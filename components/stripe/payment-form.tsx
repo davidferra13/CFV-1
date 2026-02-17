@@ -11,7 +11,7 @@ import {
 } from '@stripe/react-stripe-js'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
-import { formatCurrency } from '@/lib/ledger/compute'
+import { formatCurrency } from '@/lib/utils/currency'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
 
@@ -39,7 +39,7 @@ function CheckoutForm({ amount, onSuccess }: CheckoutFormProps) {
     const { error: submitError } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/client/payment/success`
+        return_url: `${window.location.origin}/my-events`
       }
     })
 
@@ -58,8 +58,8 @@ function CheckoutForm({ amount, onSuccess }: CheckoutFormProps) {
         <Alert variant="error">{error}</Alert>
       )}
 
-      <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-        <div className="text-sm text-blue-800">
+      <div className="bg-brand-50 border border-brand-200 rounded-md p-4">
+        <div className="text-sm text-brand-800">
           <p className="font-medium">Payment Amount</p>
           <p className="text-2xl font-bold mt-1">{formatCurrency(amount)}</p>
         </div>
@@ -77,7 +77,7 @@ function CheckoutForm({ amount, onSuccess }: CheckoutFormProps) {
         Pay {formatCurrency(amount)}
       </Button>
 
-      <p className="text-xs text-gray-500 text-center">
+      <p className="text-xs text-stone-500 text-center">
         Secure payment powered by Stripe
       </p>
     </form>

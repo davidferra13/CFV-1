@@ -9,11 +9,11 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 
 export function Badge({ variant = 'default', className = '', children, ...props }: BadgeProps) {
   const variants = {
-    default: 'bg-gray-100 text-gray-800',
-    success: 'bg-green-100 text-green-800',
-    warning: 'bg-yellow-100 text-yellow-800',
-    error: 'bg-red-100 text-red-800',
-    info: 'bg-blue-100 text-blue-800'
+    default: 'bg-stone-100 text-stone-700',
+    success: 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200',
+    warning: 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200',
+    error: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-200',
+    info: 'bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200'
   }
 
   return (

@@ -5,89 +5,114 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Routes that require chef role (route groups don't create URL segments)
+const chefPaths = [
+  '/dashboard', '/clients', '/events', '/financials', '/menus',
+  '/inquiries', '/quotes', '/expenses', '/schedule', '/settings',
+  '/aar', '/recipes', '/loyalty', '/import'
+]
+// Routes that require client role
+const clientPaths = ['/my-events', '/my-quotes']
+// Paths that skip all auth processing
+const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized']
+
+/**
+ * Copy Supabase session cookies from the internal response onto a redirect response.
+ * This ensures token refreshes performed by getUser() are not lost on redirects.
+ */
+function redirectWithCookies(url: URL, sourceResponse: NextResponse): NextResponse {
+  const redirectResponse = NextResponse.redirect(url)
+  sourceResponse.cookies.getAll().forEach((cookie) => {
+    redirectResponse.cookies.set(cookie.name, cookie.value)
+  })
+  return redirectResponse
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Public routes - no auth required
-  const publicPaths = ['/', '/pricing', '/contact']
-  const authPaths = ['/auth']
-
-  if (publicPaths.some((path) => pathname === path)) {
+  // Auth pages, webhooks, and Google/Gmail API routes - no processing needed
+  if (
+    pathname.startsWith('/auth') ||
+    pathname.startsWith('/api/webhooks') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/api/gmail')
+  ) {
     return NextResponse.next()
   }
 
-  if (authPaths.some((path) => pathname.startsWith(path))) {
+  // Static public pages + /unauthorized - no auth check needed
+  if (skipAuthPaths.some((path) => pathname === path)) {
     return NextResponse.next()
   }
 
-  // Exclude API webhooks from auth check (they use signature verification)
-  if (pathname.startsWith('/api/webhooks')) {
-    return NextResponse.next()
-  }
-
-  // Create Supabase client for middleware
+  // Create Supabase client for middleware with getAll/setAll cookie API
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
+  // When "Stay signed in" was unchecked, a session-only marker cookie is set.
+  // We strip maxAge from Supabase auth cookies so they expire when the browser closes.
+  const sessionOnly = request.cookies.get('chefflow-session-only')?.value === '1'
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          )
           response = NextResponse.next({
             request: {
               headers: request.headers,
             },
           })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
+          cookiesToSet.forEach(({ name, value, options }) => {
+            const cookieOptions = sessionOnly
+              ? { ...options, maxAge: undefined }
+              : options
+            response.cookies.set(name, value, cookieOptions)
           })
         },
       },
     }
   )
 
-  // Get authenticated user
+  // Get authenticated user (also refreshes session if token is expired)
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes require authentication
+  // Landing page: show public page if not logged in, redirect to dashboard if logged in
+  if (pathname === '/') {
+    if (!user) {
+      return response
+    }
+    // Authenticated user on landing page - redirect to their portal
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('auth_user_id', user.id)
+      .single()
+
+    if (roleData?.role === 'client') {
+      return redirectWithCookies(new URL('/my-events', request.url), response)
+    }
+    return redirectWithCookies(new URL('/dashboard', request.url), response)
+  }
+
+  // All remaining routes require authentication
   if (!user) {
     const redirectUrl = new URL('/auth/signin', request.url)
     redirectUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(redirectUrl)
+    return redirectWithCookies(redirectUrl, response)
   }
 
   // Get user role from authoritative source
@@ -98,19 +123,20 @@ export async function middleware(request: NextRequest) {
     .single()
 
   if (!roleData) {
-    // User has no role - redirect to error
-    return NextResponse.redirect(new URL('/auth/error', request.url))
+    // No role found - send to unauthorized (which is in skipAuthPaths to avoid loops)
+    return redirectWithCookies(new URL('/unauthorized', request.url), response)
   }
 
-  // Enforce role-based routing (no cross-portal access)
-  if (pathname.startsWith('/chef') && roleData.role !== 'chef') {
-    // Client trying to access chef portal - redirect to client portal
-    return NextResponse.redirect(new URL('/client/my-events', request.url))
+  // Enforce role-based routing using actual URL paths
+  const isChefRoute = chefPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+  const isClientRoute = clientPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+
+  if (isChefRoute && roleData.role !== 'chef') {
+    return redirectWithCookies(new URL('/my-events', request.url), response)
   }
 
-  if (pathname.startsWith('/client') && roleData.role !== 'client') {
-    // Chef trying to access client portal - redirect to chef portal
-    return NextResponse.redirect(new URL('/chef/dashboard', request.url))
+  if (isClientRoute && roleData.role !== 'client') {
+    return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
 
   return response

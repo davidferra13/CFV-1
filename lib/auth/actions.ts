@@ -5,15 +5,16 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import { getInvitationByToken, markInvitationUsed } from '@/lib/clients/actions'
+import { getInvitationByToken, markInvitationUsed } from '@/lib/auth/invitations'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
-  business_name: z.string().min(1, 'Business name required'),
+  business_name: z.string().optional(),
   phone: z.string().optional()
 })
 
@@ -27,7 +28,8 @@ const ClientSignupSchema = z.object({
 
 const SignInSchema = z.object({
   email: z.string().email('Valid email required'),
-  password: z.string().min(1, 'Password required')
+  password: z.string().min(1, 'Password required'),
+  rememberMe: z.boolean().optional().default(true)
 })
 
 export type ChefSignupInput = z.infer<typeof ChefSignupSchema>
@@ -56,12 +58,13 @@ export async function signUpChef(input: ChefSignupInput) {
   }
 
   try {
-    // Create chef record
+    // Create chef record (default business name to email prefix if not provided)
+    const businessName = validated.business_name?.trim() || validated.email.split('@')[0]
     const { data: chef, error: chefError } = await supabase
       .from('chefs')
       .insert({
         auth_user_id: authData.user.id,
-        business_name: validated.business_name,
+        business_name: businessName,
         email: validated.email,
         phone: validated.phone
       })
@@ -180,6 +183,8 @@ export async function signUpClient(input: ClientSignupInput) {
 
 /**
  * Sign in (both chef and client)
+ * When rememberMe is false, sets a session-only marker cookie so the middleware
+ * strips maxAge from Supabase auth cookies, making them expire when the browser closes.
  */
 export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
@@ -194,6 +199,22 @@ export async function signIn(input: SignInInput) {
   if (error) {
     console.error('[signIn] Error:', error)
     throw new Error('Invalid email or password')
+  }
+
+  const cookieStore = cookies()
+
+  if (!validated.rememberMe) {
+    // Session-only cookie (no maxAge) — cleared when browser closes.
+    // Middleware uses this to strip maxAge from Supabase auth cookies too.
+    cookieStore.set('chefflow-session-only', '1', {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    })
+  } else {
+    // Clear the marker if it was previously set
+    cookieStore.delete('chefflow-session-only')
   }
 
   revalidatePath('/', 'layout')

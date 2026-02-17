@@ -6,14 +6,22 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import Stripe from 'stripe'
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia'
-})
+import type Stripe from 'stripe'
 
 /**
- * Create PaymentIntent for event deposit
+ * Lazy Stripe client initialization
+ * Avoids module-level side effects during build/import
+ */
+function getStripe(): Stripe {
+  const StripeLib = require('stripe')
+  const StripeCtor = StripeLib.default || StripeLib
+  return new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
+    apiVersion: '2026-01-28.clover' as Stripe.LatestApiVersion
+  })
+}
+
+/**
+ * Create PaymentIntent for event payment
  * Client-only: Can only pay for own events
  */
 export async function createPaymentIntent(eventId: string) {
@@ -23,7 +31,7 @@ export async function createPaymentIntent(eventId: string) {
   // Fetch event and verify ownership
   const { data: event, error } = await supabase
     .from('events')
-    .select('*, client:clients(stripe_customer_id)')
+    .select('*')
     .eq('id', eventId)
     .eq('client_id', user.entityId!)
     .single()
@@ -37,45 +45,49 @@ export async function createPaymentIntent(eventId: string) {
     throw new Error('Event is not ready for payment')
   }
 
-  // Determine amount (deposit or full)
-  const amountCents = event.deposit_required
-    ? event.deposit_amount_cents
-    : event.total_amount_cents
+  // Determine amount from financial summary
+  const { data: financial } = await supabase
+    .from('event_financial_summary')
+    .select('*')
+    .eq('event_id', eventId)
+    .single()
+
+  // Use outstanding balance, or deposit if no payments yet, or quoted price
+  const outstandingCents = financial?.outstanding_balance_cents ?? 0
+  const depositCents = event.deposit_amount_cents ?? 0
+  const quotedCents = event.quoted_price_cents ?? 0
+  const totalPaidCents = financial?.total_paid_cents ?? 0
+
+  // If nothing paid yet and deposit defined, charge deposit; otherwise charge outstanding
+  let amountCents: number
+  let paymentType: string
+
+  if (totalPaidCents === 0 && depositCents > 0) {
+    amountCents = depositCents
+    paymentType = 'deposit'
+  } else if (outstandingCents > 0) {
+    amountCents = outstandingCents
+    paymentType = 'balance'
+  } else {
+    amountCents = quotedCents
+    paymentType = 'full'
+  }
 
   if (amountCents <= 0) {
     throw new Error('Invalid payment amount')
   }
 
-  // Get or create Stripe customer
-  let customerId = event.client?.stripe_customer_id
+  const stripe = getStripe()
 
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      metadata: {
-        client_id: user.entityId!,
-        tenant_id: user.tenantId!
-      }
-    })
-    customerId = customer.id
-
-    // Update client record with Stripe customer ID
-    await supabase
-      .from('clients')
-      .update({ stripe_customer_id: customerId })
-      .eq('id', user.entityId!)
-  }
-
-  // Create PaymentIntent
+  // Create PaymentIntent with metadata for webhook processing
   const paymentIntent = await stripe.paymentIntents.create({
     amount: amountCents,
     currency: 'usd',
-    customer: customerId,
     metadata: {
       event_id: eventId,
       tenant_id: event.tenant_id,
       client_id: user.entityId!,
-      payment_type: event.deposit_required ? 'deposit' : 'full'
+      payment_type: paymentType
     },
     automatic_payment_methods: {
       enabled: true
@@ -107,19 +119,23 @@ export async function getEventPaymentStatus(eventId: string) {
     throw new Error('Event not found')
   }
 
-  // Fetch financial summary
+  // Fetch financial summary from view
   const { data: summary } = await supabase
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', eventId)
     .single()
 
+  const paymentStatus = summary?.payment_status ?? 'unpaid'
+
   return {
     event,
-    isDepositPaid: summary?.is_deposit_paid || false,
-    isFullyPaid: summary?.is_fully_paid || false,
-    collectedCents: summary?.collected_cents || 0,
-    expectedTotalCents: event.total_amount_cents,
-    expectedDepositCents: event.deposit_amount_cents
+    paymentStatus,
+    isDepositPaid: paymentStatus !== 'unpaid',
+    isFullyPaid: paymentStatus === 'paid',
+    totalPaidCents: summary?.total_paid_cents ?? 0,
+    outstandingBalanceCents: summary?.outstanding_balance_cents ?? 0,
+    quotedPriceCents: event.quoted_price_cents ?? 0,
+    depositAmountCents: event.deposit_amount_cents ?? 0
   }
 }

@@ -1,0 +1,8 @@
+<!-- Placeholder Open Graph image for social sharing. Replace with branded 1200x630px image. -->
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+    <rect width="1200" height="630" fill="#fcfbf7" />
+    <text x="50%" y="50%" text-anchor="middle" fill="#222" font-size="64" font-family="Inter, Arial, sans-serif"
+        dy=".3em">ChefFlow</text>
+    <text x="50%" y="60%" text-anchor="middle" fill="#666" font-size="32" font-family="Inter, Arial, sans-serif">Ops for
+        Artists</text>
+</svg>

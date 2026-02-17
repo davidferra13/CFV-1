@@ -1,7 +1,7 @@
 // Input Component - Form inputs with consistent styling
 'use client'
 
-import { InputHTMLAttributes, forwardRef } from 'react'
+import { InputHTMLAttributes, forwardRef, useState } from 'react'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -11,33 +11,62 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, helperText, className = '', type = 'text', ...props }, ref) => {
+    const [showPassword, setShowPassword] = useState(false)
+    const isPassword = type === 'password'
+
     const inputClasses = `
-      block w-full rounded-md border-gray-300 shadow-sm
-      focus:border-blue-500 focus:ring-blue-500 sm:text-sm
-      disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500
-      ${error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}
+      block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900
+      placeholder:text-stone-400
+      focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
+      disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500
+      ${error ? 'border-red-300 focus:border-red-400 focus:ring-red-500/20' : ''}
+      ${isPassword ? 'pr-10' : ''}
       ${className}
     `.trim()
 
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-stone-700 mb-1.5">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        <input
-          ref={ref}
-          type={type}
-          className={inputClasses}
-          {...props}
-        />
+        <div className="relative">
+          <input
+            ref={ref}
+            type={isPassword && showPassword ? 'text' : type}
+            className={inputClasses}
+            {...props}
+          />
+          {isPassword && (
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-400 hover:text-stone-600"
+              tabIndex={-1}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+            >
+              {showPassword ? (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
+                  <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
+                  <line x1="1" y1="1" x2="23" y2="23" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              )}
+            </button>
+          )}
+        </div>
         {error && (
           <p className="mt-1 text-sm text-red-600">{error}</p>
         )}
         {helperText && !error && (
-          <p className="mt-1 text-sm text-gray-500">{helperText}</p>
+          <p className="mt-1.5 text-sm text-stone-500">{helperText}</p>
         )}
       </div>
     )

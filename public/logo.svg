@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" preserveAspectRatio="xMidYMid meet">
+    <defs>
+        <linearGradient id="g" x1="0" x2="1">
+            <stop offset="0" stop-color="#f59e0b" />
+            <stop offset="1" stop-color="#fb923c" />
+        </linearGradient>
+    </defs>
+    <rect width="120" height="120" rx="18" fill="url(#g)" />
+    <g transform="translate(18,20) scale(0.7)" fill="#fff">
+        <!-- simple chef hat shape -->
+        <path
+            d="M38 8c-6 0-11 3-14 7-3-2-7-3-11-3-9 0-16 7-16 16 0 8 6 14 14 14h49c8 0 14-6 14-14 0-9-7-16-16-16-4 0-8 1-11 3-3-4-8-7-14-7zM8 50c0 6 4 10 10 10h42c6 0 10-4 10-10v-6H8v6z" />
+        <!-- face -->
+        <circle cx="36" cy="62" r="10" fill="#ffd7b5" />
+        <circle cx="31" cy="60" r="2" fill="#333" />
+        <circle cx="41" cy="60" r="2" fill="#333" />
+        <path d="M30 67c3 2 6 2 9 0" stroke="#e38b5a" stroke-width="1.5" fill="none" stroke-linecap="round" />
+    </g>
+</svg>

@@ -45,7 +45,7 @@ const TRANSITION_PERMISSIONS: Record<string, TransitionPermission> = {
 /**
  * Core state transition function
  * Validates transition rules and permissions
- * Logs to event_transitions table (append-only)
+ * Logs to event_state_transitions table (append-only)
  */
 export async function transitionEvent({
   eventId,
@@ -55,7 +55,7 @@ export async function transitionEvent({
 }: {
   eventId: string
   toStatus: EventStatus
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
   systemTransition?: boolean // True if called from webhook
 }) {
   const supabase = createServerClient({ admin: systemTransition })
@@ -120,19 +120,30 @@ export async function transitionEvent({
   const user = systemTransition ? null : await getCurrentUser()
   const transitionedBy = user?.id || null
 
+  // Build update payload
+  const updatePayload: Record<string, unknown> = {
+    status: toStatus,
+    updated_by: transitionedBy
+  }
+
+  // Add cancellation-specific fields
+  if (toStatus === 'cancelled') {
+    updatePayload.cancelled_at = new Date().toISOString()
+    updatePayload.cancellation_reason = (metadata.reason as string) || null
+    // Determine initiator based on who triggered it
+    if (systemTransition) {
+      updatePayload.cancellation_initiated_by = 'mutual'
+    } else if (user?.role === 'chef') {
+      updatePayload.cancellation_initiated_by = 'chef'
+    } else if (user?.role === 'client') {
+      updatePayload.cancellation_initiated_by = 'client'
+    }
+  }
+
   // Update event status
   const { error: updateError } = await supabase
     .from('events')
-    .update({
-      status: toStatus,
-      status_changed_at: new Date().toISOString(),
-      updated_by: transitionedBy,
-      ...(toStatus === 'cancelled' && {
-        cancelled_at: new Date().toISOString(),
-        cancelled_by: transitionedBy,
-        cancellation_reason: metadata.reason || null
-      })
-    })
+    .update(updatePayload)
     .eq('id', eventId)
 
   if (updateError) {
@@ -142,7 +153,7 @@ export async function transitionEvent({
 
   // Log transition (immutable audit trail)
   const { error: logError } = await supabase
-    .from('event_transitions')
+    .from('event_state_transitions')
     .insert({
       tenant_id: event.tenant_id,
       event_id: eventId,
@@ -161,8 +172,8 @@ export async function transitionEvent({
     // Don't throw - transition succeeded, logging failed
   }
 
-  revalidatePath(`/chef/events/${eventId}`)
-  revalidatePath(`/client/my-events/${eventId}`)
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/my-events/${eventId}`)
   return { success: true, fromStatus, toStatus }
 }
 
@@ -198,9 +209,6 @@ export async function acceptProposal(eventId: string) {
 export async function confirmEvent(eventId: string) {
   const user = await requireChef()
 
-  // TODO: Verify payment via ledger before allowing confirmation
-  // For now, allow confirmation from 'paid' status
-
   return transitionEvent({
     eventId,
     toStatus: 'confirmed',
@@ -223,15 +231,27 @@ export async function startEvent(eventId: string) {
 
 /**
  * Chef completes event
+ * Auto-awards loyalty points as a side effect
  */
 export async function completeEvent(eventId: string) {
   const user = await requireChef()
 
-  return transitionEvent({
+  const result = await transitionEvent({
     eventId,
     toStatus: 'completed',
     metadata: { action: 'chef_completed', chefId: user.entityId }
   })
+
+  // Auto-award loyalty points (Tier 1 autonomous — no chef approval needed)
+  try {
+    const { awardEventPoints } = await import('@/lib/loyalty/actions')
+    const loyaltyResult = await awardEventPoints(eventId)
+    return { ...result, loyalty: loyaltyResult }
+  } catch (err) {
+    // Loyalty award failure should not block event completion
+    console.error('[completeEvent] Loyalty award failed (non-blocking):', err)
+    return { ...result, loyalty: null }
+  }
 }
 
 /**

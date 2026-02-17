@@ -2,6 +2,7 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
+import { ClientNav } from '@/components/navigation/client-nav'
 
 export default async function ClientLayout({
   children,
@@ -16,33 +17,9 @@ export default async function ClientLayout({
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      <header className="bg-white border-b">
-        <nav className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-8">
-              <h1 className="text-xl font-bold text-gray-900">ChefFlow</h1>
-              <div className="hidden md:flex space-x-4">
-                <a
-                  href="/client/my-events"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  My Events
-                </a>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">{user.email}</span>
-              <form action="/auth/signout" method="post">
-                <button className="text-sm text-gray-600 hover:text-gray-900">
-                  Sign Out
-                </button>
-              </form>
-            </div>
-          </div>
-        </nav>
-      </header>
-      <main className="container mx-auto px-4 py-8">{children}</main>
+    <div className="min-h-screen bg-surface-muted">
+      <ClientNav userEmail={user.email} />
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">{children}</main>
     </div>
   )
 }

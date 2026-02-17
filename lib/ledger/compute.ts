@@ -7,8 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 /**
- * Get event financial summary (computed from ledger)
- * Uses the event_financial_summary VIEW
+ * Get event financial summary (computed via the event_financial_summary view)
  */
 export async function getEventFinancialSummary(eventId: string) {
   const user = await requireChef()
@@ -28,12 +27,17 @@ export async function getEventFinancialSummary(eventId: string) {
 
   return {
     eventId: data.event_id,
-    expectedTotalCents: data.expected_total_cents,
-    expectedDepositCents: data.expected_deposit_cents,
-    collectedCents: data.collected_cents,
-    balanceCents: data.collected_cents - data.expected_total_cents,
-    isFullyPaid: data.is_fully_paid,
-    isDepositPaid: data.is_deposit_paid
+    quotedPriceCents: data.quoted_price_cents ?? 0,
+    totalPaidCents: data.total_paid_cents ?? 0,
+    totalRefundedCents: data.total_refunded_cents ?? 0,
+    totalExpensesCents: data.total_expenses_cents ?? 0,
+    tipAmountCents: data.tip_amount_cents ?? 0,
+    netRevenueCents: data.net_revenue_cents ?? 0,
+    outstandingBalanceCents: data.outstanding_balance_cents ?? 0,
+    profitCents: data.profit_cents ?? 0,
+    profitMargin: data.profit_margin ?? 0,
+    foodCostPercentage: data.food_cost_percentage ?? 0,
+    paymentStatus: data.payment_status
   }
 }
 
@@ -46,7 +50,7 @@ export async function getTenantFinancialSummary() {
 
   const { data: entries, error } = await supabase
     .from('ledger_entries')
-    .select('entry_type, amount_cents')
+    .select('entry_type, amount_cents, is_refund')
     .eq('tenant_id', user.tenantId!)
 
   if (error) {
@@ -54,41 +58,27 @@ export async function getTenantFinancialSummary() {
     throw new Error('Failed to compute tenant financials')
   }
 
-  // Compute totals from ledger
+  // Compute totals from ledger entries using new entry types
   let totalRevenue = 0
   let totalRefunds = 0
-  let totalPayouts = 0
+  let totalTips = 0
 
   for (const entry of entries) {
-    switch (entry.entry_type) {
-      case 'charge_succeeded':
-        totalRevenue += entry.amount_cents
-        break
-      case 'refund_succeeded':
-        totalRefunds += Math.abs(entry.amount_cents)
-        break
-      case 'payout_paid':
-        totalPayouts += entry.amount_cents
-        break
+    if (entry.is_refund || entry.entry_type === 'refund') {
+      totalRefunds += Math.abs(entry.amount_cents)
+    } else if (entry.entry_type === 'tip') {
+      totalTips += entry.amount_cents
+    } else {
+      // payment, deposit, installment, final_payment, add_on, credit
+      totalRevenue += entry.amount_cents
     }
   }
 
   return {
     totalRevenueCents: totalRevenue,
     totalRefundsCents: totalRefunds,
-    totalPayoutsCents: totalPayouts,
+    totalTipsCents: totalTips,
     netRevenueCents: totalRevenue - totalRefunds,
-    pendingPayoutCents: totalRevenue - totalRefunds - totalPayouts
+    totalWithTipsCents: totalRevenue + totalTips - totalRefunds
   }
-}
-
-/**
- * Format cents to currency string (for display)
- */
-export function formatCurrency(cents: number, currency = 'USD'): string {
-  const dollars = cents / 100
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency
-  }).format(dollars)
 }

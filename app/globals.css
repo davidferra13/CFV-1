@@ -1,3 +1,253 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-surface-muted text-stone-800 antialiased;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="tel"],
+  input[type="number"],
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="url"],
+  textarea,
+  select {
+    @apply rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900
+      placeholder:text-stone-400
+      focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
+      disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500;
+  }
+}
+
+@layer components {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-stone-300 rounded-full;
+  }
+
+  .allergy-banner {
+    @apply bg-red-600 text-white px-4 py-3 rounded-lg font-semibold text-sm
+      flex items-center gap-2 shadow-sm;
+  }
+
+  .skeleton {
+    @apply bg-stone-200 rounded animate-pulse;
+  }
+}
+
+/* ============================================
+   FULLCALENDAR — GOOGLE CALENDAR STYLE
+   ============================================ */
+
+/* Container */
+.calendar-container .fc {
+  --fc-border-color: #e7e5e4;
+  --fc-today-bg-color: #fef9f3;
+  --fc-neutral-bg-color: #faf9f7;
+  --fc-page-bg-color: #ffffff;
+  --fc-now-indicator-color: #e88f47;
+  --fc-list-event-hover-bg-color: #f5f3ef;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+/* Remove default FullCalendar borders that compete with our container */
+.calendar-container .fc .fc-scrollgrid {
+  border: none;
+}
+.calendar-container .fc .fc-scrollgrid td:last-of-type {
+  border-right: none;
+}
+.calendar-container .fc .fc-scrollgrid-section > td {
+  border-bottom: none;
+}
+
+/* Day headers (Mon, Tue, etc.) */
+.calendar-container .fc .fc-col-header-cell {
+  padding: 10px 0;
+  background: #faf9f7;
+  border-bottom: 1px solid #e7e5e4;
+}
+.calendar-container .fc .fc-col-header-cell-cushion {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  text-decoration: none;
+}
+
+/* Day cells */
+.calendar-container .fc .fc-daygrid-day {
+  transition: background-color 0.15s;
+}
+.calendar-container .fc .fc-daygrid-day:hover {
+  background-color: #faf9f7;
+}
+
+/* Day numbers */
+.calendar-container .fc .fc-daygrid-day-number {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #57534e;
+  padding: 6px 10px;
+  text-decoration: none;
+}
+
+/* Today's day number */
+.calendar-container .fc .fc-day-today .fc-daygrid-day-number {
+  background-color: #e88f47;
+  color: white;
+  border-radius: 9999px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+/* Other month days */
+.calendar-container .fc .fc-day-other .fc-daygrid-day-number {
+  color: #a8a29e;
+}
+
+/* Event pill styling */
+.calendar-container .fc .fc-event {
+  border-radius: 6px;
+  border: none;
+  border-left: 3px solid;
+  margin: 1px 4px;
+  padding: 0;
+  font-size: 0.75rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+.calendar-container .fc .fc-event:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: translateY(-1px);
+}
+
+/* "More" link */
+.calendar-container .fc .fc-daygrid-more-link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #e88f47;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.calendar-container .fc .fc-daygrid-more-link:hover {
+  background-color: #fef9f3;
+  color: #d47530;
+}
+
+/* Time grid (Week / Day views) */
+.calendar-container .fc .fc-timegrid-slot {
+  height: 48px;
+  border-bottom: 1px solid #f5f5f4;
+}
+.calendar-container .fc .fc-timegrid-slot-label {
+  font-size: 0.75rem;
+  color: #a8a29e;
+  vertical-align: top;
+  padding-top: 2px;
+}
+.calendar-container .fc .fc-timegrid-slot-lane {
+  border-bottom: 1px solid #f5f5f4;
+}
+
+/* Now indicator (red line like Google Calendar) */
+.calendar-container .fc .fc-timegrid-now-indicator-line {
+  border-color: #e88f47;
+  border-width: 2px;
+}
+.calendar-container .fc .fc-timegrid-now-indicator-arrow {
+  border-color: #e88f47;
+  border-width: 5px;
+}
+
+/* Time grid events */
+.calendar-container .fc .fc-timegrid-event {
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.calendar-container .fc .fc-timegrid-event .fc-event-main {
+  padding: 2px;
+}
+
+/* All-day section */
+.calendar-container .fc .fc-daygrid-body.fc-daygrid-body-unbalanced .fc-daygrid-day-events {
+  min-height: 1.5em;
+}
+
+/* List view */
+.calendar-container .fc .fc-list {
+  border: none;
+}
+.calendar-container .fc .fc-list-day-cushion {
+  background: #faf9f7;
+  padding: 8px 14px;
+}
+.calendar-container .fc .fc-list-day-text,
+.calendar-container .fc .fc-list-day-side-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #57534e;
+  text-decoration: none;
+}
+.calendar-container .fc .fc-list-event {
+  cursor: pointer;
+}
+.calendar-container .fc .fc-list-event td {
+  padding: 10px 14px;
+  border-color: #f5f5f4;
+}
+.calendar-container .fc .fc-list-event-dot {
+  border-color: #e88f47;
+}
+.calendar-container .fc .fc-list-event-title a {
+  color: #1c1917;
+  text-decoration: none;
+}
+
+/* Popover for "+X more" */
+.calendar-container .fc .fc-popover {
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  border: 1px solid #e7e5e4;
+  overflow: hidden;
+}
+.calendar-container .fc .fc-popover-header {
+  background: #faf9f7;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #57534e;
+}
+.calendar-container .fc .fc-popover-body {
+  padding: 4px;
+}
+
+/* Animation for event popover */
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-in {
+  animation: slide-in-from-top 0.2s ease-out;
+}

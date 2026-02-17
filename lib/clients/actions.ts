@@ -17,7 +17,27 @@ const InviteClientSchema = z.object({
 
 const UpdateClientSchema = z.object({
   full_name: z.string().min(1).optional(),
-  phone: z.string().optional()
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  preferred_contact_method: z.enum(['phone', 'email', 'text', 'instagram']).optional(),
+  dietary_restrictions: z.array(z.string()).optional(),
+  allergies: z.array(z.string()).optional(),
+  dislikes: z.array(z.string()).optional(),
+  spice_tolerance: z.enum(['none', 'mild', 'medium', 'hot', 'very_hot']).optional(),
+  favorite_cuisines: z.array(z.string()).optional(),
+  favorite_dishes: z.array(z.string()).optional(),
+  wine_beverage_preferences: z.string().optional(),
+  partner_name: z.string().optional(),
+  parking_instructions: z.string().optional(),
+  access_instructions: z.string().optional(),
+  kitchen_size: z.string().optional(),
+  kitchen_constraints: z.string().optional(),
+  house_rules: z.string().optional(),
+  equipment_available: z.array(z.string()).optional(),
+  equipment_must_bring: z.array(z.string()).optional(),
+  vibe_notes: z.string().optional(),
+  what_they_care_about: z.string().optional(),
+  status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional()
 })
 
 export type InviteClientInput = z.infer<typeof InviteClientSchema>
@@ -84,52 +104,12 @@ export async function inviteClient(input: InviteClientInput) {
     throw new Error('Failed to create invitation')
   }
 
-  revalidatePath('/chef/clients')
+  revalidatePath('/clients')
 
   // V1: Return invitation URL (no email sending)
   const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?token=${token}`
 
   return { success: true, invitation, invitationUrl }
-}
-
-/**
- * Get invitation by token (public - for signup flow)
- */
-export async function getInvitationByToken(token: string) {
-  const supabase = createServerClient()
-
-  const { data: invitation, error } = await supabase
-    .from('client_invitations')
-    .select('*')
-    .eq('token', token)
-    .is('used_at', null)
-    .gt('expires_at', new Date().toISOString())
-    .single()
-
-  if (error || !invitation) {
-    return null
-  }
-
-  return invitation
-}
-
-/**
- * Mark invitation as used (called during signup)
- */
-export async function markInvitationUsed(invitationId: string) {
-  const supabase = createServerClient({ admin: true })
-
-  const { error } = await supabase
-    .from('client_invitations')
-    .update({ used_at: new Date().toISOString() })
-    .eq('id', invitationId)
-
-  if (error) {
-    console.error('[markInvitationUsed] Error:', error)
-    throw new Error('Failed to mark invitation as used')
-  }
-
-  return { success: true }
 }
 
 /**
@@ -197,8 +177,8 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     throw new Error('Failed to update client')
   }
 
-  revalidatePath('/chef/clients')
-  revalidatePath(`/chef/clients/${clientId}`)
+  revalidatePath('/clients')
+  revalidatePath(`/clients/${clientId}`)
   return { success: true, client }
 }
 
@@ -244,6 +224,134 @@ export async function cancelInvitation(invitationId: string) {
     throw new Error('Failed to cancel invitation')
   }
 
-  revalidatePath('/chef/clients')
+  revalidatePath('/clients')
   return { success: true }
+}
+
+/**
+ * Get clients with statistics (chef-only)
+ * Uses client_financial_summary view for computed stats
+ */
+export async function getClientsWithStats() {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Get all clients
+  const { data: clients, error: clientsError } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (clientsError) {
+    console.error('[getClientsWithStats] Error:', clientsError)
+    throw new Error('Failed to fetch clients')
+  }
+
+  // Use the client_financial_summary view for stats
+  const { data: financialSummaries } = await supabase
+    .from('client_financial_summary')
+    .select('*')
+    .eq('tenant_id', user.tenantId!)
+
+  // Build stats map from the view
+  const statsMap = new Map<string, {
+    totalEvents: number
+    totalSpentCents: number
+    lastEventDate: string | null
+  }>()
+
+  if (financialSummaries) {
+    for (const summary of financialSummaries) {
+      if (summary.client_id) {
+        statsMap.set(summary.client_id, {
+          totalEvents: summary.total_events_count ?? 0,
+          totalSpentCents: summary.lifetime_value_cents ?? 0,
+          lastEventDate: summary.last_event_date
+        })
+      }
+    }
+  }
+
+  // Merge clients with stats
+  return clients.map(client => ({
+    ...client,
+    totalEvents: statsMap.get(client.id)?.totalEvents ?? 0,
+    totalSpentCents: statsMap.get(client.id)?.totalSpentCents ?? 0,
+    lastEventDate: statsMap.get(client.id)?.lastEventDate ?? null
+  }))
+}
+
+/**
+ * Get events for a specific client (chef-only)
+ */
+export async function getClientEvents(clientId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Verify client belongs to tenant
+  const { data: client } = await supabase
+    .from('clients')
+    .select('id')
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!client) {
+    throw new Error('Client not found')
+  }
+
+  // Get events for this client
+  const { data: events, error } = await supabase
+    .from('events')
+    .select('*')
+    .eq('client_id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .order('event_date', { ascending: false })
+
+  if (error) {
+    console.error('[getClientEvents] Error:', error)
+    throw new Error('Failed to fetch client events')
+  }
+
+  return events
+}
+
+/**
+ * Get client with detailed statistics
+ * Uses client_financial_summary view for computed metrics
+ */
+export async function getClientWithStats(clientId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Get client
+  const { data: client, error: clientError } = await supabase
+    .from('clients')
+    .select('*')
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (clientError || !client) {
+    console.error('[getClientWithStats] Error:', clientError)
+    return null
+  }
+
+  // Use the client_financial_summary view
+  const { data: financialSummary } = await supabase
+    .from('client_financial_summary')
+    .select('*')
+    .eq('client_id', clientId)
+    .single()
+
+  return {
+    ...client,
+    totalEvents: financialSummary?.total_events_count ?? 0,
+    completedEvents: financialSummary?.total_events_completed ?? 0,
+    totalSpentCents: financialSummary?.lifetime_value_cents ?? 0,
+    averageEventValueCents: financialSummary?.average_spend_per_event ?? 0,
+    lastEventDate: financialSummary?.last_event_date ?? null,
+    outstandingBalanceCents: financialSummary?.outstanding_balance_cents ?? 0
+  }
 }

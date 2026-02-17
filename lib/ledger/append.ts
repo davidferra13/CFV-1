@@ -5,38 +5,40 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import type { Database } from '@/types/database'
 
-export type LedgerEntryType =
-  | 'charge_created'
-  | 'charge_succeeded'
-  | 'charge_failed'
-  | 'refund_created'
-  | 'refund_succeeded'
-  | 'payout_created'
-  | 'payout_paid'
-  | 'adjustment'
+export type LedgerEntryType = Database['public']['Enums']['ledger_entry_type']
+// 'payment' | 'deposit' | 'installment' | 'final_payment' | 'tip' | 'refund' | 'adjustment' | 'add_on' | 'credit'
+
+export type PaymentMethod = Database['public']['Enums']['payment_method']
+// 'cash' | 'venmo' | 'paypal' | 'zelle' | 'card' | 'check'
 
 export type AppendLedgerEntryInput = {
   tenant_id: string
+  client_id: string
   entry_type: LedgerEntryType
-  amount_cents: number // Must be in minor units (cents)
-  currency?: string
-  event_id?: string
-  client_id?: string
-  stripe_event_id?: string | null // Idempotency key for webhooks
-  stripe_object_id?: string | null // payment_intent_xxx, charge_xxx, etc.
-  stripe_event_type?: string | null
+  amount_cents: number
+  payment_method: PaymentMethod
   description: string
-  metadata?: Record<string, any>
+  event_id?: string | null
+  transaction_reference?: string | null // For idempotency (e.g., Stripe event ID)
+  payment_card_used?: string | null
+  internal_notes?: string | null
+  is_refund?: boolean
+  refund_reason?: string | null
+  refunded_entry_id?: string | null
+  received_at?: string | null
   created_by?: string | null // Null for webhook entries
 }
 
 /**
- * Append entry to ledger
+ * Internal ledger append — NOT exported as a server action.
+ * Only callable from other server-side functions in this module or via
+ * the explicit re-export in lib/ledger/internal.ts for webhook use.
  * CRITICAL: This is append-only. Entries are immutable (enforced by triggers)
  */
-export async function appendLedgerEntry(input: AppendLedgerEntryInput) {
-  // Use service role for webhook calls, otherwise check auth
+async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
+  // Use service role for webhook calls (created_by === null), otherwise anon key
   const useServiceRole = input.created_by === null
   const supabase = createServerClient({ admin: useServiceRole })
 
@@ -49,33 +51,47 @@ export async function appendLedgerEntry(input: AppendLedgerEntryInput) {
     .from('ledger_entries')
     .insert({
       tenant_id: input.tenant_id,
+      client_id: input.client_id,
       entry_type: input.entry_type,
       amount_cents: input.amount_cents,
-      currency: input.currency || 'usd',
-      event_id: input.event_id,
-      client_id: input.client_id,
-      stripe_event_id: input.stripe_event_id,
-      stripe_object_id: input.stripe_object_id,
-      stripe_event_type: input.stripe_event_type,
+      payment_method: input.payment_method,
       description: input.description,
-      metadata: input.metadata,
+      event_id: input.event_id,
+      transaction_reference: input.transaction_reference,
+      payment_card_used: input.payment_card_used,
+      internal_notes: input.internal_notes,
+      is_refund: input.is_refund,
+      refund_reason: input.refund_reason,
+      refunded_entry_id: input.refunded_entry_id,
+      received_at: input.received_at,
       created_by: input.created_by
     })
     .select()
     .single()
 
   if (error) {
-    // Check if duplicate stripe_event_id (idempotency)
-    if (error.code === '23505' && error.message.includes('unique_stripe_event')) {
-      console.log('[appendLedgerEntry] Duplicate stripe event (idempotent):', input.stripe_event_id)
+    // Check if duplicate transaction_reference (idempotency)
+    if (error.code === '23505' && input.transaction_reference) {
+      console.log('[appendLedgerEntry] Duplicate transaction (idempotent):', input.transaction_reference)
       return { duplicate: true, entry: null }
     }
 
     console.error('[appendLedgerEntry] Error:', error)
-    throw new Error(`Failed to append ledger entry: ${error.message}`)
+    throw new Error('Failed to append ledger entry')
   }
 
   return { duplicate: false, entry: data }
+}
+
+/**
+ * Webhook-safe ledger append — for use by the Stripe webhook handler only.
+ * This is a named export but NOT directly callable by clients because
+ * callers must provide valid tenant_id/client_id/event_id from verified webhook data.
+ * The function itself validates nothing about the caller — the webhook handler
+ * is responsible for signature verification before calling this.
+ */
+export async function appendLedgerEntryFromWebhook(input: AppendLedgerEntryInput & { created_by: null }) {
+  return appendLedgerEntryInternal(input)
 }
 
 /**
@@ -86,12 +102,14 @@ export async function createAdjustment({
   event_id,
   amount_cents,
   description,
-  metadata = {}
+  payment_method = 'cash',
+  internal_notes
 }: {
   event_id: string
   amount_cents: number
   description: string
-  metadata?: Record<string, any>
+  payment_method?: PaymentMethod
+  internal_notes?: string
 }) {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -108,20 +126,15 @@ export async function createAdjustment({
     throw new Error('Event not found or does not belong to your tenant')
   }
 
-  return appendLedgerEntry({
+  return appendLedgerEntryInternal({
     tenant_id: user.tenantId!,
+    client_id: event.client_id,
     entry_type: 'adjustment',
     amount_cents,
-    currency: 'usd',
-    event_id,
-    client_id: event.client_id,
+    payment_method,
     description,
-    metadata: {
-      ...metadata,
-      adjusted_by: user.email,
-      adjusted_at: new Date().toISOString(),
-      chef_id: user.entityId
-    },
+    event_id,
+    internal_notes: internal_notes || `Adjusted by ${user.email} at ${new Date().toISOString()}`,
     created_by: user.id
   })
 }
@@ -157,7 +170,10 @@ export async function getTenantLedger(limit = 100) {
 
   const { data: entries, error } = await supabase
     .from('ledger_entries')
-    .select('*, event:events(title)')
+    .select(`
+      *,
+      event:events(id, occasion, event_date)
+    `)
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
     .limit(limit)

@@ -1,0 +1,313 @@
+'use client'
+
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Alert } from '@/components/ui/alert'
+import { deleteRecipe, createRecipe, addIngredientToRecipe } from '@/lib/recipes/actions'
+import { format } from 'date-fns'
+
+const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
+  sauce: 'warning',
+  protein: 'error',
+  starch: 'default',
+  vegetable: 'success',
+  dessert: 'info',
+  pasta: 'warning',
+  soup: 'info',
+  salad: 'success',
+}
+
+type RecipeDetail = NonNullable<Awaited<ReturnType<typeof import('@/lib/recipes/actions').getRecipeById>>>
+
+type Props = {
+  recipe: RecipeDetail
+}
+
+export function RecipeDetailClient({ recipe }: Props) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleDelete = async () => {
+    if (!confirm('Delete this recipe? It will be unlinked from any menu components.')) return
+
+    setLoading(true)
+    try {
+      await deleteRecipe(recipe.id)
+      router.push('/recipes')
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete recipe')
+      setLoading(false)
+    }
+  }
+
+  const handleDuplicate = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const result = await createRecipe({
+        name: `${recipe.name} (copy)`,
+        category: recipe.category,
+        method: recipe.method,
+        method_detailed: recipe.method_detailed || undefined,
+        description: recipe.description || undefined,
+        notes: recipe.notes || undefined,
+        prep_time_minutes: recipe.prep_time_minutes || undefined,
+        cook_time_minutes: recipe.cook_time_minutes || undefined,
+        total_time_minutes: recipe.total_time_minutes || undefined,
+        yield_quantity: recipe.yield_quantity || undefined,
+        yield_unit: recipe.yield_unit || undefined,
+        yield_description: recipe.yield_description || undefined,
+        dietary_tags: recipe.dietary_tags || undefined,
+      })
+
+      // Copy ingredients
+      for (let i = 0; i < recipe.ingredients.length; i++) {
+        const ing = recipe.ingredients[i]
+        await addIngredientToRecipe(result.recipe.id, {
+          ingredient_name: ing.ingredient.name,
+          ingredient_category: ing.ingredient.category,
+          ingredient_default_unit: ing.ingredient.default_unit,
+          quantity: ing.quantity,
+          unit: ing.unit,
+          preparation_notes: ing.preparation_notes || undefined,
+          is_optional: ing.is_optional,
+          sort_order: i,
+        })
+      }
+
+      router.push(`/recipes/${result.recipe.id}`)
+    } catch (err: any) {
+      setError(err.message || 'Failed to duplicate recipe')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-start">
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-stone-900">{recipe.name}</h1>
+            <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>
+              {recipe.category}
+            </Badge>
+          </div>
+          {recipe.description && (
+            <p className="text-stone-600 mt-1">{recipe.description}</p>
+          )}
+        </div>
+        <div className="flex gap-2">
+          <Link href={`/recipes/${recipe.id}/edit`}>
+            <Button variant="secondary">Edit</Button>
+          </Link>
+          <Button variant="secondary" onClick={handleDuplicate} disabled={loading}>
+            Duplicate
+          </Button>
+          <Button variant="danger" onClick={handleDelete} disabled={loading}>
+            Delete
+          </Button>
+          <Link href="/recipes">
+            <Button variant="ghost">Back</Button>
+          </Link>
+        </div>
+      </div>
+
+      {error && <Alert variant="error">{error}</Alert>}
+
+      {/* Ingredients */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Ingredients ({recipe.ingredients.length})</CardTitle>
+            <Link href={`/recipes/${recipe.id}/edit`}>
+              <Button size="sm" variant="secondary">Edit Ingredients</Button>
+            </Link>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {recipe.ingredients.length === 0 ? (
+            <p className="text-stone-500 text-center py-4">No ingredients added yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {recipe.ingredients.map((ri) => (
+                <div key={ri.id} className="flex justify-between items-center py-1 border-b border-stone-50 last:border-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-stone-900">
+                      {ri.quantity} {ri.unit} {ri.ingredient.name}
+                    </span>
+                    {ri.preparation_notes && (
+                      <span className="text-sm text-stone-500">({ri.preparation_notes})</span>
+                    )}
+                    {ri.is_optional && (
+                      <span className="text-xs px-1.5 py-0.5 bg-stone-100 text-stone-500 rounded">optional</span>
+                    )}
+                  </div>
+                  {ri.ingredient.average_price_cents != null && (
+                    <span className="text-sm text-stone-500">
+                      ${(ri.ingredient.average_price_cents / 100).toFixed(2)}/{ri.ingredient.default_unit}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Method */}
+      {recipe.method && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Method</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-stone-900 whitespace-pre-wrap">{recipe.method}</p>
+            {recipe.method_detailed && (
+              <div className="mt-4 pt-4 border-t border-stone-100">
+                <p className="text-sm font-medium text-stone-500 mb-1">Detailed Method</p>
+                <p className="text-sm text-stone-700 whitespace-pre-wrap">{recipe.method_detailed}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Details */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {recipe.yield_quantity && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Yield</dt>
+                <dd className="text-stone-900 mt-1">
+                  {recipe.yield_quantity} {recipe.yield_unit || 'servings'}
+                </dd>
+              </div>
+            )}
+            {recipe.prep_time_minutes && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Prep Time</dt>
+                <dd className="text-stone-900 mt-1">{recipe.prep_time_minutes} min</dd>
+              </div>
+            )}
+            {recipe.cook_time_minutes && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Cook Time</dt>
+                <dd className="text-stone-900 mt-1">{recipe.cook_time_minutes} min</dd>
+              </div>
+            )}
+            {recipe.times_cooked > 0 && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Times Cooked</dt>
+                <dd className="text-stone-900 mt-1">{recipe.times_cooked}</dd>
+              </div>
+            )}
+          </div>
+
+          {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-stone-100">
+              <p className="text-sm font-medium text-stone-500 mb-2">Dietary Tags</p>
+              <div className="flex flex-wrap gap-1">
+                {recipe.dietary_tags.map(tag => (
+                  <Badge key={tag} variant="success">{tag}</Badge>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {recipe.notes && (
+            <div className="mt-4 pt-4 border-t border-stone-100">
+              <p className="text-sm font-medium text-stone-500 mb-1">Notes</p>
+              <p className="text-sm text-stone-700 whitespace-pre-wrap">{recipe.notes}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Cost Summary */}
+      {recipe.costSummary && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Cost Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {recipe.costSummary.totalCostCents != null && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Total Cost</dt>
+                  <dd className="text-2xl font-bold text-stone-900 mt-1">
+                    ${(recipe.costSummary.totalCostCents / 100).toFixed(2)}
+                  </dd>
+                </div>
+              )}
+              {recipe.costSummary.costPerPortionCents != null && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Cost per Portion</dt>
+                  <dd className="text-2xl font-bold text-stone-900 mt-1">
+                    ${(recipe.costSummary.costPerPortionCents / 100).toFixed(2)}
+                  </dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Price Data</dt>
+                <dd className="mt-1">
+                  {recipe.costSummary.hasAllPrices ? (
+                    <Badge variant="success">Complete</Badge>
+                  ) : (
+                    <Badge variant="warning">Estimated</Badge>
+                  )}
+                </dd>
+              </div>
+            </div>
+            {!recipe.costSummary.hasAllPrices && (
+              <p className="text-sm text-stone-500 mt-3">
+                Cost data improves as you log more receipts and update ingredient prices.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Event History */}
+      {recipe.eventHistory.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Event History ({recipe.eventHistory.length})</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recipe.eventHistory.map((event) => (
+                <Link
+                  key={event.eventId}
+                  href={`/events/${event.eventId}`}
+                  className="block border border-stone-200 rounded-lg p-3 hover:border-brand-300 hover:shadow-sm transition-all"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium text-stone-900">{event.occasion || 'Untitled Event'}</h4>
+                      <p className="text-sm text-stone-500">
+                        {format(new Date(event.eventDate), 'PPP')}
+                        {event.clientName && ` for ${event.clientName}`}
+                      </p>
+                    </div>
+                    <Badge>{event.status}</Badge>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  )
+}

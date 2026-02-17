@@ -1,7 +1,7 @@
 // Table Component - Data tables
 'use client'
 
-import { HTMLAttributes, forwardRef } from 'react'
+import { HTMLAttributes, TdHTMLAttributes, ThHTMLAttributes, forwardRef } from 'react'
 
 export interface TableProps extends HTMLAttributes<HTMLTableElement> {}
 
@@ -11,7 +11,7 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(
       <div className="overflow-x-auto">
         <table
           ref={ref}
-          className={`min-w-full divide-y divide-gray-200 ${className}`}
+          className={`min-w-full divide-y divide-stone-200 ${className}`}
           {...props}
         />
       </div>
@@ -26,7 +26,7 @@ export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HT
     return (
       <thead
         ref={ref}
-        className={`bg-gray-50 ${className}`}
+        className={`bg-stone-50/60 ${className}`}
         {...props}
       />
     )
@@ -40,7 +40,7 @@ export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTML
     return (
       <tbody
         ref={ref}
-        className={`bg-white divide-y divide-gray-200 ${className}`}
+        className={`bg-white divide-y divide-stone-100 ${className}`}
         {...props}
       />
     )
@@ -54,7 +54,7 @@ export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTable
     return (
       <tr
         ref={ref}
-        className={`hover:bg-gray-50 ${className}`}
+        className={`hover:bg-stone-50/80 transition-colors ${className}`}
         {...props}
       />
     )
@@ -63,12 +63,12 @@ export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTable
 
 TableRow.displayName = 'TableRow'
 
-export const TableHead = forwardRef<HTMLTableCellElement, HTMLAttributes<HTMLTableCellElement>>(
+export const TableHead = forwardRef<HTMLTableCellElement, ThHTMLAttributes<HTMLTableCellElement>>(
   ({ className = '', ...props }, ref) => {
     return (
       <th
         ref={ref}
-        className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${className}`}
+        className={`px-6 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider ${className}`}
         {...props}
       />
     )
@@ -77,12 +77,12 @@ export const TableHead = forwardRef<HTMLTableCellElement, HTMLAttributes<HTMLTab
 
 TableHead.displayName = 'TableHead'
 
-export const TableCell = forwardRef<HTMLTableCellElement, HTMLAttributes<HTMLTableCellElement>>(
+export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLTableCellElement>>(
   ({ className = '', ...props }, ref) => {
     return (
       <td
         ref={ref}
-        className={`px-6 py-4 whitespace-nowrap text-sm text-gray-900 ${className}`}
+        className={`px-6 py-4 whitespace-nowrap text-sm text-stone-700 ${className}`}
         {...props}
       />
     )
