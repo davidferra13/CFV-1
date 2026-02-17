@@ -5,6 +5,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
 import { ChefSidebar, ChefMobileNav, SidebarProvider } from '@/components/navigation/chef-nav'
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
+import { ToastProvider } from '@/components/notifications/toast-provider'
+import { NotificationProvider } from '@/components/notifications/notification-provider'
 
 export default async function ChefLayout({
   children,
@@ -21,17 +23,20 @@ export default async function ChefLayout({
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen bg-surface-muted">
-        {/* Desktop sidebar */}
-        <ChefSidebar />
-        {/* Mobile nav (top bar + bottom tabs) */}
-        <ChefMobileNav />
+      <NotificationProvider userId={user.id}>
+        <ToastProvider />
+        <div className="min-h-screen bg-surface-muted">
+          {/* Desktop sidebar */}
+          <ChefSidebar />
+          {/* Mobile nav (top bar + bottom tabs) */}
+          <ChefMobileNav />
 
-        {/* Main content — offset adjusts dynamically based on sidebar state */}
-        <ChefMainContent>
-          {children}
-        </ChefMainContent>
-      </div>
+          {/* Main content — offset adjusts dynamically based on sidebar state */}
+          <ChefMainContent>
+            {children}
+          </ChefMainContent>
+        </div>
+      </NotificationProvider>
     </SidebarProvider>
   )
 }

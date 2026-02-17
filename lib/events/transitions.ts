@@ -183,6 +183,57 @@ export async function transitionEvent({
     console.error('[transitionEvent] System message post failed (non-blocking):', err)
   }
 
+  // Create chef notification for client-initiated or system transitions (non-blocking)
+  try {
+    const notifyChef =
+      (toStatus === 'accepted' && fromStatus === 'proposed') ||
+      (toStatus === 'paid' && fromStatus === 'accepted') ||
+      (toStatus === 'cancelled' && !systemTransition && user?.role === 'client')
+
+    if (notifyChef) {
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const chefUserId = await getChefAuthUserId(event.tenant_id)
+
+      if (chefUserId) {
+        const eventTitle = event.occasion || 'Untitled event'
+        const notifications: Record<string, { action: string; title: string; body: string }> = {
+          accepted: {
+            action: 'proposal_accepted',
+            title: `Proposal accepted`,
+            body: `Your proposal for "${eventTitle}" was accepted by the client`,
+          },
+          paid: {
+            action: 'event_paid',
+            title: `Payment received`,
+            body: `Payment received for "${eventTitle}"`,
+          },
+          cancelled: {
+            action: 'event_cancelled',
+            title: `Event cancelled`,
+            body: `"${eventTitle}" was cancelled by the client`,
+          },
+        }
+
+        const notif = notifications[toStatus]
+        if (notif) {
+          await createNotification({
+            tenantId: event.tenant_id,
+            recipientId: chefUserId,
+            category: toStatus === 'paid' ? 'payment' : 'event',
+            action: notif.action as any,
+            title: notif.title,
+            body: notif.body,
+            actionUrl: `/events/${eventId}`,
+            eventId,
+            clientId: event.client_id,
+          })
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[transitionEvent] Notification creation failed (non-blocking):', err)
+  }
+
   return { success: true, fromStatus, toStatus }
 }
 

@@ -45,71 +45,144 @@ export async function extractTasksFromChat(conversation: string) {
   }
 }
 
-// ─── Chef Response Drafting ─────────────────────────────────────────────────
+// ─── Chef Response Drafting (Simple) ────────────────────────────────────────
+// Used by draftSimpleResponse() for quick, non-inquiry drafts
 
 export async function draftChefResponse(
   context: string,
   tone: string,
   latestClientMessage: string,
+  chefName?: { fullName: string; firstName: string },
 ) {
   const ai = getClient()
+  const name = chefName ?? { fullName: 'Chef', firstName: 'Chef' }
+
+  const systemInstruction = `You are ${name.fullName}, a private chef. You draft client-facing messages in your own voice.
+
+VOICE RULES:
+- First person singular: I, me, my. Never "we", "our", "the team" or third-person references.
+- Tone: calm, direct, grounded, human. Not salesy, corporate, or overly enthusiastic.
+- If there's a choice between sounding impressive and sounding comfortable — comfortable wins.
+- 2-4 short paragraphs, 1-2 sentences each. Keep it concise.
+- No subject lines, no [Client Name] placeholders, no bullets or lists.
+- No em dashes, no internal system references, no marketing copy.
+- Sign off with "Best, ${name.firstName}" or "Thanks, ${name.firstName}" unless thread is deep, then "-- ${name.firstName}" or nothing.
+
+HARD RESTRICTIONS:
+- You draft only. You never send, confirm, modify records, or take action.
+- Do not make commitments not supported by the provided context.
+- Do not explain how the response was generated.
+- Never use: "Thanks for your inquiry", "To move forward", "Based on your request", "Please provide the following".`
+
   const response = await ai.models.generateContent({
     model: 'gemini-2.0-flash',
-    contents: `You are a high-end private chef. Draft a message to your client.
+    contents: `Draft a message to a client.
 
-    The Tone: ${tone}
-    Business Context: ${context}
-    Latest message from client: "${latestClientMessage}"
+Tone requested: ${tone}
+Business context: ${context}
+Latest message from client: "${latestClientMessage}"
 
-    Rules:
-    - Be professional and reassuring.
-    - Do not make commitments that aren't in the context.
-    - Keep it concise.
-    - Do not include subject lines or greetings like [Client Name].
-    - Focus on the "Chef's Voice".`,
-    config: { temperature: 0.7 },
+Write a response in ${name.firstName}'s voice following the system rules.`,
+    config: { temperature: 0.7, systemInstruction },
   })
 
   return response.text || ''
 }
 
 // ─── ACE: AI Correspondence Engine ──────────────────────────────────────────
+// Fully powered by agent-brain rules loaded per lifecycle state
 
 export async function generateACEDraft(params: {
   inquiryData: Record<string, unknown>
-  manifesto: Record<string, unknown>
-  catalog: Record<string, unknown>
+  systemRules: string
+  validationRules: string
+  rateCard: string
   calendarContext: string
-  voiceFingerprint: string
-  threadSensitivity: number
-  clientLedger: string
+  depthInstruction: string
+  inquirySummary: string
+  threadMessages: string[]
+  clientContext: string
+  lifecycleState: string
+  emailStage: string
+  missingBlocking: string[]
+  pricingAllowed: boolean
+  isRepeatClient: boolean
+  chefName?: { fullName: string; firstName: string }
 }) {
   const ai = getClient()
-  const temperature = Math.max(0.1, (100 - params.threadSensitivity) / 100)
+  const name = params.chefName ?? { fullName: 'Chef', firstName: 'Chef' }
 
-  const systemInstruction = `
-  Role: You are a drafting assistant for a private chef's correspondence.
-  Purpose: You generate editable draft responses for the chef to review, modify, and send.
-  You do NOT send messages, confirm events, modify records, or take any autonomous action.
+  // Temperature: lower for booking/pricing (precision), higher for discovery (warmth)
+  const temperature = params.emailStage === 'discovery' ? 0.7 : 0.5
 
-  Process:
-  1. Analyze the inquiry using the grounding assets in context.
-  2. Determine the Relationship Phase (Inquiry, Intent, or Logistics).
-  3. Safety Check: If the request matches a "Yellow Light" trigger, output [STATUS: ESCALATED] and STOP.
-  4. If safe, synthesize a draft response in the chef's Voice Profile.
-  `
+  // ── System Instruction: The full agent-brain ruleset ──────────────────────
 
-  const prompt = `
-  GROUNDING STACK:
-  1. Manifesto: ${JSON.stringify(params.manifesto)}
-  2. Creative Catalog: ${JSON.stringify(params.catalog)}
-  3. Voice Profile: "${params.voiceFingerprint}"
-  4. Calendar State: ${params.calendarContext}
-  5. Client Ledger: ${params.clientLedger}
-  6. Thread Context: "${JSON.stringify(params.inquiryData)}"
+  const systemInstruction = `You are a drafting assistant for ${name.fullName}, a private chef.
+You generate editable draft responses for ${name.firstName} to review, modify, and send to clients.
+You do NOT send messages, confirm events, modify records, or take any autonomous action.
+The chef always reviews and approves before anything goes to the client.
 
-  Process this inquiry and draft a response.
-  `
+${params.systemRules}
+
+${params.depthInstruction}
+
+${params.rateCard ? `=== RATE CARD (reference only — never calculate, only format) ===\n${params.rateCard}` : '=== PRICING: NOT ALLOWED at current stage. Do not include any dollar amounts, ranges, or pricing language. ==='}
+
+=== SAFETY RULES ===
+- If the inquiry is outside scope (restaurant recs, catering drop-off, bulk meal prep not fitting service model), politely redirect in one sentence.
+- If the request contains something sensitive, unusual, or ambiguous that requires the chef's judgment, output [STATUS: ESCALATED] at the start and stop.
+- If cannabis is mentioned, note it but don't make it the focus. Mark as specialty/custom.
+- If you cannot determine what the client is asking for, write a short, friendly clarification and nothing more.
+- All arithmetic must be deterministic. NEVER calculate totals, apply percentages, or estimate premiums. Only reference rate card values directly.
+
+=== OUTPUT FORMAT ===
+Produce ONLY the email draft. Nothing else.
+Format:
+Subject: [one line]
+
+[2-4 short paragraphs, 1-2 sentences each]
+
+[Sign-off]
+
+No meta commentary, no explanations, no notes to the chef, no section headers, no bullet points (unless mirroring client's list in later-stage status summary).
+
+=== REWRITE MANDATE ===
+Write the email from scratch. Do not copy, paste, summarize, or compress from the context provided. The context is reference material only.`
+
+  // ── User Prompt: The specific inquiry context ─────────────────────────────
+
+  const threadSection = params.threadMessages.length > 0
+    ? `CONVERSATION THREAD (most recent messages):\n${params.threadMessages.join('\n')}`
+    : 'No prior messages in thread. This is the first response.'
+
+  const repeatClientNote = params.isRepeatClient
+    ? 'NOTE: This is a REPEAT CLIENT. Do not reset to formal first-contact tone. Reference past context naturally. Skip discovery questions for data already on file.'
+    : ''
+
+  const pricingDirective = params.pricingAllowed
+    ? 'PRICING: Allowed at this stage. Use rate card values. Present in paragraph form, conversational. Include grocery model and deposit info.'
+    : 'PRICING: FORBIDDEN at this stage. Do not include any dollar amounts, cost references, or pricing language.'
+
+  const missingDataDirective = params.missingBlocking.length > 0
+    ? `MISSING DATA (blocking): ${params.missingBlocking.join(', ')}. You should collect the single most important missing piece in this response. Ask naturally, not like a form.`
+    : 'All blocking data is present.'
+
+  const prompt = `INQUIRY ANALYSIS:
+${params.inquirySummary}
+
+CLIENT CONTEXT:
+${params.clientContext}
+${repeatClientNote}
+
+CALENDAR:
+${params.calendarContext}
+
+${threadSection}
+
+${pricingDirective}
+${missingDataDirective}
+
+Draft a response email for this ${params.emailStage} stage inquiry. Follow all system rules exactly.`
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.0-flash',

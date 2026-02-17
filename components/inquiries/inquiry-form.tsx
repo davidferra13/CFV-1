@@ -198,7 +198,7 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
           onFill={handleSmartFill}
           parseFn={parseInquiryFromText}
           title="Smart Fill - Paste Text"
-          placeholder={"Paste a text thread, email, DM, or notes about this inquiry...\n\nExample:\n\"Hi! I'm Sarah, looking for a private chef for our anniversary dinner on March 15th. We'll be 8 people at our home in Wellesley. Budget around $200/person. My husband has a shellfish allergy. Found you on Instagram!\""}
+          placeholder={"Paste a text thread, email, DM, or notes about this inquiry...\n\nExample:\n\"Hi! I'm Sarah, looking for a private chef for our anniversary dinner on March 15th. We'll be 8 people at our home. Budget around $200/person. My husband has a shellfish allergy. Found you on Instagram!\""}
         />
 
         {/* === REQUIRED SECTION === */}
@@ -239,7 +239,7 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
             <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider">
               Contact Info
             </h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
                 label="Email"
                 type="email"
@@ -264,7 +264,7 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
             Event Details (if known)
           </h3>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Event Date"
               type="date"
@@ -295,7 +295,7 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
             onChange={(e) => setLocation(e.target.value)}
           />
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
               label="Budget ($)"
               type="number"

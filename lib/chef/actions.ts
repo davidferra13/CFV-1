@@ -42,8 +42,6 @@ const UpdatePreferencesSchema = z.object({
   target_margin_percent: z.number().min(0).max(100).optional(),
 
   shop_day_before: z.boolean().optional(),
-  wake_time_earliest: z.string().regex(/^\d{2}:\d{2}$/).optional(),
-  wake_time_latest: z.string().regex(/^\d{2}:\d{2}$/).optional(),
 })
 
 export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
@@ -97,8 +95,6 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
     default_packing_minutes: (row.default_packing_minutes as number) ?? 30,
     target_margin_percent: Number(row.target_margin_percent ?? 60),
     shop_day_before: (row.shop_day_before as boolean) ?? true,
-    wake_time_earliest: (row.wake_time_earliest as string) ?? '08:00',
-    wake_time_latest: (row.wake_time_latest as string) ?? '10:00',
   }
 }
 

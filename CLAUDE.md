@@ -20,6 +20,13 @@ These rules exist because this is a **live production app with real client data*
 - Remind the user to **back up their database** before applying migrations with real data.
 - **NEVER** run `supabase db push` or apply migrations without explicit user approval.
 
+### Migration Timestamp Collisions (CRITICAL — Multi-Agent Safety)
+
+- **Before creating ANY migration file**, you MUST run `glob supabase/migrations/*.sql` to see all existing migration files.
+- Pick a timestamp that is **strictly higher** than the highest existing one. For example, if the highest is `20260221000002`, your new file must be `20260221000003` or later.
+- **NEVER** reuse or guess a timestamp. Always check first.
+- This rule exists because multiple Claude Code agents may run concurrently. Without checking, two agents can generate the same timestamp, causing migration collisions that corrupt the schema.
+
 ### Server Actions & Queries
 - Never write a `.delete()` query on production tables without explicit approval.
 - Respect existing immutability triggers — never attempt to circumvent the immutability on `ledger_entries`, `event_transitions`, or `quote_state_transitions`.

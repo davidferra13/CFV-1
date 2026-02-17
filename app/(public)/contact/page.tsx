@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { submitContactForm } from '@/lib/contact/actions'
 
 interface FormData {
   name: string
@@ -30,6 +31,7 @@ export default function ContactPage() {
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -65,27 +67,22 @@ export default function ContactPage() {
     }
 
     setIsSubmitting(true)
+    setSubmitError(null)
 
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    try {
+      await submitContactForm(formData)
 
-    // Show success message
-    setShowSuccess(true)
+      setShowSuccess(true)
+      setFormData({ name: '', email: '', subject: '', message: '' })
 
-    // Clear form
-    setFormData({
-      name: '',
-      email: '',
-      subject: '',
-      message: ''
-    })
-
-    setIsSubmitting(false)
-
-    // Hide success message after 5 seconds
-    setTimeout(() => {
-      setShowSuccess(false)
-    }, 5000)
+      setTimeout(() => {
+        setShowSuccess(false)
+      }, 5000)
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleChange = (
@@ -117,7 +114,7 @@ export default function ContactPage() {
       {/* Contact Form and Info */}
       <section className="container mx-auto px-4 pb-16 md:pb-24">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
             {/* Contact Form */}
             <div className="lg:col-span-2">
               <Card>
@@ -136,6 +133,12 @@ export default function ContactPage() {
                           <p className="text-green-700 text-sm">We&apos;ll respond within 24 hours.</p>
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {submitError && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                      <p className="text-red-700 text-sm">{submitError}</p>
                     </div>
                   )}
 

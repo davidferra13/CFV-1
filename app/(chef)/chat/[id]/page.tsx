@@ -8,7 +8,11 @@ import {
   getConversationParticipants,
   markConversationRead,
 } from '@/lib/chat/actions'
+import { getClientNotes } from '@/lib/notes/actions'
+import { getPendingInsights } from '@/lib/insights/actions'
 import { ChatView } from '@/components/chat/chat-view'
+import { ChatSidebar } from '@/components/chat/chat-sidebar'
+import { createServerClient } from '@/lib/supabase/server'
 
 export default async function ChefChatViewPage({
   params,
@@ -37,17 +41,56 @@ export default async function ChefChatViewPage({
   const chefParticipant = participants.find((p) => p.auth_user_id === user.id)
   const chefName = chefParticipant?.name || 'Chef'
 
+  // Get client participant for sidebar
+  const clientParticipant = participants.find((p) => p.auth_user_id !== user.id)
+  let clientId: string | null = null
+  let clientName = clientParticipant?.name || 'Client'
+  let pinnedNotes: any[] = []
+
+  // Fetch insights for the conversation (regardless of client resolution)
+  const pendingInsights = await getPendingInsights(conversationId)
+
+  if (clientParticipant) {
+    // Resolve client entity ID from auth_user_id
+    const supabase = createServerClient()
+    const { data: clientRow } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('auth_user_id', clientParticipant.auth_user_id)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (clientRow) {
+      clientId = clientRow.id
+      pinnedNotes = await getClientNotes(clientRow.id, { pinned_only: true })
+    }
+  }
+
   return (
-    <ChatView
-      conversationId={conversationId}
-      initialMessages={messagesResult.messages}
-      participants={participants}
-      currentUserId={user.id}
-      currentUserName={chefName}
-      currentUserRole="chef"
-      hasMore={messagesResult.hasMore}
-      nextCursor={messagesResult.nextCursor}
-      conversation={conversation}
-    />
+    <div className="flex h-[calc(100dvh-7rem)] lg:h-[calc(100vh-64px)]">
+      <div className="flex-1 min-w-0">
+        <ChatView
+          conversationId={conversationId}
+          initialMessages={messagesResult.messages}
+          participants={participants}
+          currentUserId={user.id}
+          currentUserName={chefName}
+          currentUserRole="chef"
+          hasMore={messagesResult.hasMore}
+          nextCursor={messagesResult.nextCursor}
+          conversation={conversation}
+        />
+      </div>
+      {clientId && (
+        <div className="hidden lg:block">
+          <ChatSidebar
+            clientId={clientId}
+            clientName={clientName}
+            pinnedNotes={pinnedNotes}
+            initialInsights={pendingInsights}
+          />
+        </div>
+      )}
+    </div>
   )
 }

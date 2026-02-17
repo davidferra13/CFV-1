@@ -156,6 +156,60 @@ export async function getClientById(clientId: string) {
 }
 
 /**
+ * Create a client record from lead data (used by Gmail sync pipeline).
+ * Does NOT require auth session — uses admin client for automated pipelines.
+ * Idempotent: returns existing client if email already exists in tenant.
+ */
+export async function createClientFromLead(
+  tenantId: string,
+  lead: {
+    email: string
+    full_name: string
+    phone?: string | null
+    dietary_restrictions?: string[] | null
+    allergies?: string[] | null
+    source?: string | null
+  }
+) {
+  const supabase = createServerClient({ admin: true })
+
+  // Idempotent: check if client already exists with this email
+  const { data: existing } = await supabase
+    .from('clients')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('email', lead.email)
+    .single()
+
+  if (existing) {
+    return { id: existing.id, created: false }
+  }
+
+  // Create the client record
+  const { data: client, error } = await supabase
+    .from('clients')
+    .insert({
+      tenant_id: tenantId,
+      email: lead.email,
+      full_name: lead.full_name,
+      phone: lead.phone || null,
+      dietary_restrictions: lead.dietary_restrictions || [],
+      allergies: lead.allergies || [],
+      status: 'active',
+      referral_source: (lead.source as 'email' | 'phone' | 'instagram' | 'take_a_chef' | 'referral' | 'website' | 'other') || 'email',
+    })
+    .select('id')
+    .single()
+
+  if (error) {
+    console.error('[createClientFromLead] Error:', error)
+    throw new Error(`Failed to create client: ${error.message}`)
+  }
+
+  return { id: client.id, created: true }
+}
+
+/**
  * Update client (chef-only)
  */
 export async function updateClient(clientId: string, input: UpdateClientInput) {

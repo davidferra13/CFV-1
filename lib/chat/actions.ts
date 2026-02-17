@@ -1,16 +1,12 @@
-// @ts-nocheck
-// DEFERRED: Chat tables (conversations, chat_messages, conversation_participants)
-// are defined in Layer 6 migration but not yet applied to the remote DB.
-// Once the migration is applied and types regenerated, remove this directive.
-
 // Real-Time Chat Server Actions
 // Handles conversations, messages, read receipts, and image uploads
 // Both chefs and clients can participate — uses requireAuth() as base guard
 
 'use server'
 
-import { requireAuth, requireChef } from '@/lib/auth/get-user'
+import { requireAuth, requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { processMessageInsights } from '@/lib/insights/actions'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type {
@@ -25,8 +21,35 @@ import type {
 // ============================================
 
 const CHAT_BUCKET = 'chat-attachments'
-const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
+const MAX_DOCUMENT_SIZE = 25 * 1024 * 1024 // 25MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
+const ALLOWED_DOCUMENT_TYPES = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+]
+const ALLOWED_FILE_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_DOCUMENT_TYPES]
+
+// Derive file extension from MIME type (not filename) to prevent spoofing
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'image/webp': 'webp',
+  'application/pdf': 'pdf',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'text/plain': 'txt',
+  'text/csv': 'csv',
+}
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -49,7 +72,7 @@ const CreateConversationSchema = z.object({
 
 const SendMessageSchema = z.object({
   conversation_id: z.string().uuid(),
-  message_type: z.enum(['text', 'image', 'link', 'event_ref']).default('text'),
+  message_type: z.enum(['text', 'image', 'file', 'link', 'event_ref']).default('text'),
   body: z.string().optional(),
   link_url: z.string().url().optional(),
   referenced_event_id: z.string().uuid().optional(),
@@ -112,8 +135,12 @@ export async function createConversation(input: z.infer<typeof CreateConversatio
   }
 
   // Add both participants
-  const participants = [
-    { conversation_id: conversation.id, auth_user_id: user.id, role: 'chef' as const },
+  const participants: Array<{
+    conversation_id: string
+    auth_user_id: string
+    role: 'chef' | 'client'
+  }> = [
+    { conversation_id: conversation.id, auth_user_id: user.id, role: 'chef' },
   ]
 
   // Only add client as participant if they have an auth account
@@ -429,7 +456,14 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     throw new Error('You are not a participant in this conversation')
   }
 
-  const insertData: Record<string, unknown> = {
+  const insertData: {
+    conversation_id: string
+    sender_id: string
+    message_type: string
+    body: string | null
+    link_url?: string
+    referenced_event_id?: string
+  } = {
     conversation_id: validated.conversation_id,
     sender_id: user.id,
     message_type: validated.message_type,
@@ -464,6 +498,13 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', validated.conversation_id)
     .eq('auth_user_id', user.id)
+
+  // Fire-and-forget: analyze client messages for insights
+  if (user.role === 'client' && validated.message_type === 'text') {
+    processMessageInsights(message.id, validated.conversation_id).catch((err) =>
+      console.error('[sendChatMessage] Insight processing failed:', err)
+    )
+  }
 
   return { success: true as const, message: message as ChatMessage }
 }
@@ -509,13 +550,13 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
     throw new Error(`Invalid file type: ${file.type}. Accepted: JPEG, PNG, HEIC, WebP`)
   }
 
-  if (file.size > MAX_FILE_SIZE) {
+  if (file.size > MAX_IMAGE_SIZE) {
     throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum: 10MB`)
   }
 
   // Generate a unique ID for the message first (we need it for storage path)
   const messageId = crypto.randomUUID()
-  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
+  const ext = MIME_TO_EXT[file.type] || file.name.split('.').pop()?.toLowerCase() || 'jpg'
   const storagePath = `${conversation.tenant_id}/${conversationId}/${messageId}.${ext}`
 
   // Upload to storage
@@ -561,6 +602,118 @@ export async function sendImageMessage(conversationId: string, formData: FormDat
     .update({ last_read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
     .eq('auth_user_id', user.id)
+
+  return { success: true as const, message: message as ChatMessage }
+}
+
+/**
+ * Upload a file (document or image) and send it as a chat message.
+ * Determines message_type based on MIME type: 'image' for images, 'file' for documents.
+ */
+export async function sendFileMessage(conversationId: string, formData: FormData) {
+  const user = await requireAuth()
+  const supabase = createServerClient()
+
+  // Verify participation
+  const { data: participant } = await supabase
+    .from('conversation_participants')
+    .select('id')
+    .eq('conversation_id', conversationId)
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!participant) {
+    throw new Error('You are not a participant in this conversation')
+  }
+
+  // Get the conversation's tenant_id for storage path
+  const { data: conversation } = await supabase
+    .from('conversations')
+    .select('tenant_id')
+    .eq('id', conversationId)
+    .single()
+
+  if (!conversation) {
+    throw new Error('Conversation not found')
+  }
+
+  const file = formData.get('file') as File | null
+  const caption = formData.get('caption') as string | null
+
+  if (!file) {
+    throw new Error('No file provided')
+  }
+
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    throw new Error(
+      `Invalid file type: ${file.type}. Accepted: Images (JPEG, PNG, WebP, HEIC) and Documents (PDF, Word, Excel, CSV, TXT)`
+    )
+  }
+
+  const isImage = ALLOWED_IMAGE_TYPES.includes(file.type)
+  const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_DOCUMENT_SIZE
+  const maxLabel = isImage ? '10MB' : '25MB'
+
+  if (file.size > maxSize) {
+    throw new Error(`File too large: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maximum: ${maxLabel}`)
+  }
+
+  // Generate a unique ID for the message first (we need it for storage path)
+  const messageId = crypto.randomUUID()
+  const ext = MIME_TO_EXT[file.type] || file.name.split('.').pop()?.toLowerCase() || 'bin'
+  const storagePath = `${conversation.tenant_id}/${conversationId}/${messageId}.${ext}`
+
+  // Upload to storage
+  const { error: uploadError } = await supabase.storage
+    .from(CHAT_BUCKET)
+    .upload(storagePath, file, {
+      contentType: file.type,
+      upsert: false,
+    })
+
+  if (uploadError) {
+    console.error('[sendFileMessage] Upload error:', uploadError)
+    throw new Error(`Failed to upload file: ${uploadError.message}`)
+  }
+
+  // Create the chat message
+  const messageType = isImage ? 'image' : 'file'
+  const { data: message, error: msgError } = await supabase
+    .from('chat_messages')
+    .insert({
+      id: messageId,
+      conversation_id: conversationId,
+      sender_id: user.id,
+      message_type: messageType,
+      body: caption || null,
+      attachment_storage_path: storagePath,
+      attachment_filename: file.name,
+      attachment_content_type: file.type,
+      attachment_size_bytes: file.size,
+    })
+    .select()
+    .single()
+
+  if (msgError || !message) {
+    console.error('[sendFileMessage] Message error:', msgError)
+    // Cleanup uploaded file
+    await supabase.storage.from(CHAT_BUCKET).remove([storagePath])
+    throw new Error('Failed to create message')
+  }
+
+  // Auto-mark as read for sender
+  await supabase
+    .from('conversation_participants')
+    .update({ last_read_at: new Date().toISOString() })
+    .eq('conversation_id', conversationId)
+    .eq('auth_user_id', user.id)
+
+  // Fire-and-forget: analyze client file messages with captions for insights
+  if (user.role === 'client' && caption) {
+    processMessageInsights(message.id, conversationId).catch((err) =>
+      console.error('[sendFileMessage] Insight processing failed:', err)
+    )
+  }
 
   return { success: true as const, message: message as ChatMessage }
 }
@@ -676,10 +829,10 @@ export async function getTotalUnreadCount(): Promise<number> {
 // ============================================
 
 /**
- * Get a signed URL for a chat image attachment.
+ * Get a signed URL for a chat attachment (image or file).
  * Verifies the caller is a participant in the message's conversation.
  */
-export async function getChatImageUrl(messageId: string): Promise<string | null> {
+export async function getChatAttachmentUrl(messageId: string): Promise<string | null> {
   const user = await requireAuth()
   const supabase = createServerClient()
 
@@ -700,9 +853,150 @@ export async function getChatImageUrl(messageId: string): Promise<string | null>
     .createSignedUrl(message.attachment_storage_path, 3600)
 
   if (signError) {
-    console.error('[getChatImageUrl] Signed URL error:', signError)
+    console.error('[getChatAttachmentUrl] Signed URL error:', signError)
     return null
   }
 
   return signedUrlData.signedUrl
+}
+
+/** @deprecated Use getChatAttachmentUrl instead */
+export const getChatImageUrl = getChatAttachmentUrl
+
+// ============================================
+// CLIENT-INITIATED CONVERSATIONS
+// ============================================
+
+/**
+ * Client gets or creates a conversation with their chef.
+ * Creates a standalone conversation if none exists.
+ */
+export async function clientGetOrCreateConversation(input?: {
+  context_type?: 'standalone' | 'event' | 'inquiry'
+  event_id?: string
+  inquiry_id?: string
+}) {
+  const user = await requireClient()
+  const supabase = createServerClient()
+  const contextType = input?.context_type || 'standalone'
+
+  // Try to find existing conversation for this context
+  let query = supabase
+    .from('conversations')
+    .select('*')
+    .eq('tenant_id', user.tenantId!)
+
+  if (contextType === 'event' && input?.event_id) {
+    query = query.eq('event_id', input.event_id).eq('context_type', 'event')
+  } else if (contextType === 'inquiry' && input?.inquiry_id) {
+    query = query.eq('inquiry_id', input.inquiry_id).eq('context_type', 'inquiry')
+  } else {
+    query = query.eq('context_type', 'standalone')
+  }
+
+  const { data: existing } = await query.limit(1).single()
+
+  if (existing) {
+    // Verify client is a participant
+    const { data: participant } = await supabase
+      .from('conversation_participants')
+      .select('id')
+      .eq('conversation_id', existing.id)
+      .eq('auth_user_id', user.id)
+      .single()
+
+    if (participant) {
+      return { success: true as const, conversation: existing as Conversation, created: false }
+    }
+  }
+
+  // Create new conversation
+  const { data: conversation, error: convError } = await supabase
+    .from('conversations')
+    .insert({
+      tenant_id: user.tenantId!,
+      context_type: contextType,
+      inquiry_id: input?.inquiry_id ?? null,
+      event_id: input?.event_id ?? null,
+    })
+    .select()
+    .single()
+
+  if (convError || !conversation) {
+    console.error('[clientGetOrCreateConversation] Error:', convError)
+    throw new Error('Failed to create conversation')
+  }
+
+  // Find the chef's auth_user_id (tenant owner)
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('auth_user_id')
+    .eq('id', user.tenantId!)
+    .single()
+
+  if (!chef) {
+    throw new Error('Chef not found')
+  }
+
+  // Add both participants
+  const participants = [
+    { conversation_id: conversation.id, auth_user_id: user.id, role: 'client' as const },
+    { conversation_id: conversation.id, auth_user_id: chef.auth_user_id, role: 'chef' as const },
+  ]
+
+  const { error: partError } = await supabase
+    .from('conversation_participants')
+    .insert(participants)
+
+  if (partError) {
+    console.error('[clientGetOrCreateConversation] Participant error:', partError)
+    await supabase.from('conversations').delete().eq('id', conversation.id)
+    throw new Error('Failed to add participants to conversation')
+  }
+
+  revalidatePath('/my-chat')
+  return { success: true as const, conversation: conversation as Conversation, created: true }
+}
+
+// ============================================
+// SEARCH
+// ============================================
+
+/**
+ * Search messages within a conversation by text content.
+ */
+export async function searchChatMessages(
+  conversationId: string,
+  query: string
+): Promise<ChatMessage[]> {
+  const user = await requireAuth()
+  const supabase = createServerClient()
+
+  // Verify participation
+  const { data: participant } = await supabase
+    .from('conversation_participants')
+    .select('id')
+    .eq('conversation_id', conversationId)
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!participant) {
+    throw new Error('You are not a participant in this conversation')
+  }
+
+  const { data: messages, error } = await supabase
+    .from('chat_messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .is('deleted_at', null)
+    .ilike('body', `%${query}%`)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (error) {
+    console.error('[searchChatMessages] Error:', error)
+    return []
+  }
+
+  return (messages || []) as ChatMessage[]
 }

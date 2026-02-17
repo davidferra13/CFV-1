@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Search } from 'lucide-react'
 import { ChatPresenceDot } from './chat-presence-dot'
 import type { Conversation } from '@/lib/chat/types'
 
@@ -11,6 +11,7 @@ interface ChatHeaderProps {
   isOnline: boolean
   conversation: Conversation
   backHref: string
+  onSearchToggle?: () => void
 }
 
 export function ChatHeader({
@@ -19,6 +20,7 @@ export function ChatHeader({
   isOnline,
   conversation,
   backHref,
+  onSearchToggle,
 }: ChatHeaderProps) {
   const contextLabel =
     conversation.context_type === 'event'
@@ -73,6 +75,18 @@ export function ChatHeader({
           <ExternalLink className="w-3.5 h-3.5" />
           {contextLabel}
         </Link>
+      )}
+
+      {/* Search button */}
+      {onSearchToggle && (
+        <button
+          type="button"
+          onClick={onSearchToggle}
+          className="flex-shrink-0 p-1.5 text-stone-400 hover:text-stone-600 transition-colors"
+          title="Search messages"
+        >
+          <Search className="w-4.5 h-4.5" />
+        </button>
       )}
     </div>
   )

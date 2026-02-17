@@ -13,6 +13,7 @@ import { getFinancialQueueItems } from './providers/financial'
 import { getPostEventQueueItems } from './providers/post-event'
 import { getClientQueueItems } from './providers/client'
 import { getCulinaryQueueItems } from './providers/culinary'
+import { getContactQueueItems } from './providers/contact'
 
 /**
  * Build the complete priority queue.
@@ -53,6 +54,7 @@ export async function buildPriorityQueue(
     postEventItems,
     clientItems,
     culinaryItems,
+    contactItems,
   ] = await Promise.all([
     safeProvider('inquiry', () => getInquiryQueueItems(supabase, tenantId)),
     safeProvider('message', () => getMessageQueueItems(supabase, tenantId)),
@@ -61,6 +63,7 @@ export async function buildPriorityQueue(
     safeProvider('post_event', () => getPostEventQueueItems(supabase, tenantId)),
     safeProvider('client', () => getClientQueueItems(supabase, tenantId)),
     safeProvider('culinary', () => getCulinaryQueueItems(supabase, tenantId)),
+    safeProvider('contact', () => getContactQueueItems(supabase, tenantId)),
   ])
 
   // Merge all items
@@ -73,6 +76,7 @@ export async function buildPriorityQueue(
     ...postEventItems,
     ...clientItems,
     ...culinaryItems,
+    ...contactItems,
   ]
 
   // Deduplicate by ID (first occurrence wins)

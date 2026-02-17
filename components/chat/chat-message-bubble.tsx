@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { ExternalLink, Image as ImageIcon } from 'lucide-react'
+import { ExternalLink, Image as ImageIcon, FileText, FileSpreadsheet, File as FileIcon, Download } from 'lucide-react'
 import { ChatEventRefCard } from './chat-event-ref-card'
 import { ChatSystemMessage } from './chat-system-message'
-import { getChatImageUrl } from '@/lib/chat/actions'
+import { getChatAttachmentUrl } from '@/lib/chat/actions'
 import type { ChatMessage, ParticipantRole } from '@/lib/chat/types'
 
 interface ChatMessageBubbleProps {
@@ -15,6 +15,7 @@ interface ChatMessageBubbleProps {
   senderRole: ParticipantRole
   showTimestamp?: boolean
   isChefViewer?: boolean
+  otherParticipantLastReadAt?: string | null
 }
 
 export function ChatMessageBubble({
@@ -24,7 +25,11 @@ export function ChatMessageBubble({
   senderRole,
   showTimestamp = true,
   isChefViewer = true,
+  otherParticipantLastReadAt,
 }: ChatMessageBubbleProps) {
+  const isRead = isOwn && otherParticipantLastReadAt
+    ? new Date(otherParticipantLastReadAt) >= new Date(message.created_at)
+    : false
   // System messages render differently
   if (message.message_type === 'system') {
     return <ChatSystemMessage message={message} />
@@ -50,10 +55,13 @@ export function ChatMessageBubble({
           isChefViewer={isChefViewer}
         />
 
-        {/* Timestamp */}
+        {/* Timestamp and read receipt */}
         {showTimestamp && (
           <p className={`text-[10px] mt-1 ${isOwn ? 'text-brand-400' : 'text-stone-400'}`}>
             {format(new Date(message.created_at), 'h:mm a')}
+            {isOwn && isRead && (
+              <span className="ml-1.5 text-brand-500">Read</span>
+            )}
           </p>
         )}
       </div>
@@ -73,6 +81,8 @@ function MessageContent({
       return <TextContent body={message.body} />
     case 'image':
       return <ImageContent message={message} />
+    case 'file':
+      return <FileContent message={message} />
     case 'link':
       return <LinkContent message={message} />
     case 'event_ref':
@@ -117,7 +127,7 @@ function ImageContent({ message }: { message: ChatMessage }) {
 
   useEffect(() => {
     let cancelled = false
-    getChatImageUrl(message.id).then((url) => {
+    getChatAttachmentUrl(message.id).then((url) => {
       if (!cancelled) {
         setImageUrl(url)
         setLoading(false)
@@ -160,6 +170,75 @@ function ImageContent({ message }: { message: ChatMessage }) {
           <ImageIcon className="w-6 h-6 text-stone-300" />
         </div>
       )}
+      {message.body && (
+        <p className="text-sm text-stone-800 mt-1">{message.body}</p>
+      )}
+    </div>
+  )
+}
+
+function getDocIcon(contentType: string | null) {
+  if (contentType === 'application/pdf') return <FileText className="w-8 h-8 text-red-500" />
+  if (contentType?.includes('spreadsheet') || contentType?.includes('excel') || contentType === 'text/csv') {
+    return <FileSpreadsheet className="w-8 h-8 text-green-600" />
+  }
+  if (contentType?.includes('word') || contentType === 'application/msword') {
+    return <FileText className="w-8 h-8 text-blue-600" />
+  }
+  return <FileIcon className="w-8 h-8 text-stone-500" />
+}
+
+function formatBytes(bytes: number | null) {
+  if (!bytes) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function FileContent({ message }: { message: ChatMessage }) {
+  const [fileUrl, setFileUrl] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    getChatAttachmentUrl(message.id).then((url) => {
+      if (!cancelled) {
+        setFileUrl(url)
+        setLoading(false)
+      }
+    })
+    return () => { cancelled = true }
+  }, [message.id])
+
+  return (
+    <div>
+      <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-lg p-3 min-w-[200px]">
+        {getDocIcon(message.attachment_content_type)}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-stone-800 truncate">
+            {message.attachment_filename || 'Document'}
+          </p>
+          <p className="text-xs text-stone-500">
+            {formatBytes(message.attachment_size_bytes)}
+          </p>
+        </div>
+        {loading ? (
+          <div className="w-8 h-8 flex items-center justify-center">
+            <div className="w-4 h-4 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
+          </div>
+        ) : fileUrl ? (
+          <a
+            href={fileUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            download={message.attachment_filename || undefined}
+            className="flex-shrink-0 p-2 text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
+            title="Download file"
+          >
+            <Download className="w-4 h-4" />
+          </a>
+        ) : null}
+      </div>
       {message.body && (
         <p className="text-sm text-stone-800 mt-1">{message.body}</p>
       )}

@@ -16,6 +16,13 @@ const STATUS_LABELS: Record<string, string> = {
   in_progress: 'In Progress',
   completed: 'Completed',
   cancelled: 'Cancelled',
+  // Inquiry statuses
+  new: 'New',
+  awaiting_client: 'Awaiting Client',
+  awaiting_chef: 'Awaiting Chef',
+  quoted: 'Quoted',
+  declined: 'Declined',
+  expired: 'Expired',
 }
 
 const STATUS_BADGE_COLORS: Record<string, string> = {
@@ -48,6 +55,7 @@ export function EventDetailPopover({
   const [adjustedPos, setAdjustedPos] = useState(position)
   const props = event.extendedProps
   const isPrep = props.dayType === 'prep'
+  const isInquiry = props.dayType === 'inquiry'
 
   // Adjust position to stay within viewport
   useEffect(() => {
@@ -104,14 +112,14 @@ export function EventDetailPopover({
   return (
     <div
       ref={popoverRef}
-      className="event-popover fixed z-50 w-80 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+      className="event-popover fixed z-50 w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-white rounded-xl shadow-xl border border-stone-200 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
       style={{
         left: adjustedPos.x,
         top: adjustedPos.y,
       }}
     >
       {/* Header */}
-      <div className={`px-4 py-3 ${isPrep ? 'bg-amber-50 border-b border-amber-200' : 'bg-surface-accent border-b border-stone-200'}`}>
+      <div className={`px-4 py-3 ${isInquiry ? 'bg-gray-50 border-b border-gray-200' : isPrep ? 'bg-amber-50 border-b border-amber-200' : 'bg-surface-accent border-b border-stone-200'}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <h3 className="font-semibold text-stone-900 truncate text-base">
@@ -146,6 +154,11 @@ export function EventDetailPopover({
           {isPrep && (
             <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
               Prep Day
+            </span>
+          )}
+          {isInquiry && (
+            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-300 border-dashed">
+              Tentative Hold
             </span>
           )}
         </div>
@@ -193,18 +206,29 @@ export function EventDetailPopover({
 
       {/* Footer Actions */}
       <div className="px-4 py-3 bg-surface-muted border-t border-stone-100 flex items-center gap-2">
-        <Link
-          href={`/events/${props.eventId}`}
-          className="flex-1 text-center text-sm font-medium px-3 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors"
-        >
-          View Event
-        </Link>
-        <Link
-          href={`/events/${props.eventId}#timeline`}
-          className="text-sm font-medium px-3 py-2 rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
-        >
-          Timeline
-        </Link>
+        {isInquiry ? (
+          <Link
+            href={`/inquiries/${props.eventId}`}
+            className="flex-1 text-center text-sm font-medium px-3 py-2 rounded-lg bg-stone-600 text-white hover:bg-stone-700 transition-colors"
+          >
+            View Inquiry
+          </Link>
+        ) : (
+          <>
+            <Link
+              href={`/events/${props.eventId}`}
+              className="flex-1 text-center text-sm font-medium px-3 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-600 transition-colors"
+            >
+              View Event
+            </Link>
+            <Link
+              href={`/events/${props.eventId}#timeline`}
+              className="text-sm font-medium px-3 py-2 rounded-lg border border-stone-200 text-stone-700 hover:bg-stone-50 transition-colors"
+            >
+              Timeline
+            </Link>
+          </>
+        )}
       </div>
     </div>
   )

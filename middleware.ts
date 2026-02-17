@@ -7,14 +7,15 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes that require chef role (route groups don't create URL segments)
 const chefPaths = [
-  '/dashboard', '/queue', '/clients', '/events', '/financials', '/menus',
+  '/dashboard', '/queue', '/leads', '/clients', '/events', '/financials', '/menus',
   '/inquiries', '/quotes', '/expenses', '/schedule', '/settings',
-  '/aar', '/recipes', '/loyalty', '/import', '/chat'
+  '/aar', '/recipes', '/loyalty', '/import', '/chat', '/network',
+  '/households'
 ]
 // Routes that require client role
 const clientPaths = ['/my-events', '/my-quotes', '/my-chat']
 // Paths that skip all auth processing
-const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized']
+const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized', '/share']
 
 /**
  * Copy Supabase session cookies from the internal response onto a redirect response.
@@ -42,7 +43,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // Static public pages + /unauthorized - no auth check needed
-  if (skipAuthPaths.some((path) => pathname === path)) {
+  // /share paths use startsWith to allow /share/[token] subpaths
+  if (skipAuthPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))) {
     return NextResponse.next()
   }
 

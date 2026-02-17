@@ -32,7 +32,8 @@ const CreateEventSchema = z.object({
   location_notes: z.string().optional(),
   arrival_time: z.string().optional(),
   departure_time: z.string().optional(),
-  cannabis_preference: z.boolean().optional()
+  cannabis_preference: z.boolean().optional(),
+  household_id: z.string().uuid().nullable().optional()
 })
 
 const UpdateEventSchema = z.object({
@@ -59,7 +60,8 @@ const UpdateEventSchema = z.object({
   departure_time: z.string().optional(),
   cannabis_preference: z.boolean().optional(),
   pricing_notes: z.string().optional(),
-  payment_method_primary: z.enum(['cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other']).optional()
+  payment_method_primary: z.enum(['cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other']).optional(),
+  household_id: z.string().uuid().nullable().optional()
 })
 
 export type CreateEventInput = z.infer<typeof CreateEventSchema>
@@ -116,6 +118,7 @@ export async function createEvent(input: CreateEventInput) {
       arrival_time: validated.arrival_time,
       departure_time: validated.departure_time,
       cannabis_preference: validated.cannabis_preference,
+      household_id: validated.household_id ?? null,
       created_by: user.id,
       updated_by: user.id
     })

@@ -193,9 +193,6 @@ export function generateTimeline(
   }
 
   // 7. WAKE UP
-  const wakeEarliestMinutes = parseTime(p.wake_time_earliest)
-  const wakeLatestMinutes = parseTime(p.wake_time_latest)
-
   timeline.push({
     id: 'wake',
     time: formatTime(wakeMinutesTarget),
@@ -209,24 +206,6 @@ export function generateTimeline(
   })
 
   // ---- WARNINGS ----
-
-  if (wakeMinutesTarget < wakeEarliestMinutes) {
-    warnings.push(
-      `Wake time (${formatTime(wakeMinutesTarget)}) is before your earliest preferred wake time (${formatTime(wakeEarliestMinutes)}). Consider shopping the day before or starting prep earlier.`
-    )
-  }
-
-  if (wakeMinutesTarget > wakeLatestMinutes) {
-    warnings.push(
-      `Wake time (${formatTime(wakeMinutesTarget)}) is after your latest acceptable wake time (${formatTime(wakeLatestMinutes)}). You have extra buffer today.`
-    )
-  }
-
-  if (startPrepMinutes < wakeMinutesTarget) {
-    warnings.push(
-      'Prep needs to start before wake time - this timeline is very tight.'
-    )
-  }
 
   if (departMinutes < 0 || arrivalMinutes < 0) {
     warnings.push(

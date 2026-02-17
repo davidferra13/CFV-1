@@ -5,17 +5,21 @@ import { Send, Paperclip, X } from 'lucide-react'
 
 interface ChatInputBarProps {
   onSendText: (text: string) => Promise<void>
-  onSendImage: () => void // Opens image upload UI
+  onAttach: () => void // Opens file/image upload UI
   onTyping: (isTyping: boolean) => void
   disabled?: boolean
+  /** @deprecated Use onAttach instead */
+  onSendImage?: () => void
 }
 
 export function ChatInputBar({
   onSendText,
-  onSendImage,
+  onAttach,
   onTyping,
   disabled = false,
+  onSendImage,
 }: ChatInputBarProps) {
+  const handleAttach = onAttach || onSendImage || (() => {})
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -81,10 +85,10 @@ export function ChatInputBar({
       <div className="flex items-end gap-2">
         {/* Attachment button */}
         <button
-          onClick={onSendImage}
+          onClick={handleAttach}
           disabled={disabled || sending}
           className="flex-shrink-0 p-2 text-stone-400 hover:text-stone-600 disabled:opacity-50 transition-colors"
-          title="Send image"
+          title="Attach file"
         >
           <Paperclip className="w-5 h-5" />
         </button>

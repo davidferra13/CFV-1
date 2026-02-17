@@ -150,7 +150,7 @@ export function ShoppingSubstitutions({
               </div>
               <div>
                 <label className="text-xs font-medium text-stone-600">Store (optional)</label>
-                <Input placeholder="e.g., Market Basket" value={store} onChange={(e) => setStore(e.target.value)} />
+                <Input placeholder="e.g., Grocery store" value={store} onChange={(e) => setStore(e.target.value)} />
               </div>
             </div>
             <div>

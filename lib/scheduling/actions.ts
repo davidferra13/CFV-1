@@ -387,7 +387,7 @@ export interface CalendarEvent {
     arrivalTime: string | null
     locationAddress: string | null
     locationCity: string | null
-    dayType: 'event' | 'prep'
+    dayType: 'event' | 'prep' | 'inquiry'
   }
 }
 
@@ -493,6 +493,52 @@ export async function getCalendarEvents(
           },
         })
       }
+    }
+  }
+
+  // ── Inquiry tentative holds ──────────────────────────────────────────────
+  // Show inquiries with confirmed dates as tentative holds on the calendar
+
+  const { data: inquiries } = await supabase
+    .from('inquiries')
+    .select(`
+      id, confirmed_date, confirmed_occasion, confirmed_guest_count, status,
+      client:clients(full_name)
+    `)
+    .eq('tenant_id', user.tenantId!)
+    .not('confirmed_date', 'is', null)
+    .not('status', 'in', '("declined","expired","confirmed")')
+    .gte('confirmed_date', rangeStart)
+    .lte('confirmed_date', rangeEnd)
+
+  if (inquiries) {
+    for (const inquiry of inquiries) {
+      // Skip inquiries that already converted to events (avoid duplication)
+      const dateStr = typeof inquiry.confirmed_date === 'string'
+        ? inquiry.confirmed_date.split('T')[0]
+        : ''
+      if (!dateStr) continue
+
+      calendarEvents.push({
+        id: `inquiry-${inquiry.id}`,
+        title: `Hold: ${inquiry.confirmed_occasion || 'Inquiry'}`,
+        start: dateStr,
+        end: dateStr,
+        allDay: true,
+        extendedProps: {
+          eventId: inquiry.id,
+          occasion: inquiry.confirmed_occasion,
+          clientName: (inquiry.client as any)?.full_name ?? 'Unknown Lead',
+          guestCount: inquiry.confirmed_guest_count ?? 0,
+          status: inquiry.status,
+          prepStatus: 'not_started',
+          serveTime: '',
+          arrivalTime: null,
+          locationAddress: null,
+          locationCity: null,
+          dayType: 'inquiry',
+        },
+      })
     }
   }
 

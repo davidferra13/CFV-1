@@ -1,7 +1,7 @@
 // Chat system types
 // These supplement the auto-generated Database types with app-level interfaces
 
-export type ChatMessageType = 'text' | 'image' | 'link' | 'event_ref' | 'system'
+export type ChatMessageType = 'text' | 'image' | 'file' | 'link' | 'event_ref' | 'system'
 export type ConversationContextType = 'standalone' | 'inquiry' | 'event'
 export type ParticipantRole = 'chef' | 'client'
 

@@ -39,14 +39,12 @@ export interface ChefPreferences {
 
   // DOP preferences
   shop_day_before: boolean
-  wake_time_earliest: string // "HH:MM"
-  wake_time_latest: string   // "HH:MM"
 }
 
 export const DEFAULT_PREFERENCES: Omit<ChefPreferences, 'id' | 'chef_id'> = {
   home_address: null,
   home_city: null,
-  home_state: 'MA',
+  home_state: null,
   home_zip: null,
   default_grocery_store: null,
   default_grocery_address: null,
@@ -59,8 +57,6 @@ export const DEFAULT_PREFERENCES: Omit<ChefPreferences, 'id' | 'chef_id'> = {
   default_packing_minutes: 30,
   target_margin_percent: 60,
   shop_day_before: true,
-  wake_time_earliest: '08:00',
-  wake_time_latest: '10:00',
 }
 
 // ============================================

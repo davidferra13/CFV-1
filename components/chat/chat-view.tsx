@@ -6,8 +6,10 @@ import { Loader2 } from 'lucide-react'
 import { ChatHeader } from './chat-header'
 import { ChatMessageBubble } from './chat-message-bubble'
 import { ChatInputBar } from './chat-input-bar'
-import { ChatImageUpload } from './chat-image-upload'
+import { ChatFileUpload } from './chat-file-upload'
 import { ChatTypingIndicator } from './chat-typing-indicator'
+import { ChatQuickReplies } from './chat-quick-replies'
+import { ChatSearch } from './chat-search'
 import {
   subscribeToChatMessages,
   createTypingIndicator,
@@ -15,7 +17,7 @@ import {
 } from '@/lib/chat/realtime'
 import {
   sendChatMessage,
-  sendImageMessage,
+  sendFileMessage,
   getConversationMessages,
   markConversationRead,
 } from '@/lib/chat/actions'
@@ -59,7 +61,8 @@ export function ChatView({
   const [hasMore, setHasMore] = useState(initialHasMore)
   const [nextCursor, setNextCursor] = useState(initialCursor)
   const [loadingMore, setLoadingMore] = useState(false)
-  const [showImageUpload, setShowImageUpload] = useState(false)
+  const [showFileUpload, setShowFileUpload] = useState(false)
+  const [showSearch, setShowSearch] = useState(false)
 
   // Typing and presence
   const [typingUsers, setTypingUsers] = useState<Map<string, string>>(new Map())
@@ -83,6 +86,16 @@ export function ChatView({
   for (const p of participants) {
     senderMap.set(p.auth_user_id, { name: p.name, role: p.role as ParticipantRole })
   }
+
+  const otherParticipantLastReadAt = otherParticipant?.last_read_at || null
+
+  // Quick replies: show only for clients when last message is from chef
+  const lastMessage = messages[messages.length - 1]
+  const showQuickReplies =
+    currentUserRole === 'client' &&
+    lastMessage &&
+    lastMessage.sender_id !== currentUserId &&
+    lastMessage.message_type !== 'system'
 
   const backHref = currentUserRole === 'chef' ? '/chat' : '/my-chat'
 
@@ -209,21 +222,21 @@ export function ChatView({
     })
   }
 
-  // Send image message
-  const handleSendImage = async (file: File, caption: string) => {
+  // Send file/image message
+  const handleSendFile = async (file: File, caption: string) => {
     const formData = new FormData()
-    formData.set('image', file)
+    formData.set('file', file)
     if (caption) formData.set('caption', caption)
 
-    await sendImageMessage(conversationId, formData)
-    setShowImageUpload(false)
+    await sendFileMessage(conversationId, formData)
+    setShowFileUpload(false)
   }
 
   // Group messages by date for date separators
   const groupedMessages = groupMessagesByDate(messages)
 
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] bg-stone-50">
+    <div className="flex flex-col h-full bg-stone-50">
       {/* Header */}
       <ChatHeader
         participantName={otherName}
@@ -231,13 +244,22 @@ export function ChatView({
         isOnline={isOtherOnline}
         conversation={conversation}
         backHref={backHref}
+        onSearchToggle={() => setShowSearch((prev) => !prev)}
       />
+
+      {/* Search overlay */}
+      {showSearch && (
+        <ChatSearch
+          conversationId={conversationId}
+          onClose={() => setShowSearch(false)}
+        />
+      )}
 
       {/* Messages area */}
       <div
         ref={messagesContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-4"
+        className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4"
       >
         {/* Load more indicator */}
         {loadingMore && (
@@ -275,6 +297,7 @@ export function ChatView({
                   senderName={sender?.name || 'System'}
                   senderRole={sender?.role || 'client'}
                   isChefViewer={currentUserRole === 'chef'}
+                  otherParticipantLastReadAt={otherParticipantLastReadAt}
                 />
               )
             })}
@@ -291,19 +314,25 @@ export function ChatView({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Image upload overlay */}
-      {showImageUpload && (
-        <ChatImageUpload
-          onUpload={handleSendImage}
-          onCancel={() => setShowImageUpload(false)}
+      {/* File upload overlay */}
+      {showFileUpload && (
+        <ChatFileUpload
+          onUpload={handleSendFile}
+          onCancel={() => setShowFileUpload(false)}
         />
       )}
 
+      {/* Quick replies for clients */}
+      <ChatQuickReplies
+        visible={!!showQuickReplies && !showFileUpload}
+        onSelect={handleSendText}
+      />
+
       {/* Input bar */}
-      {!showImageUpload && (
+      {!showFileUpload && (
         <ChatInputBar
           onSendText={handleSendText}
-          onSendImage={() => setShowImageUpload(true)}
+          onAttach={() => setShowFileUpload(true)}
           onTyping={(isTyping) => sendTypingRef.current(isTyping)}
         />
       )}

@@ -43,7 +43,7 @@ The dump may contain ANY mix of:
 4. UNSTRUCTURED — anything you can't confidently categorize
 
 RULES:
-- One dump might reference multiple types: "Michel lives in Haverhill, always does Valentine's Day, and his Diane sauce recipe is..." → extract client info for Michel AND a recipe for Diane sauce.
+- One dump might reference multiple types: "John lives nearby, always does Valentine's Day, and his pan sauce recipe is..." → extract client info for John AND a recipe for pan sauce.
 - For CLIENTS: extract into the full client structure with all applicable fields.
 - For RECIPES: extract into the full recipe structure with ingredients and method.
 - For NOTES: categorize as "event_idea", "site_note", "business_note", "scheduling", or "general". Include a suggestedAction field.

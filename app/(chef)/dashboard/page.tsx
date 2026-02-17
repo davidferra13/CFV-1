@@ -126,9 +126,9 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {/* HEADER                                       */}
       {/* ============================================ */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">Dashboard</h1>
           <p className="text-stone-600 mt-1">Your command center - everything at a glance.</p>
         </div>
         <div className="flex gap-2">

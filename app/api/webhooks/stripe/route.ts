@@ -175,6 +175,29 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     })
 
     console.log('[handlePaymentSucceeded] Event transitioned to paid:', event_id)
+
+    // Notify chef of payment (non-blocking)
+    try {
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+      const chefUserId = await getChefAuthUserId(tenant_id)
+      if (chefUserId) {
+        const amountFormatted = (paymentIntent.amount / 100).toFixed(2)
+        await createNotification({
+          tenantId: tenant_id,
+          recipientId: chefUserId,
+          category: 'payment',
+          action: 'payment_received',
+          title: 'Payment received',
+          body: `$${amountFormatted} ${payment_type || 'payment'} received`,
+          actionUrl: `/events/${event_id}`,
+          eventId: event_id,
+          clientId: client_id,
+          metadata: { amount_cents: paymentIntent.amount, stripe_event_id: event.id },
+        })
+      }
+    } catch (notifErr) {
+      console.error('[handlePaymentSucceeded] Notification failed (non-blocking):', notifErr)
+    }
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)
@@ -231,6 +254,27 @@ async function handlePaymentFailed(event: Stripe.Event) {
     internal_notes: `Failure: ${paymentIntent.last_payment_error?.code ?? 'unknown'} - ${paymentIntent.last_payment_error?.message ?? 'no message'}`,
     created_by: null
   })
+
+  // Notify chef of payment failure (non-blocking)
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenant_id)
+    if (chefUserId) {
+      await createNotification({
+        tenantId: tenant_id,
+        recipientId: chefUserId,
+        category: 'payment',
+        action: 'payment_failed',
+        title: 'Payment failed',
+        body: `Payment failed for event. Error: ${paymentIntent.last_payment_error?.code ?? 'unknown'}`,
+        actionUrl: `/events/${event_id}`,
+        eventId: event_id,
+        clientId: client_id,
+      })
+    }
+  } catch (notifErr) {
+    console.error('[handlePaymentFailed] Notification failed (non-blocking):', notifErr)
+  }
 }
 
 /**
@@ -301,6 +345,29 @@ async function handleRefund(event: Stripe.Event) {
     internal_notes: `Charge: ${refund.charge}, Refund: ${refund.id}`,
     created_by: null
   })
+
+  // Notify chef of refund (non-blocking)
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenant_id)
+    if (chefUserId) {
+      const amountFormatted = (refund.amount / 100).toFixed(2)
+      await createNotification({
+        tenantId: tenant_id,
+        recipientId: chefUserId,
+        category: 'payment',
+        action: 'refund_processed',
+        title: 'Refund processed',
+        body: `$${amountFormatted} refund processed for event`,
+        actionUrl: `/events/${event_id}`,
+        eventId: event_id,
+        clientId: client_id,
+        metadata: { amount_cents: refund.amount },
+      })
+    }
+  } catch (notifErr) {
+    console.error('[handleRefund] Notification failed (non-blocking):', notifErr)
+  }
 }
 
 /**
@@ -340,6 +407,29 @@ async function handleDisputeCreated(event: Stripe.Event) {
     internal_notes: `Dispute ${dispute.id}: ${dispute.reason}. Amount: ${dispute.amount}. Status: ${dispute.status}`,
     created_by: null
   })
+
+  // Notify chef of dispute (non-blocking, urgent)
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenant_id)
+    if (chefUserId) {
+      const amountFormatted = (dispute.amount / 100).toFixed(2)
+      await createNotification({
+        tenantId: tenant_id,
+        recipientId: chefUserId,
+        category: 'payment',
+        action: 'dispute_created',
+        title: 'Dispute filed',
+        body: `A $${amountFormatted} dispute was filed. Reason: ${dispute.reason}`,
+        actionUrl: `/events/${event_id}`,
+        eventId: event_id,
+        clientId: client_id,
+        metadata: { amount_cents: dispute.amount, dispute_id: dispute.id, reason: dispute.reason },
+      })
+    }
+  } catch (notifErr) {
+    console.error('[handleDisputeCreated] Notification failed (non-blocking):', notifErr)
+  }
 }
 
 /**

@@ -202,6 +202,103 @@ export function extractSenderInfo(fromHeader: string): { name: string; email: st
   return { name: '', email: fromHeader.toLowerCase().trim() }
 }
 
+// ─── Send Email (new compose) ──────────────────────────────────────────────
+
+export interface SendEmailOptions {
+  to: string
+  subject: string
+  body: string
+  inReplyTo?: string  // Message-ID header for threading
+  references?: string // References header for threading
+  threadId?: string   // Gmail thread ID to keep message in same thread
+}
+
+export async function sendEmail(
+  accessToken: string,
+  options: SendEmailOptions
+): Promise<{ messageId: string; threadId: string }> {
+  const { to, subject, body, inReplyTo, references, threadId } = options
+
+  // Build RFC 2822 email message
+  const headers = [
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    'Content-Type: text/plain; charset=utf-8',
+    'MIME-Version: 1.0',
+  ]
+
+  if (inReplyTo) {
+    headers.push(`In-Reply-To: ${inReplyTo}`)
+  }
+  if (references) {
+    headers.push(`References: ${references}`)
+  }
+
+  const rawMessage = headers.join('\r\n') + '\r\n\r\n' + body
+
+  // Gmail API expects URL-safe base64 encoding
+  const encoded = Buffer.from(rawMessage)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '')
+
+  const requestBody: Record<string, unknown> = { raw: encoded }
+  if (threadId) {
+    requestBody.threadId = threadId
+  }
+
+  const response = await fetch(`${GMAIL_API}/messages/send`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  })
+
+  if (!response.ok) {
+    const err = await response.text()
+    throw new Error(`Gmail API send failed: ${err}`)
+  }
+
+  const data = await response.json()
+  return {
+    messageId: data.id,
+    threadId: data.threadId,
+  }
+}
+
+// ─── Get Message Headers (for reply threading) ────────────────────────────
+
+export async function getMessageHeaders(
+  accessToken: string,
+  messageId: string
+): Promise<{ messageIdHeader: string; subject: string; threadId: string }> {
+  const response = await fetch(
+    `${GMAIL_API}/messages/${messageId}?format=metadata&metadataHeaders=Message-Id&metadataHeaders=Subject`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  )
+
+  if (!response.ok) {
+    const err = await response.text()
+    throw new Error(`Gmail API get headers failed: ${err}`)
+  }
+
+  const data = await response.json()
+  const headers = data.payload?.headers || []
+  const getHeader = (name: string): string =>
+    headers.find((h: { name: string; value: string }) =>
+      h.name.toLowerCase() === name.toLowerCase()
+    )?.value || ''
+
+  return {
+    messageIdHeader: getHeader('Message-Id'),
+    subject: getHeader('Subject'),
+    threadId: data.threadId || '',
+  }
+}
+
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
 function decodeBase64Url(data: string): string {

@@ -35,6 +35,7 @@ export function ConnectedAccounts({ connection, recentSyncs }: ConnectedAccounts
     try {
       const { redirectUrl } = await initiateGoogleConnect([
         'https://www.googleapis.com/auth/gmail.readonly',
+        'https://www.googleapis.com/auth/gmail.send',
       ])
       window.location.href = redirectUrl
     } catch (err) {

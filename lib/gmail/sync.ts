@@ -13,6 +13,8 @@ import {
 } from './client'
 import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
+import { createClientFromLead } from '@/lib/clients/actions'
+import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
 import type { SyncResult, ParsedEmail } from './types'
 import type { Json } from '@/types/database'
 
@@ -216,24 +218,32 @@ async function handleInquiry(
     // Parse the email body into structured inquiry data
     const parseResult = await parseInquiryFromText(email.body)
 
-    // Check if a client exists for this sender
-    const { data: existingClient } = await supabase
-      .from('clients')
-      .select('id')
-      .eq('tenant_id', tenantId)
-      .eq('email', email.from.email)
-      .single()
+    // Find or create client from lead data
+    let clientId: string | null = null
 
-    const clientId = existingClient?.id || null
+    const leadName = parseResult.parsed.client_name || email.from.name || 'Unknown'
+    const leadEmail = email.from.email
 
-    // Build unknown_fields for unlinked leads
+    try {
+      const clientResult = await createClientFromLead(tenantId, {
+        email: leadEmail,
+        full_name: leadName,
+        phone: parseResult.parsed.client_phone || null,
+        dietary_restrictions: parseResult.parsed.confirmed_dietary_restrictions || null,
+        source: 'email',
+      })
+      clientId = clientResult.id
+    } catch (clientErr) {
+      // Non-fatal: inquiry still gets created, just without client link
+      console.error('[handleInquiry] Client creation failed:', clientErr)
+    }
+
+    // Store original lead data in unknown_fields for audit trail
     const unknownFields: Record<string, string> = {}
-    if (!clientId) {
-      unknownFields.client_name = parseResult.parsed.client_name || email.from.name || 'Unknown'
-      unknownFields.client_email = email.from.email
-      if (parseResult.parsed.client_phone) {
-        unknownFields.client_phone = parseResult.parsed.client_phone
-      }
+    unknownFields.original_sender_name = leadName
+    unknownFields.original_sender_email = leadEmail
+    if (parseResult.parsed.client_phone) {
+      unknownFields.client_phone = parseResult.parsed.client_phone
     }
 
     // Create the inquiry
@@ -294,6 +304,26 @@ async function handleInquiry(
       message_id: message?.id || null,
     })
 
+    // Notify the chef about new inquiry (non-blocking)
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'new_inquiry',
+          title: 'New inquiry received',
+          body: `${leadName} — ${email.subject || 'No subject'}`,
+          actionUrl: `/inquiries/${inquiry.id}`,
+          inquiryId: inquiry.id,
+          clientId: clientId || undefined,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[handleInquiry] Notification failed (non-fatal):', notifErr)
+    }
+
     result.inquiriesCreated++
   } catch (err) {
     const error = err as Error
@@ -343,12 +373,82 @@ async function handleExistingThread(
       .select('id')
       .single()
 
+    // Link message to inquiry by thread and auto-advance inquiry status
+    let linkedInquiryId: string | null = null
+    if (email.threadId) {
+      const { data: threadMessage } = await supabase
+        .from('messages')
+        .select('inquiry_id')
+        .eq('tenant_id', tenantId)
+        .eq('gmail_thread_id', email.threadId)
+        .not('inquiry_id', 'is', null)
+        .limit(1)
+        .maybeSingle()
+
+      if (threadMessage?.inquiry_id) {
+        linkedInquiryId = threadMessage.inquiry_id
+
+        // Link this reply message to the same inquiry
+        if (message?.id) {
+          await supabase
+            .from('messages')
+            .update({ inquiry_id: linkedInquiryId })
+            .eq('id', message.id)
+        }
+
+        // Auto-advance: awaiting_client → awaiting_chef (client replied)
+        // DB trigger auto-logs to inquiry_state_transitions
+        const { data: inquiry } = await supabase
+          .from('inquiries')
+          .select('status')
+          .eq('id', linkedInquiryId)
+          .eq('tenant_id', tenantId)
+          .single()
+
+        if (inquiry?.status === 'awaiting_client') {
+          await supabase
+            .from('inquiries')
+            .update({
+              status: 'awaiting_chef',
+              follow_up_due_at: null,
+              next_action_required: 'Client replied — review and respond',
+              next_action_by: 'chef',
+            })
+            .eq('id', linkedInquiryId)
+            .eq('tenant_id', tenantId)
+        }
+      }
+    }
+
     await logSyncEntry(supabase, tenantId, email, {
       classification: classification.category,
       confidence: classification.confidence,
       action_taken: 'logged_message',
       message_id: message?.id || null,
     })
+
+    // Notify chef about client reply (non-blocking)
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        const clientName = client?.id
+          ? (await supabase.from('clients').select('full_name').eq('id', client.id).single()).data?.full_name
+          : email.from.name || email.from.email
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'inquiry_reply',
+          title: 'Client replied',
+          body: `${clientName} — ${email.subject || 'No subject'}`,
+          actionUrl: linkedInquiryId ? `/inquiries/${linkedInquiryId}` : undefined,
+          inquiryId: linkedInquiryId || undefined,
+          clientId: client?.id || undefined,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[handleExistingThread] Notification failed (non-fatal):', notifErr)
+    }
 
     result.messagesLogged++
   } catch (err) {

@@ -31,6 +31,8 @@ import { MessageLogForm } from '@/components/messages/message-log-form'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
+import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
+import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { createServerClient } from '@/lib/supabase/server'
@@ -120,20 +122,28 @@ export default async function EventDetailPage({
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce((sum, tx) => sum + tx.points, 0)
 
+  // Fetch guest RSVP data (separate from main Promise.all to avoid breaking existing types)
+  const [guestShares, guestList, rsvpSummary] = await Promise.all([
+    getEventShares(params.id),
+    getEventGuests(params.id),
+    getEventRSVPSummary(params.id),
+  ])
+  const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">{event.occasion || 'Untitled Event'}</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">{event.occasion || 'Untitled Event'}</h1>
             <EventStatusBadge status={event.status} />
           </div>
           <p className="text-stone-600 mt-1">
             {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy \'at\' h:mm a')}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {event.status === 'draft' && (
             <Link href={`/events/${event.id}/edit`}>
               <Button variant="secondary">Edit Event</Button>
@@ -228,6 +238,20 @@ export default async function EventDetailPage({
         </Card>
       </div>
 
+      {/* Guests & RSVPs */}
+      {event.status !== 'draft' && event.status !== 'cancelled' && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Guests & RSVPs</h2>
+          <ChefGuestPanel
+            eventShareId={activeShare?.id || null}
+            guests={guestList as any[]}
+            summary={rsvpSummary as any}
+            originalGuestCount={event.guest_count}
+            visibility={activeShare?.visibility_settings as any || null}
+          />
+        </Card>
+      )}
+
       {/* Communication Log */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Communication</h2>
@@ -252,28 +276,28 @@ export default async function EventDetailPage({
           <h2 className="text-xl font-semibold">Financial Summary</h2>
           <EventExportButton eventId={event.id} />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <dt className="text-sm font-medium text-stone-500">Quoted Price</dt>
-            <dd className="text-2xl font-bold text-stone-900 mt-1">
+            <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
               {formatCurrency(event.quoted_price_cents ?? 0)}
             </dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Deposit Amount</dt>
-            <dd className="text-2xl font-bold text-stone-900 mt-1">
+            <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
               {formatCurrency(event.deposit_amount_cents ?? 0)}
             </dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Amount Paid</dt>
-            <dd className="text-2xl font-bold text-green-600 mt-1">
+            <dd className="text-xl sm:text-2xl font-bold text-green-600 mt-1">
               {formatCurrency(totalPaid)}
             </dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Balance Due</dt>
-            <dd className={`text-2xl font-bold mt-1 ${outstandingBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <dd className={`text-xl sm:text-2xl font-bold mt-1 ${outstandingBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
               {formatCurrency(outstandingBalance)}
             </dd>
           </div>
@@ -283,7 +307,7 @@ export default async function EventDetailPage({
       {/* Budget Guardrail — shown when event has pricing but few expenses */}
       {budgetGuardrail.quotedPriceCents > 0 && eventExpenseData.expenses.length === 0 && (
         <Card className="p-6 border-brand-200 bg-brand-50">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="font-semibold text-brand-900">Shopping Budget</h2>
               <p className="text-sm text-brand-700 mt-1">{budgetGuardrail.message}</p>
@@ -307,7 +331,7 @@ export default async function EventDetailPage({
           budgetGuardrail.status === 'near' ? 'border-yellow-200 bg-yellow-50' :
           'border-green-200 bg-green-50'
         }`}>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className={`font-semibold ${
                 budgetGuardrail.status === 'over' ? 'text-red-900' :
@@ -395,19 +419,19 @@ export default async function EventDetailPage({
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <dt className="text-sm font-medium text-stone-500">Revenue</dt>
-              <dd className="text-2xl font-bold text-green-600 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-green-600 mt-1">
                 {formatCurrency(profitSummary.revenue.totalPaidCents + profitSummary.revenue.tipCents)}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Expenses</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
                 {formatCurrency(profitSummary.expenses.totalBusinessCents)}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Profit</dt>
-              <dd className={`text-2xl font-bold mt-1 ${
+              <dd className={`text-xl sm:text-2xl font-bold mt-1 ${
                 profitSummary.profit.grossProfitCents >= 0 ? 'text-green-600' : 'text-red-600'
               }`}>
                 {formatCurrency(profitSummary.profit.grossProfitCents)}
@@ -415,7 +439,7 @@ export default async function EventDetailPage({
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Margin</dt>
-              <dd className={`text-2xl font-bold mt-1 ${
+              <dd className={`text-xl sm:text-2xl font-bold mt-1 ${
                 profitSummary.profit.profitMarginPercent >= 60 ? 'text-green-600' :
                 profitSummary.profit.profitMarginPercent >= 40 ? 'text-yellow-600' :
                 'text-red-600'
@@ -445,7 +469,7 @@ export default async function EventDetailPage({
       {/* Loyalty Points Awarded */}
       {event.status === 'completed' && eventLoyaltyPoints > 0 && (
         <Card className="p-6 border-purple-200 bg-purple-50">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="font-semibold text-purple-900">Loyalty Points Awarded</h2>
               <p className="text-sm text-purple-700 mt-1">
@@ -580,11 +604,11 @@ export default async function EventDetailPage({
           <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
             <div>
               <dt className="text-sm font-medium text-stone-500">Calm Rating</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">{aar.calm_rating}/5</dd>
+              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">{aar.calm_rating}/5</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Preparation Rating</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">{aar.preparation_rating}/5</dd>
+              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">{aar.preparation_rating}/5</dd>
             </div>
             {aar.forgotten_items && aar.forgotten_items.length > 0 && (
               <div>
@@ -633,7 +657,7 @@ export default async function EventDetailPage({
       {/* File AAR button — prominent, for completed events without AAR */}
       {event.status === 'completed' && !aar && !closureStatus && (
         <Card className="p-6 border-brand-200 bg-brand-50">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h2 className="font-semibold text-brand-900">Ready to review this dinner?</h2>
               <p className="text-sm text-brand-700 mt-1">File your After Action Review to track what went well and what to improve.</p>

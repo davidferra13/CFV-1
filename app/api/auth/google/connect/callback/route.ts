@@ -5,6 +5,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/supabase/server'
+import { getCurrentUser } from '@/lib/auth/get-user'
 
 const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
@@ -49,6 +50,14 @@ export async function GET(request: NextRequest) {
   }
   // Clear the CSRF cookie
   cookieStore.delete('google-oauth-csrf')
+
+  // Verify the authenticated user owns this chef ID (prevents tenant hijacking)
+  const currentUser = await getCurrentUser()
+  if (!currentUser || currentUser.role !== 'chef' || currentUser.entityId !== state.chefId) {
+    return NextResponse.redirect(
+      `${origin}/settings?error=${encodeURIComponent('Unauthorized: Chef account mismatch')}`
+    )
+  }
 
   const clientId = process.env.GOOGLE_CLIENT_ID!
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET!

@@ -20,7 +20,7 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
   // Form state
   const [homeAddress, setHomeAddress] = useState(preferences.home_address ?? '')
   const [homeCity, setHomeCity] = useState(preferences.home_city ?? '')
-  const [homeState, setHomeState] = useState(preferences.home_state ?? 'MA')
+  const [homeState, setHomeState] = useState(preferences.home_state ?? '')
   const [homeZip, setHomeZip] = useState(preferences.home_zip ?? '')
 
   const [groceryStore, setGroceryStore] = useState(preferences.default_grocery_store ?? '')
@@ -38,8 +38,6 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
 
   const [targetMargin, setTargetMargin] = useState(preferences.target_margin_percent)
   const [shopDayBefore, setShopDayBefore] = useState(preferences.shop_day_before)
-  const [wakeEarliest, setWakeEarliest] = useState(preferences.wake_time_earliest)
-  const [wakeLatest, setWakeLatest] = useState(preferences.wake_time_latest)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -64,8 +62,6 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
           default_packing_minutes: packingMinutes,
           target_margin_percent: targetMargin,
           shop_day_before: shopDayBefore,
-          wake_time_earliest: wakeEarliest,
-          wake_time_latest: wakeLatest,
         })
         setSuccess(true)
         router.refresh()
@@ -99,20 +95,20 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
         <CardContent className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1">Street Address</label>
-            <Input value={homeAddress} onChange={e => setHomeAddress(e.target.value)} placeholder="123 Main St" />
+            <Input value={homeAddress} onChange={e => setHomeAddress(e.target.value)} placeholder="Street address" />
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">City</label>
-              <Input value={homeCity} onChange={e => setHomeCity(e.target.value)} placeholder="Haverhill" />
+              <Input value={homeCity} onChange={e => setHomeCity(e.target.value)} placeholder="City" />
             </div>
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">State</label>
-              <Input value={homeState} onChange={e => setHomeState(e.target.value)} placeholder="MA" />
+              <Input value={homeState} onChange={e => setHomeState(e.target.value)} placeholder="State" />
             </div>
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">ZIP</label>
-              <Input value={homeZip} onChange={e => setHomeZip(e.target.value)} placeholder="01830" />
+              <Input value={homeZip} onChange={e => setHomeZip(e.target.value)} placeholder="ZIP" />
             </div>
           </div>
         </CardContent>
@@ -129,11 +125,11 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Store Name</label>
-                <Input value={groceryStore} onChange={e => setGroceryStore(e.target.value)} placeholder="Market Basket" />
+                <Input value={groceryStore} onChange={e => setGroceryStore(e.target.value)} placeholder="Store name" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Address</label>
-                <Input value={groceryAddress} onChange={e => setGroceryAddress(e.target.value)} placeholder="123 Main St, Haverhill, MA" />
+                <Input value={groceryAddress} onChange={e => setGroceryAddress(e.target.value)} placeholder="Store address" />
               </div>
             </div>
           </div>
@@ -143,11 +139,11 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Store Name</label>
-                <Input value={liquorStore} onChange={e => setLiquorStore(e.target.value)} placeholder="One Stop Liquor" />
+                <Input value={liquorStore} onChange={e => setLiquorStore(e.target.value)} placeholder="Store name" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1">Address</label>
-                <Input value={liquorAddress} onChange={e => setLiquorAddress(e.target.value)} placeholder="456 Elm St, Haverhill, MA" />
+                <Input value={liquorAddress} onChange={e => setLiquorAddress(e.target.value)} placeholder="Store address" />
               </div>
             </div>
           </div>
@@ -254,25 +250,6 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
             <label htmlFor="shopDayBefore" className="text-sm text-stone-700">
               Shop the day before events (recommended)
             </label>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Earliest Wake Time</label>
-              <Input
-                type="time"
-                value={wakeEarliest}
-                onChange={e => setWakeEarliest(e.target.value)}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Latest Wake Time</label>
-              <Input
-                type="time"
-                value={wakeLatest}
-                onChange={e => setWakeLatest(e.target.value)}
-              />
-            </div>
           </div>
 
           <div>

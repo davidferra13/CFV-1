@@ -9,16 +9,22 @@ export const metadata: Metadata = { title: 'Settings - ChefFlow' }
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getGoogleConnection } from '@/lib/gmail/google-auth'
 import { getGmailSyncHistory } from '@/lib/gmail/actions'
+import { getNetworkDiscoverable } from '@/lib/network/actions'
+import { getGoogleReviewUrl } from '@/lib/reviews/actions'
 import { PreferencesForm } from '@/components/settings/preferences-form'
 import { ConnectedAccounts } from '@/components/settings/connected-accounts'
+import { DiscoverabilityToggle } from '@/components/network/discoverability-toggle'
+import { GoogleReviewUrlForm } from '@/components/settings/google-review-url-form'
 import Link from 'next/link'
 
 export default async function SettingsPage() {
   await requireChef()
-  const [preferences, gmailConnection, recentSyncs] = await Promise.all([
+  const [preferences, gmailConnection, recentSyncs, networkDiscoverable, googleReviewUrl] = await Promise.all([
     getChefPreferences(),
     getGoogleConnection(),
     getGmailSyncHistory(10),
+    getNetworkDiscoverable(),
+    getGoogleReviewUrl(),
   ])
 
   return (
@@ -63,6 +69,40 @@ export default async function SettingsPage() {
             Define your creative thesis, micro-windows, context profiles, and proven wins for each season.
           </p>
         </Link>
+      </div>
+
+      {/* Client Reviews */}
+      <div className="pt-4 border-t border-stone-200">
+        <h2 className="text-lg font-semibold text-stone-900 mb-3">Client Reviews</h2>
+        <div className="space-y-3">
+          <GoogleReviewUrlForm currentUrl={googleReviewUrl} />
+          <Link
+            href="/reviews"
+            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">View All Reviews</p>
+            <p className="text-sm text-stone-500 mt-1">
+              See client feedback, ratings, and Google review click-through stats.
+            </p>
+          </Link>
+        </div>
+      </div>
+
+      {/* Chef Network */}
+      <div className="pt-4 border-t border-stone-200">
+        <h2 className="text-lg font-semibold text-stone-900 mb-3">Chef Network</h2>
+        <div className="space-y-3">
+          <DiscoverabilityToggle currentValue={networkDiscoverable} />
+          <Link
+            href="/settings/profile"
+            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">Network Profile</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Set your display name, bio, and profile photo for the chef directory.
+            </p>
+          </Link>
+        </div>
       </div>
 
       {/* Account Management */}

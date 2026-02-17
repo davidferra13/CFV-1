@@ -19,6 +19,10 @@ import { ClientEventsTable } from './client-events-table'
 import { MilestoneManager } from '@/components/clients/milestone-manager'
 import { AddressManager } from '@/components/clients/address-manager'
 import { PersonalInfoEditor } from '@/components/clients/personal-info-editor'
+import { QuickNotes } from '@/components/clients/quick-notes'
+import { HouseholdManager } from '@/components/households/household-manager'
+import { getClientNotes } from '@/lib/notes/actions'
+import { getClientHousehold, getHouseholds } from '@/lib/households/actions'
 import type { Milestone } from '@/lib/clients/milestones'
 
 const TIER_COLORS: Record<string, string> = {
@@ -44,11 +48,14 @@ interface ClientDetailPageProps {
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
   await requireChef()
 
-  const [client, messages, templates, loyaltyProfile] = await Promise.all([
+  const [client, messages, templates, loyaltyProfile, clientNotes, clientHousehold, allHouseholds] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
     getResponseTemplates(),
     getClientLoyaltyProfile(params.id).catch(() => null),
+    getClientNotes(params.id),
+    getClientHousehold(params.id).catch(() => null),
+    getHouseholds().catch(() => []),
   ])
 
   if (!client) {
@@ -58,12 +65,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <Link href="/clients" className="text-sm text-brand-600 hover:text-brand-700 mb-2 inline-block">
             ← Back to Clients
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900">{client.full_name}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">{client.full_name}</h1>
           <p className="text-stone-600 mt-1">{client.email}</p>
         </div>
         <Link href={`/events/new?client_id=${client.id}`}>
@@ -101,25 +108,25 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       </Card>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Total Events</div>
-            <div className="text-3xl font-bold text-stone-900 mt-2">{client.totalEvents}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">{client.totalEvents}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Completed Events</div>
-            <div className="text-3xl font-bold text-stone-900 mt-2">{client.completedEvents}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">{client.completedEvents}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Total Spent</div>
-            <div className="text-3xl font-bold text-stone-900 mt-2">
+            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">
               {formatCurrency(client.totalSpentCents)}
             </div>
           </CardContent>
@@ -128,7 +135,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Average Event Value</div>
-            <div className="text-3xl font-bold text-stone-900 mt-2">
+            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">
               {formatCurrency(client.averageEventValueCents)}
             </div>
           </CardContent>
@@ -149,19 +156,19 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div>
               <dt className="text-sm font-medium text-stone-500">Points Balance</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.pointsBalance.toLocaleString()}</dd>
+              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.pointsBalance.toLocaleString()}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Lifetime Earned</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.lifetimePointsEarned.toLocaleString()}</dd>
+              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.lifetimePointsEarned.toLocaleString()}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Events Completed</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.totalEventsCompleted}</dd>
+              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.totalEventsCompleted}</dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Guests Served</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.totalGuestsServed}</dd>
+              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">{loyaltyProfile.totalGuestsServed}</dd>
             </div>
           </dl>
 
@@ -240,6 +247,17 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           family_notes: (client as any).family_notes ?? null,
         }}
       />
+
+      {/* Household */}
+      <HouseholdManager
+        clientId={client.id}
+        clientName={client.full_name}
+        household={clientHousehold}
+        allHouseholds={allHouseholds}
+      />
+
+      {/* Quick Notes */}
+      <QuickNotes clientId={client.id} initialNotes={clientNotes} />
 
       {/* Milestones */}
       <MilestoneManager

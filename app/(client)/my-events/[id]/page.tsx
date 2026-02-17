@@ -2,6 +2,8 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventById } from '@/lib/events/client-actions'
+import { getClientReviewForEvent, getGoogleReviewUrlForTenant } from '@/lib/reviews/actions'
+import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { notFound, redirect } from 'next/navigation'
@@ -10,6 +12,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import AcceptProposalButton from './accept-proposal-button'
+import { ClientFeedbackForm } from '@/components/reviews/client-feedback-form'
+import { SubmittedReview } from '@/components/reviews/submitted-review'
+import { ShareEventButton } from '@/components/sharing/share-event-button'
+import { ClientRSVPSummary } from '@/components/sharing/client-rsvp-summary'
+import { MessageChefButton } from '@/components/chat/message-chef-button'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -49,6 +56,24 @@ export default async function EventDetailPage({
   const quotedPriceCents = financial?.quotedPriceCents ?? (event.quoted_price_cents ?? 0)
   const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
 
+  // Fetch sharing and RSVP data
+  const [shares, guests, rsvpSummary] = await Promise.all([
+    getEventShares(params.id),
+    getEventGuests(params.id),
+    getEventRSVPSummary(params.id),
+  ])
+  const activeShare = shares.find((s: any) => s.is_active) || null
+
+  // Fetch review data for completed events
+  let existingReview = null
+  let googleReviewUrl: string | null = null
+  if (event.status === 'completed') {
+    ;[existingReview, googleReviewUrl] = await Promise.all([
+      getClientReviewForEvent(params.id),
+      getGoogleReviewUrlForTenant(event.tenant_id),
+    ])
+  }
+
   return (
     <div className="max-w-4xl mx-auto">
       {/* Back button */}
@@ -66,13 +91,18 @@ export default async function EventDetailPage({
 
       {/* Event Header */}
       <div className="mb-8">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 mb-2">
               {event.occasion || 'Upcoming Event'}
             </h1>
             {getStatusBadge(event.status)}
           </div>
+          <MessageChefButton
+            context_type="event"
+            event_id={event.id}
+            label="Message Chef"
+          />
         </div>
       </div>
 
@@ -244,15 +274,57 @@ export default async function EventDetailPage({
             </button>
           </Link>
         )}
-
-        {event.status === 'completed' && (
-          <div className="flex-1 text-center py-4">
-            <Badge variant="success" className="text-base px-4 py-2">
-              Event Completed
-            </Badge>
-          </div>
-        )}
       </div>
+
+      {/* Share with Guests & RSVP Summary */}
+      {event.status !== 'draft' && event.status !== 'cancelled' && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Share with Guests</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ShareEventButton
+              eventId={event.id}
+              existingShare={activeShare}
+            />
+            {guests.length > 0 && (
+              <div className="pt-4 border-t border-stone-100">
+                <h4 className="text-sm font-medium text-stone-700 mb-3">RSVP Responses</h4>
+                <ClientRSVPSummary
+                  guests={guests}
+                  summary={{
+                    total_guests: rsvpSummary?.total_guests ?? 0,
+                    attending_count: rsvpSummary?.attending_count ?? 0,
+                    declined_count: rsvpSummary?.declined_count ?? 0,
+                    maybe_count: rsvpSummary?.maybe_count ?? 0,
+                    pending_count: rsvpSummary?.pending_count ?? 0,
+                    plus_one_count: rsvpSummary?.plus_one_count ?? 0,
+                  }}
+                  originalGuestCount={event.guest_count}
+                />
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Post-Event Feedback (completed events only) */}
+      {event.status === 'completed' && (
+        <div className="mb-8">
+          {existingReview ? (
+            <SubmittedReview
+              review={existingReview}
+              eventId={event.id}
+              googleReviewUrl={googleReviewUrl}
+            />
+          ) : (
+            <ClientFeedbackForm
+              eventId={event.id}
+              googleReviewUrl={googleReviewUrl}
+            />
+          )}
+        </div>
+      )}
     </div>
   )
 }

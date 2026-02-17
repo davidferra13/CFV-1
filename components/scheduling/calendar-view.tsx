@@ -42,6 +42,7 @@ const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }
   confirmed:   { bg: '#fcf0e0', border: '#f3c596', text: '#b15c26' },
   in_progress: { bg: '#fef9f3', border: '#e88f47', text: '#8e4a24' },
   completed:   { bg: '#d1fae5', border: '#34d399', text: '#065f46' },
+  inquiry:     { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' },
 }
 
 const PREP_STATUS_DOT: Record<string, string> = {
@@ -136,8 +137,10 @@ export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[]
     const eventId = info.event.extendedProps.eventId
     const isPrep = info.event.extendedProps.dayType === 'prep'
 
-    // Don't allow dragging prep days (they follow the event)
-    if (isPrep) {
+    const isInquiry = info.event.extendedProps.dayType === 'inquiry'
+
+    // Don't allow dragging prep days or inquiry holds
+    if (isPrep || isInquiry) {
       info.revert()
       return
     }
@@ -455,17 +458,22 @@ export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[]
                 allDayText="All Day"
                 eventClassNames={(arg) => {
                   const status = arg.event.extendedProps.status
-                  const isPrep = arg.event.extendedProps.dayType === 'prep'
+                  const dayType = arg.event.extendedProps.dayType
                   return [
                     'cf-event',
                     `cf-event--${status}`,
-                    isPrep ? 'cf-event--prep' : '',
+                    dayType === 'prep' ? 'cf-event--prep' : '',
+                    dayType === 'inquiry' ? 'cf-event--inquiry' : '',
                   ].filter(Boolean)
                 }}
                 eventDidMount={(info) => {
                   const status = info.event.extendedProps.status
-                  const isPrep = info.event.extendedProps.dayType === 'prep'
-                  const colors = isPrep
+                  const dayType = info.event.extendedProps.dayType
+                  const isPrep = dayType === 'prep'
+                  const isInquiry = dayType === 'inquiry'
+                  const colors = isInquiry
+                    ? STATUS_COLORS.inquiry
+                    : isPrep
                     ? { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' }
                     : STATUS_COLORS[status] || { bg: '#f5f3ef', border: '#d6d3d1', text: '#57534e' }
 
@@ -475,6 +483,10 @@ export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[]
                   info.el.style.color = colors.text
                   info.el.style.borderRadius = '6px'
                   info.el.style.cursor = 'pointer'
+                  if (isInquiry) {
+                    info.el.style.borderStyle = 'dashed'
+                    info.el.style.opacity = '0.8'
+                  }
                 }}
               />
             </div>
@@ -503,6 +515,9 @@ export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[]
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-amber-100 border border-amber-400" /> Prep Day
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="w-3 h-3 rounded border border-dashed" style={{ backgroundColor: STATUS_COLORS.inquiry.bg, borderColor: STATUS_COLORS.inquiry.border }} /> Tentative Hold
         </span>
         <span className="mx-2 border-l border-stone-200" />
         <span className="flex items-center gap-1.5">

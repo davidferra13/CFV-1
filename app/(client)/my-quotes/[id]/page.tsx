@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import QuoteResponseButtons from './quote-response-buttons'
+import { MessageChefButton } from '@/components/chat/message-chef-button'
 
 export default async function ClientQuoteDetailPage({
   params
@@ -29,9 +30,9 @@ export default async function ClientQuoteDetailPage({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
             {quote.quote_name || 'Quote'}
           </h1>
           {(quote.inquiry as any)?.confirmed_occasion && (
@@ -61,7 +62,7 @@ export default async function ClientQuoteDetailPage({
         <h2 className="text-xl font-semibold mb-4">Pricing Summary</h2>
         <div className="space-y-4">
           <div className="text-center py-4 border-b">
-            <p className="text-4xl font-bold text-stone-900">
+            <p className="text-3xl sm:text-4xl font-bold text-stone-900">
               {formatCurrency(quote.total_quoted_cents)}
             </p>
             {quote.pricing_model === 'per_person' && quote.price_per_person_cents && quote.guest_count_estimated && (
@@ -137,6 +138,11 @@ export default async function ClientQuoteDetailPage({
 
       {/* Response Buttons */}
       {isPending && <QuoteResponseButtons quoteId={quote.id} totalCents={quote.total_quoted_cents} />}
+
+      {/* Message chef about this quote */}
+      <div className="flex justify-center pt-4">
+        <MessageChefButton label="Have a question? Message your chef" />
+      </div>
     </div>
   )
 }

@@ -59,3 +59,10 @@ export interface GmailSyncLogEntry {
   error: string | null
   synced_at: string
 }
+
+export interface SendMessageResult {
+  success: boolean
+  messageId: string
+  gmailMessageId: string
+  gmailThreadId: string
+}

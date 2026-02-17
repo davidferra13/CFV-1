@@ -4,5 +4,19 @@
   "installCommand": "npm install",
   "framework": "nextjs",
   "outputDirectory": ".next",
-  "regions": ["iad1"]
+  "regions": ["iad1"],
+  "crons": [
+    {
+      "path": "/api/gmail/sync",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/scheduled/follow-ups",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/scheduled/lifecycle",
+      "schedule": "0 3 * * *"
+    }
+  ]
 }

@@ -9,9 +9,11 @@ import { getQuotesForInquiry } from '@/lib/quotes/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
 import { InquiryTransitions } from '@/components/inquiries/inquiry-transitions'
+import { InquiryResponseComposer } from '@/components/inquiries/inquiry-response-composer'
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
 import { MessageThread } from '@/components/messages/message-thread'
 import { MessageLogForm } from '@/components/messages/message-log-form'
+import { getGoogleConnection } from '@/lib/gmail/google-auth'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -62,11 +64,12 @@ export default async function InquiryDetailPage({
 }) {
   await requireChef()
 
-  const [inquiry, quotes, messages, templates] = await Promise.all([
+  const [inquiry, quotes, messages, templates, gmailStatus] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
     getMessageThread('inquiry', params.id),
     getResponseTemplates(),
+    getGoogleConnection(),
   ])
 
   if (!inquiry) {
@@ -90,10 +93,10 @@ export default async function InquiryDetailPage({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-start">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold text-stone-900">{name}</h1>
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">{name}</h1>
             <InquiryStatusBadge status={inquiry.status as any} />
             <InquiryChannelBadge channel={inquiry.channel} />
           </div>
@@ -301,6 +304,16 @@ export default async function InquiryDetailPage({
           </div>
         )}
       </Card>
+
+      {/* AI Response Composer */}
+      {inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
+        <InquiryResponseComposer
+          inquiryId={inquiry.id}
+          clientId={inquiry.client_id}
+          clientEmail={email}
+          gmailConnected={gmailStatus.connected}
+        />
+      )}
 
       {/* Communication Log */}
       <Card className="p-6">

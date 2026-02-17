@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 import {
   LayoutDashboard,
   Inbox,
@@ -29,6 +30,9 @@ import {
   Gift,
   ListChecks,
   MessageCircle,
+  Handshake,
+  Home,
+  Globe,
 } from 'lucide-react'
 
 // ─── Types ──────────────────────────────────────────
@@ -40,6 +44,7 @@ const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/chat', label: 'Messages', icon: MessageCircle },
   { href: '/queue', label: 'Queue', icon: ListChecks },
+  { href: '/network', label: 'Network', icon: Handshake },
 ]
 
 const navGroups: NavGroup[] = [
@@ -48,6 +53,7 @@ const navGroups: NavGroup[] = [
     label: 'Pipeline',
     icon: Inbox,
     items: [
+      { href: '/leads', label: 'Leads', icon: Globe },
       { href: '/inquiries', label: 'Inquiries', icon: Inbox },
       { href: '/quotes', label: 'Quotes', icon: FileText },
       { href: '/events', label: 'Events', icon: UtensilsCrossed },
@@ -69,6 +75,7 @@ const navGroups: NavGroup[] = [
     icon: Users,
     items: [
       { href: '/clients', label: 'Clients', icon: Users },
+      { href: '/households', label: 'Households', icon: Home },
       { href: '/loyalty', label: 'Loyalty', icon: Gift },
     ],
   },
@@ -321,7 +328,7 @@ export function ChefSidebar() {
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
-      {/* Logo + collapse toggle */}
+      {/* Logo + notification bell + collapse toggle */}
       <div className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}>
         <Link href="/dashboard" className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
@@ -329,16 +336,19 @@ export function ChefSidebar() {
           </div>
           {!collapsed && <span className="text-lg font-semibold text-stone-900">ChefFlow</span>}
         </Link>
-        {!collapsed && (
-          <button
-            type="button"
-            onClick={() => setCollapsed(true)}
-            className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
-            aria-label="Collapse sidebar"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-        )}
+        {!collapsed ? (
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <button
+              type="button"
+              onClick={() => setCollapsed(true)}
+              className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+              aria-label="Collapse sidebar"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* Navigation */}
@@ -355,6 +365,9 @@ export function ChefSidebar() {
             >
               <ChevronRight className="w-4 h-4" />
             </button>
+
+            {/* Notification bell */}
+            <NotificationBell collapsed />
 
             {/* Dashboard */}
             {standaloneTop.map((item) => {
@@ -606,14 +619,17 @@ export function ChefMobileNav() {
             </div>
             <span className="font-semibold text-stone-900">ChefFlow</span>
           </Link>
-          <button
-            type="button"
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="p-2 rounded-lg text-stone-500 hover:bg-stone-100"
-            aria-label="Toggle menu"
-          >
-            {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <button
+              type="button"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 rounded-lg text-stone-500 hover:bg-stone-100"
+              aria-label="Toggle menu"
+            >
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
         </div>
       </header>
 

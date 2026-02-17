@@ -41,17 +41,17 @@ const TABS: TabConfig[] = [
   {
     mode: 'brain-dump',
     label: 'Brain Dump',
-    placeholder: `Paste anything - client info, recipes, notes, whatever is on your mind.\n\nExample:\nMichel - Belgian, wife Kelly, always comes with Evan and Lindsay. Evan picky no sauce. Nut allergy. Haverhill, 10 min away, enter through garage. $100/person, 4 guests, cash, tips well.\n\nDiane sauce - sear the steak first, set it aside. Sauté shallots and mushrooms in the same pan. Deglaze with cognac. Add beef stock and heavy cream...`
+    placeholder: `Paste anything - client info, recipes, notes, whatever is on your mind.\n\nExample:\nJohn - married to Sarah, usually brings 2 other couples. Nut allergy. 15 min away. $100/person, 4 guests.\n\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream...`
   },
   {
     mode: 'clients',
     label: 'Import Clients',
-    placeholder: `Paste info about one or more clients. Separate multiple clients with blank lines or dashes.\n\nExample:\nMichel - Belgian, wife Kelly, always comes with Evan and Lindsay. Evan picky no sauce. Nut allergy. Haverhill, 10 min away, enter through garage. $100/person, 4 guests, cash, tips well.\n\nMurr - real name Mary, husband Justin. Just had a baby. Wellesley and Needham. $180/person discounted from $200. No mushrooms.`
+    placeholder: `Paste info about one or more clients. Separate multiple clients with blank lines or dashes.\n\nExample:\nJohn - married to Sarah, usually brings 2 other couples. Nut allergy. 15 min away, enter through garage. $100/person, 4 guests, cash.\n\nJane - husband Tom. Just had a baby. Prefers weekends. $150/person. No mushrooms.`
   },
   {
     mode: 'recipe',
     label: 'Import Recipe',
-    placeholder: `Type or paste a recipe description.\n\nExample:\nDiane sauce - sear the steak first, set it aside. Sauté shallots and mushrooms in the same pan. Deglaze with cognac. Add beef stock and heavy cream. Splash of worcestershire, spoon of dijon. Let it reduce. Finish with the drippings from the steak, squeeze of lemon, and fresh parsley. Serves 4, makes about 2 cups.`
+    placeholder: `Type or paste a recipe description.\n\nExample:\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream. Splash of worcestershire, spoon of dijon. Let it reduce. Finish with butter, squeeze of lemon, and fresh parsley. Serves 4, makes about 2 cups.`
   },
   {
     mode: 'receipt',
