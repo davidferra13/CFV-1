@@ -12,6 +12,31 @@ export type Database = {
   __InternalSupabase: {
     PostgrestVersion: "14.1"
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       after_action_reviews: {
@@ -152,6 +177,101 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_messages: {
+        Row: {
+          attachment_content_type: string | null
+          attachment_filename: string | null
+          attachment_size_bytes: number | null
+          attachment_storage_path: string | null
+          body: string | null
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          link_description: string | null
+          link_image_url: string | null
+          link_title: string | null
+          link_url: string | null
+          message_type: Database["public"]["Enums"]["chat_message_type"]
+          referenced_event_id: string | null
+          sender_id: string
+          system_event_type: string | null
+          system_metadata: Json | null
+        }
+        Insert: {
+          attachment_content_type?: string | null
+          attachment_filename?: string | null
+          attachment_size_bytes?: number | null
+          attachment_storage_path?: string | null
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          link_description?: string | null
+          link_image_url?: string | null
+          link_title?: string | null
+          link_url?: string | null
+          message_type?: Database["public"]["Enums"]["chat_message_type"]
+          referenced_event_id?: string | null
+          sender_id: string
+          system_event_type?: string | null
+          system_metadata?: Json | null
+        }
+        Update: {
+          attachment_content_type?: string | null
+          attachment_filename?: string | null
+          attachment_size_bytes?: number | null
+          attachment_storage_path?: string | null
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          link_description?: string | null
+          link_image_url?: string | null
+          link_title?: string | null
+          link_url?: string | null
+          message_type?: Database["public"]["Enums"]["chat_message_type"]
+          referenced_event_id?: string | null
+          sender_id?: string
+          system_event_type?: string | null
+          system_metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_referenced_event_id_fkey"
+            columns: ["referenced_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "chat_messages_referenced_event_id_fkey"
+            columns: ["referenced_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "chat_messages_referenced_event_id_fkey"
+            columns: ["referenced_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -693,6 +813,119 @@ export type Database = {
           },
           {
             foreignKeyName: "components_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversation_participants: {
+        Row: {
+          auth_user_id: string
+          conversation_id: string
+          id: string
+          joined_at: string
+          last_read_at: string | null
+          notifications_muted: boolean
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Insert: {
+          auth_user_id: string
+          conversation_id: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          notifications_muted?: boolean
+          role: Database["public"]["Enums"]["user_role"]
+        }
+        Update: {
+          auth_user_id?: string
+          conversation_id?: string
+          id?: string
+          joined_at?: string
+          last_read_at?: string | null
+          notifications_muted?: boolean
+          role?: Database["public"]["Enums"]["user_role"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          context_type: Database["public"]["Enums"]["conversation_context_type"]
+          created_at: string
+          event_id: string | null
+          id: string
+          inquiry_id: string | null
+          last_message_at: string | null
+          last_message_preview: string | null
+          last_message_sender_id: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          context_type?: Database["public"]["Enums"]["conversation_context_type"]
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          inquiry_id?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_message_sender_id?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          context_type?: Database["public"]["Enums"]["conversation_context_type"]
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          inquiry_id?: string | null
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          last_message_sender_id?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "conversations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "conversations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -3334,9 +3567,22 @@ export type Database = {
         Args: { p_recipe_id: string }
         Returns: string[]
       }
+      get_total_unread_count: { Args: { p_user_id: string }; Returns: number }
+      get_unread_counts: {
+        Args: { p_user_id: string }
+        Returns: {
+          conversation_id: string
+          unread_count: number
+        }[]
+      }
+      is_conversation_participant: {
+        Args: { conv_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       cancellation_initiator: "chef" | "client" | "mutual"
+      chat_message_type: "text" | "image" | "link" | "event_ref" | "system"
       client_status: "active" | "dormant" | "repeat_ready" | "vip"
       component_category:
         | "sauce"
@@ -3352,6 +3598,7 @@ export type Database = {
         | "beverage"
         | "other"
       contact_method: "phone" | "email" | "text" | "instagram"
+      conversation_context_type: "standalone" | "inquiry" | "event"
       event_service_style:
         | "plated"
         | "family_style"
@@ -3375,6 +3622,7 @@ export type Database = {
         | "gas_mileage"
         | "equipment"
         | "supplies"
+        | "other"
         | "vehicle"
         | "venue_rental"
         | "subscriptions"
@@ -3385,7 +3633,6 @@ export type Database = {
         | "education"
         | "uniforms"
         | "utilities"
-        | "other"
       ingredient_category:
         | "protein"
         | "produce"
@@ -3631,9 +3878,13 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       cancellation_initiator: ["chef", "client", "mutual"],
+      chat_message_type: ["text", "image", "link", "event_ref", "system"],
       client_status: ["active", "dormant", "repeat_ready", "vip"],
       component_category: [
         "sauce",
@@ -3650,6 +3901,7 @@ export const Constants = {
         "other",
       ],
       contact_method: ["phone", "email", "text", "instagram"],
+      conversation_context_type: ["standalone", "inquiry", "event"],
       event_service_style: [
         "plated",
         "family_style",
@@ -3675,6 +3927,7 @@ export const Constants = {
         "gas_mileage",
         "equipment",
         "supplies",
+        "other",
         "vehicle",
         "venue_rental",
         "subscriptions",
@@ -3685,7 +3938,6 @@ export const Constants = {
         "education",
         "uniforms",
         "utilities",
-        "other",
       ],
       ingredient_category: [
         "protein",
