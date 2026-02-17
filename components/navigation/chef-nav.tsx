@@ -43,6 +43,7 @@ type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavItem[] 
 const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/chat', label: 'Messages', icon: MessageCircle },
+  { href: '/schedule', label: 'Calendar', icon: CalendarDays },
   { href: '/queue', label: 'Queue', icon: ListChecks },
   { href: '/network', label: 'Network', icon: Handshake },
 ]
@@ -57,7 +58,6 @@ const navGroups: NavGroup[] = [
       { href: '/inquiries', label: 'Inquiries', icon: Inbox },
       { href: '/quotes', label: 'Quotes', icon: FileText },
       { href: '/events', label: 'Events', icon: UtensilsCrossed },
-      { href: '/schedule', label: 'Schedule', icon: CalendarDays },
     ],
   },
   {
