@@ -232,7 +232,7 @@ function SignUpForm() {
                 label="Business Name"
                 value={chefFormData.business_name}
                 onChange={(e) => setChefFormData({ ...chefFormData, business_name: e.target.value })}
-                helperText="Optional — you can add this later"
+                helperText="Optional - you can add this later"
               />
 
               <Input

@@ -59,7 +59,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
         id: e.id,
         type: 'event',
         title: e.occasion || `Event ${e.event_date}`,
-        snippet: `${e.event_date} — ${e.status}`,
+        snippet: `${e.event_date} - ${e.status}`,
         url: `/events/${e.id}`,
         metadata: { badge: e.status },
       })
@@ -80,7 +80,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
         id: i.id,
         type: 'inquiry',
         title: i.confirmed_occasion || 'Inquiry',
-        snippet: `${i.confirmed_date || 'No date'} — ${i.status}`,
+        snippet: `${i.confirmed_date || 'No date'} - ${i.status}`,
         url: `/inquiries/${i.id}`,
         metadata: { badge: i.status },
       })

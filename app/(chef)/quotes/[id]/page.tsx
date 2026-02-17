@@ -38,7 +38,7 @@ export default async function QuoteDetailPage({
           </div>
           <p className="text-stone-600 mt-1">
             {quote.client?.full_name || 'Unknown Client'}
-            {quote.client?.email && ` — ${quote.client.email}`}
+            {quote.client?.email && ` - ${quote.client.email}`}
           </p>
         </div>
         <Link href="/quotes">
@@ -103,7 +103,7 @@ export default async function QuoteDetailPage({
               <dd className="text-sm mt-1">
                 {quote.deposit_required ? (
                   <span className="text-stone-900">
-                    Yes — {quote.deposit_amount_cents ? formatCurrency(quote.deposit_amount_cents) : 'Amount TBD'}
+                    Yes - {quote.deposit_amount_cents ? formatCurrency(quote.deposit_amount_cents) : 'Amount TBD'}
                     {quote.deposit_percentage && ` (${quote.deposit_percentage}%)`}
                   </span>
                 ) : (
@@ -164,7 +164,7 @@ export default async function QuoteDetailPage({
                 <div className="border rounded-lg p-3 hover:bg-stone-50 transition-colors">
                   <p className="text-sm font-medium text-stone-900">Inquiry</p>
                   <p className="text-sm text-stone-600">
-                    {quote.inquiry.confirmed_occasion || 'Untitled'} — {quote.inquiry.status}
+                    {quote.inquiry.confirmed_occasion || 'Untitled'} - {quote.inquiry.status}
                   </p>
                 </div>
               </Link>
@@ -175,7 +175,7 @@ export default async function QuoteDetailPage({
                   <p className="text-sm font-medium text-stone-900">Event</p>
                   <p className="text-sm text-stone-600">
                     {quote.event.occasion || 'Untitled'}
-                    {quote.event.event_date && ` — ${format(new Date(quote.event.event_date), 'MMM d, yyyy')}`}
+                    {quote.event.event_date && ` - ${format(new Date(quote.event.event_date), 'MMM d, yyyy')}`}
                   </p>
                 </div>
               </Link>
@@ -200,7 +200,7 @@ export default async function QuoteDetailPage({
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Internal Notes</h2>
           <p className="text-sm text-stone-700 whitespace-pre-wrap">{quote.internal_notes}</p>
-          <p className="text-xs text-stone-400 mt-2">Chef eyes only — not visible to client</p>
+          <p className="text-xs text-stone-400 mt-2">Chef eyes only - not visible to client</p>
         </Card>
       )}
 

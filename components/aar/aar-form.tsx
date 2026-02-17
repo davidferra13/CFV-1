@@ -294,7 +294,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           />
 
           <Textarea
-            label="Menu notes — what did the client love?"
+            label="Menu notes - what did the client love?"
             placeholder="Which dishes landed, which didn't, any modifications..."
             value={menuNotes}
             onChange={(e) => setMenuNotes(e.target.value)}
@@ -302,7 +302,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           />
 
           <Textarea
-            label="Client notes — anything to remember?"
+            label="Client notes - anything to remember?"
             placeholder="Preferences, feedback, relationship notes..."
             value={clientNotes}
             onChange={(e) => setClientNotes(e.target.value)}
@@ -310,7 +310,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
           />
 
           <Textarea
-            label="Site notes — anything new about the location?"
+            label="Site notes - anything new about the location?"
             placeholder="Kitchen issues, parking, access changes..."
             value={siteNotes}
             onChange={(e) => setSiteNotes(e.target.value)}

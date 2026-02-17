@@ -557,7 +557,7 @@ export async function getBudgetGuardrail(eventId: string) {
   if (currentSpendCents > 0) {
     const spent = (currentSpendCents / 100).toFixed(0)
     const remaining = Math.max(0, remainingBudgetCents / 100)
-    message = `$${spent} spent of $${dollars} budget — $${remaining.toFixed(0)} remaining`
+    message = `$${spent} spent of $${dollars} budget - $${remaining.toFixed(0)} remaining`
   }
 
   return {

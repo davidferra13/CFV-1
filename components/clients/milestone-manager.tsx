@@ -92,7 +92,7 @@ export function MilestoneManager({
                   </div>
                   <p className="text-xs text-stone-500 mt-1">
                     {new Date(m.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    {m.notes && ` — ${m.notes}`}
+                    {m.notes && ` - ${m.notes}`}
                   </p>
                 </div>
                 <Button

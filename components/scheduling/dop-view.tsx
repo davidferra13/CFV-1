@@ -88,7 +88,7 @@ export function DOPView({ schedule }: { schedule: DOPSchedule }) {
       {schedule.isCompressed && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
           <p className="text-sm font-medium text-amber-900">
-            Compressed timeline — {schedule.leadTimeDays <= 0 ? 'same-day' : `${schedule.leadTimeDays} day${schedule.leadTimeDays === 1 ? '' : 's'}`} notice
+            Compressed timeline - {schedule.leadTimeDays <= 0 ? 'same-day' : `${schedule.leadTimeDays} day${schedule.leadTimeDays === 1 ? '' : 's'}`} notice
           </p>
           <p className="text-xs text-amber-700 mt-1">
             Standard day-before procedures may not apply. Shopping and prep run back to back.

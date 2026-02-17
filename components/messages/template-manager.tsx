@@ -169,7 +169,7 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="e.g. First response — new inquiry"
+                  placeholder="e.g. First response - new inquiry"
                   className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>

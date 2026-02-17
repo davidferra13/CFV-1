@@ -40,7 +40,7 @@ export function ChatImageUpload({ onUpload, onCancel }: ChatImageUploadProps) {
         <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-300 rounded-lg p-6 cursor-pointer hover:border-brand-400 transition-colors">
           <Upload className="w-8 h-8 text-stone-400 mb-2" />
           <span className="text-sm text-stone-500">Click to select an image</span>
-          <span className="text-xs text-stone-400 mt-1">JPEG, PNG, WebP, HEIC — max 10MB</span>
+          <span className="text-xs text-stone-400 mt-1">JPEG, PNG, WebP, HEIC - max 10MB</span>
           <input
             type="file"
             accept="image/jpeg,image/png,image/webp,image/heic,image/heif"

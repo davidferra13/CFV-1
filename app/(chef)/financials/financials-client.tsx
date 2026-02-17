@@ -331,17 +331,17 @@ export function FinancialsClient({
                             {formatCurrency(evt.revenueCents)}
                           </td>
                           <td className="px-4 py-3 text-sm text-right text-stone-900">
-                            {evt.expensesCents > 0 ? formatCurrency(evt.expensesCents) : '—'}
+                            {evt.expensesCents > 0 ? formatCurrency(evt.expensesCents) : '-'}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${evt.profitCents >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {evt.expensesCents > 0 ? formatCurrency(evt.profitCents) : '—'}
+                            {evt.expensesCents > 0 ? formatCurrency(evt.profitCents) : '-'}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
                             evt.profitMargin >= 60 ? 'text-green-600' :
                             evt.profitMargin >= 40 ? 'text-yellow-600' :
                             evt.profitMargin > 0 ? 'text-red-600' : 'text-stone-400'
                           }`}>
-                            {evt.expensesCents > 0 ? `${Math.round(evt.profitMargin)}%` : '—'}
+                            {evt.expensesCents > 0 ? `${Math.round(evt.profitMargin)}%` : '-'}
                           </td>
                         </tr>
                       ))}

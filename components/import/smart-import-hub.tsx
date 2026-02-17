@@ -41,17 +41,17 @@ const TABS: TabConfig[] = [
   {
     mode: 'brain-dump',
     label: 'Brain Dump',
-    placeholder: `Paste anything — client info, recipes, notes, whatever is on your mind.\n\nExample:\nMichel — Belgian, wife Kelly, always comes with Evan and Lindsay. Evan picky no sauce. Nut allergy. Haverhill, 10 min away, enter through garage. $100/person, 4 guests, cash, tips well.\n\nDiane sauce — sear the steak first, set it aside. Sauté shallots and mushrooms in the same pan. Deglaze with cognac. Add beef stock and heavy cream...`
+    placeholder: `Paste anything - client info, recipes, notes, whatever is on your mind.\n\nExample:\nMichel - Belgian, wife Kelly, always comes with Evan and Lindsay. Evan picky no sauce. Nut allergy. Haverhill, 10 min away, enter through garage. $100/person, 4 guests, cash, tips well.\n\nDiane sauce - sear the steak first, set it aside. Sauté shallots and mushrooms in the same pan. Deglaze with cognac. Add beef stock and heavy cream...`
   },
   {
     mode: 'clients',
     label: 'Import Clients',
-    placeholder: `Paste info about one or more clients. Separate multiple clients with blank lines or dashes.\n\nExample:\nMichel — Belgian, wife Kelly, always comes with Evan and Lindsay. Evan picky no sauce. Nut allergy. Haverhill, 10 min away, enter through garage. $100/person, 4 guests, cash, tips well.\n\nMurr — real name Mary, husband Justin. Just had a baby. Wellesley and Needham. $180/person discounted from $200. No mushrooms.`
+    placeholder: `Paste info about one or more clients. Separate multiple clients with blank lines or dashes.\n\nExample:\nMichel - Belgian, wife Kelly, always comes with Evan and Lindsay. Evan picky no sauce. Nut allergy. Haverhill, 10 min away, enter through garage. $100/person, 4 guests, cash, tips well.\n\nMurr - real name Mary, husband Justin. Just had a baby. Wellesley and Needham. $180/person discounted from $200. No mushrooms.`
   },
   {
     mode: 'recipe',
     label: 'Import Recipe',
-    placeholder: `Type or paste a recipe description.\n\nExample:\nDiane sauce — sear the steak first, set it aside. Sauté shallots and mushrooms in the same pan. Deglaze with cognac. Add beef stock and heavy cream. Splash of worcestershire, spoon of dijon. Let it reduce. Finish with the drippings from the steak, squeeze of lemon, and fresh parsley. Serves 4, makes about 2 cups.`
+    placeholder: `Type or paste a recipe description.\n\nExample:\nDiane sauce - sear the steak first, set it aside. Sauté shallots and mushrooms in the same pan. Deglaze with cognac. Add beef stock and heavy cream. Splash of worcestershire, spoon of dijon. Let it reduce. Finish with the drippings from the steak, squeeze of lemon, and fresh parsley. Serves 4, makes about 2 cups.`
   },
   {
     mode: 'receipt',
@@ -62,7 +62,7 @@ const TABS: TabConfig[] = [
   {
     mode: 'document',
     label: 'Import Document',
-    placeholder: `Paste a contract, policy, template, or any other document.\n\nExample:\nCancellation Policy — Events cancelled more than 7 days before the event date receive a full refund minus the deposit. Cancellations within 7 days forfeit the deposit. Same-day cancellations are charged 50% of the quoted price. Weather-related cancellations are handled on a case-by-case basis.`
+    placeholder: `Paste a contract, policy, template, or any other document.\n\nExample:\nCancellation Policy - Events cancelled more than 7 days before the event date receive a full refund minus the deposit. Cancellations within 7 days forfeit the deposit. Same-day cancellations are charged 50% of the quoted price. Weather-related cancellations are handled on a case-by-case basis.`
   },
   {
     mode: 'file-upload',
@@ -123,7 +123,7 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
 
   const eventOptions = events.map(e => ({
     value: e.id,
-    label: `${e.occasion || 'Untitled'} — ${e.event_date}${e.client ? ` (${e.client.full_name})` : ''}`,
+    label: `${e.occasion || 'Untitled'} - ${e.event_date}${e.client ? ` (${e.client.full_name})` : ''}`,
   }))
 
   const resetState = () => {
@@ -912,7 +912,7 @@ function FieldRow({ label, value, confidence }: {
         <span className="text-green-600 shrink-0" title="Explicitly stated">&#10003;</span>
       )}
       {confidence === 'inferred' && (
-        <span className="text-yellow-600 shrink-0" title="Inferred — please verify">?</span>
+        <span className="text-yellow-600 shrink-0" title="Inferred - please verify">?</span>
       )}
     </div>
   )
@@ -943,7 +943,7 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
 
       {hasAllergies && (
         <Alert variant="error" title="ALLERGY ALERT">
-          {client.allergies.join(', ')} — Please verify before saving.
+          {client.allergies.join(', ')} - Please verify before saving.
         </Alert>
       )}
 
@@ -990,10 +990,10 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
         <div className="space-y-2">
           <h4 className="text-sm font-medium text-stone-700">People</h4>
           {client.household_members.map((m, i) => (
-            <FieldRow key={`hm-${i}`} label={m.relationship || 'Household'} value={`${m.name}${m.notes ? ` — ${m.notes}` : ''}`} />
+            <FieldRow key={`hm-${i}`} label={m.relationship || 'Household'} value={`${m.name}${m.notes ? ` - ${m.notes}` : ''}`} />
           ))}
           {client.regular_guests.map((g, i) => (
-            <FieldRow key={`rg-${i}`} label="Regular Guest" value={`${g.name}${g.notes ? ` — ${g.notes}` : ''}`} />
+            <FieldRow key={`rg-${i}`} label="Regular Guest" value={`${g.name}${g.notes ? ` - ${g.notes}` : ''}`} />
           ))}
         </div>
       )}

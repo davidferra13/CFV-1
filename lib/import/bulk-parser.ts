@@ -50,6 +50,6 @@ export async function parseFile(
   return {
     records: [],
     headers: [],
-    errors: [`${type} parsing not yet supported — use CSV for now.`],
+    errors: [`${type} parsing not yet supported - use CSV for now.`],
   }
 }

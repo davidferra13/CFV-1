@@ -37,11 +37,11 @@ export default async function EventSchedulePage({
           </h1>
           <p className="text-stone-600 mt-1">
             {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy')}
-            {event.serve_time && ` — Serve at ${event.serve_time}`}
+            {event.serve_time && ` - Serve at ${event.serve_time}`}
           </p>
           <p className="text-sm text-stone-500 mt-1">
-            {event.client?.full_name} — {event.guest_count} guests
-            {event.location_city && ` — ${event.location_city}`}
+            {event.client?.full_name} - {event.guest_count} guests
+            {event.location_city && ` - ${event.location_city}`}
           </p>
         </div>
         <div className="flex gap-2">

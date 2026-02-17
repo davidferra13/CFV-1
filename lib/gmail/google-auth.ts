@@ -73,7 +73,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
   }
 
   if (!conn.refresh_token) {
-    throw new Error('No refresh token — please reconnect your Google account')
+    throw new Error('No refresh token - please reconnect your Google account')
   }
 
   // Check if token is still valid (with 5-minute buffer)

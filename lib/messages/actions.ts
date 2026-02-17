@@ -365,9 +365,9 @@ export async function getDefaultTemplates(): Promise<Array<{
 }>> {
   return [
     {
-      name: 'First response — new inquiry',
+      name: 'First response - new inquiry',
       template_text:
-        "Thanks so much for reaching out! I'd love to cook for you. Can you tell me a bit more about what you're thinking — date, number of guests, any dietary restrictions or allergies?",
+        "Thanks so much for reaching out! I'd love to cook for you. Can you tell me a bit more about what you're thinking - date, number of guests, any dietary restrictions or allergies?",
       category: 'first_response',
     },
     {
@@ -403,7 +403,7 @@ export async function getDefaultTemplates(): Promise<Array<{
     {
       name: 'Thank you + review request',
       template_text:
-        "Thank you so much for having me last night! I had a great time cooking for you. If you have a moment, I'd really appreciate a review — [link]",
+        "Thank you so much for having me last night! I had a great time cooking for you. If you have a moment, I'd really appreciate a review - [link]",
       category: 'thank_you',
     },
   ]

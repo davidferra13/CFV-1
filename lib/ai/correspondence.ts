@@ -21,7 +21,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
   if (iqErr || !inquiry) throw new Error('Inquiry not found')
 
   // Fetch client if linked
-  let clientLedger = 'New client — no prior history.'
+  let clientLedger = 'New client - no prior history.'
   if (inquiry.client_id) {
     const { data: client } = await supabase
       .from('clients')
@@ -46,7 +46,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
       .neq('status', 'cancelled')
 
     calendarContext = conflicts && conflicts.length > 0
-      ? `Date ${inquiry.confirmed_date} has ${conflicts.length} existing event(s) — may be UNAVAILABLE.`
+      ? `Date ${inquiry.confirmed_date} has ${conflicts.length} existing event(s) - may be UNAVAILABLE.`
       : `Date ${inquiry.confirmed_date} appears to be OPEN.`
   }
 

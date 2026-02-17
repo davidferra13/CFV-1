@@ -195,7 +195,7 @@ function stage6_groceryList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
   if (f.menuGravityStable && !f.guestCountStable) {
     items.push(item(ctx, 'grocery_list', 'grocery_phase_a', 'optional_early', 'low',
       'Draft grocery skeleton (Phase A)',
-      'Menu shape is stable. Start a structural grocery list — categories and staples. Quantities come later.'))
+      'Menu shape is stable. Start a structural grocery list - categories and staples. Quantities come later.'))
   }
 
   // Phase B — Quantified (guest count stabilized)
@@ -231,7 +231,7 @@ function stage7_prepList(ctx: EventContext, f: ConfirmedFacts): WorkItem[] {
   if (f.isLegallyActionable && !f.dateWithin24Hours) {
     items.push(item(ctx, 'prep_list', 'prep_early_items', 'preparable', 'normal',
       'Begin early prep items',
-      'Event is financially committed. Start items that hold well — stocks, marinades, sauces.'))
+      'Event is financially committed. Start items that hold well - stocks, marinades, sauces.'))
   }
 
   // Day-of prep becomes fragile

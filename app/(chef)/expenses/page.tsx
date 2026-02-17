@@ -188,7 +188,7 @@ export default async function ExpensesPage({
                           {event.occasion || 'Untitled'}
                         </Link>
                       ) : (
-                        <span className="text-stone-400">—</span>
+                        <span className="text-stone-400">-</span>
                       )}
                     </TableCell>
                     <TableCell>

@@ -197,7 +197,7 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
           onClose={() => setSmartFillOpen(false)}
           onFill={handleSmartFill}
           parseFn={parseInquiryFromText}
-          title="Smart Fill — Paste Text"
+          title="Smart Fill - Paste Text"
           placeholder={"Paste a text thread, email, DM, or notes about this inquiry...\n\nExample:\n\"Hi! I'm Sarah, looking for a private chef for our anniversary dinner on March 15th. We'll be 8 people at our home in Wellesley. Budget around $200/person. My husband has a shellfish allergy. Found you on Instagram!\""}
         />
 
@@ -221,7 +221,7 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
             options={clientOptions}
             value={selectedClientId}
             onChange={(e) => handleClientSelect(e.target.value)}
-            helperText="Optional — select if this is a known client"
+            helperText="Optional - select if this is a known client"
           />
 
           <Input

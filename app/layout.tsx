@@ -11,7 +11,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: 'ChefFlow',
-  description: 'Ops for Artists — Private chef business operating system',
+  description: 'Ops for Artists - Private chef business operating system',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: 'ChefFlow',
-    description: 'Ops for Artists — Private chef business operating system',
+    description: 'Ops for Artists - Private chef business operating system',
     images: [{ url: '/og-image.svg', width: 1200, height: 630 }],
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),

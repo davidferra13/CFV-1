@@ -129,7 +129,7 @@ export default async function ChefDashboard() {
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold text-stone-900">Dashboard</h1>
-          <p className="text-stone-600 mt-1">Your command center — everything at a glance.</p>
+          <p className="text-stone-600 mt-1">Your command center - everything at a glance.</p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -285,13 +285,13 @@ export default async function ChefDashboard() {
                   {aarStats.trendDirection === 'improving' && (
                     <>
                       <TrendingUp className="h-4 w-4 text-green-600" />
-                      <span className="text-green-600">Trending up — your dinners are getting calmer</span>
+                      <span className="text-green-600">Trending up - your dinners are getting calmer</span>
                     </>
                   )}
                   {aarStats.trendDirection === 'declining' && (
                     <>
                       <TrendingDown className="h-4 w-4 text-amber-600" />
-                      <span className="text-amber-600">Trending down — review your recent prep patterns</span>
+                      <span className="text-amber-600">Trending down - review your recent prep patterns</span>
                     </>
                   )}
                   {aarStats.trendDirection === 'neutral' && (

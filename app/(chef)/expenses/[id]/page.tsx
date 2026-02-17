@@ -49,7 +49,7 @@ export default async function ExpenseDetailPage({
           <h1 className="text-3xl font-bold text-stone-900">{expense.description}</h1>
           <p className="text-stone-600 mt-1">
             {format(new Date(expense.expense_date), 'EEEE, MMMM d, yyyy')}
-            {expense.vendor_name && ` — ${expense.vendor_name}`}
+            {expense.vendor_name && ` - ${expense.vendor_name}`}
           </p>
         </div>
         <div className="flex gap-2">
@@ -105,7 +105,7 @@ export default async function ExpenseDetailPage({
             <dt className="text-sm font-medium text-stone-500">Event</dt>
             <dd className="text-sm mt-1">
               <Link href={`/events/${expense.event_id}`} className="text-brand-600 hover:underline">
-                {event.occasion || 'Untitled'} — {format(new Date(event.event_date), 'MMM d, yyyy')}
+                {event.occasion || 'Untitled'} - {format(new Date(event.event_date), 'MMM d, yyyy')}
               </Link>
               {event.client && (
                 <span className="text-stone-500 ml-1">({event.client.full_name})</span>

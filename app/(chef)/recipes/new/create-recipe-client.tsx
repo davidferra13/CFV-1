@@ -261,7 +261,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
             <Textarea
               value={rawText}
               onChange={(e) => setRawText(e.target.value)}
-              placeholder="Diane sauce — sear the steak, set aside. Saut&eacute; shallots and mushrooms. Deglaze with cognac. Add beef stock, cream, worcestershire, dijon. Reduce. Finish with steak drippings, lemon, parsley. Makes about 2 cups."
+              placeholder="Diane sauce - sear the steak, set aside. Saut&eacute; shallots and mushrooms. Deglaze with cognac. Add beef stock, cream, worcestershire, dijon. Reduce. Finish with steak drippings, lemon, parsley. Makes about 2 cups."
               rows={8}
               disabled={!aiConfigured || loading}
             />
@@ -358,7 +358,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                 <Textarea
                   value={method}
                   onChange={(e) => setMethod(e.target.value)}
-                  placeholder="Concise, outcome-oriented. The chef knows how to cook — just capture what to do."
+                  placeholder="Concise, outcome-oriented. The chef knows how to cook - just capture what to do."
                   rows={4}
                 />
               </div>

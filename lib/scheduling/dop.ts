@@ -70,7 +70,7 @@ export function getDOPSchedule(
   const eventDateStr = event.event_date
 
   if (isCompressed) {
-    overrides.push('Compressed timeline — less than 48 hours until event.')
+    overrides.push('Compressed timeline - less than 48 hours until event.')
   }
 
   // ---- AT BOOKING ----
@@ -135,7 +135,7 @@ export function getDOPSchedule(
   dayBeforeTasks.push(
     task(
       'early_prep', 'Complete early prep items',
-      'Doughs, marinades, purees, sauces — anything that holds overnight.',
+      'Doughs, marinades, purees, sauces - anything that holds overnight.',
       'prep',
       false, // No direct flag for this — chef tracks mentally
       null,
@@ -189,7 +189,7 @@ export function getDOPSchedule(
       task(
         'morning_shopping', 'Grocery shopping',
         isCompressed
-          ? 'Compressed timeline — shopping and prep run back to back.'
+          ? 'Compressed timeline - shopping and prep run back to back.'
           : 'Shopping scheduled for morning of event.',
         'shopping',
         event.shopping_completed_at != null,

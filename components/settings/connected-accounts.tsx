@@ -183,7 +183,7 @@ export function ConnectedAccounts({ connection, recentSyncs }: ConnectedAccounts
                         <span className="text-stone-600 truncate">
                           {entry.from_address || 'unknown'}{' '}
                           {entry.subject && (
-                            <span className="text-stone-400">— {entry.subject}</span>
+                            <span className="text-stone-400">- {entry.subject}</span>
                           )}
                         </span>
                       </div>

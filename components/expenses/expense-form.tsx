@@ -92,7 +92,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
 
   const eventOptions = events.map(e => ({
     value: e.id,
-    label: `${e.occasion || 'Untitled'} — ${format(new Date(e.event_date), 'MMM d')}${e.client ? ` (${e.client.full_name})` : ''}`,
+    label: `${e.occasion || 'Untitled'} - ${format(new Date(e.event_date), 'MMM d')}${e.client ? ` (${e.client.full_name})` : ''}`,
   }))
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -522,7 +522,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                 {/* Line Items */}
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-stone-700">
-                    {lineItems.length} items — mark each as business or personal
+                    {lineItems.length} items - mark each as business or personal
                   </p>
                   <div className="max-h-96 overflow-y-auto space-y-2">
                     {lineItems.map((item, idx) => (

@@ -224,7 +224,7 @@ export function generateTimeline(
 
   if (startPrepMinutes < wakeMinutesTarget) {
     warnings.push(
-      'Prep needs to start before wake time — this timeline is very tight.'
+      'Prep needs to start before wake time - this timeline is very tight.'
     )
   }
 

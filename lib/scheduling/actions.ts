@@ -288,7 +288,7 @@ export async function getWeekSchedule(weekOffset: number = 0): Promise<WeekSched
 
   if (eventDays.length >= 4) {
     warnings.push(
-      `${eventDays.length} events this week — heavy schedule. Plan admin time carefully.`
+      `${eventDays.length} events this week - heavy schedule. Plan admin time carefully.`
     )
   }
 
