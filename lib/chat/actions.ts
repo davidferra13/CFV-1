@@ -459,7 +459,7 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
   const insertData: {
     conversation_id: string
     sender_id: string
-    message_type: string
+    message_type: 'text' | 'image' | 'link' | 'event_ref' | 'system' | 'file'
     body: string | null
     link_url?: string
     referenced_event_id?: string
