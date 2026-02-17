@@ -7,12 +7,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 // Routes that require chef role (route groups don't create URL segments)
 const chefPaths = [
-  '/dashboard', '/clients', '/events', '/financials', '/menus',
+  '/dashboard', '/queue', '/clients', '/events', '/financials', '/menus',
   '/inquiries', '/quotes', '/expenses', '/schedule', '/settings',
-  '/aar', '/recipes', '/loyalty', '/import'
+  '/aar', '/recipes', '/loyalty', '/import', '/chat'
 ]
 // Routes that require client role
-const clientPaths = ['/my-events', '/my-quotes']
+const clientPaths = ['/my-events', '/my-quotes', '/my-chat']
 // Paths that skip all auth processing
 const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized']
 
