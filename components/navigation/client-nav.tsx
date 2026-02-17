@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState } from 'react'
-import { Calendar, FileText, LogOut, Menu, X } from 'lucide-react'
+import { Calendar, FileText, LogOut, Menu, MessageCircle, X } from 'lucide-react'
 
 interface ClientNavProps {
   userEmail: string
@@ -14,6 +14,7 @@ interface ClientNavProps {
 const navItems = [
   { href: '/my-events', label: 'My Events', icon: Calendar },
   { href: '/my-quotes', label: 'My Quotes', icon: FileText },
+  { href: '/my-chat', label: 'Messages', icon: MessageCircle },
 ]
 
 export function ClientNav({ userEmail }: ClientNavProps) {

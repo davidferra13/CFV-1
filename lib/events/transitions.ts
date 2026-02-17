@@ -174,6 +174,15 @@ export async function transitionEvent({
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/my-events/${eventId}`)
+
+  // Post system message to linked chat conversation (non-blocking)
+  try {
+    const { postEventSystemMessage } = await import('@/lib/chat/system-messages')
+    await postEventSystemMessage(eventId, fromStatus, toStatus)
+  } catch (err) {
+    console.error('[transitionEvent] System message post failed (non-blocking):', err)
+  }
+
   return { success: true, fromStatus, toStatus }
 }
 

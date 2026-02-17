@@ -28,6 +28,7 @@ import {
   ChevronDown,
   Gift,
   ListChecks,
+  MessageCircle,
 } from 'lucide-react'
 
 // ─── Types ──────────────────────────────────────────
@@ -37,6 +38,7 @@ type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavItem[] 
 // ─── Navigation Config ──────────────────────────────
 const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/chat', label: 'Messages', icon: MessageCircle },
   { href: '/queue', label: 'Queue', icon: ListChecks },
 ]
 
@@ -487,7 +489,7 @@ export function ChefSidebar() {
 // ─── Mobile nav items (bottom tab bar) ──────────────
 const mobileTabItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-  { href: '/inquiries', label: 'Inquiries', icon: Inbox },
+  { href: '/chat', label: 'Chat', icon: MessageCircle },
   { href: '/events', label: 'Events', icon: UtensilsCrossed },
   { href: '/clients', label: 'Clients', icon: Users },
 ]
