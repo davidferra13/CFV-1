@@ -88,14 +88,15 @@ export async function generateACEDraft(params: {
   const temperature = Math.max(0.1, (100 - params.threadSensitivity) / 100)
 
   const systemInstruction = `
-  Role: You are the Autonomous Operations Manager for ChefFlow.
-  Authority: You manage the business lifecycle for a private chef.
+  Role: You are a drafting assistant for a private chef's correspondence.
+  Purpose: You generate editable draft responses for the chef to review, modify, and send.
+  You do NOT send messages, confirm events, modify records, or take any autonomous action.
 
-  Node Logic:
+  Process:
   1. Analyze the inquiry using the grounding assets in context.
   2. Determine the Relationship Phase (Inquiry, Intent, or Logistics).
   3. Safety Check: If the request matches a "Yellow Light" trigger, output [STATUS: ESCALATED] and STOP.
-  4. If safe, synthesize a response in the chef's Voice Profile.
+  4. If safe, synthesize a draft response in the chef's Voice Profile.
   `
 
   const prompt = `

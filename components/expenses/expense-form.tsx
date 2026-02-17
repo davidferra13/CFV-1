@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { createExpense, type CreateExpenseInput } from '@/lib/expenses/actions'
 import { EXPENSE_CATEGORY_GROUPS } from '@/lib/constants/expense-categories'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
@@ -479,8 +480,14 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
 
               {/* Right: Extracted Data */}
               <Card className="p-4 space-y-4">
+                <Alert variant="info" title="AI-Extracted Data">
+                  These line items were extracted by AI. Please review amounts and categories before saving.
+                </Alert>
                 <div className="flex justify-between items-center">
-                  <h3 className="text-sm font-medium text-stone-500">Extracted Data</h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-medium text-stone-500">Extracted Data</h3>
+                    <Badge variant="info">AI-Extracted</Badge>
+                  </div>
                   <span className={`text-xs px-2 py-0.5 rounded font-medium ${
                     extraction.confidence === 'high' ? 'bg-green-100 text-green-800' :
                     extraction.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :

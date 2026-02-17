@@ -109,6 +109,9 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
   const [receiptCategory, setReceiptCategory] = useState('groceries')
   const [receiptPaymentMethod, setReceiptPaymentMethod] = useState('card')
 
+  // AI review confirmation
+  const [aiReviewConfirmed, setAiReviewConfirmed] = useState(false)
+
   // Import results
   const [importResult, setImportResult] = useState<BrainDumpImportResult | null>(null)
   const [clientImportCount, setClientImportCount] = useState(0)
@@ -139,6 +142,7 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
     setRecipeImportCount(0)
     setExpenseImportCount(0)
     setDocumentImportCount(0)
+    setAiReviewConfirmed(false)
     setUploadedFile(null)
     setFilePreview(null)
     setSelectedEventId('')
@@ -416,8 +420,14 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
       {/* REVIEW PHASE */}
       {phase === 'review' && (
         <div className="space-y-6">
+          {/* AI Extraction Notice */}
+          <Alert variant="info" title="AI-Extracted Data">
+            The content below was extracted by AI. Please review carefully before saving.
+          </Alert>
+
           {/* Parse Summary */}
           <div className="flex items-center gap-3">
+            <Badge variant="info">AI-Extracted</Badge>
             <ConfidenceBadge confidence={parseConfidence} />
             <span className="text-sm text-stone-600">
               {mode === 'file-upload' && visionResult && (
@@ -516,10 +526,25 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
             </div>
           )}
 
+          {/* AI Review Confirmation */}
+          {(parsedClients.length > 0 || parsedRecipes.length > 0 || parsedReceipt || parsedDocument) && (
+            <label className="flex items-center gap-3 pt-4 border-t cursor-pointer">
+              <input
+                type="checkbox"
+                checked={aiReviewConfirmed}
+                onChange={(e) => setAiReviewConfirmed(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+              />
+              <span className="text-sm text-stone-700">
+                I have reviewed the AI-extracted data above and confirm it is accurate
+              </span>
+            </label>
+          )}
+
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4 border-t">
+          <div className="flex gap-3 pt-4">
             {(parsedClients.length > 0 || parsedRecipes.length > 0 || parsedReceipt || parsedDocument) && (
-              <Button onClick={handleSaveAll}>
+              <Button onClick={handleSaveAll} disabled={!aiReviewConfirmed}>
                 {parsedReceipt ? 'Save as Expense' :
                  parsedDocument ? 'Save Document' :
                  `Save All (${parsedClients.length + parsedRecipes.length} record${parsedClients.length + parsedRecipes.length !== 1 ? 's' : ''})`}
@@ -691,9 +716,12 @@ function ReceiptReviewCard({ receipt, eventOptions, selectedEventId, onEventChan
   return (
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-stone-900">
-          {receipt.storeName || 'Receipt'}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-stone-900">
+            {receipt.storeName || 'Receipt'}
+          </h3>
+          <Badge variant="info">AI-Extracted</Badge>
+        </div>
         <div className="text-sm text-stone-600">
           {receipt.purchaseDate && <span>{receipt.purchaseDate}</span>}
           {receipt.purchaseTime && <span> at {receipt.purchaseTime}</span>}
@@ -797,7 +825,10 @@ function DocumentReviewCard({ document }: { document: ParsedDocument }) {
   return (
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-stone-900">{document.title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-stone-900">{document.title}</h3>
+          <Badge variant="info">AI-Extracted</Badge>
+        </div>
         <Badge>{document.document_type}</Badge>
       </div>
 
@@ -900,7 +931,10 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
   return (
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-stone-900">{client.full_name}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold text-stone-900">{client.full_name}</h3>
+          <Badge variant="info">AI-Extracted</Badge>
+        </div>
         <div className="flex gap-2">
           <Button size="sm" onClick={onSave}>Save</Button>
           <Button size="sm" variant="secondary" onClick={onDiscard}>Discard</Button>
@@ -1009,6 +1043,7 @@ function RecipeReviewCard({ recipe, onDiscard }: {
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold text-stone-900">{recipe.name}</h3>
           <Badge>{recipe.category}</Badge>
+          <Badge variant="info">AI-Extracted</Badge>
         </div>
         <Button size="sm" variant="secondary" onClick={onDiscard}>Discard</Button>
       </div>
