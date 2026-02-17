@@ -1,6 +1,9 @@
 // Chef Menus List - Protected by layout
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 import { getMenus } from '@/lib/menus/actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

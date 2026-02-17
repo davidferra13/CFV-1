@@ -4,7 +4,7 @@
 
 'use server'
 
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 
 const MODEL = 'gemini-2.5-flash'
@@ -40,15 +40,13 @@ export async function parseWithAI<T>(
     throw new Error('GEMINI_API_KEY is not configured. Set it in your .env.local file to enable AI import.')
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
+  const ai = new GoogleGenAI({ apiKey })
+  const response = await ai.models.generateContent({
     model: MODEL,
-    systemInstruction: systemPrompt,
+    contents: userContent,
+    config: { systemInstruction: systemPrompt },
   })
-
-  const result = await model.generateContent(userContent)
-  const response = result.response
-  const rawText = response.text()
+  const rawText = response.text
 
   if (!rawText) {
     throw new Error('AI returned no text response')

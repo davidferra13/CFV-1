@@ -1,6 +1,9 @@
 // Client Quote List — View all quotes sent to this client
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'My Quotes - ChefFlow' }
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientQuotes } from '@/lib/quotes/client-actions'
 import { Card } from '@/components/ui/card'

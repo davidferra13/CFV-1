@@ -1,10 +1,13 @@
 // Chef Inquiry Pipeline — Unified inbox for all channels
 // Tabs + list view (Option B from spec — simpler and effective)
 
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getInquiries } from '@/lib/inquiries/actions'
+
+export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
 import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

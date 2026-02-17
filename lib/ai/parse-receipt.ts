@@ -3,7 +3,7 @@
 
 'use server'
 
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 
 const MODEL = 'gemini-2.5-flash'
@@ -115,24 +115,21 @@ export async function parseReceiptImage(
     throw new Error('GEMINI_API_KEY is not configured. Receipt extraction requires a Gemini API key.')
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
+  const ai = new GoogleGenAI({ apiKey })
+  const response = await ai.models.generateContent({
     model: MODEL,
-    systemInstruction: RECEIPT_SYSTEM_PROMPT,
-  })
-
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType: mediaType,
-        data: imageBase64,
+    contents: [
+      {
+        inlineData: {
+          mimeType: mediaType,
+          data: imageBase64,
+        },
       },
-    },
-    { text: 'Extract all data from this receipt. Return only valid JSON.' },
-  ])
-
-  const response = result.response
-  const rawText = response.text()
+      { text: 'Extract all data from this receipt. Return only valid JSON.' },
+    ],
+    config: { systemInstruction: RECEIPT_SYSTEM_PROMPT },
+  })
+  const rawText = response.text
 
   if (!rawText) {
     throw new Error('No text response from AI')

@@ -1,6 +1,7 @@
 // @ts-nocheck
 // TODO: This file references columns (total_price, etc.) that don't match the current schema.
 // Suppress type checking until revenue engine is aligned with schema.
+// DEFERRED: Revenue analytics engine. Requires menu_items table and total_price column (Phase 2 schema). Do not remove - will be enabled when schema is extended.
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'

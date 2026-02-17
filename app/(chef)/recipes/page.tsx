@@ -2,7 +2,10 @@
 // Browse, search, and filter the chef's recipe collection
 // Seasonal banner at top shows active season's creative thesis and micro-window alerts.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Recipes - ChefFlow' }
 import { getRecipes } from '@/lib/recipes/actions'
 import { getActivePalette } from '@/lib/seasonal/actions'
 import { getActiveMicroWindows, getEndingMicroWindows } from '@/lib/seasonal/helpers'

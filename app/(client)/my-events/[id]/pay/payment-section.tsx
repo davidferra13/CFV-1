@@ -19,11 +19,14 @@ export default function PaymentSection({
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [retryCount, setRetryCount] = useState(0)
 
   useEffect(() => {
-    // Create payment intent on mount
+    // Create payment intent on mount (or on retry)
     async function initPayment() {
       try {
+        setLoading(true)
+        setError(null)
         const result = await createPaymentIntent(eventId)
         setClientSecret(result.clientSecret!)
         setLoading(false)
@@ -34,7 +37,7 @@ export default function PaymentSection({
     }
 
     initPayment()
-  }, [eventId])
+  }, [eventId, retryCount])
 
   const handleSuccess = () => {
     // Payment succeeded, redirect to event detail
@@ -57,9 +60,18 @@ export default function PaymentSection({
 
   if (error) {
     return (
-      <Alert variant="error">
-        {error}
-      </Alert>
+      <div className="space-y-4">
+        <Alert variant="error">
+          {error}
+        </Alert>
+        <button
+          type="button"
+          onClick={() => setRetryCount(c => c + 1)}
+          className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors text-sm font-medium"
+        >
+          Try Again
+        </button>
+      </div>
     )
   }
 

@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { exportLedgerCSV } from '@/lib/ledger/actions'
+import { exportAllEventsCSV } from '@/lib/exports/actions'
 
 type FinancialSummary = {
   totalRevenueCents: number
@@ -99,6 +100,7 @@ export function FinancialsClient({
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [exporting, setExporting] = useState(false)
+  const [exportingAll, setExportingAll] = useState(false)
 
   // Filter entries
   const filteredEntries = useMemo(() => {
@@ -120,6 +122,9 @@ export function FinancialsClient({
 
     return filtered
   }, [ledgerEntries, filterType, startDate, endDate])
+
+  // Check if any filter is active
+  const isFiltered = filterType !== 'all' || startDate !== '' || endDate !== ''
 
   // Calculate running balance
   const entriesWithBalance = useMemo(() => {
@@ -157,11 +162,39 @@ export function FinancialsClient({
     }
   }
 
+  const handleExportAllEvents = async () => {
+    setExportingAll(true)
+    try {
+      const year = monthlySummary?.year ?? new Date().getFullYear()
+      const { csv, filename } = await exportAllEventsCSV(year)
+
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export failed:', err)
+      alert('Failed to export all events CSV')
+    } finally {
+      setExportingAll(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-stone-900">Financials</h1>
-        <p className="text-stone-600 mt-1">View your financial performance and ledger</p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-900">Financials</h1>
+          <p className="text-stone-600 mt-1">View your financial performance and ledger</p>
+        </div>
+        <Button onClick={handleExportAllEvents} disabled={exportingAll} variant="secondary">
+          {exportingAll ? 'Exporting...' : 'Export All Events'}
+        </Button>
       </div>
 
       {/* Summary Cards */}
@@ -376,6 +409,16 @@ export function FinancialsClient({
             </div>
           </div>
 
+          {/* Filtered balance warning */}
+          {isFiltered && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-800">
+              <svg className="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+              Balance shown reflects filtered entries only
+            </div>
+          )}
+
           {/* Table */}
           {entriesWithBalance.length === 0 ? (
             <div className="text-center py-8 text-stone-500">
@@ -400,6 +443,11 @@ export function FinancialsClient({
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase tracking-wider">
                       Balance
+                      {isFiltered && (
+                        <span className="block text-[10px] font-normal normal-case text-amber-600 mt-0.5">
+                          Filtered view
+                        </span>
+                      )}
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">
                       Description

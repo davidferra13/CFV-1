@@ -1,9 +1,12 @@
 // Chef Expense Overview Page
 // Shows expense summary and filterable list
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getExpenses } from '@/lib/expenses/actions'
+
+export const metadata: Metadata = { title: 'Expenses - ChefFlow' }
 import { getMonthlyFinancialSummary } from '@/lib/expenses/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -14,6 +17,7 @@ import {
   getCategoryLabel,
   getCategoryColor,
 } from '@/lib/constants/expense-categories'
+import { ExpensesExportButton } from '@/components/exports/expenses-export-button'
 import { format } from 'date-fns'
 
 export default async function ExpensesPage({
@@ -69,9 +73,16 @@ export default async function ExpensesPage({
       {/* Header */}
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-stone-900">Expenses</h1>
-        <Link href="/expenses/new">
-          <Button>Add Expense</Button>
-        </Link>
+        <div className="flex gap-2">
+          <ExpensesExportButton filters={{
+            category: searchParams.category,
+            event_id: searchParams.event_id,
+            is_business: searchParams.business === 'true' ? true : searchParams.business === 'false' ? false : undefined,
+          }} />
+          <Link href="/expenses/new">
+            <Button>Add Expense</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Summary Cards */}

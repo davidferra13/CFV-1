@@ -27,6 +27,7 @@ import {
   ChevronRight,
   ChevronDown,
   Gift,
+  ListChecks,
 } from 'lucide-react'
 
 // ─── Types ──────────────────────────────────────────
@@ -36,6 +37,7 @@ type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavItem[] 
 // ─── Navigation Config ──────────────────────────────
 const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/queue', label: 'Queue', icon: ListChecks },
 ]
 
 const navGroups: NavGroup[] = [

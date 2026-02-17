@@ -1,20 +1,20 @@
 // Chef Dashboard — Complete Command Center
-// Answers: "What needs my attention right now?"
-// Sections: Today → Week → Alerts → Prep → Outreach → Work Surface → Closure → Quality → Business
+// Answers: "What should I do right now?"
+// Sections: Today → Next Action → Week → Queue → Prep → Quality → Business
 // Protected by layout via requireChef()
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { getDashboardWorkSurface } from '@/lib/workflow/actions'
+import { getPriorityQueue } from '@/lib/queue/actions'
+
+export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 import { getClients } from '@/lib/clients/actions'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { getInquiryStats } from '@/lib/inquiries/actions'
-import { getEventsNeedingClosure } from '@/lib/events/actions'
 import { getAARStats } from '@/lib/aar/actions'
 import { getTodaysSchedule, getAllPrepPrompts, getWeekSchedule } from '@/lib/scheduling/actions'
-import { getMilestoneOutreachSuggestions } from '@/lib/clients/milestones'
 import { getClientsApproachingRewards } from '@/lib/loyalty/actions'
 import {
-  getOutstandingPayments,
   getDashboardQuoteStats,
   getDashboardEventCounts,
   getMonthOverMonthRevenue,
@@ -22,17 +22,21 @@ import {
   getNextUpcomingEvent,
 } from '@/lib/dashboard/actions'
 import { formatCurrency } from '@/lib/utils/currency'
-import { DashboardWorkSurfaceView } from '@/components/dashboard/work-surface'
 import { WeekStrip } from '@/components/dashboard/week-strip'
 import { TimelineView } from '@/components/scheduling/timeline-view'
 import { PrepPromptsView } from '@/components/scheduling/prep-prompts-view'
+import { NextActionCard } from '@/components/queue/next-action'
+import { QueueList } from '@/components/queue/queue-list'
+import { QueueSummaryBar } from '@/components/queue/queue-summary'
+import { QueueEmpty } from '@/components/queue/queue-empty'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import {
   Plus, ArrowRight, TrendingUp, TrendingDown, Minus,
-  AlertCircle, DollarSign, FileText, Calendar, Gift,
+  Calendar, Gift,
 } from 'lucide-react'
+import type { PriorityQueue } from '@/lib/queue/types'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback
@@ -51,15 +55,21 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
 // Empty defaults for each data stream
 // ============================================
 
-const emptyWorkSurface: Awaited<ReturnType<typeof getDashboardWorkSurface>> = {
-  blocked: [], preparable: [], optionalEarly: [], fragile: [], byEvent: [],
-  summary: { totalActiveEvents: 0, totalPreparableActions: 0, totalBlockedActions: 0, totalFragileActions: 0 },
+const emptyQueue: PriorityQueue = {
+  items: [],
+  nextAction: null,
+  summary: {
+    totalItems: 0,
+    byDomain: { inquiry: 0, message: 0, quote: 0, event: 0, financial: 0, post_event: 0, client: 0, culinary: 0 },
+    byUrgency: { critical: 0, high: 0, normal: 0, low: 0 },
+    allCaughtUp: true,
+  },
+  computedAt: new Date().toISOString(),
 }
 
 const emptyInquiryStats = { new: 0, awaiting_client: 0, awaiting_chef: 0, quoted: 0, confirmed: 0, declined: 0, expired: 0 }
 const emptyFinancials = { totalRevenueCents: 0, totalRefundsCents: 0, totalTipsCents: 0, netRevenueCents: 0, totalWithTipsCents: 0 }
 const emptyWeekSchedule: Awaited<ReturnType<typeof getWeekSchedule>> = { weekStart: '', weekEnd: '', days: [], warnings: [] }
-const emptyOutstandingPayments = { events: [] as { eventId: string; occasion: string | null; eventDate: string; clientName: string; outstandingCents: number }[], totalOutstandingCents: 0 }
 const emptyQuoteStats = { draft: 0, sent: 0, expiringSoon: 0, total: 0, expiringDetails: [] as { clientName: string; validUntil: string; amountCents: number }[] }
 const emptyEventCounts = { thisMonth: 0, ytd: 0, completedThisMonth: 0, completedYtd: 0, upcomingThisMonth: 0, totalGuestsThisMonth: 0, totalGuestsYtd: 0 }
 const emptyMonthRevenue = { currentMonthRevenueCents: 0, previousMonthRevenueCents: 0, currentMonthProfitCents: 0, changePercent: 0 }
@@ -77,19 +87,14 @@ export default async function ChefDashboard() {
 
   // All data fetches in parallel — each wrapped in safe() for graceful degradation
   const [
-    // Existing streams
-    workSurface,
+    queue,
     clients,
     financials,
     inquiryStats,
-    eventsNeedingClosure,
     aarStats,
     todaysSchedule,
     prepPrompts,
-    milestoneOutreach,
-    // New streams
     weekSchedule,
-    outstandingPayments,
     quoteStats,
     eventCounts,
     monthRevenue,
@@ -97,17 +102,14 @@ export default async function ChefDashboard() {
     loyaltyApproaching,
     nextEvent,
   ] = await Promise.all([
-    safe('workSurface', getDashboardWorkSurface, emptyWorkSurface),
+    safe('queue', getPriorityQueue, emptyQueue),
     safe('clients', getClients, []),
     safe('financials', getTenantFinancialSummary, emptyFinancials),
     safe('inquiryStats', getInquiryStats, emptyInquiryStats),
-    safe('eventsNeedingClosure', getEventsNeedingClosure, []),
     safe('aarStats', getAARStats, null),
     safe('todaysSchedule', getTodaysSchedule, null),
     safe('prepPrompts', getAllPrepPrompts, []),
-    safe('milestoneOutreach', getMilestoneOutreachSuggestions, []),
     safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
-    safe('outstandingPayments', getOutstandingPayments, emptyOutstandingPayments),
     safe('quoteStats', getDashboardQuoteStats, emptyQuoteStats),
     safe('eventCounts', getDashboardEventCounts, emptyEventCounts),
     safe('monthRevenue', getMonthOverMonthRevenue, emptyMonthRevenue),
@@ -116,10 +118,7 @@ export default async function ChefDashboard() {
     safe('nextEvent', getNextUpcomingEvent, null),
   ])
 
-  const needsResponseCount = inquiryStats.new + inquiryStats.awaiting_chef
   const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
-  const hasAttentionItems = needsResponseCount > 0 || outstandingPayments.totalOutstandingCents > 0 || quoteStats.total > 0
-  const hasOutreachItems = milestoneOutreach.length > 0 || loyaltyApproaching.length > 0
 
   return (
     <div className="space-y-8">
@@ -134,10 +133,10 @@ export default async function ChefDashboard() {
         </div>
         <div className="flex gap-2">
           <Link
-            href="/schedule"
+            href="/queue"
             className="inline-flex items-center justify-center px-4 py-2 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors font-medium text-sm"
           >
-            Weekly View
+            Full Queue
           </Link>
           <Link
             href="/events/new"
@@ -203,101 +202,44 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
-      {/* SECTION 2: WEEK AT A GLANCE                   */}
+      {/* SECTION 2: NEXT ACTION (hero card)           */}
+      {/* ============================================ */}
+      {queue.nextAction && (
+        <NextActionCard item={queue.nextAction} />
+      )}
+
+      {/* ============================================ */}
+      {/* SECTION 3: WEEK AT A GLANCE                   */}
       {/* ============================================ */}
       {weekSchedule.days.length > 0 && (
         <WeekStrip schedule={weekSchedule} />
       )}
 
       {/* ============================================ */}
-      {/* SECTION 3: ATTENTION NEEDED                   */}
+      {/* SECTION 4: PRIORITY QUEUE                     */}
       {/* ============================================ */}
-      {hasAttentionItems && (
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Needs Attention</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-
-            {/* Inquiries Needing Response */}
-            {needsResponseCount > 0 && (
-              <Link href="/inquiries" className="block">
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 hover:bg-amber-100 transition-colors h-full">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-medium text-amber-900">
-                        {needsResponseCount} {needsResponseCount === 1 ? 'inquiry needs' : 'inquiries need'} your response
-                      </p>
-                      <p className="text-sm text-amber-700 mt-0.5">
-                        {inquiryStats.new > 0 && `${inquiryStats.new} new`}
-                        {inquiryStats.new > 0 && inquiryStats.awaiting_chef > 0 && ' · '}
-                        {inquiryStats.awaiting_chef > 0 && `${inquiryStats.awaiting_chef} awaiting your reply`}
-                        {activeInquiryCount > needsResponseCount && ` · ${activeInquiryCount} total in pipeline`}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )}
-
-            {/* Outstanding Payments — with event detail */}
-            {outstandingPayments.totalOutstandingCents > 0 && (
-              <Link href="/financials" className="block">
-                <div className="bg-rose-50 border border-rose-200 rounded-xl p-4 hover:bg-rose-100 transition-colors h-full">
-                  <div className="flex items-start gap-3">
-                    <DollarSign className="h-5 w-5 text-rose-600 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-medium text-rose-900">
-                        {formatCurrency(outstandingPayments.totalOutstandingCents)} outstanding
-                      </p>
-                      <div className="text-sm text-rose-700 mt-0.5 space-y-0.5">
-                        {outstandingPayments.events.slice(0, 3).map(evt => (
-                          <p key={evt.eventId}>
-                            {evt.clientName}{evt.occasion ? ` — ${evt.occasion}` : ''}: {formatCurrency(evt.outstandingCents)}
-                          </p>
-                        ))}
-                        {outstandingPayments.events.length > 3 && (
-                          <p className="text-rose-500">+{outstandingPayments.events.length - 3} more</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )}
-
-            {/* Pending Quotes — with expiring client names */}
-            {quoteStats.total > 0 && (
-              <Link href="/quotes" className="block">
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 hover:bg-blue-100 transition-colors h-full">
-                  <div className="flex items-start gap-3">
-                    <FileText className="h-5 w-5 text-blue-600 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="font-medium text-blue-900">
-                        {quoteStats.sent} {quoteStats.sent === 1 ? 'quote' : 'quotes'} awaiting response
-                      </p>
-                      <div className="text-sm text-blue-700 mt-0.5">
-                        {quoteStats.expiringDetails.length > 0 ? (
-                          <div className="space-y-0.5">
-                            {quoteStats.expiringDetails.slice(0, 2).map((q, i) => (
-                              <p key={i}>{q.clientName} — {formatCurrency(q.amountCents)} expiring soon</p>
-                            ))}
-                          </div>
-                        ) : quoteStats.draft > 0 ? (
-                          <p>{quoteStats.draft} still in draft</p>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            )}
-
+      {queue.summary.allCaughtUp ? (
+        <QueueEmpty />
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
+              Priority Queue ({queue.summary.totalItems})
+            </h2>
+            <Link
+              href="/queue"
+              className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+            >
+              View all <ArrowRight className="h-3.5 w-3.5 inline" />
+            </Link>
           </div>
+          <QueueSummaryBar summary={queue.summary} />
+          <QueueList items={queue.items} limit={20} showFilters={true} />
         </div>
       )}
 
       {/* ============================================ */}
-      {/* SECTION 4: PREP PROMPTS                       */}
+      {/* SECTION 5: PREP PROMPTS                       */}
       {/* ============================================ */}
       {prepPrompts.length > 0 && (
         <Card>
@@ -314,124 +256,7 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
-      {/* SECTION 5: OUTREACH OPPORTUNITIES             */}
-      {/* ============================================ */}
-      {hasOutreachItems && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Outreach Opportunities</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {/* Milestone outreach */}
-              {milestoneOutreach.slice(0, 5).map((item, idx) => (
-                <div key={`milestone-${idx}`} className="flex items-start justify-between py-2 border-b border-stone-100 last:border-0">
-                  <div>
-                    <p className="text-sm text-stone-900">{item.suggestion}</p>
-                    <p className="text-xs text-stone-500 mt-0.5">
-                      {item.daysUntil === 0 ? 'Today' : `In ${item.daysUntil} days`}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/clients/${item.clientId}`}
-                    className="text-xs text-brand-600 hover:text-brand-700 whitespace-nowrap ml-4"
-                  >
-                    View Client
-                  </Link>
-                </div>
-              ))}
-
-              {/* Loyalty approaching rewards */}
-              {loyaltyApproaching.map((client, idx) => (
-                <div key={`loyalty-${idx}`} className="flex items-start justify-between py-2 border-b border-stone-100 last:border-0">
-                  <div className="flex items-start gap-2">
-                    <Gift className="h-4 w-4 text-purple-500 mt-0.5 shrink-0" />
-                    <div>
-                      <p className="text-sm text-stone-900">
-                        {client.clientName} is close to earning a reward
-                      </p>
-                      <p className="text-xs text-stone-500 mt-0.5">
-                        {client.approachingRewards[0]?.pointsNeeded} points away from {client.approachingRewards[0]?.rewardName}
-                        {client.approachingRewards[0]?.guestsNeeded
-                          ? ` (${client.approachingRewards[0].guestsNeeded} more guests)`
-                          : ''}
-                      </p>
-                    </div>
-                  </div>
-                  <Link
-                    href={`/clients/${client.clientId}`}
-                    className="text-xs text-brand-600 hover:text-brand-700 whitespace-nowrap ml-4"
-                  >
-                    View Client
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ============================================ */}
-      {/* SECTION 6: WORK SURFACE (core engine)         */}
-      {/* ============================================ */}
-      <DashboardWorkSurfaceView surface={workSurface} />
-
-      {/* ============================================ */}
-      {/* SECTION 7: EVENTS NEEDING CLOSURE             */}
-      {/* ============================================ */}
-      {eventsNeedingClosure.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Events Needing Closure</CardTitle>
-              <span className="text-sm text-stone-500">{eventsNeedingClosure.length} pending</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {eventsNeedingClosure.map((event) => {
-                const pendingItems: string[] = [
-                  !event.aar_filed ? 'AAR' : '',
-                  !event.reset_complete ? 'Reset' : '',
-                  !event.follow_up_sent ? 'Follow-up' : '',
-                  !event.financially_closed ? 'Financial' : '',
-                ].filter(Boolean)
-
-                return (
-                  <Link key={event.id} href={`/events/${event.id}`} className="block">
-                    <div className="flex items-center justify-between p-3 rounded-xl border border-stone-200 hover:bg-stone-50 transition-colors">
-                      <div>
-                        <span className="font-medium text-stone-900">
-                          {event.occasion || 'Untitled Event'}
-                        </span>
-                        <span className="text-sm text-stone-500 ml-2">
-                          {event.client?.full_name}
-                        </span>
-                        <p className="text-xs text-stone-400 mt-0.5">
-                          {format(new Date(event.event_date), 'MMM d, yyyy')}
-                        </p>
-                      </div>
-                      <div className="flex gap-1">
-                        {pendingItems.map((item) => (
-                          <span
-                            key={item}
-                            className="inline-flex items-center px-2 py-0.5 rounded-lg text-xs font-medium bg-red-100 text-red-700"
-                          >
-                            {item}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ============================================ */}
-      {/* SECTION 8: SERVICE QUALITY (AAR)              */}
+      {/* SECTION 6: SERVICE QUALITY (AAR)              */}
       {/* ============================================ */}
       {aarStats && aarStats.totalReviews > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -504,7 +329,7 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
-      {/* SECTION 9: BUSINESS SNAPSHOT                  */}
+      {/* SECTION 7: BUSINESS SNAPSHOT                  */}
       {/* ============================================ */}
       <div className="space-y-3">
         <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Business Snapshot</h2>

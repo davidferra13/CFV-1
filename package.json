@@ -29,7 +29,6 @@
     "@fullcalendar/react": "^6.1.20",
     "@fullcalendar/timegrid": "^6.1.20",
     "@google/genai": "^1.41.0",
-    "@google/generative-ai": "^0.24.1",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
     "@supabase/ssr": "^0.8.0",

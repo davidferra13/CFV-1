@@ -16,7 +16,7 @@ function getStripe(): Stripe {
   const StripeLib = require('stripe')
   const StripeCtor = StripeLib.default || StripeLib
   return new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2026-01-28.clover' as Stripe.LatestApiVersion
+    apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion
   })
 }
 

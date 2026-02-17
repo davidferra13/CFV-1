@@ -16,7 +16,7 @@ function getStripe(): Stripe {
   const StripeLib = require('stripe')
   const StripeCtor = StripeLib.default || StripeLib
   return new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2026-01-28.clover' as Stripe.LatestApiVersion
+    apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion
   })
 }
 
@@ -178,6 +178,29 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)
+
+    // Insert audit trail so failed transition can be investigated and resolved manually
+    try {
+      await supabase
+        .from('event_state_transitions')
+        .insert({
+          event_id,
+          tenant_id,
+          from_status: null,
+          to_status: 'paid' as const,
+          transitioned_by: null,
+          reason: 'Auto-transition failed after payment',
+          metadata: {
+            error: String(transitionError),
+            stripe_event_id: event.id,
+            payment_intent_id: paymentIntent.id,
+            requires_manual_review: true
+          }
+        })
+      console.log('[handlePaymentSucceeded] Audit trail inserted for failed transition:', event_id)
+    } catch (auditError: unknown) {
+      console.error('[handlePaymentSucceeded] Failed to insert audit trail:', auditError)
+    }
   }
 }
 

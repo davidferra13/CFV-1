@@ -1,5 +1,8 @@
 // Terms of Service Page - Placeholder
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Terms of Service - ChefFlow' }
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 

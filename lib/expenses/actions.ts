@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
+import { getChefPreferences } from '@/lib/chef/actions'
 
 // --- Zod Schemas ---
 
@@ -372,10 +373,10 @@ export async function getEventProfitSummary(eventId: string) {
     profit: {
       grossProfitCents,
       profitMarginPercent: totalRevenue > 0
-        ? Math.round((grossProfitCents / totalRevenue) * 100)
+        ? parseFloat(((grossProfitCents / totalRevenue) * 100).toFixed(1))
         : 0,
       foodCostPercent: totalRevenue > 0
-        ? Math.round((foodIngredientsCents / totalRevenue) * 100)
+        ? parseFloat(((foodIngredientsCents / totalRevenue) * 100).toFixed(1))
         : 0,
       effectiveHourlyRateCents,
     },
@@ -439,21 +440,24 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
   let totalExpensesCents = 0
   let totalProfitCents = 0
   let totalTipsCents = 0
-  let foodCostSum = 0
-  let foodCostCount = 0
+  let totalFoodCostCents = 0
+  let totalFoodCostRevenueCents = 0
 
   for (const s of monthFinancials) {
-    totalRevenueCents += (s.total_paid_cents ?? 0)
+    const revCents = s.total_paid_cents ?? 0
+    totalRevenueCents += revCents
     totalExpensesCents += (s.total_expenses_cents ?? 0)
     totalProfitCents += (s.profit_cents ?? 0)
     totalTipsCents += (s.tip_amount_cents ?? 0)
-    if (s.food_cost_percentage !== null && s.food_cost_percentage > 0) {
-      foodCostSum += s.food_cost_percentage
-      foodCostCount++
+    if (s.food_cost_percentage !== null && s.food_cost_percentage > 0 && revCents > 0) {
+      totalFoodCostCents += Math.round(revCents * s.food_cost_percentage / 100)
+      totalFoodCostRevenueCents += revCents
     }
   }
 
-  const TARGET_MONTHLY_REVENUE_CENTS = 1000000 // $10,000
+  // Read chef preferences for configurable revenue target (falls back to $10,000)
+  const prefs = await getChefPreferences()
+  const TARGET_MONTHLY_REVENUE_CENTS = (prefs as any).target_monthly_revenue_cents ?? 1000000
 
   // Build per-event breakdown
   const eventBreakdown = (monthEvents || []).map(event => {
@@ -478,7 +482,7 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
     totalExpensesCents,
     totalProfitCents,
     totalTipsCents,
-    averageFoodCostPercent: foodCostCount > 0 ? Math.round(foodCostSum / foodCostCount) : 0,
+    averageFoodCostPercent: totalFoodCostRevenueCents > 0 ? Math.round((totalFoodCostCents / totalFoodCostRevenueCents) * 100) : 0,
     eventCount: monthEvents?.length ?? 0,
     targetRevenueCents: TARGET_MONTHLY_REVENUE_CENTS,
     revenueProgressPercent: Math.round((totalRevenueCents / TARGET_MONTHLY_REVENUE_CENTS) * 100),
@@ -503,8 +507,9 @@ export async function getBudgetGuardrail(eventId: string) {
 
   const quotedPriceCents = event?.quoted_price_cents ?? 0
 
-  // Default target margin 60% — chef keeps 60%, spends up to 40%
-  const targetMarginPercent = 60
+  // Read target margin from chef preferences (defaults to 60%)
+  const prefs = await getChefPreferences()
+  const targetMarginPercent = prefs.target_margin_percent ?? 60
   const maxGrocerySpendCents = Math.round(quotedPriceCents * (1 - targetMarginPercent / 100))
 
   // Get current expenses already logged for this event (business only)

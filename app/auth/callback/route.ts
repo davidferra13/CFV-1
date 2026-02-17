@@ -1,5 +1,5 @@
-// OAuth callback handler
-// Exchanges the auth code from Google for a Supabase session
+// Auth callback handler
+// Exchanges auth code for a Supabase session (OAuth, password recovery, etc.)
 
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
@@ -18,6 +18,12 @@ export async function GET(request: Request) {
     }
   }
 
-  // Auth failed — redirect to sign-in with error
-  return NextResponse.redirect(`${origin}/auth/signin?error=Could not authenticate with Google`)
+  // Auth failed — determine appropriate error message based on intended flow
+  const isPasswordReset = next === '/auth/reset-password'
+  const errorMessage = isPasswordReset
+    ? 'Password reset link is invalid or has expired. Please request a new one.'
+    : 'Authentication failed. Please try again.'
+
+  const redirectPath = isPasswordReset ? '/auth/forgot-password' : '/auth/signin'
+  return NextResponse.redirect(`${origin}${redirectPath}?error=${encodeURIComponent(errorMessage)}`)
 }

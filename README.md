@@ -43,7 +43,7 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
    npm run dev
    ```
 
-6. Open [http://localhost:3000](http://localhost:3000)
+6. Open [http://localhost:3100](http://localhost:3100)
 
 ## Project Structure
 

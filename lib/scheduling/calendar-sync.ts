@@ -1,5 +1,6 @@
 // @ts-nocheck
 // TODO: References chef_settings table that doesn't exist. Should use google_connections instead.
+// DEFERRED: Calendar sync. References chef_settings table that should be google_connections. Will be updated when Google Calendar integration is completed.
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'

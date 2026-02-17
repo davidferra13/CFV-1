@@ -2,8 +2,11 @@
 // Month, week, day, and list views with event interaction.
 // Seasonal sidebar shows active palette context (sensory anchor, micro-windows, energy reality).
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
+
+export const metadata: Metadata = { title: 'Schedule - ChefFlow' }
 import { getActivePalette } from '@/lib/seasonal/actions'
 import { CalendarView } from '@/components/scheduling/calendar-view'
 import { SeasonalSidebar } from '@/components/seasonal/seasonal-sidebar'

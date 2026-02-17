@@ -1,5 +1,6 @@
 // @ts-nocheck
 // TODO: References menu_sections/menu_items tables that don't exist in current schema.
+// DEFERRED: Fire order system. Requires menu_sections/menu_items tables (Phase 2 schema). Do not remove - will be enabled when schema is extended.
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'

@@ -1,7 +1,10 @@
 // Chef Loyalty Program Dashboard
 // Overview of program stats, tier breakdown, rewards catalog, approaching milestones
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Loyalty Program - ChefFlow' }
 import { getLoyaltyOverview, getRewards, getClientsApproachingRewards, getLoyaltyConfig } from '@/lib/loyalty/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

@@ -2,7 +2,10 @@
 // Configure home address, default stores, timing defaults, and DOP preferences.
 // Set once, rarely changed.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Settings - ChefFlow' }
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getGoogleConnection } from '@/lib/gmail/google-auth'
 import { getGmailSyncHistory } from '@/lib/gmail/actions'
@@ -60,6 +63,31 @@ export default async function SettingsPage() {
             Define your creative thesis, micro-windows, context profiles, and proven wins for each season.
           </p>
         </Link>
+      </div>
+
+      {/* Account Management */}
+      <div className="pt-4 border-t border-stone-200">
+        <h2 className="text-lg font-semibold text-stone-900 mb-3">Account</h2>
+        <div className="space-y-3">
+          <Link
+            href="/settings/change-password"
+            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">Change Password</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Update your account password.
+            </p>
+          </Link>
+          <Link
+            href="/settings/delete-account"
+            className="block border border-red-200 rounded-lg p-4 hover:bg-red-50 transition-colors"
+          >
+            <p className="font-medium text-red-700">Delete Account</p>
+            <p className="text-sm text-red-500 mt-1">
+              Permanently delete your account and all associated data.
+            </p>
+          </Link>
+        </div>
       </div>
     </div>
   )

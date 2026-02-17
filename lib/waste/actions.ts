@@ -1,5 +1,6 @@
 // @ts-nocheck
 // TODO: References waste_entries table that doesn't exist in current schema.
+// DEFERRED: Waste tracking system. Requires waste_entries table (Phase 2 schema). Do not remove - will be enabled when schema is extended.
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'

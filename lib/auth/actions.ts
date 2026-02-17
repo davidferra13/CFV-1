@@ -11,6 +11,26 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getInvitationByToken, markInvitationUsed } from '@/lib/auth/invitations'
 
+// --- In-memory rate limiter (per-process, resets on deploy) ---
+
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+
+function checkRateLimit(key: string, maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000): void {
+  const now = Date.now()
+  const entry = rateLimitMap.get(key)
+
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs })
+    return
+  }
+
+  if (entry.count >= maxAttempts) {
+    throw new Error('Too many attempts. Please try again later.')
+  }
+
+  entry.count++
+}
+
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
@@ -32,6 +52,14 @@ const SignInSchema = z.object({
   rememberMe: z.boolean().optional().default(true)
 })
 
+const PasswordResetRequestSchema = z.object({
+  email: z.string().email('Valid email required')
+})
+
+const UpdatePasswordSchema = z.object({
+  password: z.string().min(8, 'Password must be at least 8 characters')
+})
+
 export type ChefSignupInput = z.infer<typeof ChefSignupSchema>
 export type ClientSignupInput = z.infer<typeof ClientSignupSchema>
 export type SignInInput = z.infer<typeof SignInSchema>
@@ -41,6 +69,7 @@ export type SignInInput = z.infer<typeof SignInSchema>
  */
 export async function signUpChef(input: ChefSignupInput) {
   const validated = ChefSignupSchema.parse(input)
+  checkRateLimit(validated.email)
 
   // Use service role for creating user and tenant atomically
   const supabase = createServerClient({ admin: true })
@@ -49,7 +78,7 @@ export async function signUpChef(input: ChefSignupInput) {
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: validated.email,
     password: validated.password,
-    email_confirm: true // Auto-confirm for V1 (no email verification)
+    email_confirm: false // Send verification email
   })
 
   if (authError || !authData.user) {
@@ -108,6 +137,7 @@ export async function signUpChef(input: ChefSignupInput) {
  */
 export async function signUpClient(input: ClientSignupInput) {
   const validated = ClientSignupSchema.parse(input)
+  checkRateLimit(validated.email)
 
   // Verify invitation
   const invitation = await getInvitationByToken(validated.invitation_token)
@@ -127,7 +157,7 @@ export async function signUpClient(input: ClientSignupInput) {
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: validated.email,
     password: validated.password,
-    email_confirm: true // Auto-confirm for V1
+    email_confirm: false // Send verification email
   })
 
   if (authError || !authData.user) {
@@ -188,6 +218,7 @@ export async function signUpClient(input: ClientSignupInput) {
  */
 export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
+  checkRateLimit(validated.email)
 
   const supabase = createServerClient()
 
@@ -222,6 +253,57 @@ export async function signIn(input: SignInInput) {
 }
 
 /**
+ * Request password reset - Sends email with reset link
+ * Always returns success to prevent email enumeration
+ */
+export async function requestPasswordReset(email: string) {
+  const validated = PasswordResetRequestSchema.parse({ email })
+
+  const supabase = createServerClient()
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  const { error } = await supabase.auth.resetPasswordForEmail(validated.email, {
+    redirectTo: `${siteUrl}/auth/callback?next=/auth/reset-password`
+  })
+
+  if (error) {
+    console.error('[requestPasswordReset] Error:', error)
+    // Don't reveal whether the email exists — always return success
+  }
+
+  return { success: true }
+}
+
+/**
+ * Update password - Sets new password for authenticated user
+ * Requires an active session (e.g. from password recovery token exchange)
+ */
+export async function updatePassword(newPassword: string) {
+  const validated = UpdatePasswordSchema.parse({ password: newPassword })
+
+  const supabase = createServerClient()
+
+  // Verify user is authenticated (session from recovery token exchange)
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    throw new Error('Not authenticated. Please request a new password reset link.')
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: validated.password
+  })
+
+  if (error) {
+    console.error('[updatePassword] Error:', error)
+    throw new Error(error.message || 'Failed to update password')
+  }
+
+  return { success: true }
+}
+
+/**
  * Sign out
  */
 export async function signOut() {
@@ -235,5 +317,53 @@ export async function signOut() {
   }
 
   revalidatePath('/', 'layout')
+  redirect('/')
+}
+
+/**
+ * Change password - Requires re-verification with current password
+ */
+export async function changePassword(currentPassword: string, newPassword: string) {
+  const supabase = createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user?.email) throw new Error('Not authenticated')
+
+  // Verify old password by attempting sign in
+  const { error: verifyError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  })
+  if (verifyError) throw new Error('Current password is incorrect')
+
+  // Update to new password
+  const { error } = await supabase.auth.updateUser({ password: newPassword })
+  if (error) throw new Error('Failed to update password')
+
+  return { success: true }
+}
+
+/**
+ * Delete account - Requires password verification
+ * Cascades via DB constraints, then signs out and redirects
+ */
+export async function deleteAccount(password: string) {
+  const supabase = createServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user?.email) throw new Error('Not authenticated')
+
+  // Verify password
+  const { error: verifyError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: password,
+  })
+  if (verifyError) throw new Error('Password is incorrect')
+
+  // Delete user (cascades via DB constraints)
+  const adminClient = createServerClient({ admin: true })
+  const { error } = await adminClient.auth.admin.deleteUser(user.id)
+  if (error) throw new Error('Failed to delete account')
+
+  // Sign out and redirect
+  await supabase.auth.signOut()
   redirect('/')
 }

@@ -73,7 +73,7 @@ function SignUpForm() {
 
     try {
       await signUpChef(chefFormData)
-      router.push('/auth/signin?message=Account created successfully')
+      router.push('/auth/verify-email')
     } catch (err) {
       const error = err as Error
       setError(error.message)
@@ -89,7 +89,7 @@ function SignUpForm() {
 
     try {
       await signUpClient(clientFormData)
-      router.push('/auth/signin?message=Account created successfully')
+      router.push('/auth/verify-email')
     } catch (err) {
       const error = err as Error
       setError(error.message)

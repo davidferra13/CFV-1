@@ -398,6 +398,11 @@ export async function convertInquiryToEvent(inquiryId: string) {
   const depositAmountCents = acceptedQuote?.deposit_amount_cents ?? null
   const pricingModel = acceptedQuote?.pricing_model ?? null
 
+  // Validate pricing exists before creating event
+  if (!quotedPriceCents || quotedPriceCents <= 0) {
+    throw new Error('Cannot convert inquiry to event without a confirmed price. Please attach a quote first.')
+  }
+
   // Map cannabis_preference string → boolean
   const cannabisPref = inquiry.confirmed_cannabis_preference
   const cannabisBoolean = cannabisPref

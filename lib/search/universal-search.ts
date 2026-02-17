@@ -1,5 +1,3 @@
-// @ts-nocheck
-// TODO: References column names (name instead of full_name) that don't match current schema.
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
@@ -23,16 +21,16 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   if (!query || query.length < 2) return { results: [], grouped: {} }
 
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
   const q = `%${query}%`
   const results: SearchResult[] = []
 
-  // Search clients
+  // Search clients (full_name, email, phone — scoped by tenant_id)
   const { data: clients } = await supabase
     .from('clients')
-    .select('id, name, email, phone')
-    .eq('chef_id', chef.id)
-    .or(`name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
+    .select('id, full_name, email, phone')
+    .eq('tenant_id', chef.tenantId!)
+    .or(`full_name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
     .limit(5)
 
   if (clients) {
@@ -40,19 +38,19 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
       results.push({
         id: c.id,
         type: 'client',
-        title: c.name,
+        title: c.full_name,
         snippet: c.email || c.phone || undefined,
         url: `/clients/${c.id}`,
       })
     }
   }
 
-  // Search events
+  // Search events (occasion, event_date, status — scoped by tenant_id)
   const { data: events } = await supabase
     .from('events')
-    .select('id, title, event_date, status')
-    .eq('chef_id', chef.id)
-    .ilike('title', q)
+    .select('id, occasion, event_date, status')
+    .eq('tenant_id', chef.tenantId!)
+    .ilike('occasion', q)
     .limit(5)
 
   if (events) {
@@ -60,7 +58,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
       results.push({
         id: e.id,
         type: 'event',
-        title: e.title || `Event ${e.event_date}`,
+        title: e.occasion || `Event ${e.event_date}`,
         snippet: `${e.event_date} — ${e.status}`,
         url: `/events/${e.id}`,
         metadata: { badge: e.status },
@@ -68,12 +66,12 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search inquiries
+  // Search inquiries (source_message, confirmed_occasion — scoped by tenant_id)
   const { data: inquiries } = await supabase
     .from('inquiries')
-    .select('id, client_name, event_date, status')
-    .eq('chef_id', chef.id)
-    .ilike('client_name', q)
+    .select('id, source_message, confirmed_occasion, confirmed_date, status')
+    .eq('tenant_id', chef.tenantId!)
+    .or(`source_message.ilike.${q},confirmed_occasion.ilike.${q}`)
     .limit(5)
 
   if (inquiries) {
@@ -81,19 +79,19 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
       results.push({
         id: i.id,
         type: 'inquiry',
-        title: i.client_name || 'Inquiry',
-        snippet: `${i.event_date || 'No date'} — ${i.status}`,
+        title: i.confirmed_occasion || 'Inquiry',
+        snippet: `${i.confirmed_date || 'No date'} — ${i.status}`,
         url: `/inquiries/${i.id}`,
         metadata: { badge: i.status },
       })
     }
   }
 
-  // Search menus
+  // Search menus (name — scoped by tenant_id)
   const { data: menus } = await supabase
     .from('menus')
     .select('id, name')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .ilike('name', q)
     .limit(5)
 
@@ -108,11 +106,11 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search recipes
+  // Search recipes (name — scoped by tenant_id)
   const { data: recipes } = await supabase
     .from('recipes')
     .select('id, name')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .ilike('name', q)
     .limit(5)
 

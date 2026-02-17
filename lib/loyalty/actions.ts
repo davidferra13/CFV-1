@@ -315,6 +315,17 @@ export async function awardEventPoints(eventId: string) {
     .eq('tenant_id', user.tenantId!)
     .single()
 
+  // Compute old lifetime earned points BEFORE any new transactions are inserted (for tier change detection)
+  const { data: oldLifetimeData } = await supabase
+    .from('loyalty_transactions')
+    .select('points')
+    .eq('client_id', event.client_id)
+    .eq('tenant_id', user.tenantId!)
+    .in('type', ['earned', 'bonus'])
+
+  const oldLifetimeEarned = (oldLifetimeData || []).reduce((sum: number, tx: { points: number }) => sum + tx.points, 0)
+  const oldTier = computeTier(oldLifetimeEarned, config)
+
   const currentEventsCompleted = (client?.total_events_completed || 0) + 1 // +1 for this event
 
   // Milestone bonuses
@@ -395,7 +406,7 @@ export async function awardEventPoints(eventId: string) {
     pointsAwarded: totalPoints,
     newBalance: newPointsBalance,
     newTier,
-    tierChanged: newTier !== (client?.loyalty_points ? computeTier((client?.loyalty_points || 0), config) : 'bronze'),
+    tierChanged: newTier !== oldTier,
     transactions
   }
 }

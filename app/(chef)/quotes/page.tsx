@@ -1,10 +1,13 @@
 // Chef Quote Pipeline — List all quotes with status tabs
 // Follows the same pattern as inquiries pipeline
 
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getQuotes } from '@/lib/quotes/actions'
+
+export const metadata: Metadata = { title: 'Quotes - ChefFlow' }
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'

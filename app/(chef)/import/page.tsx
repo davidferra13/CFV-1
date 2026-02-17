@@ -1,6 +1,10 @@
 // Smart Import Hub
 // Chef-only page for importing clients, recipes, receipts, documents, and files via AI parsing
+
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Smart Import - ChefFlow' }
 import { isAIConfigured } from '@/lib/ai/parse'
 import { createServerClient } from '@/lib/supabase/server'
 import { SmartImportHub } from '@/components/import/smart-import-hub'

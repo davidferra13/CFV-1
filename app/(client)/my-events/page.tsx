@@ -1,6 +1,9 @@
 // Client Events List - View all events grouped by status
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'My Events - ChefFlow' }
 import { getClientEvents } from '@/lib/events/client-actions'
 import { getMyLoyaltyStatus } from '@/lib/loyalty/actions'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -12,6 +15,10 @@ import { Button } from '@/components/ui/button'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
+type EventRow = Database['public']['Tables']['events']['Row']
+type ClientEvent = EventRow & {
+  client: { id: string; full_name: string; email: string }
+}
 
 // Status badge mapping
 function getStatusBadge(status: EventStatus) {
@@ -31,12 +38,9 @@ function getStatusBadge(status: EventStatus) {
 }
 
 // Action button for each event status
-function EventActionButton({ event }: { event: any }) {
+function EventActionButton({ event }: { event: ClientEvent }) {
   const { id, status } = event
-  const financial = event.financial?.[0]
-  const balanceDue = financial
-    ? financial.expected_total_cents - financial.collected_cents
-    : event.total_amount_cents
+  const quotedPrice = event.quoted_price_cents ?? 0
 
   if (status === 'proposed') {
     return (
@@ -48,7 +52,7 @@ function EventActionButton({ event }: { event: any }) {
     )
   }
 
-  if (status === 'accepted' && balanceDue > 0) {
+  if (status === 'accepted' && quotedPrice > 0) {
     return (
       <Link href={`/my-events/${id}/pay`}>
         <Button variant="primary" size="sm">
@@ -88,11 +92,9 @@ function EventActionButton({ event }: { event: any }) {
 }
 
 // Event card component
-function EventCard({ event }: { event: any }) {
-  const financial = event.financial?.[0]
-  const balanceDue = financial
-    ? financial.expected_total_cents - financial.collected_cents
-    : event.total_amount_cents
+function EventCard({ event }: { event: ClientEvent }) {
+  const quotedPrice = event.quoted_price_cents ?? 0
+  const location = [event.location_address, event.location_city].filter(Boolean).join(', ')
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -104,7 +106,7 @@ function EventCard({ event }: { event: any }) {
             </div>
 
             <h3 className="text-lg font-semibold text-stone-900 mb-2">
-              {event.title}
+              {event.occasion || 'Untitled Event'}
             </h3>
 
             <div className="space-y-1 text-sm text-stone-600">
@@ -122,23 +124,25 @@ function EventCard({ event }: { event: any }) {
                 <span>{event.guest_count} guests</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                <span>{event.location}</span>
-              </div>
+              {location && (
+                <div className="flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{location}</span>
+                </div>
+              )}
             </div>
 
-            {balanceDue > 0 && ['proposed', 'accepted'].includes(event.status) && (
+            {quotedPrice > 0 && ['proposed', 'accepted'].includes(event.status) && (
               <div className="mt-4 pt-4 border-t">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-stone-600">
                     {event.status === 'accepted' ? 'Balance Due:' : 'Total Price:'}
                   </span>
                   <span className="text-lg font-bold text-stone-900">
-                    {formatCurrency(balanceDue)}
+                    {formatCurrency(quotedPrice)}
                   </span>
                 </div>
               </div>
@@ -244,7 +248,7 @@ export default async function MyEventsPage() {
         {upcoming.length > 0 ? (
           <div className="space-y-4">
             {upcoming.map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event as ClientEvent} />
             ))}
           </div>
         ) : (
@@ -260,7 +264,7 @@ export default async function MyEventsPage() {
         {past.length > 0 ? (
           <div className="space-y-4">
             {past.map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event as ClientEvent} />
             ))}
           </div>
         ) : (
@@ -276,7 +280,7 @@ export default async function MyEventsPage() {
           </h2>
           <div className="space-y-4">
             {cancelled.map(event => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event as ClientEvent} />
             ))}
           </div>
         </section>

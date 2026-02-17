@@ -1,9 +1,12 @@
 // Chef Events List Page
 // Displays all events in a filterable, sortable table
 
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Events - ChefFlow' }
 import { getEvents } from '@/lib/events/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { Button } from '@/components/ui/button'

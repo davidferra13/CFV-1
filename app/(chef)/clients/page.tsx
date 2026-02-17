@@ -1,9 +1,12 @@
 // Chef Clients List Page
 // Shows all clients with statistics + client invitation form
 
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/actions'
+
+export const metadata: Metadata = { title: 'Clients - ChefFlow' }
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'

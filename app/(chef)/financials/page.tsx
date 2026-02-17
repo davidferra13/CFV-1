@@ -1,7 +1,10 @@
 // Chef Financials Dashboard - Protected by layout
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
+
+export const metadata: Metadata = { title: 'Financials - ChefFlow' }
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { getMonthlyFinancialSummary } from '@/lib/expenses/actions'
 import { getOutstandingPayments } from '@/lib/dashboard/actions'

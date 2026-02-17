@@ -838,7 +838,7 @@ export async function duplicateMenu(menuId: string) {
 
     // Copy components for this dish
     for (const comp of dish.components) {
-      await supabase.from('components').insert({
+      const { error } = await supabase.from('components').insert({
         tenant_id: user.tenantId!,
         dish_id: newDish.id,
         name: comp.name,
@@ -854,6 +854,10 @@ export async function duplicateMenu(menuId: string) {
         created_by: user.id,
         updated_by: user.id
       })
+      if (error) {
+        console.error('[duplicateMenu] Component insert failed:', error)
+        throw new Error('Failed to duplicate menu component')
+      }
     }
   }
 

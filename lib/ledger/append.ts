@@ -72,7 +72,7 @@ async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
   if (error) {
     // Check if duplicate transaction_reference (idempotency)
     if (error.code === '23505' && input.transaction_reference) {
-      console.log('[appendLedgerEntry] Duplicate transaction (idempotent):', input.transaction_reference)
+      console.error('[appendLedgerEntry] Duplicate transaction (idempotent):', input.transaction_reference)
       return { duplicate: true, entry: null }
     }
 

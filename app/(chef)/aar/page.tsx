@@ -1,7 +1,10 @@
 // AAR History Page — Shows all After Action Reviews with trends
 // Lets the chef see improvement over time
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'After Action Reviews - ChefFlow' }
 import { getRecentAARs, getAARStats } from '@/lib/aar/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'

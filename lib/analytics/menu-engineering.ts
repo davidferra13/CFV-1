@@ -1,6 +1,7 @@
 // @ts-nocheck
 // TODO: This file references menu_items table which does not exist yet.
 // Suppress type checking until the schema is updated.
+// DEFERRED: Menu engineering analytics. Requires menu_items table (Phase 2 schema). Do not remove - will be enabled when schema is extended.
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'

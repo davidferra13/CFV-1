@@ -1,5 +1,8 @@
 // Privacy Policy Page - Placeholder
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Privacy Policy - ChefFlow' }
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 

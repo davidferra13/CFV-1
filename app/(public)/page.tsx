@@ -1,5 +1,8 @@
 // Public landing page
+import type { Metadata } from 'next'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'ChefFlow - Private Chef & Catering Platform' }
 import { Card, CardContent } from '@/components/ui/card'
 
 export default function Home() {

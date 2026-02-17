@@ -77,15 +77,21 @@ export default function SignInPage() {
                 autoComplete="current-password"
               />
 
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formData.rememberMe}
-                  onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                  className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
-                />
-                <span className="text-sm text-stone-600">Stay signed in</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={formData.rememberMe}
+                    onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
+                    className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                  />
+                  <span className="text-sm text-stone-600">Stay signed in</span>
+                </label>
+
+                <Link href="/auth/forgot-password" className="text-sm text-brand-600 hover:text-brand-700 font-medium">
+                  Forgot password?
+                </Link>
+              </div>
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">

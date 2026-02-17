@@ -3,7 +3,7 @@
 
 'use server'
 
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI } from '@google/genai'
 import { z } from 'zod'
 
 const MODEL = 'gemini-2.5-flash'
@@ -114,28 +114,25 @@ export async function parseDocumentWithVision(
     throw new Error('GEMINI_API_KEY is not configured. File import requires a Gemini API key.')
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey)
-  const model = genAI.getGenerativeModel({
-    model: MODEL,
-    systemInstruction: VISION_SYSTEM_PROMPT,
-  })
-
+  const ai = new GoogleGenAI({ apiKey })
   const isPdf = mediaType === 'application/pdf'
 
-  const result = await model.generateContent([
-    {
-      inlineData: {
-        mimeType: mediaType,
-        data: base64Data,
+  const response = await ai.models.generateContent({
+    model: MODEL,
+    contents: [
+      {
+        inlineData: {
+          mimeType: mediaType,
+          data: base64Data,
+        },
       },
-    },
-    {
-      text: `Analyze this ${isPdf ? 'PDF document' : 'image'}${filename ? ` (filename: ${filename})` : ''}. Detect the content type and extract structured data. Return only valid JSON.`,
-    },
-  ])
-
-  const response = result.response
-  const rawText = response.text()
+      {
+        text: `Analyze this ${isPdf ? 'PDF document' : 'image'}${filename ? ` (filename: ${filename})` : ''}. Detect the content type and extract structured data. Return only valid JSON.`,
+      },
+    ],
+    config: { systemInstruction: VISION_SYSTEM_PROMPT },
+  })
+  const rawText = response.text
 
   if (!rawText) {
     throw new Error('No text response from AI')

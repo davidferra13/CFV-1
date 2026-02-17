@@ -30,6 +30,7 @@ import { MessageThread } from '@/components/messages/message-thread'
 import { MessageLogForm } from '@/components/messages/message-log-form'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { EventExportButton } from '@/components/exports/event-export-button'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { createServerClient } from '@/lib/supabase/server'
@@ -247,7 +248,10 @@ export default async function EventDetailPage({
 
       {/* Financial Summary */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Financial Summary</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold">Financial Summary</h2>
+          <EventExportButton eventId={event.id} />
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
             <dt className="text-sm font-medium text-stone-500">Quoted Price</dt>
