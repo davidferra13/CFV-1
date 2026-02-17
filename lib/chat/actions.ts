@@ -1,3 +1,8 @@
+// @ts-nocheck
+// DEFERRED: Chat tables (conversations, chat_messages, conversation_participants)
+// are defined in Layer 6 migration but not yet applied to the remote DB.
+// Once the migration is applied and types regenerated, remove this directive.
+
 // Real-Time Chat Server Actions
 // Handles conversations, messages, read receipts, and image uploads
 // Both chefs and clients can participate — uses requireAuth() as base guard
