@@ -175,6 +175,24 @@ export async function createMenu(input: CreateMenuInput) {
   })
 
   revalidatePath('/menus')
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'menu_created',
+      domain: 'menu',
+      entityType: 'menu',
+      entityId: menu.id,
+      summary: `Created menu: ${validated.name}${validated.is_template ? ' (template)' : ''}`,
+      context: { name: validated.name, is_template: validated.is_template, event_id: validated.event_id },
+    })
+  } catch (err) {
+    console.error('[createMenu] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, menu }
 }
 
@@ -310,6 +328,24 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
 
   revalidatePath('/menus')
   revalidatePath(`/menus/${menuId}`)
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'menu_updated',
+      domain: 'menu',
+      entityType: 'menu',
+      entityId: menuId,
+      summary: `Updated menu: ${menu.name} — ${Object.keys(validated).join(', ')}`,
+      context: { name: menu.name, changed_fields: Object.keys(validated) },
+    })
+  } catch (err) {
+    console.error('[updateMenu] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, menu }
 }
 
@@ -551,6 +587,24 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
 
   revalidatePath('/menus')
   revalidatePath(`/menus/${menuId}`)
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'menu_transitioned',
+      domain: 'menu',
+      entityType: 'menu',
+      entityId: menuId,
+      summary: `Menu moved from ${currentStatus} → ${toStatus}`,
+      context: { from_status: currentStatus, to_status: toStatus, reason },
+    })
+  } catch (err) {
+    console.error('[transitionMenu] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 

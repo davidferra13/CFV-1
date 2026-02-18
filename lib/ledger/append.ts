@@ -126,7 +126,7 @@ export async function createAdjustment({
     throw new Error('Event not found or does not belong to your tenant')
   }
 
-  return appendLedgerEntryInternal({
+  const result = await appendLedgerEntryInternal({
     tenant_id: user.tenantId!,
     client_id: event.client_id,
     entry_type: 'adjustment',
@@ -137,6 +137,26 @@ export async function createAdjustment({
     internal_notes: internal_notes || `Adjusted by ${user.email} at ${new Date().toISOString()}`,
     created_by: user.id
   })
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'ledger_entry_created',
+      domain: 'financial',
+      entityType: 'ledger_entry',
+      entityId: result.entry?.id,
+      summary: `Recorded adjustment: $${(amount_cents / 100).toFixed(2)} — ${description}`,
+      context: { amount_cents, entry_type: 'adjustment', payment_method, event_id, amount_display: `$${(amount_cents / 100).toFixed(2)}` },
+      clientId: event.client_id,
+    })
+  } catch (err) {
+    console.error('[createAdjustment] Activity log failed (non-blocking):', err)
+  }
+
+  return result
 }
 
 /**

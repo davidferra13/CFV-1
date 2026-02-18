@@ -115,6 +115,23 @@ export async function createAAR(input: CreateAARInput) {
   revalidatePath('/dashboard')
   revalidatePath('/aar')
 
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'aar_filed',
+      domain: 'operational',
+      entityType: 'after_action_review',
+      entityId: aar.id,
+      summary: `Filed after-action review — calm: ${validated.calm_rating}/5, prep: ${validated.preparation_rating}/5`,
+      context: { event_id: validated.event_id, calm_rating: validated.calm_rating, preparation_rating: validated.preparation_rating, execution_rating: validated.execution_rating },
+    })
+  } catch (err) {
+    console.error('[createAAR] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, aar }
 }
 

@@ -62,7 +62,7 @@ export async function getClientChefActivity(clientId: string, limit = 30): Promi
 
 // ─── Get Activity Counts by Domain (for filter badges) ─────────────────────
 
-export async function getActivityCountsByDomain(daysBack = 7): Promise<Record<ChefActivityDomain, number>> {
+export async function getActivityCountsByDomain(daysBack = 7): Promise<Partial<Record<ChefActivityDomain, number>>> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -76,7 +76,7 @@ export async function getActivityCountsByDomain(daysBack = 7): Promise<Record<Ch
 
   if (error) {
     console.error('[getActivityCountsByDomain] Error:', error)
-    return {} as Record<ChefActivityDomain, number>
+    return {}
   }
 
   const counts: Record<string, number> = {}
@@ -84,5 +84,5 @@ export async function getActivityCountsByDomain(daysBack = 7): Promise<Record<Ch
     counts[row.domain] = (counts[row.domain] || 0) + 1
   }
 
-  return counts as Record<ChefActivityDomain, number>
+  return counts as Partial<Record<ChefActivityDomain, number>>
 }

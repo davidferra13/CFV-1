@@ -2,6 +2,7 @@
 // "What did I do last?" + "Where should I pick up?"
 
 import type { Metadata } from 'next'
+import type { ChefActivityDomain } from '@/lib/activity/chef-types'
 import { getResumeItems } from '@/lib/activity/resume'
 import { getChefActivity, getActivityCountsByDomain } from '@/lib/activity/chef-actions'
 import { getRecentActivity } from '@/lib/activity/actions'
@@ -15,7 +16,7 @@ export default async function ActivityPage() {
     safe('resumeItems', () => getResumeItems(), []),
     safe('chefActivity', () => getChefActivity({ limit: 100, daysBack: 30 }), []),
     safe('clientActivity', () => getRecentActivity(50), []),
-    safe('domainCounts', () => getActivityCountsByDomain(7), {}),
+    safe('domainCounts', () => getActivityCountsByDomain(7), {} as Partial<Record<ChefActivityDomain, number>>),
   ])
 
   return (

@@ -22,6 +22,8 @@ import {
   getNextUpcomingEvent,
 } from '@/lib/dashboard/actions'
 import { getActiveClients, getRecentActivity } from '@/lib/activity/actions'
+import { getChefActivitySummary } from '@/lib/activity/chef-actions'
+import { ChefActivityFeed } from '@/components/activity/chef-activity-feed'
 import { formatCurrency } from '@/lib/utils/currency'
 import { WeekStrip } from '@/components/dashboard/week-strip'
 import { TimelineView } from '@/components/scheduling/timeline-view'
@@ -106,6 +108,7 @@ export default async function ChefDashboard() {
     nextEvent,
     activeClients,
     recentActivity,
+    chefActivity,
   ] = await Promise.all([
     safe('queue', getPriorityQueue, emptyQueue),
     safe('clients', getClients, []),
@@ -123,6 +126,7 @@ export default async function ChefDashboard() {
     safe('nextEvent', getNextUpcomingEvent, null),
     safe('activeClients', () => getActiveClients(15), []),
     safe('recentActivity', () => getRecentActivity(15), []),
+    safe('chefActivity', () => getChefActivitySummary(5), []),
   ])
 
   const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
@@ -534,11 +538,22 @@ export default async function ChefDashboard() {
       </div>
 
       {/* ============================================ */}
-      {/* SECTION 8: CLIENT ACTIVITY                   */}
+      {/* SECTION 8: ACTIVITY                           */}
       {/* ============================================ */}
       <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Client Activity</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Activity</h2>
+          <Link href="/activity" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
+            View all &rarr;
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="border border-stone-200 rounded-lg p-4">
+            <h3 className="text-sm font-semibold text-stone-700 mb-3">My Recent Activity</h3>
+            <div className="max-h-64 overflow-y-auto">
+              <ChefActivityFeed entries={chefActivity} compact />
+            </div>
+          </div>
           <ActiveClientsCard clients={activeClients} />
           <ActivityFeed events={recentActivity} />
         </div>

@@ -100,6 +100,23 @@ export async function createExpense(input: CreateExpenseInput) {
   }
   revalidatePath('/financials')
 
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'expense_created',
+      domain: 'financial',
+      entityType: 'expense',
+      entityId: data.id,
+      summary: `Added expense: $${(validated.amount_cents / 100).toFixed(2)} — ${validated.description || validated.category}`,
+      context: { amount_cents: validated.amount_cents, category: validated.category, event_id: validated.event_id, amount_display: `$${(validated.amount_cents / 100).toFixed(2)}` },
+    })
+  } catch (err) {
+    console.error('[createExpense] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, expense: data }
 }
 

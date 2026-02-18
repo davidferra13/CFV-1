@@ -35,6 +35,7 @@ import {
   Globe,
   Building2,
   BarChart3,
+  Activity,
 } from 'lucide-react'
 
 // ─── Types ──────────────────────────────────────────
@@ -47,6 +48,7 @@ const standaloneTop: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays },
   { href: '/queue', label: 'Queue', icon: ListChecks },
+  { href: '/activity', label: 'Activity', icon: Activity },
   { href: '/network', label: 'Network', icon: Handshake },
 ]
 

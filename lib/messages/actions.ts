@@ -96,6 +96,25 @@ export async function createMessage(input: CreateMessageInput) {
   if (validated.event_id) revalidatePath(`/events/${validated.event_id}`)
   if (validated.client_id) revalidatePath(`/clients/${validated.client_id}`)
 
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const preview = validated.body.length > 60 ? validated.body.slice(0, 60) + '…' : validated.body
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: validated.direction === 'outbound' ? 'message_sent' : 'message_drafted',
+      domain: 'communication',
+      entityType: 'message',
+      entityId: message.id,
+      summary: `${validated.direction === 'outbound' ? 'Sent' : 'Logged'} ${validated.channel} message: "${preview}"`,
+      context: { channel: validated.channel, direction: validated.direction },
+      clientId: validated.client_id || undefined,
+    })
+  } catch (err) {
+    console.error('[createMessage] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, message }
 }
 

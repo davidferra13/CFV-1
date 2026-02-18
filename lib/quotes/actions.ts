@@ -123,6 +123,26 @@ export async function createQuote(input: CreateQuoteInput) {
   }
 
   revalidatePath('/quotes')
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const amount = validated.total_quoted_cents ? `$${(validated.total_quoted_cents / 100).toFixed(2)}` : ''
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'quote_created',
+      domain: 'quote',
+      entityType: 'quote',
+      entityId: quote.id,
+      summary: `Created quote${validated.quote_name ? `: ${validated.quote_name}` : ''} — ${amount}`,
+      context: { quote_name: validated.quote_name, total_cents: validated.total_quoted_cents, amount_display: amount },
+      clientId: validated.client_id,
+    })
+  } catch (err) {
+    console.error('[createQuote] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, quote }
 }
 
@@ -387,6 +407,26 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
 
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${id}`)
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const action = newStatus === 'sent' ? 'quote_sent' : 'quote_updated'
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action,
+      domain: 'quote',
+      entityType: 'quote',
+      entityId: id,
+      summary: `Quote moved from ${currentStatus} → ${newStatus}`,
+      context: { from_status: currentStatus, to_status: newStatus, total_cents: updated.total_quoted_cents },
+      clientId: updated.client_id,
+    })
+  } catch (err) {
+    console.error('[transitionQuote] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, quote: updated }
 }
 

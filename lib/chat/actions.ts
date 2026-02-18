@@ -506,6 +506,26 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     )
   }
 
+  // Log chef activity (non-blocking, chef only)
+  if (user.role === 'chef' && user.tenantId) {
+    try {
+      const { logChefActivity } = await import('@/lib/activity/log-chef')
+      const preview = validated.body ? (validated.body.length > 60 ? validated.body.slice(0, 60) + '…' : validated.body) : 'message'
+      await logChefActivity({
+        tenantId: user.tenantId,
+        actorId: user.id,
+        action: 'chat_message_sent',
+        domain: 'communication',
+        entityType: 'chat_message',
+        entityId: message.id,
+        summary: `Sent chat message: "${preview}"`,
+        context: { conversation_id: validated.conversation_id, message_type: validated.message_type },
+      })
+    } catch (err) {
+      console.error('[sendChatMessage] Activity log failed (non-blocking):', err)
+    }
+  }
+
   return { success: true as const, message: message as ChatMessage }
 }
 

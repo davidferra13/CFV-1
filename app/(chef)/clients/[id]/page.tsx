@@ -24,6 +24,9 @@ import { getClientNotes } from '@/lib/notes/actions'
 import { getClientConnections } from '@/lib/connections/actions'
 import { getClients } from '@/lib/clients/actions'
 import { ClientConnections } from '@/components/clients/client-connections'
+import { getClientChefActivity } from '@/lib/activity/chef-actions'
+import { getClientTimeline } from '@/lib/activity/actions'
+import { ClientActivityTimeline } from '@/components/activity/client-activity-timeline'
 import type { Milestone } from '@/lib/clients/milestones'
 
 const TIER_COLORS: Record<string, string> = {
@@ -49,7 +52,7 @@ interface ClientDetailPageProps {
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
   await requireChef()
 
-  const [client, messages, templates, loyaltyProfile, clientNotes, connections, allClients] = await Promise.all([
+  const [client, messages, templates, loyaltyProfile, clientNotes, connections, allClients, chefActivity, clientPortalActivity] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
     getResponseTemplates(),
@@ -57,6 +60,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientNotes(params.id),
     getClientConnections(params.id),
     getClients(),
+    getClientChefActivity(params.id).catch(() => []),
+    getClientTimeline(params.id).catch(() => []),
   ])
 
   if (!client) {
@@ -286,6 +291,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </CardContent>
       </Card>
+
+      {/* Activity Timeline */}
+      <ClientActivityTimeline
+        chefActivity={chefActivity}
+        clientActivity={clientPortalActivity}
+      />
 
       {/* Event History */}
       <Card>

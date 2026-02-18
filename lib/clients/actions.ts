@@ -130,6 +130,23 @@ export async function inviteClient(input: InviteClientInput) {
     console.error('[inviteClient] Email failed (non-blocking):', emailErr)
   }
 
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'client_created',
+      domain: 'client',
+      entityType: 'client_invitation',
+      entityId: invitation.id,
+      summary: `Invited new client: ${validated.full_name} (${validated.email})`,
+      context: { client_name: validated.full_name, email: validated.email },
+    })
+  } catch (err) {
+    console.error('[inviteClient] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, invitation, invitationUrl }
 }
 
@@ -254,6 +271,25 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
 
   revalidatePath('/clients')
   revalidatePath(`/clients/${clientId}`)
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'client_updated',
+      domain: 'client',
+      entityType: 'client',
+      entityId: clientId,
+      summary: `Updated client: ${client.full_name} — ${Object.keys(validated).join(', ')}`,
+      context: { client_name: client.full_name, changed_fields: Object.keys(validated) },
+      clientId,
+    })
+  } catch (err) {
+    console.error('[updateClient] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, client }
 }
 
