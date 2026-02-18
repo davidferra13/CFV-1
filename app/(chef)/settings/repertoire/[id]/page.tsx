@@ -38,7 +38,7 @@ export default async function EditPalettePage({
         </div>
         <h1 className="text-3xl font-bold text-stone-900 mt-2">{palette.season_name}</h1>
         <p className="text-stone-600 mt-1">
-          Define the culinary and operational reality for this season.
+          Add your notes, seasonal ingredients, and go-to dishes for {palette.season_name}.
         </p>
       </div>
 

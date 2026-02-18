@@ -1,6 +1,5 @@
 // Seasonal Sidebar — Schedule Integration
-// Full seasonal context panel: sensory anchor, micro-windows, context profiles,
-// pantry notes, energy reality, proven wins.
+// Shows the active season's notes, available ingredients, and go-to dishes.
 
 import type { SeasonalPalette } from '@/lib/seasonal/types'
 import { getActiveMicroWindows, getEndingMicroWindows } from '@/lib/seasonal/helpers'
@@ -29,7 +28,9 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
       <Card>
         <CardContent className="p-4">
           <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-stone-900">🌸 {palette.season_name} ({formatRange(palette.start_month_day, palette.end_month_day)})</h3>
+            <h3 className="font-semibold text-stone-900">
+              {palette.season_name} ({formatRange(palette.start_month_day, palette.end_month_day)})
+            </h3>
             <Link
               href={`/settings/repertoire/${palette.id}`}
               className="text-xs text-brand-600 hover:text-brand-700"
@@ -38,61 +39,54 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
             </Link>
           </div>
           {palette.sensory_anchor ? (
-            <p className="text-sm text-stone-600 italic mt-2">
-              <span className="font-semibold">The Vibe:</span> &ldquo;{palette.sensory_anchor}&rdquo;
+            <p className="text-sm text-stone-600 mt-2">
+              {palette.sensory_anchor}
             </p>
           ) : (
             <p className="text-sm text-stone-400 mt-2">
-              No vibe set.{' '}
+              No notes yet.{' '}
               <Link href={`/settings/repertoire/${palette.id}`} className="text-brand-600 hover:text-brand-700">
-                Add a vibe
+                Add notes
               </Link>
             </p>
           )}
         </CardContent>
       </Card>
 
-      {/* Empty state prompt */}
+      {/* Empty state */}
       {isEmpty && (
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-sm text-stone-500 mb-2">
-              Your {palette.season_name} season is unconfigured.
+              Your {palette.season_name} palette is empty.
             </p>
             <p className="text-xs text-stone-400">
-              Add a vibe, peak ingredients, and best dishes to guide your planning.
+              Add notes, seasonal ingredients, and go-to dishes to build your reference.
             </p>
           </CardContent>
         </Card>
       )}
 
-      {/* Peak Ingredients */}
+      {/* Seasonal Ingredients */}
       {(activeMicroWindows.length > 0 || endingMicroWindows.length > 0) && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Peak Ingredients</CardTitle>
+            <CardTitle className="text-sm">What&apos;s In Season</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 space-y-2">
             {activeMicroWindows.map((w, i) => {
-              const isEnding = endingMicroWindows.some(e => e.name === w.name)
+              const isEnding = endingMicroWindows.some(e => e.ingredient === w.ingredient)
               return (
                 <div
                   key={i}
                   className={`flex items-start gap-2 text-sm p-2 rounded-lg ${
-                    w.urgency === 'high'
-                      ? 'bg-red-50 border border-red-100'
-                      : isEnding
+                    isEnding
                       ? 'bg-amber-50 border border-amber-100'
                       : 'bg-stone-50'
                   }`}
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-1.5">
-                      {w.urgency === 'high' && (
-                        <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
-                      )}
-                      <span className="font-medium text-stone-900">{w.ingredient}</span>
-                    </div>
+                    <span className="font-medium text-stone-900">{w.ingredient}</span>
                     <p className="text-xs text-stone-500 mt-0.5">
                       {w.start_date} to {w.end_date}
                       {isEnding && <span className="text-amber-600 font-medium"> &mdash; ending soon</span>}
@@ -104,12 +98,12 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
             })}
             {/* Show ending-only not already shown */}
             {endingMicroWindows
-              .filter(e => !activeMicroWindows.some(a => a.name === e.name))
+              .filter(e => !activeMicroWindows.some(a => a.ingredient === e.ingredient))
               .map((w, i) => (
                 <div key={`ending-${i}`} className="flex items-start gap-2 text-sm p-2 rounded-lg bg-amber-50 border border-amber-100">
                   <div className="flex-1">
                     <span className="font-medium text-stone-900">{w.ingredient}</span>
-                    <p className="text-xs text-amber-600 font-medium mt-0.5">Window ending soon</p>
+                    <p className="text-xs text-amber-600 font-medium mt-0.5">Ending soon</p>
                   </div>
                 </div>
               ))}
@@ -117,11 +111,11 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
         </Card>
       )}
 
-      {/* Best Dishes */}
+      {/* Go-To Dishes */}
       {palette.proven_wins.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Best Dishes</CardTitle>
+            <CardTitle className="text-sm">Go-To Dishes</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <ul className="space-y-1.5">
@@ -142,7 +136,6 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
   )
 }
 
-// Format MM-DD range into readable text
 function formatRange(start: string, end: string): string {
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   const [sm, sd] = start.split('-').map(Number)

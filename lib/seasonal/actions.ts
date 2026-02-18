@@ -1,5 +1,5 @@
 // Seasonal Palette Server Actions
-// CRUD for seasonal palettes — creative thesis, micro-windows, context profiles.
+// CRUD for seasonal palettes — season notes, ingredients, go-to dishes.
 // Table added in migration 20260217000002_seasonal_palettes.sql.
 // Type assertions used until types/database.ts is regenerated.
 
@@ -11,7 +11,6 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { SeasonalPalette } from './types'
 import { DEFAULT_SEASONS } from './types'
-import { getCurrentSeason } from './helpers'
 
 // Type assertion helper — seasonal_palettes not in generated types until migration applied
 function fromSeasonalPalettes(supabase: ReturnType<typeof createServerClient>): any {
@@ -23,19 +22,13 @@ function fromSeasonalPalettes(supabase: ReturnType<typeof createServerClient>): 
 // ============================================
 
 const MicroWindowSchema = z.object({
-  name: z.string().min(1, 'Name required'),
   ingredient: z.string().min(1, 'Ingredient required'),
-  start_date: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format'),
-  end_date: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format'),
-  urgency: z.enum(['high', 'normal']),
+  start_date: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format').or(z.literal('')),
+  end_date: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format').or(z.literal('')),
   notes: z.string().default(''),
-})
-
-const ContextProfileSchema = z.object({
-  name: z.string().min(1, 'Name required'),
-  kitchen_reality: z.string().min(1, 'Kitchen reality required'),
-  menu_guardrails: z.string().default(''),
-  notes: z.string().default(''),
+  // Legacy fields — accepted but not required
+  name: z.string().optional(),
+  urgency: z.enum(['high', 'normal']).optional(),
 })
 
 const ProvenWinSchema = z.object({
@@ -50,9 +43,9 @@ const UpdatePaletteSchema = z.object({
   is_active: z.boolean().optional(),
   start_month_day: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format'),
   end_month_day: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format'),
-  sensory_anchor: z.string().nullable().optional(), // "The Vibe"
-  micro_windows: z.array(MicroWindowSchema).optional(), // "Peak Ingredients"
-  proven_wins: z.array(ProvenWinSchema).optional(), // "Best Dishes"
+  sensory_anchor: z.string().nullable().optional(),
+  micro_windows: z.array(MicroWindowSchema).optional(),
+  proven_wins: z.array(ProvenWinSchema).optional(),
 })
 
 export type UpdatePaletteInput = z.infer<typeof UpdatePaletteSchema>
@@ -109,15 +102,13 @@ export async function getSeasonalPaletteById(paletteId: string): Promise<Seasona
 
 /**
  * Get the currently active palette (for Recipe Library banner and Schedule sidebar).
- * Seeds defaults if no palettes exist, then resolves by:
- *   1. Explicit is_active flag
- *   2. Date-range auto-detection from current date
+ * Only returns a palette if the chef has explicitly set one as active.
+ * This makes the feature opt-in — no auto-detection.
  */
 export async function getActivePalette(): Promise<SeasonalPalette | null> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // Try explicit is_active flag first
   const { data } = await fromSeasonalPalettes(supabase)
     .select('*')
     .eq('tenant_id', user.tenantId)
@@ -126,25 +117,7 @@ export async function getActivePalette(): Promise<SeasonalPalette | null> {
     .single()
 
   if (data) return mapRowToPalette(data as any)
-
-  // No explicit active — load all palettes
-  const { data: all } = await fromSeasonalPalettes(supabase)
-    .select('*')
-    .eq('tenant_id', user.tenantId)
-    .order('sort_order', { ascending: true })
-
-  let palettes: SeasonalPalette[]
-
-  if (!all || all.length === 0) {
-    // Seed defaults so the palette always shows on schedule/recipes
-    palettes = await seedDefaultPalettes(user.tenantId!, user.id)
-    if (palettes.length === 0) return null
-  } else {
-    palettes = (all as any[]).map(mapRowToPalette)
-  }
-
-  // Auto-detect current season from date ranges
-  return getCurrentSeason(palettes)
+  return null
 }
 
 // ============================================
@@ -187,7 +160,7 @@ export async function updateSeasonalPalette(paletteId: string, input: UpdatePale
 }
 
 /**
- * Create a new seasonal palette (for custom seasons beyond default 4).
+ * Create a new seasonal palette.
  */
 export async function createSeasonalPalette(input: CreatePaletteInput) {
   const user = await requireChef()
@@ -263,6 +236,28 @@ export async function setActiveSeason(paletteId: string) {
   return { success: true }
 }
 
+/**
+ * Deactivate all seasons (opt out of seasonal palette display).
+ */
+export async function deactivateAllSeasons() {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await fromSeasonalPalettes(supabase)
+    .update({ is_active: false, updated_by: user.id })
+    .eq('tenant_id', user.tenantId)
+
+  if (error) {
+    console.error('[deactivateAllSeasons] Error:', error)
+    throw new Error('Failed to deactivate seasons')
+  }
+
+  revalidatePath('/settings/repertoire')
+  revalidatePath('/recipes')
+  revalidatePath('/schedule')
+  return { success: true }
+}
+
 // ============================================
 // INTERNAL HELPERS
 // ============================================
@@ -301,7 +296,6 @@ function mapRowToPalette(row: Record<string, unknown>): SeasonalPalette {
     sensory_anchor: (row.sensory_anchor as string) ?? null,
     micro_windows: (row.micro_windows as any[]) ?? [],
     proven_wins: (row.proven_wins as any[]) ?? [],
-    // removed deprecated fields: context_profiles, pantry_and_preserve, chef_energy_reality
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
   }

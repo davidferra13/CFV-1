@@ -1,6 +1,6 @@
 // Seasonal Banner — Recipe Library Integration
-// Displays active season's sensory anchor and micro-window alerts.
-// Renders nothing if no active palette (graceful degradation).
+// Shows the active season's notes and what ingredients are currently available.
+// Renders nothing if no active palette.
 
 import type { SeasonalPalette, MicroWindow } from '@/lib/seasonal/types'
 
@@ -38,52 +38,43 @@ export function SeasonalBanner({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h3 className={`font-semibold text-sm uppercase tracking-wide ${textClass}`}>
-            🌸 {palette.season_name} ({palette.start_month_day} – {palette.end_month_day})
+            {palette.season_name}
           </h3>
           {palette.sensory_anchor && (
-            <p className={`text-sm mt-1 italic ${textClass} opacity-80`}>
-              <span className="font-semibold">The Vibe:</span> &ldquo;{palette.sensory_anchor}&rdquo;
+            <p className={`text-sm mt-1 ${textClass} opacity-80`}>
+              {palette.sensory_anchor}
             </p>
           )}
         </div>
       </div>
 
-      {/* Peak Ingredients badges */}
+      {/* Available ingredients */}
       {(activeMicroWindows.length > 0 || endingMicroWindows.length > 0) && (
         <div className="flex flex-wrap gap-2 mt-3">
           {activeMicroWindows.map((w, i) => {
-            const isEnding = endingMicroWindows.some(e => e.name === w.name)
+            const isEnding = endingMicroWindows.some(e => e.ingredient === w.ingredient)
             return (
               <span
                 key={`active-${i}`}
                 className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
-                  w.urgency === 'high'
-                    ? 'bg-red-100 text-red-700 ring-1 ring-red-200'
-                    : isEnding
+                  isEnding
                     ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200'
                     : 'bg-white/70 text-stone-600 ring-1 ring-stone-200'
                 }`}
               >
-                {w.urgency === 'high' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                )}
-                {isEnding && w.urgency !== 'high' && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                )}
                 {w.ingredient}
                 {isEnding && <span className="text-[10px] opacity-70">ending soon</span>}
               </span>
             )
           })}
-          {/* Show ending-only windows not already shown as active */}
+          {/* Show ending-only items not already shown as active */}
           {endingMicroWindows
-            .filter(e => !activeMicroWindows.some(a => a.name === e.name))
+            .filter(e => !activeMicroWindows.some(a => a.ingredient === e.ingredient))
             .map((w, i) => (
               <span
                 key={`ending-${i}`}
                 className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
                 {w.ingredient}
                 <span className="text-[10px] opacity-70">ending soon</span>
               </span>

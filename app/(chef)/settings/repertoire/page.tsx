@@ -22,7 +22,7 @@ export default async function RepertoirePage() {
         </div>
         <h1 className="text-3xl font-bold text-stone-900 mt-2">Seasonal Palettes</h1>
         <p className="text-stone-600 mt-1">
-          Define your creative thesis for each season. The active palette guides your Recipe Bible and Schedule sidebar.
+          Keep track of what&apos;s available each season so you can plan menus without guessing.
         </p>
       </div>
 
