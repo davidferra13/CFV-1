@@ -21,7 +21,7 @@ const CreateRuleSchema = z.object({
     value: z.union([z.string(), z.number(), z.boolean(), z.array(z.string())]),
   })).default([]),
   action_type: z.string().min(1, 'Action required'),
-  action_config: z.record(z.unknown()).default({}),
+  action_config: z.record(z.string(), z.unknown()).default({}),
   priority: z.number().default(0),
 })
 

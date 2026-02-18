@@ -39,6 +39,7 @@ export function RuleBuilder({ onClose }: RuleBuilderProps) {
         conditions,
         action_type: actionType,
         action_config: actionConfig,
+        priority: 0,
       })
       router.refresh()
       onClose()

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { transitionInquiry, convertInquiryToEvent, deleteInquiry } from '@/lib/inquiries/actions'
+import { releaseToMarketplace } from '@/lib/contact/claim'
 
 type InquiryStatus =
   | 'new'
@@ -26,7 +27,7 @@ type Inquiry = {
   converted_to_event_id: string | null
 }
 
-export function InquiryTransitions({ inquiry }: { inquiry: Inquiry }) {
+export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; canRelease?: boolean }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -60,6 +61,24 @@ export function InquiryTransitions({ inquiry }: { inquiry: Inquiry }) {
     } catch (err) {
       console.error('Convert error:', err)
       setError(err instanceof Error ? err.message : 'Conversion failed')
+      setLoading(false)
+    }
+  }
+
+  const handleRelease = async () => {
+    if (!confirm('Release this lead back to the marketplace? Other chefs will be able to claim it.')) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const result = await releaseToMarketplace(inquiry.id)
+      if (result.success) {
+        router.push('/inquiries')
+      }
+    } catch (err) {
+      console.error('Release error:', err)
+      setError(err instanceof Error ? err.message : 'Release failed')
       setLoading(false)
     }
   }
@@ -141,6 +160,15 @@ export function InquiryTransitions({ inquiry }: { inquiry: Inquiry }) {
               >
                 Mark Awaiting Client
               </Button>
+              {canRelease && (
+                <Button
+                  variant="secondary"
+                  onClick={handleRelease}
+                  disabled={loading}
+                >
+                  Release to Marketplace
+                </Button>
+              )}
               <Button
                 variant="danger"
                 onClick={() => handleTransition('declined')}

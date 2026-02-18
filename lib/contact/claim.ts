@@ -160,3 +160,90 @@ export async function dismissContactSubmission(submissionId: string) {
 
   return { success: true }
 }
+
+/**
+ * Check if an inquiry has a linked contact submission.
+ * Used to determine if "Release to Marketplace" should be shown.
+ */
+export async function getLinkedContactSubmission(inquiryId: string): Promise<{ id: string } | null> {
+  await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await (supabase as any)
+    .from('contact_submissions')
+    .select('id')
+    .eq('inquiry_id', inquiryId)
+    .single()
+
+  return data ?? null
+}
+
+/**
+ * Release an auto-assigned inquiry back to the marketplace.
+ * Unclaims the contact submission and deletes the inquiry.
+ * Only works for inquiries in 'new' status (not yet worked on).
+ */
+export async function releaseToMarketplace(inquiryId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Verify inquiry exists, belongs to this chef, and is still 'new'
+  const { data: inquiry, error: inquiryError } = await supabase
+    .from('inquiries')
+    .select('id, status, tenant_id')
+    .eq('id', inquiryId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (inquiryError || !inquiry) {
+    throw new Error('Inquiry not found')
+  }
+
+  if (inquiry.status !== 'new') {
+    throw new Error('Can only release inquiries in "new" status. Decline the inquiry instead.')
+  }
+
+  // Find the linked contact submission
+  const { data: submission } = await (supabase as any)
+    .from('contact_submissions')
+    .select('id')
+    .eq('inquiry_id', inquiryId)
+    .single()
+
+  if (!submission) {
+    throw new Error('No linked contact submission found — this inquiry was not auto-assigned')
+  }
+
+  // Unclaim the submission so it reappears in the marketplace
+  const { error: unclaimError } = await (supabase as any)
+    .from('contact_submissions')
+    .update({
+      claimed_by_chef_id: null,
+      claimed_at: null,
+      inquiry_id: null,
+    })
+    .eq('id', submission.id)
+
+  if (unclaimError) {
+    console.error('[releaseToMarketplace] Unclaim error:', unclaimError)
+    throw new Error('Failed to release submission back to marketplace')
+  }
+
+  // Delete the auto-created inquiry (status is 'new', so this is safe)
+  const { error: deleteError } = await supabase
+    .from('inquiries')
+    .delete()
+    .eq('id', inquiryId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (deleteError) {
+    console.error('[releaseToMarketplace] Delete error:', deleteError)
+    throw new Error('Failed to delete auto-assigned inquiry')
+  }
+
+  revalidatePath('/leads')
+  revalidatePath('/inquiries')
+  revalidatePath('/dashboard')
+
+  return { success: true }
+}

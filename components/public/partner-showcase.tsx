@@ -10,7 +10,7 @@ type Image = {
   image_url: string
   caption: string | null
   season: string | null
-  display_order: number
+  display_order: number | null
   location_id: string | null
 }
 

@@ -75,7 +75,7 @@ export default async function ChefProfilePage({ params }: Props) {
               </p>
             </div>
 
-            <PartnerShowcase partners={partners} chefName={chef.display_name} />
+            <PartnerShowcase partners={partners as any} chefName={chef.display_name} />
           </div>
         </section>
       )}
@@ -88,13 +88,13 @@ export default async function ChefProfilePage({ params }: Props) {
           </h2>
           <p className="text-stone-600 mt-3">
             Choose a venue above and hire {chef.display_name} for an unforgettable dining experience.
-            Or get in touch to discuss your perfect event.
+            Or tell us about your event and we&apos;ll be in touch.
           </p>
           <a
-            href="/contact"
+            href={`/chef/${params.slug}/inquire`}
             className="inline-block mt-6 px-8 py-3 bg-stone-900 text-white rounded-lg font-medium hover:bg-stone-800 transition-colors"
           >
-            Get in Touch
+            Inquire About an Event
           </a>
         </div>
       </section>

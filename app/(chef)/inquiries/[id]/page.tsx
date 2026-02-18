@@ -14,6 +14,7 @@ import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-s
 import { MessageThread } from '@/components/messages/message-thread'
 import { MessageLogForm } from '@/components/messages/message-log-form'
 import { getGoogleConnection } from '@/lib/gmail/google-auth'
+import { getLinkedContactSubmission } from '@/lib/contact/claim'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -64,12 +65,13 @@ export default async function InquiryDetailPage({
 }) {
   await requireChef()
 
-  const [inquiry, quotes, messages, templates, gmailStatus] = await Promise.all([
+  const [inquiry, quotes, messages, templates, gmailStatus, linkedSubmission] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
     getMessageThread('inquiry', params.id),
     getResponseTemplates(),
     getGoogleConnection(),
+    getLinkedContactSubmission(params.id),
   ])
 
   if (!inquiry) {
@@ -329,7 +331,10 @@ export default async function InquiryDetailPage({
       </Card>
 
       {/* Actions (Transitions) */}
-      <InquiryTransitions inquiry={inquiry} />
+      <InquiryTransitions
+        inquiry={inquiry}
+        canRelease={!!linkedSubmission && inquiry.status === 'new'}
+      />
 
       {/* Notes */}
       {notes && (

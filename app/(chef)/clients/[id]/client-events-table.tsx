@@ -7,10 +7,17 @@ import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
-import { Tables } from '@/types/database'
+type EventRow = {
+  id: string
+  occasion: string | null
+  event_date: string
+  guest_count: number
+  status: string
+  quoted_price_cents: number | null
+}
 
 interface ClientEventsTableProps {
-  events: Tables<'events'>[]
+  events: EventRow[]
 }
 
 export function ClientEventsTable({ events }: ClientEventsTableProps) {

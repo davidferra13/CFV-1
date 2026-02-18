@@ -74,9 +74,9 @@ export async function POST(req: Request) {
       tenant_id: connection.tenant_id,
       wix_submission_id: wixSubmissionId,
       wix_form_id: (payload.formId as string) || null,
-      raw_payload: payload,
+      raw_payload: payload as any,
       status: 'pending',
-    })
+    } as any)
     .select('id')
     .single()
 

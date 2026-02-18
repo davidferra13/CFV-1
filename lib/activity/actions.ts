@@ -37,8 +37,9 @@ export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient
   }
 
   // Deduplicate: keep only the latest activity per client
+  const rows = (data || []) as any[]
   const clientMap = new Map<string, ActiveClient>()
-  for (const row of data || []) {
+  for (const row of rows) {
     if (!row.client_id || clientMap.has(row.client_id)) continue
     const clientData = row.clients as { full_name: string } | null
     clientMap.set(row.client_id, {
@@ -71,7 +72,7 @@ export async function getRecentActivity(limit = 20): Promise<ActivityEvent[]> {
     return []
   }
 
-  return (data || []) as ActivityEvent[]
+  return (data || []) as unknown as ActivityEvent[]
 }
 
 // ─── Get Client Timeline ─────────────────────────────────────────────────
@@ -93,7 +94,7 @@ export async function getClientTimeline(clientId: string, limit = 30): Promise<A
     return []
   }
 
-  return (data || []) as ActivityEvent[]
+  return (data || []) as unknown as ActivityEvent[]
 }
 
 // ─── Get Engagement Stats ────────────────────────────────────────────────
@@ -119,7 +120,7 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', todayStart.toISOString())
 
-  const uniqueToday = new Set((todayData || []).map(r => r.client_id).filter(Boolean))
+  const uniqueToday = new Set(((todayData || []) as any[]).map(r => r.client_id).filter(Boolean))
 
   // Active unique clients this week
   const { data: weekData } = await supabase
@@ -130,7 +131,7 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', weekAgo.toISOString())
 
-  const uniqueWeek = new Set((weekData || []).map(r => r.client_id).filter(Boolean))
+  const uniqueWeek = new Set(((weekData || []) as any[]).map(r => r.client_id).filter(Boolean))
 
   // Total events this week
   const { count } = await supabase

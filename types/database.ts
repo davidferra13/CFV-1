@@ -39,6 +39,67 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_events: {
+        Row: {
+          actor_id: string | null
+          actor_type: string
+          client_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          tenant_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type: string
+          client_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id?: string
+          metadata?: Json | null
+          tenant_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string
+          client_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "activity_events_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       after_action_reviews: {
         Row: {
           calm_rating: number
@@ -174,6 +235,122 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "audit_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_executions: {
+        Row: {
+          action_result: Json | null
+          action_type: string
+          error: string | null
+          executed_at: string
+          id: string
+          rule_id: string
+          status: string
+          tenant_id: string
+          trigger_entity_id: string | null
+          trigger_entity_type: string | null
+          trigger_event: string
+        }
+        Insert: {
+          action_result?: Json | null
+          action_type: string
+          error?: string | null
+          executed_at?: string
+          id?: string
+          rule_id: string
+          status?: string
+          tenant_id: string
+          trigger_entity_id?: string | null
+          trigger_entity_type?: string | null
+          trigger_event: string
+        }
+        Update: {
+          action_result?: Json | null
+          action_type?: string
+          error?: string | null
+          executed_at?: string
+          id?: string
+          rule_id?: string
+          status?: string
+          tenant_id?: string
+          trigger_entity_id?: string | null
+          trigger_entity_type?: string | null
+          trigger_event?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_executions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "automation_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "automation_executions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      automation_rules: {
+        Row: {
+          action_config: Json
+          action_type: string
+          conditions: Json
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          last_fired_at: string | null
+          name: string
+          priority: number
+          tenant_id: string
+          total_fires: number
+          trigger_event: string
+          updated_at: string
+        }
+        Insert: {
+          action_config?: Json
+          action_type: string
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_fired_at?: string | null
+          name: string
+          priority?: number
+          tenant_id: string
+          total_fires?: number
+          trigger_event: string
+          updated_at?: string
+        }
+        Update: {
+          action_config?: Json
+          action_type?: string
+          conditions?: Json
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          last_fired_at?: string | null
+          name?: string
+          priority?: number
+          tenant_id?: string
+          total_fires?: number
+          trigger_event?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_rules_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -1737,6 +1914,8 @@ export type Database = {
           leftover_value_received_cents: number | null
           location_address: string
           location_city: string
+          location_lat: number | null
+          location_lng: number | null
           location_notes: string | null
           location_state: string
           location_zip: string
@@ -1826,6 +2005,8 @@ export type Database = {
           leftover_value_received_cents?: number | null
           location_address: string
           location_city: string
+          location_lat?: number | null
+          location_lng?: number | null
           location_notes?: string | null
           location_state?: string
           location_zip: string
@@ -1915,6 +2096,8 @@ export type Database = {
           leftover_value_received_cents?: number | null
           location_address?: string
           location_city?: string
+          location_lat?: number | null
+          location_lng?: number | null
           location_notes?: string | null
           location_state?: string
           location_zip?: string
@@ -4827,6 +5010,23 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      unified_inbox: {
+        Row: {
+          activity_at: string | null
+          actor_id: string | null
+          client_id: string | null
+          content_type: string | null
+          conversation_id: string | null
+          event_id: string | null
+          id: string | null
+          inquiry_id: string | null
+          is_read: boolean | null
+          preview: string | null
+          source: string | null
+          tenant_id: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
