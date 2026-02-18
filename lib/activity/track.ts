@@ -19,7 +19,7 @@ export async function trackActivity(input: {
   try {
     const supabase = createServerClient({ admin: true })
 
-    await supabase.from('activity_events').insert({
+    await supabase.from('activity_events' as any).insert({
       tenant_id: input.tenantId,
       actor_type: input.actorType,
       actor_id: input.actorId || null,

@@ -23,7 +23,7 @@ export async function evaluateAutomations(
 
     // 1. Find all active rules matching this trigger event for this tenant
     const { data: rules, error } = await supabase
-      .from('automation_rules')
+      .from('automation_rules' as any)
       .select('*')
       .eq('tenant_id', tenantId)
       .eq('trigger_event', triggerEvent)
@@ -62,7 +62,7 @@ export async function evaluateAutomations(
 
         // Update rule stats
         await supabase
-          .from('automation_rules')
+          .from('automation_rules' as any)
           .update({
             last_fired_at: new Date().toISOString(),
             total_fires: rule.total_fires + 1,
@@ -99,7 +99,7 @@ async function logExecution(
   actionResult?: Record<string, unknown>,
   error?: string
 ) {
-  await supabase.from('automation_executions').insert({
+  await supabase.from('automation_executions' as any).insert({
     tenant_id: tenantId,
     rule_id: rule.id,
     trigger_event: rule.trigger_event,

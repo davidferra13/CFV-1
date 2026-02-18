@@ -17,7 +17,7 @@ export async function getUnifiedInbox(filters?: InboxFilters): Promise<UnifiedIn
   const offset = filters?.offset ?? 0
 
   let query = supabase
-    .from('unified_inbox')
+    .from('unified_inbox' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .order('activity_at', { ascending: false })
@@ -64,7 +64,7 @@ export async function getInboxStats(): Promise<InboxStats> {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data, error } = await supabase
-    .from('unified_inbox')
+    .from('unified_inbox' as any)
     .select('source, is_read')
     .eq('tenant_id', user.tenantId!)
     .gte('activity_at', sevenDaysAgo)

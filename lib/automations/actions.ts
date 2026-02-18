@@ -33,7 +33,7 @@ export async function createAutomationRule(input: z.infer<typeof CreateRuleSchem
   const supabase = createServerClient()
 
   const { data, error } = await supabase
-    .from('automation_rules')
+    .from('automation_rules' as any)
     .insert({
       tenant_id: user.tenantId!,
       name: validated.name,
@@ -66,7 +66,7 @@ export async function updateAutomationRule(
   const supabase = createServerClient()
 
   const { error } = await supabase
-    .from('automation_rules')
+    .from('automation_rules' as any)
     .update({
       ...input,
       updated_at: new Date().toISOString(),
@@ -89,7 +89,7 @@ export async function toggleAutomationRule(ruleId: string, isActive: boolean) {
   const supabase = createServerClient()
 
   const { error } = await supabase
-    .from('automation_rules')
+    .from('automation_rules' as any)
     .update({ is_active: isActive, updated_at: new Date().toISOString() })
     .eq('id', ruleId)
     .eq('tenant_id', user.tenantId!)
@@ -109,7 +109,7 @@ export async function deleteAutomationRule(ruleId: string) {
   const supabase = createServerClient()
 
   const { error } = await supabase
-    .from('automation_rules')
+    .from('automation_rules' as any)
     .delete()
     .eq('id', ruleId)
     .eq('tenant_id', user.tenantId!)
@@ -129,7 +129,7 @@ export async function getAutomationRules(): Promise<AutomationRule[]> {
   const supabase = createServerClient()
 
   const { data, error } = await supabase
-    .from('automation_rules')
+    .from('automation_rules' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .order('priority', { ascending: false })
@@ -152,7 +152,7 @@ export async function getAutomationExecutions(options?: {
   const supabase = createServerClient()
 
   let query = supabase
-    .from('automation_executions')
+    .from('automation_executions' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .order('executed_at', { ascending: false })

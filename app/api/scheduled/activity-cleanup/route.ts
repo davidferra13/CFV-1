@@ -22,10 +22,9 @@ export async function POST(request: NextRequest) {
   const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
 
   const { count, error } = await supabase
-    .from('activity_events')
-    .delete()
+    .from('activity_events' as any)
+    .delete({ count: 'exact' })
     .lt('created_at', cutoff)
-    .select('id', { count: 'exact', head: true })
 
   if (error) {
     console.error('[Activity Cleanup] Error:', error)

@@ -17,7 +17,7 @@ export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient
 
   // Get the most recent activity per client in the time window
   const { data, error } = await supabase
-    .from('activity_events')
+    .from('activity_events' as any)
     .select(`
       client_id,
       event_type,
@@ -60,7 +60,7 @@ export async function getRecentActivity(limit = 20): Promise<ActivityEvent[]> {
   const supabase = createServerClient()
 
   const { data, error } = await supabase
-    .from('activity_events')
+    .from('activity_events' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
@@ -81,7 +81,7 @@ export async function getClientTimeline(clientId: string, limit = 30): Promise<A
   const supabase = createServerClient()
 
   const { data, error } = await supabase
-    .from('activity_events')
+    .from('activity_events' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .eq('client_id', clientId)
@@ -112,7 +112,7 @@ export async function getEngagementStats(): Promise<{
 
   // Active unique clients today
   const { data: todayData } = await supabase
-    .from('activity_events')
+    .from('activity_events' as any)
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
     .eq('actor_type', 'client')
@@ -123,7 +123,7 @@ export async function getEngagementStats(): Promise<{
 
   // Active unique clients this week
   const { data: weekData } = await supabase
-    .from('activity_events')
+    .from('activity_events' as any)
     .select('client_id')
     .eq('tenant_id', user.tenantId!)
     .eq('actor_type', 'client')
@@ -134,7 +134,7 @@ export async function getEngagementStats(): Promise<{
 
   // Total events this week
   const { count } = await supabase
-    .from('activity_events')
+    .from('activity_events' as any)
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
     .gte('created_at', weekAgo.toISOString())
