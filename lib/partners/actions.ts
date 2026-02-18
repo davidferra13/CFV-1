@@ -178,11 +178,11 @@ export async function getPartners(filters?: {
     .eq('tenant_id', user.tenantId!)
 
   if (filters?.partner_type) {
-    query = query.eq('partner_type', filters.partner_type)
+    query = query.eq('partner_type', filters.partner_type as any)
   }
 
   if (filters?.status) {
-    query = query.eq('status', filters.status)
+    query = query.eq('status', filters.status as any)
   }
 
   const { data: partners, error } = await query.order('name', { ascending: true })
