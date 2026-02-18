@@ -74,7 +74,7 @@ export async function getInboxStats(): Promise<InboxStats> {
     return { total: 0, unread: 0, bySource: { chat: 0, message: 0, wix: 0, notification: 0 } }
   }
 
-  const items = data || []
+  const items = (data || []) as any[]
   const bySource: Record<InboxSource, number> = { chat: 0, message: 0, wix: 0, notification: 0 }
   let unread = 0
 
