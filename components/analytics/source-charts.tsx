@@ -35,7 +35,7 @@ export function SourceDistributionChart({
         <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#44403c' }} width={100} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number) => [value, 'Inquiries']}
+          formatter={(value: any) => [value, 'Inquiries']}
         />
         <Bar dataKey="count" fill="#8b5cf6" radius={[0, 4, 4, 0]} />
       </BarChart>
@@ -88,7 +88,7 @@ export function RevenueBySourceChart({
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+          formatter={(value: any) => [formatCurrency(value), 'Revenue']}
         />
         <Bar dataKey="revenue_cents" fill="#10b981" name="Revenue" radius={[4, 4, 0, 0]} />
       </BarChart>
@@ -149,7 +149,7 @@ export function SourcePieChart({
           cx="50%"
           cy="50%"
           outerRadius={100}
-          label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+          label={({ name, percent }: any) => `${name} (${((percent ?? 0) * 100).toFixed(0)}%)`}
           labelLine={true}
         >
           {data.map((_, i) => (
@@ -158,7 +158,7 @@ export function SourcePieChart({
         </Pie>
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={(value: number) => [value, 'Inquiries']}
+          formatter={(value: any) => [value, 'Inquiries']}
         />
       </PieChart>
     </ResponsiveContainer>
