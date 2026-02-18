@@ -1,13 +1,14 @@
 // Seasonal Palette — Type Definitions
-// Pure types for the seasonal palette engine.
+// Pure types for the seasonal palette system.
 
 export interface MicroWindow {
-  name: string
   ingredient: string
   start_date: string   // MM-DD
   end_date: string     // MM-DD
-  urgency: 'high' | 'normal'
   notes: string
+  // Legacy fields — kept optional for backward compatibility with existing data
+  name?: string
+  urgency?: 'high' | 'normal'
 }
 
 
@@ -25,9 +26,9 @@ export interface SeasonalPalette {
   is_active: boolean
   start_month_day: string
   end_month_day: string
-  sensory_anchor: string | null // "The Vibe" in UI
-  micro_windows: MicroWindow[] // "Peak Ingredients" in UI
-  proven_wins: ProvenWin[]     // "Best Dishes" in UI
+  sensory_anchor: string | null
+  micro_windows: MicroWindow[]
+  proven_wins: ProvenWin[]
   created_at: string
   updated_at: string
 }
