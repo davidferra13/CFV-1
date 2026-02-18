@@ -1,12 +1,12 @@
-# Deployment & Domain Setup — cheflow.us
+# Deployment & Domain Setup — cheflowhq.com
 
 ## What Happened
 
-ChefFlow V1 is now live at **https://cheflow.us**. This document covers everything set up in this session.
+ChefFlow V1 is now live at **https://cheflowhq.com**. This document covers everything set up in this session.
 
 ## Domain
 
-- **Domain:** `cheflow.us` purchased via Cloudflare Registrar (~$6.50/yr)
+- **Domain:** `cheflowhq.com` purchased via Cloudflare Registrar (~$6.50/yr)
 - **DNS:** Cloudflare (A record pointing to Vercel's `76.76.21.21`)
 - **SSL:** Automatic via Vercel (HTTPS enforced)
 
@@ -26,8 +26,8 @@ All 12 variables configured via Vercel CLI:
 | `NEXT_PUBLIC_SUPABASE_URL` | Set |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Set |
 | `SUPABASE_SERVICE_ROLE_KEY` | Set |
-| `NEXT_PUBLIC_SITE_URL` | `https://cheflow.us` |
-| `NEXT_PUBLIC_APP_URL` | `https://cheflow.us` |
+| `NEXT_PUBLIC_SITE_URL` | `https://cheflowhq.com` |
+| `NEXT_PUBLIC_APP_URL` | `https://cheflowhq.com` |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Empty (not configured yet) |
 | `STRIPE_SECRET_KEY` | Empty |
 | `STRIPE_WEBHOOK_SECRET` | Empty |
@@ -48,7 +48,7 @@ Added Progressive Web App support so users can "install" ChefFlow:
 1. Make changes locally (visible at `localhost:3100`)
 2. Commit + push to GitHub
 3. Run `npx vercel deploy --prod --yes` to push live
-4. cheflow.us updates in ~2 minutes
+4. cheflowhq.com updates in ~2 minutes
 
 ## Key Fix: vercel.json
 

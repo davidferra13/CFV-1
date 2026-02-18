@@ -13,8 +13,9 @@ import { EventConfirmedEmail } from './templates/event-confirmed'
 import { EventCompletedEmail } from './templates/event-completed'
 import { EventCancelledEmail } from './templates/event-cancelled'
 import { EventReminderEmail } from './templates/event-reminder'
+import { FrontOfHouseMenuReadyEmail } from './templates/front-of-house-menu-ready'
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflow.us'
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toFixed(2)}`
@@ -260,6 +261,34 @@ export async function sendEventReminderEmail(params: {
       guestCount: params.guestCount,
       specialRequests: params.specialRequests,
     }),
+  })
+}
+
+export async function sendFrontOfHouseMenuReadyEmail(params: {
+  to: string | string[]
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  pdfFilename: string
+  pdfBuffer: Buffer
+}) {
+  await sendEmail({
+    to: params.to,
+    subject: `Front-of-house menu ready: ${params.occasion}`,
+    react: createElement(FrontOfHouseMenuReadyEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+    }),
+    attachments: [
+      {
+        filename: params.pdfFilename,
+        content: params.pdfBuffer,
+        contentType: 'application/pdf',
+      },
+    ],
   })
 }
 

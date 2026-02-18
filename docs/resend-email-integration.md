@@ -79,8 +79,8 @@ All amounts pass through as cents (matching the ledger-first model) and are form
 
 1. Sign up at [resend.com](https://resend.com)
 2. Get API key → set `RESEND_API_KEY` in `.env.local`
-3. Verify `cheflow.us` domain in Resend dashboard (add DNS records)
-4. Set `RESEND_FROM_EMAIL=noreply@cheflow.us` (already set)
+3. Verify `cheflowhq.com` domain in Resend dashboard (add DNS records)
+4. Set `RESEND_FROM_EMAIL=noreply@cheflowhq.com` (already set)
 5. For production on Vercel, add these env vars to the Vercel project settings
 
 ---
