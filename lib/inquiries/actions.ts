@@ -142,6 +142,24 @@ export async function createInquiry(input: CreateInquiryInput) {
 
   revalidatePath('/inquiries')
 
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'inquiry_created',
+      domain: 'inquiry',
+      entityType: 'inquiry',
+      entityId: inquiry.id,
+      summary: `Created inquiry from ${validated.client_name} via ${validated.channel}`,
+      context: { client_name: validated.client_name, channel: validated.channel, occasion: validated.confirmed_occasion },
+      clientId: clientId || undefined,
+    })
+  } catch (err) {
+    console.error('[createInquiry] Activity log failed (non-blocking):', err)
+  }
+
   // Fire automations (non-blocking)
   try {
     const { evaluateAutomations } = await import('@/lib/automations/engine')
@@ -366,6 +384,23 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
 
   revalidatePath('/inquiries')
   revalidatePath(`/inquiries/${id}`)
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'inquiry_transitioned',
+      domain: 'inquiry',
+      entityType: 'inquiry',
+      entityId: id,
+      summary: `Moved inquiry from ${currentStatus} → ${newStatus}`,
+      context: { from_status: currentStatus, to_status: newStatus },
+    })
+  } catch (err) {
+    console.error('[transitionInquiry] Activity log failed (non-blocking):', err)
+  }
 
   // Fire automations (non-blocking)
   try {

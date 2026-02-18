@@ -8,9 +8,7 @@ import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/action
 
 export const metadata: Metadata = { title: 'Clients - ChefFlow' }
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { formatCurrency } from '@/lib/utils/currency'
-import { format } from 'date-fns'
-import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
 import { PendingInvitationsTable } from './pending-invitations-table'
@@ -20,13 +18,18 @@ export default async function ClientsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-stone-900">Clients</h1>
-        <p className="text-stone-600 mt-1">Manage your client relationships and invitations</p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-900">Clients</h1>
+          <p className="text-stone-600 mt-1">Manage your client relationships and invitations</p>
+        </div>
+        <a href="#invite">
+          <Button>+ Add Client</Button>
+        </a>
       </div>
 
       {/* Invitation Section */}
-      <Card>
+      <Card id="invite">
         <CardHeader>
           <CardTitle>Send Client Invitation</CardTitle>
         </CardHeader>

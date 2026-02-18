@@ -310,6 +310,25 @@ export async function transitionEvent({
     console.error('[transitionEvent] Email send failed (non-blocking):', emailErr)
   }
 
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const eventTitle = event.occasion || 'Untitled event'
+    await logChefActivity({
+      tenantId: event.tenant_id,
+      actorId: transitionedBy || 'system',
+      action: toStatus === 'cancelled' ? 'event_cancelled' : 'event_transitioned',
+      domain: 'event',
+      entityType: 'event',
+      entityId: eventId,
+      summary: `Moved "${eventTitle}" from ${fromStatus} → ${toStatus}`,
+      context: { from_status: fromStatus, to_status: toStatus, occasion: eventTitle, client_id: event.client_id },
+      clientId: event.client_id,
+    })
+  } catch (err) {
+    console.error('[transitionEvent] Activity log failed (non-blocking):', err)
+  }
+
   // Fire automations (non-blocking)
   try {
     const { evaluateAutomations } = await import('@/lib/automations/engine')

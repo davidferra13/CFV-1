@@ -146,6 +146,26 @@ export async function createEvent(input: CreateEventInput) {
   })
 
   revalidatePath('/events')
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const clientName = (event as any).client?.full_name || 'client'
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'event_created',
+      domain: 'event',
+      entityType: 'event',
+      entityId: event.id,
+      summary: `Created event: ${validated.occasion || 'Untitled'} for ${clientName}`,
+      context: { client_name: clientName, event_date: validated.event_date, guest_count: validated.guest_count, occasion: validated.occasion },
+      clientId: validated.client_id,
+    })
+  } catch (err) {
+    console.error('[createEvent] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, event }
 }
 
@@ -246,6 +266,25 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
 
   revalidatePath('/events')
   revalidatePath(`/events/${eventId}`)
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'event_updated',
+      domain: 'event',
+      entityType: 'event',
+      entityId: eventId,
+      summary: `Updated event: ${event.occasion || 'Untitled'} — ${Object.keys(validated).join(', ')}`,
+      context: { occasion: event.occasion, changed_fields: Object.keys(validated) },
+      clientId: event.client_id,
+    })
+  } catch (err) {
+    console.error('[updateEvent] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true, event }
 }
 

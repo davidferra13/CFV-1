@@ -76,6 +76,26 @@ export async function addClientNote(input: z.infer<typeof AddNoteSchema>) {
   }
 
   revalidatePath(`/clients/${validated.client_id}`)
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    const preview = validated.note_text.length > 60 ? validated.note_text.slice(0, 60) + '…' : validated.note_text
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'client_note_added',
+      domain: 'communication',
+      entityType: 'client_note',
+      entityId: data.id,
+      summary: `Added ${validated.category} note: "${preview}"`,
+      context: { category: validated.category, pinned: validated.pinned },
+      clientId: validated.client_id,
+    })
+  } catch (err) {
+    console.error('[addClientNote] Activity log failed (non-blocking):', err)
+  }
+
   return { success: true as const, note: data as ClientNote }
 }
 
