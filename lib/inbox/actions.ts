@@ -51,7 +51,7 @@ export async function getUnifiedInbox(filters?: InboxFilters): Promise<UnifiedIn
     throw new Error('Failed to fetch inbox')
   }
 
-  return (data || []) as UnifiedInboxItem[]
+  return (data || []) as unknown as UnifiedInboxItem[]
 }
 
 // ─── Get Inbox Stats ─────────────────────────────────────────────────────
