@@ -1,6 +1,5 @@
 // Seasonal Palette Form — Client Component
-// Full edit form: sensory anchor, micro-windows, context profiles, pantry, energy, proven wins.
-// Follows PreferencesForm pattern: useState per field, useTransition, Card sections.
+// Simple edit form: season notes, seasonal ingredients, go-to dishes.
 
 'use client'
 
@@ -27,89 +26,62 @@ export function SeasonalPaletteForm({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
-  // Season Identity
-  const [seasonName, setSeasonName] = useState(palette.season_name)
-  const [startMonthDay, setStartMonthDay] = useState(palette.start_month_day)
-  const [endMonthDay, setEndMonthDay] = useState(palette.end_month_day)
-  const [isActive, setIsActive] = useState(palette.is_active)
+  // Season Notes (stored as sensory_anchor in DB)
+  const [seasonNotes, setSeasonNotes] = useState(palette.sensory_anchor ?? '')
 
-  // Sensory Anchor
-  const [sensoryAnchor, setSensoryAnchor] = useState(palette.sensory_anchor ?? '')
-
-  // Micro-Windows
-  const [microWindows, setMicroWindows] = useState<MicroWindow[]>(
+  // Seasonal Ingredients (stored as micro_windows in DB)
+  const [ingredients, setIngredients] = useState<MicroWindow[]>(
     palette.micro_windows.length > 0 ? palette.micro_windows : []
   )
 
-
-  // Proven Wins
-  const [provenWins, setProvenWins] = useState<ProvenWin[]>(
+  // Go-To Dishes (stored as proven_wins in DB)
+  const [dishes, setDishes] = useState<ProvenWin[]>(
     palette.proven_wins.length > 0 ? palette.proven_wins : []
   )
 
-  // ============================================
-  // DYNAMIC ARRAY HELPERS
-  // ============================================
-
-  // Micro-Windows
-  const addMicroWindow = () => {
-    setMicroWindows([...microWindows, {
-      name: '', ingredient: '', start_date: '', end_date: '', urgency: 'normal', notes: '',
+  // --- Ingredient helpers ---
+  const addIngredient = () => {
+    setIngredients([...ingredients, {
+      ingredient: '', start_date: '', end_date: '', notes: '',
     }])
   }
-  const removeMicroWindow = (index: number) => {
-    setMicroWindows(microWindows.filter((_, i) => i !== index))
+  const removeIngredient = (index: number) => {
+    setIngredients(ingredients.filter((_, i) => i !== index))
   }
-  const updateMicroWindow = (index: number, field: keyof MicroWindow, value: string) => {
-    const updated = [...microWindows]
+  const updateIngredient = (index: number, field: keyof MicroWindow, value: string) => {
+    const updated = [...ingredients]
     updated[index] = { ...updated[index], [field]: value }
-    setMicroWindows(updated)
+    setIngredients(updated)
   }
 
-  // (Context Profiles removed - simplified form)
-
-  // Proven Wins
-  const addProvenWin = () => {
-    setProvenWins([...provenWins, { dish_name: '', notes: '', recipe_id: null }])
+  // --- Dish helpers ---
+  const addDish = () => {
+    setDishes([...dishes, { dish_name: '', notes: '', recipe_id: null }])
   }
-  const removeProvenWin = (index: number) => {
-    setProvenWins(provenWins.filter((_, i) => i !== index))
+  const removeDish = (index: number) => {
+    setDishes(dishes.filter((_, i) => i !== index))
   }
-  const updateProvenWin = (index: number, field: keyof ProvenWin, value: string | null) => {
-    const updated = [...provenWins]
+  const updateDish = (index: number, field: keyof ProvenWin, value: string | null) => {
+    const updated = [...dishes]
     updated[index] = { ...updated[index], [field]: value } as ProvenWin
-    setProvenWins(updated)
+    setDishes(updated)
   }
 
-  // ============================================
-  // SUBMIT
-  // ============================================
-
+  // --- Submit ---
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setSuccess(false)
 
-    // Validation
-    if (!seasonName.trim()) {
-      setError('Season name is required')
-      return
-    }
-    if (!/^\d{2}-\d{2}$/.test(startMonthDay) || !/^\d{2}-\d{2}$/.test(endMonthDay)) {
-      setError('Date range must be in MM-DD format (e.g., 03-01)')
-      return
-    }
-
     startTransition(async () => {
       try {
         await updateSeasonalPalette(palette.id, {
-          season_name: seasonName.trim(),
-          start_month_day: startMonthDay,
-          end_month_day: endMonthDay,
-          is_active: isActive,
-          sensory_anchor: sensoryAnchor.trim() || null,
-          micro_windows: microWindows.filter(w => w.name.trim() && w.ingredient.trim()),
-          proven_wins: provenWins.filter(pw => pw.dish_name.trim()),
+          season_name: palette.season_name,
+          start_month_day: palette.start_month_day,
+          end_month_day: palette.end_month_day,
+          sensory_anchor: seasonNotes.trim() || null,
+          micro_windows: ingredients.filter(w => w.ingredient.trim()),
+          proven_wins: dishes.filter(d => d.dish_name.trim()),
         })
         setSuccess(true)
         router.refresh()
@@ -121,165 +93,95 @@ export function SeasonalPaletteForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Section 1: Season Identity */}
+      {/* Season Notes */}
       <Card>
         <CardHeader>
-          <CardTitle>Season Identity</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Season Name</label>
-            <Input
-              value={seasonName}
-              onChange={e => setSeasonName(e.target.value)}
-              placeholder="Winter"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Start Date (MM-DD)</label>
-              <Input
-                value={startMonthDay}
-                onChange={e => setStartMonthDay(e.target.value)}
-                placeholder="12-01"
-                maxLength={5}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">End Date (MM-DD)</label>
-              <Input
-                value={endMonthDay}
-                onChange={e => setEndMonthDay(e.target.value)}
-                placeholder="02-28"
-                maxLength={5}
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              id="isActive"
-              checked={isActive}
-              onChange={e => setIsActive(e.target.checked)}
-              className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
-            />
-            <label htmlFor="isActive" className="text-sm text-stone-700">
-              Set as active season (deactivates other seasons)
-            </label>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Section 2: Sensory Anchor */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Sensory Anchor</CardTitle>
+          <CardTitle>Season Notes</CardTitle>
           <p className="text-sm text-stone-500 mt-1">
-            Your creative thesis for this season. This appears at the top of your Recipe Bible and Schedule sidebar.
+            General notes about {palette.season_name} — what flavors you lean into, what approach you take, anything to remember.
           </p>
         </CardHeader>
         <CardContent>
           <Textarea
-            value={sensoryAnchor}
-            onChange={e => setSensoryAnchor(e.target.value)}
-            placeholder='e.g., "Early Spring Thaw: Cold ground, bright green shoots, bitter flavors, heavy reliance on preserved citrus."'
+            value={seasonNotes}
+            onChange={e => setSeasonNotes(e.target.value)}
+            placeholder={`What defines ${palette.season_name} for you? What ingredients and flavors are front and center?`}
             rows={3}
           />
         </CardContent>
       </Card>
 
-      {/* Section 3: Micro-Windows */}
+      {/* Seasonal Ingredients */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle>Micro-Windows</CardTitle>
+              <CardTitle>Seasonal Ingredients</CardTitle>
               <p className="text-sm text-stone-500 mt-1">
-                Define fleeting ingredient windows. High-urgency items get highlighted when their window is ending.
+                What&apos;s available this season? Add dates if you want to track availability windows.
               </p>
             </div>
-            <Button type="button" variant="secondary" size="sm" onClick={addMicroWindow}>
-              + Add Window
+            <Button type="button" variant="secondary" size="sm" onClick={addIngredient}>
+              + Add Ingredient
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          {microWindows.length === 0 && (
+          {ingredients.length === 0 && (
             <p className="text-sm text-stone-400 text-center py-4">
-              No micro-windows defined yet. Add one to track ingredient availability.
+              No ingredients added yet. Add what&apos;s in season to build your reference.
             </p>
           )}
-          {microWindows.map((window, i) => (
+          {ingredients.map((item, i) => (
             <div key={i} className="border border-stone-200 rounded-lg p-4 space-y-3">
               <div className="flex justify-between items-start">
                 <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">
-                  Window {i + 1}
+                  Ingredient {i + 1}
                 </span>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  onClick={() => removeMicroWindow(i)}
+                  onClick={() => removeIngredient(i)}
                   className="text-red-500 -mt-1"
                 >
                   Remove
                 </Button>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Ingredient</label>
+                <Input
+                  value={item.ingredient}
+                  onChange={e => updateIngredient(i, 'ingredient', e.target.value)}
+                  placeholder="e.g., wild ramps, stone fruit, butternut squash"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Name</label>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Available from (MM-DD)</label>
                   <Input
-                    value={window.name}
-                    onChange={e => updateMicroWindow(i, 'name', e.target.value)}
-                    placeholder="Ramps Season"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Ingredient</label>
-                  <Input
-                    value={window.ingredient}
-                    onChange={e => updateMicroWindow(i, 'ingredient', e.target.value)}
-                    placeholder="wild ramps"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Start (MM-DD)</label>
-                  <Input
-                    value={window.start_date}
-                    onChange={e => updateMicroWindow(i, 'start_date', e.target.value)}
+                    value={item.start_date}
+                    onChange={e => updateIngredient(i, 'start_date', e.target.value)}
                     placeholder="04-01"
                     maxLength={5}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">End (MM-DD)</label>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Available until (MM-DD)</label>
                   <Input
-                    value={window.end_date}
-                    onChange={e => updateMicroWindow(i, 'end_date', e.target.value)}
+                    value={item.end_date}
+                    onChange={e => updateIngredient(i, 'end_date', e.target.value)}
                     placeholder="04-21"
                     maxLength={5}
                   />
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Urgency</label>
-                  <select
-                    value={window.urgency}
-                    onChange={e => updateMicroWindow(i, 'urgency', e.target.value)}
-                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm bg-white"
-                  >
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                  </select>
-                </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-stone-700 mb-1">Notes (optional)</label>
                 <Input
-                  value={window.notes}
-                  onChange={e => updateMicroWindow(i, 'notes', e.target.value)}
-                  placeholder="Peak at mid-April, sourced from local forager"
+                  value={item.notes}
+                  onChange={e => updateIngredient(i, 'notes', e.target.value)}
+                  placeholder="e.g., sourced from local forager, peak mid-month"
                 />
               </div>
             </div>
@@ -287,53 +189,51 @@ export function SeasonalPaletteForm({
         </CardContent>
       </Card>
 
-      {/* Context Profiles, Pantry & Preserve, Chef Energy removed for simplified form */}
-
-      {/* Section 7: Proven Wins */}
+      {/* Go-To Dishes */}
       <Card>
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle>Proven Wins</CardTitle>
+              <CardTitle>Go-To Dishes</CardTitle>
               <p className="text-sm text-stone-500 mt-1">
-                Break-glass-in-case-of-emergency dishes that always work this season.
+                Reliable dishes that work great in {palette.season_name}. Your quick reference when planning menus.
               </p>
             </div>
-            <Button type="button" variant="secondary" size="sm" onClick={addProvenWin}>
+            <Button type="button" variant="secondary" size="sm" onClick={addDish}>
               + Add Dish
             </Button>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {provenWins.length === 0 && (
+          {dishes.length === 0 && (
             <p className="text-sm text-stone-400 text-center py-4">
-              No proven wins yet. Add your reliable go-to dishes for this season.
+              No dishes added yet. Add your reliable go-to dishes for {palette.season_name}.
             </p>
           )}
-          {provenWins.map((win, i) => (
+          {dishes.map((dish, i) => (
             <div key={i} className="flex gap-3 items-start">
               <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Dish Name</label>
+                  <label className="block text-sm font-medium text-stone-700 mb-1">Dish</label>
                   <Input
-                    value={win.dish_name}
-                    onChange={e => updateProvenWin(i, 'dish_name', e.target.value)}
+                    value={dish.dish_name}
+                    onChange={e => updateDish(i, 'dish_name', e.target.value)}
                     placeholder="Wild mushroom risotto"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
                   <Input
-                    value={win.notes}
-                    onChange={e => updateProvenWin(i, 'notes', e.target.value)}
+                    value={dish.notes}
+                    onChange={e => updateDish(i, 'notes', e.target.value)}
                     placeholder="Always a crowd pleaser"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-stone-700 mb-1">Link to Recipe</label>
                   <select
-                    value={win.recipe_id || ''}
-                    onChange={e => updateProvenWin(i, 'recipe_id', e.target.value || null)}
+                    value={dish.recipe_id || ''}
+                    onChange={e => updateDish(i, 'recipe_id', e.target.value || null)}
                     className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm bg-white"
                   >
                     <option value="">No recipe linked</option>
@@ -347,7 +247,7 @@ export function SeasonalPaletteForm({
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => removeProvenWin(i)}
+                onClick={() => removeDish(i)}
                 className="text-red-500 mt-6"
               >
                 Remove
@@ -357,16 +257,15 @@ export function SeasonalPaletteForm({
         </CardContent>
       </Card>
 
-      {/* Submit */}
+      {/* Feedback */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
-
       {success && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-sm text-green-700">Seasonal palette saved successfully.</p>
+          <p className="text-sm text-green-700">Saved!</p>
         </div>
       )}
 
@@ -375,7 +274,7 @@ export function SeasonalPaletteForm({
           Cancel
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? 'Saving...' : 'Save Palette'}
+          {isPending ? 'Saving...' : 'Save'}
         </Button>
       </div>
     </form>
