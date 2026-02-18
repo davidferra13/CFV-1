@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
   const results = {
     inquiriesExpired: 0,
     quotesExpired: 0,
+    eventReminders: 0,
     errors: [] as string[],
   }
 
@@ -128,6 +129,65 @@ export async function POST(request: NextRequest) {
     }
   } catch (err) {
     results.errors.push(`Expired quotes query: ${(err as Error).message}`)
+  }
+
+  // ── 3. Send event reminder emails (24-hour window) ───────────────────────
+  // Events happening tomorrow that are confirmed or in_progress
+
+  try {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const tomorrowDate = tomorrow.toISOString().split('T')[0]
+
+    const { data: upcomingEvents } = await supabase
+      .from('events')
+      .select(`
+        id, tenant_id, occasion, event_date, serve_time, arrival_time,
+        location_address, location_city, location_state,
+        guest_count, special_requests,
+        client:clients(id, email, full_name)
+      `)
+      .eq('event_date', tomorrowDate)
+      .in('status', ['confirmed', 'in_progress'])
+
+    if (upcomingEvents && upcomingEvents.length > 0) {
+      const { sendEventReminderEmail, buildLocation } = await import('@/lib/email/notifications')
+
+      for (const event of upcomingEvents) {
+        try {
+          const client = event.client as { id: string; email: string; full_name: string } | null
+          if (!client?.email) continue
+
+          // Get chef name
+          const { data: chef } = await supabase
+            .from('chefs')
+            .select('business_name')
+            .eq('id', event.tenant_id)
+            .single()
+
+          await sendEventReminderEmail({
+            clientEmail: client.email,
+            clientName: client.full_name,
+            chefName: chef?.business_name || 'Your Chef',
+            occasion: event.occasion || 'your event',
+            eventDate: event.event_date,
+            serveTime: event.serve_time,
+            arrivalTime: event.arrival_time,
+            location: buildLocation(event),
+            guestCount: event.guest_count,
+            specialRequests: event.special_requests,
+          })
+
+          results.eventReminders++
+        } catch (err) {
+          results.errors.push(
+            `Reminder for event ${event.id}: ${(err as Error).message}`,
+          )
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push(`Event reminders: ${(err as Error).message}`)
   }
 
   return NextResponse.json(results)

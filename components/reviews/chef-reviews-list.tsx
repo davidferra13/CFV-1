@@ -183,7 +183,7 @@ export function ChefReviewsList({
                       {format(new Date(fb.feedback_date), 'PPP')}
                     </p>
                   </div>
-                  <Badge variant="secondary">
+                  <Badge variant="default">
                     {SOURCE_LABELS[fb.source] || fb.source}
                   </Badge>
                 </div>

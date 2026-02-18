@@ -106,8 +106,29 @@ export async function inviteClient(input: InviteClientInput) {
 
   revalidatePath('/clients')
 
-  // V1: Return invitation URL (no email sending)
   const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?token=${token}`
+
+  // Send invitation email to client (non-blocking)
+  try {
+    const { data: chef } = await supabase
+      .from('chefs')
+      .select('business_name')
+      .eq('id', user.tenantId!)
+      .single()
+
+    if (chef) {
+      const { sendClientInvitationEmail } = await import('@/lib/email/notifications')
+      await sendClientInvitationEmail({
+        clientEmail: validated.email,
+        clientName: validated.full_name,
+        chefName: chef.business_name || 'Your Chef',
+        invitationUrl,
+        expiresInDays: 7,
+      })
+    }
+  } catch (emailErr) {
+    console.error('[inviteClient] Email failed (non-blocking):', emailErr)
+  }
 
   return { success: true, invitation, invitationUrl }
 }
@@ -430,7 +451,7 @@ export async function updateClientHousehold(formData: FormData) {
 
   const { data: client, error } = await supabase
     .from('clients')
-    .update({ household: tag ? { tag } : null })
+    .update({ household: tag ? { tag } : null } as any)
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
     .select()

@@ -5,7 +5,6 @@ import { notFound, redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getClients } from '@/lib/clients/actions'
-import { getHouseholds } from '@/lib/households/actions'
 import { EventForm } from '@/components/events/event-form'
 import { Alert } from '@/components/ui/alert'
 
@@ -27,17 +26,7 @@ export default async function EditEventPage({
     redirect(`/events/${params.id}`)
   }
 
-  // Fetch clients and households for dropdowns
-  const [clients, households] = await Promise.all([
-    getClients(),
-    getHouseholds().catch(() => []),
-  ])
-
-  const householdOptions = households.map((h) => ({
-    id: h.id,
-    name: h.name,
-    member_count: h.members.length,
-  }))
+  const clients = await getClients()
 
   // Map to the shape EventForm expects
   const formEvent = {
@@ -54,7 +43,6 @@ export default async function EditEventPage({
     special_requests: event.special_requests,
     quoted_price_cents: event.quoted_price_cents,
     deposit_amount_cents: event.deposit_amount_cents,
-    household_id: (event as any).household_id ?? null
   }
 
   return (
@@ -71,7 +59,7 @@ export default async function EditEventPage({
         </Alert>
       )}
 
-      <EventForm clients={clients} mode="edit" event={formEvent} households={householdOptions} />
+      <EventForm clients={clients} mode="edit" event={formEvent} />
     </div>
   )
 }

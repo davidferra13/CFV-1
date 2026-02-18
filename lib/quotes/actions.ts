@@ -332,6 +332,59 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     throw new Error('Failed to transition quote')
   }
 
+  // Send quote-sent email to client (non-blocking)
+  if (newStatus === 'sent') {
+    try {
+      const { data: client } = await supabase
+        .from('clients')
+        .select('email, full_name')
+        .eq('id', updated.client_id)
+        .single()
+
+      const { data: chef } = await supabase
+        .from('chefs')
+        .select('business_name')
+        .eq('id', user.tenantId!)
+        .single()
+
+      // Get occasion from linked inquiry or event
+      let occasion: string | null = null
+      if (updated.inquiry_id) {
+        const { data: inquiry } = await supabase
+          .from('inquiries')
+          .select('confirmed_occasion')
+          .eq('id', updated.inquiry_id)
+          .single()
+        occasion = inquiry?.confirmed_occasion || null
+      }
+      if (!occasion && updated.event_id) {
+        const { data: evt } = await supabase
+          .from('events')
+          .select('occasion')
+          .eq('id', updated.event_id)
+          .single()
+        occasion = evt?.occasion || null
+      }
+
+      if (client?.email && chef) {
+        const { sendQuoteSentEmail } = await import('@/lib/email/notifications')
+        await sendQuoteSentEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName: chef.business_name || 'Your Chef',
+          quoteId: id,
+          totalCents: updated.total_quoted_cents,
+          depositRequired: updated.deposit_required ?? false,
+          depositCents: updated.deposit_amount_cents,
+          occasion,
+          validUntil: updated.valid_until,
+        })
+      }
+    } catch (emailErr) {
+      console.error('[transitionQuote] Email failed (non-blocking):', emailErr)
+    }
+  }
+
   revalidatePath('/quotes')
   revalidatePath(`/quotes/${id}`)
   return { success: true, quote: updated }

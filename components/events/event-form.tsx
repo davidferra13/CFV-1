@@ -34,20 +34,13 @@ type Event = {
   deposit_amount_cents: number | null
 }
 
-type HouseholdOption = {
-  id: string
-  name: string
-  member_count: number
-}
-
 type EventFormProps = {
   clients: Client[]
   mode: 'create' | 'edit'
   event?: Event
-  households?: HouseholdOption[]
 }
 
-export function EventForm({ clients, mode, event, households = [] }: EventFormProps) {
+export function EventForm({ clients, mode, event }: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -71,8 +64,6 @@ export function EventForm({ clients, mode, event, households = [] }: EventFormPr
   const [depositAmount, setDepositAmount] = useState(
     event?.deposit_amount_cents ? (event.deposit_amount_cents / 100).toString() : ''
   )
-  const [householdId, setHouseholdId] = useState((event as any)?.household_id || '')
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -125,7 +116,6 @@ export function EventForm({ clients, mode, event, households = [] }: EventFormPr
           special_requests: specialRequests || undefined,
           quoted_price_cents: totalAmountCents,
           deposit_amount_cents: depositAmountCents,
-          household_id: householdId || undefined
         }
 
         const result = await createEvent(input)
@@ -149,7 +139,6 @@ export function EventForm({ clients, mode, event, households = [] }: EventFormPr
           special_requests: specialRequests || undefined,
           quoted_price_cents: totalAmountCents,
           deposit_amount_cents: depositAmountCents,
-          household_id: householdId || null
         })
 
         if (result.success) {
@@ -188,23 +177,6 @@ export function EventForm({ clients, mode, event, households = [] }: EventFormPr
           disabled={mode === 'edit'} // Can't change client after creation
           helperText={mode === 'edit' ? 'Client cannot be changed after event creation' : undefined}
         />
-
-        {/* Household (optional) */}
-        {households.length > 0 && (
-          <Select
-            label="Household (optional)"
-            options={[
-              { value: '', label: 'No household' },
-              ...households.map(h => ({
-                value: h.id,
-                label: `${h.name} (${h.member_count} members)`
-              }))
-            ]}
-            value={householdId}
-            onChange={(e) => setHouseholdId(e.target.value)}
-            helperText="Link this event to a household group"
-          />
-        )}
 
         {/* Occasion */}
         <Input

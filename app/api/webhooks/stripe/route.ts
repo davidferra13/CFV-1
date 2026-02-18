@@ -198,6 +198,37 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     } catch (notifErr) {
       console.error('[handlePaymentSucceeded] Notification failed (non-blocking):', notifErr)
     }
+
+    // Send payment confirmation email to client (non-blocking)
+    try {
+      const { data: eventData } = await supabase
+        .from('events')
+        .select('occasion, event_date')
+        .eq('id', event_id)
+        .single()
+
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('email, full_name')
+        .eq('id', client_id)
+        .single()
+
+      if (clientData?.email && eventData) {
+        const { sendPaymentConfirmationEmail } = await import('@/lib/email/notifications')
+        const remaining = financialSummary.outstanding_balance_cents
+        await sendPaymentConfirmationEmail({
+          clientEmail: clientData.email,
+          clientName: clientData.full_name,
+          amountCents: paymentIntent.amount,
+          paymentType: payment_type || 'payment',
+          occasion: eventData.occasion || 'your event',
+          eventDate: eventData.event_date,
+          remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
+        })
+      }
+    } catch (emailErr) {
+      console.error('[handlePaymentSucceeded] Email failed (non-blocking):', emailErr)
+    }
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)
@@ -274,6 +305,35 @@ async function handlePaymentFailed(event: Stripe.Event) {
     }
   } catch (notifErr) {
     console.error('[handlePaymentFailed] Notification failed (non-blocking):', notifErr)
+  }
+
+  // Send payment failed email to client (non-blocking)
+  try {
+    const supabase = createServerClient({ admin: true })
+    const { data: eventData } = await supabase
+      .from('events')
+      .select('occasion')
+      .eq('id', event_id)
+      .single()
+
+    const { data: clientData } = await supabase
+      .from('clients')
+      .select('email, full_name')
+      .eq('id', client_id)
+      .single()
+
+    if (clientData?.email && eventData) {
+      const { sendPaymentFailedEmail } = await import('@/lib/email/notifications')
+      await sendPaymentFailedEmail({
+        clientEmail: clientData.email,
+        clientName: clientData.full_name,
+        occasion: eventData.occasion || 'your event',
+        eventId: event_id,
+        errorMessage: paymentIntent.last_payment_error?.message ?? null,
+      })
+    }
+  } catch (emailErr) {
+    console.error('[handlePaymentFailed] Email failed (non-blocking):', emailErr)
   }
 }
 

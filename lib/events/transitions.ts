@@ -234,6 +234,82 @@ export async function transitionEvent({
     console.error('[transitionEvent] Notification creation failed (non-blocking):', err)
   }
 
+  // Send transactional emails (non-blocking)
+  try {
+    const supabaseAdmin = createServerClient({ admin: true })
+
+    // Fetch client details for email
+    const { data: client } = await supabaseAdmin
+      .from('clients')
+      .select('email, full_name')
+      .eq('id', event.client_id)
+      .single()
+
+    // Fetch chef name
+    const { data: chef } = await supabaseAdmin
+      .from('chefs')
+      .select('business_name')
+      .eq('id', event.tenant_id)
+      .single()
+
+    if (client?.email && chef) {
+      const { sendEventProposedEmail, sendEventConfirmedEmail, sendEventCompletedEmail, sendEventCancelledEmail, buildLocation } = await import('@/lib/email/notifications')
+      const chefName = chef.business_name || 'Your Chef'
+      const occasion = event.occasion || 'Untitled event'
+      const location = buildLocation(event)
+
+      if (toStatus === 'proposed' && fromStatus === 'draft') {
+        await sendEventProposedEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName,
+          eventId,
+          occasion,
+          eventDate: event.event_date,
+          guestCount: event.guest_count,
+          location,
+        })
+      }
+
+      if (toStatus === 'confirmed' && fromStatus === 'paid') {
+        await sendEventConfirmedEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName,
+          occasion,
+          eventDate: event.event_date,
+          serveTime: event.serve_time,
+          location,
+          guestCount: event.guest_count,
+        })
+      }
+
+      if (toStatus === 'completed' && fromStatus === 'in_progress') {
+        await sendEventCompletedEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName,
+          eventId,
+          occasion,
+          eventDate: event.event_date,
+        })
+      }
+
+      if (toStatus === 'cancelled') {
+        await sendEventCancelledEmail({
+          recipientEmail: client.email,
+          recipientName: client.full_name,
+          occasion,
+          eventDate: event.event_date,
+          cancelledBy: user?.role === 'chef' ? chefName : 'the client',
+          reason: (metadata.reason as string) || null,
+        })
+      }
+    }
+  } catch (emailErr) {
+    console.error('[transitionEvent] Email send failed (non-blocking):', emailErr)
+  }
+
   return { success: true, fromStatus, toStatus }
 }
 
