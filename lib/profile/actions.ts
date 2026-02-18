@@ -50,7 +50,7 @@ export async function getPublicChefProfile(slug: string) {
       (l: { is_active: boolean }) => l.is_active
     ),
     partner_images: (p.partner_images || []).sort(
-      (a: { display_order: number }, b: { display_order: number }) => a.display_order - b.display_order
+      (a: { display_order: number | null }, b: { display_order: number | null }) => (a.display_order ?? 0) - (b.display_order ?? 0)
     ),
   }))
 

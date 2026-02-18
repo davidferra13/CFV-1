@@ -19,7 +19,7 @@ export async function getWixConnection(): Promise<WixConnectionStatus> {
   const { data } = await supabase
     .from('wix_connections')
     .select('*')
-    .eq('chef_id', user.chefId!)
+    .eq('chef_id', user.entityId)
     .single()
 
   if (!data) {
@@ -60,7 +60,7 @@ export async function setupWixConnection(): Promise<{ webhookUrl: string; webhoo
     .from('wix_connections')
     .upsert(
       {
-        chef_id: user.chefId!,
+        chef_id: user.entityId,
         tenant_id: user.tenantId!,
         webhook_secret: webhookSecret,
       },
@@ -88,7 +88,7 @@ export async function disconnectWix(): Promise<void> {
   const { error } = await supabase
     .from('wix_connections')
     .delete()
-    .eq('chef_id', user.chefId!)
+    .eq('chef_id', user.entityId)
 
   if (error) {
     console.error('[disconnectWix] Error:', error)
@@ -110,7 +110,7 @@ export async function regenerateWixSecret(): Promise<{ webhookUrl: string; webho
   const { error } = await supabase
     .from('wix_connections')
     .update({ webhook_secret: newSecret, updated_at: new Date().toISOString() })
-    .eq('chef_id', user.chefId!)
+    .eq('chef_id', user.entityId)
 
   if (error) {
     console.error('[regenerateWixSecret] Error:', error)

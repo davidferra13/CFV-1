@@ -188,7 +188,7 @@ export async function getRevenueBySource(range?: DateRange): Promise<RevenueData
   }
 
   // Get the inquiry channel for each event
-  const inquiryIds = (events || []).map(e => e.inquiry_id).filter(Boolean)
+  const inquiryIds = (events || []).map(e => e.inquiry_id).filter((id): id is string => id != null)
   const { data: inquiries } = inquiryIds.length > 0
     ? await supabase
         .from('inquiries')
