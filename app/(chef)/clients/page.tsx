@@ -23,9 +23,7 @@ export default async function ClientsPage() {
           <h1 className="text-3xl font-bold text-stone-900">Clients</h1>
           <p className="text-stone-600 mt-1">Manage your client relationships and invitations</p>
         </div>
-        <a href="#invite">
-          <Button>+ Add Client</Button>
-        </a>
+        <Button href="#invite">+ Add Client</Button>
       </div>
 
       {/* Invitation Section */}
