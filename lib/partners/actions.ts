@@ -8,7 +8,6 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import type { Database } from '@/types/database'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -179,11 +178,11 @@ export async function getPartners(filters?: {
     .eq('tenant_id', user.tenantId!)
 
   if (filters?.partner_type) {
-    query = query.eq('partner_type', filters.partner_type as Database['public']['Enums']['partner_type'])
+    query = query.eq('partner_type', filters.partner_type)
   }
 
   if (filters?.status) {
-    query = query.eq('status', filters.status as Database['public']['Enums']['partner_status'])
+    query = query.eq('status', filters.status)
   }
 
   const { data: partners, error } = await query.order('name', { ascending: true })
@@ -720,7 +719,7 @@ export async function getShowcasePartners(chefSlug: string) {
       (l: { is_active: boolean }) => l.is_active
     ),
     partner_images: (p.partner_images || []).sort(
-      (a: { display_order: number }, b: { display_order: number }) => a.display_order - b.display_order
+      (a: { display_order: number | null }, b: { display_order: number | null }) => (a.display_order ?? 0) - (b.display_order ?? 0)
     ),
   }))
 
