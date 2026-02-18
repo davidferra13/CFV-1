@@ -56,8 +56,8 @@ export async function getClientConnections(clientId: string): Promise<ClientConn
   const supabase = createServerClient()
 
   // Get connections where this client is on either side
-  const { data: connections, error } = await supabase
-    .from('client_connections')
+  const { data: connections, error } = await (supabase as any)
+    .from('client_connections' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
     .or(`client_a_id.eq.${clientId},client_b_id.eq.${clientId}`)
@@ -88,7 +88,7 @@ export async function getClientConnections(clientId: string): Promise<ClientConn
   }
 
   // Assemble with "other" client info
-  return connections.map((c) => {
+  return connections.map((c: any) => {
     const otherId = c.client_a_id === clientId ? c.client_b_id : c.client_a_id
     return {
       id: c.id,
@@ -141,7 +141,7 @@ export async function createConnection(input: z.infer<typeof CreateConnectionSch
   if (!clientB) throw new Error('Second client not found')
 
   const { data, error } = await supabase
-    .from('client_connections')
+    .from('client_connections' as any)
     .insert({
       tenant_id: user.tenantId!,
       client_a_id: validated.client_a_id,
@@ -186,7 +186,7 @@ export async function updateConnection(
   }
 
   const { data, error } = await supabase
-    .from('client_connections')
+    .from('client_connections' as any)
     .update(updates)
     .eq('id', connectionId)
     .eq('tenant_id', user.tenantId!)
@@ -198,9 +198,10 @@ export async function updateConnection(
     throw new Error('Failed to update connection')
   }
 
-  revalidatePath(`/clients/${data.client_a_id}`)
-  revalidatePath(`/clients/${data.client_b_id}`)
-  return { connection: data }
+  const updated = data as any
+  revalidatePath(`/clients/${updated.client_a_id}`)
+  revalidatePath(`/clients/${updated.client_b_id}`)
+  return { connection: updated }
 }
 
 /**
@@ -212,7 +213,7 @@ export async function removeConnection(connectionId: string) {
 
   // Get connection first for revalidation paths
   const { data: connection } = await supabase
-    .from('client_connections')
+    .from('client_connections' as any)
     .select('client_a_id, client_b_id')
     .eq('id', connectionId)
     .eq('tenant_id', user.tenantId!)
@@ -223,7 +224,7 @@ export async function removeConnection(connectionId: string) {
   }
 
   const { error } = await supabase
-    .from('client_connections')
+    .from('client_connections' as any)
     .delete()
     .eq('id', connectionId)
     .eq('tenant_id', user.tenantId!)
@@ -233,7 +234,8 @@ export async function removeConnection(connectionId: string) {
     throw new Error('Failed to remove connection')
   }
 
-  revalidatePath(`/clients/${connection.client_a_id}`)
-  revalidatePath(`/clients/${connection.client_b_id}`)
+  const conn = connection as any
+  revalidatePath(`/clients/${conn.client_a_id}`)
+  revalidatePath(`/clients/${conn.client_b_id}`)
   return { success: true as const }
 }

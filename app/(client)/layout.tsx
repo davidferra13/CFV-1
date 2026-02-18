@@ -3,6 +3,7 @@
 import { requireClient } from '@/lib/auth/get-user'
 import { redirect } from 'next/navigation'
 import { ClientNav } from '@/components/navigation/client-nav'
+import { ActivityTracker } from '@/components/activity/activity-tracker'
 
 export default async function ClientLayout({
   children,
@@ -19,6 +20,7 @@ export default async function ClientLayout({
   return (
     <div className="min-h-screen bg-surface-muted">
       <ClientNav userEmail={user.email} />
+      <ActivityTracker eventType="portal_login" />
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">{children}</main>
     </div>
   )

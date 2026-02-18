@@ -33,6 +33,8 @@ const CreateEventSchema = z.object({
   arrival_time: z.string().optional(),
   departure_time: z.string().optional(),
   cannabis_preference: z.boolean().optional(),
+  location_lat: z.number().optional(),
+  location_lng: z.number().optional(),
 })
 
 const UpdateEventSchema = z.object({
@@ -60,6 +62,8 @@ const UpdateEventSchema = z.object({
   pricing_notes: z.string().optional(),
   cannabis_preference: z.boolean().optional(),
   payment_method_primary: z.enum(['cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other']).optional(),
+  location_lat: z.number().optional(),
+  location_lng: z.number().optional(),
 })
 
 export type CreateEventInput = z.infer<typeof CreateEventSchema>
@@ -89,37 +93,40 @@ export async function createEvent(input: CreateEventInput) {
   }
 
   // Create event (status defaults to 'draft' in DB)
+  const insertPayload: Record<string, unknown> = {
+    tenant_id: user.tenantId!,
+    client_id: validated.client_id,
+    event_date: validated.event_date,
+    serve_time: validated.serve_time,
+    guest_count: validated.guest_count,
+    location_address: validated.location_address,
+    location_city: validated.location_city,
+    location_state: validated.location_state,
+    location_zip: validated.location_zip,
+    occasion: validated.occasion,
+    service_style: validated.service_style,
+    pricing_model: validated.pricing_model,
+    quoted_price_cents: validated.quoted_price_cents,
+    deposit_amount_cents: validated.deposit_amount_cents,
+    dietary_restrictions: validated.dietary_restrictions,
+    allergies: validated.allergies,
+    special_requests: validated.special_requests,
+    site_notes: validated.site_notes,
+    access_instructions: validated.access_instructions,
+    kitchen_notes: validated.kitchen_notes,
+    location_notes: validated.location_notes,
+    arrival_time: validated.arrival_time,
+    departure_time: validated.departure_time,
+    cannabis_preference: validated.cannabis_preference,
+    location_lat: validated.location_lat,
+    location_lng: validated.location_lng,
+    created_by: user.id,
+    updated_by: user.id,
+  }
+
   const { data: event, error } = await supabase
     .from('events')
-    .insert({
-      tenant_id: user.tenantId!,
-      client_id: validated.client_id,
-      event_date: validated.event_date,
-      serve_time: validated.serve_time,
-      guest_count: validated.guest_count,
-      location_address: validated.location_address,
-      location_city: validated.location_city,
-      location_state: validated.location_state,
-      location_zip: validated.location_zip,
-      occasion: validated.occasion,
-      service_style: validated.service_style,
-      pricing_model: validated.pricing_model,
-      quoted_price_cents: validated.quoted_price_cents,
-      deposit_amount_cents: validated.deposit_amount_cents,
-      dietary_restrictions: validated.dietary_restrictions,
-      allergies: validated.allergies,
-      special_requests: validated.special_requests,
-      site_notes: validated.site_notes,
-      access_instructions: validated.access_instructions,
-      kitchen_notes: validated.kitchen_notes,
-      location_notes: validated.location_notes,
-      arrival_time: validated.arrival_time,
-      departure_time: validated.departure_time,
-      cannabis_preference: validated.cannabis_preference,
-      household_id: validated.household_id ?? null,
-      created_by: user.id,
-      updated_by: user.id
-    })
+    .insert(insertPayload as any)
     .select()
     .single()
 

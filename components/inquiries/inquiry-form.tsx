@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { createInquiry, type CreateInquiryInput } from '@/lib/inquiries/actions'
 import { parseCurrencyToCents, formatCentsToDisplay } from '@/lib/utils/currency'
+import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { SmartFillModal } from '@/components/import/smart-fill-modal'
 import { parseInquiryFromText, type ParsedInquiry } from '@/lib/ai/parse-inquiry'
 import { isAIConfigured } from '@/lib/ai/parse'
@@ -24,7 +25,28 @@ type Client = {
   phone: string | null
 }
 
-export function InquiryForm({ clients }: { clients: Client[] }) {
+type Partner = {
+  id: string
+  name: string
+  partner_type: string
+}
+
+type PartnerLocation = {
+  id: string
+  name: string
+  city: string | null
+  state: string | null
+}
+
+export function InquiryForm({
+  clients,
+  partners = [],
+  partnerLocations = {},
+}: {
+  clients: Client[]
+  partners?: Partner[]
+  partnerLocations?: Record<string, PartnerLocation[]>
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -88,6 +110,10 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
   const [serviceExpectations, setServiceExpectations] = useState('')
   const [cannabisPreference, setCannabisPreference] = useState('')
 
+  // Partner linking
+  const [selectedPartnerId, setSelectedPartnerId] = useState('')
+  const [selectedLocationId, setSelectedLocationId] = useState('')
+
   // Extra context
   const [sourceMessage, setSourceMessage] = useState('')
   const [notes, setNotes] = useState('')
@@ -127,6 +153,8 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
         client_name: clientName.trim(),
         client_email: clientEmail || undefined,
         client_phone: clientPhone || undefined,
+        referral_partner_id: selectedPartnerId || null,
+        partner_location_id: selectedLocationId || null,
         confirmed_date: confirmedDate || undefined,
         confirmed_guest_count: guestCountNum,
         confirmed_location: location || undefined,
@@ -235,6 +263,48 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
           />
         </div>
 
+        {/* === REFERRAL PARTNER (optional) === */}
+        {partners.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider">
+              Referral Source
+            </h3>
+
+            <Select
+              label="Referral Partner"
+              options={partners.map(p => ({
+                value: p.id,
+                label: `${p.name} (${
+                  p.partner_type === 'airbnb_host' ? 'Airbnb' :
+                  p.partner_type === 'business' ? 'Business' :
+                  p.partner_type === 'platform' ? 'Platform' :
+                  p.partner_type === 'venue' ? 'Venue' :
+                  p.partner_type === 'individual' ? 'Individual' : 'Other'
+                })`,
+              }))}
+              value={selectedPartnerId}
+              onChange={(e) => {
+                setSelectedPartnerId(e.target.value)
+                setSelectedLocationId('')
+              }}
+              helperText="Who referred this inquiry?"
+            />
+
+            {selectedPartnerId && (partnerLocations[selectedPartnerId] || []).length > 0 && (
+              <Select
+                label="Partner Location"
+                options={(partnerLocations[selectedPartnerId] || []).map(loc => ({
+                  value: loc.id,
+                  label: `${loc.name}${loc.city ? ` — ${loc.city}${loc.state ? `, ${loc.state}` : ''}` : ''}`,
+                }))}
+                value={selectedLocationId}
+                onChange={(e) => setSelectedLocationId(e.target.value)}
+                helperText="Which specific location?"
+              />
+            )}
+          </div>
+        )}
+
         {/* === CONTACT INFO (for unlinked leads) === */}
         {!selectedClientId && (
           <div className="space-y-4">
@@ -290,11 +360,13 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
             onChange={(e) => setOccasion(e.target.value)}
           />
 
-          <Input
+          <AddressAutocomplete
             label="Location"
             placeholder="e.g., 123 Main St, Denver CO 80202"
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
+            onChange={(val) => setLocation(val)}
+            onPlaceSelect={(data: AddressData) => setLocation(data.formattedAddress)}
+            helperText="Start typing for Google address suggestions"
           />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

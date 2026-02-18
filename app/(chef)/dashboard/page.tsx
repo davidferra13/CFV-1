@@ -21,6 +21,7 @@ import {
   getCurrentMonthExpenseSummary,
   getNextUpcomingEvent,
 } from '@/lib/dashboard/actions'
+import { getActiveClients, getRecentActivity } from '@/lib/activity/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { WeekStrip } from '@/components/dashboard/week-strip'
 import { TimelineView } from '@/components/scheduling/timeline-view'
@@ -30,6 +31,8 @@ import { QueueList } from '@/components/queue/queue-list'
 import { QueueSummaryBar } from '@/components/queue/queue-summary'
 import { QueueEmpty } from '@/components/queue/queue-empty'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ActiveClientsCard } from '@/components/dashboard/active-clients-card'
+import { ActivityFeed } from '@/components/dashboard/activity-feed'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import {
@@ -101,6 +104,8 @@ export default async function ChefDashboard() {
     monthExpenses,
     loyaltyApproaching,
     nextEvent,
+    activeClients,
+    recentActivity,
   ] = await Promise.all([
     safe('queue', getPriorityQueue, emptyQueue),
     safe('clients', getClients, []),
@@ -116,6 +121,8 @@ export default async function ChefDashboard() {
     safe('monthExpenses', getCurrentMonthExpenseSummary, emptyExpenses),
     safe('loyaltyApproaching', getClientsApproachingRewards, []),
     safe('nextEvent', getNextUpcomingEvent, null),
+    safe('activeClients', () => getActiveClients(15), []),
+    safe('recentActivity', () => getRecentActivity(15), []),
   ])
 
   const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
@@ -523,6 +530,17 @@ export default async function ChefDashboard() {
             </CardContent>
           </Card>
 
+        </div>
+      </div>
+
+      {/* ============================================ */}
+      {/* SECTION 8: CLIENT ACTIVITY                   */}
+      {/* ============================================ */}
+      <div className="space-y-3">
+        <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Client Activity</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <ActiveClientsCard clients={activeClients} />
+          <ActivityFeed events={recentActivity} />
         </div>
       </div>
 

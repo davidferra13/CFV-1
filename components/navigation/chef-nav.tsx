@@ -33,6 +33,8 @@ import {
   Handshake,
   Home,
   Globe,
+  Building2,
+  BarChart3,
 } from 'lucide-react'
 
 // ─── Types ──────────────────────────────────────────
@@ -42,7 +44,7 @@ type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavItem[] 
 // ─── Navigation Config ──────────────────────────────
 const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/chat', label: 'Messages', icon: MessageCircle },
+  { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays },
   { href: '/queue', label: 'Queue', icon: ListChecks },
   { href: '/network', label: 'Network', icon: Handshake },
@@ -55,6 +57,7 @@ const navGroups: NavGroup[] = [
     icon: Inbox,
     items: [
       { href: '/leads', label: 'Leads', icon: Globe },
+      { href: '/partners', label: 'Partners', icon: Building2 },
       { href: '/inquiries', label: 'Inquiries', icon: Inbox },
       { href: '/quotes', label: 'Quotes', icon: FileText },
       { href: '/events', label: 'Events', icon: UtensilsCrossed },
@@ -92,6 +95,7 @@ const navGroups: NavGroup[] = [
     label: 'Operations',
     icon: ClipboardCheck,
     items: [
+      { href: '/analytics', label: 'Analytics', icon: BarChart3 },
       { href: '/aar', label: 'Reviews', icon: ClipboardCheck },
       { href: '/import', label: 'Import', icon: Upload },
     ],

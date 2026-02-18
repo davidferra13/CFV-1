@@ -430,6 +430,94 @@ export type Database = {
           },
         ]
       }
+      chef_feedback: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          event_id: string | null
+          feedback_date: string
+          feedback_text: string
+          id: string
+          logged_by: string
+          rating: number | null
+          source: string
+          source_url: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          feedback_date?: string
+          feedback_text: string
+          id?: string
+          logged_by: string
+          rating?: number | null
+          source: string
+          source_url?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          event_id?: string | null
+          feedback_date?: string
+          feedback_text?: string
+          id?: string
+          logged_by?: string
+          rating?: number | null
+          source?: string
+          source_url?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_feedback_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "chef_feedback_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_feedback_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "chef_feedback_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "chef_feedback_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_feedback_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chef_preferences: {
         Row: {
           chef_id: string
@@ -535,6 +623,8 @@ export type Database = {
           id: string
           phone: string | null
           profile_image_url: string | null
+          slug: string | null
+          tagline: string | null
           updated_at: string
         }
         Insert: {
@@ -548,6 +638,8 @@ export type Database = {
           id?: string
           phone?: string | null
           profile_image_url?: string | null
+          slug?: string | null
+          tagline?: string | null
           updated_at?: string
         }
         Update: {
@@ -561,9 +653,77 @@ export type Database = {
           id?: string
           phone?: string | null
           profile_image_url?: string | null
+          slug?: string | null
+          tagline?: string | null
           updated_at?: string
         }
         Relationships: []
+      }
+      client_connections: {
+        Row: {
+          client_a_id: string
+          client_b_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          relationship_type: string
+          tenant_id: string
+        }
+        Insert: {
+          client_a_id: string
+          client_b_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          relationship_type: string
+          tenant_id: string
+        }
+        Update: {
+          client_a_id?: string
+          client_b_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          relationship_type?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_connections_client_a_id_fkey"
+            columns: ["client_a_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "client_connections_client_a_id_fkey"
+            columns: ["client_a_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_connections_client_b_id_fkey"
+            columns: ["client_b_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "client_connections_client_b_id_fkey"
+            columns: ["client_b_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_invitations: {
         Row: {
@@ -1585,6 +1745,7 @@ export type Database = {
           non_negotiables_checked: boolean
           occasion: string | null
           packing_list_ready: boolean
+          partner_location_id: string | null
           payment_card_used: string | null
           payment_method_primary:
             | Database["public"]["Enums"]["payment_method"]
@@ -1597,6 +1758,7 @@ export type Database = {
           pricing_notes: string | null
           pricing_snapshot: Json | null
           quoted_price_cents: number | null
+          referral_partner_id: string | null
           reset_complete: boolean
           reset_completed_at: string | null
           reset_started_at: string | null
@@ -1672,6 +1834,7 @@ export type Database = {
           non_negotiables_checked?: boolean
           occasion?: string | null
           packing_list_ready?: boolean
+          partner_location_id?: string | null
           payment_card_used?: string | null
           payment_method_primary?:
             | Database["public"]["Enums"]["payment_method"]
@@ -1684,6 +1847,7 @@ export type Database = {
           pricing_notes?: string | null
           pricing_snapshot?: Json | null
           quoted_price_cents?: number | null
+          referral_partner_id?: string | null
           reset_complete?: boolean
           reset_completed_at?: string | null
           reset_started_at?: string | null
@@ -1759,6 +1923,7 @@ export type Database = {
           non_negotiables_checked?: boolean
           occasion?: string | null
           packing_list_ready?: boolean
+          partner_location_id?: string | null
           payment_card_used?: string | null
           payment_method_primary?:
             | Database["public"]["Enums"]["payment_method"]
@@ -1771,6 +1936,7 @@ export type Database = {
           pricing_notes?: string | null
           pricing_snapshot?: Json | null
           quoted_price_cents?: number | null
+          referral_partner_id?: string | null
           reset_complete?: boolean
           reset_completed_at?: string | null
           reset_started_at?: string | null
@@ -1839,6 +2005,20 @@ export type Database = {
             columns: ["menu_id"]
             isOneToOne: false
             referencedRelation: "menus"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_partner_location_id_fkey"
+            columns: ["partner_location_id"]
+            isOneToOne: false
+            referencedRelation: "partner_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_referral_partner_id_fkey"
+            columns: ["referral_partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
             referencedColumns: ["id"]
           },
           {
@@ -2365,6 +2545,8 @@ export type Database = {
           last_response_at: string | null
           next_action_by: string | null
           next_action_required: string | null
+          partner_location_id: string | null
+          referral_partner_id: string | null
           source_message: string | null
           status: Database["public"]["Enums"]["inquiry_status"]
           tenant_id: string
@@ -2390,6 +2572,8 @@ export type Database = {
           last_response_at?: string | null
           next_action_by?: string | null
           next_action_required?: string | null
+          partner_location_id?: string | null
+          referral_partner_id?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
           tenant_id: string
@@ -2415,6 +2599,8 @@ export type Database = {
           last_response_at?: string | null
           next_action_by?: string | null
           next_action_required?: string | null
+          partner_location_id?: string | null
+          referral_partner_id?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
           tenant_id?: string
@@ -2455,6 +2641,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_partner_location_id_fkey"
+            columns: ["partner_location_id"]
+            isOneToOne: false
+            referencedRelation: "partner_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiries_referral_partner_id_fkey"
+            columns: ["referral_partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
             referencedColumns: ["id"]
           },
           {
@@ -3310,6 +3510,133 @@ export type Database = {
           },
         ]
       }
+      partner_images: {
+        Row: {
+          caption: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          image_url: string
+          location_id: string | null
+          partner_id: string
+          season: string | null
+          tenant_id: string
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url: string
+          location_id?: string | null
+          partner_id: string
+          season?: string | null
+          tenant_id: string
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          image_url?: string
+          location_id?: string | null
+          partner_id?: string
+          season?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_images_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "partner_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_images_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_images_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_locations: {
+        Row: {
+          address: string | null
+          booking_url: string | null
+          city: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          max_guest_count: number | null
+          name: string
+          notes: string | null
+          partner_id: string
+          state: string | null
+          tenant_id: string
+          updated_at: string
+          zip: string | null
+        }
+        Insert: {
+          address?: string | null
+          booking_url?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_guest_count?: number | null
+          name: string
+          notes?: string | null
+          partner_id: string
+          state?: string | null
+          tenant_id: string
+          updated_at?: string
+          zip?: string | null
+        }
+        Update: {
+          address?: string | null
+          booking_url?: string | null
+          city?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          max_guest_count?: number | null
+          name?: string
+          notes?: string | null
+          partner_id?: string
+          state?: string | null
+          tenant_id?: string
+          updated_at?: string
+          zip?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_locations_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "referral_partners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_locations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_state_transitions: {
         Row: {
           from_status: Database["public"]["Enums"]["quote_status"] | null
@@ -3667,6 +3994,77 @@ export type Database = {
           },
         ]
       }
+      referral_partners: {
+        Row: {
+          booking_url: string | null
+          commission_notes: string | null
+          contact_name: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          email: string | null
+          id: string
+          is_showcase_visible: boolean
+          name: string
+          notes: string | null
+          partner_type: Database["public"]["Enums"]["partner_type"]
+          phone: string | null
+          showcase_order: number | null
+          status: Database["public"]["Enums"]["partner_status"]
+          tenant_id: string
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          booking_url?: string | null
+          commission_notes?: string | null
+          contact_name?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_showcase_visible?: boolean
+          name: string
+          notes?: string | null
+          partner_type?: Database["public"]["Enums"]["partner_type"]
+          phone?: string | null
+          showcase_order?: number | null
+          status?: Database["public"]["Enums"]["partner_status"]
+          tenant_id: string
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          booking_url?: string | null
+          commission_notes?: string | null
+          contact_name?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          email?: string | null
+          id?: string
+          is_showcase_visible?: boolean
+          name?: string
+          notes?: string | null
+          partner_type?: Database["public"]["Enums"]["partner_type"]
+          phone?: string | null
+          showcase_order?: number | null
+          status?: Database["public"]["Enums"]["partner_status"]
+          tenant_id?: string
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_partners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       response_templates: {
         Row: {
           category: string | null
@@ -3953,6 +4351,156 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
+      }
+      wix_connections: {
+        Row: {
+          auto_create_inquiry: boolean
+          chef_id: string
+          created_at: string
+          error_count: number
+          form_field_mapping: Json
+          id: string
+          last_submission_at: string | null
+          tenant_id: string
+          total_submissions: number
+          updated_at: string
+          webhook_secret: string
+        }
+        Insert: {
+          auto_create_inquiry?: boolean
+          chef_id: string
+          created_at?: string
+          error_count?: number
+          form_field_mapping?: Json
+          id?: string
+          last_submission_at?: string | null
+          tenant_id: string
+          total_submissions?: number
+          updated_at?: string
+          webhook_secret: string
+        }
+        Update: {
+          auto_create_inquiry?: boolean
+          chef_id?: string
+          created_at?: string
+          error_count?: number
+          form_field_mapping?: Json
+          id?: string
+          last_submission_at?: string | null
+          tenant_id?: string
+          total_submissions?: number
+          updated_at?: string
+          webhook_secret?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wix_connections_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: true
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wix_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wix_submissions: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          error: string | null
+          gmail_duplicate_of: string | null
+          id: string
+          inquiry_id: string | null
+          processed_at: string | null
+          processing_attempts: number
+          raw_payload: Json
+          status: string
+          submitter_email: string | null
+          submitter_name: string | null
+          submitter_phone: string | null
+          tenant_id: string
+          wix_form_id: string | null
+          wix_submission_id: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          error?: string | null
+          gmail_duplicate_of?: string | null
+          id?: string
+          inquiry_id?: string | null
+          processed_at?: string | null
+          processing_attempts?: number
+          raw_payload: Json
+          status?: string
+          submitter_email?: string | null
+          submitter_name?: string | null
+          submitter_phone?: string | null
+          tenant_id: string
+          wix_form_id?: string | null
+          wix_submission_id: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          error?: string | null
+          gmail_duplicate_of?: string | null
+          id?: string
+          inquiry_id?: string | null
+          processed_at?: string | null
+          processing_attempts?: number
+          raw_payload?: Json
+          status?: string
+          submitter_email?: string | null
+          submitter_name?: string | null
+          submitter_phone?: string | null
+          tenant_id?: string
+          wix_form_id?: string | null
+          wix_submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wix_submissions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "wix_submissions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wix_submissions_gmail_duplicate_of_fkey"
+            columns: ["gmail_duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "gmail_sync_log"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wix_submissions_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wix_submissions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -4434,6 +4982,9 @@ export type Database = {
         | "phone"
         | "website"
         | "other"
+        | "referral"
+        | "walk_in"
+        | "wix"
       inquiry_status:
         | "new"
         | "awaiting_client"
@@ -4486,6 +5037,14 @@ export type Database = {
         | "preference"
         | "logistics"
         | "relationship"
+      partner_status: "active" | "inactive"
+      partner_type:
+        | "airbnb_host"
+        | "business"
+        | "platform"
+        | "individual"
+        | "venue"
+        | "other"
       payment_method:
         | "cash"
         | "venmo"
@@ -4762,6 +5321,9 @@ export const Constants = {
         "phone",
         "website",
         "other",
+        "referral",
+        "walk_in",
+        "wix",
       ],
       inquiry_status: [
         "new",
@@ -4821,6 +5383,15 @@ export const Constants = {
         "preference",
         "logistics",
         "relationship",
+      ],
+      partner_status: ["active", "inactive"],
+      partner_type: [
+        "airbnb_host",
+        "business",
+        "platform",
+        "individual",
+        "venue",
+        "other",
       ],
       payment_method: [
         "cash",

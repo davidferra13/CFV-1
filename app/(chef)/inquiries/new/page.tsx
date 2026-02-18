@@ -4,12 +4,31 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
+import { getPartners, getPartnerLocations } from '@/lib/partners/actions'
 import { InquiryForm } from '@/components/inquiries/inquiry-form'
 
 export default async function NewInquiryPage() {
   await requireChef()
 
-  const clients = await getClients()
+  const [clients, partners] = await Promise.all([
+    getClients(),
+    getPartners({ status: 'active' }),
+  ])
+
+  // Build partner locations map for cascading dropdown
+  const partnerLocations: Record<string, { id: string; name: string; city: string | null; state: string | null }[]> = {}
+  for (const partner of partners) {
+    if (partner.partner_locations && partner.partner_locations.length > 0) {
+      partnerLocations[partner.id] = partner.partner_locations
+        .filter((l: { is_active: boolean }) => l.is_active)
+        .map((l: { id: string; name: string }) => ({
+          id: l.id,
+          name: l.name,
+          city: null,
+          state: null,
+        }))
+    }
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -20,7 +39,11 @@ export default async function NewInquiryPage() {
         </p>
       </div>
 
-      <InquiryForm clients={clients} />
+      <InquiryForm
+        clients={clients}
+        partners={partners.map(p => ({ id: p.id, name: p.name, partner_type: p.partner_type }))}
+        partnerLocations={partnerLocations}
+      />
     </div>
   )
 }

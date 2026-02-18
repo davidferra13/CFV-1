@@ -34,6 +34,8 @@ const CreateInquirySchema = z.object({
   client_name: z.string().min(1, 'Client name required'),
   client_email: z.string().email().optional().or(z.literal('')),
   client_phone: z.string().optional().or(z.literal('')),
+  referral_partner_id: z.string().uuid().nullable().optional(),
+  partner_location_id: z.string().uuid().nullable().optional(),
   confirmed_date: z.string().optional().or(z.literal('')),
   confirmed_guest_count: z.number().int().positive().nullable().optional(),
   confirmed_location: z.string().optional().or(z.literal('')),
@@ -116,6 +118,8 @@ export async function createInquiry(input: CreateInquiryInput) {
       tenant_id: user.tenantId!,
       channel: validated.channel,
       client_id: clientId,
+      referral_partner_id: validated.referral_partner_id || null,
+      partner_location_id: validated.partner_location_id || null,
       first_contact_at: new Date().toISOString(),
       confirmed_date: validated.confirmed_date || null,
       confirmed_guest_count: validated.confirmed_guest_count ?? null,
@@ -137,6 +141,25 @@ export async function createInquiry(input: CreateInquiryInput) {
   }
 
   revalidatePath('/inquiries')
+
+  // Fire automations (non-blocking)
+  try {
+    const { evaluateAutomations } = await import('@/lib/automations/engine')
+    const clientName = validated.client_name || 'Unknown'
+    await evaluateAutomations(user.tenantId!, 'inquiry_created', {
+      entityId: inquiry.id,
+      entityType: 'inquiry',
+      fields: {
+        channel: validated.channel,
+        client_name: clientName,
+        occasion: validated.confirmed_occasion || null,
+        guest_count: validated.confirmed_guest_count ?? null,
+      },
+    })
+  } catch (err) {
+    console.error('[createInquiry] Automation evaluation failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry }
 }
 
@@ -343,6 +366,23 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
 
   revalidatePath('/inquiries')
   revalidatePath(`/inquiries/${id}`)
+
+  // Fire automations (non-blocking)
+  try {
+    const { evaluateAutomations } = await import('@/lib/automations/engine')
+    await evaluateAutomations(user.tenantId!, 'inquiry_status_changed', {
+      entityId: id,
+      entityType: 'inquiry',
+      fields: {
+        from_status: currentStatus,
+        to_status: newStatus,
+        status: newStatus,
+      },
+    })
+  } catch (err) {
+    console.error('[transitionInquiry] Automation evaluation failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry: updated }
 }
 
@@ -416,6 +456,8 @@ export async function convertInquiryToEvent(inquiryId: string) {
       tenant_id: user.tenantId!,
       client_id: inquiry.client_id,
       inquiry_id: inquiry.id,
+      referral_partner_id: inquiry.referral_partner_id || null,
+      partner_location_id: inquiry.partner_location_id || null,
       event_date: inquiry.confirmed_date,
       serve_time: 'TBD',
       guest_count: inquiry.confirmed_guest_count || 1,

@@ -35,6 +35,8 @@ export type NotificationAction =
   // Clients
   | 'client_signup'
   | 'review_submitted'
+  // Wix
+  | 'wix_submission'
   // System
   | 'system_alert'
 
@@ -91,6 +93,9 @@ export const NOTIFICATION_CONFIG: Record<
   // Clients
   client_signup: { category: 'client', icon: 'UserPlus', toastByDefault: true },
   review_submitted: { category: 'client', icon: 'Star', toastByDefault: true },
+
+  // Wix - toast new submissions (time-sensitive leads)
+  wix_submission: { category: 'inquiry', icon: 'Globe', toastByDefault: true },
 
   // System
   system_alert: { category: 'system', icon: 'Bell', toastByDefault: true },

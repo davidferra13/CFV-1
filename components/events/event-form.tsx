@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
+import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { createEvent, updateEvent, type CreateEventInput } from '@/lib/events/actions'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 
@@ -57,6 +58,8 @@ export function EventForm({ clients, mode, event }: EventFormProps) {
   const [locationCity, setLocationCity] = useState(event?.location_city || '')
   const [locationState, setLocationState] = useState(event?.location_state || '')
   const [locationZip, setLocationZip] = useState(event?.location_zip || '')
+  const [locationLat, setLocationLat] = useState<number | null>((event as any)?.location_lat ?? null)
+  const [locationLng, setLocationLng] = useState<number | null>((event as any)?.location_lng ?? null)
   const [specialRequests, setSpecialRequests] = useState(event?.special_requests || '')
   const [totalAmount, setTotalAmount] = useState(
     event?.quoted_price_cents ? (event.quoted_price_cents / 100).toString() : ''
@@ -64,6 +67,15 @@ export function EventForm({ clients, mode, event }: EventFormProps) {
   const [depositAmount, setDepositAmount] = useState(
     event?.deposit_amount_cents ? (event.deposit_amount_cents / 100).toString() : ''
   )
+  const handlePlaceSelect = (data: AddressData) => {
+    setLocationAddress(data.address)
+    setLocationCity(data.city)
+    setLocationState(data.state)
+    setLocationZip(data.zip)
+    setLocationLat(data.lat)
+    setLocationLng(data.lng)
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -116,6 +128,8 @@ export function EventForm({ clients, mode, event }: EventFormProps) {
           special_requests: specialRequests || undefined,
           quoted_price_cents: totalAmountCents,
           deposit_amount_cents: depositAmountCents,
+          location_lat: locationLat ?? undefined,
+          location_lng: locationLng ?? undefined,
         }
 
         const result = await createEvent(input)
@@ -139,6 +153,8 @@ export function EventForm({ clients, mode, event }: EventFormProps) {
           special_requests: specialRequests || undefined,
           quoted_price_cents: totalAmountCents,
           deposit_amount_cents: depositAmountCents,
+          location_lat: locationLat ?? undefined,
+          location_lng: locationLng ?? undefined,
         })
 
         if (result.success) {
@@ -218,12 +234,14 @@ export function EventForm({ clients, mode, event }: EventFormProps) {
         />
 
         {/* Location */}
-        <Input
+        <AddressAutocomplete
           label="Address"
           required
           placeholder="e.g., 123 Main St"
           value={locationAddress}
-          onChange={(e) => setLocationAddress(e.target.value)}
+          onChange={(val) => setLocationAddress(val)}
+          onPlaceSelect={handlePlaceSelect}
+          helperText="Start typing for Google address suggestions"
         />
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <Input

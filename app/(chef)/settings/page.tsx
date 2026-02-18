@@ -9,22 +9,28 @@ export const metadata: Metadata = { title: 'Settings - ChefFlow' }
 import { getChefPreferences } from '@/lib/chef/actions'
 import { getGoogleConnection } from '@/lib/gmail/google-auth'
 import { getGmailSyncHistory } from '@/lib/gmail/actions'
+import { getWixConnection, getWixSubmissions } from '@/lib/wix/actions'
 import { getNetworkDiscoverable } from '@/lib/network/actions'
 import { getGoogleReviewUrl } from '@/lib/reviews/actions'
+import { getChefSlug } from '@/lib/profile/actions'
 import { PreferencesForm } from '@/components/settings/preferences-form'
 import { ConnectedAccounts } from '@/components/settings/connected-accounts'
+import { WixConnection } from '@/components/wix/wix-connection'
 import { DiscoverabilityToggle } from '@/components/network/discoverability-toggle'
 import { GoogleReviewUrlForm } from '@/components/settings/google-review-url-form'
 import Link from 'next/link'
 
 export default async function SettingsPage() {
   await requireChef()
-  const [preferences, gmailConnection, recentSyncs, networkDiscoverable, googleReviewUrl] = await Promise.all([
+  const [preferences, gmailConnection, recentSyncs, wixConnection, wixSubmissions, networkDiscoverable, googleReviewUrl, profileSlug] = await Promise.all([
     getChefPreferences(),
     getGoogleConnection(),
     getGmailSyncHistory(10),
+    getWixConnection(),
+    getWixSubmissions({ limit: 10 }),
     getNetworkDiscoverable(),
     getGoogleReviewUrl(),
+    getChefSlug(),
   ])
 
   return (
@@ -41,21 +47,35 @@ export default async function SettingsPage() {
       {/* Connected Accounts */}
       <div className="pt-4 border-t border-stone-200">
         <h2 className="text-lg font-semibold text-stone-900 mb-3">Connected Accounts</h2>
-        <ConnectedAccounts connection={gmailConnection} recentSyncs={recentSyncs} />
+        <div className="space-y-4">
+          <ConnectedAccounts connection={gmailConnection} recentSyncs={recentSyncs} />
+          <WixConnection connection={wixConnection} recentSubmissions={wixSubmissions} />
+        </div>
       </div>
 
       {/* Additional Settings Links */}
       <div className="pt-4 border-t border-stone-200">
         <h2 className="text-lg font-semibold text-stone-900 mb-3">Communication</h2>
-        <Link
-          href="/settings/templates"
-          className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
-        >
-          <p className="font-medium text-stone-900">Response Templates</p>
-          <p className="text-sm text-stone-500 mt-1">
-            Pre-written messages you can quickly copy and customize when logging communication.
-          </p>
-        </Link>
+        <div className="space-y-3">
+          <Link
+            href="/settings/templates"
+            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">Response Templates</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Pre-written messages you can quickly copy and customize when logging communication.
+            </p>
+          </Link>
+          <Link
+            href="/settings/automations"
+            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">Automations</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Set up rules to auto-create follow-ups, notifications, and draft messages when events happen.
+            </p>
+          </Link>
+        </div>
       </div>
 
       <div className="pt-4 border-t border-stone-200">
@@ -84,6 +104,27 @@ export default async function SettingsPage() {
             <p className="text-sm text-stone-500 mt-1">
               See client feedback, ratings, and Google review click-through stats.
             </p>
+          </Link>
+        </div>
+      </div>
+
+      {/* Public Profile */}
+      <div className="pt-4 border-t border-stone-200">
+        <h2 className="text-lg font-semibold text-stone-900 mb-3">Public Profile</h2>
+        <div className="space-y-3">
+          <Link
+            href="/settings/public-profile"
+            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">Profile & Partner Showcase</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Set your public URL, tagline, and manage which partners appear on your public showcase page.
+            </p>
+            {profileSlug.slug && (
+              <p className="text-xs text-brand-600 mt-2">
+                Live at: /chef/{profileSlug.slug}
+              </p>
+            )}
           </Link>
         </div>
       </div>

@@ -310,6 +310,24 @@ export async function transitionEvent({
     console.error('[transitionEvent] Email send failed (non-blocking):', emailErr)
   }
 
+  // Fire automations (non-blocking)
+  try {
+    const { evaluateAutomations } = await import('@/lib/automations/engine')
+    await evaluateAutomations(event.tenant_id, 'event_status_changed', {
+      entityId: eventId,
+      entityType: 'event',
+      fields: {
+        from_status: fromStatus,
+        to_status: toStatus,
+        status: toStatus,
+        occasion: event.occasion || null,
+        client_id: event.client_id,
+      },
+    })
+  } catch (err) {
+    console.error('[transitionEvent] Automation evaluation failed (non-blocking):', err)
+  }
+
   return { success: true, fromStatus, toStatus }
 }
 

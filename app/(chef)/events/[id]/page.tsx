@@ -33,6 +33,7 @@ import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
 import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
+import { LocationMap } from '@/components/ui/location-map'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { createServerClient } from '@/lib/supabase/server'
@@ -188,6 +189,15 @@ export default async function EventDetailPage({
                   .filter(Boolean)
                   .join(', ') || 'Not set'}
               </dd>
+              {(event as any).location_lat && (event as any).location_lng && (
+                <div className="mt-2">
+                  <LocationMap
+                    lat={(event as any).location_lat}
+                    lng={(event as any).location_lng}
+                    className="h-48"
+                  />
+                </div>
+              )}
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Number of Guests</dt>
