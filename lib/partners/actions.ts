@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import type { Database } from '@/types/database'
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -178,11 +179,11 @@ export async function getPartners(filters?: {
     .eq('tenant_id', user.tenantId!)
 
   if (filters?.partner_type) {
-    query = query.eq('partner_type', filters.partner_type)
+    query = query.eq('partner_type', filters.partner_type as Database['public']['Enums']['partner_type'])
   }
 
   if (filters?.status) {
-    query = query.eq('status', filters.status)
+    query = query.eq('status', filters.status as Database['public']['Enums']['partner_status'])
   }
 
   const { data: partners, error } = await query.order('name', { ascending: true })
