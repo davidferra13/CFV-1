@@ -20,9 +20,10 @@ import { MilestoneManager } from '@/components/clients/milestone-manager'
 import { AddressManager } from '@/components/clients/address-manager'
 import { PersonalInfoEditor } from '@/components/clients/personal-info-editor'
 import { QuickNotes } from '@/components/clients/quick-notes'
-import { HouseholdManager } from '@/components/households/household-manager'
+// Household functionality has been simplified to a per-client tag stored on clients.household
+// The full household manager UI is deprecated; we now use a compact form below.
 import { getClientNotes } from '@/lib/notes/actions'
-import { getClientHousehold, getHouseholds } from '@/lib/households/actions'
+import { updateClientHousehold } from '@/lib/clients/actions'
 import type { Milestone } from '@/lib/clients/milestones'
 
 const TIER_COLORS: Record<string, string> = {
@@ -48,14 +49,12 @@ interface ClientDetailPageProps {
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
   await requireChef()
 
-  const [client, messages, templates, loyaltyProfile, clientNotes, clientHousehold, allHouseholds] = await Promise.all([
+  const [client, messages, templates, loyaltyProfile, clientNotes] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
     getResponseTemplates(),
     getClientLoyaltyProfile(params.id).catch(() => null),
     getClientNotes(params.id),
-    getClientHousehold(params.id).catch(() => null),
-    getHouseholds().catch(() => []),
   ])
 
   if (!client) {
@@ -248,13 +247,27 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         }}
       />
 
-      {/* Household */}
-      <HouseholdManager
-        clientId={client.id}
-        clientName={client.full_name}
-        household={clientHousehold}
-        allHouseholds={allHouseholds}
-      />
+      {/* Household tag (simple) */}
+      <div className="mt-4">
+        <h2 className="text-lg font-medium">Household</h2>
+        <p className="text-sm text-stone-500 mb-2">A compact tag stored on the client record. Full household manager is deprecated.</p>
+        <form action={updateClientHousehold} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+          <input type="hidden" name="clientId" value={client.id} />
+          <div className="md:col-span-2">
+            <label className="text-sm font-medium text-stone-500">Household Tag</label>
+            <input
+              name="household_tag"
+              defaultValue={((client as any).household as any)?.tag ?? ''}
+              placeholder="e.g. 'Family: Johnson'"
+              aria-label="Household Tag"
+              className="mt-1 block w-full rounded-md border-stone-200 shadow-sm"
+            />
+          </div>
+          <div>
+            <Button type="submit">Save</Button>
+          </div>
+        </form>
+      </div>
 
       {/* Quick Notes */}
       <QuickNotes clientId={client.id} initialNotes={clientNotes} />

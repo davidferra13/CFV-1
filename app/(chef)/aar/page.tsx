@@ -9,6 +9,7 @@ import { getRecentAARs, getAARStats } from '@/lib/aar/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { FileAARButton } from '@/components/aar/file-aar-button'
 import { format } from 'date-fns'
 
 export default async function AARHistoryPage() {
@@ -27,9 +28,12 @@ export default async function AARHistoryPage() {
           <h1 className="text-3xl font-bold text-stone-900">After Action Reviews</h1>
           <p className="text-stone-600 mt-1">Track your improvement over time</p>
         </div>
-        <Link href="/dashboard">
-          <Button variant="ghost">Back to Dashboard</Button>
-        </Link>
+        <div className="flex gap-2">
+          <FileAARButton />
+          <Link href="/dashboard">
+            <Button variant="ghost">Back to Dashboard</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Stats Summary */}
@@ -127,9 +131,12 @@ export default async function AARHistoryPage() {
           <p className="text-stone-500 mt-2">
             After Action Reviews will appear here after you complete events and file reviews.
           </p>
-          <Link href="/events" className="inline-block mt-4">
-            <Button variant="secondary">View Events</Button>
-          </Link>
+          <div className="flex justify-center gap-3 mt-4">
+            <FileAARButton />
+            <Link href="/events">
+              <Button variant="secondary">View Events</Button>
+            </Link>
+          </div>
         </Card>
       ) : (
         <div className="space-y-3">

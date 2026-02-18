@@ -13,6 +13,8 @@ import listPlugin from '@fullcalendar/list'
 import type { EventClickArg, DatesSetArg, EventContentArg, EventDropArg } from '@fullcalendar/core'
 import type { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'
 import { getCalendarEvents, rescheduleEvent, type CalendarEvent } from '@/lib/scheduling/actions'
+import type { SeasonalPalette } from '@/lib/seasonal/types'
+import { getCurrentSeason } from '@/lib/seasonal/helpers'
 import { EventDetailPopover } from './event-detail-popover'
 import { AgendaView } from './agenda-view'
 import { MiniCalendar } from './mini-calendar'
@@ -51,7 +53,21 @@ const PREP_STATUS_DOT: Record<string, string> = {
   not_started: '#ef4444',
 }
 
-export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[] }) {
+const SEASON_EMOJI: Record<string, string> = {
+  Winter: '❄️',
+  Spring: '🌸',
+  Summer: '☀️',
+  Autumn: '🍂',
+}
+
+function formatRange(start: string, end: string): string {
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const [sm, sd] = start.split('-').map(Number)
+  const [em, ed] = end.split('-').map(Number)
+  return `${MONTHS[sm - 1]} ${sd} \u2013 ${MONTHS[em - 1]} ${ed}`
+}
+
+export function CalendarView({ initialEvents, palettes }: { initialEvents: CalendarEvent[]; palettes?: SeasonalPalette[] }) {
   const router = useRouter()
   const calendarRef = useRef<InstanceType<typeof FullCalendar>>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -63,6 +79,7 @@ export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[]
   const [isLoading, setIsLoading] = useState(false)
   const [rescheduleToast, setRescheduleToast] = useState<string | null>(null)
   const [selectedDate, setSelectedDate] = useState<string | undefined>(undefined)
+  const [viewSeason, setViewSeason] = useState<SeasonalPalette | null>(null)
 
   // ============================================
   // DATA FETCHING
@@ -76,12 +93,20 @@ export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[]
       const end = arg.endStr.split('T')[0]
       const fetched = await getCalendarEvents(start, end)
       setEvents(fetched)
+      // time-machine: compute season for the visible center date
+      if (palettes && palettes.length > 0) {
+        const startMs = new Date(arg.start).getTime()
+        const endMs = new Date(arg.end).getTime()
+        const mid = new Date(Math.floor((startMs + endMs) / 2))
+        const season = getCurrentSeason(palettes, mid)
+        setViewSeason(season)
+      }
     } catch (err) {
       console.error('[CalendarView] Failed to fetch events:', err)
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [palettes])
 
   // ============================================
   // EVENT CLICK → POPOVER
@@ -421,6 +446,27 @@ export function CalendarView({ initialEvents }: { initialEvents: CalendarEvent[]
         <div className="flex-1 min-w-0">
           {isCalendarView ? (
             <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+              {viewSeason && (
+                <div className="p-3 border-b bg-stone-50">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className="text-sm font-semibold">{SEASON_EMOJI[viewSeason.season_name] || '🌱'} {viewSeason.season_name} <span className="text-xs text-stone-500">({formatRange(viewSeason.start_month_day, viewSeason.end_month_day)})</span></div>
+                      </div>
+                      {viewSeason.sensory_anchor && (
+                        <div className="text-xs text-stone-600 italic mt-1">The Vibe: {viewSeason.sensory_anchor}</div>
+                      )}
+                      {viewSeason.micro_windows && viewSeason.micro_windows.length > 0 && (
+                        <div className="text-xs text-stone-600 mt-1">Peak Ingredients: {viewSeason.micro_windows.map(m => m.ingredient).slice(0,6).join(', ')}</div>
+                      )}
+                      {viewSeason.proven_wins && viewSeason.proven_wins.length > 0 && (
+                        <div className="text-xs text-stone-600 mt-1">Go-To Dishes: {viewSeason.proven_wins.map(p => p.dish_name).slice(0,3).join(', ')}</div>
+                      )}
+                    </div>
+                    <div className="text-xs text-stone-400">Time Machine</div>
+                  </div>
+                </div>
+              )}
               <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}

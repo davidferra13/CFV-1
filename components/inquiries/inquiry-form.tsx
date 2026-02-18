@@ -159,9 +159,11 @@ export function InquiryForm({ clients }: { clients: Client[] }) {
   const channelOptions = [
     { value: 'text', label: 'Text Message' },
     { value: 'email', label: 'Email' },
+    { value: 'phone', label: 'Phone Call' },
+    { value: 'referral', label: 'Referral' },
+    { value: 'walk_in', label: 'Walk-In / Networking' },
     { value: 'instagram', label: 'Instagram' },
     { value: 'take_a_chef', label: 'Take a Chef' },
-    { value: 'phone', label: 'Phone Call' },
     { value: 'website', label: 'Website' },
     { value: 'other', label: 'Other' },
   ]

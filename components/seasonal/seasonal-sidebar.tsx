@@ -21,9 +21,6 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
 
   const isEmpty = !palette.sensory_anchor
     && palette.micro_windows.length === 0
-    && palette.context_profiles.length === 0
-    && !palette.pantry_and_preserve
-    && !palette.chef_energy_reality
     && palette.proven_wins.length === 0
 
   return (
@@ -32,7 +29,7 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
       <Card>
         <CardContent className="p-4">
           <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-stone-900">{palette.season_name} Reality</h3>
+            <h3 className="font-semibold text-stone-900">🌸 {palette.season_name} ({formatRange(palette.start_month_day, palette.end_month_day)})</h3>
             <Link
               href={`/settings/repertoire/${palette.id}`}
               className="text-xs text-brand-600 hover:text-brand-700"
@@ -42,20 +39,16 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
           </div>
           {palette.sensory_anchor ? (
             <p className="text-sm text-stone-600 italic mt-2">
-              &ldquo;{palette.sensory_anchor}&rdquo;
+              <span className="font-semibold">The Vibe:</span> &ldquo;{palette.sensory_anchor}&rdquo;
             </p>
           ) : (
             <p className="text-sm text-stone-400 mt-2">
-              No sensory anchor set.{' '}
+              No vibe set.{' '}
               <Link href={`/settings/repertoire/${palette.id}`} className="text-brand-600 hover:text-brand-700">
-                Define your creative thesis
+                Add a vibe
               </Link>
             </p>
           )}
-          {/* Date range */}
-          <p className="text-xs text-stone-400 mt-2">
-            {formatRange(palette.start_month_day, palette.end_month_day)}
-          </p>
         </CardContent>
       </Card>
 
@@ -64,20 +57,20 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
         <Card>
           <CardContent className="p-4 text-center">
             <p className="text-sm text-stone-500 mb-2">
-              Your {palette.season_name} palette is unconfigured.
+              Your {palette.season_name} season is unconfigured.
             </p>
             <p className="text-xs text-stone-400">
-              Add micro-windows, context profiles, and proven wins to guide your menus and scheduling.
+              Add a vibe, peak ingredients, and best dishes to guide your planning.
             </p>
           </CardContent>
         </Card>
       )}
 
-      {/* Micro-Windows */}
+      {/* Peak Ingredients */}
       {(activeMicroWindows.length > 0 || endingMicroWindows.length > 0) && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Ingredient Windows</CardTitle>
+            <CardTitle className="text-sm">Peak Ingredients</CardTitle>
           </CardHeader>
           <CardContent className="pt-0 space-y-2">
             {activeMicroWindows.map((w, i) => {
@@ -124,51 +117,11 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
         </Card>
       )}
 
-      {/* Context Profiles */}
-      {palette.context_profiles.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Context Profiles</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-0 space-y-2">
-            {palette.context_profiles.map((cp, i) => (
-              <div key={i} className="bg-stone-50 rounded-lg p-2.5">
-                <p className="text-sm font-medium text-stone-900">{cp.name}</p>
-                <p className="text-xs text-stone-600 mt-0.5">{cp.kitchen_reality}</p>
-                {cp.menu_guardrails && (
-                  <p className="text-xs text-stone-500 mt-0.5 italic">{cp.menu_guardrails}</p>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Pantry & Energy */}
-      {(palette.pantry_and_preserve || palette.chef_energy_reality) && (
-        <Card>
-          <CardContent className="p-4 space-y-3">
-            {palette.pantry_and_preserve && (
-              <div>
-                <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1">Pantry & Preserve</p>
-                <p className="text-sm text-stone-700">{palette.pantry_and_preserve}</p>
-              </div>
-            )}
-            {palette.chef_energy_reality && (
-              <div>
-                <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1">Energy Reality</p>
-                <p className="text-sm text-stone-700">{palette.chef_energy_reality}</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Proven Wins */}
+      {/* Best Dishes */}
       {palette.proven_wins.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm">Proven Wins</CardTitle>
+            <CardTitle className="text-sm">Best Dishes</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <ul className="space-y-1.5">

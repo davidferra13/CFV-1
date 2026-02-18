@@ -10,7 +10,6 @@ const chefPaths = [
   '/dashboard', '/queue', '/leads', '/clients', '/events', '/financials', '/menus',
   '/inquiries', '/quotes', '/expenses', '/schedule', '/settings',
   '/aar', '/recipes', '/loyalty', '/import', '/chat', '/network',
-  '/households'
 ]
 // Routes that require client role
 const clientPaths = ['/my-events', '/my-quotes', '/my-chat']

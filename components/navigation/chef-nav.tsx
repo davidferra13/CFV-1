@@ -75,7 +75,6 @@ const navGroups: NavGroup[] = [
     icon: Users,
     items: [
       { href: '/clients', label: 'Clients', icon: Users },
-      { href: '/households', label: 'Households', icon: Home },
       { href: '/loyalty', label: 'Loyalty', icon: Gift },
     ],
   },

@@ -7,7 +7,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateSeasonalPalette } from '@/lib/seasonal/actions'
-import type { SeasonalPalette, MicroWindow, ContextProfile, ProvenWin } from '@/lib/seasonal/types'
+import type { SeasonalPalette, MicroWindow, ProvenWin } from '@/lib/seasonal/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -41,14 +41,6 @@ export function SeasonalPaletteForm({
     palette.micro_windows.length > 0 ? palette.micro_windows : []
   )
 
-  // Context Profiles
-  const [contextProfiles, setContextProfiles] = useState<ContextProfile[]>(
-    palette.context_profiles.length > 0 ? palette.context_profiles : []
-  )
-
-  // Additional fields
-  const [pantryAndPreserve, setPantryAndPreserve] = useState(palette.pantry_and_preserve ?? '')
-  const [chefEnergyReality, setChefEnergyReality] = useState(palette.chef_energy_reality ?? '')
 
   // Proven Wins
   const [provenWins, setProvenWins] = useState<ProvenWin[]>(
@@ -74,20 +66,7 @@ export function SeasonalPaletteForm({
     setMicroWindows(updated)
   }
 
-  // Context Profiles
-  const addContextProfile = () => {
-    setContextProfiles([...contextProfiles, {
-      name: '', kitchen_reality: '', menu_guardrails: '', notes: '',
-    }])
-  }
-  const removeContextProfile = (index: number) => {
-    setContextProfiles(contextProfiles.filter((_, i) => i !== index))
-  }
-  const updateContextProfile = (index: number, field: keyof ContextProfile, value: string) => {
-    const updated = [...contextProfiles]
-    updated[index] = { ...updated[index], [field]: value }
-    setContextProfiles(updated)
-  }
+  // (Context Profiles removed - simplified form)
 
   // Proven Wins
   const addProvenWin = () => {
@@ -130,9 +109,6 @@ export function SeasonalPaletteForm({
           is_active: isActive,
           sensory_anchor: sensoryAnchor.trim() || null,
           micro_windows: microWindows.filter(w => w.name.trim() && w.ingredient.trim()),
-          context_profiles: contextProfiles.filter(cp => cp.name.trim() && cp.kitchen_reality.trim()),
-          pantry_and_preserve: pantryAndPreserve.trim() || null,
-          chef_energy_reality: chefEnergyReality.trim() || null,
           proven_wins: provenWins.filter(pw => pw.dish_name.trim()),
         })
         setSuccess(true)
@@ -311,117 +287,7 @@ export function SeasonalPaletteForm({
         </CardContent>
       </Card>
 
-      {/* Section 4: Context Profiles */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>Context Profiles</CardTitle>
-              <p className="text-sm text-stone-500 mt-1">
-                Operational scenarios and their kitchen reality. These serve as guardrails when writing menus.
-              </p>
-            </div>
-            <Button type="button" variant="secondary" size="sm" onClick={addContextProfile}>
-              + Add Profile
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {contextProfiles.length === 0 && (
-            <p className="text-sm text-stone-400 text-center py-4">
-              No context profiles defined yet. Add one to set operational guardrails.
-            </p>
-          )}
-          {contextProfiles.map((profile, i) => (
-            <div key={i} className="border border-stone-200 rounded-lg p-4 space-y-3">
-              <div className="flex justify-between items-start">
-                <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">
-                  Profile {i + 1}
-                </span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeContextProfile(i)}
-                  className="text-red-500 -mt-1"
-                >
-                  Remove
-                </Button>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Context Name</label>
-                <Input
-                  value={profile.name}
-                  onChange={e => updateContextProfile(i, 'name', e.target.value)}
-                  placeholder='e.g., "Heatwave / High Summer"'
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Kitchen Reality</label>
-                <Textarea
-                  value={profile.kitchen_reality}
-                  onChange={e => updateContextProfile(i, 'kitchen_reality', e.target.value)}
-                  placeholder="No ovens during service. Raw preparations. Heavy ice usage."
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Menu Guardrails</label>
-                <Textarea
-                  value={profile.menu_guardrails}
-                  onChange={e => updateContextProfile(i, 'menu_guardrails', e.target.value)}
-                  placeholder="Cold plates, ceviche, salads. No braised proteins."
-                  rows={2}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
-                <Input
-                  value={profile.notes}
-                  onChange={e => updateContextProfile(i, 'notes', e.target.value)}
-                  placeholder="Optional notes"
-                />
-              </div>
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
-      {/* Section 5: Pantry & Preserve */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Pantry & Preserve</CardTitle>
-          <p className="text-sm text-stone-500 mt-1">
-            What did you save from last season that needs to be used?
-          </p>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={pantryAndPreserve}
-            onChange={e => setPantryAndPreserve(e.target.value)}
-            placeholder='e.g., "Fermented chilies from Summer. Canned tomatoes (20 jars). Preserved lemons (12)."'
-            rows={3}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Section 6: Chef Energy Reality */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Chef Energy Reality</CardTitle>
-          <p className="text-sm text-stone-500 mt-1">
-            A check on the team&apos;s stamina. Be honest about capacity.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <Textarea
-            value={chefEnergyReality}
-            onChange={e => setChefEnergyReality(e.target.value)}
-            placeholder='e.g., "Team is burned out post-December rush. Keep January menus simple. No multi-course tasting menus until mid-February."'
-            rows={3}
-          />
-        </CardContent>
-      </Card>
+      {/* Context Profiles, Pantry & Preserve, Chef Energy removed for simplified form */}
 
       {/* Section 7: Proven Wins */}
       <Card>

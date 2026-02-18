@@ -56,7 +56,7 @@ export function ChatInbox({
         <MessageCircle className="w-12 h-12 text-stone-300 mx-auto mb-3" />
         <p className="text-stone-500 text-sm">No conversations yet</p>
         <p className="text-stone-400 text-xs mt-1">
-          Start a conversation from a client&apos;s profile or event page
+          Click &quot;+ New Conversation&quot; above to start chatting with a client
         </p>
       </div>
     )

@@ -29,7 +29,7 @@ const VALID_TRANSITIONS: Record<InquiryStatus, InquiryStatus[]> = {
 // ============================================
 
 const CreateInquirySchema = z.object({
-  channel: z.enum(['text', 'email', 'instagram', 'take_a_chef', 'phone', 'website', 'other']),
+  channel: z.enum(['text', 'email', 'instagram', 'take_a_chef', 'phone', 'website', 'referral', 'walk_in', 'other']),
   client_id: z.string().uuid().nullable().optional(),
   client_name: z.string().min(1, 'Client name required'),
   client_email: z.string().email().optional().or(z.literal('')),

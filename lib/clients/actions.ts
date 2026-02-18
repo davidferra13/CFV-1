@@ -409,3 +409,40 @@ export async function getClientWithStats(clientId: string) {
     outstandingBalanceCents: financialSummary?.outstanding_balance_cents ?? 0
   }
 }
+
+/**
+ * Server action: Update a client's household tag stored in the `household` JSONB.
+ * Accepts a FormData payload from a client-side form with fields:
+ * - clientId
+ * - household_tag
+ */
+export async function updateClientHousehold(formData: FormData) {
+  const user = await requireChef()
+
+  const clientId = String(formData.get('clientId') ?? '')
+  const tag = formData.get('household_tag')
+    ? String(formData.get('household_tag'))
+    : null
+
+  if (!clientId) throw new Error('Missing clientId')
+
+  const supabase = createServerClient()
+
+  const { data: client, error } = await supabase
+    .from('clients')
+    .update({ household: tag ? { tag } : null })
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[updateClientHousehold] Error:', error)
+    throw new Error('Failed to update client household')
+  }
+
+  revalidatePath('/clients')
+  revalidatePath(`/clients/${clientId}`)
+
+  return { success: true, client }
+}

@@ -3,6 +3,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { claimContactSubmission, dismissContactSubmission } from '@/lib/contact/claim'
@@ -31,6 +32,9 @@ export function LeadsList({ submissions }: { submissions: Submission[] }) {
         <p className="text-stone-500 mt-1">
           When someone submits the contact form on your website, it will appear here.
         </p>
+        <Link href="/inquiries/new" className="inline-block mt-4">
+          <Button variant="secondary">Log Manual Lead</Button>
+        </Link>
       </Card>
     )
   }

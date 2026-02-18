@@ -3,7 +3,9 @@
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefReviews, getChefReviewStats } from '@/lib/reviews/actions'
+import { getChefFeedback } from '@/lib/reviews/chef-feedback-actions'
 import { ChefReviewsList } from '@/components/reviews/chef-reviews-list'
+import { LogFeedbackButton } from '@/components/reviews/log-feedback-button'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Reviews - ChefFlow' }
@@ -11,9 +13,10 @@ export const metadata: Metadata = { title: 'Reviews - ChefFlow' }
 export default async function ReviewsPage() {
   await requireChef()
 
-  const [reviews, stats] = await Promise.all([
+  const [reviews, stats, feedback] = await Promise.all([
     getChefReviews(),
     getChefReviewStats(),
+    getChefFeedback(),
   ])
 
   return (
@@ -25,15 +28,18 @@ export default async function ReviewsPage() {
             Feedback from your clients after completed events.
           </p>
         </div>
-        <Link
-          href="/settings"
-          className="text-sm text-brand-600 hover:text-brand-700"
-        >
-          Configure Google Review Link
-        </Link>
+        <div className="flex items-center gap-3">
+          <LogFeedbackButton />
+          <Link
+            href="/settings"
+            className="text-sm text-brand-600 hover:text-brand-700"
+          >
+            Configure Google Review Link
+          </Link>
+        </div>
       </div>
 
-      <ChefReviewsList reviews={reviews as any} stats={stats} />
+      <ChefReviewsList reviews={reviews as any} stats={stats} feedback={feedback as any} />
     </div>
   )
 }

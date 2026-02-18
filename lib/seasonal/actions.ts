@@ -50,12 +50,9 @@ const UpdatePaletteSchema = z.object({
   is_active: z.boolean().optional(),
   start_month_day: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format'),
   end_month_day: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format'),
-  sensory_anchor: z.string().nullable().optional(),
-  micro_windows: z.array(MicroWindowSchema).optional(),
-  context_profiles: z.array(ContextProfileSchema).optional(),
-  pantry_and_preserve: z.string().nullable().optional(),
-  chef_energy_reality: z.string().nullable().optional(),
-  proven_wins: z.array(ProvenWinSchema).optional(),
+  sensory_anchor: z.string().nullable().optional(), // "The Vibe"
+  micro_windows: z.array(MicroWindowSchema).optional(), // "Peak Ingredients"
+  proven_wins: z.array(ProvenWinSchema).optional(), // "Best Dishes"
 })
 
 export type UpdatePaletteInput = z.infer<typeof UpdatePaletteSchema>
@@ -303,10 +300,8 @@ function mapRowToPalette(row: Record<string, unknown>): SeasonalPalette {
     end_month_day: row.end_month_day as string,
     sensory_anchor: (row.sensory_anchor as string) ?? null,
     micro_windows: (row.micro_windows as any[]) ?? [],
-    context_profiles: (row.context_profiles as any[]) ?? [],
-    pantry_and_preserve: (row.pantry_and_preserve as string) ?? null,
-    chef_energy_reality: (row.chef_energy_reality as string) ?? null,
     proven_wins: (row.proven_wins as any[]) ?? [],
+    // removed deprecated fields: context_profiles, pantry_and_preserve, chef_energy_reality
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
   }

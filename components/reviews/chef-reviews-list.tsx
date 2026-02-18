@@ -1,4 +1,4 @@
-// Chef Reviews List — Displays all client reviews for the chef's dashboard
+// Chef Reviews List — Displays all client reviews and chef-logged feedback
 // Shows ratings, feedback, consent status, and aggregate stats
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,6 +18,18 @@ interface ReviewWithRelations {
   created_at: string
   client: { id: string; full_name: string; email: string }
   event: { id: string; occasion: string | null; event_date: string }
+}
+
+interface FeedbackWithRelations {
+  id: string
+  source: string
+  rating: number | null
+  feedback_text: string
+  source_url: string | null
+  feedback_date: string
+  created_at: string
+  client: { id: string; full_name: string; email: string } | null
+  event: { id: string; occasion: string | null; event_date: string } | null
 }
 
 interface ReviewStats {
@@ -45,12 +57,24 @@ function StarDisplay({ rating }: { rating: number }) {
   )
 }
 
+const SOURCE_LABELS: Record<string, string> = {
+  verbal: 'Verbal',
+  google: 'Google',
+  yelp: 'Yelp',
+  email: 'Email',
+  social_media: 'Social Media',
+  text_message: 'Text',
+  other: 'Other',
+}
+
 export function ChefReviewsList({
   reviews,
   stats,
+  feedback = [],
 }: {
   reviews: ReviewWithRelations[]
   stats: ReviewStats
+  feedback?: FeedbackWithRelations[]
 }) {
   return (
     <div className="space-y-6">
@@ -78,11 +102,11 @@ export function ChefReviewsList({
         />
       </div>
 
-      {/* Reviews */}
+      {/* Client Reviews */}
       {reviews.length === 0 ? (
         <Card>
           <CardContent className="py-8 text-center">
-            <p className="text-stone-500">No reviews yet. Reviews appear here after clients leave feedback on completed events.</p>
+            <p className="text-stone-500">No client reviews yet. Reviews appear here after clients leave feedback on completed events.</p>
           </CardContent>
         </Card>
       ) : (
@@ -130,6 +154,58 @@ export function ChefReviewsList({
 
                 <p className="text-xs text-stone-400 mt-3">
                   {format(new Date(review.created_at), 'PPP')}
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Logged Feedback */}
+      {feedback.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-stone-900">Logged Feedback</h2>
+          <p className="text-sm text-stone-500">
+            Verbal, external reviews, and other feedback you&apos;ve captured manually.
+          </p>
+          {feedback.map((fb) => (
+            <Card key={fb.id}>
+              <CardContent className="pt-5">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    {fb.client ? (
+                      <p className="font-medium text-stone-900">{fb.client.full_name}</p>
+                    ) : (
+                      <p className="font-medium text-stone-500 italic">No client linked</p>
+                    )}
+                    <p className="text-sm text-stone-500">
+                      {fb.event?.occasion && `${fb.event.occasion} \u00B7 `}
+                      {format(new Date(fb.feedback_date), 'PPP')}
+                    </p>
+                  </div>
+                  <Badge variant="secondary">
+                    {SOURCE_LABELS[fb.source] || fb.source}
+                  </Badge>
+                </div>
+
+                {fb.rating && <StarDisplay rating={fb.rating} />}
+
+                <p className="text-stone-700 text-sm mt-3">{fb.feedback_text}</p>
+
+                {fb.source_url && (
+                  <a
+                    href={fb.source_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 mt-2"
+                  >
+                    <ExternalLink className="w-3 h-3" />
+                    View original
+                  </a>
+                )}
+
+                <p className="text-xs text-stone-400 mt-3">
+                  Logged {format(new Date(fb.created_at), 'PPP')}
                 </p>
               </CardContent>
             </Card>

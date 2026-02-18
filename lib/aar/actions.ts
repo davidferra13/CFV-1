@@ -209,6 +209,33 @@ export async function updateAAR(id: string, input: UpdateAARInput) {
 }
 
 /**
+ * Get completed events that haven't had an AAR filed yet.
+ * Used by the AAR list page to let chefs pick which event to review.
+ */
+export async function getEventsWithoutAAR() {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: events, error } = await supabase
+    .from('events')
+    .select(`
+      id, occasion, event_date, guest_count,
+      client:clients(id, full_name)
+    `)
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'completed')
+    .eq('aar_filed', false)
+    .order('event_date', { ascending: false })
+
+  if (error) {
+    console.error('[getEventsWithoutAAR] Error:', error)
+    return []
+  }
+
+  return events
+}
+
+/**
  * Get recent AARs across all events with event context
  */
 export async function getRecentAARs(limit = 10) {

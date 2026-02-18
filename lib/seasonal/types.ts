@@ -10,12 +10,6 @@ export interface MicroWindow {
   notes: string
 }
 
-export interface ContextProfile {
-  name: string
-  kitchen_reality: string
-  menu_guardrails: string
-  notes: string
-}
 
 export interface ProvenWin {
   dish_name: string
@@ -31,12 +25,9 @@ export interface SeasonalPalette {
   is_active: boolean
   start_month_day: string
   end_month_day: string
-  sensory_anchor: string | null
-  micro_windows: MicroWindow[]
-  context_profiles: ContextProfile[]
-  pantry_and_preserve: string | null
-  chef_energy_reality: string | null
-  proven_wins: ProvenWin[]
+  sensory_anchor: string | null // "The Vibe" in UI
+  micro_windows: MicroWindow[] // "Peak Ingredients" in UI
+  proven_wins: ProvenWin[]     // "Best Dishes" in UI
   created_at: string
   updated_at: string
 }
@@ -50,9 +41,6 @@ export const DEFAULT_SEASONS: Omit<SeasonalPalette, 'id' | 'tenant_id' | 'create
     end_month_day: '02-28',
     sensory_anchor: null,
     micro_windows: [],
-    context_profiles: [],
-    pantry_and_preserve: null,
-    chef_energy_reality: null,
     proven_wins: [],
   },
   {
@@ -63,9 +51,6 @@ export const DEFAULT_SEASONS: Omit<SeasonalPalette, 'id' | 'tenant_id' | 'create
     end_month_day: '05-31',
     sensory_anchor: null,
     micro_windows: [],
-    context_profiles: [],
-    pantry_and_preserve: null,
-    chef_energy_reality: null,
     proven_wins: [],
   },
   {
@@ -76,9 +61,6 @@ export const DEFAULT_SEASONS: Omit<SeasonalPalette, 'id' | 'tenant_id' | 'create
     end_month_day: '08-31',
     sensory_anchor: null,
     micro_windows: [],
-    context_profiles: [],
-    pantry_and_preserve: null,
-    chef_energy_reality: null,
     proven_wins: [],
   },
   {
@@ -89,9 +71,6 @@ export const DEFAULT_SEASONS: Omit<SeasonalPalette, 'id' | 'tenant_id' | 'create
     end_month_day: '11-30',
     sensory_anchor: null,
     micro_windows: [],
-    context_profiles: [],
-    pantry_and_preserve: null,
-    chef_energy_reality: null,
     proven_wins: [],
   },
 ]

@@ -108,7 +108,6 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 mb-4">
                   <span>{palette.micro_windows.length} micro-window{palette.micro_windows.length !== 1 ? 's' : ''}</span>
-                  <span>{palette.context_profiles.length} context profile{palette.context_profiles.length !== 1 ? 's' : ''}</span>
                   <span>{palette.proven_wins.length} proven win{palette.proven_wins.length !== 1 ? 's' : ''}</span>
                 </div>
 

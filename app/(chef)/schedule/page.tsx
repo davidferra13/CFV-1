@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
 
 export const metadata: Metadata = { title: 'Schedule - ChefFlow' }
-import { getActivePalette } from '@/lib/seasonal/actions'
+import { getActivePalette, getSeasonalPalettes } from '@/lib/seasonal/actions'
 import { CalendarView } from '@/components/scheduling/calendar-view'
 import { SeasonalSidebar } from '@/components/seasonal/seasonal-sidebar'
 
@@ -25,9 +25,10 @@ export default async function SchedulePage() {
   const rangeStart = start.toISOString().split('T')[0]
   const rangeEnd = end.toISOString().split('T')[0]
 
-  const [initialEvents, palette] = await Promise.all([
+  const [initialEvents, palette, palettes] = await Promise.all([
     getCalendarEvents(rangeStart, rangeEnd),
     getActivePalette(),
+    getSeasonalPalettes(),
   ])
 
   return (
@@ -40,7 +41,7 @@ export default async function SchedulePage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-        <CalendarView initialEvents={initialEvents} />
+        <CalendarView initialEvents={initialEvents} palettes={palettes} />
         {palette && <SeasonalSidebar palette={palette} />}
       </div>
     </div>

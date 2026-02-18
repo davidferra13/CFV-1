@@ -38,17 +38,17 @@ export function SeasonalBanner({
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <h3 className={`font-semibold text-sm uppercase tracking-wide ${textClass}`}>
-            {palette.season_name} Palette
+            🌸 {palette.season_name} ({palette.start_month_day} – {palette.end_month_day})
           </h3>
           {palette.sensory_anchor && (
             <p className={`text-sm mt-1 italic ${textClass} opacity-80`}>
-              &ldquo;{palette.sensory_anchor}&rdquo;
+              <span className="font-semibold">The Vibe:</span> &ldquo;{palette.sensory_anchor}&rdquo;
             </p>
           )}
         </div>
       </div>
 
-      {/* Micro-window badges */}
+      {/* Peak Ingredients badges */}
       {(activeMicroWindows.length > 0 || endingMicroWindows.length > 0) && (
         <div className="flex flex-wrap gap-2 mt-3">
           {activeMicroWindows.map((w, i) => {
