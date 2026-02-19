@@ -35,6 +35,7 @@ type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavCollaps
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/chat', label: 'Messaging', icon: MessageCircle },
 ]
 
 // Main domains
@@ -289,11 +290,10 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/chat',
-        label: 'Messaging Tools',
+        href: '/inbox/history-scan',
+        label: 'Inbox Tools',
         icon: MessageCircle,
         children: [
-          { href: '/inbox/history-scan', label: 'Email History Scan', visibility: 'advanced' },
           { href: '/inbox/triage', label: 'Communication Triage', visibility: 'advanced' },
         ],
       },
