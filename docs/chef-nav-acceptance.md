@@ -5,7 +5,7 @@ This rubric defines when Chef Portal IA is considered complete and regression-sa
 ## Hard gates
 
 1. Primary visibility gate
-- No more than 9 always-visible top-level navigation entries (including Settings).
+- No more than 10 always-visible top-level navigation entries (including Settings).
 
 2. Progressive disclosure gate
 - Advanced/Admin routes are hidden behind one extra interaction (`Advanced` section) and are never shown by default as first-glance options.

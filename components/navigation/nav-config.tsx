@@ -36,6 +36,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
+  { href: '/schedule', label: 'Calendar', icon: CalendarDays },
 ]
 
 // Main domains
@@ -127,11 +128,10 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/schedule',
-        label: 'Calendar',
+        href: '/calendar',
+        label: 'Availability',
         icon: CalendarDays,
         children: [
-          { href: '/calendar', label: 'Availability Calendar' },
           { href: '/waitlist', label: 'Waitlist', visibility: 'advanced' },
         ],
       },

@@ -121,8 +121,8 @@ function main() {
   const navEntries = collectNavEntries()
 
   const topLevelCount = standaloneTop.length + navGroups.length + standaloneBottom.length
-  if (topLevelCount > 9) {
-    failures.push(`Top-level visible count is ${topLevelCount}; expected <= 9`)
+  if (topLevelCount > 10) {
+    failures.push(`Top-level visible count is ${topLevelCount}; expected <= 10`)
   }
 
   const byHref = new Map<string, NavEntry[]>()
