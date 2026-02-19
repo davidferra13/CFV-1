@@ -48,12 +48,13 @@ export { handleXxx as GET, handleXxx as POST }
 
 Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the existing auth check inside each handler is fully compatible.
 
-### All 9 Routes Fixed
+### All 10 Routes Fixed
 
 | Route | Schedule | Handler Function |
 |---|---|---|
 | `app/api/gmail/sync/route.ts` | every 5 min | `handleGmailSync` |
 | `app/api/scheduled/integrations/pull/route.ts` | every 5 min | `handleIntegrationsPull` |
+| `app/api/scheduled/wix-process/route.ts` | every 5 min | `handleWixProcess` |
 | `app/api/scheduled/automations/route.ts` | every 15 min | `handleAutomations` |
 | `app/api/scheduled/copilot/route.ts` | every 15 min | `handleCopilot` |
 | `app/api/scheduled/revenue-goals/route.ts` | every 6 hr | `handleRevenueGoals` |
@@ -63,8 +64,8 @@ Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` on GET requests — the 
 | `app/api/scheduled/lifecycle/route.ts` | daily 3am | `handleLifecycle` |
 
 **Not changed** (not in `vercel.json` crons):
+
 - `app/api/scheduled/activity-cleanup/route.ts`
-- `app/api/scheduled/wix-process/route.ts`
 
 ---
 

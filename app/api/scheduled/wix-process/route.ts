@@ -1,5 +1,6 @@
 // Scheduled Wix Submission Processor
-// POST /api/scheduled/wix-process — processes pending Wix submissions.
+// GET /api/scheduled/wix-process — invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/scheduled/wix-process — invoked manually or by external schedulers
 // Picks up any submissions that weren't processed inline (async failure, backlog, etc.).
 // Secured with CRON_SECRET bearer token (same pattern as follow-ups cron).
 
@@ -7,7 +8,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { processWixSubmission } from '@/lib/wix/process'
 
-export async function POST(request: NextRequest) {
+async function handleWixProcess(request: NextRequest): Promise<NextResponse> {
   // Validate cron secret
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
@@ -82,3 +83,5 @@ export async function POST(request: NextRequest) {
     failed,
   })
 }
+
+export { handleWixProcess as GET, handleWixProcess as POST }
