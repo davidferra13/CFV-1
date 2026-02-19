@@ -6,6 +6,9 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
 
 // ============================================
 // 1. Outstanding Payments — events with money owed
@@ -292,5 +295,443 @@ export async function getNextUpcomingEvent() {
     serveTime: data.serve_time,
     guestCount: data.guest_count,
     clientName: (data.client as any)?.full_name ?? 'Unknown',
+  }
+}
+
+// ============================================
+// 7. Dashboard Hours Snapshot + Manual Hours Log
+// ============================================
+
+const MANUAL_LABOR_CATEGORIES = [
+  'planning',
+  'admin',
+  'client_comms',
+  'marketing',
+  'recipe_dev',
+  'shopping_sourcing',
+  'prep_work',
+  'cooking_service',
+  'cleanup',
+  'travel',
+  'learning',
+  'charity',
+  'other',
+] as const
+
+export type ManualLaborCategory = (typeof MANUAL_LABOR_CATEGORIES)[number]
+
+const LogDashboardHoursSchema = z.object({
+  minutes: z.number().int().positive().max(24 * 60),
+  logged_for: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format')
+    .refine(
+      (val) => val <= new Date().toISOString().slice(0, 10),
+      { message: 'Cannot log hours for a future date.' }
+    )
+    .optional(),
+  category: z.enum(MANUAL_LABOR_CATEGORIES),
+  note: z.string().trim().max(500).optional(),
+})
+
+export type LogDashboardHoursInput = z.infer<typeof LogDashboardHoursSchema>
+
+export type DashboardHoursEntry = {
+  id: string
+  minutes: number
+  loggedFor: string
+  category: ManualLaborCategory | null
+  note: string | null
+  createdAt: string
+}
+
+export type DashboardHoursActivityKey =
+  | 'shopping'
+  | 'prep'
+  | 'travel'
+  | 'service'
+  | 'packing'
+  | 'planning'
+  | 'admin'
+  | 'client_comms'
+  | 'marketing'
+  | 'recipe_dev'
+  | 'shopping_sourcing'
+  | 'prep_work'
+  | 'cooking_service'
+  | 'cleanup'
+  | 'learning'
+  | 'manual'
+  | 'charity'
+  | 'other'
+
+export type DashboardHoursTopActivity = {
+  key: DashboardHoursActivityKey
+  label: string
+  minutes: number
+  sharePercent: number
+}
+
+export type DashboardHoursCategoryEntry = {
+  key: DashboardHoursActivityKey
+  label: string
+  minutes: number
+}
+
+export type DashboardHoursSnapshot = {
+  todayMinutes: number
+  weekMinutes: number
+  allTimeMinutes: number
+  topActivity: DashboardHoursTopActivity | null
+  recentEntries: DashboardHoursEntry[]
+  trackingStreak: number
+  todayLogged: boolean
+  weekCategoryBreakdown: DashboardHoursCategoryEntry[]
+}
+
+type DashboardEventTimeRow = {
+  event_date: string
+  time_shopping_minutes: number | null
+  time_prep_minutes: number | null
+  time_travel_minutes: number | null
+  time_service_minutes: number | null
+  time_reset_minutes: number | null
+}
+
+type DashboardManualHoursRow = {
+  id: string
+  action: string
+  created_at: string
+  context: unknown
+}
+
+const HOURS_ACTIVITY_LABELS: Record<DashboardHoursActivityKey, string> = {
+  shopping: 'Shopping',
+  prep: 'Prep',
+  travel: 'Travel',
+  service: 'Execution',
+  packing: 'Packing',
+  planning: 'Planning & Menu Design',
+  admin: 'Admin & Bookkeeping',
+  client_comms: 'Client Communication',
+  marketing: 'Marketing & Social Media',
+  recipe_dev: 'Recipe Development',
+  shopping_sourcing: 'Shopping & Sourcing',
+  prep_work: 'Prep Work',
+  cooking_service: 'Cooking & Service',
+  cleanup: 'Cleanup & Reset',
+  learning: 'Learning & Training',
+  manual: 'Manual Log',
+  charity: 'Charity',
+  other: 'Other',
+}
+
+function computeTrackingStreak(
+  loggedDates: Set<string>,
+  todayIso: string
+): { streak: number; todayLogged: boolean } {
+  const todayLogged = loggedDates.has(todayIso)
+  const yesterday = new Date(new Date(`${todayIso}T12:00:00Z`).getTime() - 86400000)
+    .toISOString().slice(0, 10)
+  const startDate = todayLogged ? todayIso : yesterday
+
+  let streak = 0
+  let cursor = new Date(`${startDate}T12:00:00Z`)
+  while (true) {
+    const dateStr = cursor.toISOString().slice(0, 10)
+    if (loggedDates.has(dateStr)) {
+      streak++
+      cursor = new Date(cursor.getTime() - 86400000)
+    } else {
+      break
+    }
+  }
+  return { streak, todayLogged }
+}
+
+function asRecord(value: unknown): Record<string, unknown> | null {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null
+  return value as Record<string, unknown>
+}
+
+function asPositiveMinutes(value: unknown): number | null {
+  if (typeof value === 'number' && Number.isFinite(value) && value > 0) {
+    return Math.round(value)
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return Math.round(parsed)
+    }
+  }
+  return null
+}
+
+function coerceIsoDate(value: unknown, fallbackIsoDate: string): string {
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value
+  }
+  return fallbackIsoDate
+}
+
+function getEventMinuteBreakdown(event: DashboardEventTimeRow): {
+  shopping: number
+  prep: number
+  travel: number
+  service: number
+  packing: number
+  total: number
+} {
+  const shopping = event.time_shopping_minutes ?? 0
+  const prep = event.time_prep_minutes ?? 0
+  const travel = event.time_travel_minutes ?? 0
+  const service = event.time_service_minutes ?? 0
+  const packing = event.time_reset_minutes ?? 0
+
+  return {
+    shopping,
+    prep,
+    travel,
+    service,
+    packing,
+    total: shopping + prep + travel + service + packing,
+  }
+}
+
+function buildTopActivity(
+  totals: Record<DashboardHoursActivityKey, number>,
+  allTimeMinutes: number
+): DashboardHoursTopActivity | null {
+  let topKey: DashboardHoursActivityKey | null = null
+  let topMinutes = 0
+
+  for (const [key, minutes] of Object.entries(totals) as Array<[DashboardHoursActivityKey, number]>) {
+    if (minutes > topMinutes) {
+      topKey = key
+      topMinutes = minutes
+    }
+  }
+
+  if (!topKey || topMinutes <= 0 || allTimeMinutes <= 0) return null
+
+  return {
+    key: topKey,
+    label: HOURS_ACTIVITY_LABELS[topKey],
+    minutes: topMinutes,
+    sharePercent: Math.round((topMinutes / allTimeMinutes) * 100),
+  }
+}
+
+export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapshot> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const todayIso = new Date().toISOString().slice(0, 10)
+  const sevenDaysAgoIso = new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
+  const batchSize = 1000
+
+  const [events, manualRows] = await Promise.all([
+    (async () => {
+      const rows: DashboardEventTimeRow[] = []
+      let from = 0
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('events')
+          .select('event_date, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes')
+          .eq('tenant_id', user.tenantId!)
+          .range(from, from + batchSize - 1)
+
+        if (error) {
+          console.error('[getDashboardHoursSnapshot] Event query error:', error)
+          break
+        }
+
+        const chunk = (data || []) as DashboardEventTimeRow[]
+        rows.push(...chunk)
+        if (chunk.length < batchSize) break
+        from += batchSize
+      }
+
+      return rows
+    })(),
+    (async () => {
+      const rows: DashboardManualHoursRow[] = []
+      let from = 0
+
+      while (true) {
+        const { data, error } = await supabase
+          .from('chef_activity_log')
+          .select('id, action, created_at, context')
+          .eq('tenant_id', user.tenantId!)
+          .in('action', ['hours_logged', 'charity_hours_logged'])
+          .order('created_at', { ascending: false })
+          .range(from, from + batchSize - 1)
+
+        if (error) {
+          console.error('[getDashboardHoursSnapshot] Manual query error:', error)
+          break
+        }
+
+        const chunk = (data || []) as DashboardManualHoursRow[]
+        rows.push(...chunk)
+        if (chunk.length < batchSize) break
+        from += batchSize
+      }
+
+      return rows
+    })(),
+  ])
+
+  let todayMinutes = 0
+  let weekMinutes = 0
+  let allTimeMinutes = 0
+  const emptyTotals = (): Record<DashboardHoursActivityKey, number> => ({
+    shopping: 0, prep: 0, travel: 0, service: 0, packing: 0,
+    planning: 0, admin: 0, client_comms: 0, marketing: 0, recipe_dev: 0,
+    shopping_sourcing: 0, prep_work: 0, cooking_service: 0, cleanup: 0, learning: 0,
+    manual: 0, charity: 0, other: 0,
+  })
+  const activityTotals = emptyTotals()
+  const weekActivityTotals = emptyTotals()
+  const manualLogDates = new Set<string>()
+
+  for (const event of events) {
+    const breakdown = getEventMinuteBreakdown(event)
+    if (breakdown.total <= 0) continue
+
+    allTimeMinutes += breakdown.total
+    activityTotals.shopping += breakdown.shopping
+    activityTotals.prep += breakdown.prep
+    activityTotals.travel += breakdown.travel
+    activityTotals.service += breakdown.service
+    activityTotals.packing += breakdown.packing
+
+    const inWeek = event.event_date >= sevenDaysAgoIso && event.event_date <= todayIso
+    if (inWeek) {
+      weekMinutes += breakdown.total
+      weekActivityTotals.shopping += breakdown.shopping
+      weekActivityTotals.prep += breakdown.prep
+      weekActivityTotals.travel += breakdown.travel
+      weekActivityTotals.service += breakdown.service
+      weekActivityTotals.packing += breakdown.packing
+    }
+    if (event.event_date === todayIso) {
+      todayMinutes += breakdown.total
+    }
+  }
+
+  const recentEntries: DashboardHoursEntry[] = []
+  for (const row of manualRows) {
+    const context = asRecord(row.context)
+    const minutes = asPositiveMinutes(context?.minutes)
+    if (!minutes) continue
+
+    const fallbackDate = row.created_at.slice(0, 10)
+    const loggedFor = coerceIsoDate(context?.logged_for, fallbackDate)
+    const note = typeof context?.note === 'string' && context.note.trim().length > 0
+      ? context.note.trim()
+      : null
+
+    const rawCategory = typeof context?.category === 'string' ? context.category : null
+    let activityKey: DashboardHoursActivityKey
+    if (rawCategory && (MANUAL_LABOR_CATEGORIES as ReadonlyArray<string>).includes(rawCategory)) {
+      activityKey = rawCategory as ManualLaborCategory
+    } else if (row.action === 'charity_hours_logged') {
+      activityKey = 'charity'
+    } else {
+      activityKey = 'manual'
+    }
+    activityTotals[activityKey] += minutes
+
+    manualLogDates.add(loggedFor)
+    allTimeMinutes += minutes
+
+    const inWeek = loggedFor >= sevenDaysAgoIso && loggedFor <= todayIso
+    if (inWeek) {
+      weekMinutes += minutes
+      weekActivityTotals[activityKey] += minutes
+    }
+    if (loggedFor === todayIso) {
+      todayMinutes += minutes
+    }
+
+    const category: ManualLaborCategory | null =
+      rawCategory && (MANUAL_LABOR_CATEGORIES as ReadonlyArray<string>).includes(rawCategory)
+        ? (rawCategory as ManualLaborCategory)
+        : null
+
+    if (recentEntries.length < 5) {
+      recentEntries.push({
+        id: row.id,
+        minutes,
+        loggedFor,
+        category,
+        note,
+        createdAt: row.created_at,
+      })
+    }
+  }
+
+  const topActivity = buildTopActivity(activityTotals, allTimeMinutes)
+  const { streak: trackingStreak, todayLogged } = computeTrackingStreak(manualLogDates, todayIso)
+
+  const weekCategoryBreakdown: DashboardHoursCategoryEntry[] = (
+    Object.entries(weekActivityTotals) as Array<[DashboardHoursActivityKey, number]>
+  )
+    .filter(([, m]) => m > 0)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([key, minutes]) => ({ key, label: HOURS_ACTIVITY_LABELS[key], minutes }))
+
+  return {
+    todayMinutes,
+    weekMinutes,
+    allTimeMinutes,
+    topActivity,
+    recentEntries,
+    trackingStreak,
+    todayLogged,
+    weekCategoryBreakdown,
+  }
+}
+
+export async function logDashboardHours(input: LogDashboardHoursInput) {
+  const user = await requireChef()
+  const validated = LogDashboardHoursSchema.parse(input)
+
+  const loggedFor = validated.logged_for ?? new Date().toISOString().slice(0, 10)
+  const category = validated.category
+  const note = validated.note?.trim() || null
+  const action = category === 'charity' ? 'charity_hours_logged' : 'hours_logged'
+  const categoryLabel = HOURS_ACTIVITY_LABELS[category]
+
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action,
+      domain: 'operational',
+      entityType: 'hours_log',
+      summary: `Logged ${formatMinutesAsDuration(validated.minutes)} — ${categoryLabel}`,
+      context: {
+        minutes: validated.minutes,
+        logged_for: loggedFor,
+        category,
+        note,
+      },
+    })
+  } catch (err) {
+    console.error('[logDashboardHours] Activity log failed (non-blocking):', err)
+  }
+
+  revalidatePath('/dashboard')
+  revalidatePath('/activity')
+
+  return {
+    success: true,
+    minutes: validated.minutes,
+    loggedFor,
+    category,
   }
 }
