@@ -7,7 +7,7 @@ import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react'
 import type { LucideIcon } from 'lucide-react'
 import { standaloneTop, navGroups, standaloneBottom, mobileTabItems } from './nav-config'
-import type { NavGroup, NavCollapsibleItem } from './nav-config'
+import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { AppLogo } from '@/components/branding/app-logo'
@@ -85,6 +85,18 @@ function isCollapsibleItemActive(pathname: string, item: NavCollapsibleItem) {
   return item.children?.some((child) => isItemActive(pathname, child.href)) ?? false
 }
 
+function partitionChildren(children: NavSubItem[] = []) {
+  const secondary: NavSubItem[] = []
+  const advanced: NavSubItem[] = []
+
+  for (const child of children) {
+    if (child.visibility === 'advanced') advanced.push(child)
+    else secondary.push(child)
+  }
+
+  return { secondary, advanced }
+}
+
 // ─── Flyout for rail mode ───────────────────────────
 function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) {
   const [open, setOpen] = useState(false)
@@ -157,6 +169,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
             const itemOpen = openItems.has(item.href)
 
             if (item.children?.length) {
+              const { secondary, advanced } = partitionChildren(item.children)
               return (
                 <div key={item.href}>
                   <button
@@ -180,7 +193,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                     }`}
                   >
                     <div className="ml-8 mr-2 mb-1 space-y-0.5">
-                      {item.children.map((child) => {
+                      {secondary.map((child) => {
                         const childActive = isItemActive(pathname, child.href)
                         return (
                           <Link
@@ -197,6 +210,32 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                           </Link>
                         )
                       })}
+                      {advanced.length > 0 && (
+                        <details className="pt-1">
+                          <summary className="cursor-pointer px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                            Advanced
+                          </summary>
+                          <div className="space-y-0.5">
+                            {advanced.map((child) => {
+                              const childActive = isItemActive(pathname, child.href)
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={() => setOpen(false)}
+                                  className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                                    childActive
+                                      ? 'bg-brand-50 text-brand-700'
+                                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                                  }`}
+                                >
+                                  {child.label}
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -278,6 +317,7 @@ function NavGroupSection({
 
             if (item.children?.length) {
               const itemOpen = openItems.has(item.href)
+              const { secondary, advanced } = partitionChildren(item.children)
               return (
                 <div key={item.href}>
                   <button
@@ -302,7 +342,7 @@ function NavGroupSection({
                     }`}
                   >
                     <div className="ml-6 pl-2 border-l border-stone-100 mt-0.5 space-y-0.5">
-                      {item.children.map((child) => {
+                      {secondary.map((child) => {
                         const childActive = isItemActive(pathname, child.href)
                         return (
                           <Link
@@ -319,6 +359,32 @@ function NavGroupSection({
                           </Link>
                         )
                       })}
+                      {advanced.length > 0 && (
+                        <details className="pt-1">
+                          <summary className="cursor-pointer px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                            Advanced
+                          </summary>
+                          <div className="space-y-0.5">
+                            {advanced.map((child) => {
+                              const childActive = isItemActive(pathname, child.href)
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
+                                    childActive
+                                      ? 'bg-brand-50 text-brand-700'
+                                      : 'text-stone-600 hover:bg-stone-50 hover:text-brand-700'
+                                  }`}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                                  {child.label}
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -635,6 +701,7 @@ function MobileGroupSection({
 
             if (item.children?.length) {
               const itemOpen = openItems.has(item.href)
+              const { secondary, advanced } = partitionChildren(item.children)
               return (
                 <div key={item.href}>
                   <button
@@ -659,7 +726,7 @@ function MobileGroupSection({
                     }`}
                   >
                     <div className="ml-5 pl-3 border-l border-stone-100 mt-0.5 space-y-0.5">
-                      {item.children.map((child) => {
+                      {secondary.map((child) => {
                         const childActive = isItemActive(pathname, child.href)
                         return (
                           <Link
@@ -677,6 +744,33 @@ function MobileGroupSection({
                           </Link>
                         )
                       })}
+                      {advanced.length > 0 && (
+                        <details className="pt-1">
+                          <summary className="cursor-pointer px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                            Advanced
+                          </summary>
+                          <div className="space-y-0.5">
+                            {advanced.map((child) => {
+                              const childActive = isItemActive(pathname, child.href)
+                              return (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  onClick={onNavigate}
+                                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                                    childActive
+                                      ? 'bg-brand-50 text-brand-700'
+                                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                                  }`}
+                                >
+                                  <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                                  {child.label}
+                                </Link>
+                              )
+                            })}
+                          </div>
+                        </details>
+                      )}
                     </div>
                   </div>
                 </div>
