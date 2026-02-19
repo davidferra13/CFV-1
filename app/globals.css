@@ -21,6 +21,37 @@
       placeholder:text-stone-400
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
       disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500;
+    /* Prevent iOS auto-zoom on focus — requires font-size >= 16px */
+    font-size: max(16px, 0.875rem);
+  }
+
+  /* Eliminate 300ms tap delay on interactive elements */
+  button,
+  a,
+  [role="button"],
+  [role="link"],
+  label {
+    touch-action: manipulation;
+  }
+}
+
+/* ============================================
+   SAFE AREA UTILITIES (iOS notch / home bar)
+   ============================================ */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  /* Mobile nav bar (56px) + safe area bottom inset */
+  .pb-mobile-nav {
+    padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0px));
+  }
+  /* Mobile header (56px) + safe area top inset */
+  .pt-mobile-header {
+    padding-top: calc(3.5rem + env(safe-area-inset-top, 0px));
   }
 }
 

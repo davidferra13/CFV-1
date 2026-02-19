@@ -1,5 +1,24 @@
 /** @type {import('next').NextConfig} */
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development',
+  fallbacks: {
+    document: '/offline.html',
+  },
+})
+
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'luefkpakzvxcsqroxyhz.supabase.co',
+        pathname: '/storage/v1/object/**',
+      },
+    ],
+  },
   async headers() {
     return [
       {
@@ -27,4 +46,4 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withPWA(nextConfig)

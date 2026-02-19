@@ -8,7 +8,7 @@ export function ChefMainContent({ children }: { children: React.ReactNode }) {
 
   return (
     <main
-      className={`pt-14 pb-16 lg:pt-0 lg:pb-0 transition-all duration-200 ${
+      className={`pt-mobile-header pb-mobile-nav lg:pt-0 lg:pb-0 transition-all duration-200 ${
         collapsed ? 'lg:pl-16' : 'lg:pl-60'
       }`}
     >

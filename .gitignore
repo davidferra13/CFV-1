@@ -34,3 +34,13 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# temp/debug files
+.tmp-*
+tmp_*
+
+# PWA generated files (produced at build time by next-pwa)
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map

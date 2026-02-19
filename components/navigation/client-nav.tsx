@@ -1,124 +1,332 @@
-// Client Portal Navigation — Clean top nav
+// Client Portal Navigation - Chef-style vertical sidebar formatting.
 'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
-import { useState } from 'react'
-import { Calendar, FileText, LogOut, Menu, MessageCircle, X } from 'lucide-react'
+import { useState, useEffect, useCallback, createContext, useContext } from 'react'
+import { Calendar, CalendarPlus, ClipboardList, FileText, Gift, LogOut, Menu, MessageCircle, User, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { AppLogo } from '@/components/branding/app-logo'
 
 interface ClientNavProps {
   userEmail: string
 }
 
+const BOOK_NOW_HREF = '/book-now'
+
 const navItems = [
   { href: '/my-events', label: 'My Events', icon: Calendar },
+  { href: '/my-inquiries', label: 'My Inquiries', icon: ClipboardList },
   { href: '/my-quotes', label: 'My Quotes', icon: FileText },
   { href: '/my-chat', label: 'Messages', icon: MessageCircle },
+  { href: '/my-rewards', label: 'Rewards', icon: Gift },
+  { href: '/my-profile', label: 'Profile', icon: User },
 ]
 
-export function ClientNav({ userEmail }: ClientNavProps) {
-  const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+type ClientSidebarContextType = {
+  collapsed: boolean
+  setCollapsed: (v: boolean) => void
+}
+
+const ClientSidebarContext = createContext<ClientSidebarContextType>({
+  collapsed: false,
+  setCollapsed: () => {},
+})
+
+function isItemActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(href + '/')
+}
+
+export function useClientSidebar() {
+  return useContext(ClientSidebarContext)
+}
+
+export function ClientSidebarProvider({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    const stored = localStorage.getItem('client-sidebar-collapsed')
+    if (stored === 'true') setCollapsed(true)
+    setMounted(true)
+  }, [])
+
+  const handleSetCollapsed = useCallback((v: boolean) => {
+    setCollapsed(v)
+    localStorage.setItem('client-sidebar-collapsed', String(v))
+  }, [])
+
+  if (!mounted) {
+    return (
+      <ClientSidebarContext.Provider value={{ collapsed: false, setCollapsed: handleSetCollapsed }}>
+        {children}
+      </ClientSidebarContext.Provider>
+    )
+  }
 
   return (
-    <nav className="bg-white border-b border-stone-200">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between h-16">
-          {/* Logo and Desktop Nav */}
-          <div className="flex items-center">
-            <Link href="/my-events" className="flex items-center gap-2 mr-8">
-              <div className="w-7 h-7 rounded-md bg-brand-600 flex items-center justify-center">
-                <span className="text-white font-bold text-xs">CF</span>
-              </div>
-              <span className="text-lg font-semibold text-stone-900">ChefFlow</span>
-            </Link>
-            <div className="hidden md:flex md:space-x-1">
-              {navItems.map((item) => {
-                const isActive = pathname.startsWith(item.href)
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      isActive
-                        ? 'bg-brand-50 text-brand-700'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
-                    }`}
-                  >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-brand-600' : 'text-stone-400'}`} />
-                    {item.label}
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
+    <ClientSidebarContext.Provider value={{ collapsed, setCollapsed: handleSetCollapsed }}>
+      {children}
+    </ClientSidebarContext.Provider>
+  )
+}
 
-          {/* Desktop User Info and Sign Out */}
-          <div className="hidden md:flex md:items-center md:gap-3">
-            <span className="text-sm text-stone-500">{userEmail}</span>
-            <button
-              type="button"
-              onClick={() => signOut()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Sign Out
-            </button>
-          </div>
+export function ClientSidebar({ userEmail }: ClientNavProps) {
+  const pathname = usePathname()
+  const { collapsed, setCollapsed } = useClientSidebar()
 
-          {/* Mobile Menu Button */}
-          <div className="flex items-center md:hidden">
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-stone-400 hover:bg-stone-100"
-              aria-label="Toggle menu"
-            >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
+  return (
+    <aside
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-stone-200 transition-all duration-200 z-30 ${
+        collapsed ? 'lg:w-16' : 'lg:w-60'
+      }`}
+    >
+      <div className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}>
+        <Link href="/my-events" className="flex items-center gap-2">
+          <AppLogo />
+          {!collapsed && <span className="text-lg font-semibold text-stone-900">ChefFlow</span>}
+        </Link>
+        {!collapsed ? (
+          <button
+            type="button"
+            onClick={() => setCollapsed(true)}
+            className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+            aria-label="Collapse sidebar"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        ) : null}
       </div>
 
-      {/* Mobile Menu */}
-      {mobileMenuOpen && (
-        <div className="md:hidden border-t border-stone-100">
-          <div className="p-3 space-y-1">
+      <nav className="flex-1 overflow-y-auto py-3 custom-scrollbar">
+        {collapsed ? (
+          <div className="flex flex-col items-center gap-1 px-1">
+            <button
+              type="button"
+              onClick={() => setCollapsed(false)}
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors mb-1"
+              aria-label="Expand sidebar"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <Link
+              href={BOOK_NOW_HREF}
+              title="Book Now"
+              className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                isItemActive(pathname, BOOK_NOW_HREF)
+                  ? 'bg-brand-600 text-white'
+                  : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
+              }`}
+            >
+              <CalendarPlus className="w-[18px] h-[18px]" />
+            </Link>
+            <div className="w-6 border-t border-stone-100 my-1.5" />
             {navItems.map((item) => {
-              const isActive = pathname.startsWith(item.href)
               const Icon = item.icon
+              const active = isItemActive(pathname, item.href)
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                    isActive
-                      ? 'bg-brand-50 text-brand-700'
-                      : 'text-stone-600 hover:bg-stone-50'
+                  title={item.label}
+                  className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                    active
+                      ? 'bg-brand-50 text-brand-600'
+                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
                   }`}
-                  onClick={() => setMobileMenuOpen(false)}
                 >
-                  <Icon className={`w-[18px] h-[18px] ${isActive ? 'text-brand-600' : 'text-stone-400'}`} />
+                  <Icon className="w-[18px] h-[18px]" />
+                </Link>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="px-3 space-y-1">
+            <Link
+              href={BOOK_NOW_HREF}
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                isItemActive(pathname, BOOK_NOW_HREF)
+                  ? 'bg-brand-700 text-white'
+                  : 'bg-brand-600 text-white hover:bg-brand-700'
+              }`}
+            >
+              <CalendarPlus className="w-[18px] h-[18px] flex-shrink-0" />
+              Book Now
+            </Link>
+            {navItems.map((item) => {
+              const Icon = item.icon
+              const active = isItemActive(pathname, item.href)
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-brand-50 text-brand-700'
+                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                  }`}
+                >
+                  <Icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`} />
                   {item.label}
                 </Link>
               )
             })}
           </div>
-          <div className="px-3 pb-3 pt-2 border-t border-stone-100">
-            <div className="px-3 py-1 text-sm text-stone-400">{userEmail}</div>
+        )}
+      </nav>
+
+      <div className={`border-t border-stone-100 ${collapsed ? 'p-1.5' : 'p-3'}`}>
+        {!collapsed ? <p className="px-3 pb-1 text-xs text-stone-400 truncate">{userEmail}</p> : null}
+        <button
+          type="button"
+          onClick={() => signOut()}
+          title={collapsed ? 'Sign Out' : undefined}
+          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors ${
+            collapsed
+              ? 'justify-center w-10 h-10 mx-auto'
+              : 'gap-3 w-full px-3 py-2'
+          }`}
+        >
+          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
+          {!collapsed && 'Sign Out'}
+        </button>
+      </div>
+    </aside>
+  )
+}
+
+export function ClientMobileNav({ userEmail }: ClientNavProps) {
+  const pathname = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  const closeMenu = () => setMenuOpen(false)
+
+  return (
+    <>
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-stone-200 pt-safe">
+        <div className="flex items-center justify-between h-14 px-4">
+          <Link href="/my-events" className="flex items-center gap-2">
+            <AppLogo size={28} className="rounded-md" />
+            <span className="font-semibold text-stone-900">ChefFlow</span>
+          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href={BOOK_NOW_HREF}
+              className="inline-flex items-center rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700"
+            >
+              Book Now
+            </Link>
             <button
               type="button"
-              onClick={() => signOut()}
-              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50"
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-2 rounded-lg text-stone-500 hover:bg-stone-100"
+              aria-label="Toggle menu"
             >
-              <LogOut className="w-[18px] h-[18px]" />
-              Sign Out
+              {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>
+      </header>
+
+      {menuOpen && (
+        <>
+          <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
+          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-white border-r border-stone-200 shadow-xl">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-stone-100">
+              <span className="font-semibold text-stone-900">Menu</span>
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={closeMenu}
+                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
+              <Link
+                href={BOOK_NOW_HREF}
+                onClick={closeMenu}
+                className={`mb-3 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-semibold transition-colors ${
+                  isItemActive(pathname, BOOK_NOW_HREF)
+                    ? 'bg-brand-700 text-white'
+                    : 'bg-brand-600 text-white hover:bg-brand-700'
+                }`}
+              >
+                <CalendarPlus className="w-[18px] h-[18px]" />
+                Book Now
+              </Link>
+              {navItems.map((item) => {
+                const Icon = item.icon
+                const active = isItemActive(pathname, item.href)
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={closeMenu}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      active
+                        ? 'bg-brand-50 text-brand-700'
+                        : 'text-stone-600 hover:bg-stone-50'
+                    }`}
+                  >
+                    <Icon className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`} />
+                    {item.label}
+                  </Link>
+                )
+              })}
+              <div className="pt-4 mt-4 border-t border-stone-100">
+                <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>
+                <button
+                  type="button"
+                  onClick={() => signOut()}
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50"
+                >
+                  <LogOut className="w-[18px] h-[18px]" />
+                  Sign Out
+                </button>
+              </div>
+            </nav>
+          </div>
+        </>
       )}
-    </nav>
+
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 pb-safe">
+        <div className="flex items-center justify-around h-14">
+          {navItems.map((item) => {
+            const active = isItemActive(pathname, item.href)
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors ${
+                  active ? 'text-brand-600' : 'text-stone-400'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                {item.label}
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+    </>
+  )
+}
+
+export function ClientMainContent({ children }: { children: React.ReactNode }) {
+  const { collapsed } = useClientSidebar()
+
+  return (
+    <main
+      className={`pt-mobile-header pb-mobile-nav lg:pt-0 lg:pb-0 transition-all duration-200 ${
+        collapsed ? 'lg:pl-16' : 'lg:pl-60'
+      }`}
+    >
+      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        {children}
+      </div>
+    </main>
   )
 }

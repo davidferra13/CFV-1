@@ -6,107 +6,20 @@ import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react'
 import type { LucideIcon } from 'lucide-react'
+import { standaloneTop, navGroups, standaloneBottom, mobileTabItems } from './nav-config'
+import type { NavGroup, NavCollapsibleItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
+import { GlobalSearch } from '@/components/search/global-search'
+import { AppLogo } from '@/components/branding/app-logo'
 import {
-  LayoutDashboard,
-  Inbox,
-  FileText,
-  UtensilsCrossed,
-  Users,
-  BookOpen,
-  CookingPot,
-  DollarSign,
-  Receipt,
-  Upload,
-  ClipboardCheck,
-  CalendarDays,
-  Settings,
   LogOut,
   Menu,
   X,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
-  Gift,
-  ListChecks,
-  MessageCircle,
-  Handshake,
-  Home,
-  Globe,
-  Building2,
-  BarChart3,
-  Activity,
 } from 'lucide-react'
-
-// ─── Types ──────────────────────────────────────────
-type NavItem = { href: string; label: string; icon: LucideIcon }
-type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavItem[] }
-
-// ─── Navigation Config ──────────────────────────────
-const standaloneTop: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/schedule', label: 'Calendar', icon: CalendarDays },
-  { href: '/queue', label: 'Queue', icon: ListChecks },
-  { href: '/activity', label: 'Activity', icon: Activity },
-  { href: '/network', label: 'Network', icon: Handshake },
-]
-
-const navGroups: NavGroup[] = [
-  {
-    id: 'pipeline',
-    label: 'Pipeline',
-    icon: Inbox,
-    items: [
-      { href: '/leads', label: 'Leads', icon: Globe },
-      { href: '/partners', label: 'Partners', icon: Building2 },
-      { href: '/inquiries', label: 'Inquiries', icon: Inbox },
-      { href: '/quotes', label: 'Quotes', icon: FileText },
-      { href: '/events', label: 'Events', icon: UtensilsCrossed },
-    ],
-  },
-  {
-    id: 'culinary',
-    label: 'Culinary',
-    icon: CookingPot,
-    items: [
-      { href: '/menus', label: 'Menus', icon: BookOpen },
-      { href: '/recipes', label: 'Recipes', icon: CookingPot },
-    ],
-  },
-  {
-    id: 'clients',
-    label: 'Clients',
-    icon: Users,
-    items: [
-      { href: '/clients', label: 'Clients', icon: Users },
-      { href: '/loyalty', label: 'Loyalty', icon: Gift },
-    ],
-  },
-  {
-    id: 'finance',
-    label: 'Finance',
-    icon: DollarSign,
-    items: [
-      { href: '/financials', label: 'Financials', icon: DollarSign },
-      { href: '/expenses', label: 'Expenses', icon: Receipt },
-    ],
-  },
-  {
-    id: 'operations',
-    label: 'Operations',
-    icon: ClipboardCheck,
-    items: [
-      { href: '/analytics', label: 'Analytics', icon: BarChart3 },
-      { href: '/aar', label: 'Reviews', icon: ClipboardCheck },
-      { href: '/import', label: 'Import', icon: Upload },
-    ],
-  },
-]
-
-const standaloneBottom: NavItem[] = [
-  { href: '/settings', label: 'Settings', icon: Settings },
-]
+// Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
 // ─── Sidebar Context ────────────────────────────────
 type SidebarContextType = {
@@ -161,12 +74,21 @@ function isItemActive(pathname: string, href: string) {
 }
 
 function isGroupActive(pathname: string, group: NavGroup) {
-  return group.items.some((item) => isItemActive(pathname, item.href))
+  return group.items.some((item) => {
+    if (isItemActive(pathname, item.href)) return true
+    return item.children?.some((child) => isItemActive(pathname, child.href)) ?? false
+  })
+}
+
+function isCollapsibleItemActive(pathname: string, item: NavCollapsibleItem) {
+  if (isItemActive(pathname, item.href)) return true
+  return item.children?.some((child) => isItemActive(pathname, child.href)) ?? false
 }
 
 // ─── Flyout for rail mode ───────────────────────────
 function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) {
   const [open, setOpen] = useState(false)
+  const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const GroupIcon = group.icon
@@ -179,6 +101,28 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
 
   const handleLeave = () => {
     timeoutRef.current = setTimeout(() => setOpen(false), 150)
+  }
+
+  useEffect(() => {
+    for (const item of group.items) {
+      if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
+        setOpenItems((prev) => {
+          if (prev.has(item.href)) return prev
+          const next = new Set(prev)
+          next.add(item.href)
+          return next
+        })
+      }
+    }
+  }, [group.items, pathname])
+
+  const toggleItem = (href: string) => {
+    setOpenItems((prev) => {
+      const next = new Set(prev)
+      if (next.has(href)) next.delete(href)
+      else next.add(href)
+      return next
+    })
   }
 
   return (
@@ -209,7 +153,56 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
           </p>
           {group.items.map((item) => {
             const Icon = item.icon
-            const itemActive = isItemActive(pathname, item.href)
+            const itemActive = isCollapsibleItemActive(pathname, item)
+            const itemOpen = openItems.has(item.href)
+
+            if (item.children?.length) {
+              return (
+                <div key={item.href}>
+                  <button
+                    type="button"
+                    onClick={() => toggleItem(item.href)}
+                    className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm font-medium transition-colors ${
+                      itemActive ? 'text-brand-700' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`} />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-stone-400 transition-transform duration-200 ${
+                        itemOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ${
+                      itemOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="ml-8 mr-2 mb-1 space-y-0.5">
+                      {item.children.map((child) => {
+                        const childActive = isItemActive(pathname, child.href)
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={() => setOpen(false)}
+                            className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                              childActive
+                                ? 'bg-brand-50 text-brand-700'
+                                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                            }`}
+                          >
+                            {child.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <Link
                 key={item.href}
@@ -238,11 +231,15 @@ function NavGroupSection({
   pathname,
   isOpen,
   onToggle,
+  openItems,
+  onToggleItem,
 }: {
   group: NavGroup
   pathname: string
   isOpen: boolean
   onToggle: () => void
+  openItems: Set<string>
+  onToggleItem: (href: string) => void
 }) {
   const GroupIcon = group.icon
   const active = isGroupActive(pathname, group)
@@ -253,14 +250,15 @@ function NavGroupSection({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+        className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-base font-semibold transition-colors ${
           active && !isOpen
             ? 'text-brand-700'
-            : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'
+            : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
         }`}
+        style={{ letterSpacing: 0.2 }}
       >
-        <GroupIcon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`} />
-        <span className="flex-1 text-left">{group.label}</span>
+        <GroupIcon className={`w-[20px] h-[20px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`} />
+        <span className="flex-1 text-left tracking-tight">{group.label}</span>
         <ChevronDown
           className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
@@ -270,21 +268,71 @@ function NavGroupSection({
 
       <div
         className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l border-stone-100 mt-0.5 space-y-0.5">
+        <div className="ml-3 pl-3 border-l-2 border-stone-100 mt-0.5 space-y-1">
           {group.items.map((item) => {
             const Icon = item.icon
-            const itemActive = isItemActive(pathname, item.href)
+            const itemActive = isCollapsibleItemActive(pathname, item)
+
+            if (item.children?.length) {
+              const itemOpen = openItems.has(item.href)
+              return (
+                <div key={item.href}>
+                  <button
+                    type="button"
+                    onClick={() => onToggleItem(item.href)}
+                    aria-expanded={itemOpen}
+                    className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-[15px] font-medium transition-colors ${
+                      itemActive ? 'text-brand-700' : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`} />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                        itemOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ${
+                      itemOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="ml-6 pl-2 border-l border-stone-100 mt-0.5 space-y-0.5">
+                      {item.children.map((child) => {
+                        const childActive = isItemActive(pathname, child.href)
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
+                              childActive
+                                ? 'bg-brand-50 text-brand-700'
+                                : 'text-stone-600 hover:bg-stone-50 hover:text-brand-700'
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                            {child.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-[15px] font-medium transition-colors ${
                   itemActive
                     ? 'bg-brand-50 text-brand-700'
-                    : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                    : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
                 }`}
               >
                 <Icon className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`} />
@@ -303,6 +351,7 @@ export function ChefSidebar() {
   const pathname = usePathname()
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
+  const [openItems, setOpenItems] = useState<Set<string>>(new Set())
 
   // Auto-expand group containing active route
   useEffect(() => {
@@ -318,11 +367,35 @@ export function ChefSidebar() {
     }
   }, [pathname])
 
+  useEffect(() => {
+    for (const group of navGroups) {
+      for (const item of group.items) {
+        if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
+          setOpenItems((prev) => {
+            if (prev.has(item.href)) return prev
+            const next = new Set(prev)
+            next.add(item.href)
+            return next
+          })
+        }
+      }
+    }
+  }, [pathname])
+
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
+      return next
+    })
+  }
+
+  const toggleItem = (href: string) => {
+    setOpenItems((prev) => {
+      const next = new Set(prev)
+      if (next.has(href)) next.delete(href)
+      else next.add(href)
       return next
     })
   }
@@ -336,13 +409,12 @@ export function ChefSidebar() {
       {/* Logo + notification bell + collapse toggle */}
       <div className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}>
         <Link href="/dashboard" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
-            <span className="text-white font-bold text-sm">CF</span>
-          </div>
+          <AppLogo />
           {!collapsed && <span className="text-lg font-semibold text-stone-900">ChefFlow</span>}
         </Link>
         {!collapsed ? (
           <div className="flex items-center gap-1">
+            <GlobalSearch />
             <NotificationBell />
             <button
               type="button"
@@ -373,6 +445,7 @@ export function ChefSidebar() {
 
             {/* Notification bell */}
             <NotificationBell collapsed />
+            <GlobalSearch />
 
             {/* Dashboard */}
             {standaloneTop.map((item) => {
@@ -456,6 +529,8 @@ export function ChefSidebar() {
                 pathname={pathname}
                 isOpen={openGroups.has(group.id)}
                 onToggle={() => toggleGroup(group.id)}
+                openItems={openItems}
+                onToggleItem={toggleItem}
               />
             ))}
 
@@ -504,13 +579,7 @@ export function ChefSidebar() {
   )
 }
 
-// ─── Mobile nav items (bottom tab bar) ──────────────
-const mobileTabItems: NavItem[] = [
-  { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
-  { href: '/chat', label: 'Chat', icon: MessageCircle },
-  { href: '/events', label: 'Events', icon: UtensilsCrossed },
-  { href: '/clients', label: 'Clients', icon: Users },
-]
+// Mobile tab items provided by central nav config
 
 // ─── Mobile group section (for slide-out) ───────────
 function MobileGroupSection({
@@ -518,12 +587,16 @@ function MobileGroupSection({
   pathname,
   isOpen,
   onToggle,
+  openItems,
+  onToggleItem,
   onNavigate,
 }: {
   group: NavGroup
   pathname: string
   isOpen: boolean
   onToggle: () => void
+  openItems: Set<string>
+  onToggleItem: (href: string) => void
   onNavigate: () => void
 }) {
   const GroupIcon = group.icon
@@ -552,13 +625,64 @@ function MobileGroupSection({
 
       <div
         className={`overflow-hidden transition-all duration-200 ${
-          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="ml-3 pl-3 border-l border-stone-100 mt-0.5 space-y-0.5">
           {group.items.map((item) => {
             const Icon = item.icon
-            const itemActive = isItemActive(pathname, item.href)
+            const itemActive = isCollapsibleItemActive(pathname, item)
+
+            if (item.children?.length) {
+              const itemOpen = openItems.has(item.href)
+              return (
+                <div key={item.href}>
+                  <button
+                    type="button"
+                    onClick={() => onToggleItem(item.href)}
+                    aria-expanded={itemOpen}
+                    className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      itemActive ? 'text-brand-700' : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                    }`}
+                  >
+                    <Icon className={`w-4 h-4 flex-shrink-0 ${itemActive ? 'text-brand-600' : 'text-stone-400'}`} />
+                    <span className="flex-1 text-left">{item.label}</span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
+                        itemOpen ? 'rotate-0' : '-rotate-90'
+                      }`}
+                    />
+                  </button>
+                  <div
+                    className={`overflow-hidden transition-all duration-200 ${
+                      itemOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+                    }`}
+                  >
+                    <div className="ml-5 pl-3 border-l border-stone-100 mt-0.5 space-y-0.5">
+                      {item.children.map((child) => {
+                        const childActive = isItemActive(pathname, child.href)
+                        return (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={onNavigate}
+                            className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                              childActive
+                                ? 'bg-brand-50 text-brand-700'
+                                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                            }`}
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
+                            {child.label}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )
+            }
+
             return (
               <Link
                 key={item.href}
@@ -586,6 +710,7 @@ export function ChefMobileNav() {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
+  const [openItems, setOpenItems] = useState<Set<string>>(new Set())
 
   // Auto-expand group containing active route in mobile menu
   useEffect(() => {
@@ -602,6 +727,22 @@ export function ChefMobileNav() {
     }
   }, [pathname, menuOpen])
 
+  useEffect(() => {
+    if (!menuOpen) return
+    for (const group of navGroups) {
+      for (const item of group.items) {
+        if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
+          setOpenItems((prev) => {
+            if (prev.has(item.href)) return prev
+            const next = new Set(prev)
+            next.add(item.href)
+            return next
+          })
+        }
+      }
+    }
+  }, [pathname, menuOpen])
+
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => {
       const next = new Set(prev)
@@ -611,20 +752,28 @@ export function ChefMobileNav() {
     })
   }
 
+  const toggleItem = (href: string) => {
+    setOpenItems((prev) => {
+      const next = new Set(prev)
+      if (next.has(href)) next.delete(href)
+      else next.add(href)
+      return next
+    })
+  }
+
   const closeMenu = () => setMenuOpen(false)
 
   return (
     <>
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-stone-200 h-14">
-        <div className="flex items-center justify-between h-full px-4">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-stone-200 pt-safe">
+        <div className="flex items-center justify-between h-14 px-4">
           <Link href="/dashboard" className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-md bg-brand-600 flex items-center justify-center">
-              <span className="text-white font-bold text-xs">CF</span>
-            </div>
+            <AppLogo size={28} className="rounded-md" />
             <span className="font-semibold text-stone-900">ChefFlow</span>
           </Link>
           <div className="flex items-center gap-1">
+            <GlobalSearch />
             <NotificationBell />
             <button
               type="button"
@@ -687,6 +836,8 @@ export function ChefMobileNav() {
                     pathname={pathname}
                     isOpen={openGroups.has(group.id)}
                     onToggle={() => toggleGroup(group.id)}
+                    openItems={openItems}
+                    onToggleItem={toggleItem}
                     onNavigate={closeMenu}
                   />
                 ))}
@@ -732,7 +883,7 @@ export function ChefMobileNav() {
       )}
 
       {/* Mobile bottom tab bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 pb-safe">
         <div className="flex items-center justify-around h-14">
           {mobileTabItems.map((item) => {
             const active = isItemActive(pathname, item.href)
@@ -741,7 +892,7 @@ export function ChefMobileNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium transition-colors ${
+                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors ${
                   active ? 'text-brand-600' : 'text-stone-400'
                 }`}
               >
@@ -753,7 +904,7 @@ export function ChefMobileNav() {
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[10px] font-medium text-stone-400"
+            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium text-stone-400"
           >
             <Menu className="w-5 h-5" />
             More
