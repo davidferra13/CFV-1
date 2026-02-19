@@ -1,14 +1,14 @@
 // Scheduled Automations Cron
-// POST /api/scheduled/automations — evaluates time-based automation triggers.
-// Handles: follow_up_overdue, no_response_timeout, quote_expiring, event_approaching
-// Runs every 15 minutes. Secured with CRON_SECRET.
+// GET /api/scheduled/automations — invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/scheduled/automations — invoked manually or by external schedulers
+// Evaluates time-based automation triggers every 15 minutes.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { evaluateAutomations } from '@/lib/automations/engine'
 import type { TriggerEvent } from '@/lib/automations/types'
 
-export async function POST(request: NextRequest) {
+async function handleAutomations(request: NextRequest): Promise<NextResponse> {
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
 
@@ -22,6 +22,7 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServerClient({ admin: true })
   let evaluated = 0
+  let timeTrackingReminders = 0
   const errors: string[] = []
 
   // 1. Check for overdue follow-ups
@@ -113,5 +114,19 @@ export async function POST(request: NextRequest) {
     errors.push(`event_approaching: ${(err as Error).message}`)
   }
 
-  return NextResponse.json({ evaluated, errors })
+  // 4. Gentle chef time-tracking reminders (running timers + completion gaps)
+  try {
+    const { runTimeTrackingReminderSweep } = await import('@/lib/events/time-reminders')
+    const reminderResult = await runTimeTrackingReminderSweep()
+    timeTrackingReminders = reminderResult.runningReminders + reminderResult.completionReminders
+    if (reminderResult.errors.length > 0) {
+      errors.push(...reminderResult.errors)
+    }
+  } catch (err) {
+    errors.push(`time_tracking_reminders: ${(err as Error).message}`)
+  }
+
+  return NextResponse.json({ evaluated, timeTrackingReminders, errors })
 }
+
+export { handleAutomations as GET, handleAutomations as POST }

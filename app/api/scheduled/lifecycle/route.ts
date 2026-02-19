@@ -1,13 +1,14 @@
 // Scheduled Lifecycle Maintenance Cron Endpoint
-// POST /api/scheduled/lifecycle — expires stale inquiries, handles periodic checks.
-// Secured with CRON_SECRET bearer token.
+// GET /api/scheduled/lifecycle — invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/scheduled/lifecycle — invoked manually or by external schedulers
+// Expires stale inquiries and handles periodic lifecycle checks.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
 const STALE_INQUIRY_DAYS = 30 // Expire after 30 days of no activity
 
-export async function POST(request: NextRequest) {
+async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   // Validate cron secret
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
@@ -192,3 +193,5 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(results)
 }
+
+export { handleLifecycle as GET, handleLifecycle as POST }

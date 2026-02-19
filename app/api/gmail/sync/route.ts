@@ -1,12 +1,13 @@
 // Gmail Sync Cron Endpoint
-// POST /api/gmail/sync — syncs all connected chefs' Gmail inboxes.
-// Secured with CRON_SECRET bearer token (for Vercel Cron or external scheduler).
+// GET /api/gmail/sync — invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/gmail/sync — invoked manually or by external schedulers
+// Both methods run identical logic secured with CRON_SECRET bearer token.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { syncGmailInbox } from '@/lib/gmail/sync'
 
-export async function POST(request: NextRequest) {
+async function handleGmailSync(request: NextRequest): Promise<NextResponse> {
   // Validate cron secret
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
@@ -81,3 +82,7 @@ export async function POST(request: NextRequest) {
     results,
   })
 }
+
+// Vercel Cron Jobs send GET — export GET so cron fires correctly
+// POST remains for manual or external scheduler calls
+export { handleGmailSync as GET, handleGmailSync as POST }

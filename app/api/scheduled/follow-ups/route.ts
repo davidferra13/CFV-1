@@ -1,11 +1,12 @@
 // Scheduled Follow-ups Cron Endpoint
-// POST /api/scheduled/follow-ups — notifies chefs about overdue inquiry follow-ups.
-// Secured with CRON_SECRET bearer token (same pattern as Gmail sync).
+// GET /api/scheduled/follow-ups — invoked by Vercel Cron Job (Vercel sends GET)
+// POST /api/scheduled/follow-ups — invoked manually or by external schedulers
+// Notifies chefs about overdue inquiry follow-ups.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
-export async function POST(request: NextRequest) {
+async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
   // Validate cron secret
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
@@ -102,3 +103,5 @@ export async function POST(request: NextRequest) {
     errors,
   })
 }
+
+export { handleFollowUps as GET, handleFollowUps as POST }
