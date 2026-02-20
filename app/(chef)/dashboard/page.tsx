@@ -26,6 +26,8 @@ import {
   getDashboardHoursSnapshot,
   type DashboardHoursCategoryEntry,
 } from '@/lib/dashboard/actions'
+import { getQuoteAcceptanceInsights } from '@/lib/analytics/quote-insights'
+import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-acceptance-insights'
 import { getRevenueGoalSnapshot } from '@/lib/revenue-goals/actions'
 import { getActiveClients, getRecentClientActivity } from '@/lib/activity/actions'
 import { getChefActivitySummary } from '@/lib/activity/chef-actions'
@@ -191,6 +193,7 @@ export default async function ChefDashboard() {
     collaboratingOnEvents,
     pendingCollabInvitations,
     pendingRecipeShares,
+    quoteInsights,
   ] = await Promise.all([
     safe('preferences', getChefPreferences, {
       id: '',
@@ -225,6 +228,7 @@ export default async function ChefDashboard() {
     safe('collaboratingOnEvents', getCollaboratingOnEvents, []),
     safe('pendingCollabInvitations', getPendingCollaborationInvitations, []),
     safe('pendingRecipeShares', getPendingRecipeShares, []),
+    safe('quoteInsights', getQuoteAcceptanceInsights, null),
   ])
 
   const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
@@ -873,6 +877,11 @@ export default async function ChefDashboard() {
           </Card>
 
           </div>
+
+          {/* Quote Performance Insights — full-width below the grid */}
+          {quoteInsights && (
+            <QuoteAcceptanceInsightsPanel data={quoteInsights} />
+          )}
         </section>
       )}
 

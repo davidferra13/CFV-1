@@ -13,6 +13,8 @@ import { Alert } from '@/components/ui/alert'
 import { createQuote, updateQuote, type CreateQuoteInput, type UpdateQuoteInput } from '@/lib/quotes/actions'
 import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
 import { computePricing, formatCentsAsDollars, type ServiceType, type PricingBreakdown } from '@/lib/pricing/compute'
+import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
+import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 
 type Client = {
   id: string
@@ -49,6 +51,7 @@ type ExistingQuote = {
 type QuoteFormProps = {
   clients: Client[]
   pricingHistory?: PricingHistoryEntry[]
+  pricingSuggestion?: PricingSuggestion | null
   prefilledClientId?: string
   prefilledInquiryId?: string
   prefilledGuestCount?: number | null
@@ -61,6 +64,7 @@ type QuoteFormProps = {
 export function QuoteForm({
   clients,
   pricingHistory,
+  pricingSuggestion,
   prefilledClientId,
   prefilledInquiryId,
   prefilledGuestCount,
@@ -267,6 +271,9 @@ export function QuoteForm({
           </div>
         </Card>
       )}
+
+      {/* ── Pricing Benchmarks (AI suggestion, read-only) ───────────────── */}
+      <PricingSuggestionPanel suggestion={pricingSuggestion ?? null} />
 
       {/* ── Pricing Calculator Panel ─────────────────────────────────────── */}
       <Card className="overflow-hidden">

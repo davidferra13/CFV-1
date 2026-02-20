@@ -6,14 +6,19 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getInquiries } from '@/lib/inquiries/actions'
+import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
+import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
 import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatDistanceToNow, format } from 'date-fns'
+import type { BookingScore } from '@/lib/analytics/booking-score'
 
 type InquiryFilter = 'all' | 'new' | 'awaiting_client' | 'awaiting_chef' | 'quoted' | 'confirmed' | 'closed'
+
+const OPEN_STATUSES = new Set(['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -27,13 +32,24 @@ function getDisplayName(inquiry: {
 async function InquiryList({ filter }: { filter: InquiryFilter }) {
   await requireChef()
 
-  let inquiries = await getInquiries()
+  const [allInquiries, bookingScores] = await Promise.all([
+    getInquiries(),
+    getBookingScoresForOpenInquiries().catch(() => [] as BookingScore[]),
+  ])
+
+  let inquiries = allInquiries
 
   // Apply filter
   if (filter === 'closed') {
     inquiries = inquiries.filter(i => i.status === 'declined' || i.status === 'expired')
   } else if (filter !== 'all') {
     inquiries = inquiries.filter(i => i.status === filter)
+  }
+
+  // Build score lookup map
+  const scoreMap = new Map<string, BookingScore>()
+  for (const score of bookingScores) {
+    scoreMap.set(score.inquiryId, score)
   }
 
   if (inquiries.length === 0) {
@@ -58,6 +74,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
       {inquiries.map((inquiry) => {
         const name = getDisplayName(inquiry)
         const isNew = inquiry.status === 'new'
+        const score = OPEN_STATUSES.has(inquiry.status) ? scoreMap.get(inquiry.id) : undefined
 
         return (
           <Link
@@ -75,6 +92,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   <span className="font-medium text-stone-900">{name}</span>
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
+                  {score && <BookingScoreBadge score={score} />}
                 </div>
                 {inquiry.confirmed_occasion && (
                   <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>

@@ -5,6 +5,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { getClientPricingHistory } from '@/lib/quotes/actions'
 import { getInquiryById } from '@/lib/inquiries/actions'
+import { getPricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { QuoteForm } from '@/components/quotes/quote-form'
 
 export default async function NewQuotePage({
@@ -35,11 +36,17 @@ export default async function NewQuotePage({
     }
   }
 
-  // Fetch pricing history if client is known
-  let pricingHistory: Awaited<ReturnType<typeof getClientPricingHistory>> = []
-  if (prefilledClientId) {
-    pricingHistory = await getClientPricingHistory(prefilledClientId)
-  }
+  // Fetch pricing history and benchmark suggestion in parallel
+  const [pricingHistory, pricingSuggestion] = await Promise.all([
+    prefilledClientId ? getClientPricingHistory(prefilledClientId) : Promise.resolve([]),
+    prefilledGuestCount && prefilledGuestCount > 0
+      ? getPricingSuggestion({
+          pricingModel: 'flat_rate',
+          guestCount: prefilledGuestCount,
+          occasion: prefilledOccasion,
+        }).catch(() => null)
+      : Promise.resolve(null),
+  ])
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -53,6 +60,7 @@ export default async function NewQuotePage({
       <QuoteForm
         clients={clients}
         pricingHistory={pricingHistory}
+        pricingSuggestion={pricingSuggestion}
         prefilledClientId={prefilledClientId}
         prefilledInquiryId={prefilledInquiryId}
         prefilledGuestCount={prefilledGuestCount}

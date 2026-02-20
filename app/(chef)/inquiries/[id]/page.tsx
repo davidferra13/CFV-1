@@ -33,6 +33,8 @@ import { computeEngagementScore } from '@/lib/activity/engagement'
 import { EngagementBadge } from '@/components/activity/engagement-badge'
 import { InquirySummary, type InquirySummaryData } from '@/components/inquiries/inquiry-summary'
 import { InquiryAddClientButton } from '@/components/inquiries/inquiry-add-client-button'
+import { getBookingScoreForInquiry } from '@/lib/analytics/booking-score'
+import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -73,7 +75,7 @@ export default async function InquiryDetailPage({
 }) {
   await requireChef()
 
-  const [inquiry, quotes, messages, templates, gmailStatus, linkedSubmission, inquiryNotes, recipeLinks, availableRecipes] = await Promise.all([
+  const [inquiry, quotes, messages, templates, gmailStatus, linkedSubmission, inquiryNotes, recipeLinks, availableRecipes, bookingScore] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
     getMessageThread('inquiry', params.id),
@@ -83,6 +85,7 @@ export default async function InquiryDetailPage({
     getInquiryNotes(params.id),
     getLinkedRecipes(params.id),
     getRecipesForLinker(),
+    getBookingScoreForInquiry(params.id).catch(() => null),
   ])
 
   if (!inquiry) {
@@ -158,6 +161,7 @@ export default async function InquiryDetailPage({
             {inquiry.client?.id && (
               <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
             )}
+            {bookingScore && <BookingScoreBadge score={bookingScore} />}
           </div>
           {inquiry.confirmed_occasion && (
             <p className="text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>

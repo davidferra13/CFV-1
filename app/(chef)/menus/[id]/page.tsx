@@ -5,6 +5,8 @@ import { getMenuById, getMenuEvent } from '@/lib/menus/actions'
 import { notFound } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
 import { MenuDetailClient } from './menu-detail-client'
+import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
+import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -33,19 +35,31 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  let recipeMap: Record<string, { id: string; name: string; category: string }> = {}
-  if (recipeIds.size > 0) {
-    const supabase = createServerClient()
-    const { data: recipes } = await supabase
-      .from('recipes')
-      .select('id, name, category')
-      .in('id', Array.from(recipeIds))
-      .eq('tenant_id', user.tenantId!)
+  const [recipeMapResult, recommendations] = await Promise.all([
+    recipeIds.size > 0
+      ? createServerClient()
+          .from('recipes')
+          .select('id, name, category')
+          .in('id', Array.from(recipeIds))
+          .eq('tenant_id', user.tenantId!)
+      : Promise.resolve({ data: null }),
+    getMenuRecommendations({
+      dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],
+      allergies: (event as any)?.allergies ?? [],
+    }).catch(() => null),
+  ])
 
-    if (recipes) {
-      recipeMap = Object.fromEntries(recipes.map(r => [r.id, r]))
-    }
+  let recipeMap: Record<string, { id: string; name: string; category: string }> = {}
+  if (recipeMapResult.data) {
+    recipeMap = Object.fromEntries(recipeMapResult.data.map(r => [r.id, r]))
   }
 
-  return <MenuDetailClient menu={menu} event={event} recipeMap={recipeMap} />
+  return (
+    <div className="space-y-6">
+      <MenuDetailClient menu={menu} event={event} recipeMap={recipeMap} />
+      {recommendations && (
+        <MenuRecommendationHints result={recommendations} />
+      )}
+    </div>
+  )
 }

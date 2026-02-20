@@ -6,6 +6,8 @@ import { Suspense } from 'react'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getQuotes } from '@/lib/quotes/actions'
+import { getQuoteAcceptanceInsights } from '@/lib/analytics/quote-insights'
+import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-acceptance-insights'
 
 export const metadata: Metadata = { title: 'Quotes - ChefFlow' }
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
@@ -102,6 +104,9 @@ export default async function QuotesPage({
 
   const filter = (searchParams.status || 'all') as QuoteFilter
 
+  // Fetch insights in parallel with page render
+  const insights = await getQuoteAcceptanceInsights().catch(() => null)
+
   const tabs: { value: QuoteFilter; label: string }[] = [
     { value: 'all', label: 'All' },
     { value: 'draft', label: 'Draft' },
@@ -123,6 +128,9 @@ export default async function QuotesPage({
           <Button>+ New Quote</Button>
         </Link>
       </div>
+
+      {/* Quote Acceptance Insights */}
+      {insights && <QuoteAcceptanceInsightsPanel data={insights} />}
 
       {/* Status Tabs */}
       <Card className="p-4">
