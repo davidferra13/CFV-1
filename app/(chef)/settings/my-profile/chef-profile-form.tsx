@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { updateChefFullProfile } from '@/lib/chef/profile-actions'
+import { updateChefFullProfile, uploadChefLogo } from '@/lib/chef/profile-actions'
 import { uploadChefProfileImage } from '@/lib/network/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,7 @@ type ChefProfile = {
   tagline: string | null
   google_review_url: string | null
   profile_image_url: string | null
+  logo_url: string | null
   website_url: string | null
   show_website_on_public_profile: boolean
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
@@ -46,6 +47,9 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
   >(profile.preferred_inquiry_destination || 'both')
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
+  const [logoUrl, setLogoUrl] = useState(profile.logo_url || '')
+  const [selectedLogoFile, setSelectedLogoFile] = useState<File | null>(null)
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!selectedImageFile) {
@@ -56,6 +60,16 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
     setImagePreviewUrl(objectUrl)
     return () => URL.revokeObjectURL(objectUrl)
   }, [selectedImageFile])
+
+  useEffect(() => {
+    if (!selectedLogoFile) {
+      setLogoPreviewUrl(null)
+      return
+    }
+    const objectUrl = URL.createObjectURL(selectedLogoFile)
+    setLogoPreviewUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [selectedLogoFile])
 
   function handleSave() {
     setError(null)
@@ -74,6 +88,16 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
           setSelectedImageFile(null)
         }
 
+        let nextLogoUrl = logoUrl || null
+        if (selectedLogoFile) {
+          const logoFormData = new FormData()
+          logoFormData.set('logo', selectedLogoFile)
+          const uploaded = await uploadChefLogo(logoFormData)
+          nextLogoUrl = uploaded.url
+          setLogoUrl(uploaded.url)
+          setSelectedLogoFile(null)
+        }
+
         await updateChefFullProfile({
           business_name: businessName,
           display_name: displayName || null,
@@ -82,6 +106,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
           tagline: tagline || null,
           google_review_url: googleReviewUrl || null,
           profile_image_url: nextProfileImageUrl,
+          logo_url: nextLogoUrl,
           website_url: websiteUrl || null,
           show_website_on_public_profile: showWebsiteOnPublicProfile,
           preferred_inquiry_destination: preferredInquiryDestination,
@@ -218,6 +243,46 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
                 alt="Profile preview"
                 className="h-20 w-20 rounded-full object-cover border border-stone-200"
               />
+            </div>
+          )}
+
+          <div className="w-full pt-2 border-t border-stone-100">
+            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+              Business Logo
+            </label>
+            <p className="text-xs text-stone-500 mb-2">
+              Your brand mark or logo, shown on your public chef page. Transparent PNG or SVG works best.
+            </p>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/svg+xml"
+              onChange={(e) => setSelectedLogoFile(e.target.files?.[0] ?? null)}
+              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+            />
+            <p className="mt-1.5 text-xs text-stone-500">
+              JPEG, PNG, WebP, or SVG (max 5MB). Recommended: landscape format, min 200px wide.
+            </p>
+            {logoUrl && !selectedLogoFile && (
+              <button
+                type="button"
+                className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+                onClick={() => setLogoUrl('')}
+              >
+                Remove current logo
+              </button>
+            )}
+          </div>
+
+          {(logoPreviewUrl || logoUrl) && (
+            <div className="pt-2 border-t border-stone-100">
+              <p className="text-sm text-stone-600 mb-2">Logo Preview</p>
+              <div className="inline-flex items-center justify-center rounded-lg border border-stone-200 bg-stone-50 p-3">
+                <img
+                  src={logoPreviewUrl || logoUrl}
+                  alt="Logo preview"
+                  className="max-h-16 max-w-[240px] object-contain"
+                />
+              </div>
             </div>
           )}
         </CardContent>

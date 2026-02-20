@@ -76,7 +76,7 @@ export async function getPublicChefProfile(slug: string) {
   // Find chef by slug
   let { data: chef, error: chefError } = await supabase
     .from('chefs')
-    .select('id, business_name, display_name, bio, profile_image_url, tagline, website_url, show_website_on_public_profile, preferred_inquiry_destination, portal_primary_color, portal_background_color, portal_background_image_url')
+    .select('id, business_name, display_name, bio, profile_image_url, logo_url, tagline, website_url, show_website_on_public_profile, preferred_inquiry_destination, portal_primary_color, portal_background_color, portal_background_image_url')
     .eq('slug', slug)
     .single()
 
