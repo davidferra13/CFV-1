@@ -278,6 +278,248 @@ export async function markFinancialClosed(eventId: string) {
   return { success: true }
 }
 
+// ─── recordTip ────────────────────────────────────────────────────────────────
+
+import type { PaymentMethod } from '@/lib/ledger/append'
+
+/**
+ * Record a tip received after service (cash, Venmo, Zelle, etc.)
+ * Appends an immutable ledger entry with entry_type = 'tip'.
+ * Can be called from the close-out wizard for completed or in_progress events.
+ */
+export async function recordTip({
+  eventId,
+  amountCents,
+  paymentMethod,
+}: {
+  eventId: string
+  amountCents: number
+  paymentMethod: PaymentMethod
+}) {
+  const user = await requireChef()
+
+  if (!Number.isInteger(amountCents) || amountCents <= 0) {
+    throw new Error('Tip amount must be a positive integer (cents)')
+  }
+
+  const supabase = createServerClient()
+
+  const { data: event } = await supabase
+    .from('events')
+    .select('id, tenant_id, client_id, status')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event) throw new Error('Event not found')
+  if (!['in_progress', 'completed'].includes(event.status)) {
+    throw new Error('Tips can only be recorded for in-progress or completed events')
+  }
+
+  const supabaseAdmin = createServerClient({ admin: true })
+
+  const { data: entry, error } = await supabaseAdmin
+    .from('ledger_entries')
+    .insert({
+      tenant_id: event.tenant_id,
+      client_id: event.client_id,
+      entry_type: 'tip' as const,
+      amount_cents: amountCents,
+      payment_method: paymentMethod,
+      description: `Tip received — ${paymentMethod}`,
+      event_id: eventId,
+      is_refund: false,
+      created_by: user.id,
+    })
+    .select('id')
+    .single()
+
+  if (error) {
+    console.error('[recordTip] Error:', error)
+    throw new Error('Failed to record tip')
+  }
+
+  revalidatePath(`/events/${eventId}`)
+  revalidatePath(`/events/${eventId}/financial`)
+  revalidatePath(`/events/${eventId}/close-out`)
+
+  return { success: true, entryId: entry?.id }
+}
+
+// ─── getEventCloseOutData ─────────────────────────────────────────────────────
+
+export type CloseOutData = {
+  event: {
+    id: string
+    occasion: string | null
+    eventDate: string
+    guestCount: number
+    status: string
+    financialClosed: boolean
+    aarFiled: boolean
+    mileageMiles: number | null
+    clientFirstName: string
+  }
+  financial: {
+    quotedPriceCents: number
+    totalPaidCents: number
+    tipCents: number
+    totalReceivedCents: number
+    outstandingBalanceCents: number
+    actualGrocerySpendCents: number
+    totalCostCents: number
+    grossProfitCents: number
+    grossMarginPercent: number
+    netProfitWithTipCents: number
+    effectiveHourlyRateCents: number | null
+    foodCostPercent: number
+    deductionValueCents: number | null
+  }
+  existingTip: { amountCents: number; paymentMethod: string } | null
+  expensesNeedingReceipts: Array<{ id: string; description: string; amountCents: number; receiptUploaded: boolean }>
+  hasAnyExpenses: boolean
+  aarExists: boolean
+}
+
+/**
+ * Fetch all data needed to render the post-event close-out wizard.
+ * Single round-trip-friendly aggregation for the wizard page.
+ */
+export async function getEventCloseOutData(eventId: string): Promise<CloseOutData | null> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Fetch event with client name
+  const { data: event } = await supabase
+    .from('events')
+    .select(`
+      id, occasion, event_date, guest_count, status,
+      financial_closed, aar_filed, mileage_miles,
+      client:clients(full_name)
+    `)
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event || event.status !== 'completed') return null
+
+  const clientData = event.client as unknown as { full_name: string } | null
+  const firstName = clientData?.full_name?.split(' ')[0] ?? 'the client'
+
+  // Parallel fetches: financial summary view, tip entry, expenses, AAR check
+  const [financialRow, tipRow, expenses, aarRow] = await Promise.all([
+    supabase
+      .from('event_financial_summary')
+      .select('*')
+      .eq('event_id', eventId)
+      .single()
+      .then(r => r.data),
+
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents, payment_method')
+      .eq('event_id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .eq('entry_type', 'tip')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .then(r => r.data?.[0] ?? null),
+
+    supabase
+      .from('expenses')
+      .select('id, description, amount_cents, receipt_uploaded')
+      .eq('event_id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .order('created_at', { ascending: true })
+      .then(r => r.data ?? []),
+
+    supabase
+      .from('after_action_reviews')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .limit(1)
+      .then(r => (r.data?.length ?? 0) > 0),
+  ])
+
+  const totalPaid = financialRow?.total_paid_cents ?? 0
+  const tipCents = financialRow?.tip_amount_cents ?? 0
+  const quoted = financialRow?.quoted_price_cents ?? 0
+  const outstanding = financialRow?.outstanding_balance_cents ?? 0
+  const totalExpenses = (financialRow as any)?.total_expenses_cents ?? 0
+  const grossProfit = (financialRow as any)?.profit_cents ?? (quoted - totalExpenses)
+  const grossMargin = (financialRow as any)?.profit_margin
+    ? parseFloat(String((financialRow as any).profit_margin)) * 100
+    : 0
+  const foodCostPct = (financialRow as any)?.food_cost_percentage
+    ? parseFloat(String((financialRow as any).food_cost_percentage)) * 100
+    : 0
+
+  const mileageMiles = event.mileage_miles ? parseFloat(String(event.mileage_miles)) : null
+  const deductionValueCents = mileageMiles
+    ? Math.round(mileageMiles * IRS_MILEAGE_RATE_CENTS_PER_MILE)
+    : null
+
+  // Net profit = gross + tip
+  const netProfitWithTipCents = grossProfit + tipCents
+
+  // Effective hourly rate — columns use time_ prefix (added in 20260216000003_operational_refinements.sql)
+  const { data: timeRow } = await (supabase as any)
+    .from('events')
+    .select('time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes')
+    .eq('id', eventId)
+    .single()
+
+  const totalMinutes = timeRow
+    ? (timeRow.time_shopping_minutes ?? 0) + (timeRow.time_prep_minutes ?? 0) +
+      (timeRow.time_travel_minutes ?? 0) + (timeRow.time_service_minutes ?? 0) + (timeRow.time_reset_minutes ?? 0)
+    : 0
+
+  const effectiveHourlyRateCents = totalMinutes > 0 && netProfitWithTipCents > 0
+    ? Math.round((netProfitWithTipCents / totalMinutes) * 60)
+    : null
+
+  return {
+    event: {
+      id: eventId,
+      occasion: event.occasion,
+      eventDate: event.event_date,
+      guestCount: event.guest_count,
+      status: event.status,
+      financialClosed: event.financial_closed ?? false,
+      aarFiled: event.aar_filed ?? false,
+      mileageMiles,
+      clientFirstName: firstName,
+    },
+    financial: {
+      quotedPriceCents: quoted,
+      totalPaidCents: totalPaid,
+      tipCents,
+      totalReceivedCents: totalPaid + tipCents,
+      outstandingBalanceCents: outstanding,
+      actualGrocerySpendCents: totalExpenses,
+      totalCostCents: totalExpenses,
+      grossProfitCents: grossProfit,
+      grossMarginPercent: Math.round(grossMargin * 10) / 10,
+      netProfitWithTipCents,
+      effectiveHourlyRateCents,
+      foodCostPercent: Math.round(foodCostPct * 10) / 10,
+      deductionValueCents,
+    },
+    existingTip: tipRow ? { amountCents: tipRow.amount_cents, paymentMethod: tipRow.payment_method } : null,
+    expensesNeedingReceipts: (expenses ?? [])
+      .filter((e: any) => !e.receipt_uploaded)
+      .map((e: any) => ({
+        id: e.id,
+        description: e.description,
+        amountCents: e.amount_cents,
+        receiptUploaded: e.receipt_uploaded ?? false,
+      })),
+    hasAnyExpenses: (expenses ?? []).length > 0,
+    aarExists: aarRow,
+  }
+}
+
 // ─── updateMileage ────────────────────────────────────────────────────────────
 
 /**

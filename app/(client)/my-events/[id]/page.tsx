@@ -231,10 +231,19 @@ export default async function EventDetailPage({
             <div className="pt-3 border-t">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold text-stone-900">Balance Due</span>
-                <span className="text-2xl font-bold text-stone-900">
+                <span className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-900'}`}>
                   {formatCurrency(outstandingBalanceCents)}
                 </span>
               </div>
+              {outstandingBalanceCents > 0 && event.status === 'completed' && (
+                <div className="mt-3">
+                  <Link href={`/my-events/${event.id}/pay`}>
+                    <button type="button" className="w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm">
+                      Pay Remaining Balance
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
 
             {(event.deposit_amount_cents ?? 0) > 0 && (
@@ -406,7 +415,7 @@ export default async function EventDetailPage({
 
       {/* Post-Event Feedback (completed events only) */}
       {event.status === 'completed' && (
-        <div className="mb-8">
+        <div id="review" className="mb-8">
           {existingReview ? (
             <SubmittedReview
               review={existingReview}

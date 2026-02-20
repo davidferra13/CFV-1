@@ -240,13 +240,14 @@ export async function sendEventCompletedEmail(params: {
 }) {
   await sendEmail({
     to: params.clientEmail,
-    subject: `How was your ${params.occasion}?`,
+    subject: `Thank you for dining with ${params.chefName}`,
     react: createElement(EventCompletedEmail, {
       clientName: params.clientName,
       chefName: params.chefName,
       occasion: params.occasion,
       eventDate: formatDate(params.eventDate),
-      reviewUrl: `${APP_URL}/my-events/${params.eventId}`,
+      receiptUrl: `${APP_URL}/my-events/${params.eventId}`,
+      reviewUrl: `${APP_URL}/my-events/${params.eventId}#review`,
     }),
   })
 }

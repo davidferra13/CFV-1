@@ -6,6 +6,7 @@ import { requireClient } from '@/lib/auth/get-user'
 export const metadata: Metadata = { title: 'My Events - ChefFlow' }
 import { getClientEvents } from '@/lib/events/client-actions'
 import { getMyLoyaltyStatus } from '@/lib/loyalty/actions'
+import { createServerClient } from '@/lib/supabase/server'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -14,6 +15,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { PostEventBanner } from '@/components/client/post-event-banner'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -40,7 +42,7 @@ function getStatusBadge(status: EventStatus) {
 }
 
 // Action button for each event status
-function EventActionButton({ event }: { event: ClientEvent }) {
+function EventActionButton({ event, hasOutstandingBalance }: { event: ClientEvent; hasOutstandingBalance?: boolean }) {
   const { id, status } = event
   const quotedPrice = event.quoted_price_cents ?? 0
 
@@ -75,12 +77,37 @@ function EventActionButton({ event }: { event: ClientEvent }) {
   }
 
   if (status === 'completed') {
+    // Balance still outstanding on a completed event — rare but important
+    if (hasOutstandingBalance) {
+      return (
+        <div className="flex flex-col gap-2 items-end">
+          <Link href={`/my-events/${id}/pay`}>
+            <Button variant="primary" size="sm">
+              Pay Balance
+            </Button>
+          </Link>
+          <Link href={`/my-events/${id}`}>
+            <Button variant="ghost" size="sm">
+              View Receipt
+            </Button>
+          </Link>
+        </div>
+      )
+    }
+
     return (
-      <Link href={`/my-events/${id}`}>
-        <Button variant="ghost" size="sm">
-          View Receipt
-        </Button>
-      </Link>
+      <div className="flex flex-col gap-2 items-end sm:items-center sm:flex-row">
+        <Link href={`/my-events/${id}`}>
+          <Button variant="ghost" size="sm">
+            View Receipt
+          </Button>
+        </Link>
+        <Link href={`/my-events/${id}#review`}>
+          <Button variant="secondary" size="sm">
+            Leave Review
+          </Button>
+        </Link>
+      </div>
     )
   }
 
@@ -94,7 +121,7 @@ function EventActionButton({ event }: { event: ClientEvent }) {
 }
 
 // Event card component
-function EventCard({ event }: { event: ClientEvent }) {
+function EventCard({ event, hasOutstandingBalance }: { event: ClientEvent; hasOutstandingBalance?: boolean }) {
   const quotedPrice = event.quoted_price_cents ?? 0
   const location = [event.location_address, event.location_city].filter(Boolean).join(', ')
 
@@ -105,6 +132,9 @@ function EventCard({ event }: { event: ClientEvent }) {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               {getStatusBadge(event.status)}
+              {event.status === 'completed' && hasOutstandingBalance && (
+                <Badge variant="error">Balance Due</Badge>
+              )}
             </div>
 
             <h3 className="text-lg font-semibold text-stone-900 mb-2">
@@ -152,7 +182,7 @@ function EventCard({ event }: { event: ClientEvent }) {
           </div>
 
           <div className="sm:ml-4">
-            <EventActionButton event={event} />
+            <EventActionButton event={event} hasOutstandingBalance={hasOutstandingBalance} />
           </div>
         </div>
       </CardContent>
@@ -191,7 +221,8 @@ const TIER_LABELS: Record<string, string> = {
 }
 
 export default async function MyEventsPage() {
-  await requireClient()
+  const user = await requireClient()
+  const supabase = createServerClient()
 
   const [events, loyaltyStatus] = await Promise.all([
     getClientEvents(),
@@ -205,6 +236,55 @@ export default async function MyEventsPage() {
   const past = events.filter(e => e.status === 'completed')
   const cancelled = events.filter(e => e.status === 'cancelled')
 
+  // Find completed events without reviews — used to show the post-event banner
+  // Single query: fetch review event_ids for this client's completed events
+  let unreviewedEvent: ClientEvent | null = null
+  let pastWithBalance: Set<string> = new Set()
+
+  if (past.length > 0) {
+    const pastIds = past.map(e => e.id)
+
+    const [reviewRows, balanceRows] = await Promise.all([
+      // Which completed events already have reviews?
+      supabase
+        .from('client_reviews')
+        .select('event_id')
+        .in('event_id', pastIds)
+        .then(r => r.data ?? []),
+
+      // Which completed events have outstanding balances?
+      supabase
+        .from('event_financial_summary')
+        .select('event_id, outstanding_balance_cents')
+        .in('event_id', pastIds)
+        .gt('outstanding_balance_cents', 0)
+        .then(r => r.data ?? []),
+    ])
+
+    const reviewedEventIds = new Set((reviewRows as Array<{ event_id: string }>).map(r => r.event_id))
+    pastWithBalance = new Set((balanceRows as Array<{ event_id: string; outstanding_balance_cents: number }>)
+      .filter(r => (r.outstanding_balance_cents ?? 0) > 0)
+      .map(r => r.event_id))
+
+    // Most recent completed event without a review (events are ordered ascending by date,
+    // so the last in the array is the most recent)
+    const latestFirst = [...past].sort(
+      (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+    )
+    unreviewedEvent = latestFirst.find(e => !reviewedEventIds.has(e.id)) ?? null
+  }
+
+  // Fetch chef name for the post-event banner (single lookup on the tenant for this event)
+  let chefDisplayName = 'your chef'
+  if (unreviewedEvent) {
+    const { data: chef } = await supabase
+      .from('chefs')
+      .select('business_name')
+      .eq('id', (unreviewedEvent as any).tenant_id)
+      .single()
+    chefDisplayName = chef?.business_name || 'your chef'
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
@@ -213,6 +293,16 @@ export default async function MyEventsPage() {
           Manage your upcoming events and view past bookings
         </p>
       </div>
+
+      {/* Post-event review banner — shown for most recent unreviewed completed event */}
+      {unreviewedEvent && (
+        <PostEventBanner
+          eventId={unreviewedEvent.id}
+          occasion={unreviewedEvent.occasion}
+          eventDate={unreviewedEvent.event_date}
+          chefName={chefDisplayName}
+        />
+      )}
 
       {/* Loyalty Status */}
       {loyaltyStatus && (loyaltyStatus.pointsBalance > 0 || loyaltyStatus.totalEventsCompleted > 0) && (
@@ -266,7 +356,11 @@ export default async function MyEventsPage() {
         {past.length > 0 ? (
           <div className="space-y-4">
             {past.map(event => (
-              <EventCard key={event.id} event={event as ClientEvent} />
+              <EventCard
+                key={event.id}
+                event={event as ClientEvent}
+                hasOutstandingBalance={pastWithBalance.has(event.id)}
+              />
             ))}
           </div>
         ) : (

@@ -73,7 +73,7 @@ export function EventTransitions({
   const [showCancelDialog, setShowCancelDialog] = useState(false)
   const [cancellationReason, setCancellationReason] = useState('')
 
-  const handleTransition = async (action: () => Promise<any>) => {
+  const handleTransition = async (action: () => Promise<any>, redirectTo?: string) => {
     setLoading(true)
     setError(null)
 
@@ -81,7 +81,11 @@ export function EventTransitions({
       const result = await action()
 
       if (result.success) {
-        router.refresh()
+        if (redirectTo) {
+          router.push(redirectTo)
+        } else {
+          router.refresh()
+        }
       } else {
         throw new Error('Transition failed')
       }
@@ -212,7 +216,10 @@ export function EventTransitions({
 
           {event.status === 'in_progress' && (
             <Button
-              onClick={() => handleTransition(() => completeEvent(event.id))}
+              onClick={() => handleTransition(
+                () => completeEvent(event.id),
+                `/events/${event.id}/close-out`
+              )}
               loading={loading}
               disabled={loading || isHardBlocked}
               title={isHardBlocked ? 'Resolve hard blocks above before completing' : undefined}
