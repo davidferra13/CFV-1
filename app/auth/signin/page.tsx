@@ -1,7 +1,7 @@
 // Sign In Page
 'use client'
 
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, type SignInInput } from '@/lib/auth/actions'
@@ -26,7 +26,8 @@ function safeRedirectPath(raw: string | null): string {
 
 function SignInForm() {
   const router = useRouter()
-  const searchParams = useSearchParams() ?? new URLSearchParams()
+  const rawSearchParams = useSearchParams()
+  const searchParams = useMemo(() => rawSearchParams ?? new URLSearchParams(), [rawSearchParams])
   const [loading, setLoading] = useState(false)
 
   const [error, setError] = useState<string | null>(null)

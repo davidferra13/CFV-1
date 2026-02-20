@@ -20,6 +20,7 @@ export type EditorDish = {
   allergen_flags: string[]
   chef_notes: string | null
   sort_order: number
+  photo_url: string | null
 }
 
 export type EditorMenu = {
@@ -87,9 +88,9 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
 
   if (menuErr || !menu) return null
 
-  const { data: dishes } = await supabase
+  const { data: dishes } = await (supabase as any)
     .from('dishes')
-    .select('id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order')
+    .select('id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url')
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
     .order('course_number', { ascending: true })
@@ -107,7 +108,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
     status: menu.status,
     is_template: menu.is_template ?? false,
     event_id: menu.event_id ?? null,
-    dishes: (dishes ?? []).map(d => ({
+    dishes: ((dishes ?? []) as any[]).map((d: any) => ({
       id: d.id,
       course_number: d.course_number,
       course_name: d.course_name,
@@ -117,6 +118,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
       allergen_flags: (d.allergen_flags as string[]) ?? [],
       chef_notes: d.chef_notes ?? null,
       sort_order: d.sort_order ?? d.course_number,
+      photo_url: (d as any).photo_url ?? null,
     })),
   }
 

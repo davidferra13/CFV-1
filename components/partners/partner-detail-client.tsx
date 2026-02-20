@@ -144,6 +144,7 @@ export function PartnerDetailClient({
               <div className="mt-3 ml-6 flex gap-2 overflow-x-auto">
                 {locImages.map(img => (
                   <div key={img.id} className="flex-shrink-0 relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img.image_url}
                       alt={img.caption || loc.name}
@@ -169,6 +170,7 @@ export function PartnerDetailClient({
           <div className="flex gap-2 overflow-x-auto">
             {getGeneralImages().map(img => (
               <div key={img.id} className="flex-shrink-0 relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={img.image_url}
                   alt={img.caption || 'Partner image'}

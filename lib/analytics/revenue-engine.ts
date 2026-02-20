@@ -57,11 +57,11 @@ export interface RevenueStrategy {
   achievable: boolean
 }
 
-export function solveRevenueClosure(
+export async function solveRevenueClosure(
   goalCents: number,
   bookedCents: number,
   remainingDays: number,
-): { strategies: RevenueStrategy[]; gap: number; achievable: boolean } {
+): Promise<{ strategies: RevenueStrategy[]; gap: number; achievable: boolean }> {
   const gap = goalCents - bookedCents
   if (gap <= 0) {
     return { strategies: [], gap: 0, achievable: true }
@@ -99,13 +99,13 @@ export function solveRevenueClosure(
 
 export async function computeDashboardKPIs(range: DateRange): Promise<DashboardKPIs> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   // Events in range
   const { data: events } = await supabase
     .from('events')
-    .select('id, status, total_price, guest_count, event_date')
-    .eq('chef_id', chef.id)
+    .select('id, status, quoted_price_cents, guest_count, event_date')
+    .eq('tenant_id', chef.tenantId!)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
@@ -113,7 +113,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
   const { data: ledger } = await supabase
     .from('ledger_entries')
     .select('id, entry_type, amount_cents')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
@@ -121,7 +121,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
   const { data: inquiries } = await supabase
     .from('inquiries')
     .select('id, status')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
@@ -137,15 +137,15 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     .filter(l => l.entry_type === 'refund')
     .reduce((s, l) => s + Math.abs(l.amount_cents), 0)
 
-  // Booked value
+  // Booked value from quoted_price_cents
   const nonCancelled = allEvents.filter(e => e.status !== 'cancelled')
-  const bookedValue = nonCancelled.reduce((s, e) => s + (e.total_price || 0), 0)
+  const bookedValue = nonCancelled.reduce((s, e) => s + ((e as any).quoted_price_cents || 0), 0)
 
   // Completed
   const completed = allEvents.filter(e => e.status === 'completed')
 
-  // Conversion
-  const converted = allInquiries.filter(i => i.status === 'converted')
+  // Conversion — inquiries that became events (status = confirmed or have a linked event)
+  const converted = allInquiries.filter(i => i.status === 'confirmed' || (i as any).converted_to_event_id)
 
   // Average event value
   const avgValue = nonCancelled.length > 0
@@ -159,7 +159,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     },
     totalBookedValue: {
       value: bookedValue,
-      definition: 'Sum of total_price for non-cancelled events in period',
+      definition: 'Sum of quoted_price_cents for non-cancelled events in period',
     },
     inquiriesCount: {
       value: allInquiries.length,
@@ -177,7 +177,7 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
     },
     averageEventValue: {
       value: avgValue,
-      definition: 'Mean total_price of non-cancelled events in period',
+      definition: 'Mean quoted_price_cents of non-cancelled events in period',
     },
   }
 }
@@ -186,19 +186,19 @@ export async function computeDashboardKPIs(range: DateRange): Promise<DashboardK
 
 export async function computeRevenueByMonth(range: DateRange): Promise<RevenueByPeriod[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: ledger } = await supabase
     .from('ledger_entries')
     .select('entry_type, amount_cents, created_at')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', chef.tenantId!)
     .gte('created_at', range.start)
     .lte('created_at', range.end)
 
   const monthMap = new Map<string, number>()
 
   for (const entry of ledger || []) {
-    const key = entry.created_at.slice(0, 7) // YYYY-MM
+    const key = (entry.created_at as string).slice(0, 7) // YYYY-MM
     const current = monthMap.get(key) || 0
     const amount = entry.entry_type === 'refund' ? -Math.abs(entry.amount_cents) : entry.amount_cents
     monthMap.set(key, current + amount)
@@ -213,12 +213,12 @@ export async function computeRevenueByMonth(range: DateRange): Promise<RevenueBy
 
 export async function computeTopClients(range: DateRange): Promise<TopClient[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
-    .select('id, client_id, total_price, status, clients(name)')
-    .eq('chef_id', chef.id)
+    .select('id, client_id, quoted_price_cents, status, clients(full_name)')
+    .eq('tenant_id', chef.tenantId!)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
     .neq('status', 'cancelled')
@@ -229,11 +229,11 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
     const clientId = e.client_id
     if (!clientId) continue
     const entry = clientMap.get(clientId) || {
-      name: (e.clients as any)?.name || 'Unknown',
+      name: ((e as any).clients as any)?.full_name || 'Unknown',
       revenue: 0,
       count: 0,
     }
-    entry.revenue += e.total_price || 0
+    entry.revenue += (e as any).quoted_price_cents || 0
     entry.count++
     clientMap.set(clientId, entry)
   }
@@ -252,12 +252,12 @@ export async function computeTopClients(range: DateRange): Promise<TopClient[]> 
 
 export async function computeSeasonalPerformance(range: DateRange): Promise<SeasonalMonth[]> {
   const chef = await requireChef()
-  const supabase = await createServerClient()
+  const supabase = createServerClient()
 
   const { data: events } = await supabase
     .from('events')
-    .select('id, event_date, status, guest_count, total_price')
-    .eq('chef_id', chef.id)
+    .select('id, event_date, status, guest_count, quoted_price_cents')
+    .eq('tenant_id', chef.tenantId!)
     .gte('event_date', range.start)
     .lte('event_date', range.end)
 
@@ -266,12 +266,12 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
   }>()
 
   for (const e of events || []) {
-    const key = e.event_date.slice(0, 7)
+    const key = (e.event_date as string).slice(0, 7)
     const entry = monthMap.get(key) || { total: 0, cancelled: 0, guestSum: 0, guestCount: 0, revenue: 0 }
     entry.total++
     if (e.status === 'cancelled') entry.cancelled++
-    if (e.guest_count > 0) { entry.guestSum += e.guest_count; entry.guestCount++ }
-    entry.revenue += e.total_price || 0
+    if (e.guest_count && e.guest_count > 0) { entry.guestSum += e.guest_count; entry.guestCount++ }
+    entry.revenue += (e as any).quoted_price_cents || 0
     monthMap.set(key, entry)
   }
 
@@ -288,7 +288,7 @@ export async function computeSeasonalPerformance(range: DateRange): Promise<Seas
 
 // ─── CSV Export ─────────────────────────────────────────────────────────────
 
-export function exportToCSV(rows: Record<string, unknown>[], filename: string): string {
+export async function exportToCSV(rows: Record<string, unknown>[], filename: string): Promise<string> {
   if (rows.length === 0) return ''
   const headers = Object.keys(rows[0])
   const csvLines = [
@@ -309,7 +309,7 @@ export function exportToCSV(rows: Record<string, unknown>[], filename: string): 
 
 // ─── Range Helpers ──────────────────────────────────────────────────────────
 
-export function defaultRange(days = 30): DateRange {
+export async function defaultRange(days = 30): Promise<DateRange> {
   const end = new Date()
   const start = new Date(end.getTime() - days * 86400000)
   return {
@@ -318,7 +318,7 @@ export function defaultRange(days = 30): DateRange {
   }
 }
 
-export function yearRange(): DateRange {
+export async function yearRange(): Promise<DateRange> {
   const now = new Date()
   return {
     start: `${now.getFullYear()}-01-01`,

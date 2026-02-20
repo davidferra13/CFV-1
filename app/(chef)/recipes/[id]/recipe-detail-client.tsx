@@ -10,6 +10,7 @@ import { Alert } from '@/components/ui/alert'
 import { deleteRecipe, createRecipe, addIngredientToRecipe } from '@/lib/recipes/actions'
 import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
 import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
+import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { format } from 'date-fns'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
@@ -129,6 +130,13 @@ export function RecipeDetailClient({ recipe }: Props) {
           </Link>
         </div>
       </div>
+
+      {/* Dish Photo */}
+      <DishPhotoUpload
+        entityType="recipe"
+        entityId={recipe.id}
+        currentPhotoUrl={(recipe as any).photo_url ?? null}
+      />
 
       {error && <Alert variant="error">{error}</Alert>}
       {shareSuccess && <Alert variant="success">{shareSuccess}</Alert>}

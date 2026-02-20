@@ -56,6 +56,12 @@ const SECTIONS = [
     description: 'Mileage log, quarterly estimates, and accountant export',
     icon: '🗓️',
   },
+  {
+    href: '/finance/goals',
+    label: 'Revenue Goals',
+    description: 'Annual target, YTD progress, and gap-closing strategies',
+    icon: '🎯',
+  },
 ]
 
 export default async function FinancePage() {

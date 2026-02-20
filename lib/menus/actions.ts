@@ -1045,3 +1045,84 @@ export async function duplicateMenu(menuId: string) {
   revalidatePath('/menus')
   return { success: true, menu: newMenu }
 }
+
+// ============================================
+// MENU TEMPLATES
+// ============================================
+
+/**
+ * Clone a menu — creates a draft copy with "(Copy)" suffix.
+ * Copies the full hierarchy: menu → dishes → components.
+ * The clone is never attached to an event and is never a template.
+ */
+export async function cloneMenu(menuId: string) {
+  // Delegate to the existing duplicateMenu which performs a full deep copy
+  const result = await duplicateMenu(menuId)
+
+  // Ensure the clone is not marked as a template
+  try {
+    const supabase = createServerClient()
+    const user = await requireChef()
+    await supabase
+      .from('menus')
+      .update({ is_template: false, event_id: null })
+      .eq('id', result.menu.id)
+      .eq('tenant_id', user.tenantId!)
+  } catch {
+    // Non-blocking: if the update fails the clone itself still exists as draft
+  }
+
+  revalidatePath('/menus')
+  return result.menu
+}
+
+/**
+ * Save an existing menu as a template (sets is_template = true).
+ * The menu remains in its current state; it is just flagged as reusable.
+ */
+export async function saveMenuAsTemplate(menuId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('menus')
+    .update({ is_template: true, updated_by: user.id })
+    .eq('id', menuId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[saveMenuAsTemplate] Error:', error)
+    throw new Error('Failed to save menu as template')
+  }
+
+  revalidatePath('/menus')
+  revalidatePath('/settings/templates')
+  return { success: true }
+}
+
+/**
+ * List all menus flagged as templates for the chef's tenant.
+ */
+export async function listMenuTemplates() {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  try {
+    const { data, error } = await supabase
+      .from('menus')
+      .select('id, name, description, service_style, cuisine_type, target_guest_count, created_at')
+      .eq('tenant_id', user.tenantId!)
+      .eq('is_template', true)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('[listMenuTemplates] Error:', error)
+      return []
+    }
+
+    return data || []
+  } catch (err) {
+    console.error('[listMenuTemplates] Unexpected error:', err)
+    return []
+  }
+}

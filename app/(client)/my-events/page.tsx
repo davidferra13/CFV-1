@@ -224,17 +224,12 @@ export default async function MyEventsPage() {
   const user = await requireClient()
   const supabase = createServerClient()
 
-  const [events, loyaltyStatus] = await Promise.all([
-    getClientEvents(),
+  const [eventsResult, loyaltyStatus] = await Promise.all([
+    getClientEvents({ pastLimit: 5 }),
     getMyLoyaltyStatus().catch(() => null),
   ])
 
-  // Group events by status
-  const upcoming = events.filter(e =>
-    ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(e.status)
-  )
-  const past = events.filter(e => e.status === 'completed')
-  const cancelled = events.filter(e => e.status === 'cancelled')
+  const { upcoming, past, pastTotalCount, cancelled } = eventsResult
 
   // Find completed events without reviews — used to show the post-event banner
   // Single query: fetch review event_ids for this client's completed events
@@ -274,13 +269,15 @@ export default async function MyEventsPage() {
     unreviewedEvent = latestFirst.find(e => !reviewedEventIds.has(e.id)) ?? null
   }
 
-  // Fetch chef name for the post-event banner (single lookup on the tenant for this event)
+  // Fetch chef name for the post-event banner.
+  // Scope to user.tenantId (the chef this client belongs to) — never trust event.tenant_id
+  // from the returned row for cross-entity lookups.
   let chefDisplayName = 'your chef'
-  if (unreviewedEvent) {
+  if (unreviewedEvent && user.tenantId) {
     const { data: chef } = await supabase
       .from('chefs')
       .select('business_name')
-      .eq('id', (unreviewedEvent as any).tenant_id)
+      .eq('id', user.tenantId)
       .single()
     chefDisplayName = chef?.business_name || 'your chef'
   }
@@ -350,9 +347,19 @@ export default async function MyEventsPage() {
 
       {/* Past Events */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-stone-900 mb-4">
-          Past Events
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-semibold text-stone-900">
+            Past Events
+          </h2>
+          {pastTotalCount > 5 && (
+            <Link
+              href="/my-events/history"
+              className="text-sm text-stone-500 hover:text-stone-700 underline underline-offset-2"
+            >
+              View all {pastTotalCount} past events
+            </Link>
+          )}
+        </div>
         {past.length > 0 ? (
           <div className="space-y-4">
             {past.map(event => (
@@ -362,6 +369,15 @@ export default async function MyEventsPage() {
                 hasOutstandingBalance={pastWithBalance.has(event.id)}
               />
             ))}
+            {pastTotalCount > 5 && (
+              <div className="text-center pt-2">
+                <Link href="/my-events/history">
+                  <Button variant="ghost" size="sm">
+                    + {pastTotalCount - 5} more past event{pastTotalCount - 5 !== 1 ? 's' : ''}
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         ) : (
           <EmptyState message="No past events yet" />
@@ -387,7 +403,7 @@ export default async function MyEventsPage() {
 
       <ActivityTracker
         eventType="events_list_viewed"
-        metadata={{ event_count: events.length }}
+        metadata={{ event_count: upcoming.length + pastTotalCount + cancelled.length }}
       />
     </div>
   )

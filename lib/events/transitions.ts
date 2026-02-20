@@ -442,6 +442,41 @@ export async function transitionEvent({
     console.error('[transitionEvent] Email send failed (non-blocking):', emailErr)
   }
 
+  // Create post-event survey and email client (non-blocking)
+  if (toStatus === 'completed' && fromStatus === 'in_progress') {
+    try {
+      const supabaseAdmin = createServerClient({ admin: true })
+      const { data: client } = await supabaseAdmin
+        .from('clients')
+        .select('email, full_name')
+        .eq('id', event.client_id)
+        .single()
+
+      const { data: chef } = await supabaseAdmin
+        .from('chefs')
+        .select('business_name')
+        .eq('id', event.tenant_id)
+        .single()
+
+      const { createSurveyForEvent } = await import('@/lib/surveys/actions')
+      const surveyToken = await createSurveyForEvent(eventId, event.tenant_id)
+
+      if (surveyToken && client?.email) {
+        const { sendPostEventSurveyEmail } = await import('@/lib/email/notifications')
+        const surveyUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/survey/${surveyToken}`
+        await sendPostEventSurveyEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName: chef?.business_name || 'Your Chef',
+          occasion: event.occasion || 'your event',
+          surveyUrl,
+        })
+      }
+    } catch (surveyErr) {
+      console.error('[transitionEvent] Survey creation failed (non-blocking):', surveyErr)
+    }
+  }
+
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')

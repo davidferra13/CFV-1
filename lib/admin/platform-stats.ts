@@ -165,7 +165,6 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
     .select('id, full_name, email, tenant_id, created_at')
     .order('created_at', { ascending: false })
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const clients = rawClients as any[] | null
 
   if (!clients?.length) return []
@@ -388,11 +387,10 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// New tables not yet in generated types — use any to bypass strict table check
 type AnyClient = any
 
 export async function getPlatformAuditLog(limit = 100): Promise<Record<string, unknown>[]> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase: AnyClient = createAdminClient()
 
   const { data } = await supabase
@@ -405,7 +403,6 @@ export async function getPlatformAuditLog(limit = 100): Promise<Record<string, u
 }
 
 export async function getChefFeatureFlags(chefId: string): Promise<Record<string, boolean>> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabase: AnyClient = createAdminClient()
 
   const { data } = await supabase
@@ -423,7 +420,6 @@ export async function getAllChefFlags(): Promise<{
   flagsByChef: Record<string, Record<string, boolean>>
 }> {
   const supabase = createAdminClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const supabaseAny: AnyClient = supabase
 
   const [chefsResult, flagsResult] = await Promise.all([

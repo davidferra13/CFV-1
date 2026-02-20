@@ -13,6 +13,8 @@ const REPORTS = [
   { href: '/finance/reporting/profit-by-event', label: 'Profit by Event', icon: '💰', description: 'Event revenue minus direct expenses' },
   { href: '/finance/reporting/expense-by-category', label: 'Expense by Category', icon: '📂', description: 'Spend breakdown across all expense categories' },
   { href: '/finance/reporting/tax-summary', label: 'Tax Summary', icon: '🧾', description: 'Business expense totals and income summary for tax prep' },
+  { href: '/finance/reporting/profit-loss', label: 'Profit & Loss Statement', icon: '📈', description: 'Full P&L with revenue, expenses, and net profit' },
+  { href: '/finance/year-end', label: 'Year-End Summary', icon: '🎯', description: 'Complete annual summary for tax preparation' },
 ]
 
 export default async function ReportingPage() {

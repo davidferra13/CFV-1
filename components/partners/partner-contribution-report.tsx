@@ -79,6 +79,7 @@ export function PartnerContributionReport({
       <Card className="p-8 print:shadow-none print:border-none">
         <div className="text-center border-b border-stone-200 pb-6 mb-6">
           {chef?.profile_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={chef.profile_image_url}
               alt={chef.name}

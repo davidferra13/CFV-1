@@ -40,6 +40,7 @@ export function ChefCard({
       {/* Avatar */}
       <div className="flex-shrink-0">
         {profileImageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={profileImageUrl}
             alt={name}

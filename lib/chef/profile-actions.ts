@@ -262,3 +262,28 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
 
   return { success: true, url: publicUrl }
 }
+
+export async function markOnboardingComplete() {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  await (supabase as any)
+    .from('chefs')
+    .update({ onboarding_completed_at: new Date().toISOString() })
+    .eq('id', user.entityId)
+
+  return { success: true }
+}
+
+export async function getOnboardingStatus(): Promise<boolean> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await (supabase as any)
+    .from('chefs')
+    .select('onboarding_completed_at')
+    .eq('id', user.entityId)
+    .single()
+
+  return !!(data as any)?.onboarding_completed_at
+}

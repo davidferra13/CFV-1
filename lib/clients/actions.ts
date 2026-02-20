@@ -720,3 +720,79 @@ export async function addClientFromInquiry(input: {
     return { success: false, error: 'An unexpected error occurred' }
   }
 }
+
+/**
+ * Create a client record directly (chef-only).
+ * Creates a "shadow client" without requiring an auth account.
+ * Used by the Event Creation Wizard when a chef adds a new client inline.
+ * Returns the new client's ID so the wizard can immediately create an event.
+ */
+export async function createClientDirect(input: {
+  full_name: string
+  email: string
+}): Promise<{ success: true; clientId: string } | { success: false; error: string }> {
+  try {
+    const user = await requireChef()
+
+    if (!input.full_name.trim()) {
+      return { success: false, error: 'Client name is required' }
+    }
+    if (!input.email.trim()) {
+      return { success: false, error: 'Client email is required' }
+    }
+
+    const supabase = createServerClient()
+
+    // Check for duplicate email in this tenant
+    const { data: existing } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('tenant_id', user.tenantId!)
+      .eq('email', input.email.trim().toLowerCase())
+      .maybeSingle()
+
+    if (existing) {
+      return { success: false, error: 'A client with this email already exists' }
+    }
+
+    const { data: client, error: clientErr } = await supabase
+      .from('clients')
+      .insert({
+        tenant_id: user.tenantId!,
+        full_name: input.full_name.trim(),
+        email: input.email.trim().toLowerCase(),
+        status: 'active',
+      } as any)
+      .select('id')
+      .single()
+
+    if (clientErr || !client) {
+      console.error('[createClientDirect] Insert error:', clientErr)
+      return { success: false, error: 'Failed to create client record' }
+    }
+
+    revalidatePath('/clients')
+
+    // Log chef activity (non-blocking)
+    try {
+      const { logChefActivity } = await import('@/lib/activity/log-chef')
+      await logChefActivity({
+        tenantId: user.tenantId!,
+        actorId: user.id,
+        action: 'client_created',
+        domain: 'client',
+        entityType: 'client',
+        entityId: client.id,
+        summary: `Created client: ${input.full_name.trim()} (${input.email.trim()}) via event wizard`,
+        context: { client_name: input.full_name.trim(), email: input.email.trim() },
+      })
+    } catch (err) {
+      console.error('[createClientDirect] Activity log failed (non-blocking):', err)
+    }
+
+    return { success: true, clientId: client.id }
+  } catch (err) {
+    console.error('[createClientDirect] Error:', err)
+    return { success: false, error: 'An unexpected error occurred' }
+  }
+}

@@ -238,6 +238,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
           {(imagePreviewUrl || profileImageUrl) && (
             <div className="pt-2 border-t border-stone-100">
               <p className="text-sm text-stone-600 mb-2">Image Preview</p>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagePreviewUrl || profileImageUrl}
                 alt="Profile preview"
@@ -277,6 +278,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
             <div className="pt-2 border-t border-stone-100">
               <p className="text-sm text-stone-600 mb-2">Logo Preview</p>
               <div className="inline-flex items-center justify-center rounded-lg border border-stone-200 bg-stone-50 p-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={logoPreviewUrl || logoUrl}
                   alt="Logo preview"

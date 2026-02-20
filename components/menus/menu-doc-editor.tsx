@@ -9,6 +9,7 @@ import { useState, useRef, useCallback, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import {
   updateMenuMeta,
   updateDishEditorContent,
@@ -205,6 +206,7 @@ function CourseBlock({
   const [showTagPicker, setShowTagPicker] = useState(false)
   const [showAllergenPicker, setShowAllergenPicker] = useState(false)
   const [deleting, startDelete] = useTransition()
+  const [photoUrl, setPhotoUrl] = useState<string | null>(dish.photo_url)
 
   const saveField = (field: string, data: Partial<EditorDish>) => {
     onUpdate(dish.id, data)
@@ -319,41 +321,54 @@ function CourseBlock({
       {/* Divider */}
       <div className="h-px bg-stone-200 mb-4" />
 
-      {/* Dish name */}
-      {!locked ? (
-        <AutoTextarea
-          value={dishName}
-          onChange={v => {
-            setDishName(v)
-            saveField('name', { name: v || null })
-          }}
-          placeholder="Dish name…"
-          minRows={1}
-          className="w-full text-xl font-semibold text-stone-900 bg-transparent border-none outline-none placeholder:text-stone-300 leading-tight mb-1 py-0 block"
-        />
-      ) : (
-        <p className="text-xl font-semibold text-stone-900 leading-tight mb-1">
-          {dishName || <span className="text-stone-300 italic text-base">Unnamed dish</span>}
-        </p>
-      )}
+      {/* Dish name + photo thumbnail */}
+      <div className="flex gap-3 items-start">
+        <div className="flex-1 min-w-0">
+          {!locked ? (
+            <AutoTextarea
+              value={dishName}
+              onChange={v => {
+                setDishName(v)
+                saveField('name', { name: v || null })
+              }}
+              placeholder="Dish name…"
+              minRows={1}
+              className="w-full text-xl font-semibold text-stone-900 bg-transparent border-none outline-none placeholder:text-stone-300 leading-tight mb-1 py-0 block"
+            />
+          ) : (
+            <p className="text-xl font-semibold text-stone-900 leading-tight mb-1">
+              {dishName || <span className="text-stone-300 italic text-base">Unnamed dish</span>}
+            </p>
+          )}
 
-      {/* Description */}
-      {!locked ? (
-        <AutoTextarea
-          value={description}
-          onChange={v => {
-            setDescription(v)
-            saveField('description', { description: v || null })
-          }}
-          placeholder="Ingredients, preparation, flavour notes — shown to client…"
-          minRows={2}
-          className="w-full text-sm text-stone-500 italic bg-transparent border-none outline-none placeholder:text-stone-300 leading-relaxed mb-2 py-0 block"
+          {/* Description */}
+          {!locked ? (
+            <AutoTextarea
+              value={description}
+              onChange={v => {
+                setDescription(v)
+                saveField('description', { description: v || null })
+              }}
+              placeholder="Ingredients, preparation, flavour notes — shown to client…"
+              minRows={2}
+              className="w-full text-sm text-stone-500 italic bg-transparent border-none outline-none placeholder:text-stone-300 leading-relaxed mb-2 py-0 block"
+            />
+          ) : (
+            description && (
+              <p className="text-sm text-stone-500 italic leading-relaxed mb-2">{description}</p>
+            )
+          )}
+        </div>
+
+        {/* Dish photo thumbnail — click to add or replace */}
+        <DishPhotoUpload
+          compact
+          entityType="dish"
+          entityId={dish.id}
+          currentPhotoUrl={photoUrl}
+          onPhotoChange={setPhotoUrl}
         />
-      ) : (
-        description && (
-          <p className="text-sm text-stone-500 italic leading-relaxed mb-2">{description}</p>
-        )
-      )}
+      </div>
 
       {/* Dietary tags row — Accommodates */}
       <div className="flex flex-wrap items-center gap-1.5 mt-2">

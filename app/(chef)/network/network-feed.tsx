@@ -242,6 +242,7 @@ function FeedPostItem({ post }: { post: NetworkFeedPost }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {post.author.profile_image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={post.author.profile_image_url}
               alt={name}

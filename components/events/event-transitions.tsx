@@ -37,25 +37,51 @@ type Event = {
 
 function GateList({ blockers }: { blockers: GateResult[] }) {
   if (blockers.length === 0) return null
+
+  const hardBlocks = blockers.filter(g => g.isHardBlock)
+  const softWarnings = blockers.filter(g => !g.isHardBlock)
+
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-1.5">
-      <p className="text-xs font-semibold text-amber-900">Complete these before proceeding:</p>
-      {blockers.map((g) => (
-        <div key={g.gate} className="flex items-start gap-2">
-          <span className={`mt-0.5 text-xs font-bold shrink-0 ${g.isHardBlock ? 'text-red-600' : 'text-amber-600'}`}>
-            {g.isHardBlock ? '✕' : '!'}
-          </span>
-          <div>
-            <p className={`text-xs font-medium ${g.isHardBlock ? 'text-red-800' : 'text-amber-800'}`}>
-              {g.label}
-            </p>
-            <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
-            {g.details && (
-              <p className="text-[11px] text-red-600 mt-0.5 font-medium">{g.details}</p>
-            )}
-          </div>
+    <div className="space-y-2">
+      {/* Hard blocks — must be resolved before proceeding */}
+      {hardBlocks.length > 0 && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-3 space-y-1.5">
+          <p className="text-xs font-semibold text-red-900">Required before proceeding:</p>
+          {hardBlocks.map((g) => (
+            <div key={g.gate} className="flex items-start gap-2">
+              <span className="mt-0.5 text-xs font-bold shrink-0 text-red-600">✕</span>
+              <div>
+                <p className="text-xs font-medium text-red-800">{g.label}</p>
+                <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
+                {g.details && (
+                  <p className="text-[11px] text-red-600 mt-0.5 font-medium">{g.details}</p>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
+      )}
+
+      {/* Soft warnings — you can still proceed, but these are recommended */}
+      {softWarnings.length > 0 && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-1.5">
+          <p className="text-xs font-semibold text-amber-900">
+            Recommended before proceeding (you can still continue):
+          </p>
+          {softWarnings.map((g) => (
+            <div key={g.gate} className="flex items-start gap-2">
+              <span className="mt-0.5 text-xs font-bold shrink-0 text-amber-500">!</span>
+              <div>
+                <p className="text-xs font-medium text-amber-800">{g.label}</p>
+                <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
+                {g.details && (
+                  <p className="text-[11px] text-amber-700 mt-0.5 font-medium">{g.details}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -186,7 +212,7 @@ export function EventTransitions({
               onClick={() => handleTransition(() => proposeEvent(event.id))}
               loading={loading}
               disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve hard blocks above before proposing' : undefined}
+              title={isHardBlocked ? 'Resolve required items above before proposing' : undefined}
             >
               Propose to Client
             </Button>
@@ -197,7 +223,7 @@ export function EventTransitions({
               onClick={() => handleTransition(() => confirmEvent(event.id))}
               loading={loading}
               disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve hard blocks above before confirming' : undefined}
+              title={isHardBlocked ? 'Resolve required items above before confirming' : undefined}
             >
               Confirm Event
             </Button>
@@ -208,7 +234,7 @@ export function EventTransitions({
               onClick={() => handleTransition(() => startEvent(event.id))}
               loading={loading}
               disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve hard blocks above before starting' : undefined}
+              title={isHardBlocked ? 'Resolve required items above before starting' : undefined}
             >
               Mark In Progress
             </Button>
@@ -222,7 +248,7 @@ export function EventTransitions({
               )}
               loading={loading}
               disabled={loading || isHardBlocked}
-              title={isHardBlocked ? 'Resolve hard blocks above before completing' : undefined}
+              title={isHardBlocked ? 'Resolve required items above before completing' : undefined}
             >
               Mark Completed
             </Button>

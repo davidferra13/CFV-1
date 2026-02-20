@@ -73,7 +73,7 @@ function SignUpForm() {
 
     try {
       await signUpChef(chefFormData)
-      router.push('/auth/signin')
+      router.push('/auth/signin?redirect=/onboarding')
     } catch (err) {
       const error = err as Error
       setError(error.message)

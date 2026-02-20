@@ -141,6 +141,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
             <p className="text-sm font-medium text-stone-700 mb-2">Preview</p>
             <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
               {(imagePreviewUrl || profileImageUrl) ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={imagePreviewUrl || profileImageUrl}
                   alt="Preview"

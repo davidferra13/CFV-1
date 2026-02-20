@@ -10,9 +10,11 @@ import { createServerClient } from '@/lib/supabase/server'
 import { getEventProfitSummary } from '@/lib/expenses/actions'
 import { revalidatePath } from 'next/cache'
 
-// IRS standard mileage rate for 2026 (cents per mile)
-// Update annually as IRS publishes new rates.
-const IRS_MILEAGE_RATE_CENTS_PER_MILE = 70  // $0.70/mile (2025 rate — adjust when 2026 is published)
+// IRS standard mileage rate (cents per mile).
+// 2025 rate: $0.70/mile (67 cents in 2024). The 2026 rate is typically announced
+// in December of the prior year — check https://www.irs.gov/tax-professionals/standard-mileage-rates
+// and update this constant when the IRS publishes the new rate.
+const IRS_MILEAGE_RATE_CENTS_PER_MILE = 70  // $0.70/mile — verify 2026 rate when published
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -107,9 +109,19 @@ export async function getEventFinancialSummaryFull(eventId: string): Promise<Eve
   const clientData = event.client as unknown as { full_name: string } | null
 
   // Fetch profit summary (reuses existing, comprehensive action)
-  const profitSummary = await getEventProfitSummary(eventId).catch(() => null)
+  let profitSummary: Awaited<ReturnType<typeof getEventProfitSummary>> | null = null
+  let profitSummaryError: string | null = null
+  try {
+    profitSummary = await getEventProfitSummary(eventId)
+  } catch (err) {
+    console.error('[getEventFinancialSummaryFull] getEventProfitSummary failed:', err)
+    profitSummaryError = err instanceof Error ? err.message : 'Unknown error'
+  }
 
   const pendingItems: string[] = []
+  if (profitSummaryError) {
+    pendingItems.push(`Financial data unavailable: ${profitSummaryError}`)
+  }
 
   // Revenue section
   const quotedPriceCents = profitSummary?.revenue.quotedPriceCents ?? 0

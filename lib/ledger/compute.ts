@@ -82,3 +82,85 @@ export async function getTenantFinancialSummary() {
     totalWithTipsCents: totalRevenue + totalTips - totalRefunds
   }
 }
+
+/**
+ * Compute full Profit & Loss for a given calendar year
+ */
+export async function computeProfitAndLoss(year: number) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const startDate = `${year}-01-01`
+  const endDate = `${year}-12-31`
+
+  // Revenue from ledger
+  const { data: ledgerEntries } = await supabase
+    .from('ledger_entries')
+    .select('entry_type, amount_cents, created_at, is_refund')
+    .eq('tenant_id', user.tenantId!)
+    .gte('created_at', startDate)
+    .lte('created_at', endDate + 'T23:59:59')
+
+  // Expenses
+  const { data: expenses } = await supabase
+    .from('expenses')
+    .select('amount_cents, category, description, expense_date')
+    .eq('tenant_id', user.tenantId!)
+    .gte('expense_date', startDate)
+    .lte('expense_date', endDate)
+
+  const entries = ledgerEntries || []
+  const allExpenses = expenses || []
+
+  // Revenue calculation
+  let totalRevenueCents = 0
+  let totalRefundsCents = 0
+  let totalTipsCents = 0
+
+  for (const entry of entries) {
+    if (entry.is_refund || entry.entry_type === 'refund') {
+      totalRefundsCents += Math.abs(entry.amount_cents)
+    } else if (entry.entry_type === 'tip') {
+      totalTipsCents += entry.amount_cents
+    } else {
+      totalRevenueCents += entry.amount_cents
+    }
+  }
+
+  const netRevenueCents = totalRevenueCents - totalRefundsCents
+
+  // Expense breakdown by category
+  const expensesByCategory = new Map<string, number>()
+  for (const expense of allExpenses) {
+    const cat = expense.category || 'Uncategorized'
+    expensesByCategory.set(cat, (expensesByCategory.get(cat) || 0) + expense.amount_cents)
+  }
+
+  const totalExpensesCents = allExpenses.reduce((s, e) => s + e.amount_cents, 0)
+  const netProfitCents = netRevenueCents - totalExpensesCents
+  const profitMarginPercent = netRevenueCents > 0
+    ? Math.round((netProfitCents / netRevenueCents) * 1000) / 10
+    : 0
+
+  // Monthly revenue breakdown
+  const monthlyRevenue = new Map<string, number>()
+  for (const entry of entries) {
+    if (!entry.is_refund && entry.entry_type !== 'refund') {
+      const month = (entry.created_at as string).slice(0, 7)
+      monthlyRevenue.set(month, (monthlyRevenue.get(month) || 0) + entry.amount_cents)
+    }
+  }
+
+  return {
+    year,
+    totalRevenueCents,
+    totalRefundsCents,
+    totalTipsCents,
+    netRevenueCents,
+    totalExpensesCents,
+    netProfitCents,
+    profitMarginPercent,
+    expensesByCategory: Object.fromEntries(expensesByCategory),
+    monthlyRevenue: Object.fromEntries(monthlyRevenue),
+  }
+}

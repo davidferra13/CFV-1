@@ -64,6 +64,7 @@ import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
 import { sendClientSurvey } from '@/lib/surveys/actions'
+import { ContractSection } from '@/components/contracts/contract-section'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -376,6 +377,9 @@ export default async function EventDetailPage({
           </dl>
         </Card>
       </div>
+
+      {/* Service Contract */}
+      <ContractSection eventId={event.id} eventStatus={event.status} />
 
       {/* Guests & RSVPs */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (

@@ -274,6 +274,7 @@ function InviteChefForm({
                   className="w-full text-left flex items-center gap-3 rounded-md border border-stone-200 bg-white px-3 py-2 hover:bg-stone-50 transition-colors text-sm"
                 >
                   {chef.profile_image_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={chef.profile_image_url} alt="" className="h-8 w-8 rounded-full object-cover" />
                   ) : (
                     <div className="h-8 w-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600">

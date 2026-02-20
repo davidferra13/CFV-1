@@ -12,14 +12,12 @@ export default async function SurveyPage({ params }: { params: { token: string }
 
   if (!survey) notFound()
 
-  const event = Array.isArray(survey.events) ? survey.events[0] : survey.events
-  const chef = Array.isArray(survey.chefs) ? survey.chefs[0] : survey.chefs
-  const chefName = (chef as { business_name?: string })?.business_name ?? 'Your chef'
-  const eventDate = (event as { event_date?: string })?.event_date
-  const occasion = (event as { occasion?: string })?.occasion
+  const chefName = survey.chef?.business_name ?? 'Your chef'
+  const eventDate = survey.event?.event_date
+  const occasion = survey.event?.occasion
 
   // Already responded
-  if (survey.responded_at) {
+  if (survey.submitted_at) {
     return (
       <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 max-w-md w-full text-center">

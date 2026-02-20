@@ -720,6 +720,7 @@ function FileUploadZone({ file, preview, onFileChange, disabled, accept, hint }:
       {/* Image preview */}
       {preview && (
         <div className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={preview} alt="Upload preview" className="max-h-64 rounded-lg border border-stone-200 mx-auto" />
         </div>
       )}

@@ -121,13 +121,22 @@ export default async function EventDetailPage({
       {/* Proposed event alert */}
       {event.status === 'proposed' && (
         <Alert variant="info" className="mb-6">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div>
               <p className="font-medium mb-1">Proposal Pending</p>
               <p className="text-sm">
                 Review the event details below and accept the proposal to proceed with payment.
               </p>
             </div>
+            <Link
+              href={`/my-events/${event.id}/proposal`}
+              className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 bg-white border border-brand-200 px-3 py-1.5 rounded-lg shadow-sm transition"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              View Full Proposal
+            </Link>
           </div>
         </Alert>
       )}
@@ -369,6 +378,14 @@ export default async function EventDetailPage({
           <Link href={`/my-events/${event.id}/pay`} className="flex-1">
             <button className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition">
               Proceed to Payment
+            </button>
+          </Link>
+        )}
+
+        {['proposed', 'accepted'].includes(event.status) && (
+          <Link href={`/my-events/${event.id}/proposal`} className="flex-1">
+            <button className="w-full border border-stone-300 bg-white text-stone-700 px-6 py-3 rounded-lg font-semibold hover:bg-stone-50 transition text-sm">
+              View Full Proposal
             </button>
           </Link>
         )}

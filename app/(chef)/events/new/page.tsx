@@ -16,6 +16,15 @@ export default async function NewEventPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-stone-500">
+          Prefer a step-by-step guide?{' '}
+          <a href="/events/new/wizard" className="text-brand-600 hover:text-brand-700 font-medium">
+            Try the event wizard &rarr;
+          </a>
+        </p>
+      </div>
+
       <div>
         <h1 className="text-3xl font-bold text-stone-900">Create New Event</h1>
         <p className="text-stone-600 mt-1">Fill in the details for your new event</p>

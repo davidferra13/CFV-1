@@ -27,6 +27,7 @@ export default async function GiftCardStorePage({ params }: Props) {
         {/* Header */}
         <div className="text-center mb-8">
           {chef.profile_image_url && (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={chef.profile_image_url}
               alt={chef.display_name}

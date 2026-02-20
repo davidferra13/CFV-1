@@ -85,6 +85,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
       {/* Cover Image */}
       {partner.cover_image_url ? (
         <div className="relative h-56 overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={partner.cover_image_url}
             alt={partner.name}
@@ -187,6 +188,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                   {filteredImages.map(img => (
                     <div key={img.id} className="relative rounded-lg overflow-hidden aspect-[4/3]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={img.image_url}
                         alt={img.caption || partner.name}

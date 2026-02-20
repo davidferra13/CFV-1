@@ -12,6 +12,7 @@ import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -34,16 +35,19 @@ async function EventsList({ status }: { status: EventStatus }) {
 
   if (events.length === 0) {
     return (
-      <Card className="p-8 text-center">
-        <p className="text-stone-500 mb-4">
-          {status === 'all'
-            ? 'No events yet. Create your first event!'
-            : `No events with status "${status}"`}
-        </p>
-        {status === 'all' && (
-          <Link href="/events/new">
-            <Button>Create Event</Button>
-          </Link>
+      <Card>
+        {status === 'all' ? (
+          <EmptyState
+            title="No events yet"
+            description="Create your first event to start managing proposals, timelines, and financials in one place."
+            action={{ label: 'Create Event', href: '/events/new' }}
+          />
+        ) : (
+          <EmptyState
+            title={`No ${status.replace(/_/g, ' ')} events`}
+            description="There are no events matching this status filter right now."
+            secondaryAction={{ label: 'View all events', href: '/events' }}
+          />
         )}
       </Card>
     )

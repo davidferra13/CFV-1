@@ -144,6 +144,7 @@ function ImageContent({ message }: { message: ChatMessage }) {
         </div>
       ) : imageUrl ? (
         <>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageUrl}
             alt={message.attachment_filename || 'Image'}
@@ -157,6 +158,7 @@ function ImageContent({ message }: { message: ChatMessage }) {
               className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
               onClick={() => setExpanded(false)}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imageUrl}
                 alt={message.attachment_filename || 'Image'}

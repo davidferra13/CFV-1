@@ -65,9 +65,12 @@ export async function POST(req: Request) {
   // its own idempotency check inside handleGiftCardPurchaseCompleted().
   const supabase = createServerClient({ admin: true })
 
-  const isCheckoutEvent = event.type === 'checkout.session.completed'
+  // Events that do not write ledger entries bypass the ledger idempotency check
+  const isNonLedgerEvent =
+    event.type === 'checkout.session.completed' ||
+    event.type === 'account.updated'
 
-  if (!isCheckoutEvent) {
+  if (!isNonLedgerEvent) {
     const { data: existingEntry } = await supabase
       .from('ledger_entries')
       .select('id')
@@ -109,6 +112,10 @@ export async function POST(req: Request) {
 
       case 'charge.dispute.funds_withdrawn':
         await handleDisputeFundsWithdrawn(event)
+        break
+
+      case 'account.updated':
+        await handleAccountUpdated(event)
         break
 
       default:
@@ -784,4 +791,23 @@ async function handleDisputeFundsWithdrawn(event: Stripe.Event) {
     internal_notes: `Dispute ${dispute.id} funds withdrawn. Amount: ${dispute.amount}`,
     created_by: null
   })
+}
+
+/**
+ * Handle Stripe Connect account.updated
+ * Updates stripe_onboarding_complete when Stripe confirms charges_enabled.
+ * This is the production-safe, async path for Connect status — it keeps the
+ * DB in sync even if the chef closes the browser before the callback fires.
+ */
+async function handleAccountUpdated(event: Stripe.Event) {
+  const account = event.data.object as Stripe.Account
+  console.log('[handleAccountUpdated] account:', account.id, 'charges_enabled:', account.charges_enabled)
+
+  try {
+    const { updateConnectStatusFromWebhook } = await import('@/lib/stripe/connect')
+    await updateConnectStatusFromWebhook(account.id, account.charges_enabled === true)
+  } catch (err) {
+    console.error('[handleAccountUpdated] Failed to update connect status:', err)
+    throw err // Rethrow so Stripe retries the webhook
+  }
 }

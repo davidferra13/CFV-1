@@ -9,12 +9,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 const chefPaths = [
   '/dashboard', '/queue', '/leads', '/clients', '/events', '/financials', '/menus',
   '/inquiries', '/quotes', '/expenses', '/schedule', '/settings',
-  '/aar', '/recipes', '/loyalty', '/import', '/chat', '/network',
+  '/aar', '/recipes', '/loyalty', '/import', '/chat', '/network', '/onboarding',
 ]
 // Routes that require client role
 const clientPaths = ['/my-events', '/my-quotes', '/my-chat', '/my-profile', '/my-rewards', '/book-now']
 // Paths that skip all auth processing
-const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized', '/share', '/chef', '/partner-signup']
+const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized', '/share', '/chef', '/partner-signup', '/chefs', '/survey']
+// Admin paths — require authentication but not a specific role (email check is in layout)
+const adminPaths = ['/admin']
 
 /**
  * Copy Supabase session cookies from the internal response onto a redirect response.
@@ -50,10 +52,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // Build request headers with current pathname so server components can read it
+  // without an additional DB call or breaking the App Router server component model.
+  // Used by app/(chef)/layout.tsx for the onboarding gate.
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', pathname)
+
   // Create Supabase client for middleware with getAll/setAll cookie API
   let response = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: requestHeaders,
     },
   })
 
@@ -75,7 +83,7 @@ export async function middleware(request: NextRequest) {
           )
           response = NextResponse.next({
             request: {
-              headers: request.headers,
+              headers: requestHeaders,
             },
           })
           cookiesToSet.forEach(({ name, value, options }) => {
@@ -157,6 +165,12 @@ export async function middleware(request: NextRequest) {
   if (!roleData) {
     // No role found - send to unauthorized (which is in skipAuthPaths to avoid loops)
     return redirectWithCookies(new URL('/unauthorized', request.url), response)
+  }
+
+  // Admin paths — any authenticated user can reach /admin; the layout enforces the email check
+  const isAdminRoute = adminPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+  if (isAdminRoute) {
+    return response
   }
 
   // Enforce role-based routing using actual URL paths

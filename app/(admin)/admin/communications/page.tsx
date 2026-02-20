@@ -30,7 +30,7 @@ export default async function AdminCommunicationsPage() {
           <h2 className="text-sm font-semibold text-slate-700">Platform Announcement Banner</h2>
         </div>
         <p className="text-sm text-slate-500 mb-4">
-          Set a message that appears at the top of every logged-in user's portal. Leave blank to clear.
+          Set a message that appears at the top of every logged-in user&apos;s portal. Leave blank to clear.
         </p>
         <div className="space-y-3">
           <textarea

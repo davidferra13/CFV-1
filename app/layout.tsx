@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import { CookieConsent } from '@/components/ui/cookie-consent'
+import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import './globals.css'
 
 const inter = Inter({
@@ -52,6 +53,7 @@ export default function RootLayout({
       <body className="font-sans">
         {children}
         <CookieConsent />
+        <PresenceBeacon />
       </body>
     </html>
   )

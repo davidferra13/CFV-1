@@ -95,6 +95,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
             <div className="max-w-4xl mx-auto px-6 text-center">
               {chef.logo_url && (
                 <div className="flex justify-center mb-6">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={chef.logo_url}
                     alt={`${chef.display_name} logo`}
@@ -104,6 +105,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
               )}
 
               {chef.profile_image_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={chef.profile_image_url}
                   alt={chef.display_name}

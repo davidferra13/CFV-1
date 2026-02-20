@@ -53,6 +53,7 @@ export function ChatImageUpload({ onUpload, onCancel }: ChatImageUploadProps) {
           {/* Preview */}
           <div className="relative inline-block">
             {preview && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={preview}
                 alt="Upload preview"

@@ -66,8 +66,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
   const ledger = ledgerResult.data ?? []
 
   const totalGMV = ledger.filter((l) => l.entry_type === 'payment').reduce((s, l) => s + (l.amount_cents ?? 0), 0)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const totalExpenses = ledger.filter((l) => (l.entry_type as any) === 'expense').reduce((s, l) => s + (l.amount_cents ?? 0), 0)
+  // 'expense' is not in the current entry_type enum — returns 0 until schema adds it
+  const totalExpenses = ledger.filter((l) => (l.entry_type as string) === 'expense').reduce((s, l) => s + (l.amount_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -168,8 +168,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             {clients.map((client) => (
               <div key={client.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
-                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                  <p className="text-sm font-medium text-slate-900">{(client as any).full_name ?? 'Unnamed'}</p>
+                  <p className="text-sm font-medium text-slate-900">{(client as {full_name?: string | null}).full_name ?? 'Unnamed'}</p>
                   <p className="text-xs text-slate-400">{client.email ?? '—'}</p>
                 </div>
                 <p className="text-xs text-slate-400">

@@ -13,8 +13,10 @@ export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
 import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { formatDistanceToNow, format } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
+import { InquiriesViewWrapper } from '@/components/inquiries/inquiries-view-wrapper'
 
 type InquiryFilter = 'all' | 'new' | 'awaiting_client' | 'awaiting_chef' | 'quoted' | 'confirmed' | 'closed'
 
@@ -54,16 +56,19 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 
   if (inquiries.length === 0) {
     return (
-      <Card className="p-8 text-center">
-        <p className="text-stone-500 mb-4">
-          {filter === 'all'
-            ? 'No inquiries yet. Log your first inquiry!'
-            : `No inquiries with status "${filter.replace('_', ' ')}"`}
-        </p>
-        {filter === 'all' && (
-          <Link href="/inquiries/new">
-            <Button>Log New Inquiry</Button>
-          </Link>
+      <Card>
+        {filter === 'all' ? (
+          <EmptyState
+            title="No inquiries yet"
+            description="Log your first inquiry to start tracking leads from initial contact through to a booked event."
+            action={{ label: 'Log New Inquiry', href: '/inquiries/new' }}
+          />
+        ) : (
+          <EmptyState
+            title={`No ${filter.replace(/_/g, ' ')} inquiries`}
+            description="There are no inquiries matching this status filter right now."
+            secondaryAction={{ label: 'View all inquiries', href: '/inquiries' }}
+          />
         )}
       </Card>
     )
@@ -141,6 +146,20 @@ export default async function InquiriesPage({
     { value: 'closed', label: 'Declined / Expired' },
   ]
 
+  // Fetch all inquiries for the kanban board (always shows all, unfiltered)
+  const allInquiries = await getInquiries()
+
+  // Map to the shape KanbanBoard expects
+  const kanbanInquiries = allInquiries.map((inquiry) => ({
+    id: inquiry.id,
+    status: inquiry.status,
+    client_name: getDisplayName(inquiry),
+    occasion: inquiry.confirmed_occasion ?? undefined,
+    event_date: inquiry.confirmed_date ?? undefined,
+    guest_count: inquiry.confirmed_guest_count ?? undefined,
+    created_at: inquiry.created_at,
+  }))
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -154,30 +173,35 @@ export default async function InquiriesPage({
         </Link>
       </div>
 
-      {/* Status Tabs */}
-      <Card className="p-4">
-        <div className="flex gap-2 flex-wrap">
-          {tabs.map((tab) => (
-            <Link key={tab.value} href={`/inquiries?status=${tab.value}`}>
-              <Button
-                size="sm"
-                variant={filter === tab.value ? 'primary' : 'secondary'}
-              >
-                {tab.label}
-              </Button>
-            </Link>
-          ))}
-        </div>
-      </Card>
+      {/* View wrapper: manages list/kanban toggle */}
+      <InquiriesViewWrapper inquiries={kanbanInquiries}>
+        {/* Status Tabs + List — unchanged, passed as children slot */}
+        <div className="space-y-4">
+          <Card className="p-4">
+            <div className="flex gap-2 flex-wrap">
+              {tabs.map((tab) => (
+                <Link key={tab.value} href={`/inquiries?status=${tab.value}`}>
+                  <Button
+                    size="sm"
+                    variant={filter === tab.value ? 'primary' : 'secondary'}
+                  >
+                    {tab.label}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          </Card>
 
-      {/* Inquiry List */}
-      <Suspense fallback={
-        <Card className="p-8 text-center">
-          <p className="text-stone-500">Loading inquiries...</p>
-        </Card>
-      }>
-        <InquiryList filter={filter} />
-      </Suspense>
+          {/* Inquiry List */}
+          <Suspense fallback={
+            <Card className="p-8 text-center">
+              <p className="text-stone-500">Loading inquiries...</p>
+            </Card>
+          }>
+            <InquiryList filter={filter} />
+          </Suspense>
+        </div>
+      </InquiriesViewWrapper>
     </div>
   )
 }

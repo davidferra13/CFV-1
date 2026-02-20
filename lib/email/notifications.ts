@@ -34,6 +34,7 @@ import { NewInquiryChefEmail } from './templates/new-inquiry-chef'
 import { GiftCardPurchasedChefEmail } from './templates/gift-card-purchased-chef'
 import { CollaborationInviteEmail } from './templates/collaboration-invite'
 import { RecipeShareEmail } from './templates/recipe-share'
+import { PostEventSurveyEmail } from './templates/post-event-survey'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -827,6 +828,27 @@ export async function sendRecipeShareEmail(params: {
       category: params.category,
       note: params.note,
       dashboardUrl: `${APP_URL}/dashboard`,
+    }),
+  })
+}
+
+// ─── Post-Event Survey ───────────────────────────────────────────────────────
+
+export async function sendPostEventSurveyEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  surveyUrl: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `How was your ${params.occasion} with ${params.chefName}?`,
+    react: createElement(PostEventSurveyEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      surveyUrl: params.surveyUrl,
     }),
   })
 }

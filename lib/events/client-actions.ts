@@ -10,9 +10,13 @@ import { clientGetOrCreateConversation, sendChatMessage } from '@/lib/chat/actio
 import { revalidatePath } from 'next/cache'
 
 /**
- * Get all events for the current client
+ * Get events for the current client.
+ * Upcoming and cancelled events are always returned in full.
+ * Past (completed) events are capped at `pastLimit` most recent (default 5) to avoid
+ * loading unbounded history. Pass pastLimit: Infinity to retrieve all.
  */
-export async function getClientEvents() {
+export async function getClientEvents(options?: { pastLimit?: number }) {
+  const pastLimit = options?.pastLimit ?? 5
   const user = await requireClient()
   const supabase = createServerClient()
 
@@ -24,14 +28,31 @@ export async function getClientEvents() {
     `)
     .eq('client_id', user.entityId)
     .not('status', 'eq', 'draft')
-    .order('event_date', { ascending: true })
+    .order('event_date', { ascending: false })
 
   if (error) {
     console.error('[getClientEvents] Error:', error)
     throw new Error('Failed to fetch events')
   }
 
-  return events
+  const all = events ?? []
+  const upcoming = all.filter(e =>
+    ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(e.status)
+  ).sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+  const completed = all.filter(e => e.status === 'completed')
+  const cancelled = all.filter(e => e.status === 'cancelled')
+
+  const pastTotalCount = completed.length
+  const pastSlice = Number.isFinite(pastLimit) ? completed.slice(0, pastLimit) : completed
+
+  return {
+    upcoming,
+    past: pastSlice,
+    pastTotalCount,
+    cancelled,
+    // Legacy flat array for callers that don't use the grouped shape
+    all: all.sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()),
+  }
 }
 
 /**
