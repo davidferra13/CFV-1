@@ -53,12 +53,13 @@ export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocIn
     quoteRow = inquiryQuotes?.[0] ?? null
   }
 
-  // Most recent contract
+  // Most recent contract — scope by tenant_id (not chef_id) to match the
+  // established tenant-isolation pattern used everywhere else in the codebase.
   const { data: contracts } = await (supabase as any)
     .from('event_contracts')
     .select('id, status, signed_at')
     .eq('event_id', eventId)
-    .eq('chef_id', user.tenantId!)
+    .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
     .limit(1)
 

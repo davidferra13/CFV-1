@@ -52,6 +52,8 @@ supabase/.temp/
 /public/sw.js.map
 /public/workbox-*.js
 /public/workbox-*.js.map
+/public/fallback-*.js
+/public/worker-*.js
 
 # Build/debug artifacts (AI agent cleanup)
 build-output.txt

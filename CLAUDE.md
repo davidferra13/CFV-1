@@ -46,6 +46,15 @@ These rules exist because this is a **live production app with real client data*
 - Use **feature branches** for new work, not direct commits to `main`.
 - Branch naming: `feature/description` or `fix/description`.
 
+### Health Checks (run before merging to main)
+- `npx tsc --noEmit --skipLibCheck` → must exit 0, zero errors
+- `npx next build` → must exit 0
+- All work committed, no important untracked files
+- `types/database.ts` current with remote schema
+
+### Full Workflow Reference
+See **`docs/AGENT-WORKFLOW.md`** for the complete step-by-step playbook covering health checks, migration safety, parallel agent rules, and merge procedure. Every agent should read it before starting significant work.
+
 ---
 
 ## ARCHITECTURE REMINDERS

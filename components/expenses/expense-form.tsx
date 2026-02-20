@@ -587,10 +587,10 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
 
                 {/* Submit */}
                 <div className="flex gap-2 pt-2">
-                  <Button onClick={handleSubmitReceipt} loading={loading}>
+                  <Button onClick={handleSubmitReceipt} loading={loading} disabled={loading}>
                     Confirm & Save
                   </Button>
-                  <Button variant="secondary" onClick={() => router.push('/expenses')}>
+                  <Button variant="secondary" onClick={() => router.push('/expenses')} disabled={loading}>
                     Cancel
                   </Button>
                 </div>
