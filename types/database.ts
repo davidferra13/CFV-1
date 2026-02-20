@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.1"
-  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -99,6 +94,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      activity_events_archive: {
+        Row: {
+          actor_id: string | null
+          actor_type: string
+          archived_at: string
+          client_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string | null
+          event_type: string
+          id: string
+          metadata: Json | null
+          tenant_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          actor_type: string
+          archived_at?: string
+          client_id?: string | null
+          created_at: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type: string
+          id: string
+          metadata?: Json | null
+          tenant_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          actor_type?: string
+          archived_at?: string
+          client_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string | null
+          event_type?: string
+          id?: string
+          metadata?: Json | null
+          tenant_id?: string
+        }
+        Relationships: []
       }
       after_action_reviews: {
         Row: {
@@ -358,6 +395,96 @@ export type Database = {
           },
         ]
       }
+      chat_insights: {
+        Row: {
+          applied_at: string | null
+          applied_to: string | null
+          client_id: string | null
+          confidence: number
+          conversation_id: string
+          created_at: string
+          detail: string | null
+          dismissed_at: string | null
+          extracted_data: Json | null
+          id: string
+          insight_type: Database["public"]["Enums"]["insight_type"]
+          message_id: string
+          status: Database["public"]["Enums"]["insight_status"]
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          applied_at?: string | null
+          applied_to?: string | null
+          client_id?: string | null
+          confidence?: number
+          conversation_id: string
+          created_at?: string
+          detail?: string | null
+          dismissed_at?: string | null
+          extracted_data?: Json | null
+          id?: string
+          insight_type: Database["public"]["Enums"]["insight_type"]
+          message_id: string
+          status?: Database["public"]["Enums"]["insight_status"]
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          applied_at?: string | null
+          applied_to?: string | null
+          client_id?: string | null
+          confidence?: number
+          conversation_id?: string
+          created_at?: string
+          detail?: string | null
+          dismissed_at?: string | null
+          extracted_data?: Json | null
+          id?: string
+          insight_type?: Database["public"]["Enums"]["insight_type"]
+          message_id?: string
+          status?: Database["public"]["Enums"]["insight_status"]
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_insights_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "chat_insights_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_insights_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_insights_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_insights_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chat_messages: {
         Row: {
           attachment_content_type: string | null
@@ -449,6 +576,70 @@ export type Database = {
             columns: ["referenced_event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_activity_log: {
+        Row: {
+          action: string
+          actor_id: string
+          client_id: string | null
+          context: Json
+          created_at: string
+          domain: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          summary: string
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          client_id?: string | null
+          context?: Json
+          created_at?: string
+          domain: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          summary: string
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          client_id?: string | null
+          context?: Json
+          created_at?: string
+          domain?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          summary?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_activity_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "chef_activity_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_activity_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
         ]
@@ -695,6 +886,136 @@ export type Database = {
           },
         ]
       }
+      chef_network_contact_shares: {
+        Row: {
+          contact_email: string | null
+          contact_name: string
+          contact_phone: string | null
+          created_at: string
+          details: string
+          event_date: string | null
+          id: string
+          location: string | null
+          recipient_chef_id: string
+          responded_at: string | null
+          response_note: string | null
+          sender_chef_id: string
+          status: Database["public"]["Enums"]["chef_network_contact_share_status"]
+        }
+        Insert: {
+          contact_email?: string | null
+          contact_name: string
+          contact_phone?: string | null
+          created_at?: string
+          details: string
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          recipient_chef_id: string
+          responded_at?: string | null
+          response_note?: string | null
+          sender_chef_id: string
+          status?: Database["public"]["Enums"]["chef_network_contact_share_status"]
+        }
+        Update: {
+          contact_email?: string | null
+          contact_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          details?: string
+          event_date?: string | null
+          id?: string
+          location?: string | null
+          recipient_chef_id?: string
+          responded_at?: string | null
+          response_note?: string | null
+          sender_chef_id?: string
+          status?: Database["public"]["Enums"]["chef_network_contact_share_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_network_contact_shares_recipient_chef_id_fkey"
+            columns: ["recipient_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_network_contact_shares_sender_chef_id_fkey"
+            columns: ["sender_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_network_feature_preferences: {
+        Row: {
+          chef_id: string
+          created_at: string
+          enabled: boolean
+          feature_key: Database["public"]["Enums"]["chef_network_feature_key"]
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          enabled?: boolean
+          feature_key: Database["public"]["Enums"]["chef_network_feature_key"]
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          enabled?: boolean
+          feature_key?: Database["public"]["Enums"]["chef_network_feature_key"]
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_network_feature_preferences_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_network_posts: {
+        Row: {
+          author_chef_id: string
+          content: string
+          created_at: string
+          feature_key: Database["public"]["Enums"]["chef_network_feature_key"]
+          id: string
+        }
+        Insert: {
+          author_chef_id: string
+          content: string
+          created_at?: string
+          feature_key?: Database["public"]["Enums"]["chef_network_feature_key"]
+          id?: string
+        }
+        Update: {
+          author_chef_id?: string
+          content?: string
+          created_at?: string
+          feature_key?: Database["public"]["Enums"]["chef_network_feature_key"]
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_network_posts_author_chef_id_fkey"
+            columns: ["author_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chef_preferences: {
         Row: {
           chef_id: string
@@ -799,10 +1120,16 @@ export type Database = {
           google_review_url: string | null
           id: string
           phone: string | null
+          portal_background_color: string | null
+          portal_background_image_url: string | null
+          portal_primary_color: string | null
+          preferred_inquiry_destination: string
           profile_image_url: string | null
+          show_website_on_public_profile: boolean
           slug: string | null
           tagline: string | null
           updated_at: string
+          website_url: string | null
         }
         Insert: {
           auth_user_id: string
@@ -814,10 +1141,16 @@ export type Database = {
           google_review_url?: string | null
           id?: string
           phone?: string | null
+          portal_background_color?: string | null
+          portal_background_image_url?: string | null
+          portal_primary_color?: string | null
+          preferred_inquiry_destination?: string
           profile_image_url?: string | null
+          show_website_on_public_profile?: boolean
           slug?: string | null
           tagline?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Update: {
           auth_user_id?: string
@@ -829,10 +1162,16 @@ export type Database = {
           google_review_url?: string | null
           id?: string
           phone?: string | null
+          portal_background_color?: string | null
+          portal_background_image_url?: string | null
+          portal_primary_color?: string | null
+          preferred_inquiry_destination?: string
           profile_image_url?: string | null
+          show_website_on_public_profile?: boolean
           slug?: string | null
           tagline?: string | null
           updated_at?: string
+          website_url?: string | null
         }
         Relationships: []
       }
@@ -1160,7 +1499,7 @@ export type Database = {
           regular_guests: Json | null
           spice_tolerance: Database["public"]["Enums"]["spice_tolerance"] | null
           status: Database["public"]["Enums"]["client_status"]
-          tenant_id: string
+          tenant_id: string | null
           tipping_pattern: string | null
           total_events_completed: number | null
           total_events_count: number | null
@@ -1218,7 +1557,7 @@ export type Database = {
             | Database["public"]["Enums"]["spice_tolerance"]
             | null
           status?: Database["public"]["Enums"]["client_status"]
-          tenant_id: string
+          tenant_id?: string | null
           tipping_pattern?: string | null
           total_events_completed?: number | null
           total_events_count?: number | null
@@ -1276,7 +1615,7 @@ export type Database = {
             | Database["public"]["Enums"]["spice_tolerance"]
             | null
           status?: Database["public"]["Enums"]["client_status"]
-          tenant_id?: string
+          tenant_id?: string | null
           tipping_pattern?: string | null
           total_events_completed?: number | null
           total_events_count?: number | null
@@ -1293,6 +1632,224 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_action_log: {
+        Row: {
+          action: string
+          actor_id: string | null
+          communication_event_id: string | null
+          created_at: string
+          id: string
+          new_state: Json
+          previous_state: Json
+          source: Database["public"]["Enums"]["communication_action_source"]
+          tenant_id: string
+          thread_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          communication_event_id?: string | null
+          created_at?: string
+          id?: string
+          new_state?: Json
+          previous_state?: Json
+          source: Database["public"]["Enums"]["communication_action_source"]
+          tenant_id: string
+          thread_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          communication_event_id?: string | null
+          created_at?: string
+          id?: string
+          new_state?: Json
+          previous_state?: Json
+          source?: Database["public"]["Enums"]["communication_action_source"]
+          tenant_id?: string
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_action_log_communication_event_id_fkey"
+            columns: ["communication_event_id"]
+            isOneToOne: false
+            referencedRelation: "communication_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_action_log_communication_event_id_fkey"
+            columns: ["communication_event_id"]
+            isOneToOne: false
+            referencedRelation: "communication_inbox_items"
+            referencedColumns: ["communication_event_id"]
+          },
+          {
+            foreignKeyName: "communication_action_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_action_log_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "communication_inbox_items"
+            referencedColumns: ["thread_id"]
+          },
+          {
+            foreignKeyName: "communication_action_log_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_classification_rules: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          label: string
+          match_field: string
+          match_value: string
+          name: string
+          operator: string
+          priority: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label: string
+          match_field: string
+          match_value: string
+          name: string
+          operator: string
+          priority?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          match_field?: string
+          match_value?: string
+          name?: string
+          operator?: string
+          priority?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_classification_rules_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_events: {
+        Row: {
+          created_at: string
+          direction: Database["public"]["Enums"]["communication_direction"]
+          external_id: string | null
+          id: string
+          linked_entity_id: string | null
+          linked_entity_type: string | null
+          normalized_content: string
+          raw_content: string
+          resolved_client_id: string | null
+          sender_identity: string
+          source: Database["public"]["Enums"]["communication_source"]
+          status: Database["public"]["Enums"]["communication_event_status"]
+          tenant_id: string
+          thread_id: string
+          timestamp: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          direction: Database["public"]["Enums"]["communication_direction"]
+          external_id?: string | null
+          id?: string
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
+          normalized_content: string
+          raw_content: string
+          resolved_client_id?: string | null
+          sender_identity: string
+          source: Database["public"]["Enums"]["communication_source"]
+          status?: Database["public"]["Enums"]["communication_event_status"]
+          tenant_id: string
+          thread_id: string
+          timestamp: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          direction?: Database["public"]["Enums"]["communication_direction"]
+          external_id?: string | null
+          id?: string
+          linked_entity_id?: string | null
+          linked_entity_type?: string | null
+          normalized_content?: string
+          raw_content?: string
+          resolved_client_id?: string | null
+          sender_identity?: string
+          source?: Database["public"]["Enums"]["communication_source"]
+          status?: Database["public"]["Enums"]["communication_event_status"]
+          tenant_id?: string
+          thread_id?: string
+          timestamp?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_events_resolved_client_id_fkey"
+            columns: ["resolved_client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "communication_events_resolved_client_id_fkey"
+            columns: ["resolved_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_events_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "communication_inbox_items"
+            referencedColumns: ["thread_id"]
+          },
+          {
+            foreignKeyName: "communication_events_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
             referencedColumns: ["id"]
           },
         ]
@@ -1485,6 +2042,67 @@ export type Database = {
           },
         ]
       }
+      conversation_threads: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          external_thread_key: string | null
+          id: string
+          is_starred: boolean
+          last_activity_at: string
+          snoozed_until: string | null
+          state: Database["public"]["Enums"]["conversation_thread_state"]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          external_thread_key?: string | null
+          id?: string
+          is_starred?: boolean
+          last_activity_at?: string
+          snoozed_until?: string | null
+          state?: Database["public"]["Enums"]["conversation_thread_state"]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          external_thread_key?: string | null
+          id?: string
+          is_starred?: boolean
+          last_activity_at?: string
+          snoozed_until?: string | null
+          state?: Database["public"]["Enums"]["conversation_thread_state"]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_threads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "conversation_threads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_threads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           context_type: Database["public"]["Enums"]["conversation_context_type"]
@@ -1553,6 +2171,228 @@ export type Database = {
           },
           {
             foreignKeyName: "conversations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_actions: {
+        Row: {
+          action_key: string
+          action_mode: string
+          actor_auth_user_id: string | null
+          error: string | null
+          executed_at: string
+          id: string
+          idempotency_key: string | null
+          recommendation_id: string | null
+          request_payload: Json
+          result_payload: Json
+          run_id: string | null
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          action_key: string
+          action_mode: string
+          actor_auth_user_id?: string | null
+          error?: string | null
+          executed_at?: string
+          id?: string
+          idempotency_key?: string | null
+          recommendation_id?: string | null
+          request_payload?: Json
+          result_payload?: Json
+          run_id?: string | null
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          action_key?: string
+          action_mode?: string
+          actor_auth_user_id?: string | null
+          error?: string | null
+          executed_at?: string
+          id?: string
+          idempotency_key?: string | null
+          recommendation_id?: string | null
+          request_payload?: Json
+          result_payload?: Json
+          run_id?: string | null
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_actions_recommendation_id_fkey"
+            columns: ["recommendation_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_recommendations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_actions_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_actions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_recommendations: {
+        Row: {
+          body: string | null
+          confidence: number | null
+          created_at: string
+          id: string
+          payload: Json
+          recommendation_type: string
+          resolved_at: string | null
+          run_id: string
+          severity: string
+          status: string
+          tenant_id: string
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          recommendation_type: string
+          resolved_at?: string | null
+          run_id: string
+          severity?: string
+          status?: string
+          tenant_id: string
+          title: string
+        }
+        Update: {
+          body?: string | null
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          payload?: Json
+          recommendation_type?: string
+          resolved_at?: string | null
+          run_id?: string
+          severity?: string
+          status?: string
+          tenant_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_recommendations_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_recommendations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_run_errors: {
+        Row: {
+          created_at: string
+          error_message: string
+          error_payload: Json
+          error_scope: string
+          id: string
+          run_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message: string
+          error_payload?: Json
+          error_scope: string
+          id?: string
+          run_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string
+          error_payload?: Json
+          error_scope?: string
+          id?: string
+          run_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_run_errors_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "copilot_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "copilot_run_errors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      copilot_runs: {
+        Row: {
+          autonomy_level: number
+          completed_at: string | null
+          duration_ms: number | null
+          id: string
+          plan_payload: Json
+          run_source: string
+          started_at: string
+          status: string
+          summary: Json
+          tenant_id: string
+        }
+        Insert: {
+          autonomy_level?: number
+          completed_at?: string | null
+          duration_ms?: number | null
+          id?: string
+          plan_payload?: Json
+          run_source?: string
+          started_at?: string
+          status?: string
+          summary?: Json
+          tenant_id: string
+        }
+        Update: {
+          autonomy_level?: number
+          completed_at?: string | null
+          duration_ms?: number | null
+          id?: string
+          plan_payload?: Json
+          run_source?: string
+          started_at?: string
+          status?: string
+          summary?: Json
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "copilot_runs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -2317,6 +3157,64 @@ export type Database = {
           },
         ]
       }
+      follow_up_timers: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          dismissed_at: string | null
+          due_at: string
+          id: string
+          reason: string
+          status: Database["public"]["Enums"]["follow_up_timer_status"]
+          tenant_id: string
+          thread_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          due_at: string
+          id?: string
+          reason: string
+          status?: Database["public"]["Enums"]["follow_up_timer_status"]
+          tenant_id: string
+          thread_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          dismissed_at?: string | null
+          due_at?: string
+          id?: string
+          reason?: string
+          status?: Database["public"]["Enums"]["follow_up_timer_status"]
+          tenant_id?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "follow_up_timers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "follow_up_timers_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "communication_inbox_items"
+            referencedColumns: ["thread_id"]
+          },
+          {
+            foreignKeyName: "follow_up_timers_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gmail_sync_log: {
         Row: {
           action_taken: string | null
@@ -2893,6 +3791,329 @@ export type Database = {
           },
           {
             foreignKeyName: "inquiry_state_transitions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_connections: {
+        Row: {
+          access_token: string | null
+          api_key: string | null
+          auth_type: Database["public"]["Enums"]["integration_auth_type"]
+          chef_id: string
+          config: Json
+          connected_at: string
+          created_at: string
+          error_count: number
+          external_account_id: string | null
+          external_account_name: string | null
+          id: string
+          last_error: string | null
+          last_sync_at: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          refresh_token: string | null
+          scopes: string[]
+          status: Database["public"]["Enums"]["integration_status"]
+          tenant_id: string
+          token_expires_at: string | null
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          api_key?: string | null
+          auth_type?: Database["public"]["Enums"]["integration_auth_type"]
+          chef_id: string
+          config?: Json
+          connected_at?: string
+          created_at?: string
+          error_count?: number
+          external_account_id?: string | null
+          external_account_name?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          provider: Database["public"]["Enums"]["integration_provider"]
+          refresh_token?: string | null
+          scopes?: string[]
+          status?: Database["public"]["Enums"]["integration_status"]
+          tenant_id: string
+          token_expires_at?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          api_key?: string | null
+          auth_type?: Database["public"]["Enums"]["integration_auth_type"]
+          chef_id?: string
+          config?: Json
+          connected_at?: string
+          created_at?: string
+          error_count?: number
+          external_account_id?: string | null
+          external_account_name?: string | null
+          id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          refresh_token?: string | null
+          scopes?: string[]
+          status?: Database["public"]["Enums"]["integration_status"]
+          tenant_id?: string
+          token_expires_at?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_connections_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_entity_links: {
+        Row: {
+          created_at: string
+          external_entity_id: string
+          external_entity_type: string
+          id: string
+          local_entity_id: string
+          local_entity_type: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_entity_id: string
+          external_entity_type: string
+          id?: string
+          local_entity_id: string
+          local_entity_type: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_entity_id?: string
+          external_entity_type?: string
+          id?: string
+          local_entity_id?: string
+          local_entity_type?: string
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_entity_links_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_events: {
+        Row: {
+          canonical_event_type: string | null
+          connection_id: string | null
+          error: string | null
+          external_entity_id: string | null
+          external_entity_type: string | null
+          id: string
+          normalized_payload: Json | null
+          occurred_at: string | null
+          processed_at: string | null
+          processing_attempts: number
+          provider: Database["public"]["Enums"]["integration_provider"]
+          raw_payload: Json
+          received_at: string
+          source_event_id: string
+          source_event_type: string
+          status: Database["public"]["Enums"]["integration_sync_status"]
+          tenant_id: string
+        }
+        Insert: {
+          canonical_event_type?: string | null
+          connection_id?: string | null
+          error?: string | null
+          external_entity_id?: string | null
+          external_entity_type?: string | null
+          id?: string
+          normalized_payload?: Json | null
+          occurred_at?: string | null
+          processed_at?: string | null
+          processing_attempts?: number
+          provider: Database["public"]["Enums"]["integration_provider"]
+          raw_payload: Json
+          received_at?: string
+          source_event_id: string
+          source_event_type: string
+          status?: Database["public"]["Enums"]["integration_sync_status"]
+          tenant_id: string
+        }
+        Update: {
+          canonical_event_type?: string | null
+          connection_id?: string | null
+          error?: string | null
+          external_entity_id?: string | null
+          external_entity_type?: string | null
+          id?: string
+          normalized_payload?: Json | null
+          occurred_at?: string | null
+          processed_at?: string | null
+          processing_attempts?: number
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          raw_payload?: Json
+          received_at?: string
+          source_event_id?: string
+          source_event_type?: string
+          status?: Database["public"]["Enums"]["integration_sync_status"]
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_events_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_events_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_field_mappings: {
+        Row: {
+          active: boolean
+          connection_id: string | null
+          created_at: string
+          external_path: string
+          id: string
+          local_field: string
+          mapping_name: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          tenant_id: string
+          transform_rule: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          connection_id?: string | null
+          created_at?: string
+          external_path: string
+          id?: string
+          local_field: string
+          mapping_name: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          tenant_id: string
+          transform_rule?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          connection_id?: string | null
+          created_at?: string
+          external_path?: string
+          id?: string
+          local_field?: string
+          mapping_name?: string
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          tenant_id?: string
+          transform_rule?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_field_mappings_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_field_mappings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      integration_sync_jobs: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          cursor_after: string | null
+          cursor_before: string | null
+          error: string | null
+          finished_at: string | null
+          id: string
+          job_type: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          started_at: string | null
+          status: Database["public"]["Enums"]["integration_sync_status"]
+          tenant_id: string
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          cursor_after?: string | null
+          cursor_before?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_type: string
+          provider: Database["public"]["Enums"]["integration_provider"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["integration_sync_status"]
+          tenant_id: string
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          cursor_after?: string | null
+          cursor_before?: string | null
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          job_type?: string
+          provider?: Database["public"]["Enums"]["integration_provider"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["integration_sync_status"]
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "integration_sync_jobs_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "integration_connections"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "integration_sync_jobs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -4425,6 +5646,64 @@ export type Database = {
           },
         ]
       }
+      suggested_links: {
+        Row: {
+          communication_event_id: string
+          confidence_score: number
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["suggested_link_status"]
+          suggested_entity_id: string
+          suggested_entity_type: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          communication_event_id: string
+          confidence_score: number
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["suggested_link_status"]
+          suggested_entity_id: string
+          suggested_entity_type: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          communication_event_id?: string
+          confidence_score?: number
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["suggested_link_status"]
+          suggested_entity_id?: string
+          suggested_entity_type?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suggested_links_communication_event_id_fkey"
+            columns: ["communication_event_id"]
+            isOneToOne: false
+            referencedRelation: "communication_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "suggested_links_communication_event_id_fkey"
+            columns: ["communication_event_id"]
+            isOneToOne: false
+            referencedRelation: "communication_inbox_items"
+            referencedColumns: ["communication_event_id"]
+          },
+          {
+            foreignKeyName: "suggested_links_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       unused_ingredients: {
         Row: {
           created_at: string
@@ -4707,6 +5986,77 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "clients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_inbox_items: {
+        Row: {
+          client_id: string | null
+          communication_event_id: string | null
+          communication_status:
+            | Database["public"]["Enums"]["communication_event_status"]
+            | null
+          direction:
+            | Database["public"]["Enums"]["communication_direction"]
+            | null
+          event_timestamp: string | null
+          has_overdue_follow_up: boolean | null
+          is_starred: boolean | null
+          last_activity_at: string | null
+          linked_entity_id: string | null
+          linked_entity_type: string | null
+          needs_attention: boolean | null
+          next_follow_up_due_at: string | null
+          normalized_content: string | null
+          pending_link_count: number | null
+          raw_content: string | null
+          resolved_client_id: string | null
+          sender_identity: string | null
+          snoozed_until: string | null
+          source: Database["public"]["Enums"]["communication_source"] | null
+          tab: string | null
+          tenant_id: string | null
+          thread_id: string | null
+          thread_state:
+            | Database["public"]["Enums"]["conversation_thread_state"]
+            | null
+          top_pending_confidence: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_events_resolved_client_id_fkey"
+            columns: ["resolved_client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "communication_events_resolved_client_id_fkey"
+            columns: ["resolved_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_threads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "conversation_threads_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_threads_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -5102,7 +6452,35 @@ export type Database = {
         | "system"
         | "file"
       chef_connection_status: "pending" | "accepted" | "declined"
+      chef_network_contact_share_status: "open" | "accepted" | "passed"
+      chef_network_feature_key:
+        | "availability"
+        | "referral_asks"
+        | "referral_offers"
+        | "collab_requests"
+        | "menu_spotlights"
+        | "sourcing_intel"
+        | "operational_tips"
+        | "equipment_feedback"
+        | "event_recap_learnings"
+        | "urgent_needs"
+        | "professional_proof"
+        | "questions_to_network"
       client_status: "active" | "dormant" | "repeat_ready" | "vip"
+      communication_action_source:
+        | "manual"
+        | "webhook"
+        | "automation"
+        | "import"
+      communication_direction: "inbound" | "outbound"
+      communication_event_status: "unlinked" | "linked" | "resolved"
+      communication_source:
+        | "email"
+        | "website_form"
+        | "sms"
+        | "instagram"
+        | "takeachef"
+        | "manual_log"
       component_category:
         | "sauce"
         | "protein"
@@ -5118,6 +6496,7 @@ export type Database = {
         | "other"
       contact_method: "phone" | "email" | "text" | "instagram"
       conversation_context_type: "standalone" | "inquiry" | "event"
+      conversation_thread_state: "active" | "snoozed" | "closed"
       event_service_style:
         | "plated"
         | "family_style"
@@ -5152,6 +6531,7 @@ export type Database = {
         | "education"
         | "uniforms"
         | "utilities"
+      follow_up_timer_status: "active" | "completed" | "dismissed"
       household_relationship:
         | "partner"
         | "child"
@@ -5193,6 +6573,43 @@ export type Database = {
         | "confirmed"
         | "declined"
         | "expired"
+      insight_status: "pending" | "accepted" | "dismissed"
+      insight_type:
+        | "inquiry_intent"
+        | "dietary_preference"
+        | "allergy_mention"
+        | "important_date"
+        | "guest_count"
+        | "event_detail"
+        | "budget_mention"
+        | "location_mention"
+        | "general_preference"
+      integration_auth_type: "oauth2" | "api_key" | "pat" | "none"
+      integration_provider:
+        | "square"
+        | "shopify_pos"
+        | "clover"
+        | "toast"
+        | "lightspeed"
+        | "calendly"
+        | "google_calendar"
+        | "hubspot"
+        | "salesforce"
+        | "wix"
+        | "gmail"
+        | "custom_webhook"
+        | "csv_import"
+      integration_status:
+        | "connected"
+        | "disconnected"
+        | "error"
+        | "reauth_required"
+      integration_sync_status:
+        | "pending"
+        | "processing"
+        | "completed"
+        | "failed"
+        | "duplicate"
       ledger_entry_type:
         | "payment"
         | "deposit"
@@ -5293,6 +6710,7 @@ export type Database = {
         | "preference"
         | "forgot"
         | "other"
+      suggested_link_status: "pending" | "accepted" | "rejected"
       unused_reason: "leftover_reusable" | "wasted" | "returned"
       user_role: "chef" | "client"
     }
@@ -5435,7 +6853,38 @@ export const Constants = {
         "file",
       ],
       chef_connection_status: ["pending", "accepted", "declined"],
+      chef_network_contact_share_status: ["open", "accepted", "passed"],
+      chef_network_feature_key: [
+        "availability",
+        "referral_asks",
+        "referral_offers",
+        "collab_requests",
+        "menu_spotlights",
+        "sourcing_intel",
+        "operational_tips",
+        "equipment_feedback",
+        "event_recap_learnings",
+        "urgent_needs",
+        "professional_proof",
+        "questions_to_network",
+      ],
       client_status: ["active", "dormant", "repeat_ready", "vip"],
+      communication_action_source: [
+        "manual",
+        "webhook",
+        "automation",
+        "import",
+      ],
+      communication_direction: ["inbound", "outbound"],
+      communication_event_status: ["unlinked", "linked", "resolved"],
+      communication_source: [
+        "email",
+        "website_form",
+        "sms",
+        "instagram",
+        "takeachef",
+        "manual_log",
+      ],
       component_category: [
         "sauce",
         "protein",
@@ -5452,6 +6901,7 @@ export const Constants = {
       ],
       contact_method: ["phone", "email", "text", "instagram"],
       conversation_context_type: ["standalone", "inquiry", "event"],
+      conversation_thread_state: ["active", "snoozed", "closed"],
       event_service_style: [
         "plated",
         "family_style",
@@ -5489,6 +6939,7 @@ export const Constants = {
         "uniforms",
         "utilities",
       ],
+      follow_up_timer_status: ["active", "completed", "dismissed"],
       household_relationship: [
         "partner",
         "child",
@@ -5533,6 +6984,47 @@ export const Constants = {
         "confirmed",
         "declined",
         "expired",
+      ],
+      insight_status: ["pending", "accepted", "dismissed"],
+      insight_type: [
+        "inquiry_intent",
+        "dietary_preference",
+        "allergy_mention",
+        "important_date",
+        "guest_count",
+        "event_detail",
+        "budget_mention",
+        "location_mention",
+        "general_preference",
+      ],
+      integration_auth_type: ["oauth2", "api_key", "pat", "none"],
+      integration_provider: [
+        "square",
+        "shopify_pos",
+        "clover",
+        "toast",
+        "lightspeed",
+        "calendly",
+        "google_calendar",
+        "hubspot",
+        "salesforce",
+        "wix",
+        "gmail",
+        "custom_webhook",
+        "csv_import",
+      ],
+      integration_status: [
+        "connected",
+        "disconnected",
+        "error",
+        "reauth_required",
+      ],
+      integration_sync_status: [
+        "pending",
+        "processing",
+        "completed",
+        "failed",
+        "duplicate",
       ],
       ledger_entry_type: [
         "payment",
@@ -5640,8 +7132,10 @@ export const Constants = {
         "forgot",
         "other",
       ],
+      suggested_link_status: ["pending", "accepted", "rejected"],
       unused_reason: ["leftover_reusable", "wasted", "returned"],
       user_role: ["chef", "client"],
     },
   },
 } as const
+

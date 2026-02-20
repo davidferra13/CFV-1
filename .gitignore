@@ -25,6 +25,11 @@ yarn-error.log*
 # local env files
 .env*.local
 .env
+# auto-backup of production env (created by npm run env:use-local)
+.env.local.prod.backup
+# any other env backup or dev variants that should never be committed
+.env.local.backup*
+.env.local.dev
 
 # vercel
 .vercel
@@ -39,8 +44,38 @@ next-env.d.ts
 .tmp-*
 tmp_*
 
+# Supabase local development (Docker temp files)
+supabase/.temp/
+
 # PWA generated files (produced at build time by next-pwa)
 /public/sw.js
 /public/sw.js.map
 /public/workbox-*.js
 /public/workbox-*.js.map
+
+# Build/debug artifacts (AI agent cleanup)
+build-output.txt
+build_out.txt
+build_output*.txt
+build_log_current.txt
+build.log
+gen_error.txt
+nul
+*.tmp
+
+# Supabase temp type exports
+supabase-types-temp.ts
+*supabase-types-temp.ts
+
+# Ad-hoc debug scripts
+find_violations.*
+run_tsc_capture.js
+check-types-gen.js
+
+# Types debug output
+types/gen-output.txt
+types/gen-stderr.txt
+
+# Playwright test output
+/test-results/
+/playwright-report/
