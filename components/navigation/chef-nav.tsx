@@ -415,7 +415,7 @@ function NavGroupSection({
 
 // ─── Desktop Sidebar ────────────────────────────────
 export function ChefSidebar({ primaryNavHrefs }: { primaryNavHrefs?: string[] }) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
@@ -803,7 +803,7 @@ function MobileGroupSection({
 
 // ─── Mobile Navigation ──────────────────────────────
 export function ChefMobileNav({ primaryNavHrefs }: { primaryNavHrefs?: string[] }) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())

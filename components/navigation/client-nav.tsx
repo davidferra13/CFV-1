@@ -73,7 +73,7 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
 }
 
 export function ClientSidebar({ userEmail }: ClientNavProps) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
 
   return (
@@ -201,7 +201,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
 }
 
 export function ClientMobileNav({ userEmail }: ClientNavProps) {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
 
   const closeMenu = () => setMenuOpen(false)

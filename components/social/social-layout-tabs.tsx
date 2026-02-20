@@ -12,7 +12,7 @@ const TABS = [
 ]
 
 export function SocialLayoutTabs() {
-  const pathname = usePathname()
+  const pathname = usePathname() ?? ''
 
   return (
     <nav className="flex gap-1 -mb-px" aria-label="Social marketing tabs">

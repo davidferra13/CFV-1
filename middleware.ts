@@ -32,12 +32,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Auth pages, webhooks, and Google/Gmail API routes - no processing needed
+  // /api/e2e/* endpoints establish test sessions — they must be reachable unauthenticated
   if (
     pathname.startsWith('/auth') ||
     pathname.startsWith('/api/webhooks') ||
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/gmail') ||
-    pathname.startsWith('/api/scheduled')
+    pathname.startsWith('/api/scheduled') ||
+    pathname.startsWith('/api/e2e')
   ) {
     return NextResponse.next()
   }
