@@ -62,8 +62,13 @@ build_output*.txt
 build_log_current.txt
 build.log
 gen_error.txt
+build_latest.txt
+build-investigation.txt
 nul
 *.tmp
+
+# Pages Router artifacts (this project uses App Router)
+/pages/
 
 # Supabase temp type exports
 supabase-types-temp.ts
