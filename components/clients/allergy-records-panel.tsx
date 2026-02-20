@@ -81,7 +81,7 @@ const SEVERITY_CONFIG = {
 
 const SOURCE_LABELS: Record<AllergyRecord['source'], string> = {
   chef_entered: 'Chef entered',
-  ai_detected: 'AI detected — pending confirmation',
+  ai_detected: 'Auto-detected — pending confirmation',
   intake_form: 'Intake form',
   client_stated: 'Client stated',
 }
@@ -348,7 +348,7 @@ export function AllergyRecordsPanel({
         </div>
         {unconfirmed.length > 0 && (
           <p className="text-xs text-amber-700 mt-1">
-            {unconfirmed.length} AI-detected allergen{unconfirmed.length > 1 ? 's' : ''} need your confirmation before they lock into planning documents.
+            {unconfirmed.length} auto-detected allergen{unconfirmed.length > 1 ? 's' : ''} need your confirmation before they lock into planning documents.
           </p>
         )}
       </CardHeader>

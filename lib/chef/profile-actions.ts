@@ -193,7 +193,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
  */
 export async function uploadChefLogo(formData: FormData): Promise<{ success: true; url: string }> {
   const user = await requireChef()
-  const supabase = createServerClient({ admin: true } as any)
+  const supabase = createServerClient({ admin: true })
 
   const file = formData.get('logo') as File | null
   if (!file) {

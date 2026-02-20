@@ -148,8 +148,8 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
   return (
     <div className="space-y-5">
       {!aiConfigured && (
-        <Alert variant="warning" title="AI Not Configured">
-          AI parsing requires a Gemini API key. You can still use the manual capture form at the bottom.
+        <Alert variant="warning" title="Parsing Not Configured">
+          Smart parsing requires a Gemini API key. You can still use the manual capture form at the bottom.
         </Alert>
       )}
 

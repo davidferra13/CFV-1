@@ -43,7 +43,7 @@ test.describe('Settings Pages', () => {
     await page.goto(ROUTES.settingsProfile)
     await page.waitForLoadState('networkidle')
     // Business name should be visible in the form
-    await expect(page.getByDisplayValue('TEST - E2E Kitchen')).toBeVisible({ timeout: 10_000 })
+    await expect(page.locator('[value="TEST - E2E Kitchen"]')).toBeVisible({ timeout: 10_000 })
   })
 
   test('automations list renders', async ({ page }) => {

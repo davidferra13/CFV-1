@@ -11,6 +11,7 @@ type PublicProfileData = {
   chef: {
     display_name: string
     profile_image_url: string | null
+    logo_url: string | null
     tagline: string | null
     bio: string | null
     website_url: string | null
@@ -92,6 +93,16 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
           {/* Hero Section */}
           <section className="py-16 md:py-24 bg-white/70 backdrop-blur-[1px]">
             <div className="max-w-4xl mx-auto px-6 text-center">
+              {chef.logo_url && (
+                <div className="flex justify-center mb-6">
+                  <img
+                    src={chef.logo_url}
+                    alt={`${chef.display_name} logo`}
+                    className="max-h-16 max-w-[220px] object-contain"
+                  />
+                </div>
+              )}
+
               {chef.profile_image_url ? (
                 <img
                   src={chef.profile_image_url}

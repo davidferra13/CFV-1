@@ -83,8 +83,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, skipped: 'no email_id' })
   }
 
-  // Only process open and click events
-  if (type !== 'email.opened' && type !== 'email.clicked') {
+  // Only process supported email events
+  const HANDLED_TYPES: Record<string, string> = {
+    'email.opened': 'opened_at',
+    'email.clicked': 'clicked_at',
+    'email.bounced': 'bounced_at',
+    'email.spam_complaint': 'spam_at',
+  }
+
+  if (!(type in HANDLED_TYPES)) {
     await logWebhookEvent({
       provider: 'resend',
       eventType: type,
@@ -105,7 +112,7 @@ export async function POST(req: NextRequest) {
 
   const now = data.created_at ?? new Date().toISOString()
 
-  const updateField = type === 'email.opened' ? 'opened_at' : 'clicked_at'
+  const updateField = HANDLED_TYPES[type]
 
   const { error } = await supabase
     .from('campaign_recipients' as any)

@@ -255,7 +255,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
           <CardContent className="space-y-4">
             {!aiConfigured && (
               <Alert variant="warning">
-                Smart import is not configured. Set GEMINI_API_KEY in your environment to enable Smart Import.
+                Smart import is not configured. Contact your administrator to enable this feature.
               </Alert>
             )}
             <Textarea

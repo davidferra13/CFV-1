@@ -1,128 +1,215 @@
-// Source Analytics Dashboard
-// Charts and tables showing where inquiries come from and how they convert
+// Comprehensive Analytics Hub
+// All statistics tracked by ChefFlow — 9 tabs covering every business and chef metric
 
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import {
-  getSourceDistribution,
-  getConversionRatesBySource,
-  getRevenueBySource,
-  getSourceTrends,
-  getPartnerLeaderboard,
-} from '@/lib/partners/analytics'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { AnalyticsClient } from '@/components/analytics/analytics-client'
+import { AnalyticsHub } from '@/components/analytics/analytics-hub-client'
 
-export const metadata: Metadata = { title: 'Analytics - ChefFlow' }
+// ─── Server Action Imports ────────────────────────────────────────────────────
 
-const TYPE_LABELS: Record<string, string> = {
-  airbnb_host: 'Airbnb',
-  business: 'Business',
-  platform: 'Platform',
-  individual: 'Individual',
-  venue: 'Venue',
-  other: 'Other',
+// Existing
+import { getSourceDistribution, getConversionRatesBySource, getRevenueBySource } from '@/lib/partners/analytics'
+import { getMonthOverMonthRevenue, getDashboardEventCounts } from '@/lib/dashboard/actions'
+
+// New analytics actions
+import { getClientRetentionStats, getClientChurnStats, getRevenueConcentration, getClientAcquisitionStats, getReferralConversionStats, getNpsStats } from '@/lib/analytics/client-analytics'
+import { getInquiryFunnelStats, getQuoteAcceptanceStats, getGhostRateStats, getLeadTimeStats, getDeclineReasonStats, getNegotiationStats, getAvgInquiryResponseTime } from '@/lib/analytics/pipeline-analytics'
+import { getRevenuePerUnitStats, getRevenueByDayOfWeek, getRevenueByEventType, getRevenueBySeason, getTrueLaborCostStats, getCapacityStats, getCarryForwardStats, getBreakEvenStats } from '@/lib/analytics/revenue-analytics'
+import { getComplianceStats, getTimePhaseStats, getWasteStats, getCulinaryOperationsStats } from '@/lib/analytics/operations-analytics'
+import { getCampaignEmailStats, getMarketingSpendByChannel, getReviewStats, getWebsiteStats } from '@/lib/analytics/marketing-analytics'
+import { getSocialConnectionStatuses, getSocialGrowthTrend, getGoogleReviewStats } from '@/lib/analytics/social-analytics'
+import { getRecipeUsageStats, getDishPerformanceStats, getMenuApprovalStats } from '@/lib/analytics/culinary-analytics'
+
+export const metadata: Metadata = { title: 'Analytics Hub - ChefFlow' }
+
+// Date helpers
+function periodDates(monthsBack: number = 12): { start: string; end: string } {
+  const end = new Date()
+  const start = new Date()
+  start.setMonth(start.getMonth() - monthsBack)
+  return {
+    start: start.toISOString().slice(0, 10),
+    end: end.toISOString().slice(0, 10),
+  }
 }
 
-function formatCents(cents: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+function currentMonth(): string {
+  return new Date().toISOString().slice(0, 7)
 }
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsHubPage() {
   await requireChef()
 
-  const [distribution, conversions, revenue, trends, leaderboard] = await Promise.all([
-    getSourceDistribution(),
-    getConversionRatesBySource(),
-    getRevenueBySource(),
-    getSourceTrends(12),
-    getPartnerLeaderboard(),
+  const { start, end } = periodDates(12)
+  const thisMonth = currentMonth()
+
+  // Fetch all analytics in parallel — safe to fail individually
+  const [
+    // Overview / existing
+    monthRevenue,
+    eventCounts,
+    sourceDistribution,
+    sourceConversions,
+    sourceRevenue,
+
+    // Client
+    clientRetention,
+    clientChurn,
+    revenueConcentration,
+    clientAcquisition,
+    referralConversion,
+    npsStats,
+
+    // Pipeline
+    inquiryFunnel,
+    quoteAcceptance,
+    ghostRate,
+    leadTime,
+    declineReasons,
+    negotiation,
+    responseTime,
+
+    // Revenue
+    revenuePerUnit,
+    revenueByDayOfWeek,
+    revenueByEventType,
+    revenueBySeason,
+    trueLaborCost,
+    capacity,
+    carryForward,
+    breakEven,
+
+    // Operations
+    compliance,
+    timePhases,
+    waste,
+    culinaryOps,
+
+    // Marketing
+    emailStats,
+    marketingSpend,
+    reviewStats,
+    websiteStats,
+
+    // Social
+    socialConnections,
+    instagramTrend,
+    googleReviews,
+
+    // Culinary
+    recipeUsage,
+    dishPerformance,
+    menuApproval,
+  ] = await Promise.allSettled([
+    getMonthOverMonthRevenue().catch(() => null),
+    getDashboardEventCounts().catch(() => null),
+    getSourceDistribution().catch(() => []),
+    getConversionRatesBySource().catch(() => []),
+    getRevenueBySource().catch(() => []),
+
+    getClientRetentionStats().catch(() => ({ activeClients: 0, repeatClients: 0, repeatBookingRate: 0, retentionRate: 0 })),
+    getClientChurnStats().catch(() => ({ totalAtRisk: 0, dormantCount: 0, churnRate: 0, avgDaysSinceLastEvent: 0 })),
+    getRevenueConcentration().catch(() => ({ top5Clients: [], top5SharePercent: 0, herfindahlIndex: 0 })),
+    getClientAcquisitionStats(start, end).catch(() => ({ newClientsThisPeriod: 0, totalMarketingSpendCents: 0, cacCents: 0, cacRatio: 0 })),
+    getReferralConversionStats().catch(() => ({ referredInquiries: 0, referredConversions: 0, referralConversionRate: 0, referralRevenueCents: 0 })),
+    getNpsStats().catch(() => ({ npsScore: 0, promoters: 0, passives: 0, detractors: 0, totalResponses: 0, avgOverallRating: 0, avgFoodQualityRating: 0, avgServiceRating: 0, avgValueRating: 0, avgPresentationRating: 0, wouldRebookPercent: 0, responseRate: 0 })),
+
+    getInquiryFunnelStats().catch(() => ({ totalInquiries: 0, quotedCount: 0, confirmedCount: 0, completedCount: 0, declinedCount: 0, expiredCount: 0, quoteRate: 0, confirmRate: 0, completionRate: 0, overallConversionRate: 0 })),
+    getQuoteAcceptanceStats().catch(() => ({ totalSent: 0, accepted: 0, rejected: 0, expired: 0, acceptanceRate: 0, rejectionRate: 0, expiryRate: 0, avgValueCents: 0 })),
+    getGhostRateStats().catch(() => ({ totalInquiries: 0, ghosted: 0, ghostRate: 0, avgDaysToGhost: 0 })),
+    getLeadTimeStats().catch(() => ({ avgLeadTimeDays: 0, avgSalesCycleDays: 0, buckets: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 }, bucketPercents: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 } })),
+    getDeclineReasonStats().catch(() => ({ reasons: [], totalDeclined: 0 })),
+    getNegotiationStats().catch(() => ({ totalQuotes: 0, negotiatedCount: 0, negotiationRate: 0, avgOriginalCents: 0, avgFinalCents: 0, avgDiscountPercent: 0, avgDiscountCents: 0 })),
+    getAvgInquiryResponseTime().catch(() => ({ avgHoursToFirstResponse: 0, under1hour: 0, under4hours: 0, under24hours: 0, over24hours: 0, under1hourPercent: 0, under4hoursPercent: 0 })),
+
+    getRevenuePerUnitStats(start, end).catch(() => ({ revenuePerGuestCents: 0, revenuePerHourCents: 0, revenuePerMileCents: 0, totalGuestsServed: 0, totalHoursWorked: 0, totalMilesDriven: 0, netRevenueCents: 0 })),
+    getRevenueByDayOfWeek(start, end).catch(() => []),
+    getRevenueByEventType(start, end).catch(() => []),
+    getRevenueBySeason().catch(() => []),
+    getTrueLaborCostStats(start, end).catch(() => ({ ownerHoursCents: 0, staffCostCents: 0, totalLaborCents: 0, laborAsPercentOfRevenue: 0, trueNetProfitCents: 0, trueNetMarginPercent: 0 })),
+    getCapacityStats(thisMonth).catch(() => ({ maxEventsPerMonth: null, bookedThisMonth: 0, utilization: 0, demandOverflow: 0 })),
+    getCarryForwardStats(start, end).catch(() => ({ totalSavingsCents: 0, avgSavingsPerEvent: 0, eventsWithCarryForward: 0, savingsAsPercentOfFoodCost: 0 })),
+    getBreakEvenStats().catch(() => ({ estimatedFixedMonthlyCents: 0, avgEventsPerMonth: 0, breakEvenEventsPerMonth: 0, breakEvenRevenuePerEventCents: 0 })),
+
+    getComplianceStats(start, end).catch(() => ({ onTimeStartRate: 0, receiptSubmissionRate: 0, kitchenComplianceRate: 0, menuDeviationRate: 0, tempLogComplianceRate: 0, dietaryAccommodationRate: 0 })),
+    getTimePhaseStats(start, end).catch(() => []),
+    getWasteStats(start, end).catch(() => ({ totalFoodSpendCents: 0, leftoverCarriedForwardCents: 0, netFoodCostCents: 0, wastePercent: 0, eventsWithLeftovers: 0 })),
+    getCulinaryOperationsStats().catch(() => ({ avgCoursesPerEvent: 0, avgGuestsPerEvent: 0, mostCommonOccasion: 'N/A', dietaryRestrictionFrequency: [] })),
+
+    getCampaignEmailStats().catch(() => ({ totalCampaigns: 0, totalRecipients: 0, totalSent: 0, openRate: 0, clickRate: 0, bounceRate: 0, spamRate: 0, unsubscribeRate: 0, bestCampaign: null })),
+    getMarketingSpendByChannel(start, end).catch(() => []),
+    getReviewStats().catch(() => ({ totalReviews: 0, avgRating: 0, reviewRate: 0, ratingDistribution: [], recentReviews: [] })),
+    getWebsiteStats().catch(() => ({ snapshotMonth: '', uniqueVisitors: null, pageviews: null, bounceRatePercent: null, avgSessionSeconds: null, topSource: null, inquiryConversionRatePercent: null, previousMonth: null })),
+
+    getSocialConnectionStatuses().catch(() => []),
+    getSocialGrowthTrend('instagram', 6).catch(() => []),
+    getGoogleReviewStats().catch(() => null),
+
+    getRecipeUsageStats().catch(() => ({ totalRecipes: 0, recipesUsedInEvents: 0, recipeReuseRate: 0, avgTimesCooked: 0, neverCookedCount: 0, topRecipes: [] })),
+    getDishPerformanceStats().catch(() => ({ newDishesThisMonth: 0, newDishesThisYear: 0, menuModificationRate: 0, avgDishesSentPerMenu: 0 })),
+    getMenuApprovalStats().catch(() => ({ totalSent: 0, approved: 0, revisionRequested: 0, pending: 0, approvalRate: 0, revisionRate: 0, avgResponseHours: 0 })),
   ])
 
-  // Extract unique source names from trends for the line chart
-  const trendSources = new Set<string>()
-  for (const point of trends) {
-    for (const key of Object.keys(point)) {
-      if (key !== 'month') trendSources.add(key)
-    }
+  function val<T>(result: PromiseSettledResult<T>, fallback: T): T {
+    return result.status === 'fulfilled' ? result.value : fallback
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Source Analytics</h1>
-        <p className="text-stone-600 mt-1">
-          Understand where your inquiries come from, how they convert, and which sources drive revenue
-        </p>
+        <h1 className="text-3xl font-bold text-stone-900">Analytics Hub</h1>
+        <p className="text-stone-600 mt-1">Every metric that matters — business, operations, clients, marketing, social, and culinary</p>
       </div>
 
-      {/* Charts Grid */}
-      <AnalyticsClient
-        distribution={distribution}
-        conversions={conversions}
-        revenue={revenue}
-        trends={trends}
-        trendSources={Array.from(trendSources)}
+      <AnalyticsHub
+        monthRevenue={val(monthRevenue, null)}
+        eventCounts={val(eventCounts, null)}
+        sourceDistribution={val(sourceDistribution, [])}
+        sourceConversions={val(sourceConversions, [])}
+        sourceRevenue={val(sourceRevenue, [])}
+
+        clientRetention={val(clientRetention, { activeClients: 0, repeatClients: 0, repeatBookingRate: 0, retentionRate: 0 })}
+        clientChurn={val(clientChurn, { totalAtRisk: 0, dormantCount: 0, churnRate: 0, avgDaysSinceLastEvent: 0 })}
+        revenueConcentration={val(revenueConcentration, { top5Clients: [], top5SharePercent: 0, herfindahlIndex: 0 })}
+        clientAcquisition={val(clientAcquisition, { newClientsThisPeriod: 0, totalMarketingSpendCents: 0, cacCents: 0, cacRatio: 0 })}
+        referralConversion={val(referralConversion, { referredInquiries: 0, referredConversions: 0, referralConversionRate: 0, referralRevenueCents: 0 })}
+        npsStats={val(npsStats, { npsScore: 0, promoters: 0, passives: 0, detractors: 0, totalResponses: 0, avgOverallRating: 0, avgFoodQualityRating: 0, avgServiceRating: 0, avgValueRating: 0, avgPresentationRating: 0, wouldRebookPercent: 0, responseRate: 0 })}
+
+        inquiryFunnel={val(inquiryFunnel, { totalInquiries: 0, quotedCount: 0, confirmedCount: 0, completedCount: 0, declinedCount: 0, expiredCount: 0, quoteRate: 0, confirmRate: 0, completionRate: 0, overallConversionRate: 0 })}
+        quoteAcceptance={val(quoteAcceptance, { totalSent: 0, accepted: 0, rejected: 0, expired: 0, acceptanceRate: 0, rejectionRate: 0, expiryRate: 0, avgValueCents: 0 })}
+        ghostRate={val(ghostRate, { totalInquiries: 0, ghosted: 0, ghostRate: 0, avgDaysToGhost: 0 })}
+        leadTime={val(leadTime, { avgLeadTimeDays: 0, avgSalesCycleDays: 0, buckets: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 }, bucketPercents: { under2weeks: 0, twoTo4weeks: 0, oneToThreeMonths: 0, over3months: 0 } })}
+        declineReasons={val(declineReasons, { reasons: [], totalDeclined: 0 })}
+        negotiation={val(negotiation, { totalQuotes: 0, negotiatedCount: 0, negotiationRate: 0, avgOriginalCents: 0, avgFinalCents: 0, avgDiscountPercent: 0, avgDiscountCents: 0 })}
+        responseTime={val(responseTime, { avgHoursToFirstResponse: 0, under1hour: 0, under4hours: 0, under24hours: 0, over24hours: 0, under1hourPercent: 0, under4hoursPercent: 0 })}
+
+        revenuePerUnit={val(revenuePerUnit, { revenuePerGuestCents: 0, revenuePerHourCents: 0, revenuePerMileCents: 0, totalGuestsServed: 0, totalHoursWorked: 0, totalMilesDriven: 0, netRevenueCents: 0 })}
+        revenueByDayOfWeek={val(revenueByDayOfWeek, [])}
+        revenueByEventType={val(revenueByEventType, [])}
+        revenueBySeason={val(revenueBySeason, [])}
+        trueLaborCost={val(trueLaborCost, { ownerHoursCents: 0, staffCostCents: 0, totalLaborCents: 0, laborAsPercentOfRevenue: 0, trueNetProfitCents: 0, trueNetMarginPercent: 0 })}
+        capacity={val(capacity, { maxEventsPerMonth: null, bookedThisMonth: 0, utilization: 0, demandOverflow: 0 })}
+        carryForward={val(carryForward, { totalSavingsCents: 0, avgSavingsPerEvent: 0, eventsWithCarryForward: 0, savingsAsPercentOfFoodCost: 0 })}
+        breakEven={val(breakEven, { estimatedFixedMonthlyCents: 0, avgEventsPerMonth: 0, breakEvenEventsPerMonth: 0, breakEvenRevenuePerEventCents: 0 })}
+
+        compliance={val(compliance, { onTimeStartRate: 0, receiptSubmissionRate: 0, kitchenComplianceRate: 0, menuDeviationRate: 0, tempLogComplianceRate: 0, dietaryAccommodationRate: 0 })}
+        timePhases={val(timePhases, [])}
+        waste={val(waste, { totalFoodSpendCents: 0, leftoverCarriedForwardCents: 0, netFoodCostCents: 0, wastePercent: 0, eventsWithLeftovers: 0 })}
+        culinaryOps={val(culinaryOps, { avgCoursesPerEvent: 0, avgGuestsPerEvent: 0, mostCommonOccasion: 'N/A', dietaryRestrictionFrequency: [] })}
+
+        emailStats={val(emailStats, { totalCampaigns: 0, totalRecipients: 0, totalSent: 0, openRate: 0, clickRate: 0, bounceRate: 0, spamRate: 0, unsubscribeRate: 0, bestCampaign: null })}
+        marketingSpend={val(marketingSpend, [])}
+        reviewStats={val(reviewStats, { totalReviews: 0, avgRating: 0, reviewRate: 0, ratingDistribution: [], recentReviews: [] })}
+        websiteStats={val(websiteStats, { snapshotMonth: '', uniqueVisitors: null, pageviews: null, bounceRatePercent: null, avgSessionSeconds: null, topSource: null, inquiryConversionRatePercent: null, previousMonth: null })}
+
+        socialConnections={val(socialConnections, [])}
+        instagramTrend={val(instagramTrend, [])}
+        googleReviews={val(googleReviews, null)}
+
+        recipeUsage={val(recipeUsage, { totalRecipes: 0, recipesUsedInEvents: 0, recipeReuseRate: 0, avgTimesCooked: 0, neverCookedCount: 0, topRecipes: [] })}
+        dishPerformance={val(dishPerformance, { newDishesThisMonth: 0, newDishesThisYear: 0, menuModificationRate: 0, avgDishesSentPerMenu: 0 })}
+        menuApproval={val(menuApproval, { totalSent: 0, approved: 0, revisionRequested: 0, pending: 0, approvalRate: 0, revisionRate: 0, avgResponseHours: 0 })}
       />
-
-      {/* Partner Leaderboard */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Partner Leaderboard</h2>
-
-        {leaderboard.length === 0 ? (
-          <p className="text-stone-400 text-sm py-4">
-            No partner data yet. <Link href="/partners/new" className="text-brand-600 hover:underline">Add your first partner</Link> and link inquiries to see them here.
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-stone-200">
-                  <th className="text-left py-2 px-3 text-stone-500 font-medium">Partner</th>
-                  <th className="text-left py-2 px-3 text-stone-500 font-medium">Type</th>
-                  <th className="text-right py-2 px-3 text-stone-500 font-medium">Referrals</th>
-                  <th className="text-right py-2 px-3 text-stone-500 font-medium">Events</th>
-                  <th className="text-right py-2 px-3 text-stone-500 font-medium">Completed</th>
-                  <th className="text-right py-2 px-3 text-stone-500 font-medium">Revenue</th>
-                  <th className="text-right py-2 px-3 text-stone-500 font-medium">Guests</th>
-                  <th className="text-right py-2 px-3 text-stone-500 font-medium">Conversion</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboard.map((entry, i) => (
-                  <tr key={entry.id} className="border-b border-stone-100 hover:bg-stone-50">
-                    <td className="py-2 px-3">
-                      <Link href={`/partners/${entry.id}`} className="font-medium text-stone-900 hover:text-brand-600">
-                        {entry.name}
-                      </Link>
-                    </td>
-                    <td className="py-2 px-3">
-                      <Badge variant="default">
-                        {TYPE_LABELS[entry.partner_type] || entry.partner_type}
-                      </Badge>
-                    </td>
-                    <td className="py-2 px-3 text-right text-stone-700">{entry.inquiry_count}</td>
-                    <td className="py-2 px-3 text-right text-stone-700">{entry.event_count}</td>
-                    <td className="py-2 px-3 text-right text-stone-700">{entry.completed_count}</td>
-                    <td className="py-2 px-3 text-right font-medium text-stone-900">
-                      {formatCents(entry.revenue_cents)}
-                    </td>
-                    <td className="py-2 px-3 text-right text-stone-700">{entry.guest_count}</td>
-                    <td className="py-2 px-3 text-right">
-                      <span className={entry.conversion_rate >= 50 ? 'text-emerald-600 font-medium' : 'text-stone-600'}>
-                        {entry.conversion_rate}%
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Card>
     </div>
   )
 }

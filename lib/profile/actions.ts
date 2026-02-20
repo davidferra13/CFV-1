@@ -124,6 +124,7 @@ export async function getPublicChefProfile(slug: string) {
       business_name: chef.business_name,
       bio: chef.bio,
       profile_image_url: chef.profile_image_url,
+      logo_url: chef.logo_url ?? null,
       tagline: chef.tagline,
       website_url: chef.website_url,
       show_website_on_public_profile: chef.show_website_on_public_profile ?? true,

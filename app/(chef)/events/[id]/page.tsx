@@ -63,6 +63,7 @@ import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-
 import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-banner'
 import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
 import { getEventCollaborators } from '@/lib/collaboration/actions'
+import { sendClientSurvey } from '@/lib/surveys/actions'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -972,6 +973,25 @@ export default async function EventDetailPage({
             <Link href={`/events/${event.id}/debrief`}>
               <Button variant="ghost" size="sm">View / Edit</Button>
             </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* Client Satisfaction Survey */}
+      {event.status === 'completed' && event.client_id && (
+        <Card className="p-6 border-blue-200 bg-blue-50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 className="font-semibold text-blue-900">Client Satisfaction Survey</h3>
+              <p className="text-sm text-blue-700 mt-1">
+                Send a post-event survey to collect NPS score, ratings, and a testimonial.
+              </p>
+            </div>
+            <form action={async (_: FormData) => { 'use server'; await sendClientSurvey(event.id) }}>
+              <Button variant="secondary" size="sm" type="submit">
+                Send Survey
+              </Button>
+            </form>
           </div>
         </Card>
       )}
