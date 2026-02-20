@@ -1,0 +1,284 @@
+// Built-in Automation Settings
+// Toggle cards for each system automation with plain-English descriptions.
+// Chef can enable/disable each and configure key parameters.
+'use client'
+
+import { useState, useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { updateAutomationSettings } from '@/lib/automations/settings-actions'
+import type { ChefAutomationSettings } from '@/lib/automations/types'
+
+interface BuiltInSettingsProps {
+  settings: ChefAutomationSettings
+}
+
+export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
+  const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Local state mirrors the settings
+  const [followUpEnabled, setFollowUpEnabled] = useState(settings.follow_up_reminders_enabled)
+  const [followUpHours, setFollowUpHours] = useState(settings.follow_up_reminder_interval_hours)
+  const [noResponseEnabled, setNoResponseEnabled] = useState(settings.no_response_alerts_enabled)
+  const [noResponseDays, setNoResponseDays] = useState(settings.no_response_threshold_days)
+  const [eventApproachingEnabled, setEventApproachingEnabled] = useState(settings.event_approaching_alerts_enabled)
+  const [eventApproachingHours, setEventApproachingHours] = useState(settings.event_approaching_hours)
+  const [inquiryExpiryEnabled, setInquiryExpiryEnabled] = useState(settings.inquiry_auto_expiry_enabled)
+  const [inquiryExpiryDays, setInquiryExpiryDays] = useState(settings.inquiry_expiry_days)
+  const [quoteExpiryEnabled, setQuoteExpiryEnabled] = useState(settings.quote_auto_expiry_enabled)
+  const [clientRemindersEnabled, setClientRemindersEnabled] = useState(settings.client_event_reminders_enabled)
+  const [timeTrackingEnabled, setTimeTrackingEnabled] = useState(settings.time_tracking_reminders_enabled)
+
+  const handleSave = () => {
+    setError(null)
+    setSaved(false)
+    startTransition(async () => {
+      try {
+        await updateAutomationSettings({
+          follow_up_reminders_enabled: followUpEnabled,
+          follow_up_reminder_interval_hours: followUpHours,
+          no_response_alerts_enabled: noResponseEnabled,
+          no_response_threshold_days: noResponseDays,
+          event_approaching_alerts_enabled: eventApproachingEnabled,
+          event_approaching_hours: eventApproachingHours,
+          inquiry_auto_expiry_enabled: inquiryExpiryEnabled,
+          inquiry_expiry_days: inquiryExpiryDays,
+          quote_auto_expiry_enabled: quoteExpiryEnabled,
+          client_event_reminders_enabled: clientRemindersEnabled,
+          time_tracking_reminders_enabled: timeTrackingEnabled,
+        })
+        setSaved(true)
+        router.refresh()
+        setTimeout(() => setSaved(false), 3000)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save')
+      }
+    })
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <CardTitle>Built-in Automations</CardTitle>
+            <p className="text-sm text-stone-500 mt-0.5">
+              These run automatically in the background. Toggle any you don&apos;t need.
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleSave}
+            loading={isPending}
+          >
+            {saved ? 'Saved' : 'Save'}
+          </Button>
+        </div>
+        {error && (
+          <p className="text-sm text-red-600 mt-1">{error}</p>
+        )}
+      </CardHeader>
+      <CardContent className="space-y-4">
+
+        {/* Follow-up Reminders */}
+        <SettingRow
+          enabled={followUpEnabled}
+          onToggle={setFollowUpEnabled}
+          title="Follow-up Reminders"
+          description="Notifies you when an inquiry is waiting for your follow-up."
+        >
+          {followUpEnabled && (
+            <InlineParam label="Remind every">
+              <NumberInput
+                value={followUpHours}
+                onChange={setFollowUpHours}
+                min={1}
+                max={336}
+                suffix="hours"
+              />
+            </InlineParam>
+          )}
+        </SettingRow>
+
+        {/* No-Response Alerts */}
+        <SettingRow
+          enabled={noResponseEnabled}
+          onToggle={setNoResponseEnabled}
+          title="No-Response Alerts"
+          description="Alerts you when a client hasn't responded and the conversation has gone quiet."
+        >
+          {noResponseEnabled && (
+            <InlineParam label="Alert after">
+              <NumberInput
+                value={noResponseDays}
+                onChange={setNoResponseDays}
+                min={1}
+                max={30}
+                suffix="days of silence"
+              />
+            </InlineParam>
+          )}
+        </SettingRow>
+
+        {/* Event Approach Alerts */}
+        <SettingRow
+          enabled={eventApproachingEnabled}
+          onToggle={setEventApproachingEnabled}
+          title="Event Approach Alerts"
+          description="Fires your custom rules when a confirmed event is getting close."
+        >
+          {eventApproachingEnabled && (
+            <InlineParam label="Alert when within">
+              <NumberInput
+                value={eventApproachingHours}
+                onChange={setEventApproachingHours}
+                min={1}
+                max={168}
+                suffix="hours"
+              />
+            </InlineParam>
+          )}
+        </SettingRow>
+
+        {/* Inquiry Auto-Expiry */}
+        <SettingRow
+          enabled={inquiryExpiryEnabled}
+          onToggle={setInquiryExpiryEnabled}
+          title="Inquiry Auto-Expiry"
+          description="Automatically marks inquiries as expired when a client goes silent for too long."
+        >
+          {inquiryExpiryEnabled && (
+            <InlineParam label="Expire after">
+              <NumberInput
+                value={inquiryExpiryDays}
+                onChange={setInquiryExpiryDays}
+                min={7}
+                max={365}
+                suffix="days of no activity"
+              />
+            </InlineParam>
+          )}
+        </SettingRow>
+
+        {/* Quote Auto-Expiry */}
+        <SettingRow
+          enabled={quoteExpiryEnabled}
+          onToggle={setQuoteExpiryEnabled}
+          title="Quote Auto-Expiry"
+          description="Automatically marks sent quotes as expired once their expiry date passes."
+        />
+
+        {/* Client Day-Before Emails */}
+        <SettingRow
+          enabled={clientRemindersEnabled}
+          onToggle={setClientRemindersEnabled}
+          title="Day-Before Client Emails"
+          description="Sends your clients an email the day before their event with timing and location details."
+        />
+
+        {/* Time Tracking Reminders */}
+        <SettingRow
+          enabled={timeTrackingEnabled}
+          onToggle={setTimeTrackingEnabled}
+          title="Time-Tracking Reminders"
+          description="Nudges you to log hours when a timer has been running a long time or an event is done."
+        />
+
+      </CardContent>
+    </Card>
+  )
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────
+
+function SettingRow({
+  enabled,
+  onToggle,
+  title,
+  description,
+  children,
+}: {
+  enabled: boolean
+  onToggle: (v: boolean) => void
+  title: string
+  description: string
+  children?: React.ReactNode
+}) {
+  return (
+    <div className={`rounded-lg border p-3 transition-colors ${enabled ? 'border-stone-200 bg-white' : 'border-stone-100 bg-stone-50'}`}>
+      <div className="flex items-start gap-3">
+        {/* Toggle */}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          onClick={() => onToggle(!enabled)}
+          className={`mt-0.5 relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 ${
+            enabled ? 'bg-brand-600' : 'bg-stone-300'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+              enabled ? 'translate-x-4' : 'translate-x-0'
+            }`}
+          />
+        </button>
+        {/* Text */}
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-medium ${enabled ? 'text-stone-800' : 'text-stone-400'}`}>
+            {title}
+          </p>
+          <p className={`text-xs mt-0.5 ${enabled ? 'text-stone-500' : 'text-stone-400'}`}>
+            {description}
+          </p>
+          {children && <div className="mt-2">{children}</div>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function InlineParam({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-stone-600">
+      <span>{label}</span>
+      {children}
+    </div>
+  )
+}
+
+function NumberInput({
+  value,
+  onChange,
+  min,
+  max,
+  suffix,
+}: {
+  value: number
+  onChange: (v: number) => void
+  min: number
+  max: number
+  suffix: string
+}) {
+  return (
+    <>
+      <input
+        type="number"
+        value={value}
+        min={min}
+        max={max}
+        onChange={(e) => {
+          const n = parseInt(e.target.value, 10)
+          if (!isNaN(n) && n >= min && n <= max) onChange(n)
+        }}
+        className="w-16 border border-stone-300 rounded px-2 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+      />
+      <span>{suffix}</span>
+    </>
+  )
+}

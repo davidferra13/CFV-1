@@ -1,10 +1,17 @@
-// Scheduled Activity Cleanup
-// POST /api/scheduled/activity-cleanup — deletes activity events older than 90 days.
-// Run weekly to prevent unbounded table growth.
-// Secured with CRON_SECRET bearer token.
+// POST /api/scheduled/activity-cleanup
+// Deletes aged activity events with optional archive copy.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
+
+const DEFAULT_RETENTION_DAYS = 90
+
+function getRetentionDays(): number {
+  const configured = Number.parseInt(process.env.ACTIVITY_RETENTION_DAYS || '', 10)
+  if (!Number.isFinite(configured)) return DEFAULT_RETENTION_DAYS
+  return Math.max(30, Math.min(3650, configured))
+}
 
 export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization')
@@ -19,17 +26,71 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServerClient({ admin: true })
-  const cutoff = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+  const retentionDays = getRetentionDays()
+  const cutoff = new Date(Date.now() - retentionDays * 24 * 60 * 60 * 1000).toISOString()
+  const archiveBeforeDelete = process.env.ACTIVITY_ARCHIVE_BEFORE_DELETE === 'true'
+
+  if (archiveBeforeDelete) {
+    const { data: oldRows, error: fetchError } = await supabase
+      .from('activity_events')
+      .select('*')
+      .lt('created_at', cutoff)
+      .limit(5000)
+
+    if (fetchError) {
+      return NextResponse.json({ error: 'Archive fetch failed' }, { status: 500 })
+    }
+
+    if (oldRows && oldRows.length > 0) {
+      const archivePayload = oldRows.map(row => ({
+        ...row,
+        archived_at: new Date().toISOString(),
+      }))
+
+      const { error: archiveError } = await supabase
+        .from('activity_events_archive' as any) // table added in migration, types pending regen
+        .insert(archivePayload)
+
+      if (archiveError) {
+        return NextResponse.json({ error: 'Archive insert failed' }, { status: 500 })
+      }
+    }
+  }
 
   const { count, error } = await supabase
-    .from('activity_events' as any)
+    .from('activity_events')
     .delete({ count: 'exact' })
     .lt('created_at', cutoff)
 
   if (error) {
-    console.error('[Activity Cleanup] Error:', error)
     return NextResponse.json({ error: 'Cleanup failed' }, { status: 500 })
   }
 
-  return NextResponse.json({ deleted: count || 0, cutoff })
+  // sms_send_log cleanup — owned by push-cleanup cron, not this handler
+  const smsCount = 0
+
+  const result = {
+    deleted: count || 0,
+    smsLogDeleted: smsCount,
+    cutoff,
+    retentionDays,
+    archivedFirst: archiveBeforeDelete,
+  }
+  await recordCronHeartbeat('activity-cleanup', result)
+  return NextResponse.json(result)
+}
+
+export async function GET(request: NextRequest) {
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET
+
+  if (!cronSecret) {
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
+  }
+
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  return NextResponse.json({ status: 'activity-cleanup cron ready' })
 }

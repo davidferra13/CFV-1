@@ -5,21 +5,34 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getInquiryById } from '@/lib/inquiries/actions'
+import { getInquiryNotes, getLinkedRecipes, getRecipesForLinker } from '@/lib/inquiries/note-actions'
 import { getQuotesForInquiry } from '@/lib/quotes/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
 import { InquiryTransitions } from '@/components/inquiries/inquiry-transitions'
+import { InquiryDeadlineForm } from '@/components/inquiries/inquiry-deadline-form'
 import { InquiryResponseComposer } from '@/components/inquiries/inquiry-response-composer'
+import { InquiryNotes } from '@/components/inquiries/inquiry-notes'
+import { InquiryRecipeLinker } from '@/components/inquiries/inquiry-recipe-linker'
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
 import { MessageThread } from '@/components/messages/message-thread'
 import { MessageLogForm } from '@/components/messages/message-log-form'
 import { getGoogleConnection } from '@/lib/gmail/google-auth'
 import { getLinkedContactSubmission } from '@/lib/contact/claim'
+import { getEventPhotosForChef } from '@/lib/events/photo-actions'
+import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
+import { getDocumentReadiness } from '@/lib/documents/actions'
+import { DocumentSection } from '@/components/documents/document-section'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
+import { getClientTimeline } from '@/lib/activity/actions'
+import { computeEngagementScore } from '@/lib/activity/engagement'
+import { EngagementBadge } from '@/components/activity/engagement-badge'
+import { InquirySummary, type InquirySummaryData } from '@/components/inquiries/inquiry-summary'
+import { InquiryAddClientButton } from '@/components/inquiries/inquiry-add-client-button'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -48,11 +61,6 @@ function getDisplayPhone(inquiry: {
   return (unknown?.client_phone as string) || null
 }
 
-function getNotes(inquiry: { unknown_fields: unknown }): string | null {
-  const unknown = inquiry.unknown_fields as Record<string, unknown> | null
-  return (unknown?.notes as string) || null
-}
-
 function getReferralSource(inquiry: { unknown_fields: unknown }): string | null {
   const unknown = inquiry.unknown_fields as Record<string, unknown> | null
   return (unknown?.referral_source as string) || null
@@ -65,23 +73,42 @@ export default async function InquiryDetailPage({
 }) {
   await requireChef()
 
-  const [inquiry, quotes, messages, templates, gmailStatus, linkedSubmission] = await Promise.all([
+  const [inquiry, quotes, messages, templates, gmailStatus, linkedSubmission, inquiryNotes, recipeLinks, availableRecipes] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
     getMessageThread('inquiry', params.id),
     getResponseTemplates(),
     getGoogleConnection(),
     getLinkedContactSubmission(params.id),
+    getInquiryNotes(params.id),
+    getLinkedRecipes(params.id),
+    getRecipesForLinker(),
   ])
 
   if (!inquiry) {
     notFound()
   }
 
+  // Compute client engagement score (only if inquiry is linked to a registered client)
+  const clientActivity = inquiry.client?.id
+    ? await getClientTimeline(inquiry.client.id, 50).catch(() => [])
+    : []
+  const engagementScore = computeEngagementScore(clientActivity)
+
+  // If this inquiry was converted to an event, fetch its dinner photos
+  const convertedEventId = (inquiry as any).converted_to_event_id as string | null
+  const [eventPhotos, docReadiness] = await Promise.all([
+    convertedEventId
+      ? getEventPhotosForChef(convertedEventId).catch(() => [])
+      : Promise.resolve([]),
+    convertedEventId
+      ? getDocumentReadiness(convertedEventId).catch(() => null)
+      : Promise.resolve(null),
+  ])
+
   const name = getDisplayName(inquiry)
   const email = getDisplayEmail(inquiry)
   const phone = getDisplayPhone(inquiry)
-  const notes = getNotes(inquiry)
   const referralSource = getReferralSource(inquiry)
 
   // Track which confirmed facts are still missing
@@ -92,6 +119,33 @@ export default async function InquiryDetailPage({
   if (!inquiry.confirmed_occasion) missingFacts.push('Occasion')
   if (!inquiry.confirmed_budget_cents) missingFacts.push('Budget')
 
+  // Build summary data for the shared InquirySummary component
+  const summaryData: InquirySummaryData = {
+    id: inquiry.id,
+    status: inquiry.status as any,
+    channel: inquiry.channel,
+    confirmed_occasion: inquiry.confirmed_occasion,
+    confirmed_date: inquiry.confirmed_date,
+    confirmed_guest_count: inquiry.confirmed_guest_count,
+    confirmed_location: inquiry.confirmed_location,
+    confirmed_budget_cents: inquiry.confirmed_budget_cents,
+    confirmed_dietary_restrictions: inquiry.confirmed_dietary_restrictions,
+    confirmed_service_expectations: inquiry.confirmed_service_expectations,
+    source_message: inquiry.source_message,
+    first_contact_at: inquiry.first_contact_at,
+    last_response_at: inquiry.last_response_at,
+    updated_at: inquiry.updated_at,
+    transitions: inquiry.transitions as any,
+    quotes: quotes.map((q) => ({
+      id: q.id,
+      quote_name: q.quote_name,
+      total_quoted_cents: q.total_quoted_cents,
+      status: q.status,
+      pricing_model: q.pricing_model,
+    })),
+    converted_to_event_id: convertedEventId,
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -101,6 +155,9 @@ export default async function InquiryDetailPage({
             <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">{name}</h1>
             <InquiryStatusBadge status={inquiry.status as any} />
             <InquiryChannelBadge channel={inquiry.channel} />
+            {inquiry.client?.id && (
+              <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
+            )}
           </div>
           {inquiry.confirmed_occasion && (
             <p className="text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
@@ -128,6 +185,9 @@ export default async function InquiryDetailPage({
           </p>
         </div>
       )}
+
+      {/* Inquiry Summary — visual snapshot */}
+      <InquirySummary data={summaryData} variant="chef" />
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -163,7 +223,15 @@ export default async function InquiryDetailPage({
                     {inquiry.client.full_name}
                   </Link>
                 ) : (
-                  <span className="text-stone-400">Not linked to a client record</span>
+                  <div>
+                    <span className="text-stone-400 text-sm">Not linked to a client record</span>
+                    <InquiryAddClientButton
+                      inquiryId={inquiry.id}
+                      prefillName={name !== 'Unknown Lead' ? name : undefined}
+                      prefillEmail={email ?? undefined}
+                      prefillPhone={phone ?? undefined}
+                    />
+                  </div>
                 )}
               </dd>
             </div>
@@ -237,9 +305,9 @@ export default async function InquiryDetailPage({
       </div>
 
       {/* Pipeline Management */}
-      {(inquiry.next_action_required || inquiry.follow_up_due_at) && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Pipeline</h2>
+      <Card className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Pipeline</h2>
+        {(inquiry.next_action_required || inquiry.follow_up_due_at) ? (
           <dl className="space-y-3">
             {inquiry.next_action_required && (
               <div>
@@ -266,8 +334,16 @@ export default async function InquiryDetailPage({
               </div>
             )}
           </dl>
-        </Card>
-      )}
+        ) : (
+          <p className="text-sm text-stone-500">No follow-up deadline set.</p>
+        )}
+
+        <InquiryDeadlineForm
+          inquiryId={inquiry.id}
+          currentDeadline={inquiry.follow_up_due_at}
+          currentNextAction={inquiry.next_action_required}
+        />
+      </Card>
 
       {/* Quotes Section */}
       <Card className="p-6">
@@ -282,26 +358,36 @@ export default async function InquiryDetailPage({
         ) : (
           <div className="space-y-2">
             {quotes.map((quote) => (
-              <Link
-                key={quote.id}
-                href={`/quotes/${quote.id}`}
-                className="block border rounded-lg p-3 hover:bg-stone-50 transition-colors"
-              >
+              <div key={quote.id} className="border rounded-lg p-3">
                 <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-stone-900 text-sm">
-                      {quote.quote_name || formatCurrency(quote.total_quoted_cents)}
+                  <Link href={`/quotes/${quote.id}`} className="flex-1 min-w-0 hover:underline">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-stone-900 text-sm">
+                        {quote.quote_name || formatCurrency(quote.total_quoted_cents)}
+                      </span>
+                      <QuoteStatusBadge status={quote.status as any} />
+                      {quote.pricing_model && (
+                        <PricingModelBadge model={quote.pricing_model as any} />
+                      )}
+                    </div>
+                  </Link>
+                  <div className="flex items-center gap-2 ml-2">
+                    <span className="text-sm font-semibold text-stone-900">
+                      {formatCurrency(quote.total_quoted_cents)}
                     </span>
-                    <QuoteStatusBadge status={quote.status as any} />
-                    {quote.pricing_model && (
-                      <PricingModelBadge model={quote.pricing_model as any} />
+                    {(quote.status === 'sent' || quote.status === 'accepted') && (
+                      <a
+                        href={`/api/documents/quote/${quote.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-stone-500 hover:text-stone-800 border border-stone-200 rounded px-2 py-0.5 hover:bg-stone-50"
+                      >
+                        PDF
+                      </a>
                     )}
                   </div>
-                  <span className="text-sm font-semibold text-stone-900">
-                    {formatCurrency(quote.total_quoted_cents)}
-                  </span>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}
@@ -337,59 +423,58 @@ export default async function InquiryDetailPage({
       />
 
       {/* Notes */}
-      {notes && (
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Internal Notes</h2>
-          <p className="text-sm text-stone-700 whitespace-pre-wrap">{notes}</p>
-        </Card>
+      <InquiryNotes inquiryId={inquiry.id} initialNotes={inquiryNotes} />
+
+      {/* Recipe Ideas */}
+      <InquiryRecipeLinker
+        inquiryId={inquiry.id}
+        initialLinks={recipeLinks}
+        availableRecipes={availableRecipes}
+      />
+
+      {/* Dinner Photos — shown when this inquiry was converted to an event with photos */}
+      {convertedEventId && (
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-xl font-semibold text-stone-900">Dinner Photos</h2>
+            {eventPhotos.length === 0 && (
+              <span className="text-sm text-stone-400">
+                No photos uploaded yet for this dinner.{' '}
+                <a href={`/events/${convertedEventId}`} className="text-brand-600 hover:underline">
+                  Go to event &rarr;
+                </a>
+              </span>
+            )}
+          </div>
+          <EventPhotoGallery
+            eventId={convertedEventId}
+            initialPhotos={eventPhotos}
+          />
+        </div>
       )}
 
-      {/* Source Message */}
-      {inquiry.source_message && (
+      {/* Documents — shown when this inquiry was converted to an event */}
+      {convertedEventId && docReadiness ? (
+        <DocumentSection
+          eventId={convertedEventId}
+          readiness={docReadiness}
+        />
+      ) : convertedEventId ? (
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Original Message</h2>
-          <div className="bg-stone-50 rounded-lg p-4">
-            <p className="text-sm text-stone-700 whitespace-pre-wrap font-mono">
-              {inquiry.source_message}
-            </p>
-          </div>
+          <h2 className="text-xl font-semibold mb-3">Printed Documents</h2>
+          <p className="text-stone-500 text-sm">
+            Documents will be available once a menu is added to the linked event.{' '}
+            <a href={`/events/${convertedEventId}`} className="text-brand-600 hover:underline">
+              Go to event &rarr;
+            </a>
+          </p>
         </Card>
-      )}
-
-      {/* Status History */}
-      {inquiry.transitions.length > 0 && (
+      ) : (
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Status History</h2>
-          <div className="space-y-3">
-            {inquiry.transitions.map((transition) => (
-              <div key={transition.id} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    {transition.from_status && (
-                      <>
-                        <span className="text-sm font-medium text-stone-900 capitalize">
-                          {(transition.from_status as string).replace('_', ' ')}
-                        </span>
-                        <span className="text-stone-400">&rarr;</span>
-                      </>
-                    )}
-                    <span className="text-sm font-medium text-stone-900 capitalize">
-                      {(transition.to_status as string).replace('_', ' ')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-stone-500 mt-1">
-                    {format(new Date(transition.transitioned_at), "MMM d, yyyy 'at' h:mm a")}
-                  </p>
-                  {transition.reason && (
-                    <p className="text-sm text-stone-600 mt-1">
-                      Reason: {transition.reason}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <h2 className="text-xl font-semibold mb-3">Printed Documents</h2>
+          <p className="text-stone-500 text-sm">
+            Documents will be available once this inquiry converts to a confirmed event.
+          </p>
         </Card>
       )}
 

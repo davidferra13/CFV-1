@@ -149,7 +149,7 @@ export class PDFLayout {
   }
 
   /** Checkbox row — square box + text (for checklist) */
-  checkbox(text: string, size: number = 10, extraInfo?: string) {
+  checkbox(text: string, size: number = 10, extraInfo?: string, preChecked?: boolean) {
     const s = this.scaledSize(size)
     const boxSize = s * 0.38
     const lh = this.lineHeight(size) + 1
@@ -158,6 +158,13 @@ export class PDFLayout {
     this.doc.setDrawColor(40, 40, 40)
     this.doc.setLineWidth(0.3)
     this.doc.rect(MARGIN_X + 2, this.y - boxSize + 0.5, boxSize, boxSize)
+
+    // Pre-checked: draw a check mark inside the box
+    if (preChecked) {
+      this.doc.setFont('helvetica', 'bold')
+      this.doc.setFontSize(s * 0.9)
+      this.doc.text('✓', MARGIN_X + 2 + boxSize * 0.1, this.y - boxSize * 0.05)
+    }
 
     // Checkbox text
     this.doc.setFontSize(s)

@@ -8,7 +8,10 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import PaymentSection from './payment-section'
+import { PaymentPageClient } from './payment-page-client'
+import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
+import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
 
 export default async function PaymentPage({
   params
@@ -109,7 +112,7 @@ export default async function PaymentPage({
               {totalPaidCents > 0 && (
                 <div className="flex justify-between text-stone-600">
                   <span>Already Paid</span>
-                  <span className="font-medium text-green-600">
+                  <span className="font-medium text-emerald-600">
                     -{formatCurrency(totalPaidCents)}
                   </span>
                 </div>
@@ -148,18 +151,17 @@ export default async function PaymentPage({
         </CardContent>
       </Card>
 
-      {/* Payment Form */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Payment Details</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <PaymentSection
-            eventId={params.id}
-            amount={paymentAmount}
-          />
-        </CardContent>
-      </Card>
+      {/* Cancellation Policy — shown before payment so client knows the terms */}
+      <div className="mb-6">
+        <CancellationPolicyDisplay variant="compact" />
+      </div>
+
+      {/* Payment form + gift card/voucher redemption */}
+      <PaymentPageClient
+        eventId={params.id}
+        outstandingBalanceCents={outstandingBalanceCents}
+        paymentAmount={paymentAmount}
+      />
 
       {/* Security Notice */}
       <div className="mt-6 text-center text-sm text-stone-500">
@@ -170,6 +172,20 @@ export default async function PaymentPage({
           <span>Secure payment powered by Stripe</span>
         </div>
       </div>
+
+      {/* Activity tracking — payment_page_visited is the highest-intent signal */}
+      <ActivityTracker
+        eventType="payment_page_visited"
+        entityType="event"
+        entityId={params.id}
+        metadata={{
+          payment_amount_cents: paymentAmount,
+          has_deposit: hasDeposit,
+          occasion: event.occasion,
+          event_date: event.event_date,
+        }}
+      />
+      <SessionHeartbeat entityType="event" entityId={params.id} intervalMs={30_000} />
     </div>
   )
 }

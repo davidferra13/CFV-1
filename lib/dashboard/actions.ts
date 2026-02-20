@@ -18,7 +18,7 @@ export async function getOutstandingPayments() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: summaries, error } = await supabase
+  const { data: summaries, error } = await (supabase as any)
     .from('event_financial_summary')
     .select('event_id, outstanding_balance_cents, quoted_price_cents, total_paid_cents')
     .eq('tenant_id', user.tenantId!)
@@ -29,7 +29,7 @@ export async function getOutstandingPayments() {
     return { events: [] as OutstandingEvent[], totalOutstandingCents: 0 }
   }
 
-  const eventIds = summaries.map(s => s.event_id).filter(Boolean) as string[]
+  const eventIds = summaries.map((s: any) => s.event_id).filter(Boolean) as string[]
 
   // Only show non-draft, non-cancelled events where payment is expected
   const { data: events } = await supabase
@@ -41,7 +41,7 @@ export async function getOutstandingPayments() {
     .order('event_date', { ascending: true })
 
   const enriched: OutstandingEvent[] = (events || []).map(event => {
-    const fin = summaries.find(s => s.event_id === event.id)
+    const fin = summaries.find((s: any) => s.event_id === event.id)
     return {
       eventId: event.id,
       occasion: event.occasion,
@@ -195,7 +195,7 @@ export async function getMonthOverMonthRevenue() {
     }
   }
 
-  const { data: summaries } = await supabase
+  const { data: summaries } = await (supabase as any)
     .from('event_financial_summary')
     .select('event_id, total_paid_cents, profit_cents')
     .eq('tenant_id', user.tenantId!)
@@ -559,7 +559,7 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
       let from = 0
 
       while (true) {
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('chef_activity_log')
           .select('id, action, created_at, context')
           .eq('tenant_id', user.tenantId!)

@@ -1,6 +1,6 @@
 // Authentication Server Actions
 // Handles signup, signin, signout
-// Enforces invitation-based client signup
+// Supports chef signup and client signup
 
 'use server'
 
@@ -10,26 +10,7 @@ import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { getInvitationByToken, markInvitationUsed } from '@/lib/auth/invitations'
-
-// --- In-memory rate limiter (per-process, resets on deploy) ---
-
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
-
-function checkRateLimit(key: string, maxAttempts: number = 5, windowMs: number = 15 * 60 * 1000): void {
-  const now = Date.now()
-  const entry = rateLimitMap.get(key)
-
-  if (!entry || now > entry.resetAt) {
-    rateLimitMap.set(key, { count: 1, resetAt: now + windowMs })
-    return
-  }
-
-  if (entry.count >= maxAttempts) {
-    throw new Error('Too many attempts. Please try again later.')
-  }
-
-  entry.count++
-}
+import { checkRateLimit } from '@/lib/rateLimit'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -43,7 +24,7 @@ const ClientSignupSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   full_name: z.string().min(1, 'Full name required'),
   phone: z.string().optional(),
-  invitation_token: z.string().min(1, 'Invitation token required')
+  invitation_token: z.string().optional(),
 })
 
 const SignInSchema = z.object({
@@ -69,7 +50,7 @@ export type SignInInput = z.infer<typeof SignInSchema>
  */
 export async function signUpChef(input: ChefSignupInput) {
   const validated = ChefSignupSchema.parse(input)
-  checkRateLimit(validated.email)
+  await checkRateLimit(validated.email)
 
   // Use service role for creating user and tenant atomically
   const supabase = createServerClient({ admin: true })
@@ -78,7 +59,7 @@ export async function signUpChef(input: ChefSignupInput) {
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: validated.email,
     password: validated.password,
-    email_confirm: false // Send verification email
+    email_confirm: true
   })
 
   if (authError || !authData.user) {
@@ -124,6 +105,22 @@ export async function signUpChef(input: ChefSignupInput) {
       throw new Error('Failed to assign role')
     }
 
+    // Create default chef preferences so network visibility works immediately
+    const { error: preferencesError } = await (supabase as any)
+      .from('chef_preferences')
+      .insert({
+        chef_id: chef.id,
+        tenant_id: chef.id,
+      })
+
+    if (preferencesError) {
+      console.error('[signUpChef] Preferences creation error:', preferencesError)
+      await supabase.from('user_roles').delete().eq('auth_user_id', authData.user.id)
+      await supabase.from('chefs').delete().eq('id', chef.id)
+      await supabase.auth.admin.deleteUser(authData.user.id)
+      throw new Error('Failed to initialize chef preferences')
+    }
+
     return { success: true, userId: authData.user.id }
   } catch (error) {
     // Ensure cleanup
@@ -133,21 +130,32 @@ export async function signUpChef(input: ChefSignupInput) {
 }
 
 /**
- * Client signup - Invitation-based only
+ * Client signup
+ * Supports:
+ * - standalone signup (no chef required)
+ * - invitation token flow
  */
 export async function signUpClient(input: ClientSignupInput) {
   const validated = ClientSignupSchema.parse(input)
-  checkRateLimit(validated.email)
+  await checkRateLimit(validated.email)
 
-  // Verify invitation
-  const invitation = await getInvitationByToken(validated.invitation_token)
-  if (!invitation) {
-    throw new Error('Invalid or expired invitation')
-  }
+  let tenantId: string | null = null
+  let invitationId: string | null = null
+  const invitationToken = validated.invitation_token?.trim()
 
-  // Verify email matches invitation
-  if (invitation.email.toLowerCase() !== validated.email.toLowerCase()) {
-    throw new Error('Email does not match invitation')
+  if (invitationToken) {
+    // Invitation path
+    const invitation = await getInvitationByToken(invitationToken)
+    if (!invitation) {
+      throw new Error('Invalid or expired invitation')
+    }
+
+    if (invitation.email.toLowerCase() !== validated.email.toLowerCase()) {
+      throw new Error('Email does not match invitation')
+    }
+
+    tenantId = invitation.tenant_id
+    invitationId = invitation.id
   }
 
   // Use service role for atomic creation
@@ -157,7 +165,7 @@ export async function signUpClient(input: ClientSignupInput) {
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: validated.email,
     password: validated.password,
-    email_confirm: false // Send verification email
+    email_confirm: true
   })
 
   if (authError || !authData.user) {
@@ -171,7 +179,7 @@ export async function signUpClient(input: ClientSignupInput) {
       .from('clients')
       .insert({
         auth_user_id: authData.user.id,
-        tenant_id: invitation.tenant_id,
+        tenant_id: tenantId as any,
         full_name: validated.full_name,
         email: validated.email,
         phone: validated.phone
@@ -201,8 +209,22 @@ export async function signUpClient(input: ClientSignupInput) {
       throw new Error('Failed to assign role')
     }
 
-    // Mark invitation as used
-    await markInvitationUsed(invitation.id)
+    // Mark invitation as used when token flow is used
+    if (invitationId) {
+      await markInvitationUsed(invitationId)
+    }
+
+    // Auto-award welcome points for invitation-based signups.
+    // Tenant is known at signup time only when an invitation token was used.
+    // Non-blocking — welcome point failure must never break account creation.
+    if (tenantId) {
+      try {
+        const { autoAwardWelcomePoints } = await import('@/lib/loyalty/auto-award')
+        await autoAwardWelcomePoints(client.id, tenantId)
+      } catch (welcErr) {
+        console.error('[signUpClient] Welcome points award failed (non-blocking):', welcErr)
+      }
+    }
 
     return { success: true, userId: authData.user.id }
   } catch (error) {
@@ -218,18 +240,57 @@ export async function signUpClient(input: ClientSignupInput) {
  */
 export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
-  checkRateLimit(validated.email)
+  const email = validated.email.trim().toLowerCase()
+  await checkRateLimit(email)
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+  if (
+    process.env.NODE_ENV === 'production' &&
+    (supabaseUrl.includes('127.0.0.1') || supabaseUrl.includes('localhost'))
+  ) {
+    console.error('[signIn] Misconfigured Supabase URL in production:', supabaseUrl)
+    throw new Error('Sign-in is temporarily unavailable. Please contact support.')
+  }
 
   const supabase = createServerClient()
 
   const { data, error } = await supabase.auth.signInWithPassword({
-    email: validated.email,
+    email,
     password: validated.password
   })
 
   if (error) {
     console.error('[signIn] Error:', error)
-    throw new Error('Invalid email or password')
+    const errorCode = String((error as any)?.code || '')
+    const errorMessage = String((error as any)?.message || '').toLowerCase()
+    const errorStatus = Number((error as any)?.status || 0)
+
+    if (errorCode === 'email_not_confirmed') {
+      throw new Error('Your email is not confirmed. Please use Forgot password or create a new account.')
+    }
+
+    const invalidCredentials =
+      errorCode === 'invalid_credentials' ||
+      errorMessage.includes('invalid login credentials') ||
+      errorMessage.includes('invalid email or password') ||
+      errorMessage.includes('invalid grant')
+
+    if (invalidCredentials) {
+      throw new Error('Invalid email or password')
+    }
+
+    const serviceUnavailable =
+      errorStatus >= 500 ||
+      errorMessage.includes('fetch failed') ||
+      errorMessage.includes('network') ||
+      errorMessage.includes('timed out') ||
+      errorMessage.includes('temporarily unavailable')
+
+    if (serviceUnavailable) {
+      throw new Error('Sign-in service is temporarily unavailable. Please try again.')
+    }
+
+    throw new Error('Sign-in failed. Please try again or reset your password.')
   }
 
   const cookieStore = cookies()

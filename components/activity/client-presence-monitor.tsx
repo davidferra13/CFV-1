@@ -1,0 +1,391 @@
+// ClientPresenceMonitor — Full-page real-time client portal monitoring panel.
+// Expanded version of LivePresencePanel: shows engagement scores, entity context,
+// and a live activity stream. Subscribes to Supabase Realtime for instant updates.
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import Link from 'next/link'
+import { createClient } from '@/lib/supabase/client'
+import type { ActiveClientWithContext, ActivityEvent, ActivityEventType } from '@/lib/activity/types'
+import { EngagementBadge } from './engagement-badge'
+
+// Presence windows
+const ONLINE_WINDOW_MS = 5 * 60 * 1000   // < 5 min = "Online Now"
+const RECENT_WINDOW_MS = 60 * 60 * 1000  // up to 60 min shown on this page
+
+// Max events to keep in the live stream
+const MAX_STREAM_EVENTS = 50
+
+// Human-readable labels for each event type
+const EVENT_LABELS: Record<string, string> = {
+  portal_login: 'logged in',
+  event_viewed: 'viewing an event',
+  quote_viewed: 'reviewing a quote',
+  invoice_viewed: 'viewing an invoice',
+  proposal_viewed: 'reviewing your proposal',
+  chat_message_sent: 'sent a message',
+  rsvp_submitted: 'submitted RSVP',
+  form_submitted: 'submitted a form',
+  page_viewed: 'browsing portal',
+  payment_page_visited: 'on the payment page',
+  document_downloaded: 'downloaded a document',
+  events_list_viewed: 'browsing events',
+  quotes_list_viewed: 'browsing quotes',
+  chat_opened: 'reading messages',
+  rewards_viewed: 'browsing rewards',
+  session_heartbeat: 'active on portal',
+}
+
+const STREAM_LABELS: Record<string, string> = {
+  portal_login: 'Logged into the portal',
+  event_viewed: 'Viewed an event',
+  quote_viewed: 'Viewed a quote',
+  invoice_viewed: 'Viewed an invoice',
+  proposal_viewed: 'Viewed a proposal',
+  chat_message_sent: 'Sent a chat message',
+  rsvp_submitted: 'Submitted RSVP',
+  form_submitted: 'Submitted a form',
+  page_viewed: 'Visited a page',
+  payment_page_visited: 'On the payment page',
+  document_downloaded: 'Downloaded a document',
+  events_list_viewed: 'Browsed event list',
+  quotes_list_viewed: 'Browsed quotes',
+  chat_opened: 'Opened messages',
+  rewards_viewed: 'Browsed rewards',
+}
+
+// Never shown in the activity stream
+const HIDDEN_FROM_STREAM = new Set(['session_heartbeat'])
+
+const HIGH_INTENT = new Set(['payment_page_visited', 'proposal_viewed'])
+
+type StreamItem = {
+  event: ActivityEvent
+  clientName: string
+}
+
+function getLabel(eventType: string): string {
+  return EVENT_LABELS[eventType] || 'on the portal'
+}
+
+function formatTimeAgo(dateStr: string): string {
+  const diffMs = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diffMs / 60000)
+  if (mins < 1) return 'now'
+  if (mins === 1) return '1m ago'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(diffMs / 3600000)
+  if (hrs === 1) return '1h ago'
+  return `${hrs}h ago`
+}
+
+function isOnlineNow(lastActivity: string): boolean {
+  return Date.now() - new Date(lastActivity).getTime() < ONLINE_WINDOW_MS
+}
+
+interface ClientPresenceMonitorProps {
+  tenantId: string
+  initialClients: ActiveClientWithContext[]
+  initialActivity: ActivityEvent[]
+}
+
+export function ClientPresenceMonitor({
+  tenantId,
+  initialClients,
+  initialActivity,
+}: ClientPresenceMonitorProps) {
+  const [clients, setClients] = useState<ActiveClientWithContext[]>(initialClients)
+
+  // Build initial stream with resolved client names from the initial clients list
+  const initialNameMap = new Map(initialClients.map(c => [c.client_id, c.client_name]))
+  const [stream, setStream] = useState<StreamItem[]>(
+    initialActivity
+      .filter(e => !HIDDEN_FROM_STREAM.has(e.event_type))
+      .map(e => ({
+        event: e,
+        clientName: (e.client_id && initialNameMap.get(e.client_id)) || 'Client',
+      }))
+  )
+
+  // Cache of client names so Realtime rows can be enriched without a round-trip
+  const clientNamesRef = useRef<Map<string, string>>(
+    new Map(initialClients.map(c => [c.client_id, c.client_name]))
+  )
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    const channel = supabase
+      .channel(`client-presence-monitor:${tenantId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'activity_events',
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        (payload) => {
+          const row = payload.new as {
+            id: string
+            client_id: string | null
+            actor_type: string
+            event_type: string
+            entity_type: string | null
+            entity_id: string | null
+            metadata: Record<string, unknown> | null
+            created_at: string
+            tenant_id: string
+            actor_id: string
+          }
+
+          if (row.actor_type !== 'client' || !row.client_id) return
+
+          const clientId = row.client_id
+
+          function applyUpdate(resolvedName: string) {
+            const now = Date.now()
+
+            // Update the presence list
+            setClients(prev => {
+              const stillVisible = prev.filter(
+                c => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
+              )
+              const existing = stillVisible.find(c => c.client_id === clientId)
+              const updatedEntry: ActiveClientWithContext = existing
+                ? {
+                    ...existing,
+                    last_activity: row.created_at,
+                    event_type: row.event_type as ActivityEventType,
+                    entity_type: row.entity_type,
+                    last_entity_id: row.entity_id,
+                    metadata: row.metadata ?? undefined,
+                  }
+                : {
+                    client_id: clientId,
+                    client_name: resolvedName,
+                    last_activity: row.created_at,
+                    event_type: row.event_type as ActivityEventType,
+                    entity_type: row.entity_type,
+                    last_entity_id: row.entity_id,
+                    metadata: row.metadata ?? undefined,
+                    engagement_level: 'none',
+                    engagement_signals: [],
+                    entity_title: null,
+                  }
+
+              const withoutClient = stillVisible.filter(c => c.client_id !== clientId)
+              return [updatedEntry, ...withoutClient].sort(
+                (a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
+              )
+            })
+
+            // Prepend to the activity stream (if not a heartbeat)
+            if (!HIDDEN_FROM_STREAM.has(row.event_type)) {
+              const newEvent: ActivityEvent = {
+                id: row.id,
+                tenant_id: row.tenant_id,
+                actor_id: row.actor_id,
+                client_id: clientId,
+                actor_type: 'client',
+                event_type: row.event_type as ActivityEventType,
+                entity_type: row.entity_type,
+                entity_id: row.entity_id,
+                metadata: row.metadata ?? {},
+                created_at: row.created_at,
+              }
+              setStream(prev =>
+                [{ event: newEvent, clientName: resolvedName }, ...prev].slice(0, MAX_STREAM_EVENTS)
+              )
+            }
+          }
+
+          const cachedName = clientNamesRef.current.get(clientId)
+          if (cachedName) {
+            applyUpdate(cachedName)
+          } else {
+            void (async () => {
+              const { data } = await supabase
+                .from('clients')
+                .select('full_name')
+                .eq('id', clientId)
+                .single()
+              const name = data?.full_name || 'Client'
+              if (name !== 'Client') clientNamesRef.current.set(clientId, name)
+              applyUpdate(name)
+            })()
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      void supabase.removeChannel(channel)
+    }
+  }, [tenantId])
+
+  const onlineNow = clients.filter(c => isOnlineNow(c.last_activity))
+  const recentlyActive = clients.filter(c => !isOnlineNow(c.last_activity))
+
+  return (
+    <div className="space-y-6">
+      {/* ── Active Clients ── */}
+      <div className="border border-stone-200 rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-stone-50 border-b border-stone-200">
+          <h2 className="text-sm font-semibold text-stone-700">Active Clients</h2>
+          {onlineNow.length > 0 && (
+            <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              {onlineNow.length} online now
+            </span>
+          )}
+        </div>
+
+        {clients.length === 0 ? (
+          <div className="px-4 py-8 text-center text-stone-400 text-sm">
+            No clients active in the last hour. Activity will appear here as clients browse the portal.
+          </div>
+        ) : (
+          <div>
+            {/* Online Now */}
+            {onlineNow.length > 0 && (
+              <div>
+                <div className="px-4 py-2 bg-emerald-50 border-b border-emerald-100">
+                  <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide">Online Now</p>
+                </div>
+                <div className="divide-y divide-stone-100">
+                  {onlineNow.map(client => (
+                    <ClientPresenceRow key={client.client_id} client={client} isOnline />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Recently Active */}
+            {recentlyActive.length > 0 && (
+              <div>
+                <div className="px-4 py-2 bg-stone-50 border-b border-stone-100">
+                  <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wide">
+                    Recently Active (last hour)
+                  </p>
+                </div>
+                <div className="divide-y divide-stone-100">
+                  {recentlyActive.map(client => (
+                    <ClientPresenceRow key={client.client_id} client={client} isOnline={false} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Live Activity Stream ── */}
+      <div className="border border-stone-200 rounded-lg overflow-hidden">
+        <div className="px-4 py-3 bg-stone-50 border-b border-stone-200">
+          <h2 className="text-sm font-semibold text-stone-700">Live Activity Stream</h2>
+          <p className="text-xs text-stone-400 mt-0.5">All client portal actions in the past 24 hours</p>
+        </div>
+
+        {stream.length === 0 ? (
+          <div className="px-4 py-8 text-center text-stone-400 text-sm">
+            No client activity in the past 24 hours.
+          </div>
+        ) : (
+          <div className="divide-y divide-stone-100">
+            {stream.map(item => (
+              <StreamRow key={item.event.id} item={item} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Row: one client in the presence list ──
+
+function ClientPresenceRow({
+  client,
+  isOnline,
+}: {
+  client: ActiveClientWithContext
+  isOnline: boolean
+}) {
+  const isHighIntent = HIGH_INTENT.has(client.event_type)
+
+  return (
+    <Link
+      href={`/clients/${client.client_id}`}
+      className={`flex items-center gap-3 px-4 py-3 hover:bg-stone-50 transition-colors ${
+        isOnline ? '' : 'opacity-70'
+      }`}
+    >
+      {/* Avatar */}
+      <div className="relative shrink-0">
+        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+          isHighIntent
+            ? 'bg-amber-100 text-amber-700'
+            : 'bg-brand-100 text-brand-700'
+        }`}>
+          {client.client_name.charAt(0).toUpperCase()}
+        </span>
+        {isOnline && (
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+        )}
+      </div>
+
+      {/* Name + activity */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-sm font-medium text-stone-800 truncate">{client.client_name}</span>
+          {client.engagement_level !== 'none' && (
+            <EngagementBadge level={client.engagement_level} signals={client.engagement_signals} />
+          )}
+        </div>
+        <p className={`text-xs truncate mt-0.5 ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-400'}`}>
+          {getLabel(client.event_type)}
+          {client.entity_title && (
+            <span className="text-stone-400 font-normal"> — {client.entity_title}</span>
+          )}
+        </p>
+      </div>
+
+      {/* Time */}
+      <span className="text-xs text-stone-400 shrink-0">{formatTimeAgo(client.last_activity)}</span>
+    </Link>
+  )
+}
+
+// ── Row: one event in the activity stream ──
+
+function StreamRow({ item }: { item: StreamItem }) {
+  const { event, clientName } = item
+  const isHighIntent = HIGH_INTENT.has(event.event_type)
+  const label = STREAM_LABELS[event.event_type] || event.event_type
+
+  const href = event.client_id ? `/clients/${event.client_id}` : null
+
+  const content = (
+    <div className={`flex items-center gap-3 px-4 py-2.5 ${isHighIntent ? 'bg-amber-50' : ''}`}>
+      <span className={`w-2 h-2 rounded-full shrink-0 ${isHighIntent ? 'bg-amber-400' : 'bg-stone-300'}`} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm text-stone-700 truncate">
+          <span className="font-medium">{clientName}</span>
+          <span className="text-stone-400"> — </span>
+          {label}
+        </p>
+      </div>
+      <span className="text-xs text-stone-400 shrink-0">{formatTimeAgo(event.created_at)}</span>
+    </div>
+  )
+
+  if (href) {
+    return (
+      <Link href={href} className="block hover:bg-stone-50 transition-colors">
+        {content}
+      </Link>
+    )
+  }
+  return content
+}

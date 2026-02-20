@@ -106,7 +106,7 @@ export async function inviteClient(input: InviteClientInput) {
 
   revalidatePath('/clients')
 
-  const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?token=${token}`
+  const invitationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/client-signup?token=${token}`
 
   // Send invitation email to client (non-blocking)
   try {
@@ -502,4 +502,221 @@ export async function updateClientHousehold(formData: FormData) {
   revalidatePath(`/clients/${clientId}`)
 
   return { success: true, client }
+}
+
+/**
+ * Get comprehensive financial detail for a single client.
+ * Returns per-event breakdown (quoted, paid, outstanding, payment status),
+ * all ledger entries for the client, and summary totals.
+ */
+export async function getClientFinancialDetail(clientId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Verify client belongs to this tenant
+  const { data: clientCheck } = await supabase
+    .from('clients')
+    .select('id')
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!clientCheck) throw new Error('Client not found')
+
+  // Parallel: events for this client + ledger entries for this client
+  const [eventsResult, ledgerResult] = await Promise.all([
+    supabase
+      .from('events')
+      .select('id, occasion, event_date, status, quoted_price_cents, payment_status, deposit_amount_cents, guest_count')
+      .eq('client_id', clientId)
+      .eq('tenant_id', user.tenantId!)
+      .order('event_date', { ascending: false }),
+    supabase
+      .from('ledger_entries')
+      .select('id, entry_type, amount_cents, is_refund, description, payment_method, created_at, received_at, event_id, events(id, occasion, event_date)')
+      .eq('client_id', clientId)
+      .eq('tenant_id', user.tenantId!)
+      .order('created_at', { ascending: false })
+  ])
+
+  const events = eventsResult.data ?? []
+  const ledgerEntries = ledgerResult.data ?? []
+
+  // Fetch financial summary for each event from the view
+  const eventIds = events.map(e => e.id)
+  const { data: summaries } = eventIds.length > 0
+    ? await supabase
+        .from('event_financial_summary')
+        .select('event_id, total_paid_cents, total_refunded_cents, outstanding_balance_cents, tip_amount_cents, net_revenue_cents')
+        .in('event_id', eventIds)
+    : { data: [] }
+
+  const summaryMap = new Map<string, {
+    total_paid_cents: number
+    total_refunded_cents: number
+    outstanding_balance_cents: number
+    tip_amount_cents: number
+    net_revenue_cents: number
+  }>()
+  for (const s of summaries ?? []) {
+    if (s.event_id) summaryMap.set(s.event_id, {
+      total_paid_cents: s.total_paid_cents ?? 0,
+      total_refunded_cents: s.total_refunded_cents ?? 0,
+      outstanding_balance_cents: s.outstanding_balance_cents ?? 0,
+      tip_amount_cents: s.tip_amount_cents ?? 0,
+      net_revenue_cents: s.net_revenue_cents ?? 0,
+    })
+  }
+
+  // Build per-event breakdown
+  const eventBreakdown = events.map(event => {
+    const fin = summaryMap.get(event.id) ?? {
+      total_paid_cents: 0,
+      total_refunded_cents: 0,
+      outstanding_balance_cents: 0,
+      tip_amount_cents: 0,
+      net_revenue_cents: 0,
+    }
+    return {
+      eventId: event.id,
+      occasion: event.occasion ?? 'Untitled Event',
+      eventDate: event.event_date,
+      status: event.status,
+      guestCount: event.guest_count ?? 0,
+      quotedPriceCents: event.quoted_price_cents ?? 0,
+      depositAmountCents: event.deposit_amount_cents ?? 0,
+      paymentStatus: event.payment_status ?? 'unpaid',
+      totalPaidCents: fin.total_paid_cents,
+      totalRefundedCents: fin.total_refunded_cents,
+      outstandingBalanceCents: fin.outstanding_balance_cents,
+      tipAmountCents: fin.tip_amount_cents,
+    }
+  })
+
+  // Compute summary totals (exclude cancelled events from outstanding)
+  const activeEvents = eventBreakdown.filter(e => e.status !== 'cancelled')
+  const totalQuotedCents = activeEvents.reduce((sum, e) => sum + e.quotedPriceCents, 0)
+  const totalPaidCents = activeEvents.reduce((sum, e) => sum + e.totalPaidCents, 0)
+  const totalOutstandingCents = activeEvents.reduce((sum, e) => sum + e.outstandingBalanceCents, 0)
+  const totalRefundedCents = eventBreakdown.reduce((sum, e) => sum + e.totalRefundedCents, 0)
+
+  // Tips: compute from ledger entries (entry_type = 'tip') to stay consistent
+  // with getTenantFinancialSummary — ledger is the source of truth, not events.tip_amount_cents
+  const totalTipsCents = ledgerEntries
+    .filter((e: any) => e.entry_type === 'tip')
+    .reduce((sum: number, e: any) => sum + e.amount_cents, 0)
+
+  return {
+    eventBreakdown,
+    ledgerEntries,
+    summary: {
+      totalQuotedCents,
+      totalPaidCents,
+      totalOutstandingCents,
+      totalRefundedCents,
+      totalTipsCents,
+      collectionRatePercent: totalQuotedCents > 0
+        ? Math.round((totalPaidCents / totalQuotedCents) * 100)
+        : 100,
+    }
+  }
+}
+
+/**
+ * Toggle automated emails on/off for a specific client.
+ * Chef-controlled only — the client does not see or manage this setting.
+ */
+export async function setClientAutomatedEmails(clientId: string, enabled: boolean) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('clients')
+    .update({ automated_emails_enabled: enabled } as any)
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[setClientAutomatedEmails] Error:', error)
+    throw new Error('Failed to update client email preference')
+  }
+
+  revalidatePath(`/clients/${clientId}`)
+  return { success: true }
+}
+
+/**
+ * Create a client record directly from an inquiry (chef-only).
+ * Used in the "Add as Client" flow on the inquiry detail page.
+ * Creates the client without auth account — a "shadow client" the chef manages.
+ * Also links the new client to the source inquiry.
+ */
+export async function addClientFromInquiry(input: {
+  full_name: string
+  email: string
+  phone?: string
+  inquiryId: string
+}): Promise<{ success: true; clientId: string } | { success: false; error: string }> {
+  try {
+    const user = await requireChef()
+    const supabase = createServerClient()
+
+    if (!input.full_name.trim() || !input.email.trim()) {
+      return { success: false, error: 'Name and email are required' }
+    }
+
+    // Check for duplicate email in this tenant
+    const { data: existing } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('tenant_id', user.tenantId!)
+      .eq('email', input.email.trim().toLowerCase())
+      .maybeSingle()
+
+    if (existing) {
+      // Client already exists — just link the inquiry
+      await supabase
+        .from('inquiries')
+        .update({ client_id: existing.id })
+        .eq('id', input.inquiryId)
+        .eq('tenant_id', user.tenantId!)
+
+      revalidatePath(`/inquiries/${input.inquiryId}`)
+      revalidatePath('/clients')
+      return { success: true, clientId: existing.id }
+    }
+
+    // Create the client record
+    const { data: client, error: clientErr } = await supabase
+      .from('clients')
+      .insert({
+        tenant_id: user.tenantId!,
+        full_name: input.full_name.trim(),
+        email: input.email.trim().toLowerCase(),
+        phone: input.phone?.trim() || null,
+      } as any)
+      .select('id')
+      .single()
+
+    if (clientErr || !client) {
+      console.error('[addClientFromInquiry] Insert error:', clientErr)
+      return { success: false, error: 'Failed to create client record' }
+    }
+
+    // Link inquiry to new client
+    await supabase
+      .from('inquiries')
+      .update({ client_id: client.id })
+      .eq('id', input.inquiryId)
+      .eq('tenant_id', user.tenantId!)
+
+    revalidatePath(`/inquiries/${input.inquiryId}`)
+    revalidatePath('/clients')
+    revalidatePath('/inquiries')
+
+    return { success: true, clientId: client.id }
+  } catch (err) {
+    console.error('[addClientFromInquiry] Error:', err)
+    return { success: false, error: 'An unexpected error occurred' }
+  }
 }

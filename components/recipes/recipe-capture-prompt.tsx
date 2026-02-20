@@ -1,9 +1,14 @@
 'use client'
 
+// Recipe Capture Prompt — Post-Event Banner
+// Shown on event detail when components have no recipe.
+// Upgraded from quiet card to prominent, action-oriented banner.
+// Also supports quick in-place capture for single dishes.
+
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +16,7 @@ import { Alert } from '@/components/ui/alert'
 import { createRecipe, addIngredientToRecipe, linkRecipeToComponent } from '@/lib/recipes/actions'
 import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedIngredient } from '@/lib/ai/parse-recipe'
+import { BookOpen, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
 
 type UnrecordedComponent = {
   id: string
@@ -27,25 +33,25 @@ type Props = {
 export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigured }: Props) {
   const router = useRouter()
   const [components, setComponents] = useState(unrecordedComponents)
+  const [expanded, setExpanded] = useState(true)
   const [quickCaptureId, setQuickCaptureId] = useState<string | null>(null)
   const [rawText, setRawText] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // All caught up — show a quiet success state
   if (components.length === 0) {
     return (
-      <Card className="border-green-200 bg-green-50">
-        <CardContent className="py-4">
-          <p className="text-green-800 font-medium">All recipes recorded for this event</p>
-        </CardContent>
-      </Card>
+      <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+        <BookOpen className="h-5 w-5 text-emerald-600 shrink-0" />
+        <p className="text-sm font-medium text-green-900">All recipes recorded for this event</p>
+      </div>
     )
   }
 
   const handleQuickCapture = async (comp: UnrecordedComponent) => {
     if (!rawText.trim()) return
-
     setLoading(true)
     setError('')
     setSuccess('')
@@ -56,7 +62,6 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
       let recipeMethod = rawText.trim()
       let ingredientsList: ParsedIngredient[] = []
 
-      // If AI is available, parse the text
       if (aiConfigured) {
         const result = await parseRecipeFromText(`${comp.name}: ${rawText}`)
         recipeName = result.parsed.name || comp.name
@@ -65,14 +70,12 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
         ingredientsList = result.parsed.ingredients || []
       }
 
-      // Create recipe
       const recipeResult = await createRecipe({
         name: recipeName,
         category: recipeCategory,
         method: recipeMethod,
       })
 
-      // Add parsed ingredients
       for (let i = 0; i < ingredientsList.length; i++) {
         const ing = ingredientsList[i]
         await addIngredientToRecipe(recipeResult.recipe.id, {
@@ -87,14 +90,12 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
         })
       }
 
-      // Link to component
       await linkRecipeToComponent(recipeResult.recipe.id, comp.id)
 
-      // Remove from list
       setComponents(prev => prev.filter(c => c.id !== comp.id))
       setQuickCaptureId(null)
       setRawText('')
-      setSuccess(`Recipe "${recipeName}" saved and linked to ${comp.name}`)
+      setSuccess(`"${recipeName}" saved and linked`)
       router.refresh()
     } catch (err: any) {
       setError(err.message || 'Failed to save recipe')
@@ -104,29 +105,56 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
   }
 
   return (
-    <Card className="border-amber-200">
-      <CardHeader>
-        <CardTitle>Recipe Capture</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-stone-600">
-          {components.length} component{components.length !== 1 ? 's' : ''} from this dinner {components.length !== 1 ? "don't" : "doesn't"} have saved recipes:
-        </p>
+    <div className="border-2 border-amber-400 rounded-lg overflow-hidden">
+      {/* Banner header — always visible */}
+      <button
+        type="button"
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-amber-50 hover:bg-amber-100 transition-colors"
+      >
+        <div className="flex items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+          <span className="font-semibold text-amber-900">
+            {components.length} dish{components.length !== 1 ? 'es' : ''} from this event {components.length !== 1 ? 'have' : 'has'} no recipe recorded
+          </span>
+          <Badge variant="warning">{components.length}</Badge>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href="/recipes/sprint"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors"
+          >
+            Sprint Mode
+          </Link>
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 text-amber-600" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-amber-600" />
+          )}
+        </div>
+      </button>
 
-        {error && <Alert variant="error">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
+      {/* Expanded list of unrecorded components */}
+      {expanded && (
+        <div className="bg-white border-t border-amber-200 p-4 space-y-3">
+          {error && <Alert variant="error">{error}</Alert>}
+          {success && <Alert variant="success">{success}</Alert>}
 
-        <div className="space-y-3">
+          <p className="text-xs text-stone-500">
+            Record while the dinner is fresh. Paste a quick description — AI will structure it.
+          </p>
+
           {components.map((comp) => (
             <div key={comp.id} className="border border-stone-200 rounded-lg p-3">
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-stone-900">{comp.name}</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="font-medium text-stone-900 truncate">{comp.name}</span>
                   {comp.category && (
                     <Badge variant="default">{comp.category}</Badge>
                   )}
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 shrink-0">
                   <Button
                     size="sm"
                     variant="secondary"
@@ -138,8 +166,10 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
                   >
                     {quickCaptureId === comp.id ? 'Cancel' : 'Quick Capture'}
                   </Button>
-                  <Link href={`/recipes/new?component=${comp.id}&componentName=${encodeURIComponent(comp.name)}&componentCategory=${encodeURIComponent(comp.category || 'other')}`}>
-                    <Button size="sm">Record Recipe</Button>
+                  <Link
+                    href={`/recipes/new?component=${comp.id}&componentName=${encodeURIComponent(comp.name)}&componentCategory=${encodeURIComponent(comp.category || 'other')}`}
+                  >
+                    <Button size="sm">Full Editor</Button>
                   </Link>
                 </div>
               </div>
@@ -149,9 +179,10 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
                   <Textarea
                     value={rawText}
                     onChange={(e) => setRawText(e.target.value)}
-                    placeholder={`Describe how you made ${comp.name} tonight...`}
+                    placeholder={`How did you make ${comp.name}? Ingredients, technique, timing...`}
                     rows={4}
                     disabled={loading}
+                    autoFocus
                   />
                   <div className="flex justify-end gap-2">
                     <Button
@@ -167,7 +198,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
             </div>
           ))}
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   )
 }

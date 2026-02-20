@@ -180,7 +180,7 @@ function ImageContent({ message }: { message: ChatMessage }) {
 function getDocIcon(contentType: string | null) {
   if (contentType === 'application/pdf') return <FileText className="w-8 h-8 text-red-500" />
   if (contentType?.includes('spreadsheet') || contentType?.includes('excel') || contentType === 'text/csv') {
-    return <FileSpreadsheet className="w-8 h-8 text-green-600" />
+    return <FileSpreadsheet className="w-8 h-8 text-emerald-600" />
   }
   if (contentType?.includes('word') || contentType === 'application/msword') {
     return <FileText className="w-8 h-8 text-blue-600" />

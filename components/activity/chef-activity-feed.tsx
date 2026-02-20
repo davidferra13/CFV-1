@@ -85,7 +85,7 @@ function ContextLine({ context }: { context: Record<string, unknown> }) {
 
   return (
     <p className="text-xs text-stone-400 mt-0.5 truncate">
-      {parts.join(' · ')}
+      {parts.join(' | ')}
     </p>
   )
 }

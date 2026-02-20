@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { Json } from '@/types/database'
 import type { NotificationCategory, NotificationAction, Notification } from './types'
+import { routeNotification } from './channel-router'
 
 // ─── Create ─────────────────────────────────────────────────────────────
 
@@ -43,24 +44,42 @@ export async function createNotification({
 }) {
   const supabase = createServerClient({ admin: true })
 
-  const { error } = await supabase.from('notifications').insert({
-    tenant_id: tenantId,
-    recipient_id: recipientId,
-    category,
-    action,
-    title,
-    body: body ?? null,
-    action_url: actionUrl ?? null,
-    event_id: eventId ?? null,
-    inquiry_id: inquiryId ?? null,
-    client_id: clientId ?? null,
-    metadata: metadata as unknown as Json,
-  })
+  const { data: notification, error } = await supabase
+    .from('notifications')
+    .insert({
+      tenant_id: tenantId,
+      recipient_id: recipientId,
+      category,
+      action,
+      title,
+      body: body ?? null,
+      action_url: actionUrl ?? null,
+      event_id: eventId ?? null,
+      inquiry_id: inquiryId ?? null,
+      client_id: clientId ?? null,
+      metadata: metadata as unknown as Json,
+    })
+    .select('id')
+    .single()
 
-  if (error) {
+  if (error || !notification) {
     console.error('[createNotification] Insert failed:', error)
     throw new Error('Failed to create notification')
   }
+
+  // Fire out-of-app channels (email, push, SMS) as a non-blocking side effect.
+  // routeNotification never throws — all errors are caught and logged internally.
+  routeNotification({
+    notificationId: notification.id,
+    tenantId,
+    recipientId,
+    action,
+    title,
+    body,
+    actionUrl,
+  }).catch((err) => {
+    console.error('[createNotification] routeNotification fire failed:', err)
+  })
 }
 
 // ─── Read ───────────────────────────────────────────────────────────────
@@ -221,7 +240,30 @@ export async function updateNotificationPreference(
   }
 }
 
-// ─── Helper for resolving chef recipient ────────────────────────────────
+// ─── Helpers for resolving chef recipient ────────────────────────────────
+
+/**
+ * Get the chef's email and business name for a given tenant.
+ * Used when sending out-of-app emails in the multi-channel router.
+ */
+export async function getChefProfile(
+  tenantId: string,
+): Promise<{ email: string; name: string } | null> {
+  const supabase = createServerClient({ admin: true })
+
+  const { data, error } = await supabase
+    .from('chefs')
+    .select('email, business_name')
+    .eq('id', tenantId)
+    .single()
+
+  if (error || !data) {
+    console.error('[getChefProfile] Lookup failed:', error)
+    return null
+  }
+
+  return { email: data.email, name: data.business_name }
+}
 
 /**
  * Get the auth_user_id for a chef (tenant).

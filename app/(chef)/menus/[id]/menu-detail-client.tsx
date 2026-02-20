@@ -212,6 +212,12 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
           <Button variant="ghost" onClick={() => router.back()}>
             Back
           </Button>
+          <Button
+            variant="primary"
+            onClick={() => router.push(`/menus/${menu.id}/editor`)}
+          >
+            Open Editor
+          </Button>
         </div>
       </div>
 
@@ -326,7 +332,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                                     {comp.category && <span className="text-stone-400 ml-1">({comp.category})</span>}
                                   </span>
                                   {linkedRecipe ? (
-                                    <Link href={`/recipes/${linkedRecipe.id}`} className="text-xs text-green-600 hover:underline">
+                                    <Link href={`/recipes/${linkedRecipe.id}`} className="text-xs text-emerald-600 hover:underline">
                                       Recipe
                                     </Link>
                                   ) : (
@@ -336,6 +342,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                                 <div className="flex gap-1">
                                   {linkedRecipe ? (
                                     <button
+                                      type="button"
                                       onClick={() => handleUnlinkRecipe(comp.id)}
                                       className="text-xs text-stone-400 hover:text-red-500"
                                       disabled={loading}
@@ -345,6 +352,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                                   ) : (
                                     <>
                                       <button
+                                        type="button"
                                         onClick={() => {
                                           setLinkingComponentId(linkingComponentId === comp.id ? null : comp.id)
                                           setRecipeSearch('')
@@ -382,6 +390,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                                 <div className="mt-2 space-y-1">
                                   {recipeResults.map(recipe => (
                                     <button
+                                      type="button"
                                       key={recipe.id}
                                       onClick={() => handleLinkRecipe(recipe.id, linkingComponentId)}
                                       className="w-full text-left px-2 py-1.5 text-sm hover:bg-brand-50 rounded flex justify-between items-center"

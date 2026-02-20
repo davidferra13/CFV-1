@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database, Json } from '@/types/database'
+import type { PricingInput } from '@/lib/pricing/compute'
 
 type QuoteStatus = Database['public']['Enums']['quote_status']
 type PricingModel = Database['public']['Enums']['pricing_model']
@@ -399,6 +400,23 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
           occasion,
           validUntil: updated.valid_until,
         })
+
+        // In-app notification to client (non-blocking)
+        try {
+          const { createClientNotification } = await import('@/lib/notifications/client-actions')
+          await createClientNotification({
+            tenantId: user.tenantId!,
+            clientId: updated.client_id,
+            category: 'quote',
+            action: 'quote_sent_to_client',
+            title: `New quote from ${chef.business_name || 'your chef'}`,
+            body: `${((updated.total_quoted_cents ?? 0) / 100).toFixed(2)} for ${occasion || 'your event'}`,
+            actionUrl: `/my-quotes/${id}`,
+            inquiryId: updated.inquiry_id ?? undefined,
+          })
+        } catch {
+          // Non-fatal — notification failure must never block quote transition
+        }
       }
     } catch (emailErr) {
       console.error('[transitionQuote] Email failed (non-blocking):', emailErr)
@@ -522,4 +540,61 @@ export async function deleteQuote(id: string) {
 
   revalidatePath('/quotes')
   return { success: true }
+}
+
+// ============================================
+// 9. CREATE QUOTE FROM PRICING INPUT
+// ============================================
+// High-level action: runs the deterministic pricing engine, guards against
+// requiresCustomPricing, then persists the quote via createQuote().
+// Use this instead of calling computePricing + createQuote separately.
+
+export async function createQuoteFromPricingInput(
+  pricingInput: PricingInput & {
+    clientId: string
+    inquiryId?: string
+    eventId?: string
+    quoteName?: string
+    pricingNotes?: string
+    internalNotes?: string
+  }
+) {
+  // Import at call site (compute.ts is 'use server' — safe for dynamic import)
+  const { generateQuoteFromPricing } = await import('@/lib/pricing/compute')
+
+  const result = await generateQuoteFromPricing(pricingInput)
+
+  // Hard guard: never persist a quote that the engine cannot fully compute
+  if (result._requiresCustomPricing) {
+    const reasons = result._validationErrors.length > 0
+      ? result._validationErrors.join('; ')
+      : result._breakdown.notes.filter(n =>
+          n.toLowerCase().includes('custom') ||
+          n.toLowerCase().includes('requires') ||
+          n.toLowerCase().includes('buyout')
+        ).join('; ') || 'Pricing could not be fully determined'
+
+    throw new Error(
+      `Cannot save quote: requires custom pricing. ${reasons}`
+    )
+  }
+
+  // Strip internal underscore fields before handing off to createQuote
+  const { _requiresCustomPricing, _validationErrors, _breakdown, ...quoteData } = result
+
+  return createQuote({
+    client_id: quoteData.client_id,
+    inquiry_id: quoteData.inquiry_id ?? null,
+    event_id: quoteData.event_id ?? null,
+    quote_name: quoteData.quote_name ?? '',
+    pricing_model: quoteData.pricing_model as 'per_person' | 'flat_rate' | 'custom',
+    total_quoted_cents: quoteData.total_quoted_cents,
+    price_per_person_cents: quoteData.price_per_person_cents ?? null,
+    guest_count_estimated: quoteData.guest_count_estimated ?? null,
+    deposit_required: quoteData.deposit_required,
+    deposit_amount_cents: quoteData.deposit_amount_cents ?? null,
+    deposit_percentage: quoteData.deposit_percentage ?? null,
+    pricing_notes: quoteData.pricing_notes ?? '',
+    internal_notes: pricingInput.internalNotes ?? '',
+  })
 }

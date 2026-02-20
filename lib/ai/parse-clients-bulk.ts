@@ -5,7 +5,8 @@
 
 import { z } from 'zod'
 import { parseWithAI, type ParseResult } from './parse'
-import { ParsedClientSchema, type ParsedClient } from './parse-client'
+import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
+import { parseClientsHeuristically, toFallbackWarning } from './fallback-parsers'
 
 // ============================================
 // BULK RESPONSE SCHEMA
@@ -78,10 +79,14 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  * Parse multiple clients from a text dump
  */
 export async function parseClientsFromBulk(rawText: string): Promise<ParseResult<ParsedClient[]>> {
-  const result = await parseWithAI(
-    BULK_CLIENT_SYSTEM_PROMPT,
-    rawText,
-    BulkClientsResponseSchema
-  )
-  return result
+  try {
+    const result = await parseWithAI(
+      BULK_CLIENT_SYSTEM_PROMPT,
+      rawText,
+      BulkClientsResponseSchema
+    )
+    return result
+  } catch (error) {
+    return parseClientsHeuristically(rawText, toFallbackWarning(error))
+  }
 }

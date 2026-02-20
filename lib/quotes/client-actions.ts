@@ -77,7 +77,7 @@ export async function acceptQuote(quoteId: string) {
   // Fetch quote with full pricing data
   const { data: quote, error: fetchError } = await supabase
     .from('quotes')
-    .select('*')
+    .select('*, tenant_id')
     .eq('id', quoteId)
     .eq('client_id', user.entityId)
     .single()
@@ -153,6 +153,18 @@ export async function acceptQuote(quoteId: string) {
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${quoteId}`)
   revalidatePath('/my-events')
+
+  // Notify chef that quote was accepted (non-blocking)
+  const quoteTenantId = quote.tenant_id as string | undefined
+  if (quoteTenantId) {
+    notifyChefOfQuoteAccepted(
+      quoteTenantId,
+      quoteId,
+      quote,
+      user.entityId,
+    ).catch((err) => console.error('[acceptQuote] Chef notification failed:', err))
+  }
+
   return { success: true }
 }
 
@@ -197,4 +209,74 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${quoteId}`)
   return { success: true }
+}
+
+// ─── Internal: notify chef when a quote is accepted ──────────────────────────
+
+async function notifyChefOfQuoteAccepted(
+  tenantId: string,
+  quoteId: string,
+  quote: {
+    name?: string | null
+    title?: string | null
+    total_quoted_cents?: number | null
+    deposit_required?: boolean | null
+    deposit_amount_cents?: number | null
+    inquiry_id?: string | null
+  },
+  clientId: string,
+): Promise<void> {
+  const { createNotification, getChefAuthUserId, getChefProfile } = await import(
+    '@/lib/notifications/actions'
+  )
+
+  const [chefUserId, chefProfile] = await Promise.all([
+    getChefAuthUserId(tenantId),
+    getChefProfile(tenantId),
+  ])
+
+  if (!chefUserId) return
+
+  // Load client name
+  const { createServerClient } = await import('@/lib/supabase/server')
+  const supabase = createServerClient({ admin: true })
+  const { data: client } = await supabase
+    .from('clients')
+    .select('full_name')
+    .eq('id', clientId)
+    .single()
+  const clientName = client?.full_name ?? 'A client'
+
+  const quoteName = quote.name || quote.title || 'Quote'
+  const totalCents = quote.total_quoted_cents ?? 0
+  const inquiryId = quote.inquiry_id
+
+  // In-app notification
+  await createNotification({
+    tenantId,
+    recipientId: chefUserId,
+    category: 'quote',
+    action: 'quote_accepted',
+    title: 'Quote accepted',
+    body: `${clientName} accepted ${quoteName}`,
+    actionUrl: inquiryId ? `/inquiries/${inquiryId}` : '/inquiries',
+    clientId,
+    inquiryId: inquiryId ?? undefined,
+    metadata: { quote_id: quoteId, total_cents: totalCents },
+  })
+
+  // Email the chef
+  if (chefProfile) {
+    const { sendQuoteAcceptedChefEmail } = await import('@/lib/email/notifications')
+    await sendQuoteAcceptedChefEmail({
+      chefEmail: chefProfile.email,
+      chefName: chefProfile.name,
+      clientName,
+      quoteName,
+      totalCents,
+      depositRequired: quote.deposit_required ?? false,
+      depositCents: quote.deposit_amount_cents ?? null,
+      inquiryId: inquiryId ?? quoteId,
+    })
+  }
 }

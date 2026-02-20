@@ -151,7 +151,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
                       year: 'numeric',
                     })}
                     {note.source === 'ai_insight' && (
-                      <span className="ml-1.5 text-amber-500">AI-Suggested</span>
+                      <span className="ml-1.5 text-amber-500">Suggested</span>
                     )}
                   </p>
                 </div>

@@ -6,10 +6,15 @@ import { getResendClient, FROM_EMAIL, FROM_NAME } from './resend-client'
 import type { ReactElement } from 'react'
 
 type SendEmailParams = {
-  to: string
+  to: string | string[]
   subject: string
   react: ReactElement
   replyTo?: string
+  attachments?: Array<{
+    filename: string
+    content: Buffer | string
+    contentType?: string
+  }>
 }
 
 /**
@@ -17,7 +22,7 @@ type SendEmailParams = {
  * Non-blocking: logs errors but never throws.
  * Returns true if sent successfully, false otherwise.
  */
-export async function sendEmail({ to, subject, react, replyTo }: SendEmailParams): Promise<boolean> {
+export async function sendEmail({ to, subject, react, replyTo, attachments }: SendEmailParams): Promise<boolean> {
   // Skip if Resend is not configured (dev environments without key)
   if (!process.env.RESEND_API_KEY) {
     console.log('[sendEmail] RESEND_API_KEY not configured, skipping email to:', to)
@@ -33,6 +38,7 @@ export async function sendEmail({ to, subject, react, replyTo }: SendEmailParams
       subject,
       react,
       replyTo,
+      attachments,
     })
 
     if (error) {

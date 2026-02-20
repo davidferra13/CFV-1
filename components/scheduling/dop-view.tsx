@@ -25,7 +25,7 @@ function TaskRow({ task }: { task: DOPTask }) {
     <div className={`flex items-start gap-3 py-2 ${task.isOverdue ? 'bg-red-50 -mx-2 px-2 rounded' : ''}`}>
       <span className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded flex items-center justify-center text-xs ${
         task.isComplete
-          ? 'bg-green-100 text-green-600'
+          ? 'bg-green-100 text-emerald-600'
           : task.isOverdue
             ? 'bg-red-100 text-red-600'
             : 'bg-stone-100 text-stone-400'

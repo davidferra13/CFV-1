@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache'
 import { syncGmailInbox } from './sync'
 import { getGoogleAccessToken } from './google-auth'
 import { sendEmail, getMessageHeaders } from './client'
+import { isCommTriageEnabled } from '@/lib/features'
 import type { SyncResult, GmailSyncLogEntry, SendMessageResult } from './types'
 
 // ─── Trigger Gmail Sync ─────────────────────────────────────────────────────
@@ -31,9 +32,11 @@ export async function triggerGmailSync(): Promise<SyncResult> {
   // Run the sync
   const result = await syncGmailInbox(user.entityId!, user.tenantId!)
 
-  // Revalidate pages that show inquiry/message data
+  // Revalidate pages that show inquiry/message/inbox data
   revalidatePath('/inquiries')
   revalidatePath('/settings')
+  revalidatePath('/inbox')
+  revalidatePath('/inbox/triage')
 
   return result
 }
@@ -253,7 +256,39 @@ export async function approveAndSendMessage(
     // The message DID go out to Gmail
   }
 
-  // 7. Update inquiry: action tracking, auto-advance status, set follow-up timer
+  // 7. Ingest outbound message into communication pipeline (non-blocking)
+  // This ensures the inbox thread shows both inbound client messages AND chef replies.
+  if (isCommTriageEnabled()) {
+    try {
+      const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
+
+      // Get the chef's connected Gmail address for senderIdentity
+      const { data: conn } = await supabase
+        .from('google_connections')
+        .select('connected_email')
+        .eq('chef_id', user.entityId!)
+        .single()
+
+      await ingestCommunicationEvent({
+        tenantId: user.tenantId!,
+        source: 'email',
+        externalId: gmailResult.messageId,
+        externalThreadKey: gmailResult.threadId,
+        timestamp: new Date().toISOString(),
+        senderIdentity: conn?.connected_email ?? 'chef',
+        rawContent: `${subject}\n\n${emailBody}`.trim(),
+        direction: 'outbound',
+        linkedEntityType: message.inquiry_id ? 'inquiry' : null,
+        linkedEntityId: message.inquiry_id || null,
+        ingestionSource: 'manual',
+        actorId: user.id,
+      })
+    } catch (intakeErr) {
+      console.error('[approveAndSendMessage] Outbound communication intake failed (non-fatal):', intakeErr)
+    }
+  }
+
+  // 8. Update inquiry: action tracking, auto-advance status, set follow-up timer
   if (message.inquiry_id) {
     const { data: currentInquiry } = await supabase
       .from('inquiries')

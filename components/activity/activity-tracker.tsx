@@ -3,9 +3,10 @@
 'use client'
 
 import { useEffect } from 'react'
+import type { ActivityEventType } from '@/lib/activity/types'
 
 interface ActivityTrackerProps {
-  eventType: string
+  eventType: ActivityEventType
   entityType?: string
   entityId?: string
   metadata?: Record<string, unknown>

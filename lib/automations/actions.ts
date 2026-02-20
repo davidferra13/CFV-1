@@ -142,6 +142,28 @@ export async function getAutomationRules(): Promise<AutomationRule[]> {
   return (data || []) as unknown as AutomationRule[]
 }
 
+// ─── Get Templates for Rule Builder ──────────────────────────────────────
+// Lightweight fetch for the template picker dropdown in the rule builder.
+
+export async function getTemplatesForAutomations(): Promise<{ id: string; name: string }[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('response_templates')
+    .select('id, name')
+    .eq('tenant_id', user.tenantId!)
+    .eq('is_active', true)
+    .order('name')
+
+  if (error) {
+    console.error('[getTemplatesForAutomations] Error:', error)
+    return []
+  }
+
+  return data || []
+}
+
 // ─── Get Execution History ───────────────────────────────────────────────
 
 export async function getAutomationExecutions(options?: {

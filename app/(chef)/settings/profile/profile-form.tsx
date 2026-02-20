@@ -1,12 +1,12 @@
 // Profile Form - Edit chef network profile fields
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { updateChefProfile } from '@/lib/network/actions'
+import { updateChefProfile, uploadChefProfileImage } from '@/lib/network/actions'
 
 interface ProfileFormProps {
   profile: {
@@ -26,18 +26,42 @@ export function ProfileForm({ profile }: ProfileFormProps) {
   const [displayName, setDisplayName] = useState(profile.display_name ?? '')
   const [bio, setBio] = useState(profile.bio ?? '')
   const [profileImageUrl, setProfileImageUrl] = useState(profile.profile_image_url ?? '')
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null)
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string | null>(null)
 
-  function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    if (!selectedImageFile) {
+      setImagePreviewUrl(null)
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(selectedImageFile)
+    setImagePreviewUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [selectedImageFile])
+
+  function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setSuccess(false)
 
     startTransition(async () => {
       try {
+        let nextProfileImageUrl = profileImageUrl.trim() || null
+
+        if (selectedImageFile) {
+          const formData = new FormData()
+          formData.set('image', selectedImageFile)
+          const uploaded = await uploadChefProfileImage(formData)
+          nextProfileImageUrl = uploaded.url
+          setProfileImageUrl(uploaded.url)
+          setSelectedImageFile(null)
+        }
+
         await updateChefProfile({
           display_name: displayName.trim() || null,
           bio: bio.trim() || null,
-          profile_image_url: profileImageUrl.trim() || null,
+          profile_image_url: nextProfileImageUrl,
         })
         setSuccess(true)
         router.refresh()
@@ -88,22 +112,37 @@ export function ProfileForm({ profile }: ProfileFormProps) {
             <p className="mt-1.5 text-sm text-stone-500">{bio.length}/500 characters</p>
           </div>
 
-          <Input
-            label="Profile Image URL"
-            type="url"
-            placeholder="https://example.com/your-photo.jpg"
-            value={profileImageUrl}
-            onChange={(e) => setProfileImageUrl(e.target.value)}
-            helperText="Link to a profile photo. If blank, your initials will be shown."
-          />
+          <div className="w-full">
+            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+              Profile Photo
+            </label>
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+              onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
+              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+            />
+            <p className="mt-1.5 text-sm text-stone-500">
+              Upload a JPEG, PNG, HEIC, or WebP image (max 10MB). New upload replaces your current photo.
+            </p>
+            {profileImageUrl && !selectedImageFile && (
+              <button
+                type="button"
+                className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+                onClick={() => setProfileImageUrl('')}
+              >
+                Remove current photo
+              </button>
+            )}
+          </div>
 
           {/* Preview */}
           <div className="pt-2 border-t border-stone-100">
             <p className="text-sm font-medium text-stone-700 mb-2">Preview</p>
             <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
-              {profileImageUrl ? (
+              {(imagePreviewUrl || profileImageUrl) ? (
                 <img
-                  src={profileImageUrl}
+                  src={imagePreviewUrl || profileImageUrl}
                   alt="Preview"
                   className="h-10 w-10 rounded-full object-cover"
                   onError={(e) => {

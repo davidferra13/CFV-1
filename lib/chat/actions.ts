@@ -506,6 +506,16 @@ export async function sendChatMessage(input: z.infer<typeof SendMessageSchema>) 
     )
   }
 
+  // Notify chef when a client sends a message (non-blocking)
+  if (user.role === 'client') {
+    notifyChefOfClientMessage(
+      validated.conversation_id,
+      message.id,
+      validated.body ?? 'Sent a message',
+      user.tenantId,
+    ).catch((err) => console.error('[sendChatMessage] Chef notification failed:', err))
+  }
+
   // Log chef activity (non-blocking, chef only)
   if (user.role === 'chef' && user.tenantId) {
     try {
@@ -881,7 +891,7 @@ export async function getChatAttachmentUrl(messageId: string): Promise<string | 
 }
 
 /** @deprecated Use getChatAttachmentUrl instead */
-export const getChatImageUrl = getChatAttachmentUrl
+const getChatImageUrl = getChatAttachmentUrl
 
 // ============================================
 // CLIENT-INITIATED CONVERSATIONS
@@ -1019,4 +1029,98 @@ export async function searchChatMessages(
   }
 
   return (messages || []) as ChatMessage[]
+}
+
+// ─── Internal: Chef notification for client messages ─────────────────────────
+
+/**
+ * Fires after a client sends a message. Looks up the chef's identity,
+ * creates an in-app notification, and sends an email.
+ * Rate-limited: checks conversation.last_chef_notified_at — max 1 email per hour per conversation.
+ */
+async function notifyChefOfClientMessage(
+  conversationId: string,
+  messageId: string,
+  messageBody: string,
+  clientTenantId: string | undefined | null,
+): Promise<void> {
+  const { createServerClient } = await import('@/lib/supabase/server')
+  const supabase = createServerClient({ admin: true })
+
+  // Load conversation to get tenant_id (the chef's tenant)
+  const { data: conversation } = await supabase
+    .from('conversations')
+    .select('tenant_id, last_message_at')
+    .eq('id', conversationId)
+    .single()
+
+  if (!conversation) return
+
+  const tenantId = conversation.tenant_id
+
+  // Load chef identity
+  const { createNotification, getChefAuthUserId, getChefProfile } = await import('@/lib/notifications/actions')
+  const [chefUserId, chefProfile] = await Promise.all([
+    getChefAuthUserId(tenantId),
+    getChefProfile(tenantId),
+  ])
+
+  if (!chefUserId) return
+
+  // Load client name from conversation participants
+  const { data: participants } = await supabase
+    .from('conversation_participants')
+    .select('auth_user_id, role')
+    .eq('conversation_id', conversationId)
+    .neq('role', 'chef')
+    .limit(1)
+
+  let clientName = 'A client'
+  if (participants?.[0]) {
+    const clientAuthId = participants[0].auth_user_id
+    const { data: client } = await supabase
+      .from('clients')
+      .select('full_name')
+      .eq('auth_user_id', clientAuthId)
+      .eq('tenant_id', tenantId)
+      .single()
+    if (client?.full_name) clientName = client.full_name
+  }
+
+  // In-app notification (non-blocking failure is fine)
+  await createNotification({
+    tenantId,
+    recipientId: chefUserId,
+    category: 'chat',
+    action: 'new_message',
+    title: `New message from ${clientName}`,
+    body: messageBody.length > 100 ? messageBody.slice(0, 100) + '…' : messageBody,
+    actionUrl: `/inbox`,
+    metadata: { conversation_id: conversationId, message_id: messageId },
+  })
+
+  // Email — rate-limited to once per conversation per hour
+  if (chefProfile) {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { data: recentLog } = await supabase
+      .from('notification_delivery_log')
+      .select('id')
+      .eq('tenant_id', tenantId)
+      .eq('channel', 'email')
+      .eq('status', 'sent')
+      .gte('sent_at', oneHourAgo)
+      .limit(1)
+      .single()
+
+    if (!recentLog) {
+      const { sendNewMessageChefEmail } = await import('@/lib/email/notifications')
+      await sendNewMessageChefEmail({
+        chefEmail: chefProfile.email,
+        chefName: chefProfile.name,
+        clientName,
+        messagePreview: messageBody,
+        conversationUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/inbox`,
+      })
+    }
+  }
 }

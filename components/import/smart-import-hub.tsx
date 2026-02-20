@@ -24,8 +24,11 @@ import type { BrainDumpImportResult } from '@/lib/ai/import-actions'
 import type { ReceiptExtraction } from '@/lib/ai/parse-receipt'
 import type { ParsedDocument } from '@/lib/ai/parse-document-text'
 import type { VisionDetectionResult } from '@/lib/ai/parse-document-vision'
+import { CsvImport } from './csv-import'
+import { PastEventsImport } from './past-events-import'
+import { TakeAChefImport } from './take-a-chef-import'
 
-type ImportMode = 'brain-dump' | 'clients' | 'recipe' | 'receipt' | 'document' | 'file-upload'
+export type ImportMode = 'brain-dump' | 'clients' | 'recipe' | 'receipt' | 'document' | 'file-upload' | 'csv' | 'past-events' | 'take-a-chef'
 type ImportPhase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
 
 type EventOption = {
@@ -35,13 +38,25 @@ type EventOption = {
   client: { full_name: string } | null
 }
 
-type TabConfig = { mode: ImportMode; label: string; placeholder: string; isFileUpload?: boolean }
+type TabConfig = { mode: ImportMode; label: string; placeholder: string; isFileUpload?: boolean; isCustomComponent?: boolean }
 
 const TABS: TabConfig[] = [
   {
     mode: 'brain-dump',
     label: 'Brain Dump',
     placeholder: `Paste anything - client info, recipes, notes, whatever is on your mind.\n\nExample:\nJohn - married to Sarah, usually brings 2 other couples. Nut allergy. 15 min away. $100/person, 4 guests.\n\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream...`
+  },
+  {
+    mode: 'csv',
+    label: 'CSV / Spreadsheet',
+    placeholder: '',
+    isCustomComponent: true,
+  },
+  {
+    mode: 'past-events',
+    label: 'Past Events',
+    placeholder: '',
+    isCustomComponent: true,
   },
   {
     mode: 'clients',
@@ -70,6 +85,12 @@ const TABS: TabConfig[] = [
     placeholder: '',
     isFileUpload: true,
   },
+  {
+    mode: 'take-a-chef',
+    label: 'Take a Chef',
+    placeholder: '',
+    isCustomComponent: true,
+  },
 ]
 
 const CATEGORY_OPTIONS = EXPENSE_CATEGORY_OPTIONS
@@ -84,8 +105,18 @@ const PAYMENT_METHOD_OPTIONS = [
   { value: 'other', label: 'Other' },
 ]
 
-export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: boolean; events?: EventOption[] }) {
-  const [mode, setMode] = useState<ImportMode>('brain-dump')
+export function SmartImportHub({
+  aiConfigured,
+  events = [],
+  existingClients = [],
+  initialMode = 'brain-dump',
+}: {
+  aiConfigured: boolean
+  events?: EventOption[]
+  existingClients?: { id: string; full_name: string }[]
+  initialMode?: ImportMode
+}) {
+  const [mode, setMode] = useState<ImportMode>(initialMode)
   const [phase, setPhase] = useState<ImportPhase>('input')
   const [rawText, setRawText] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -330,8 +361,9 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
     setParsedRecipes(prev => prev.filter((_, i) => i !== index))
   }
 
-  const isTextMode = !currentTab.isFileUpload
+  const isTextMode = !currentTab.isFileUpload && !currentTab.isCustomComponent
   const isFileMode = !!currentTab.isFileUpload
+  const isCustomMode = !!currentTab.isCustomComponent
   const canParse = aiConfigured && phase !== 'parsing' && (
     isTextMode ? rawText.trim().length > 0 : uploadedFile !== null
   )
@@ -363,8 +395,13 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
         </Alert>
       )}
 
-      {/* INPUT PHASE */}
-      {(phase === 'input' || phase === 'parsing') && (
+      {/* CUSTOM COMPONENT MODES — CSV and Past Events handle their own full flow */}
+      {isCustomMode && mode === 'csv' && <CsvImport />}
+      {isCustomMode && mode === 'past-events' && <PastEventsImport existingClients={existingClients} />}
+      {isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}
+
+      {/* INPUT PHASE — AI-driven modes only */}
+      {!isCustomMode && (phase === 'input' || phase === 'parsing') && (
         <div className="space-y-4">
           {/* Text input for text-based modes */}
           {isTextMode && (
@@ -406,6 +443,7 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
             </Button>
             {(rawText || uploadedFile) && (
               <Button
+                type="button"
                 variant="secondary"
                 onClick={() => { setRawText(''); resetState() }}
                 disabled={phase === 'parsing'}
@@ -417,17 +455,17 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
         </div>
       )}
 
-      {/* REVIEW PHASE */}
-      {phase === 'review' && (
+      {/* REVIEW PHASE — AI-driven modes only */}
+      {!isCustomMode && phase === 'review' && (
         <div className="space-y-6">
           {/* AI Extraction Notice */}
-          <Alert variant="info" title="AI-Extracted Data">
-            The content below was extracted by AI. Please review carefully before saving.
+          <Alert variant="info" title="Here's what we found">
+            This was extracted automatically — review it below before saving.
           </Alert>
 
           {/* Parse Summary */}
           <div className="flex items-center gap-3">
-            <Badge variant="info">AI-Extracted</Badge>
+            <Badge variant="info">Parsed</Badge>
             <ConfidenceBadge confidence={parseConfidence} />
             <span className="text-sm text-stone-600">
               {mode === 'file-upload' && visionResult && (
@@ -443,7 +481,7 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
 
           {/* Warnings */}
           {parseWarnings.length > 0 && (
-            <Alert variant="warning" title="Warnings">
+            <Alert variant="warning" title="Heads up">
               <ul className="list-disc list-inside space-y-1">
                 {parseWarnings.map((w, i) => <li key={i}>{w}</li>)}
               </ul>
@@ -536,7 +574,7 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
                 className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
               />
               <span className="text-sm text-stone-700">
-                I have reviewed the AI-extracted data above and confirm it is accurate
+                Everything looks right — save this data
               </span>
             </label>
           )}
@@ -547,7 +585,7 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
               <Button onClick={handleSaveAll} disabled={!aiReviewConfirmed}>
                 {parsedReceipt ? 'Save as Expense' :
                  parsedDocument ? 'Save Document' :
-                 `Save All (${parsedClients.length + parsedRecipes.length} record${parsedClients.length + parsedRecipes.length !== 1 ? 's' : ''})`}
+                 `Save All (${parsedClients.length + parsedRecipes.length} item${parsedClients.length + parsedRecipes.length !== 1 ? 's' : ''})`}
               </Button>
             )}
             <Button variant="secondary" onClick={() => { resetState(); setRawText('') }}>
@@ -557,21 +595,21 @@ export function SmartImportHub({ aiConfigured, events = [] }: { aiConfigured: bo
         </div>
       )}
 
-      {/* SAVING PHASE */}
-      {phase === 'saving' && (
+      {/* SAVING PHASE — AI-driven modes only */}
+      {!isCustomMode && phase === 'saving' && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mb-4" />
-          <p className="text-stone-600">Saving records...</p>
+          <p className="text-stone-600">Saving...</p>
         </div>
       )}
 
-      {/* DONE PHASE */}
-      {phase === 'done' && (
+      {/* DONE PHASE — AI-driven modes only */}
+      {!isCustomMode && phase === 'done' && (
         <div className="space-y-4">
-          <Alert variant="success" title="Import Complete">
-            {clientImportCount > 0 && <p>Created {clientImportCount} client record{clientImportCount !== 1 ? 's' : ''}.</p>}
-            {recipeImportCount > 0 && <p>Created {recipeImportCount} recipe record{recipeImportCount !== 1 ? 's' : ''}.</p>}
-            {expenseImportCount > 0 && <p>Created {expenseImportCount} expense record{expenseImportCount !== 1 ? 's' : ''}.</p>}
+          <Alert variant="success" title="All saved">
+            {clientImportCount > 0 && <p>Added {clientImportCount} client{clientImportCount !== 1 ? 's' : ''}.</p>}
+            {recipeImportCount > 0 && <p>Added {recipeImportCount} recipe{recipeImportCount !== 1 ? 's' : ''}.</p>}
+            {expenseImportCount > 0 && <p>Added {expenseImportCount} expense{expenseImportCount !== 1 ? 's' : ''}.</p>}
             {documentImportCount > 0 && <p>Saved {documentImportCount} document{documentImportCount !== 1 ? 's' : ''}.</p>}
           </Alert>
 
@@ -720,7 +758,7 @@ function ReceiptReviewCard({ receipt, eventOptions, selectedEventId, onEventChan
           <h3 className="text-lg font-semibold text-stone-900">
             {receipt.storeName || 'Receipt'}
           </h3>
-          <Badge variant="info">AI-Extracted</Badge>
+          <Badge variant="info">Parsed</Badge>
         </div>
         <div className="text-sm text-stone-600">
           {receipt.purchaseDate && <span>{receipt.purchaseDate}</span>}
@@ -827,7 +865,7 @@ function DocumentReviewCard({ document }: { document: ParsedDocument }) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-stone-900">{document.title}</h3>
-          <Badge variant="info">AI-Extracted</Badge>
+          <Badge variant="info">Parsed</Badge>
         </div>
         <Badge>{document.document_type}</Badge>
       </div>
@@ -909,7 +947,7 @@ function FieldRow({ label, value, confidence }: {
       <span className="text-stone-500 min-w-[140px] shrink-0">{label}</span>
       <span className="text-stone-900">{displayValue}</span>
       {confidence === 'confirmed' && (
-        <span className="text-green-600 shrink-0" title="Explicitly stated">&#10003;</span>
+        <span className="text-emerald-600 shrink-0" title="Explicitly stated">&#10003;</span>
       )}
       {confidence === 'inferred' && (
         <span className="text-yellow-600 shrink-0" title="Inferred - please verify">?</span>
@@ -933,7 +971,7 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="text-lg font-semibold text-stone-900">{client.full_name}</h3>
-          <Badge variant="info">AI-Extracted</Badge>
+          <Badge variant="info">Parsed</Badge>
         </div>
         <div className="flex gap-2">
           <Button size="sm" onClick={onSave}>Save</Button>
@@ -1043,7 +1081,7 @@ function RecipeReviewCard({ recipe, onDiscard }: {
         <div className="flex items-center gap-3">
           <h3 className="text-lg font-semibold text-stone-900">{recipe.name}</h3>
           <Badge>{recipe.category}</Badge>
-          <Badge variant="info">AI-Extracted</Badge>
+          <Badge variant="info">Parsed</Badge>
         </div>
         <Button size="sm" variant="secondary" onClick={onDiscard}>Discard</Button>
       </div>

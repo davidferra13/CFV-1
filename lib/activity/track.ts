@@ -1,10 +1,10 @@
-// Activity Tracking — Lightweight tracker
-// Callable from both server actions and API routes.
-// Uses admin client so it works from any context (client portal, cron, webhook).
-// Non-blocking: failures are logged but never thrown.
+// Activity tracking write utility.
+// Uses admin client and never throws (non-blocking).
 
 import { createServerClient } from '@/lib/supabase/server'
+import type { TablesInsert } from '@/types/database'
 import type { ActorType, ActivityEventType } from './types'
+import { incrementMetric, logActivityEvent } from './observability'
 
 export async function trackActivity(input: {
   tenantId: string
@@ -19,7 +19,7 @@ export async function trackActivity(input: {
   try {
     const supabase = createServerClient({ admin: true })
 
-    await supabase.from('activity_events' as any).insert({
+    const payload: TablesInsert<'activity_events'> = {
       tenant_id: input.tenantId,
       actor_type: input.actorType,
       actor_id: input.actorId || null,
@@ -27,10 +27,25 @@ export async function trackActivity(input: {
       event_type: input.eventType,
       entity_type: input.entityType || null,
       entity_id: input.entityId || null,
-      metadata: input.metadata || {},
-    })
+      metadata: (input.metadata || {}) as TablesInsert<'activity_events'>['metadata'],
+    }
+
+    const { error } = await supabase.from('activity_events').insert(payload)
+    if (error) {
+      incrementMetric('activity.track.failure')
+      logActivityEvent('error', 'trackActivity insert failed', {
+        error: error.message,
+        eventType: input.eventType,
+      })
+      return
+    }
+
+    incrementMetric('activity.track.success')
   } catch (err) {
-    // Non-blocking: activity tracking should never break the main flow
-    console.error('[trackActivity] Failed (non-fatal):', err)
+    incrementMetric('activity.track.failure')
+    logActivityEvent('error', 'trackActivity failed (non-fatal)', {
+      eventType: input.eventType,
+      error: err instanceof Error ? err.message : String(err),
+    })
   }
 }

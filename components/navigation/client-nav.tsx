@@ -7,6 +7,7 @@ import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
 import { Calendar, CalendarPlus, ClipboardList, FileText, Gift, LogOut, Menu, MessageCircle, User, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { AppLogo } from '@/components/branding/app-logo'
+import { NotificationBell } from '@/components/notifications/notification-bell'
 
 interface ClientNavProps {
   userEmail: string
@@ -176,6 +177,10 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
       </nav>
 
       <div className={`border-t border-stone-100 ${collapsed ? 'p-1.5' : 'p-3'}`}>
+        {/* Notification bell */}
+        <div className={`mb-1 ${collapsed ? 'flex justify-center' : 'px-2 py-1'}`}>
+          <NotificationBell collapsed={collapsed} />
+        </div>
         {!collapsed ? <p className="px-3 pb-1 text-xs text-stone-400 truncate">{userEmail}</p> : null}
         <button
           type="button"
@@ -216,6 +221,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
             >
               Book Now
             </Link>
+            <NotificationBell />
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}

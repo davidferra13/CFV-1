@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import type { ChefActivityDomain } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
+import type { ActivityActorFilter } from '@/lib/activity/types'
 
 type ActivityTab = 'my' | 'client' | 'all'
 type TimeRange = '1' | '7' | '30' | '90'
@@ -12,6 +12,8 @@ interface ActivityFiltersProps {
   onTabChange: (tab: ActivityTab) => void
   activeDomain: ChefActivityDomain | null
   onDomainChange: (domain: ChefActivityDomain | null) => void
+  actorFilter: ActivityActorFilter
+  onActorFilterChange: (actor: ActivityActorFilter) => void
   timeRange: TimeRange
   onTimeRangeChange: (range: TimeRange) => void
   domainCounts?: Partial<Record<ChefActivityDomain, number>>
@@ -30,6 +32,13 @@ const TIME_OPTIONS: { value: TimeRange; label: string }[] = [
   { value: '90', label: '3 Months' },
 ]
 
+const ACTOR_OPTIONS: { value: ActivityActorFilter; label: string }[] = [
+  { value: 'all', label: 'All Actors' },
+  { value: 'client', label: 'Clients' },
+  { value: 'chef', label: 'Chefs' },
+  { value: 'system', label: 'System' },
+]
+
 const DOMAIN_ORDER: ChefActivityDomain[] = [
   'event', 'inquiry', 'quote', 'menu', 'recipe', 'client', 'financial', 'communication', 'operational',
 ]
@@ -39,10 +48,15 @@ export function ActivityFilters({
   onTabChange,
   activeDomain,
   onDomainChange,
+  actorFilter,
+  onActorFilterChange,
   timeRange,
   onTimeRangeChange,
   domainCounts = {},
 }: ActivityFiltersProps) {
+  const showDomain = activeTab !== 'client'
+  const showActor = activeTab !== 'my'
+
   return (
     <div className="space-y-3">
       {/* Tabs */}
@@ -63,47 +77,64 @@ export function ActivityFilters({
       </div>
 
       {/* Domain pills + time range */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
-          <button
-            onClick={() => onDomainChange(null)}
-            className={`text-[11px] font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
-              activeDomain === null
-                ? 'bg-stone-800 text-white'
-                : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
-            }`}
-          >
-            All
-          </button>
-          {DOMAIN_ORDER.map(domain => {
-            const config = DOMAIN_CONFIG[domain]
-            const count = domainCounts[domain] || 0
-            return (
+          {showDomain && (
+            <>
               <button
-                key={domain}
-                onClick={() => onDomainChange(activeDomain === domain ? null : domain)}
+                onClick={() => onDomainChange(null)}
                 className={`text-[11px] font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
-                  activeDomain === domain
-                    ? `${config.bgColor} ${config.color}`
+                  activeDomain === null
+                    ? 'bg-stone-800 text-white'
                     : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
                 }`}
               >
-                {config.label}
-                {count > 0 && <span className="ml-1 opacity-60">{count}</span>}
+                All
               </button>
-            )
-          })}
+              {DOMAIN_ORDER.map(domain => {
+                const config = DOMAIN_CONFIG[domain]
+                const count = domainCounts[domain] || 0
+                return (
+                  <button
+                    key={domain}
+                    onClick={() => onDomainChange(activeDomain === domain ? null : domain)}
+                    className={`text-[11px] font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
+                      activeDomain === domain
+                        ? `${config.bgColor} ${config.color}`
+                        : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                    }`}
+                  >
+                    {config.label}
+                    {count > 0 && <span className="ml-1 opacity-60">{count}</span>}
+                  </button>
+                )
+              })}
+            </>
+          )}
         </div>
 
-        <select
-          value={timeRange}
-          onChange={e => onTimeRangeChange(e.target.value as TimeRange)}
-          className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white shrink-0"
-        >
-          {TIME_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
+        <div className="flex items-center gap-2">
+          {showActor && (
+            <select
+              value={actorFilter}
+              onChange={e => onActorFilterChange(e.target.value as ActivityActorFilter)}
+              className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white"
+            >
+              {ACTOR_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          )}
+          <select
+            value={timeRange}
+            onChange={e => onTimeRangeChange(e.target.value as TimeRange)}
+            className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white shrink-0"
+          >
+            {TIME_OPTIONS.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
       </div>
     </div>
   )

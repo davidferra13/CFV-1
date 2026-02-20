@@ -14,7 +14,8 @@ import {
 import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
-import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
+import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
+import { isCommTriageEnabled } from '@/lib/features'
 import type { SyncResult, ParsedEmail } from './types'
 import type { Json } from '@/types/database'
 
@@ -57,8 +58,8 @@ export async function syncGmailInbox(
   let messageIds: string[]
 
   if (!historyId) {
-    // First sync — get last 50 messages
-    const messages = await listRecentMessages(accessToken, { maxResults: 50 })
+    // First sync — get last 50 inbox messages (exclude Sent/Drafts/Spam)
+    const messages = await listRecentMessages(accessToken, { maxResults: 50, query: 'in:inbox -in:sent' })
     messageIds = messages.map((m) => m.id)
 
     // Bootstrap the history ID for future incremental syncs
@@ -73,8 +74,8 @@ export async function syncGmailInbox(
     messageIds = historyResult.messageIds
 
     if (historyResult.latestHistoryId === '') {
-      // History ID too old — fall back to recent messages
-      const messages = await listRecentMessages(accessToken, { maxResults: 50 })
+      // History ID too old — fall back to recent inbox messages
+      const messages = await listRecentMessages(accessToken, { maxResults: 50, query: 'in:inbox -in:sent' })
       messageIds = messages.map((m) => m.id)
       const profile = await getGmailProfile(accessToken)
       await supabase
@@ -172,6 +173,26 @@ async function processMessage(
     })
     result.skipped++
     return
+  }
+
+  // Communication intake signal layer (non-blocking, additive)
+  if (isCommTriageEnabled()) {
+    try {
+      const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
+      await ingestCommunicationEvent({
+        tenantId,
+        source: 'email',
+        externalId: email.messageId,
+        externalThreadKey: email.threadId,
+        timestamp: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
+        senderIdentity: `${email.from.name || email.from.email} <${email.from.email}>`,
+        rawContent: `${email.subject || ''}\n\n${email.body || ''}`.trim(),
+        direction: 'inbound',
+        ingestionSource: 'import',
+      })
+    } catch (intakeErr) {
+      console.error('[processMessage] Communication intake failed (non-fatal):', intakeErr)
+    }
   }
 
   // Classify the email
@@ -322,6 +343,26 @@ async function handleInquiry(
       }
     } catch (notifErr) {
       console.error('[handleInquiry] Notification failed (non-fatal):', notifErr)
+    }
+
+    // Email the chef directly about the new inquiry (non-blocking)
+    try {
+      const chefProfile = await getChefProfile(tenantId)
+      if (chefProfile) {
+        const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+        await sendNewInquiryChefEmail({
+          chefEmail: chefProfile.email,
+          chefName: chefProfile.name,
+          clientName: leadName,
+          occasion: parseResult.parsed.confirmed_occasion || null,
+          eventDate: parseResult.parsed.confirmed_date || null,
+          guestCount: parseResult.parsed.confirmed_guest_count ?? null,
+          source: 'gmail',
+          inquiryId: inquiry.id,
+        })
+      }
+    } catch (emailErr) {
+      console.error('[handleInquiry] Chef email failed (non-fatal):', emailErr)
     }
 
     result.inquiriesCreated++

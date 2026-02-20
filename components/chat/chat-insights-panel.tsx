@@ -39,7 +39,7 @@ const INSIGHT_COLORS: Record<InsightType, string> = {
   important_date: 'text-purple-600',
   guest_count: 'text-blue-600',
   event_detail: 'text-blue-600',
-  budget_mention: 'text-green-600',
+  budget_mention: 'text-emerald-600',
   location_mention: 'text-teal-600',
   general_preference: 'text-pink-600',
 }
@@ -72,7 +72,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
     <div className="px-3 pb-3">
       <div className="flex items-center gap-1.5 mb-2">
         <Sparkles className="w-3 h-3 text-amber-500" />
-        <span className="text-xs font-medium text-amber-700">AI Suggestions</span>
+        <span className="text-xs font-medium text-amber-700">Smart Suggestions</span>
         <span className="text-[10px] text-amber-500">({insights.length})</span>
       </div>
 

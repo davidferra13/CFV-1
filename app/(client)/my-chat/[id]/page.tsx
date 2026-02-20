@@ -9,6 +9,7 @@ import {
   markConversationRead,
 } from '@/lib/chat/actions'
 import { ChatView } from '@/components/chat/chat-view'
+import { ActivityTracker } from '@/components/activity/activity-tracker'
 
 export default async function ClientChatViewPage({
   params,
@@ -38,16 +39,23 @@ export default async function ClientChatViewPage({
   const clientName = clientParticipant?.name || 'Client'
 
   return (
-    <ChatView
-      conversationId={conversationId}
-      initialMessages={messagesResult.messages}
-      participants={participants}
-      currentUserId={user.id}
-      currentUserName={clientName}
-      currentUserRole="client"
-      hasMore={messagesResult.hasMore}
-      nextCursor={messagesResult.nextCursor}
-      conversation={conversation}
-    />
+    <>
+      <ChatView
+        conversationId={conversationId}
+        initialMessages={messagesResult.messages}
+        participants={participants}
+        currentUserId={user.id}
+        currentUserName={clientName}
+        currentUserRole="client"
+        hasMore={messagesResult.hasMore}
+        nextCursor={messagesResult.nextCursor}
+        conversation={conversation}
+      />
+      <ActivityTracker
+        eventType="chat_opened"
+        entityType="conversation"
+        entityId={conversationId}
+      />
+    </>
   )
 }

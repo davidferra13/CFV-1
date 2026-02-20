@@ -6,7 +6,8 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
 import { createClientFromLead } from '@/lib/clients/actions'
-import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
+import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/notifications/actions'
+import { isCommTriageEnabled } from '@/lib/features'
 import type { Json } from '@/types/database'
 import type { ProcessResult } from './types'
 
@@ -86,6 +87,28 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
 
     // 4. Build source text for AI parsing
     const sourceText = buildSourceText(payload, extracted)
+
+    // Communication intake signal layer (non-blocking, additive)
+    if (isCommTriageEnabled()) {
+      try {
+        const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
+        await ingestCommunicationEvent({
+          tenantId: submission.tenant_id,
+          source: 'website_form',
+          externalId: submission.id,
+          externalThreadKey: submission.wix_form_id || extracted.email || extracted.phone || submission.id,
+          timestamp: new Date(submission.created_at).toISOString(),
+          senderIdentity: extracted.email
+            ? `${extracted.name || extracted.email} <${extracted.email}>`
+            : extracted.name || extracted.phone || 'Unknown website form sender',
+          rawContent: sourceText,
+          direction: 'inbound',
+          ingestionSource: 'webhook',
+        })
+      } catch (intakeErr) {
+        console.error('[processWixSubmission] Communication intake failed (non-fatal):', intakeErr)
+      }
+    }
 
     // 5. Parse with AI (same function Gmail sync uses)
     const parseResult = await parseInquiryFromText(sourceText)
@@ -209,6 +232,26 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
       }
     } catch (notifErr) {
       console.error('[processWixSubmission] Notification failed (non-fatal):', notifErr)
+    }
+
+    // Email the chef directly about the new Wix submission (non-blocking)
+    try {
+      const chefProfile = await getChefProfile(submission.tenant_id)
+      if (chefProfile) {
+        const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+        await sendNewInquiryChefEmail({
+          chefEmail: chefProfile.email,
+          chefName: chefProfile.name,
+          clientName: leadName,
+          occasion: parseResult.parsed.confirmed_occasion || null,
+          eventDate: parseResult.parsed.confirmed_date || null,
+          guestCount: parseResult.parsed.confirmed_guest_count ?? null,
+          source: 'wix',
+          inquiryId: inquiry.id,
+        })
+      }
+    } catch (emailErr) {
+      console.error('[processWixSubmission] Chef email failed (non-fatal):', emailErr)
     }
 
     // 13. Fire automations (non-blocking)

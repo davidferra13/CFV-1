@@ -1,0 +1,100 @@
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { requireChef } from '@/lib/auth/get-user'
+import { getQuotes } from '@/lib/quotes/actions'
+import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
+import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
+import { formatCurrency } from '@/lib/utils/currency'
+import { formatDistanceToNow } from 'date-fns'
+
+export const metadata: Metadata = { title: 'Viewed Quotes - ChefFlow' }
+
+export default async function ViewedQuotesPage() {
+  await requireChef()
+
+  // "Viewed" quotes are sent quotes that have been opened by the client.
+  // We fetch all sent quotes and filter by viewed_at if available.
+  const sentQuotes = await getQuotes({ status: 'sent' } as any)
+  const quotes = sentQuotes.filter((q: any) => q.viewed_at != null)
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <Link href="/quotes" className="text-sm text-stone-500 hover:text-stone-700">
+          ← All Quotes
+        </Link>
+        <div className="flex items-center gap-3 mt-1">
+          <h1 className="text-3xl font-bold text-stone-900">Viewed Quotes</h1>
+          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+            {quotes.length}
+          </span>
+        </div>
+        <p className="text-stone-500 mt-1">Sent quotes that have been opened by the client</p>
+      </div>
+
+      {quotes.length === 0 ? (
+        <Card className="p-12 text-center">
+          <p className="text-stone-600 font-medium mb-1">No viewed quotes</p>
+          <p className="text-stone-400 text-sm mb-4">
+            Quotes opened by clients will appear here once view tracking is active
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Link href="/quotes/sent">
+              <Button size="sm" variant="secondary">View Sent Quotes</Button>
+            </Link>
+            <Link href="/quotes">
+              <Button variant="secondary" size="sm">View All Quotes</Button>
+            </Link>
+          </div>
+        </Card>
+      ) : (
+        <div className="space-y-2">
+          {quotes.map((quote: any) => {
+            const clientName = quote.client?.full_name || 'Unknown Client'
+            return (
+              <Link
+                key={quote.id}
+                href={`/quotes/${quote.id}`}
+                className="block rounded-lg border border-l-4 border-l-brand-500 bg-brand-50/50 p-4 hover:shadow-sm transition-all hover:bg-brand-50"
+              >
+                <div className="flex justify-between items-start gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-stone-900">{clientName}</span>
+                      <QuoteStatusBadge status={quote.status as any} />
+                      {quote.pricing_model && (
+                        <PricingModelBadge model={quote.pricing_model as any} />
+                      )}
+                    </div>
+                    {quote.quote_name && (
+                      <p className="text-sm text-stone-600 mt-1">{quote.quote_name}</p>
+                    )}
+                    {quote.inquiry?.confirmed_occasion && (
+                      <p className="text-xs text-stone-500 mt-1">
+                        Inquiry: {quote.inquiry.confirmed_occasion}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-lg font-semibold text-stone-900">
+                      {formatCurrency(quote.total_quoted_cents)}
+                    </p>
+                    {quote.price_per_person_cents && quote.guest_count_estimated && (
+                      <p className="text-xs text-stone-500">
+                        {formatCurrency(quote.price_per_person_cents)}/person x {quote.guest_count_estimated}
+                      </p>
+                    )}
+                    <p className="text-xs text-stone-400 mt-1">
+                      {formatDistanceToNow(new Date(quote.updated_at), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}

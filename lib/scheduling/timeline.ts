@@ -1,15 +1,27 @@
 // Timeline Generation Engine
 // Given an event, generates a complete day-of timeline working
-// backwards from arrival time. Pure computation — no DB calls.
+// backwards from arrival time. Pure computation - no DB calls.
 
 import type {
   ChefPreferences,
+  DefaultStore,
   EventTimeline,
   TimelineItem,
   RouteStop,
   SchedulingEvent,
 } from './types'
 import { DEFAULT_PREFERENCES } from './types'
+import type { TravelLeg } from '../travel/types'
+
+// ============================================
+// CONSTANTS
+// ============================================
+
+/**
+ * Always-on travel buffer added on top of the estimated drive time.
+ * The spec says: "15 minutes on top of estimated drive time. Always. Non-negotiable."
+ */
+const TRAVEL_BUFFER_MINUTES = 15
 
 // ============================================
 // HELPERS
@@ -46,6 +58,50 @@ function estimatePrepMinutes(componentCount: number, defaultHours: number): numb
   return defaultHours * 60
 }
 
+function getDefaultStores(prefs: ChefPreferences | null): DefaultStore[] {
+  if (!prefs) return []
+
+  const stores: DefaultStore[] = []
+
+  for (const store of prefs.default_stores ?? []) {
+    stores.push(store)
+  }
+
+  if (prefs.default_grocery_store) {
+    stores.push({
+      name: prefs.default_grocery_store,
+      address: prefs.default_grocery_address || '',
+      place_id: null,
+    })
+  }
+
+  if (prefs.default_liquor_store) {
+    stores.push({
+      name: prefs.default_liquor_store,
+      address: prefs.default_liquor_address || '',
+      place_id: null,
+    })
+  }
+
+  for (const store of prefs.default_specialty_stores ?? []) {
+    stores.push(store)
+  }
+
+  const deduped: DefaultStore[] = []
+  const seen = new Set<string>()
+  for (const store of stores) {
+    const name = store.name.trim()
+    if (!name) continue
+    const address = (store.address || '').trim()
+    const key = `${name.toLowerCase()}|${address.toLowerCase()}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    deduped.push({ name, address, place_id: store.place_id ?? null })
+  }
+
+  return deduped
+}
+
 // ============================================
 // TIMELINE GENERATOR
 // ============================================
@@ -54,19 +110,43 @@ function estimatePrepMinutes(componentCount: number, defaultHours: number): numb
  * Generate a complete day-of timeline for an event.
  *
  * Works backwards from arrival time:
- *   ARRIVAL → DEPART → PACK → FINISH PREP → START PREP → HOME FROM SHOPPING → LEAVE FOR STORE → WAKE
+ * ARRIVAL -> DEPART -> PACK (= prep complete) -> START PREP -> HOME FROM SHOPPING -> LEAVE FOR STORE -> WAKE
+ *
+ * If `legs` are provided (from event_travel_legs), the timeline uses their
+ * actual planned times instead of heuristic calculations:
+ * - A `service_travel` leg overrides the departure time and drive estimate.
+ * - A `grocery_shopping` / `consolidated_shopping` leg on a DIFFERENT date
+ *   removes the day-of shopping block (shopping already planned elsewhere).
  */
 export function generateTimeline(
   event: SchedulingEvent,
-  prefs: ChefPreferences | null
+  prefs: ChefPreferences | null,
+  legs?: TravelLeg[]
 ): EventTimeline {
   const p = prefs ?? { ...DEFAULT_PREFERENCES, id: '', chef_id: '' }
+  const stores = getDefaultStores(p)
 
   const warnings: string[] = []
   const timeline: TimelineItem[] = []
 
+  // ── Travel leg overrides ────────────────────────────────────────────────────
+  // If planned legs exist, use their data instead of heuristic defaults.
+
+  // service_travel leg → override departure time and drive estimate
+  const serviceLeg = legs?.find((l) => l.leg_type === 'service_travel' && l.status !== 'cancelled')
+  const legTravelMinutes = serviceLeg?.total_estimated_minutes ?? null
+
+  // Shopping planned on a DIFFERENT date → suppress day-of shopping block
+  const shoppingLeg = legs?.find(
+    (l) =>
+      (l.leg_type === 'grocery_shopping' || l.leg_type === 'consolidated_shopping') &&
+      l.status !== 'cancelled' &&
+      l.leg_date !== event.event_date
+  )
+  const shoppingHandledElsewhere = !!shoppingLeg
+
   // Resolve key times
-  const travelMinutes = event.travel_time_minutes ?? 30
+  const travelMinutes = legTravelMinutes ?? event.travel_time_minutes ?? 30
   const bufferMinutes = p.default_buffer_minutes
   const packingMinutes = p.default_packing_minutes
   const shoppingMinutes = p.default_shopping_minutes
@@ -83,8 +163,6 @@ export function generateTimeline(
   const arrivalMinutes = event.arrival_time
     ? parseTime(event.arrival_time)
     : serveTimeMinutes - bufferMinutes
-
-  // ---- WORK BACKWARDS ----
 
   // 1. ARRIVAL at client
   timeline.push({
@@ -111,65 +189,50 @@ export function generateTimeline(
   }
 
   // 3. DEPART HOME
-  const departMinutes = arrivalMinutes - travelMinutes
+  // Drive time + always-on 15-min travel buffer (traffic, parking, unloading).
+  const departMinutes = arrivalMinutes - travelMinutes - TRAVEL_BUFFER_MINUTES
   timeline.push({
     id: 'departure',
     time: formatTime(departMinutes),
     label: 'Depart for client',
-    description: `${travelMinutes} min drive to ${event.location_city || 'client'}.`,
+    description: `${travelMinutes} min drive + ${TRAVEL_BUFFER_MINUTES} min buffer → ${event.location_city || 'client location'}.`,
     type: 'departure',
     isDeadline: true,
     isFlexible: false,
   })
 
-  // 4. CAR PACKED
+  // 4. PACKING — prep completion and packing start are the same moment.
+  // Showing both at the same timestamp creates duplicate entries; fold into one.
   const carPackedMinutes = departMinutes - packingMinutes
   timeline.push({
     id: 'packing',
     time: formatTime(carPackedMinutes),
-    label: 'Start packing car',
-    description: `Pack coolers, equipment, and supplies. ${packingMinutes} min.`,
+    label: 'Prep complete — start packing',
+    description: `All food prep done. Pack coolers, equipment, and supplies. ${packingMinutes} min.`,
     type: 'packing',
     isDeadline: false,
     isFlexible: false,
   })
 
-  // 5. FINISH PREP (= car packed time)
-  timeline.push({
-    id: 'finish_prep',
-    time: formatTime(carPackedMinutes),
-    label: 'Finish all prep',
-    description: 'All food prep complete. Ready to pack.',
-    type: 'milestone',
-    isDeadline: false,
-    isFlexible: false,
-  })
-
-  // 6. START PREP
+  // 5. START PREP / HOME FROM SHOPPING
+  // In shop-day-before flow: explicit start_prep block (chef is already home).
+  // In day-of shopping flow: home_from_shopping carries the prep-start meaning —
+  // adding start_prep at the same timestamp would create a duplicate like finish_prep did.
   const startPrepMinutes = carPackedMinutes - prepMinutes
-  timeline.push({
-    id: 'start_prep',
-    time: formatTime(startPrepMinutes),
-    label: 'Start prep',
-    description: `Estimated ${Math.round(prepMinutes / 60 * 10) / 10} hours of prep work.`,
-    type: 'prep',
-    isDeadline: false,
-    isFlexible: true,
-  })
+  const prepHoursLabel = `${Math.round((prepMinutes / 60) * 10) / 10} hours of prep work.`
 
-  // Shopping route (if shopping day-of)
   let wakeMinutesTarget: number
 
-  if (!p.shop_day_before) {
-    // Shopping happens day-of before prep
+  if (!p.shop_day_before && !shoppingHandledElsewhere) {
+    // Day-of shopping — show shopping blocks in the timeline.
     const homeFromShoppingMinutes = startPrepMinutes
-    const leaveForStoreMinutes = homeFromShoppingMinutes - shoppingMinutes - buildRouteDriveTime(event, p)
+    const leaveForStoreMinutes = homeFromShoppingMinutes - shoppingMinutes - buildRouteDriveTime(p)
 
     timeline.push({
       id: 'home_from_shopping',
       time: formatTime(homeFromShoppingMinutes),
-      label: 'Home from shopping',
-      description: 'All ingredients in the house. Start prep immediately.',
+      label: 'Home from shopping — start prep',
+      description: `All ingredients in the house. ${prepHoursLabel}`,
       type: 'shopping',
       isDeadline: false,
       isFlexible: false,
@@ -178,34 +241,42 @@ export function generateTimeline(
     timeline.push({
       id: 'leave_for_store',
       time: formatTime(leaveForStoreMinutes),
-      label: `Leave for ${p.default_grocery_store || 'grocery store'}`,
-      description: buildShoppingDescription(event, p),
+      label: `Leave for ${stores[0]?.name || 'store'}`,
+      description: buildShoppingDescription(stores),
       type: 'shopping',
       isDeadline: false,
       isFlexible: true,
     })
 
-    // Wake up 30 min before leaving for store
     wakeMinutesTarget = leaveForStoreMinutes - 30
   } else {
-    // Shopping was done day before — wake up before prep
+    // shop_day_before is true, OR shopping is planned on a different date via a travel leg.
+    // Either way: no day-of shopping block; just show start_prep.
+    timeline.push({
+      id: 'start_prep',
+      time: formatTime(startPrepMinutes),
+      label: 'Start prep',
+      description: `Estimated ${prepHoursLabel}`,
+      type: 'prep',
+      isDeadline: false,
+      isFlexible: true,
+    })
+
     wakeMinutesTarget = startPrepMinutes - 30
   }
 
-  // 7. WAKE UP
+  // 6. WAKE UP
   timeline.push({
     id: 'wake',
     time: formatTime(wakeMinutesTarget),
     label: 'Wake up',
-    description: p.shop_day_before
+    description: (p.shop_day_before || shoppingHandledElsewhere)
       ? 'Get ready and start prep.'
       : 'Get ready, then leave for shopping.',
     type: 'wake',
     isDeadline: false,
     isFlexible: true,
   })
-
-  // ---- WARNINGS ----
 
   if (departMinutes < 0 || arrivalMinutes < 0) {
     warnings.push(
@@ -217,7 +288,7 @@ export function generateTimeline(
   timeline.sort((a, b) => parseTime(a.time) - parseTime(b.time))
 
   // Build route
-  const route = buildRoute(event, p)
+  const route = buildRoute(event, p, stores)
 
   return {
     eventId: event.id,
@@ -232,60 +303,39 @@ export function generateTimeline(
 // ROUTE BUILDING
 // ============================================
 
-function buildRouteDriveTime(
-  event: SchedulingEvent,
-  prefs: ChefPreferences | null
-): number {
-  // Estimate: 15 min per stop (home → store → store → home)
-  let stops = 1 // grocery store
-  if (event.hasAlcohol && prefs?.default_liquor_store) stops++
-  // Each specialty store adds a stop
-  stops += (prefs?.default_specialty_stores?.length ?? 0)
+function buildRouteDriveTime(prefs: ChefPreferences | null): number {
+  // Estimate: 15 min per stop (home -> stores -> home)
+  const stops = Math.max(1, getDefaultStores(prefs).length)
   return stops * 15
 }
 
 function buildRoute(
   event: SchedulingEvent,
-  prefs: ChefPreferences | null
+  prefs: ChefPreferences | null,
+  stores: DefaultStore[]
 ): EventTimeline['route'] {
   const p = prefs ?? { ...DEFAULT_PREFERENCES, id: '', chef_id: '' }
   const stops: RouteStop[] = []
   let totalDrive = 0
 
-  // Home → Grocery store
-  if (p.default_grocery_store) {
-    stops.push({
-      name: p.default_grocery_store,
-      address: p.default_grocery_address || '',
-      purpose: 'Groceries',
-      estimatedMinutes: p.default_shopping_minutes,
-    })
-    totalDrive += 15
+  // Only include store stops when shopping day-of.
+  // If shop_day_before is true, shopping happened yesterday — today's route is HOME → CLIENT only.
+  if (!p.shop_day_before && stores.length > 0) {
+    const perStoreMinutes = Math.max(10, Math.round(p.default_shopping_minutes / stores.length))
+
+    for (const store of stores) {
+      stops.push({
+        name: store.name,
+        address: store.address,
+        purpose: 'Store',
+        estimatedMinutes: perStoreMinutes,
+      })
+      totalDrive += 15
+    }
   }
 
-  // Liquor store (if event has alcohol)
-  if (event.hasAlcohol && p.default_liquor_store) {
-    stops.push({
-      name: p.default_liquor_store,
-      address: p.default_liquor_address || '',
-      purpose: 'Liquor',
-      estimatedMinutes: 15,
-    })
-    totalDrive += 10
-  }
-
-  // Specialty stores
-  for (const store of p.default_specialty_stores ?? []) {
-    stops.push({
-      name: store.name,
-      address: store.address,
-      purpose: `Specialty: ${store.notes || store.name}`,
-      estimatedMinutes: 20,
-    })
-    totalDrive += 10
-  }
-
-  // Client location (for day-of route)
+  // Client location (for day-of route).
+  // Include the always-on travel buffer so the route total matches the timeline's departure slot.
   if (event.location_address) {
     stops.push({
       name: event.client?.full_name || 'Client',
@@ -293,30 +343,20 @@ function buildRoute(
       purpose: 'Event location',
       estimatedMinutes: 0,
     })
-    totalDrive += event.travel_time_minutes ?? 30
+    totalDrive += (event.travel_time_minutes ?? 30) + TRAVEL_BUFFER_MINUTES
   }
 
   return { stops, totalDriveMinutes: totalDrive }
 }
 
-function buildShoppingDescription(
-  event: SchedulingEvent,
-  prefs: ChefPreferences | null
-): string {
-  const p = prefs ?? { ...DEFAULT_PREFERENCES, id: '', chef_id: '' }
-  const stops: string[] = []
-
-  if (p.default_grocery_store) stops.push(p.default_grocery_store)
-  if (event.hasAlcohol && p.default_liquor_store) stops.push(p.default_liquor_store)
-  for (const store of p.default_specialty_stores ?? []) {
-    stops.push(store.name)
-  }
+function buildShoppingDescription(stores: DefaultStore[]): string {
+  const stops = stores.map((store) => store.name).filter(Boolean)
 
   if (stops.length > 1) {
-    return `Route: ${stops.join(' → ')} → home`
+    return `Route: ${stops.join(' -> ')} -> home`
   }
   if (stops.length === 1) {
-    return `${stops[0]} → home`
+    return `${stops[0]} -> home`
   }
-  return 'Grocery shopping'
+  return 'Store run'
 }

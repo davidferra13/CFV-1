@@ -8,6 +8,7 @@ import type Stripe from 'stripe'
 import { appendLedgerEntryFromWebhook } from '@/lib/ledger/append'
 import { transitionEvent } from '@/lib/events/transitions'
 import { createServerClient } from '@/lib/supabase/server'
+import { logWebhookEvent } from '@/lib/webhooks/audit-log'
 
 /**
  * Lazy Stripe client initialization
@@ -49,23 +50,43 @@ export async function POST(req: Request) {
 
   console.log('[Stripe Webhook] Received event:', event.type, event.id)
 
-  // Idempotency check: Has this event been processed?
-  // Uses transaction_reference column for deduplication
-  const supabase = createServerClient({ admin: true })
-  const { data: existingEntry } = await supabase
-    .from('ledger_entries')
-    .select('id')
-    .eq('transaction_reference', event.id)
-    .single()
+  // Log webhook receipt for audit trail — fire-and-forget
+  logWebhookEvent({
+    provider: 'stripe',
+    eventType: event.type,
+    providerEventId: event.id,
+    status: 'received',
+    payloadSizeBytes: body.length,
+  })
 
-  if (existingEntry) {
-    console.log('[Stripe Webhook] Event already processed (idempotent):', event.id)
-    return NextResponse.json({ received: true, cached: true })
+  // Idempotency check: Has this event been processed?
+  // Uses transaction_reference column for deduplication.
+  // NOTE: checkout.session.completed does NOT write to ledger_entries, so it has
+  // its own idempotency check inside handleGiftCardPurchaseCompleted().
+  const supabase = createServerClient({ admin: true })
+
+  const isCheckoutEvent = event.type === 'checkout.session.completed'
+
+  if (!isCheckoutEvent) {
+    const { data: existingEntry } = await supabase
+      .from('ledger_entries')
+      .select('id')
+      .eq('transaction_reference', event.id)
+      .single()
+
+    if (existingEntry) {
+      console.log('[Stripe Webhook] Event already processed (idempotent):', event.id)
+      return NextResponse.json({ received: true, cached: true })
+    }
   }
 
   try {
     // Route to appropriate handler
     switch (event.type) {
+      case 'checkout.session.completed':
+        await handleGiftCardPurchaseCompleted(event, supabase)
+        break
+
       case 'payment_intent.succeeded':
         await handlePaymentSucceeded(event)
         break
@@ -107,6 +128,193 @@ export async function POST(req: Request) {
 }
 
 /**
+ * Handle gift card purchase via Stripe Checkout Session.
+ * Reads purchase_intent_id from session metadata to create the client_incentives record,
+ * sends the gift card code to the recipient, and confirms the buyer.
+ *
+ * Idempotency: Checks gift_card_purchase_intents.status — if already 'paid', returns early.
+ */
+async function handleGiftCardPurchaseCompleted(
+  event: Stripe.Event,
+  supabase: ReturnType<typeof createServerClient>
+) {
+  const session = event.data.object as Stripe.Checkout.Session
+
+  // Only handle gift card purchases (ignore other checkout sessions)
+  const { payment_type, purchase_intent_id, tenant_id } = session.metadata ?? {}
+
+  if (payment_type !== 'gift_card_purchase') {
+    console.log('[handleGiftCardPurchaseCompleted] Not a gift card purchase, skipping')
+    return
+  }
+
+  if (!purchase_intent_id || !tenant_id) {
+    console.error('[handleGiftCardPurchaseCompleted] Missing metadata on session:', session.id)
+    return
+  }
+
+  console.log('[handleGiftCardPurchaseCompleted] Processing gift card purchase:', purchase_intent_id)
+
+  // Idempotency: if already processed, skip
+  const { data: intent } = await (supabase as any)
+    .from('gift_card_purchase_intents')
+    .select('*')
+    .eq('id', purchase_intent_id)
+    .single()
+
+  if (!intent) {
+    console.error('[handleGiftCardPurchaseCompleted] Purchase intent not found:', purchase_intent_id)
+    return
+  }
+
+  if (intent.status === 'paid') {
+    console.log('[handleGiftCardPurchaseCompleted] Already processed (idempotent):', purchase_intent_id)
+    return
+  }
+
+  // Generate the gift card code
+  const crypto = require('crypto')
+  const code = `GFT-${crypto.randomBytes(8).toString('hex').toUpperCase()}`
+
+  // Fetch the chef's display name and email for the gift card title and notification
+  const { data: chef } = await (supabase as any)
+    .from('chefs')
+    .select('display_name, business_name, email')
+    .eq('id', tenant_id)
+    .single()
+
+  const chefName = chef?.display_name || chef?.business_name || 'Your Chef'
+  const amountDollars = (intent.amount_cents / 100).toFixed(2)
+
+  // Create the client_incentives row (the actual gift card)
+  const { data: incentive, error: incentiveError } = await (supabase as any)
+    .from('client_incentives')
+    .insert({
+      tenant_id,
+      type: 'gift_card',
+      code,
+      title: `Gift Card — ${chefName} ($${amountDollars})`,
+      currency_code: intent.currency_code || 'USD',
+      amount_cents: intent.amount_cents,
+      // remaining_balance_cents initialized automatically by trigger
+      max_redemptions: 10, // Generous limit; actual balance is the gate
+      is_active: true,
+      purchase_status: 'paid',
+      purchase_stripe_payment_intent_id: typeof session.payment_intent === 'string'
+        ? session.payment_intent
+        : null,
+      purchased_by_user_id: intent.buyer_user_id || null,
+      purchased_by_email: intent.buyer_email,
+      // Webhook-created gift cards use 'system' role — buyer may be a guest (no auth account).
+      // Admin client bypasses RLS; 'system' satisfies the creator_role_shape CHECK constraint
+      // (see migration 20260228000002 which made created_by_user_id nullable for system rows).
+      created_by_user_id: null,
+      created_by_role: 'system',
+      created_by_client_id: null,
+    })
+    .select('id, code, amount_cents, title')
+    .single()
+
+  if (incentiveError || !incentive) {
+    console.error('[handleGiftCardPurchaseCompleted] Failed to create incentive:', incentiveError)
+    // Mark as failed so we can retry / investigate
+    await (supabase as any)
+      .from('gift_card_purchase_intents')
+      .update({ status: 'failed' })
+      .eq('id', purchase_intent_id)
+    return
+  }
+
+  // Mark the intent as paid and link the created incentive
+  await (supabase as any)
+    .from('gift_card_purchase_intents')
+    .update({
+      status: 'paid',
+      created_incentive_id: incentive.id,
+    })
+    .eq('id', purchase_intent_id)
+
+  console.log('[handleGiftCardPurchaseCompleted] Gift card created:', code)
+
+  // Send the gift card code to the recipient (non-blocking)
+  try {
+    const { sendIncentiveDeliveryEmail } = await import('@/lib/email/notifications')
+    const expiresAtLabel = null // Gift cards purchased via Stripe don't expire by default
+
+    await sendIncentiveDeliveryEmail({
+      recipientEmail: intent.recipient_email,
+      recipientName: intent.recipient_name,
+      senderName: intent.buyer_email, // Buyer's email as sender identifier
+      incentiveType: 'gift_card',
+      title: incentive.title || `Gift Card — ${chefName}`,
+      code,
+      valueLabel: `$${amountDollars} gift card value`,
+      expiresAt: expiresAtLabel,
+      personalMessage: intent.personal_message,
+    })
+  } catch (emailErr) {
+    console.error('[handleGiftCardPurchaseCompleted] Recipient email failed (non-blocking):', emailErr)
+  }
+
+  // Send purchase confirmation to the buyer (non-blocking)
+  try {
+    const { sendGiftCardPurchaseConfirmationEmail } = await import('@/lib/email/notifications')
+    await sendGiftCardPurchaseConfirmationEmail({
+      buyerEmail: intent.buyer_email,
+      recipientEmail: intent.recipient_email,
+      recipientName: intent.recipient_name,
+      amountCents: intent.amount_cents,
+      code,
+      chefName,
+    })
+  } catch (emailErr) {
+    console.error('[handleGiftCardPurchaseCompleted] Buyer confirmation email failed (non-blocking):', emailErr)
+  }
+
+  // Notify chef of gift card sale (non-blocking)
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenant_id)
+    if (chefUserId) {
+      await createNotification({
+        tenantId: tenant_id,
+        recipientId: chefUserId,
+        category: 'payment',
+        action: 'gift_card_purchased',
+        title: 'Gift card sold',
+        body: `A $${amountDollars} gift card was purchased by ${intent.buyer_email}`,
+        actionUrl: '/clients/gift-cards',
+        metadata: {
+          amount_cents: intent.amount_cents,
+          code,
+          recipient_email: intent.recipient_email,
+          purchase_intent_id,
+        },
+      })
+    }
+  } catch (notifErr) {
+    console.error('[handleGiftCardPurchaseCompleted] Notification failed (non-blocking):', notifErr)
+  }
+
+  // Email the chef about the gift card sale (non-blocking)
+  if (chef?.email) {
+    try {
+      const { sendGiftCardPurchasedChefEmail } = await import('@/lib/email/notifications')
+      await sendGiftCardPurchasedChefEmail({
+        chefEmail: chef.email,
+        chefName,
+        buyerName: intent.buyer_name || null,
+        recipientName: intent.recipient_name || null,
+        amountCents: intent.amount_cents,
+        code,
+      })
+    } catch (emailErr) {
+      console.error('[handleGiftCardPurchaseCompleted] Chef email failed (non-blocking):', emailErr)
+    }
+  }
+}
+
+/**
  * Handle successful payment
  * 1. Append to ledger (source of truth)
  * 2. Check financial summary
@@ -120,6 +328,22 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
   if (!event_id || !tenant_id || !client_id) {
     throw new Error('Missing required metadata on PaymentIntent')
+  }
+
+  // Security: verify the metadata actually maps to a real event owned by that tenant.
+  // This prevents crafted PaymentIntents (with arbitrary metadata) from writing
+  // to the ledger for an event they don't own — even if RLS has a gap.
+  const supabaseAdmin = createServerClient({ admin: true })
+  const { data: ownershipCheck } = await supabaseAdmin
+    .from('events')
+    .select('id')
+    .eq('id', event_id)
+    .eq('tenant_id', tenant_id)
+    .single()
+
+  if (!ownershipCheck) {
+    console.error('[handlePaymentSucceeded] Metadata mismatch — event_id not owned by tenant_id', { event_id, tenant_id })
+    throw new Error('Payment metadata does not match a known event for this tenant')
   }
 
   console.log('[handlePaymentSucceeded] Processing payment for event:', event_id)
@@ -146,9 +370,8 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     return
   }
 
-  // 2. Check financial summary
-  const supabase = createServerClient({ admin: true })
-  const { data: financialSummary } = await supabase
+  // 2. Check financial summary (reuse the admin client created above)
+  const { data: financialSummary } = await supabaseAdmin
     .from('event_financial_summary')
     .select('*')
     .eq('event_id', event_id)
@@ -176,6 +399,14 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
     console.log('[handlePaymentSucceeded] Event transitioned to paid:', event_id)
 
+    // Assign invoice number (non-blocking — idempotent if already set)
+    try {
+      const { assignInvoiceNumber } = await import('@/lib/events/invoice-actions')
+      await assignInvoiceNumber(event_id)
+    } catch (invoiceErr) {
+      console.error('[handlePaymentSucceeded] Invoice number assignment failed (non-blocking):', invoiceErr)
+    }
+
     // Notify chef of payment (non-blocking)
     try {
       const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
@@ -199,23 +430,31 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       console.error('[handlePaymentSucceeded] Notification failed (non-blocking):', notifErr)
     }
 
-    // Send payment confirmation email to client (non-blocking)
+    // Send payment confirmation email to client + chef (non-blocking)
     try {
-      const { data: eventData } = await supabase
+      const { data: eventData } = await supabaseAdmin
         .from('events')
         .select('occasion, event_date')
         .eq('id', event_id)
         .single()
 
-      const { data: clientData } = await supabase
+      const { data: clientData } = await supabaseAdmin
         .from('clients')
         .select('email, full_name')
         .eq('id', client_id)
         .single()
 
+      const { data: chefData } = await supabaseAdmin
+        .from('chefs')
+        .select('email, business_name, display_name')
+        .eq('id', tenant_id)
+        .single()
+
       if (clientData?.email && eventData) {
-        const { sendPaymentConfirmationEmail } = await import('@/lib/email/notifications')
+        const { sendPaymentConfirmationEmail, sendPaymentReceivedChefEmail } = await import('@/lib/email/notifications')
         const remaining = financialSummary.outstanding_balance_cents
+
+        // Client receipt
         await sendPaymentConfirmationEmail({
           clientEmail: clientData.email,
           clientName: clientData.full_name,
@@ -225,6 +464,21 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
           eventDate: eventData.event_date,
           remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
         })
+
+        // Chef email notification (in addition to in-app notification)
+        if (chefData?.email) {
+          await sendPaymentReceivedChefEmail({
+            chefEmail: chefData.email,
+            chefName: chefData.business_name || chefData.display_name || 'Chef',
+            clientName: clientData.full_name,
+            amountCents: paymentIntent.amount,
+            paymentType: payment_type || 'payment',
+            occasion: eventData.occasion || 'your event',
+            eventDate: eventData.event_date,
+            eventId: event_id,
+            remainingBalanceCents: typeof remaining === 'number' ? remaining : null,
+          })
+        }
       }
     } catch (emailErr) {
       console.error('[handlePaymentSucceeded] Email failed (non-blocking):', emailErr)
@@ -235,7 +489,7 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
     // Insert audit trail so failed transition can be investigated and resolved manually
     try {
-      await supabase
+      await supabaseAdmin
         .from('event_state_transitions')
         .insert({
           event_id,

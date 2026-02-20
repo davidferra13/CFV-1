@@ -36,7 +36,7 @@ export function DiscoverabilityToggle({ currentValue }: DiscoverabilityTogglePro
           <p className="text-sm text-stone-500 mt-1">
             {enabled
               ? 'You are visible in the chef directory. Other chefs can find you by name and see your city/state.'
-              : 'You are hidden from the chef directory. No one can find or connect with you.'}
+              : 'You have opted out of the chef directory. Other chefs cannot find or connect with you.'}
           </p>
         </div>
 

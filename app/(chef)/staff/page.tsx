@@ -1,0 +1,118 @@
+// Staff Roster Page
+// Chef manages their team: sous chefs, kitchen assistants, service staff.
+
+import type { Metadata } from 'next'
+import { requireChef } from '@/lib/auth/get-user'
+import { listStaffMembers, deactivateStaffMember } from '@/lib/staff/actions'
+import { StaffMemberForm } from '@/components/staff/staff-member-form'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+
+export const metadata: Metadata = { title: 'Staff Roster — ChefFlow' }
+
+const ROLE_LABELS: Record<string, string> = {
+  sous_chef: 'Sous Chef',
+  kitchen_assistant: 'Kitchen Assistant',
+  service_staff: 'Service Staff',
+  server: 'Server',
+  bartender: 'Bartender',
+  dishwasher: 'Dishwasher',
+  other: 'Other',
+}
+
+export default async function StaffRosterPage() {
+  await requireChef()
+  const staff = await listStaffMembers(false) // load all including inactive
+
+  const active = staff.filter((s: any) => s.status === 'active')
+  const inactive = staff.filter((s: any) => s.status === 'inactive')
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-stone-900">Staff Roster</h1>
+        <p className="mt-1 text-sm text-stone-500">
+          Manage your sous chefs, kitchen assistants, and service staff. Assign them to events
+          and track hours and labor costs.
+        </p>
+      </div>
+
+      {/* Active staff */}
+      <div className="space-y-3">
+        {active.length === 0 ? (
+          <p className="text-sm text-stone-500">No active staff yet. Add your first team member below.</p>
+        ) : (
+          active.map((member: any) => (
+            <Card key={member.id}>
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-stone-900">{member.name}</span>
+                      <Badge variant="default">{ROLE_LABELS[member.role] ?? member.role}</Badge>
+                    </div>
+                    <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-stone-500">
+                      {member.hourly_rate_cents > 0 && (
+                        <span>${(member.hourly_rate_cents / 100).toFixed(2)}/hr</span>
+                      )}
+                      {member.phone && <span>{member.phone}</span>}
+                      {member.email && <span>{member.email}</span>}
+                    </div>
+                    {member.notes && (
+                      <p className="mt-1 text-xs text-stone-400">{member.notes}</p>
+                    )}
+                  </div>
+                  <form
+                    action={async () => {
+                      'use server'
+                      await deactivateStaffMember(member.id)
+                    }}
+                  >
+                    <Button type="submit" variant="ghost" size="sm" className="text-stone-400">
+                      Deactivate
+                    </Button>
+                  </form>
+                </div>
+                <details className="mt-3">
+                  <summary className="cursor-pointer text-xs text-amber-700 hover:text-amber-900">
+                    Edit
+                  </summary>
+                  <div className="mt-3">
+                    <StaffMemberForm member={member} />
+                  </div>
+                </details>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Add new */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Add Team Member</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <StaffMemberForm />
+        </CardContent>
+      </Card>
+
+      {/* Inactive */}
+      {inactive.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-sm text-stone-500">
+            {inactive.length} inactive team member{inactive.length !== 1 ? 's' : ''}
+          </summary>
+          <div className="mt-3 space-y-2">
+            {inactive.map((member: any) => (
+              <div key={member.id} className="flex items-center justify-between rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-400">
+                <span>{member.name} — {ROLE_LABELS[member.role] ?? member.role}</span>
+              </div>
+            ))}
+          </div>
+        </details>
+      )}
+    </div>
+  )
+}

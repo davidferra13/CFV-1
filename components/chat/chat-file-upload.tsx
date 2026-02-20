@@ -32,7 +32,7 @@ function isImageType(type: string) {
 function getFileIcon(type: string) {
   if (type === 'application/pdf') return <FileText className="w-10 h-10 text-red-500" />
   if (type.includes('spreadsheet') || type.includes('excel') || type === 'text/csv') {
-    return <FileSpreadsheet className="w-10 h-10 text-green-600" />
+    return <FileSpreadsheet className="w-10 h-10 text-emerald-600" />
   }
   if (type.includes('word') || type === 'application/msword') {
     return <FileText className="w-10 h-10 text-blue-600" />

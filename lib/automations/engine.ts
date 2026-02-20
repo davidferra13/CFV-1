@@ -8,6 +8,18 @@ import { evaluateConditions } from './conditions'
 import { executeAction } from './action-handlers'
 import type { AutomationRule, AutomationContext, TriggerEvent, Condition } from './types'
 
+// ─── Cooldown Windows ────────────────────────────────────────────────────
+// Prevent the same rule from firing on the same entity more than once
+// within a cooldown window. Stops time-based triggers (event_approaching,
+// no_response_timeout) from firing hundreds of times per cycle.
+
+const COOLDOWN_HOURS: Partial<Record<TriggerEvent, number>> = {
+  event_approaching: 12,   // at most once per 12h per event
+  no_response_timeout: 24, // at most once per 24h per inquiry
+  follow_up_overdue: 24,   // at most once per 24h (rescheduling resets the trigger)
+  quote_expiring: 24,      // at most once per 24h per quote
+}
+
 // ─── Main Entry Point ────────────────────────────────────────────────────
 // Call this after key actions: inquiry creation, status changes, Wix processing, etc.
 // Non-blocking: catches all errors internally.
@@ -36,20 +48,42 @@ export async function evaluateAutomations(
     for (const ruleRow of rules) {
       const rule = ruleRow as unknown as AutomationRule
       try {
-        // Parse conditions from JSONB
+        // ── Cooldown deduplication ───────────────────────────────────────
+        // For time-based triggers, skip if we already successfully fired
+        // this rule for this entity within the cooldown window.
+        const cooldownHours = COOLDOWN_HOURS[rule.trigger_event]
+        if (cooldownHours && fullContext.entityId) {
+          const cutoff = new Date(Date.now() - cooldownHours * 3_600_000).toISOString()
+          const { data: recentExecution } = await supabase
+            .from('automation_executions' as any)
+            .select('id')
+            .eq('rule_id', rule.id)
+            .eq('trigger_entity_id', fullContext.entityId)
+            .eq('status', 'success')
+            .gte('executed_at', cutoff)
+            .limit(1)
+            .maybeSingle()
+
+          if (recentExecution) {
+            // Already fired recently — skip silently (no log entry)
+            continue
+          }
+        }
+
+        // ── Parse conditions from JSONB ─────────────────────────────────
         const conditions = (rule.conditions || []) as Condition[]
 
-        // Evaluate conditions
+        // ── Evaluate conditions ─────────────────────────────────────────
         if (!evaluateConditions(conditions, fullContext)) {
           // Conditions not met — log as skipped
           await logExecution(supabase, tenantId, rule, fullContext, 'skipped')
           continue
         }
 
-        // Execute the action
+        // ── Execute the action ──────────────────────────────────────────
         const result = await executeAction(rule, fullContext)
 
-        // Log the execution
+        // ── Log the execution ───────────────────────────────────────────
         await logExecution(
           supabase,
           tenantId,
@@ -60,14 +94,16 @@ export async function evaluateAutomations(
           result.error
         )
 
-        // Update rule stats
-        await supabase
-          .from('automation_rules' as any)
-          .update({
-            last_fired_at: new Date().toISOString(),
-            total_fires: rule.total_fires + 1,
-          })
-          .eq('id', rule.id)
+        // ── Update rule stats ───────────────────────────────────────────
+        if (result.success) {
+          await supabase
+            .from('automation_rules' as any)
+            .update({
+              last_fired_at: new Date().toISOString(),
+              total_fires: rule.total_fires + 1,
+            })
+            .eq('id', rule.id)
+        }
       } catch (ruleErr) {
         const error = ruleErr as Error
         console.error(`[Automations] Rule "${rule.name}" (${rule.id}) failed:`, error.message)

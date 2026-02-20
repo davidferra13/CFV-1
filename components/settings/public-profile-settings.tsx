@@ -1,16 +1,15 @@
 // Public Profile Settings Client Component
-// Handles slug editing, tagline, and showcase partner toggles
+// Handles tagline and showcase partner toggles
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { updateChefSlug, updateChefTagline } from '@/lib/profile/actions'
+import { updateChefPortalTheme, uploadChefPortalBackgroundImage } from '@/lib/profile/actions'
 import { updatePartner } from '@/lib/partners/actions'
 
 type PartnerInfo = {
@@ -31,20 +30,39 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 export function PublicProfileSettings({
-  currentSlug,
   currentTagline,
+  currentPrimaryColor,
+  currentBackgroundColor,
+  currentBackgroundImageUrl,
   partners,
 }: {
-  currentSlug: string | null
   currentTagline: string | null
+  currentPrimaryColor: string | null
+  currentBackgroundColor: string | null
+  currentBackgroundImageUrl: string | null
   partners: PartnerInfo[]
 }) {
   const router = useRouter()
-  const [slug, setSlug] = useState(currentSlug || '')
   const [tagline, setTagline] = useState(currentTagline || '')
+  const [primaryColor, setPrimaryColor] = useState(currentPrimaryColor || '#1c1917')
+  const [backgroundColor, setBackgroundColor] = useState(currentBackgroundColor || '#fafaf9')
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState(currentBackgroundImageUrl || '')
+  const [selectedBackgroundFile, setSelectedBackgroundFile] = useState<File | null>(null)
+  const [backgroundPreviewUrl, setBackgroundPreviewUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!selectedBackgroundFile) {
+      setBackgroundPreviewUrl(null)
+      return
+    }
+
+    const objectUrl = URL.createObjectURL(selectedBackgroundFile)
+    setBackgroundPreviewUrl(objectUrl)
+    return () => URL.revokeObjectURL(objectUrl)
+  }, [selectedBackgroundFile])
 
   async function handleSaveProfile() {
     setSaving(true)
@@ -52,12 +70,24 @@ export function PublicProfileSettings({
     setSuccess(null)
 
     try {
-      if (slug && slug !== currentSlug) {
-        await updateChefSlug(slug)
+      let nextBackgroundImageUrl = backgroundImageUrl || null
+
+      if (selectedBackgroundFile) {
+        const formData = new FormData()
+        formData.set('image', selectedBackgroundFile)
+        const uploaded = await uploadChefPortalBackgroundImage(formData)
+        nextBackgroundImageUrl = uploaded.url
+        setBackgroundImageUrl(uploaded.url)
+        setSelectedBackgroundFile(null)
       }
-      if (tagline !== currentTagline) {
-        await updateChefTagline(tagline)
-      }
+
+      await updateChefPortalTheme({
+        tagline: tagline || null,
+        portal_primary_color: primaryColor,
+        portal_background_color: backgroundColor,
+        portal_background_image_url: nextBackgroundImageUrl,
+      })
+
       setSuccess('Profile updated!')
       router.refresh()
     } catch (err) {
@@ -81,30 +111,9 @@ export function PublicProfileSettings({
       {error && <Alert variant="error">{error}</Alert>}
       {success && <Alert variant="success">{success}</Alert>}
 
-      {/* Profile URL */}
+      {/* Profile */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Profile URL</h2>
-
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Your public URL slug</label>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-stone-400">/chef/</span>
-            <Input
-              value={slug}
-              onChange={e => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-              placeholder="chef-david"
-              className="flex-1"
-            />
-          </div>
-          <p className="text-xs text-stone-400 mt-1">
-            Lowercase letters, numbers, and hyphens only. This is your shareable public page.
-          </p>
-          {slug && (
-            <p className="text-xs text-brand-600 mt-1">
-              Preview: {typeof window !== 'undefined' ? window.location.origin : ''}/chef/{slug}
-            </p>
-          )}
-        </div>
+        <h2 className="text-lg font-semibold text-stone-900">Public Profile</h2>
 
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1">Tagline</label>
@@ -115,6 +124,61 @@ export function PublicProfileSettings({
             rows={2}
           />
           <p className="text-xs text-stone-400 mt-1">Shown below your name on the public profile</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1">Primary Color</label>
+            <input
+              type="color"
+              value={primaryColor}
+              onChange={e => setPrimaryColor(e.target.value)}
+              className="h-10 w-full rounded-md border border-stone-300 bg-white px-2"
+            />
+            <p className="text-xs text-stone-400 mt-1">Used for call-to-action buttons and links</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-1">Background Color</label>
+            <input
+              type="color"
+              value={backgroundColor}
+              onChange={e => setBackgroundColor(e.target.value)}
+              className="h-10 w-full rounded-md border border-stone-300 bg-white px-2"
+            />
+            <p className="text-xs text-stone-400 mt-1">Used as page background color fallback</p>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Background Image</label>
+          <input
+            type="file"
+            accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+            onChange={e => setSelectedBackgroundFile(e.target.files?.[0] ?? null)}
+            className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+          />
+          <p className="mt-1 text-xs text-stone-400">Upload JPEG, PNG, HEIC, or WebP (max 10MB)</p>
+          {backgroundImageUrl && !selectedBackgroundFile && (
+            <button
+              type="button"
+              className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+              onClick={() => setBackgroundImageUrl('')}
+            >
+              Remove current background image
+            </button>
+          )}
+          {(selectedBackgroundFile || backgroundImageUrl) && (
+            <div className="mt-3">
+              <p className="text-xs text-stone-500 mb-2">Background Preview</p>
+              <div
+                className="h-28 w-full rounded-md border border-stone-200 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(${backgroundPreviewUrl || backgroundImageUrl})`,
+                }}
+              />
+            </div>
+          )}
         </div>
 
         <Button onClick={handleSaveProfile} disabled={saving}>

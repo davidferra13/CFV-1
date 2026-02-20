@@ -22,38 +22,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function InquirePage({ params }: Props) {
   const data = await getPublicChefProfile(params.slug)
   if (!data) notFound()
+  const primaryColor = data.chef.portal_primary_color || '#1c1917'
+  const backgroundColor = data.chef.portal_background_color || '#fafaf9'
+  const backgroundImageUrl = data.chef.portal_background_image_url
+  const pageBackgroundStyle = backgroundImageUrl
+    ? {
+      backgroundColor,
+      backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed' as const,
+    }
+    : { backgroundColor }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-stone-50 to-white">
+    <div className="min-h-screen" style={pageBackgroundStyle}>
       <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-2xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-10">
-            {data.chef.profile_image_url ? (
-              <img
-                src={data.chef.profile_image_url}
-                alt={data.chef.display_name}
-                className="w-20 h-20 rounded-full object-cover mx-auto mb-4 ring-4 ring-white shadow-lg"
-              />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-stone-200 flex items-center justify-center mx-auto mb-4 ring-4 ring-white shadow-lg">
-                <span className="text-2xl font-bold text-stone-500">
-                  {data.chef.display_name.charAt(0).toUpperCase()}
-                </span>
-              </div>
-            )}
-            <h1 className="text-3xl md:text-4xl font-bold text-stone-900">
-              Book {data.chef.display_name}
-            </h1>
-            <p className="text-stone-600 mt-2">
-              Tell us about your event and we&apos;ll be in touch within 24 hours.
-            </p>
-          </div>
-
-          {/* Form */}
           <PublicInquiryForm
             chefSlug={params.slug}
             chefName={data.chef.display_name}
+            primaryColor={primaryColor}
           />
         </div>
       </section>

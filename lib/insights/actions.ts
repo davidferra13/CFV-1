@@ -3,7 +3,15 @@
 // Once applied and types regenerated, remove this directive.
 
 // Chat Insights Server Actions
-// Processes AI-extracted insights and provides CRUD for chef review
+// Processes AI-extracted insights and provides CRUD for chef review.
+//
+// Signal Scanner — Auto-Escalation Rules:
+//   confidence >= 0.75 + allergy_mention or dietary_preference:
+//     → Auto-create client_allergy_records (unconfirmed)
+//     → Auto-create pinned dietary note
+//     → Notify chef immediately
+//   confidence >= 0.5 (all types):
+//     → Store as pending insight for chef review (existing behavior)
 
 'use server'
 
@@ -12,6 +20,11 @@ import { createServerClient } from '@/lib/supabase/server'
 import { analyzeMessageForInsights } from '@/lib/ai/chat-insights'
 import { addClientNote } from '@/lib/notes/actions'
 import { revalidatePath } from 'next/cache'
+
+// ─── Signal Scanner auto-escalation threshold ────────────────────────────────
+// Insights at or above this confidence are escalated immediately without
+// waiting for chef to open the chat panel.
+const AUTO_ESCALATE_CONFIDENCE = 0.75
 
 // ============================================
 // TYPES
@@ -154,9 +167,152 @@ export async function processMessageInsights(
     if (error) {
       console.error('[processMessageInsights] Insert error:', error)
     }
+
+    // ── Signal Scanner: Auto-escalate high-confidence allergy/dietary insights ──
+    // For any allergy or dietary insight above the threshold, we don't wait for
+    // the chef to open the chat panel. We act immediately:
+    //   1. Upsert a client_allergy_records row (unconfirmed, source=ai_detected)
+    //   2. Create a pinned dietary note on the client profile
+    //   3. Notify the chef via in-app notification
+    if (clientRow?.id) {
+      const allergyInsights = filtered.filter(
+        (i) =>
+          (i.type === 'allergy_mention' || i.type === 'dietary_preference') &&
+          i.confidence >= AUTO_ESCALATE_CONFIDENCE
+      )
+
+      for (const insight of allergyInsights) {
+        await autoEscalateAllergyInsight({
+          supabase,
+          tenantId: conversation.tenant_id,
+          clientId: clientRow.id,
+          messageId,
+          insight,
+        }).catch((err) =>
+          console.error('[processMessageInsights] Auto-escalation failed (non-blocking):', err)
+        )
+      }
+    }
   } catch (err) {
     // Non-blocking: log and continue
     console.error('[processMessageInsights] Error:', err)
+  }
+}
+
+// ─── Auto-escalation helper ──────────────────────────────────────────────────
+
+/**
+ * Escalates a high-confidence allergy or dietary insight by:
+ * 1. Upserting a client_allergy_records row (ai_detected, unconfirmed)
+ * 2. Creating a pinned dietary note
+ * 3. Notifying the chef
+ *
+ * This runs fire-and-forget inside processMessageInsights. Failures are logged
+ * but never surface to the message sender.
+ */
+async function autoEscalateAllergyInsight({
+  supabase,
+  tenantId,
+  clientId,
+  messageId,
+  insight,
+}: {
+  supabase: ReturnType<typeof createServerClient>
+  tenantId: string
+  clientId: string
+  messageId: string
+  insight: { type: string; title: string; detail: string | null; extracted_data: Record<string, unknown>; confidence: number }
+}) {
+  // Extract the allergen name from the AI's extracted_data or fall back to title
+  const allergen: string =
+    (insight.extracted_data?.allergen as string) ||
+    (insight.extracted_data?.item as string) ||
+    insight.title
+
+  if (!allergen || allergen.trim().length === 0) return
+
+  // Determine severity from extracted_data if AI provided it, else default
+  const rawSeverity = (insight.extracted_data?.severity as string)?.toLowerCase()
+  const severityMap: Record<string, string> = {
+    anaphylaxis: 'anaphylaxis',
+    severe: 'anaphylaxis',
+    life_threatening: 'anaphylaxis',
+    allergy: 'allergy',
+    immune: 'allergy',
+    intolerance: 'intolerance',
+    sensitive: 'intolerance',
+    dislike: 'preference',
+    avoid: 'preference',
+    preference: 'preference',
+  }
+  const severity =
+    (rawSeverity && severityMap[rawSeverity]) ||
+    (insight.type === 'allergy_mention' ? 'allergy' : 'preference')
+
+  // 1. Upsert client_allergy_records (ON CONFLICT on lower(allergen) per client)
+  //    We use a raw insert with ON CONFLICT DO NOTHING so we don't overwrite
+  //    chef-confirmed records with AI guesses.
+  const { error: upsertError } = await (supabase as any)
+    .from('client_allergy_records')
+    .upsert(
+      {
+        tenant_id: tenantId,
+        client_id: clientId,
+        allergen: allergen.trim(),
+        severity,
+        source: 'ai_detected',
+        confirmed_by_chef: false,
+        notes: insight.detail || null,
+        detected_in_message_id: messageId,
+      },
+      {
+        onConflict: 'client_id,allergen',
+        ignoreDuplicates: true,   // Don't overwrite existing (chef-entered) record
+      }
+    )
+
+  if (upsertError) {
+    console.error('[autoEscalateAllergyInsight] Upsert error:', upsertError)
+  }
+
+  // 2. Create a pinned dietary note (always creates — notes are a log, not deduplicated)
+  const noteEmoji = severity === 'anaphylaxis' ? '⚠️ ANAPHYLAXIS' : severity === 'allergy' ? 'Allergy' : severity === 'intolerance' ? 'Intolerance' : 'Preference'
+  const noteText = `AI Detected — ${noteEmoji}: ${allergen}${insight.detail ? ` — ${insight.detail}` : ''} (confidence: ${Math.round(insight.confidence * 100)}% — confirm in client profile)`
+
+  await addClientNote({
+    client_id: clientId,
+    note_text: noteText,
+    category: 'dietary' as any,
+    pinned: severity === 'anaphylaxis' || severity === 'allergy',
+  }).catch((err) => console.error('[autoEscalateAllergyInsight] Note create failed:', err))
+
+  // 3. Notify chef
+  const isCritical = severity === 'anaphylaxis'
+  const notificationTitle = isCritical
+    ? `CRITICAL: Possible anaphylaxis allergen detected — ${allergen}`
+    : `Allergy detected in chat: ${allergen}`
+  const notificationBody = isCritical
+    ? `Client may have a life-threatening allergy to ${allergen}. Confirm immediately before planning any menus.`
+    : `AI detected "${allergen}" (${severity}) in a client message. Review and confirm on the client profile.`
+
+  try {
+    const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
+    const chefUserId = await getChefAuthUserId(tenantId)
+    if (chefUserId) {
+      await createNotification({
+        tenantId,
+        recipientId: chefUserId,
+        category: 'client',
+        action: isCritical ? 'allergy_critical_detected' : 'allergy_detected',
+        title: notificationTitle,
+        body: notificationBody,
+        actionUrl: `/clients/${clientId}`,
+        clientId,
+        metadata: { allergen, severity, confidence: insight.confidence, message_id: messageId },
+      } as any)
+    }
+  } catch (err) {
+    console.error('[autoEscalateAllergyInsight] Notification failed:', err)
   }
 }
 

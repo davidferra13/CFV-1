@@ -3,7 +3,6 @@
 
 import { useState, useTransition, useEffect, useRef } from 'react'
 import { Search } from 'lucide-react'
-import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChefCard } from '@/components/network/chef-card'
@@ -23,28 +22,24 @@ export function ChefSearch() {
   const [actionError, setActionError] = useState<string | null>(null)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // Debounced search
+  // Load discoverable chefs by default; filter as query changes
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
-    if (!query || query.length < 2) {
-      setResults([])
-      setSearched(false)
-      return
-    }
-
     debounceRef.current = setTimeout(async () => {
       setIsSearching(true)
+      const normalizedQuery = query.trim()
       try {
-        const data = await searchChefs({ query })
+        const data = await searchChefs({ query: normalizedQuery })
         setResults(data)
-        setSearched(true)
+        setSearched(normalizedQuery.length > 0)
       } catch {
         setResults([])
+        setSearched(normalizedQuery.length > 0)
       } finally {
         setIsSearching(false)
       }
-    }, 300)
+    }, query.trim().length === 0 ? 0 : 300)
 
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
@@ -156,6 +151,12 @@ export function ChefSearch() {
       {!isSearching && searched && results.length === 0 && (
         <p className="text-sm text-stone-500 text-center py-4">
           No chefs found matching &ldquo;{query}&rdquo;. They may have network discovery turned off.
+        </p>
+      )}
+
+      {!isSearching && !searched && results.length === 0 && (
+        <p className="text-sm text-stone-500 text-center py-4">
+          No discoverable chefs yet.
         </p>
       )}
 

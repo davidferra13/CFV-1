@@ -3,66 +3,12 @@
 
 'use server'
 
-import { z } from 'zod'
 import { parseWithAI, type ParseResult } from './parse'
+import { ParsedRecipeSchema, type ParsedRecipe, type ParsedIngredient } from './parse-recipe-schema'
 
-// ============================================
-// PARSED RECIPE SCHEMA
-// ============================================
-
-const RECIPE_CATEGORIES = [
-  'sauce', 'protein', 'starch', 'vegetable', 'fruit', 'dessert',
-  'bread', 'pasta', 'soup', 'salad', 'appetizer', 'condiment',
-  'beverage', 'other'
-] as const
-
-const ALLERGEN_FLAGS = [
-  'dairy', 'nuts', 'tree_nuts', 'peanuts', 'gluten', 'shellfish',
-  'fish', 'eggs', 'soy', 'sesame', 'celery', 'mustard', 'sulfites'
-] as const
-
-const ParsedIngredientSchema = z.object({
-  name: z.string().min(1),
-  quantity: z.number().default(1),
-  unit: z.string().default('unit'),
-  preparation_notes: z.string().nullable().default(null),
-  is_optional: z.boolean().default(false),
-  estimated: z.boolean().default(false),
-  category: z.enum([
-    'protein', 'produce', 'dairy', 'pantry', 'spice', 'oil',
-    'alcohol', 'baking', 'frozen', 'canned', 'fresh_herb',
-    'dry_herb', 'condiment', 'beverage', 'specialty', 'other'
-  ]).default('other'),
-  allergen_flags: z.array(z.string()).default([])
-})
-
-export type ParsedIngredient = z.infer<typeof ParsedIngredientSchema>
-
-export const ParsedRecipeSchema = z.object({
-  parsed: z.object({
-    name: z.string().min(1),
-    category: z.enum(RECIPE_CATEGORIES),
-    description: z.string().nullable().default(null),
-    method: z.string().min(1),
-    method_detailed: z.string().nullable().default(null),
-    ingredients: z.array(ParsedIngredientSchema).default([]),
-    yield_quantity: z.number().nullable().default(null),
-    yield_unit: z.string().nullable().default(null),
-    yield_description: z.string().nullable().default(null),
-    prep_time_minutes: z.number().nullable().default(null),
-    cook_time_minutes: z.number().nullable().default(null),
-    total_time_minutes: z.number().nullable().default(null),
-    dietary_tags: z.array(z.string()).default([]),
-    allergen_flags: z.array(z.string()).default([]),
-    adaptations: z.string().nullable().default(null),
-    notes: z.string().nullable().default(null),
-    field_confidence: z.record(z.string(), z.enum(['confirmed', 'inferred', 'unknown'])).default({})
-  }),
-  confidence: z.enum(['high', 'medium', 'low']),
-  warnings: z.array(z.string()).default([])
-})
-
-export type ParsedRecipe = z.infer<typeof ParsedRecipeSchema>['parsed']
+// ParsedRecipeSchema, ParsedRecipe, and ParsedIngredient are defined in ./parse-recipe-schema (no 'use server').
+// Re-export the TYPES only for consumers that import from this file.
+export type { ParsedRecipe, ParsedIngredient } from './parse-recipe-schema'
 
 const RECIPE_SYSTEM_PROMPT = `You are a data extraction assistant for a private chef's recipe management system. Your job is to parse natural language recipe descriptions into structured JSON.
 

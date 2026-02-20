@@ -13,6 +13,62 @@ import type { BrainDumpResult } from './parse-brain-dump'
 import type { Json } from '@/types/database'
 
 // ============================================
+// DUPLICATE CHECK
+// Called during the review phase before save.
+// Returns matches grouped by email and name.
+// ============================================
+
+export type DuplicateCheckResult = {
+  byEmail: Record<string, { id: string; full_name: string; email: string }>
+  byName: Record<string, { id: string; full_name: string; email: string | null }>
+}
+
+export async function checkClientDuplicates(
+  candidates: { full_name: string; email?: string | null }[]
+): Promise<DuplicateCheckResult> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const emails = candidates
+    .map(c => c.email)
+    .filter((e): e is string => !!e && !e.includes('@placeholder.import'))
+  const names = candidates.map(c => c.full_name.trim().toLowerCase())
+
+  // Run email match and full client name fetch in parallel.
+  // Name matching is done in JS rather than via PostgREST .or() because
+  // PostgREST's ilike filter misparses values that contain spaces.
+  const [emailResult, allClientsResult] = await Promise.all([
+    emails.length > 0
+      ? supabase
+          .from('clients')
+          .select('id, full_name, email')
+          .eq('tenant_id', user.tenantId!)
+          .in('email', emails)
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from('clients')
+      .select('id, full_name, email')
+      .eq('tenant_id', user.tenantId!)
+      .limit(500),
+  ])
+
+  const byEmail: DuplicateCheckResult['byEmail'] = {}
+  for (const row of emailResult.data || []) {
+    if (row.email) byEmail[row.email.toLowerCase()] = row as { id: string; full_name: string; email: string }
+  }
+
+  const byName: DuplicateCheckResult['byName'] = {}
+  for (const row of allClientsResult.data || []) {
+    const key = row.full_name.trim().toLowerCase()
+    if (names.includes(key)) {
+      byName[key] = row
+    }
+  }
+
+  return { byEmail, byName }
+}
+
+// ============================================
 // 1. IMPORT SINGLE CLIENT
 // ============================================
 
@@ -237,7 +293,8 @@ export type BrainDumpImportResult = {
 }
 
 export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDumpImportResult> {
-  await requireChef()
+  const user = await requireChef()
+  const supabase = createServerClient()
 
   const result: BrainDumpImportResult = {
     clients: [],
@@ -282,5 +339,35 @@ export async function importBrainDump(parsed: BrainDumpResult): Promise<BrainDum
     }
   }
 
+  // Save brain dump notes to chef_documents so they aren't lost
+  const allNotes = [
+    ...parsed.notes,
+    ...parsed.unstructured.map(text => ({
+      type: 'general',
+      content: text,
+      suggestedAction: 'Review and classify this note manually.',
+    })),
+  ]
+
+  for (const note of allNotes) {
+    try {
+      await supabase.from('chef_documents').insert({
+        tenant_id: user.tenantId!,
+        title: `Brain dump note — ${note.type.replace(/_/g, ' ')}`,
+        document_type: 'note',
+        content_text: note.content,
+        summary: note.suggestedAction,
+        source_type: 'brain_dump',
+        tags: [note.type],
+        created_by: user.id,
+        updated_by: user.id,
+      })
+    } catch (err) {
+      // Note save failure is non-fatal
+      console.error('[importBrainDump] Note save failed:', err)
+    }
+  }
+
+  revalidatePath('/import')
   return result
 }

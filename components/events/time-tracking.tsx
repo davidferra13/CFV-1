@@ -1,10 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useRouter } from 'next/navigation'
+import { Alert } from '@/components/ui/alert'
+import {
+  EVENT_TIME_ACTIVITY_TYPES,
+  EVENT_TIME_ACTIVITY_CONFIG,
+  type EventTimeActivityType,
+  formatMinutesAsDuration,
+  safeDurationMinutes,
+} from '@/lib/events/time-tracking'
 
 type TimeData = {
   time_shopping_minutes: number | null
@@ -12,151 +20,282 @@ type TimeData = {
   time_travel_minutes: number | null
   time_service_minutes: number | null
   time_reset_minutes: number | null
+  shopping_started_at: string | null
+  shopping_completed_at: string | null
+  prep_started_at: string | null
+  prep_completed_at: string | null
+  travel_started_at: string | null
+  travel_completed_at: string | null
+  service_started_at: string | null
+  service_completed_at: string | null
+  reset_started_at: string | null
+  reset_completed_at: string | null
+}
+
+type TimeTotals = Pick<
+  TimeData,
+  'time_shopping_minutes' | 'time_prep_minutes' | 'time_travel_minutes' | 'time_service_minutes' | 'time_reset_minutes'
+>
+
+type ActivityRow = {
+  id: EventTimeActivityType
+  label: string
+  minutes: number
+  startedAt: string | null
+  completedAt: string | null
+  isActive: boolean
+}
+
+const ACTIVITY_MINUTE_FIELDS: Record<EventTimeActivityType, keyof TimeTotals> = {
+  shopping: 'time_shopping_minutes',
+  prep: 'time_prep_minutes',
+  packing: 'time_reset_minutes',
+  driving: 'time_travel_minutes',
+  execution: 'time_service_minutes',
+}
+
+function toNumber(value: string): number | null {
+  if (!value.trim()) return null
+  const parsed = Number.parseInt(value, 10)
+  if (!Number.isFinite(parsed) || parsed < 0) return null
+  return parsed
 }
 
 export function TimeTracking({
   eventId,
   initialData,
   onSave,
+  onStart,
+  onStop,
 }: {
   eventId: string
   initialData: TimeData
-  onSave: (eventId: string, data: TimeData) => Promise<{ success: boolean }>
+  onSave: (eventId: string, data: TimeTotals) => Promise<{ success: boolean }>
+  onStart: (eventId: string, activity: EventTimeActivityType) => Promise<{ success: boolean }>
+  onStop: (eventId: string, activity: EventTimeActivityType) => Promise<{ success: boolean }>
 }) {
   const router = useRouter()
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [busyActivity, setBusyActivity] = useState<EventTimeActivityType | null>(null)
+  const [busyAction, setBusyAction] = useState<'start' | 'stop' | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
   const [shopping, setShopping] = useState(initialData.time_shopping_minutes?.toString() ?? '')
   const [prep, setPrep] = useState(initialData.time_prep_minutes?.toString() ?? '')
-  const [travel, setTravel] = useState(initialData.time_travel_minutes?.toString() ?? '')
-  const [service, setService] = useState(initialData.time_service_minutes?.toString() ?? '')
-  const [reset, setReset] = useState(initialData.time_reset_minutes?.toString() ?? '')
+  const [packing, setPacking] = useState(initialData.time_reset_minutes?.toString() ?? '')
+  const [driving, setDriving] = useState(initialData.time_travel_minutes?.toString() ?? '')
+  const [execution, setExecution] = useState(initialData.time_service_minutes?.toString() ?? '')
 
-  const totalMinutes = (parseInt(shopping) || 0) + (parseInt(prep) || 0) + (parseInt(travel) || 0) + (parseInt(service) || 0) + (parseInt(reset) || 0)
-  const hours = Math.floor(totalMinutes / 60)
-  const mins = totalMinutes % 60
+  // Live elapsed display — ticks every 30s while any timer is running.
+  // Derived directly from initialData so the effect doesn't depend on activityRows.
+  const [liveNow, setLiveNow] = useState(() => Date.now())
+  const hasActiveTimer =
+    (initialData.shopping_started_at !== null && initialData.shopping_completed_at === null) ||
+    (initialData.prep_started_at !== null && initialData.prep_completed_at === null) ||
+    (initialData.reset_started_at !== null && initialData.reset_completed_at === null) ||
+    (initialData.travel_started_at !== null && initialData.travel_completed_at === null) ||
+    (initialData.service_started_at !== null && initialData.service_completed_at === null)
+  useEffect(() => {
+    if (!hasActiveTimer) return
+    const id = setInterval(() => setLiveNow(Date.now()), 30_000)
+    return () => clearInterval(id)
+  }, [hasActiveTimer])
 
-  const hasData = initialData.time_shopping_minutes !== null || initialData.time_prep_minutes !== null ||
-    initialData.time_travel_minutes !== null || initialData.time_service_minutes !== null || initialData.time_reset_minutes !== null
+  useEffect(() => {
+    setShopping(initialData.time_shopping_minutes?.toString() ?? '')
+    setPrep(initialData.time_prep_minutes?.toString() ?? '')
+    setPacking(initialData.time_reset_minutes?.toString() ?? '')
+    setDriving(initialData.time_travel_minutes?.toString() ?? '')
+    setExecution(initialData.time_service_minutes?.toString() ?? '')
+  }, [
+    initialData.time_shopping_minutes,
+    initialData.time_prep_minutes,
+    initialData.time_reset_minutes,
+    initialData.time_travel_minutes,
+    initialData.time_service_minutes,
+  ])
+
+  const activityRows = useMemo<ActivityRow[]>(() => {
+    return EVENT_TIME_ACTIVITY_TYPES.map((activity) => {
+      const config = EVENT_TIME_ACTIVITY_CONFIG[activity]
+      const minutesField = ACTIVITY_MINUTE_FIELDS[activity]
+      const startedAt = initialData[config.startedAtColumn]
+      const completedAt = initialData[config.completedAtColumn]
+
+      return {
+        id: activity,
+        label: config.label,
+        minutes: initialData[minutesField] ?? 0,
+        startedAt,
+        completedAt,
+        isActive: Boolean(startedAt && !completedAt),
+      }
+    })
+  }, [initialData])
+
+  const activeActivity = activityRows.find((row) => row.isActive)?.id ?? null
+  const hasAnyData =
+    activityRows.some((row) => row.minutes > 0) || activityRows.some((row) => row.startedAt !== null)
+
+  const editorTotalMinutes =
+    (Number.parseInt(shopping, 10) || 0) +
+    (Number.parseInt(prep, 10) || 0) +
+    (Number.parseInt(packing, 10) || 0) +
+    (Number.parseInt(driving, 10) || 0) +
+    (Number.parseInt(execution, 10) || 0)
 
   async function handleSave() {
     setSaving(true)
+    setError(null)
     try {
       await onSave(eventId, {
-        time_shopping_minutes: shopping ? parseInt(shopping) : null,
-        time_prep_minutes: prep ? parseInt(prep) : null,
-        time_travel_minutes: travel ? parseInt(travel) : null,
-        time_service_minutes: service ? parseInt(service) : null,
-        time_reset_minutes: reset ? parseInt(reset) : null,
+        time_shopping_minutes: toNumber(shopping),
+        time_prep_minutes: toNumber(prep),
+        time_travel_minutes: toNumber(driving),
+        time_service_minutes: toNumber(execution),
+        time_reset_minutes: toNumber(packing),
       })
       setEditing(false)
       router.refresh()
-    } catch (e) {
-      console.error(e)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save time entries')
     } finally {
       setSaving(false)
     }
   }
 
-  if (!editing) {
-    return (
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Time Invested</CardTitle>
-            <Button variant="secondary" size="sm" onClick={() => setEditing(true)}>
-              {hasData ? 'Edit' : 'Log Time'}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {!hasData ? (
-            <p className="text-sm text-stone-500">Track how long each phase took to calculate your effective hourly rate.</p>
-          ) : (
-            <div>
-              <dl className="grid grid-cols-3 md:grid-cols-5 gap-3">
-                {initialData.time_shopping_minutes !== null && (
-                  <div>
-                    <dt className="text-xs font-medium text-stone-500">Shopping</dt>
-                    <dd className="text-lg font-semibold text-stone-900">{initialData.time_shopping_minutes}m</dd>
-                  </div>
-                )}
-                {initialData.time_prep_minutes !== null && (
-                  <div>
-                    <dt className="text-xs font-medium text-stone-500">Prep</dt>
-                    <dd className="text-lg font-semibold text-stone-900">{initialData.time_prep_minutes}m</dd>
-                  </div>
-                )}
-                {initialData.time_travel_minutes !== null && (
-                  <div>
-                    <dt className="text-xs font-medium text-stone-500">Travel</dt>
-                    <dd className="text-lg font-semibold text-stone-900">{initialData.time_travel_minutes}m</dd>
-                  </div>
-                )}
-                {initialData.time_service_minutes !== null && (
-                  <div>
-                    <dt className="text-xs font-medium text-stone-500">Service</dt>
-                    <dd className="text-lg font-semibold text-stone-900">{initialData.time_service_minutes}m</dd>
-                  </div>
-                )}
-                {initialData.time_reset_minutes !== null && (
-                  <div>
-                    <dt className="text-xs font-medium text-stone-500">Reset</dt>
-                    <dd className="text-lg font-semibold text-stone-900">{initialData.time_reset_minutes}m</dd>
-                  </div>
-                )}
-              </dl>
-              <p className="text-sm text-stone-600 mt-3 font-medium">
-                Total: {hours > 0 ? `${hours}h ` : ''}{mins}m
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    )
+  async function handleToggleActivity(activity: EventTimeActivityType, mode: 'start' | 'stop') {
+    setBusyActivity(activity)
+    setBusyAction(mode)
+    setError(null)
+
+    try {
+      if (mode === 'start') {
+        await onStart(eventId, activity)
+      } else {
+        await onStop(eventId, activity)
+      }
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Failed to ${mode} timer`)
+    } finally {
+      setBusyActivity(null)
+      setBusyAction(null)
+    }
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Time Invested</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          <div>
-            <label className="text-xs font-medium text-stone-600">Shopping (min)</label>
-            <Input type="number" placeholder="0" value={shopping} onChange={(e) => setShopping(e.target.value)} />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-stone-600">Prep (min)</label>
-            <Input type="number" placeholder="0" value={prep} onChange={(e) => setPrep(e.target.value)} />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-stone-600">Travel (min)</label>
-            <Input type="number" placeholder="0" value={travel} onChange={(e) => setTravel(e.target.value)} />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-stone-600">Service (min)</label>
-            <Input type="number" placeholder="0" value={service} onChange={(e) => setService(e.target.value)} />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-stone-600">Reset (min)</label>
-            <Input type="number" placeholder="0" value={reset} onChange={(e) => setReset(e.target.value)} />
-          </div>
+        <div className="flex items-center justify-between gap-2">
+          <CardTitle className="text-lg">Chef Hours Tracking</CardTitle>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setEditing((prev) => !prev)}
+            disabled={saving}
+          >
+            {editing ? 'Close Edit' : hasAnyData ? 'Adjust Totals' : 'Set Totals'}
+          </Button>
         </div>
-        {totalMinutes > 0 && (
-          <p className="text-sm text-stone-600 mt-2">
-            Total: {hours > 0 ? `${hours}h ` : ''}{mins}m
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {error && (
+          <Alert variant="error" title="Could not update tracking">
+            {error}
+          </Alert>
+        )}
+
+        <div className="rounded-lg border border-stone-200 divide-y">
+          {activityRows.map((row) => {
+            const isBusy = busyActivity === row.id
+            const startDisabled = Boolean(activeActivity && activeActivity !== row.id) || Boolean(busyActivity) || saving
+            const stopDisabled = Boolean(busyActivity) || saving
+
+            return (
+              <div key={row.id} className="flex items-center justify-between gap-3 p-3">
+                <div>
+                  <p className="text-sm font-medium text-stone-900">{row.label}</p>
+                  <p className="text-xs text-stone-600">
+                    Logged: {formatMinutesAsDuration(row.minutes)}
+                    {row.isActive && row.startedAt
+                      ? ` • Running: ${formatMinutesAsDuration(safeDurationMinutes(row.startedAt, new Date(liveNow).toISOString()))}`
+                      : ''}
+                  </p>
+                </div>
+                {row.isActive ? (
+                  <Button
+                    size="sm"
+                    variant="danger"
+                    disabled={stopDisabled}
+                    onClick={() => handleToggleActivity(row.id, 'stop')}
+                  >
+                    {isBusy && busyAction === 'stop' ? 'Stopping...' : 'Stop'}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    disabled={startDisabled}
+                    onClick={() => handleToggleActivity(row.id, 'start')}
+                  >
+                    {isBusy && busyAction === 'start' ? 'Starting...' : 'Start'}
+                  </Button>
+                )}
+              </div>
+            )
+          })}
+        </div>
+
+        {activeActivity && (
+          <p className="text-xs text-stone-500">
+            One active timer at a time to keep logging simple. Gentle reminders are capped to avoid spam.
           </p>
         )}
-        <div className="flex gap-2 mt-3">
-          <Button size="sm" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving...' : 'Save'}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
-            Cancel
-          </Button>
-        </div>
+
+        <p className="text-sm font-medium text-stone-700">
+          Total Logged: {formatMinutesAsDuration(activityRows.reduce((sum, row) => sum + row.minutes, 0))}
+        </p>
+
+        {editing && (
+          <div className="space-y-3 rounded-lg border border-stone-200 p-3">
+            <p className="text-sm font-medium text-stone-800">Manual correction (if you forgot to start/stop)</p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div>
+                <label className="text-xs font-medium text-stone-600">Shopping (min)</label>
+                <Input type="number" min={0} placeholder="0" value={shopping} onChange={(e) => setShopping(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-stone-600">Prep (min)</label>
+                <Input type="number" min={0} placeholder="0" value={prep} onChange={(e) => setPrep(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-stone-600">Packing (min)</label>
+                <Input type="number" min={0} placeholder="0" value={packing} onChange={(e) => setPacking(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-stone-600">Driving (min)</label>
+                <Input type="number" min={0} placeholder="0" value={driving} onChange={(e) => setDriving(e.target.value)} />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-stone-600">Execution (min)</label>
+                <Input type="number" min={0} placeholder="0" value={execution} onChange={(e) => setExecution(e.target.value)} />
+              </div>
+            </div>
+            {editorTotalMinutes > 0 && (
+              <p className="text-sm text-stone-600">Manual total: {formatMinutesAsDuration(editorTotalMinutes)}</p>
+            )}
+            <div className="flex gap-2">
+              <Button size="sm" onClick={handleSave} disabled={saving || Boolean(busyActivity)}>
+                {saving ? 'Saving...' : 'Save Totals'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setEditing(false)} disabled={saving}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   )

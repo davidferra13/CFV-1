@@ -2,10 +2,12 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { getChefReviews, getChefReviewStats } from '@/lib/reviews/actions'
-import { getChefFeedback } from '@/lib/reviews/chef-feedback-actions'
+import { getUnifiedChefReviewFeed } from '@/lib/reviews/actions'
+import { getExternalReviewSources } from '@/lib/reviews/external-actions'
 import { ChefReviewsList } from '@/components/reviews/chef-reviews-list'
 import { LogFeedbackButton } from '@/components/reviews/log-feedback-button'
+import { ImportPlatformReview } from '@/components/reviews/import-platform-review'
+import { ExternalReviewSources } from '@/components/reviews/external-review-sources'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Reviews - ChefFlow' }
@@ -13,23 +15,23 @@ export const metadata: Metadata = { title: 'Reviews - ChefFlow' }
 export default async function ReviewsPage() {
   await requireChef()
 
-  const [reviews, stats, feedback] = await Promise.all([
-    getChefReviews(),
-    getChefReviewStats(),
-    getChefFeedback(),
+  const [reviews, externalSources] = await Promise.all([
+    getUnifiedChefReviewFeed(),
+    getExternalReviewSources(),
   ])
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Client Reviews</h1>
+          <h1 className="text-3xl font-bold text-stone-900">Reviews</h1>
           <p className="text-stone-600 mt-1">
-            Feedback from your clients after completed events.
+            Unified feed of internal and external reviews with source attribution.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <LogFeedbackButton />
+          <ImportPlatformReview />
           <Link
             href="/settings"
             className="text-sm text-brand-600 hover:text-brand-700"
@@ -39,7 +41,8 @@ export default async function ReviewsPage() {
         </div>
       </div>
 
-      <ChefReviewsList reviews={reviews as any} stats={stats} feedback={feedback as any} />
+      <ExternalReviewSources sources={externalSources} />
+      <ChefReviewsList reviews={reviews} />
     </div>
   )
 }

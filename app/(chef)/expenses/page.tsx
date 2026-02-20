@@ -94,7 +94,7 @@ export default async function ExpensesPage({
         </Card>
         <Card className="p-4">
           <p className="text-sm font-medium text-stone-500">Monthly Revenue</p>
-          <p className="text-2xl font-bold text-green-600 mt-1">{formatCurrency(monthlySummary.totalRevenueCents)}</p>
+          <p className="text-2xl font-bold text-emerald-600 mt-1">{formatCurrency(monthlySummary.totalRevenueCents)}</p>
           <p className="text-xs text-stone-500 mt-1">{monthlySummary.eventCount} events</p>
         </Card>
         <Card className="p-4">

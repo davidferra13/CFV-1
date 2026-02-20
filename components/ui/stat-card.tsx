@@ -26,8 +26,8 @@ export function StatCard({ label, value, icon: Icon, trend, subtitle, className 
             <p className="text-xs text-stone-400">{subtitle}</p>
           )}
         </div>
-        <div className="rounded-lg bg-stone-100 p-2.5">
-          <Icon className="h-5 w-5 text-stone-600" />
+        <div className="rounded-lg bg-brand-50 p-2.5">
+          <Icon className="h-5 w-5 text-brand-600" />
         </div>
       </div>
       {trend && (

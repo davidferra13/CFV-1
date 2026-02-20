@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { universalSearch, type SearchResult } from '@/lib/search/universal-search'
 
 export function GlobalSearch() {
@@ -14,6 +14,33 @@ export function GlobalSearch() {
   const inputRef = useRef<HTMLInputElement>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
+  const pathname = usePathname()
+  const listboxId = 'global-search-results'
+
+  const openAndFocus = useCallback(() => {
+    setOpen(true)
+    setTimeout(() => inputRef.current?.focus(), 0)
+  }, [])
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault()
+        openAndFocus()
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [openAndFocus])
+
+  useEffect(() => {
+    setOpen(false)
+    setQuery('')
+    setResults([])
+    setGrouped({})
+    setLoading(false)
+    setHighlightedIndex(-1)
+  }, [pathname])
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -42,6 +69,7 @@ export function GlobalSearch() {
   const selectResult = useCallback((item: SearchResult) => {
     setOpen(false)
     setQuery('')
+    setHighlightedIndex(-1)
     router.push(item.url)
   }, [router])
 
@@ -77,9 +105,9 @@ export function GlobalSearch() {
 
   return (
     <div className="relative">
-      <div className="flex items-center">
+      <div className="relative z-50 flex items-center">
         <button
-          onClick={() => { setOpen(true); setTimeout(() => inputRef.current?.focus(), 0) }}
+          onClick={openAndFocus}
           className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
           aria-label="Open search"
         >
@@ -94,17 +122,18 @@ export function GlobalSearch() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Search everything..."
+            placeholder="Search everything... (Ctrl/Cmd+K)"
             className="min-w-[220px] px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
             role="combobox"
-            aria-expanded={results.length > 0}
+            aria-controls={listboxId}
+            aria-expanded={open}
             aria-autocomplete="list"
           />
         )}
       </div>
 
       {open && query.length >= 2 && (
-        <div className="absolute top-12 left-0 right-0 min-w-[320px] max-w-[600px] bg-white shadow-xl border border-stone-200 rounded-xl z-50 p-2" role="listbox">
+        <div id={listboxId} className="absolute top-12 left-0 right-0 min-w-[320px] max-w-[600px] bg-white shadow-xl border border-stone-200 rounded-xl z-50 p-2" role="listbox">
           {loading && (
             <div className="p-2 space-y-2">
               {[1, 2, 3].map(i => (

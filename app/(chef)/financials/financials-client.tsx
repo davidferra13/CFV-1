@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { exportLedgerCSV } from '@/lib/ledger/actions'
 import { exportAllEventsCSV } from '@/lib/exports/actions'
+import type { RevenueGoalSnapshot } from '@/lib/revenue-goals/types'
 
 type FinancialSummary = {
   totalRevenueCents: number
@@ -59,11 +60,23 @@ type MonthlySummary = {
   eventBreakdown: MonthlyEventBreakdown[]
 }
 
+type MarketIncomeEntry = {
+  entry_type: string
+  title: string
+  start_date: string
+  expected_revenue_cents: number | null
+  actual_revenue_cents: number | null
+  revenue_type: string | null
+  is_completed: boolean
+}
+
 type Props = {
   financials: FinancialSummary
   ledgerEntries: LedgerEntry[]
   pendingPaymentsCents: number
   monthlySummary?: MonthlySummary
+  revenueGoal?: RevenueGoalSnapshot
+  marketIncome?: MarketIncomeEntry[]
 }
 
 const ENTRY_TYPE_LABELS: Record<string, string> = {
@@ -90,11 +103,22 @@ const ENTRY_TYPE_COLORS: Record<string, string> = {
   credit: 'bg-teal-100 text-teal-800'
 }
 
+const CALENDAR_ENTRY_TYPE_LABELS: Record<string, string> = {
+  market: 'Farmers Market',
+  festival: 'Food Festival',
+  class: 'Cooking Class',
+  photo_shoot: 'Photo Shoot',
+  media: 'Media / Press',
+  other: 'Other',
+}
+
 export function FinancialsClient({
   financials,
   ledgerEntries,
   pendingPaymentsCents,
-  monthlySummary
+  monthlySummary,
+  revenueGoal,
+  marketIncome,
 }: Props) {
   const [filterType, setFilterType] = useState<string>('all')
   const [startDate, setStartDate] = useState('')
@@ -202,7 +226,7 @@ export function FinancialsClient({
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Total Revenue</div>
-            <div className="text-3xl font-bold text-green-600 mt-2">
+            <div className="text-3xl font-bold text-emerald-600 mt-2">
               {formatCurrency(financials.totalRevenueCents)}
             </div>
             <p className="text-xs text-stone-500 mt-1">All successful payments</p>
@@ -253,7 +277,7 @@ export function FinancialsClient({
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
                   <p className="text-sm text-stone-500">Revenue</p>
-                  <p className="text-xl font-bold text-green-600">{formatCurrency(monthlySummary.totalRevenueCents)}</p>
+                  <p className="text-xl font-bold text-emerald-600">{formatCurrency(monthlySummary.totalRevenueCents)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Expenses</p>
@@ -261,7 +285,7 @@ export function FinancialsClient({
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Profit</p>
-                  <p className={`text-xl font-bold ${monthlySummary.totalProfitCents >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  <p className={`text-xl font-bold ${monthlySummary.totalProfitCents >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                     {formatCurrency(monthlySummary.totalProfitCents)}
                   </p>
                 </div>
@@ -295,6 +319,79 @@ export function FinancialsClient({
             </CardContent>
           </Card>
 
+          {revenueGoal && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Revenue Goal Program</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!revenueGoal.enabled ? (
+                  <p className="text-sm text-stone-600">
+                    Revenue goals are currently off. Enable them in Settings to receive booking and calendar suggestions.
+                  </p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-sm text-stone-500">Monthly Target</p>
+                        <p className="text-xl font-bold text-stone-900">
+                          {formatCurrency(revenueGoal.monthly.targetCents)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-stone-500">Projected</p>
+                        <p className="text-xl font-bold text-stone-900">
+                          {formatCurrency(revenueGoal.monthly.projectedCents)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-stone-500">Gap</p>
+                        <p className={`text-xl font-bold ${revenueGoal.monthly.gapCents > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                          {formatCurrency(revenueGoal.monthly.gapCents)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-stone-500">Dinners Needed</p>
+                        <p className="text-xl font-bold text-stone-900">
+                          {revenueGoal.dinnersNeededThisMonth}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="w-full bg-stone-200 rounded-full h-2">
+                      <div
+                        className={`h-2 rounded-full ${revenueGoal.monthly.progressPercent >= 100 ? 'bg-green-500' : 'bg-brand-500'}`}
+                        style={{ width: `${Math.min(100, Math.max(0, revenueGoal.monthly.progressPercent))}%` }}
+                      />
+                    </div>
+
+                    {revenueGoal.openDatesThisMonth.length > 0 && (
+                      <p className="text-sm text-stone-600">
+                        Open dates this month: {revenueGoal.openDatesThisMonth.slice(0, 6).join(', ')}
+                        {revenueGoal.openDatesThisMonth.length > 6 ? ', ...' : ''}
+                      </p>
+                    )}
+
+                    {revenueGoal.recommendations.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-stone-700">Top Recommendations</p>
+                        {revenueGoal.recommendations.slice(0, 3).map((rec) => (
+                          <div key={rec.id} className="rounded-md border border-stone-200 p-3">
+                            <p className="text-sm font-semibold text-stone-900">{rec.title}</p>
+                            <p className="text-sm text-stone-600 mt-1">{rec.description}</p>
+                            <Link href={rec.href} className="text-sm text-brand-600 hover:text-brand-700 mt-2 inline-block">
+                              Open <span aria-hidden="true">&rarr;</span>
+                            </Link>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Per-Event Breakdown */}
           {monthlySummary.eventBreakdown.length > 0 && (
             <Card>
@@ -327,17 +424,17 @@ export function FinancialsClient({
                             {format(new Date(evt.eventDate), 'MMM d')}
                           </td>
                           <td className="px-4 py-3 text-sm text-stone-600">{evt.clientName}</td>
-                          <td className="px-4 py-3 text-sm text-right text-green-600 font-medium">
+                          <td className="px-4 py-3 text-sm text-right text-emerald-600 font-medium">
                             {formatCurrency(evt.revenueCents)}
                           </td>
                           <td className="px-4 py-3 text-sm text-right text-stone-900">
                             {evt.expensesCents > 0 ? formatCurrency(evt.expensesCents) : '-'}
                           </td>
-                          <td className={`px-4 py-3 text-sm text-right font-medium ${evt.profitCents >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          <td className={`px-4 py-3 text-sm text-right font-medium ${evt.profitCents >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                             {evt.expensesCents > 0 ? formatCurrency(evt.profitCents) : '-'}
                           </td>
                           <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            evt.profitMargin >= 60 ? 'text-green-600' :
+                            evt.profitMargin >= 60 ? 'text-emerald-600' :
                             evt.profitMargin >= 40 ? 'text-yellow-600' :
                             evt.profitMargin > 0 ? 'text-red-600' : 'text-stone-400'
                           }`}>
@@ -353,6 +450,94 @@ export function FinancialsClient({
           )}
         </>
       )}
+
+      {/* Other Income — market/class/festival revenue */}
+      {marketIncome && marketIncome.length > 0 && (() => {
+        const incomeEntries = marketIncome.filter(e => e.revenue_type === 'income')
+        const promoEntries = marketIncome.filter(e => e.revenue_type === 'promotional')
+        const completedIncomeCents = incomeEntries
+          .filter(e => e.is_completed && e.actual_revenue_cents != null)
+          .reduce((sum, e) => sum + (e.actual_revenue_cents ?? 0), 0)
+        const expectedPendingCents = incomeEntries
+          .filter(e => !e.is_completed && e.expected_revenue_cents != null)
+          .reduce((sum, e) => sum + (e.expected_revenue_cents ?? 0), 0)
+
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>Other Income — Markets &amp; Classes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Summary strip */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-sm text-stone-500">Confirmed Income</p>
+                  <p className="text-xl font-bold text-emerald-600">{formatCurrency(completedIncomeCents)}</p>
+                  <p className="text-xs text-stone-400">From completed events</p>
+                </div>
+                <div>
+                  <p className="text-sm text-stone-500">Expected (Upcoming)</p>
+                  <p className="text-xl font-bold text-amber-600">{formatCurrency(expectedPendingCents)}</p>
+                  <p className="text-xs text-stone-400">From planned events</p>
+                </div>
+                <div>
+                  <p className="text-sm text-stone-500">Promotional Appearances</p>
+                  <p className="text-xl font-bold text-stone-600">{promoEntries.length}</p>
+                  <p className="text-xs text-stone-400">No direct revenue</p>
+                </div>
+              </div>
+
+              {/* Income entry table */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-stone-50 border-b">
+                    <tr>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Date</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Type</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Title</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-stone-500 uppercase">Expected</th>
+                      <th className="px-3 py-2 text-right text-xs font-medium text-stone-500 uppercase">Actual</th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-stone-200">
+                    {marketIncome.map((entry, i) => (
+                      <tr key={i} className="hover:bg-stone-50">
+                        <td className="px-3 py-2 text-sm text-stone-900 whitespace-nowrap">
+                          {format(new Date(entry.start_date), 'MMM d, yyyy')}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-stone-600 whitespace-nowrap">
+                          {CALENDAR_ENTRY_TYPE_LABELS[entry.entry_type] ?? entry.entry_type}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-stone-900">{entry.title}</td>
+                        <td className="px-3 py-2 text-sm text-right text-stone-600">
+                          {entry.revenue_type === 'income' && entry.expected_revenue_cents != null
+                            ? formatCurrency(entry.expected_revenue_cents)
+                            : <span className="text-stone-400">—</span>}
+                        </td>
+                        <td className="px-3 py-2 text-sm text-right font-medium">
+                          {entry.actual_revenue_cents != null
+                            ? <span className="text-emerald-600">{formatCurrency(entry.actual_revenue_cents)}</span>
+                            : <span className="text-stone-400">—</span>}
+                        </td>
+                        <td className="px-3 py-2 text-sm">
+                          {entry.revenue_type === 'promotional' ? (
+                            <span className="inline-flex px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-700">Promotional</span>
+                          ) : entry.is_completed ? (
+                            <span className="inline-flex px-2 py-0.5 text-xs rounded bg-green-100 text-green-700">Completed</span>
+                          ) : (
+                            <span className="inline-flex px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-700">Upcoming</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )
+      })()}
 
       {/* Ledger Entries */}
       <Card>
@@ -478,7 +663,7 @@ export function FinancialsClient({
                       </td>
                       <td
                         className={`px-4 py-3 whitespace-nowrap text-sm text-right font-medium ${
-                          entry.amount_cents > 0 ? 'text-green-600' : 'text-red-600'
+                          entry.amount_cents > 0 ? 'text-emerald-600' : 'text-red-600'
                         }`}
                       >
                         {entry.amount_cents > 0 ? '+' : ''}

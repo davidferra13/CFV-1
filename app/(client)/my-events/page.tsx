@@ -13,6 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
+import { ActivityTracker } from '@/components/activity/activity-tracker'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -289,6 +290,11 @@ export default async function MyEventsPage() {
 
       {/* Floating Message Chef button */}
       <MessageChefButton variant="fab" />
+
+      <ActivityTracker
+        eventType="events_list_viewed"
+        metadata={{ event_count: events.length }}
+      />
     </div>
   )
 }

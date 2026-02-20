@@ -32,9 +32,11 @@ const TRANSITION_RULES: Record<EventStatus, EventStatus[]> = {
 // Who can trigger each transition
 type TransitionPermission = 'chef' | 'client' | 'system'
 
-const TRANSITION_PERMISSIONS: Record<string, TransitionPermission> = {
+const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPermission[]> = {
   'draft->proposed': 'chef',
   'proposed->accepted': 'client',
+  'proposed->cancelled': ['chef', 'client'],
+  'accepted->cancelled': ['chef', 'client'],
   'accepted->paid': 'system', // Stripe webhook only
   'paid->confirmed': 'chef',
   'confirmed->in_progress': 'chef',
@@ -94,16 +96,19 @@ export async function transitionEvent({
       TRANSITION_PERMISSIONS[transitionKey] ||
       TRANSITION_PERMISSIONS[cancellationKey]
 
-    if (requiredRole === 'chef' && user.role !== 'chef') {
-      throw new Error('Chef permission required for this transition')
+    if (!requiredRole) {
+      throw new Error('Transition permission is not configured')
     }
 
-    if (requiredRole === 'client' && user.role !== 'client') {
-      throw new Error('Client permission required for this transition')
-    }
+    const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole]
 
-    if (requiredRole === 'system') {
-      throw new Error('This transition can only be triggered by system (webhook)')
+    if (!allowedRoles.includes(user.role as TransitionPermission)) {
+      if (allowedRoles.includes('system')) {
+        throw new Error('This transition can only be triggered by system (webhook)')
+      }
+
+      const rolesLabel = allowedRoles.join(' or ')
+      throw new Error(`${rolesLabel} permission required for this transition`)
     }
 
     // Verify tenant/client ownership
@@ -140,6 +145,37 @@ export async function transitionEvent({
     }
   }
 
+  // ── Readiness Gate Check (pre-transition) ────────────────────────────────
+  // Evaluate gates for this transition. Hard blocks (e.g., unconfirmed anaphylaxis)
+  // throw and abort. Soft warnings are logged in metadata but do not block.
+  // System transitions (Stripe webhooks) skip readiness checks.
+  let readinessWarnings: string[] = []
+  if (!systemTransition) {
+    try {
+      const { evaluateReadinessForTransition } = await import('@/lib/events/readiness')
+      const readiness = await evaluateReadinessForTransition(eventId, fromStatus, toStatus)
+
+      if (readiness.hardBlocked) {
+        const hardBlockerDescriptions = readiness.blockers
+          .filter((b) => b.isHardBlock)
+          .map((b) => b.details || b.label)
+          .join('; ')
+        throw new Error(`Cannot proceed: ${hardBlockerDescriptions}`)
+      }
+
+      // Collect soft warnings for metadata
+      readinessWarnings = readiness.blockers
+        .filter((b) => !b.isHardBlock)
+        .map((b) => b.label)
+    } catch (readinessErr: any) {
+      // Re-throw hard blocks; swallow infrastructure errors (non-blocking)
+      if (readinessErr.message?.startsWith('Cannot proceed:')) {
+        throw readinessErr
+      }
+      console.error('[transitionEvent] Readiness check failed (non-blocking):', readinessErr)
+    }
+  }
+
   // Update event status
   const { error: updateError } = await supabase
     .from('events')
@@ -163,7 +199,8 @@ export async function transitionEvent({
       metadata: {
         ...metadata,
         timestamp: new Date().toISOString(),
-        source: systemTransition ? 'system' : 'user'
+        source: systemTransition ? 'system' : 'user',
+        ...(readinessWarnings.length > 0 && { readiness_warnings: readinessWarnings }),
       }
     })
 
@@ -234,6 +271,46 @@ export async function transitionEvent({
     console.error('[transitionEvent] Notification creation failed (non-blocking):', err)
   }
 
+  // Create client notification for chef-initiated transitions (non-blocking)
+  try {
+    const notifyClient =
+      (toStatus === 'proposed' && fromStatus === 'draft') ||
+      (toStatus === 'confirmed' && fromStatus === 'paid')
+
+    if (notifyClient && event.client_id) {
+      const { createClientNotification } = await import('@/lib/notifications/client-actions')
+      const eventTitle = event.occasion || 'Untitled event'
+
+      if (toStatus === 'proposed') {
+        await createClientNotification({
+          tenantId: event.tenant_id,
+          clientId: event.client_id,
+          category: 'event',
+          action: 'event_proposed_to_client',
+          title: 'New event proposal',
+          body: `You have a new proposal for "${eventTitle}"`,
+          actionUrl: `/my-events/${eventId}`,
+          eventId,
+        })
+      }
+
+      if (toStatus === 'confirmed') {
+        await createClientNotification({
+          tenantId: event.tenant_id,
+          clientId: event.client_id,
+          category: 'event',
+          action: 'event_confirmed_to_client',
+          title: 'Event confirmed',
+          body: `"${eventTitle}" is confirmed — everything is set`,
+          actionUrl: `/my-events/${eventId}`,
+          eventId,
+        })
+      }
+    }
+  } catch (err) {
+    console.error('[transitionEvent] Client notification failed (non-blocking):', err)
+  }
+
   // Send transactional emails (non-blocking)
   try {
     const supabaseAdmin = createServerClient({ admin: true })
@@ -248,12 +325,20 @@ export async function transitionEvent({
     // Fetch chef name
     const { data: chef } = await supabaseAdmin
       .from('chefs')
-      .select('business_name')
+      .select('business_name, email')
       .eq('id', event.tenant_id)
       .single()
 
     if (client?.email && chef) {
-      const { sendEventProposedEmail, sendEventConfirmedEmail, sendEventCompletedEmail, sendEventCancelledEmail, buildLocation } = await import('@/lib/email/notifications')
+      const {
+        sendEventProposedEmail,
+        sendEventConfirmedEmail,
+        sendEventCompletedEmail,
+        sendEventCancelledEmail,
+        sendFrontOfHouseMenuReadyEmail,
+        sendPrepSheetReadyEmail,
+        buildLocation
+      } = await import('@/lib/email/notifications')
       const chefName = chef.business_name || 'Your Chef'
       const occasion = event.occasion || 'Untitled event'
       const location = buildLocation(event)
@@ -282,6 +367,53 @@ export async function transitionEvent({
           location,
           guestCount: event.guest_count,
         })
+
+        // Auto-send printable FOH menu PDF to both client and chef.
+        // Non-blocking to event transition if PDF generation/send fails.
+        try {
+          const { format } = await import('date-fns')
+          const { generateFrontOfHouseMenu } = await import('@/lib/documents/generate-front-of-house-menu')
+          const fohPdf = await generateFrontOfHouseMenu(eventId)
+          const dateSuffix = format(new Date(), 'yyyy-MM-dd')
+          const recipients = Array.from(new Set([client.email, chef.email].filter(Boolean)))
+
+          if (recipients.length > 0) {
+            await sendFrontOfHouseMenuReadyEmail({
+              to: recipients,
+              clientName: client.full_name,
+              chefName,
+              occasion,
+              eventDate: event.event_date,
+              pdfFilename: `front-of-house-menu-${dateSuffix}.pdf`,
+              pdfBuffer: fohPdf,
+            })
+          }
+        } catch (fohErr) {
+          console.error('[transitionEvent] FOH menu auto-send failed (non-blocking):', fohErr)
+        }
+
+        // Auto-send prep sheet PDF to chef only (non-blocking).
+        // Prep sheet is chef-internal — client never sees it.
+        try {
+          const { format } = await import('date-fns')
+          const { generatePrepSheet } = await import('@/lib/documents/generate-prep-sheet')
+          const prepPdf = await generatePrepSheet(eventId)
+          const dateSuffix = format(new Date(), 'yyyy-MM-dd')
+
+          if (chef.email) {
+            await sendPrepSheetReadyEmail({
+              to: chef.email,
+              clientName: client.full_name,
+              chefName,
+              occasion,
+              eventDate: event.event_date,
+              pdfFilename: `prep-sheet-${dateSuffix}.pdf`,
+              pdfBuffer: prepPdf,
+            })
+          }
+        } catch (prepErr) {
+          console.error('[transitionEvent] Prep sheet auto-send failed (non-blocking):', prepErr)
+        }
       }
 
       if (toStatus === 'completed' && fromStatus === 'in_progress') {
@@ -329,6 +461,18 @@ export async function transitionEvent({
     console.error('[transitionEvent] Activity log failed (non-blocking):', err)
   }
 
+  // Auto-create draft service travel legs when confirmed (non-blocking, idempotent)
+  // Creates service_travel + return_home legs pre-filled from event location + chef home address.
+  // Chef reviews and confirms them from the Travel Plan tab.
+  if (toStatus === 'confirmed') {
+    try {
+      const { autoCreateServiceLegs } = await import('@/lib/travel/actions')
+      await autoCreateServiceLegs(eventId)
+    } catch (err) {
+      console.error('[transitionEvent] Auto-create service legs failed (non-blocking):', err)
+    }
+  }
+
   // Fire automations (non-blocking)
   try {
     const { evaluateAutomations } = await import('@/lib/automations/engine')
@@ -347,7 +491,12 @@ export async function transitionEvent({
     console.error('[transitionEvent] Automation evaluation failed (non-blocking):', err)
   }
 
-  return { success: true, fromStatus, toStatus }
+  return {
+    success: true,
+    fromStatus,
+    toStatus,
+    warnings: readinessWarnings,   // Soft gates that were bypassed (logged, not blocked)
+  }
 }
 
 /**

@@ -51,6 +51,21 @@ export type ChefActivityAction =
   // Operational
   | 'aar_filed'
   | 'automation_created'
+  | 'journey_created'
+  | 'journey_updated'
+  | 'journey_deleted'
+  | 'journey_entry_added'
+  | 'journey_entry_updated'
+  | 'journey_idea_added'
+  | 'journey_idea_updated'
+  | 'journey_idea_adopted'
+  | 'journey_media_added'
+  | 'journey_media_updated'
+  | 'journey_recipe_linked'
+  | 'journey_recipe_updated'
+  | 'hours_logged'
+  | 'charity_hours_logged'
+  | 'debrief_completed'
 
 export type ChefActivityEntry = {
   id: string
@@ -64,6 +79,21 @@ export type ChefActivityEntry = {
   context: Record<string, unknown>
   client_id: string | null
   created_at: string
+}
+
+export type ChefActivityLogRow = ChefActivityEntry
+
+export type ChefActivityQueryOptions = {
+  limit?: number
+  domain?: ChefActivityDomain
+  clientId?: string
+  daysBack?: number
+  cursor?: string | null
+}
+
+export type ChefActivityQueryResult = {
+  items: ChefActivityEntry[]
+  nextCursor: string | null
 }
 
 export type ResumeItem = {

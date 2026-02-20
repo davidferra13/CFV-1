@@ -12,9 +12,9 @@ const chefPaths = [
   '/aar', '/recipes', '/loyalty', '/import', '/chat', '/network',
 ]
 // Routes that require client role
-const clientPaths = ['/my-events', '/my-quotes', '/my-chat']
+const clientPaths = ['/my-events', '/my-quotes', '/my-chat', '/my-profile', '/my-rewards', '/book-now']
 // Paths that skip all auth processing
-const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized', '/share']
+const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized', '/share', '/chef', '/partner-signup']
 
 /**
  * Copy Supabase session cookies from the internal response onto a redirect response.
@@ -36,7 +36,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/auth') ||
     pathname.startsWith('/api/webhooks') ||
     pathname.startsWith('/api/auth') ||
-    pathname.startsWith('/api/gmail')
+    pathname.startsWith('/api/gmail') ||
+    pathname.startsWith('/api/scheduled')
   ) {
     return NextResponse.next()
   }
@@ -91,19 +92,40 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Role cache cookie — avoids a DB round-trip on every navigation.
+  // The layout's requireChef() / requireClient() remain the authoritative security check.
+  const roleCookieName = 'chefflow-role-cache'
+  const cachedRole = request.cookies.get(roleCookieName)?.value
+  const roleIsKnown = cachedRole === 'chef' || cachedRole === 'client'
+
+  // Helper: write the role cookie onto a response, mirroring the sessionOnly flag.
+  function setRoleCookie(res: NextResponse, role: string) {
+    res.cookies.set(roleCookieName, role, {
+      maxAge: sessionOnly ? undefined : 300, // 5 min persistent, or session-scoped
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+    })
+  }
+
   // Landing page: show public page if not logged in, redirect to dashboard if logged in
   if (pathname === '/') {
     if (!user) {
       return response
     }
-    // Authenticated user on landing page - redirect to their portal
-    const { data: roleData } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('auth_user_id', user.id)
-      .single()
-
-    if (roleData?.role === 'client') {
+    // Authenticated user on landing page — use cached role if available
+    let landingRole = roleIsKnown ? cachedRole : undefined
+    if (!landingRole) {
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('auth_user_id', user.id)
+        .single()
+      landingRole = roleData?.role
+      if (landingRole) setRoleCookie(response, landingRole)
+    }
+    if (landingRole === 'client') {
       return redirectWithCookies(new URL('/my-events', request.url), response)
     }
     return redirectWithCookies(new URL('/dashboard', request.url), response)
@@ -116,12 +138,19 @@ export async function middleware(request: NextRequest) {
     return redirectWithCookies(redirectUrl, response)
   }
 
-  // Get user role from authoritative source
-  const { data: roleData } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('auth_user_id', user.id)
-    .single()
+  // Get user role — served from cookie cache when fresh, DB otherwise
+  let roleData: { role: string } | null = null
+  if (roleIsKnown) {
+    roleData = { role: cachedRole }
+  } else {
+    const { data } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('auth_user_id', user.id)
+      .single()
+    roleData = data
+    if (roleData) setRoleCookie(response, roleData.role)
+  }
 
   if (!roleData) {
     // No role found - send to unauthorized (which is in skipAuthPaths to avoid loops)

@@ -34,7 +34,7 @@ export function PendingInvitationsTable({ invitations }: PendingInvitationsTable
   }
 
   function copyToClipboard(token: string) {
-    const url = `${window.location.origin}/auth/signup?token=${token}`
+    const url = `${window.location.origin}/auth/client-signup?token=${token}`
     navigator.clipboard.writeText(url)
     alert('Invitation link copied to clipboard!')
   }

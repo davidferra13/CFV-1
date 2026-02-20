@@ -11,12 +11,80 @@
       "schedule": "*/5 * * * *"
     },
     {
+      "path": "/api/scheduled/integrations/pull",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/scheduled/integrations/retry",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/scheduled/automations",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/scheduled/copilot",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/scheduled/revenue-goals",
+      "schedule": "0 */6 * * *"
+    },
+    {
       "path": "/api/scheduled/follow-ups",
       "schedule": "0 */6 * * *"
     },
     {
       "path": "/api/scheduled/lifecycle",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/scheduled/reviews-sync",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/scheduled/wix-process",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/scheduled/email-history-scan",
+      "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/scheduled/call-reminders",
+      "schedule": "*/30 * * * *"
+    },
+    {
+      "path": "/api/scheduled/campaigns",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/scheduled/sequences",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/scheduled/social-publish",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/scheduled/activity-cleanup",
+      "schedule": "0 2 * * *"
+    },
+    {
+      "path": "/api/scheduled/loyalty-expiry",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/scheduled/waitlist-sweep",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/scheduled/push-cleanup",
+      "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/scheduled/monitor",
+      "schedule": "30 * * * *"
     }
   ]
 }

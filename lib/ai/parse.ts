@@ -17,6 +17,22 @@ export type ParseResult<T> = {
   warnings: string[]
 }
 
+function getResponseText(response: { text?: string | (() => string) }): string {
+  if (typeof response.text === 'function') {
+    return response.text()
+  }
+  return response.text || ''
+}
+
+function extractJsonPayload(rawText: string): string {
+  const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
+  return jsonMatch ? jsonMatch[1].trim() : rawText.trim()
+}
+
+function formatZodIssues(error: z.ZodError): string {
+  return error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')
+}
+
 /**
  * Check if AI import is configured
  */
@@ -37,7 +53,7 @@ export async function parseWithAI<T>(
 ): Promise<T> {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
-    throw new Error('GEMINI_API_KEY is not configured. Set it in your .env.local file to enable AI import.')
+    throw new Error('GEMINI_API_KEY is not configured. Set it in your .env.local file to enable smart import.')
   }
 
   const ai = new GoogleGenAI({ apiKey })
@@ -46,31 +62,58 @@ export async function parseWithAI<T>(
     contents: userContent,
     config: { systemInstruction: systemPrompt },
   })
-  const rawText = response.text
+  const rawText = getResponseText(response)
 
   if (!rawText) {
-    throw new Error('AI returned no text response')
+    throw new Error('Parser returned no text response')
   }
 
   // Extract JSON from response (handle markdown code blocks)
-  let jsonStr = rawText
-  const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
-  if (jsonMatch) {
-    jsonStr = jsonMatch[1].trim()
-  }
+  let jsonStr = extractJsonPayload(rawText)
 
   let parsed: unknown
   try {
     parsed = JSON.parse(jsonStr)
   } catch {
-    throw new Error(`AI response was not valid JSON. Raw response: ${rawText.slice(0, 200)}...`)
+    throw new Error(`Parser response was not valid JSON. Raw response: ${rawText.slice(0, 200)}...`)
   }
 
   // Validate with Zod
-  const zodResult = schema.safeParse(parsed)
+  let zodResult = schema.safeParse(parsed)
   if (!zodResult.success) {
-    const issues = zodResult.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')
-    throw new Error(`AI response did not match expected schema: ${issues}`)
+    const firstPassIssues = formatZodIssues(zodResult.error)
+
+    // Single repair pass: ask model to output corrected JSON using the same schema contract.
+    const repairResponse = await ai.models.generateContent({
+      model: MODEL,
+      contents: [
+        'Your previous response did not satisfy the required JSON schema.',
+        `Validation errors: ${firstPassIssues}`,
+        'Return ONLY corrected JSON (no markdown, no prose).',
+        'Keep the same structure and preserve as much extracted data as possible.',
+        '--- Previous JSON ---',
+        jsonStr,
+      ].join('\n'),
+      config: { systemInstruction: systemPrompt },
+    })
+
+    const repairedText = getResponseText(repairResponse)
+    if (!repairedText) {
+      throw new Error(`Parser response did not match expected schema: ${firstPassIssues}`)
+    }
+
+    const repairedJsonStr = extractJsonPayload(repairedText)
+    try {
+      parsed = JSON.parse(repairedJsonStr)
+    } catch {
+      throw new Error(`Parser response did not match expected schema: ${firstPassIssues}`)
+    }
+
+    zodResult = schema.safeParse(parsed)
+    if (!zodResult.success) {
+      const secondPassIssues = formatZodIssues(zodResult.error)
+      throw new Error(`Parser response did not match expected schema: ${secondPassIssues}`)
+    }
   }
 
   return zodResult.data

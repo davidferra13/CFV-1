@@ -5,7 +5,8 @@
       "Bash(wc:*)",
       "Bash(find:*)",
       "Bash(npx supabase db reset:*)",
-      "Bash(npx supabase migration list:*)"
+      "Bash(npx supabase migration list:*)",
+      "Bash(grep:*)"
     ]
   }
 }

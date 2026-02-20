@@ -6,6 +6,7 @@ import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = { title: 'Loyalty Program - ChefFlow' }
 import { getLoyaltyOverview, getRewards, getClientsApproachingRewards, getLoyaltyConfig } from '@/lib/loyalty/actions'
+import { getPendingRewardDeliveries } from '@/lib/loyalty/auto-award'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,6 +14,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { RewardActions } from './reward-actions'
+import { PendingDeliveriesPanel } from '@/components/loyalty/pending-deliveries-panel'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-100 text-amber-800',
@@ -31,11 +33,12 @@ const TIER_LABELS: Record<string, string> = {
 export default async function LoyaltyDashboardPage() {
   await requireChef()
 
-  const [overview, rewards, approachingRewards, config] = await Promise.all([
+  const [overview, rewards, approachingRewards, config, pendingDeliveries] = await Promise.all([
     getLoyaltyOverview(),
     getRewards(),
     getClientsApproachingRewards(),
     getLoyaltyConfig(),
+    getPendingRewardDeliveries(),
   ])
 
   return (
@@ -48,37 +51,45 @@ export default async function LoyaltyDashboardPage() {
             {config.points_per_guest} points per guest served · {overview.totalClients} clients enrolled
           </p>
         </div>
-        <Link href="/loyalty/rewards/new">
-          <Button>Create Reward</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/loyalty/settings">
+            <Button variant="secondary">Program Settings</Button>
+          </Link>
+          <Link href="/loyalty/rewards/new">
+            <Button>Create Reward</Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Pending Deliveries — shown at top so it's not missed */}
+      <PendingDeliveriesPanel deliveries={pendingDeliveries as any} />
 
       {/* Overview Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="pt-6">
-            <dt className="text-sm font-medium text-stone-500">Total Clients</dt>
-            <dd className="text-3xl font-bold text-stone-900 mt-2">{overview.totalClients}</dd>
+            <p className="text-sm font-medium text-stone-500">Total Clients</p>
+            <p className="text-3xl font-bold text-stone-900 mt-2">{overview.totalClients}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <dt className="text-sm font-medium text-stone-500">Points Outstanding</dt>
-            <dd className="text-3xl font-bold text-stone-900 mt-2">{overview.totalPointsOutstanding.toLocaleString()}</dd>
+            <p className="text-sm font-medium text-stone-500">Points Outstanding</p>
+            <p className="text-3xl font-bold text-stone-900 mt-2">{overview.totalPointsOutstanding.toLocaleString()}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <dt className="text-sm font-medium text-stone-500">Gold+ Members</dt>
-            <dd className="text-3xl font-bold text-stone-900 mt-2">
+            <p className="text-sm font-medium text-stone-500">Gold+ Members</p>
+            <p className="text-3xl font-bold text-stone-900 mt-2">
               {overview.clientsPerTier.gold + overview.clientsPerTier.platinum}
-            </dd>
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-6">
-            <dt className="text-sm font-medium text-stone-500">Active Rewards</dt>
-            <dd className="text-3xl font-bold text-stone-900 mt-2">{rewards.length}</dd>
+            <p className="text-sm font-medium text-stone-500">Active Rewards</p>
+            <p className="text-3xl font-bold text-stone-900 mt-2">{rewards.length}</p>
           </CardContent>
         </Card>
       </div>
@@ -189,9 +200,11 @@ export default async function LoyaltyDashboardPage() {
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Rewards Catalog</h2>
-          <Link href="/loyalty/rewards/new">
-            <Button variant="secondary" size="sm">Add Reward</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/loyalty/rewards/new">
+              <Button variant="secondary" size="sm">Add Reward</Button>
+            </Link>
+          </div>
         </div>
 
         {rewards.length === 0 ? (
@@ -200,24 +213,26 @@ export default async function LoyaltyDashboardPage() {
             <p className="text-sm mt-1">Add rewards to give your clients something to work toward.</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-1">
             {rewards.map((reward) => (
-              <div key={reward.id} className="flex items-center justify-between py-3 border-b border-stone-100 last:border-0">
-                <div className="flex-1">
-                  <p className="font-medium text-stone-900">{reward.name}</p>
-                  <p className="text-sm text-stone-500 mt-0.5">
-                    {reward.description}
-                    {reward.reward_type === 'discount_fixed' && reward.reward_value_cents && (
-                      <> · {formatCurrency(reward.reward_value_cents)} off</>
-                    )}
-                    {reward.reward_type === 'discount_percent' && reward.reward_percent && (
-                      <> · {reward.reward_percent}% off</>
-                    )}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-sm font-bold text-stone-900">{reward.points_required} pts</span>
-                  <RewardActions rewardId={reward.id} />
+              <div key={reward.id} className="py-3 border-b border-stone-100 last:border-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-medium text-stone-900">{reward.name}</p>
+                    <p className="text-sm text-stone-500 mt-0.5">
+                      {reward.description}
+                      {reward.reward_type === 'discount_fixed' && reward.reward_value_cents && (
+                        <> · {formatCurrency(reward.reward_value_cents)} off</>
+                      )}
+                      {reward.reward_type === 'discount_percent' && reward.reward_percent && (
+                        <> · {reward.reward_percent}% off</>
+                      )}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm font-bold text-stone-900">{reward.points_required} pts</span>
+                    <RewardActions reward={reward} />
+                  </div>
                 </div>
               </div>
             ))}
@@ -238,7 +253,7 @@ export default async function LoyaltyDashboardPage() {
                     {format(new Date(tx.created_at), 'MMM d, yyyy')}
                   </p>
                 </div>
-                <span className="text-sm font-bold text-green-600">+{tx.points}</span>
+                <span className="text-sm font-bold text-emerald-600">+{tx.points}</span>
               </div>
             ))}
           </div>
@@ -247,33 +262,48 @@ export default async function LoyaltyDashboardPage() {
 
       {/* Program Settings Summary */}
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Program Settings</h2>
-        <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Program Settings</h2>
+          <Link href="/loyalty/settings">
+            <Button variant="ghost" size="sm">Edit Settings</Button>
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
-            <dt className="text-sm font-medium text-stone-500">Points per Guest</dt>
-            <dd className="text-lg font-bold text-stone-900 mt-1">{config.points_per_guest}</dd>
+            <p className="text-sm font-medium text-stone-500">Points per Guest</p>
+            <p className="text-lg font-bold text-stone-900 mt-1">{config.points_per_guest}</p>
           </div>
           <div>
-            <dt className="text-sm font-medium text-stone-500">Large Party Bonus</dt>
-            <dd className="text-lg font-bold text-stone-900 mt-1">
-              {config.bonus_large_party_points || 0} pts ({config.bonus_large_party_threshold}+ guests)
-            </dd>
+            <p className="text-sm font-medium text-stone-500">Welcome Bonus</p>
+            <p className="text-lg font-bold text-stone-900 mt-1">{config.welcome_points ?? 25} pts</p>
           </div>
           <div>
-            <dt className="text-sm font-medium text-stone-500">Milestones</dt>
-            <dd className="text-sm text-stone-900 mt-1">
-              {config.milestone_bonuses.map(m => `${m.events}th event: +${m.bonus}`).join(', ')}
-            </dd>
+            <p className="text-sm font-medium text-stone-500">Large Party Bonus</p>
+            <p className="text-lg font-bold text-stone-900 mt-1">
+              {config.bonus_large_party_points || '—'} {config.bonus_large_party_points ? `pts (${config.bonus_large_party_threshold}+ guests)` : ''}
+            </p>
           </div>
           <div>
-            <dt className="text-sm font-medium text-stone-500">Program Status</dt>
-            <dd className="mt-1">
+            <p className="text-sm font-medium text-stone-500">Program Status</p>
+            <div className="mt-1">
               <Badge variant={config.is_active ? 'success' : 'default'}>
                 {config.is_active ? 'Active' : 'Paused'}
               </Badge>
-            </dd>
+            </div>
           </div>
-        </dl>
+          {config.milestone_bonuses.length > 0 && (
+            <div className="col-span-2 md:col-span-4">
+              <p className="text-sm font-medium text-stone-500 mb-1">Milestones</p>
+              <div className="flex flex-wrap gap-2">
+                {config.milestone_bonuses.map(m => (
+                  <span key={m.events} className="inline-flex items-center px-2.5 py-1 rounded-full text-xs bg-stone-100 text-stone-700">
+                    🏆 {m.events}th dinner → +{m.bonus} pts
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </Card>
     </div>
   )

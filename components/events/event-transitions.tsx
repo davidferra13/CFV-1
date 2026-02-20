@@ -1,5 +1,6 @@
 // Event Transitions Component
-// Shows action buttons for transitioning event status based on current state
+// Shows action buttons for transitioning event status based on current state.
+// Readiness gates are shown inline — hard blocks disable the button, soft blocks warn.
 'use client'
 
 import { useState } from 'react'
@@ -15,6 +16,7 @@ import {
   completeEvent,
   cancelEvent
 } from '@/lib/events/transitions'
+import type { ReadinessResult, GateResult } from '@/lib/events/readiness'
 
 type EventStatus =
   | 'draft'
@@ -31,7 +33,40 @@ type Event = {
   status: EventStatus
 }
 
-export function EventTransitions({ event }: { event: Event }) {
+// ─── Inline gate list shown before action buttons ────────────────────────────
+
+function GateList({ blockers }: { blockers: GateResult[] }) {
+  if (blockers.length === 0) return null
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-1.5">
+      <p className="text-xs font-semibold text-amber-900">Complete these before proceeding:</p>
+      {blockers.map((g) => (
+        <div key={g.gate} className="flex items-start gap-2">
+          <span className={`mt-0.5 text-xs font-bold shrink-0 ${g.isHardBlock ? 'text-red-600' : 'text-amber-600'}`}>
+            {g.isHardBlock ? '✕' : '!'}
+          </span>
+          <div>
+            <p className={`text-xs font-medium ${g.isHardBlock ? 'text-red-800' : 'text-amber-800'}`}>
+              {g.label}
+            </p>
+            <p className="text-[11px] text-stone-500 mt-0.5">{g.description}</p>
+            {g.details && (
+              <p className="text-[11px] text-red-600 mt-0.5 font-medium">{g.details}</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export function EventTransitions({
+  event,
+  readiness,
+}: {
+  event: Event
+  readiness?: ReadinessResult | null
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -69,6 +104,10 @@ export function EventTransitions({ event }: { event: Event }) {
     setCancellationReason('')
   }
 
+  // Derive gate blockers for the current transition from the passed readiness result
+  const blockers: GateResult[] = readiness?.blockers ?? []
+  const isHardBlocked = readiness?.hardBlocked ?? false
+
   // Terminal states - no actions available
   if (event.status === 'completed' || event.status === 'cancelled') {
     return (
@@ -92,6 +131,11 @@ export function EventTransitions({ event }: { event: Event }) {
       )}
 
       <div className="space-y-4">
+        {/* Readiness gate warnings — shown for transitions that have blockers */}
+        {blockers.length > 0 && (
+          <GateList blockers={blockers} />
+        )}
+
         {/* Cancel Dialog */}
         {showCancelDialog && (
           <div className="border border-red-200 rounded-lg p-4 bg-red-50">
@@ -137,7 +181,8 @@ export function EventTransitions({ event }: { event: Event }) {
             <Button
               onClick={() => handleTransition(() => proposeEvent(event.id))}
               loading={loading}
-              disabled={loading}
+              disabled={loading || isHardBlocked}
+              title={isHardBlocked ? 'Resolve hard blocks above before proposing' : undefined}
             >
               Propose to Client
             </Button>
@@ -147,7 +192,8 @@ export function EventTransitions({ event }: { event: Event }) {
             <Button
               onClick={() => handleTransition(() => confirmEvent(event.id))}
               loading={loading}
-              disabled={loading}
+              disabled={loading || isHardBlocked}
+              title={isHardBlocked ? 'Resolve hard blocks above before confirming' : undefined}
             >
               Confirm Event
             </Button>
@@ -157,7 +203,8 @@ export function EventTransitions({ event }: { event: Event }) {
             <Button
               onClick={() => handleTransition(() => startEvent(event.id))}
               loading={loading}
-              disabled={loading}
+              disabled={loading || isHardBlocked}
+              title={isHardBlocked ? 'Resolve hard blocks above before starting' : undefined}
             >
               Mark In Progress
             </Button>
@@ -167,7 +214,8 @@ export function EventTransitions({ event }: { event: Event }) {
             <Button
               onClick={() => handleTransition(() => completeEvent(event.id))}
               loading={loading}
-              disabled={loading}
+              disabled={loading || isHardBlocked}
+              title={isHardBlocked ? 'Resolve hard blocks above before completing' : undefined}
             >
               Mark Completed
             </Button>

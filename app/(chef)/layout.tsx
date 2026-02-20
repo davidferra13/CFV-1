@@ -7,6 +7,8 @@ import { ChefSidebar, ChefMobileNav, SidebarProvider } from '@/components/naviga
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
+import { PushPermissionPrompt } from '@/components/notifications/push-permission-prompt'
+import { getChefLayoutData } from '@/lib/chef/layout-cache'
 
 export default async function ChefLayout({
   children,
@@ -20,21 +22,40 @@ export default async function ChefLayout({
   } catch {
     redirect('/auth/signin?portal=chef')
   }
+  // Cached for 60s — slug and nav prefs change rarely, and the cache is keyed
+  // per chef so one tenant's update never bleeds into another.
+  const layoutData = await getChefLayoutData(user.entityId)
+  const profile = layoutData
+  const primaryNavHrefs = layoutData.primary_nav_hrefs
 
   return (
     <SidebarProvider>
       <NotificationProvider userId={user.id}>
         <ToastProvider />
-        <div className="min-h-screen bg-surface-muted">
+        <div
+          className="min-h-screen"
+          style={{
+            backgroundColor: profile.portal_background_color || '#f5f5f4',
+            backgroundImage: profile.portal_background_image_url
+              ? `url(${profile.portal_background_image_url})`
+              : undefined,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        >
           {/* Desktop sidebar */}
-          <ChefSidebar />
+          <ChefSidebar primaryNavHrefs={primaryNavHrefs} />
           {/* Mobile nav (top bar + bottom tabs) */}
-          <ChefMobileNav />
+          <ChefMobileNav primaryNavHrefs={primaryNavHrefs} />
 
           {/* Main content — offset adjusts dynamically based on sidebar state */}
           <ChefMainContent>
             {children}
           </ChefMainContent>
+
+          {/* Push notification permission prompt — appears after 5s if not subscribed */}
+          <PushPermissionPrompt />
         </div>
       </NotificationProvider>
     </SidebarProvider>

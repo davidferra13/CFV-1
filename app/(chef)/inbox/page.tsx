@@ -1,20 +1,75 @@
-// Unified Inbox Page
-// Aggregates chat, CRM messages, Wix submissions, and notifications
-// into a single chronological feed with source filters.
-
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { isCommTriageEnabled } from '@/lib/features'
 import { getUnifiedInbox, getInboxStats } from '@/lib/inbox/actions'
 import { InboxFeed } from '@/components/inbox/inbox-feed'
+import { CommunicationInboxClient } from '@/components/communication/communication-inbox-client'
+import { InboxCalendarPeek } from '@/components/communication/inbox-calendar-peek'
+import { getCommunicationInbox, getCommunicationInboxStats } from '@/lib/communication/actions'
+import type { CommunicationTab } from '@/lib/communication/types'
+import { getCalendarEvents } from '@/lib/scheduling/actions'
+import { getGoogleConnection } from '@/lib/gmail/google-auth'
+import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Inbox - ChefFlow' }
 
-export default async function InboxPage() {
+const VALID_TABS: CommunicationTab[] = ['unlinked', 'needs_attention', 'snoozed', 'resolved']
+
+export default async function InboxPage({
+  searchParams,
+}: {
+  searchParams?: { tab?: string }
+}) {
   await requireChef()
 
-  const [items, stats] = await Promise.all([
+  const triageEnabled = isCommTriageEnabled()
+  if (triageEnabled) {
+    const tab = VALID_TABS.includes(searchParams?.tab as CommunicationTab)
+      ? (searchParams?.tab as CommunicationTab)
+      : 'needs_attention'
+
+    const now = new Date()
+    const rangeStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    const rangeEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+
+    const [items, stats, calendarEvents, gmailConnection] = await Promise.all([
+      getCommunicationInbox(undefined, 100),
+      getCommunicationInboxStats(),
+      getCalendarEvents(rangeStart, rangeEnd),
+      getGoogleConnection(),
+    ])
+
+    return (
+      <div className="max-w-5xl mx-auto space-y-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-900">Inbox</h1>
+            <p className="text-stone-600 mt-1">
+              Manage all your messages, bookings, and follow-ups in one place.
+            </p>
+          </div>
+          <InboxCalendarPeek events={calendarEvents} />
+        </div>
+
+        {!gmailConnection.connected && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <span className="font-medium">Gmail is disconnected.</span>{' '}
+            New emails won&apos;t be synced into your inbox.{' '}
+            <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">
+              Reconnect in Settings →
+            </Link>
+          </div>
+        )}
+
+        <CommunicationInboxClient items={items as any} stats={stats} initialTab={tab} />
+      </div>
+    )
+  }
+
+  const [items, stats, gmailConnection] = await Promise.all([
     getUnifiedInbox({ limit: 50 }),
     getInboxStats(),
+    getGoogleConnection(),
   ])
 
   return (
@@ -22,9 +77,19 @@ export default async function InboxPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-900">Inbox</h1>
         <p className="text-stone-600 mt-1">
-          Everything in one place — chat, messages, form submissions, and notifications.
+          Everything in one place - chat, messages, form submissions, and notifications.
         </p>
       </div>
+
+      {!gmailConnection.connected && (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <span className="font-medium">Gmail is disconnected.</span>{' '}
+          New emails won&apos;t be synced into your inbox.{' '}
+          <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">
+            Reconnect in Settings →
+          </Link>
+        </div>
+      )}
 
       <InboxFeed items={items} stats={stats} />
     </div>

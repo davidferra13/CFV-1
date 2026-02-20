@@ -73,7 +73,7 @@ function SignUpForm() {
 
     try {
       await signUpChef(chefFormData)
-      router.push('/auth/verify-email')
+      router.push('/auth/signin')
     } catch (err) {
       const error = err as Error
       setError(error.message)
@@ -89,7 +89,7 @@ function SignUpForm() {
 
     try {
       await signUpClient(clientFormData)
-      router.push('/auth/verify-email')
+      router.push('/auth/signin')
     } catch (err) {
       const error = err as Error
       setError(error.message)
@@ -193,7 +193,7 @@ function SignUpForm() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">Start managing your private chef business</p>
+          <p className="text-stone-600 mt-2">Manage your chef work, your way</p>
         </div>
 
         <Card>
@@ -229,10 +229,10 @@ function SignUpForm() {
 
               <Input
                 type="text"
-                label="Business Name"
+                label="Your Name or Business Name"
                 value={chefFormData.business_name}
                 onChange={(e) => setChefFormData({ ...chefFormData, business_name: e.target.value })}
-                helperText="Optional - you can add this later"
+                helperText="How you'd like to be known — a personal name works perfectly"
               />
 
               <Input
@@ -258,6 +258,10 @@ function SignUpForm() {
                 Already have an account?{' '}
                 <Link href="/auth/signin" className="text-brand-600 hover:text-brand-700 font-medium">
                   Sign in
+                </Link>
+                <span className="mx-1">·</span>
+                <Link href="/auth/client-signup" className="text-brand-600 hover:text-brand-700 font-medium">
+                  Client sign up
                 </Link>
               </div>
             </CardFooter>

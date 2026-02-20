@@ -8,19 +8,24 @@ import { createServerClient } from '@/lib/supabase/server'
 import { createClientFromLead } from '@/lib/clients/actions'
 import { z } from 'zod'
 
+const DEFAULT_BOOKING_CHEF_EMAIL = 'davidferra13@gmail.com'
+
 const PublicInquirySchema = z.object({
-  chef_slug: z.string().min(1, 'Chef identifier required'),
+  chef_slug: z.string().optional(),
   // Required
   full_name: z.string().min(1, 'Name is required'),
   email: z.string().email('Valid email required'),
+  address: z.string().min(1, 'Address is required'),
   event_date: z.string().min(1, 'Event date is required'),
-  city: z.string().min(1, 'City is required'),
+  serve_time: z.string().min(1, 'Serve time is required'),
+  guest_count: z.number().int().positive(),
+  occasion: z.string().min(1, 'Occasion is required'),
   // Optional
   phone: z.string().optional().or(z.literal('')),
-  guest_count: z.number().int().positive().nullable().optional(),
-  occasion: z.string().optional().or(z.literal('')),
   budget_cents: z.number().int().nonnegative().nullable().optional(),
-  message: z.string().optional().or(z.literal('')),
+  favorite_ingredients_dislikes: z.string().optional().or(z.literal('')),
+  allergies_food_restrictions: z.string().optional().or(z.literal('')),
+  additional_notes: z.string().optional().or(z.literal('')),
 })
 
 export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
@@ -35,19 +40,40 @@ export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
 export async function submitPublicInquiry(input: PublicInquiryInput) {
   const validated = PublicInquirySchema.parse(input)
   const supabase = createServerClient({ admin: true })
+  const allergiesList = validated.allergies_food_restrictions
+    ? validated.allergies_food_restrictions
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean)
+    : null
+
+  const sourceParts = [
+    `Serving Time: ${validated.serve_time.trim()}`,
+    validated.favorite_ingredients_dislikes?.trim()
+      ? `Favorites/Dislikes: ${validated.favorite_ingredients_dislikes.trim()}`
+      : null,
+    validated.allergies_food_restrictions?.trim()
+      ? `Allergies/Food Restrictions: ${validated.allergies_food_restrictions.trim()}`
+      : null,
+    validated.additional_notes?.trim()
+      ? `Additional Notes: ${validated.additional_notes.trim()}`
+      : null,
+  ].filter(Boolean)
+  const sourceMessage = sourceParts.join('\n')
 
   // 1. Resolve chef slug → tenant_id
   const { data: chef, error: chefError } = await (supabase as any)
     .from('chefs')
-    .select('id')
-    .eq('slug', validated.chef_slug)
+    .select('id, business_name')
+    .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
     .single()
 
   if (chefError || !chef) {
-    throw new Error('Chef not found')
+    throw new Error('Default chef account not found')
   }
 
   const tenantId = chef.id as string
+  const chefName = (chef.business_name as string | null) || 'Your Chef'
 
   // 2. Create or find existing client
   const client = await createClientFromLead(tenantId, {
@@ -66,14 +92,21 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       client_id: client.id,
       first_contact_at: new Date().toISOString(),
       confirmed_date: validated.event_date || null,
-      confirmed_guest_count: validated.guest_count ?? null,
-      confirmed_location: validated.city.trim() || null,
-      confirmed_occasion: validated.occasion?.trim() || null,
+      confirmed_guest_count: validated.guest_count,
+      confirmed_location: validated.address.trim(),
+      confirmed_occasion: validated.occasion.trim(),
       confirmed_budget_cents: validated.budget_cents ?? null,
-      source_message: validated.message?.trim() || null,
-      unknown_fields: validated.message
-        ? { message: validated.message.trim() }
-        : null,
+      confirmed_service_expectations: `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
+      confirmed_dietary_restrictions: allergiesList,
+      source_message: sourceMessage || null,
+      unknown_fields: {
+        address: validated.address.trim(),
+        serve_time: validated.serve_time.trim(),
+        favorite_ingredients_dislikes: validated.favorite_ingredients_dislikes?.trim() || null,
+        allergies_food_restrictions: validated.allergies_food_restrictions?.trim() || null,
+        additional_notes: validated.additional_notes?.trim() || null,
+      },
+      status: 'new',
     })
     .select('id')
     .single()
@@ -81,6 +114,20 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   if (inquiryError) {
     console.error('[submitPublicInquiry] Inquiry creation error:', inquiryError)
     throw new Error('Failed to create inquiry')
+  }
+
+  // Send acknowledgment email to client (non-blocking — never fails the submission)
+  try {
+    const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
+    await sendInquiryReceivedEmail({
+      clientEmail: validated.email.toLowerCase().trim(),
+      clientName: validated.full_name.trim(),
+      chefName,
+      occasion: validated.occasion.trim(),
+      eventDate: validated.event_date || null,
+    })
+  } catch (emailErr) {
+    console.error('[submitPublicInquiry] Acknowledgment email failed (non-blocking):', emailErr)
   }
 
   // 4. Create draft event with available info (TBD for missing required fields)
@@ -91,14 +138,14 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       client_id: client.id,
       inquiry_id: inquiry.id,
       event_date: validated.event_date,
-      serve_time: 'TBD',
-      guest_count: validated.guest_count || 1,
-      location_address: validated.city.trim(),
-      location_city: validated.city.trim(),
+      serve_time: validated.serve_time.trim(),
+      guest_count: validated.guest_count,
+      location_address: validated.address.trim(),
+      location_city: 'TBD',
       location_zip: 'TBD',
-      occasion: validated.occasion?.trim() || null,
+      occasion: validated.occasion.trim(),
       quoted_price_cents: validated.budget_cents ?? null,
-      special_requests: validated.message?.trim() || null,
+      special_requests: sourceMessage || null,
     })
     .select('id')
     .single()

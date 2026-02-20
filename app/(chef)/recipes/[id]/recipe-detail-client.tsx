@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { deleteRecipe, createRecipe, addIngredientToRecipe } from '@/lib/recipes/actions'
+import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
+import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
 import { format } from 'date-fns'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
@@ -31,6 +33,8 @@ export function RecipeDetailClient({ recipe }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [shareSuccess, setShareSuccess] = useState<string | null>(null)
 
   const handleDelete = async () => {
     if (!confirm('Delete this recipe? It will be unlinked from any menu components.')) return
@@ -110,6 +114,13 @@ export function RecipeDetailClient({ recipe }: Props) {
           <Button variant="secondary" onClick={handleDuplicate} disabled={loading}>
             Duplicate
           </Button>
+          <Button
+            variant="secondary"
+            onClick={() => { setShowShareModal(true); setShareSuccess(null) }}
+            disabled={loading}
+          >
+            Share
+          </Button>
           <Button variant="danger" onClick={handleDelete} disabled={loading}>
             Delete
           </Button>
@@ -120,6 +131,20 @@ export function RecipeDetailClient({ recipe }: Props) {
       </div>
 
       {error && <Alert variant="error">{error}</Alert>}
+      {shareSuccess && <Alert variant="success">{shareSuccess}</Alert>}
+
+      {/* Share with Chef modal */}
+      {showShareModal && (
+        <RecipeShareModal
+          recipeId={recipe.id}
+          recipeName={recipe.name}
+          onSuccess={(chefName) => {
+            setShowShareModal(false)
+            setShareSuccess(`Recipe shared with ${chefName}. They'll receive an invitation to accept.`)
+          }}
+          onCancel={() => setShowShareModal(false)}
+        />
+      )}
 
       {/* Ingredients */}
       <Card>
@@ -160,6 +185,9 @@ export function RecipeDetailClient({ recipe }: Props) {
           )}
         </CardContent>
       </Card>
+
+      {/* Scaling Calculator */}
+      <RecipeScalingCalculator recipe={recipe} />
 
       {/* Method */}
       {recipe.method && (
@@ -307,6 +335,126 @@ export function RecipeDetailClient({ recipe }: Props) {
             </div>
           </CardContent>
         </Card>
+      )}
+    </div>
+  )
+}
+
+// ─── Recipe Share Modal ───────────────────────
+
+function RecipeShareModal({
+  recipeId,
+  recipeName,
+  onSuccess,
+  onCancel,
+}: {
+  recipeId: string
+  recipeName: string
+  onSuccess: (chefName: string) => void
+  onCancel: () => void
+}) {
+  const [isPending, startTransition] = useTransition()
+  const [search, setSearch] = useState('')
+  const [searching, setSearching] = useState(false)
+  const [results, setResults] = useState<Array<{ id: string; business_name: string; display_name: string | null }>>([])
+  const [selectedChef, setSelectedChef] = useState<{ id: string; business_name: string; display_name: string | null } | null>(null)
+  const [note, setNote] = useState('')
+  const [modalError, setModalError] = useState<string | null>(null)
+
+  async function handleSearch() {
+    if (!search.trim()) return
+    setSearching(true)
+    try {
+      const r = await getConnectedChefsForCollaboration(search)
+      setResults(r as any)
+    } catch {
+      setResults([])
+    } finally {
+      setSearching(false)
+    }
+  }
+
+  function handleSend() {
+    if (!selectedChef) return
+    setModalError(null)
+    startTransition(async () => {
+      try {
+        await shareRecipe({ recipeId, targetChefId: selectedChef.id, note: note || undefined })
+        onSuccess(selectedChef.display_name || selectedChef.business_name)
+      } catch (err: any) {
+        setModalError(err.message)
+      }
+    })
+  }
+
+  return (
+    <div className="rounded-lg border border-brand-200 bg-brand-50/40 p-4 space-y-3">
+      <p className="text-sm font-semibold text-stone-800">Share &ldquo;{recipeName}&rdquo; with a Chef</p>
+      <p className="text-xs text-stone-600">
+        They&apos;ll receive an invitation to accept. If accepted, they get their own editable copy.
+        Only chefs you&apos;re connected with in the Chef Network can receive shares.
+      </p>
+
+      {modalError && <Alert variant="error">{modalError}</Alert>}
+
+      {!selectedChef ? (
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              placeholder="Search your connected chefs..."
+              className="flex-1 rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+            />
+            <Button variant="secondary" size="sm" onClick={handleSearch} disabled={searching}>
+              {searching ? '...' : 'Search'}
+            </Button>
+          </div>
+          {results.map(chef => (
+            <button
+              key={chef.id}
+              type="button"
+              onClick={() => setSelectedChef(chef)}
+              className="w-full text-left flex items-center gap-3 rounded-md border border-stone-200 bg-white px-3 py-2 hover:bg-stone-50 transition-colors text-sm"
+            >
+              <div className="h-7 w-7 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600 flex-shrink-0">
+                {(chef.display_name || chef.business_name).charAt(0).toUpperCase()}
+              </div>
+              <span className="font-medium text-stone-900">{chef.display_name || chef.business_name}</span>
+            </button>
+          ))}
+          {results.length === 0 && search && !searching && (
+            <p className="text-xs text-stone-500">No connected chefs found matching &ldquo;{search}&rdquo;.</p>
+          )}
+          <div className="flex justify-end">
+            <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+          </div>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex items-center gap-3 rounded-md bg-white border border-stone-200 px-3 py-2">
+            <div className="h-7 w-7 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600">
+              {(selectedChef.display_name || selectedChef.business_name).charAt(0).toUpperCase()}
+            </div>
+            <p className="text-sm font-medium text-stone-900 flex-1">{selectedChef.display_name || selectedChef.business_name}</p>
+            <button type="button" onClick={() => setSelectedChef(null)} className="text-xs text-stone-400 hover:text-stone-600">Change</button>
+          </div>
+          <input
+            type="text"
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            placeholder="Optional note (e.g. try this with brown butter)"
+            className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+          />
+          <div className="flex gap-2">
+            <Button variant="primary" size="sm" onClick={handleSend} disabled={isPending}>
+              {isPending ? 'Sending...' : 'Send Share'}
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+          </div>
+        </div>
       )}
     </div>
   )

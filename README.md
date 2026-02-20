@@ -45,6 +45,23 @@ This project is governed by **CHEFFLOW_V1_SCOPE_LOCK.md**. All features, archite
 
 6. Open [http://localhost:3100](http://localhost:3100)
 
+### Local One-Command Bootstrap
+
+For a full local environment (Supabase + migrations + generated types + demo users/data):
+
+```bash
+npm run local:bootstrap
+```
+
+After bootstrap:
+
+- Chef login: `chef.demo@local.chefflow` / `ChefFlowLocal!123`
+- Client login: `client.demo@local.chefflow` / `ChefFlowLocal!123`
+- Public chef page: `http://localhost:3100/chef/chef-demo`
+- Supabase Studio: `http://127.0.0.1:54323`
+
+More details: `docs/LOCAL_TESTING_BOOTSTRAP.md`
+
 ## Project Structure
 
 ```

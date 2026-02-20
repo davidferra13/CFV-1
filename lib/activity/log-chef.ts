@@ -1,10 +1,10 @@
-// Chef Activity Log — Write Utility
-// Non-blocking, fire-and-forget logging of chef actions.
-// Uses admin client so it works from any server context.
-// Failures are logged but never thrown — activity logging must never break primary workflows.
+// Chef activity log write utility.
+// Non-blocking by design.
 
 import { createServerClient } from '@/lib/supabase/server'
+import type { TablesInsert } from '@/types/database'
 import type { ChefActivityAction, ChefActivityDomain } from './chef-types'
+import { logActivityEvent } from './observability'
 
 export async function logChefActivity(input: {
   tenantId: string
@@ -20,7 +20,7 @@ export async function logChefActivity(input: {
   try {
     const supabase = createServerClient({ admin: true })
 
-    await supabase.from('chef_activity_log' as any).insert({
+    const payload: TablesInsert<'chef_activity_log'> = {
       tenant_id: input.tenantId,
       actor_id: input.actorId,
       action: input.action,
@@ -28,11 +28,19 @@ export async function logChefActivity(input: {
       entity_type: input.entityType,
       entity_id: input.entityId || null,
       summary: input.summary,
-      context: input.context || {},
+      context: (input.context || {}) as TablesInsert<'chef_activity_log'>['context'],
       client_id: input.clientId || null,
-    })
+    }
+
+    const { error } = await supabase.from('chef_activity_log').insert(payload)
+
+    if (error) {
+      logActivityEvent('error', 'logChefActivity insert failed', { error: error.message, action: input.action })
+    }
   } catch (err) {
-    // Non-blocking: activity logging should never break the main flow
-    console.error('[logChefActivity] Failed (non-fatal):', err)
+    logActivityEvent('error', 'logChefActivity failed (non-fatal)', {
+      action: input.action,
+      error: err instanceof Error ? err.message : String(err),
+    })
   }
 }

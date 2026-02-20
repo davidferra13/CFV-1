@@ -11,6 +11,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import QuoteResponseButtons from './quote-response-buttons'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
+import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
 
 export default async function ClientQuoteDetailPage({
   params
@@ -39,9 +41,19 @@ export default async function ClientQuoteDetailPage({
             <p className="text-stone-600 mt-1">{(quote.inquiry as any).confirmed_occasion}</p>
           )}
         </div>
-        <Link href="/my-quotes">
-          <Button variant="ghost">Back to Quotes</Button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <a
+            href={`/api/documents/quote-client/${params.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+          >
+            Download PDF
+          </a>
+          <Link href="/my-quotes">
+            <Button variant="ghost">Back to Quotes</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Status Banner */}
@@ -102,7 +114,15 @@ export default async function ClientQuoteDetailPage({
       {/* Event Details from Inquiry */}
       {quote.inquiry && (
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Event Details</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Event Details</h2>
+            <Link
+              href={`/my-inquiries/${(quote.inquiry as any).id}`}
+              className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+            >
+              View Inquiry →
+            </Link>
+          </div>
           <dl className="space-y-3">
             {(quote.inquiry as any).confirmed_occasion && (
               <div>
@@ -143,6 +163,21 @@ export default async function ClientQuoteDetailPage({
       <div className="flex justify-center pt-4">
         <MessageChefButton label="Have a question? Message your chef" />
       </div>
+
+      {/* Activity tracking */}
+      <ActivityTracker
+        eventType="quote_viewed"
+        entityType="quote"
+        entityId={quote.id}
+        metadata={{
+          quote_status: quote.status,
+          total_quoted_cents: quote.total_quoted_cents,
+          is_pending: isPending,
+          valid_until: quote.valid_until,
+          has_deposit: quote.deposit_required,
+        }}
+      />
+      {isPending && <SessionHeartbeat entityType="quote" entityId={quote.id} />}
     </div>
   )
 }

@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useRef, createContext, useContext, useCallback } from 'react'
 import type { LucideIcon } from 'lucide-react'
-import { standaloneTop, navGroups, standaloneBottom, mobileTabItems } from './nav-config'
+import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } from './nav-config'
 import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
@@ -69,8 +69,9 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
 
 // ─── Helper: check if a pathname matches a nav item ─
 function isItemActive(pathname: string, href: string) {
-  if (href === '/dashboard') return pathname === '/dashboard'
-  return pathname === href || pathname.startsWith(href + '/')
+  const normalizedHref = href.split('?')[0]
+  if (normalizedHref === '/dashboard') return pathname === '/dashboard'
+  return pathname === normalizedHref || pathname.startsWith(normalizedHref + '/')
 }
 
 function isGroupActive(pathname: string, group: NavGroup) {
@@ -160,7 +161,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
 
       {open && (
         <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] bg-white rounded-lg shadow-lg border border-stone-200 py-1.5">
-          <p className="px-3 py-1.5 text-[11px] font-semibold text-stone-400 uppercase tracking-wider">
+          <p className="px-3 py-1.5 text-xs font-semibold text-stone-400 uppercase tracking-wider">
             {group.label}
           </p>
           {group.items.map((item) => {
@@ -212,7 +213,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                          <summary className="cursor-pointer px-2 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -324,7 +325,7 @@ function NavGroupSection({
                     type="button"
                     onClick={() => onToggleItem(item.href)}
                     aria-expanded={itemOpen}
-                    className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-[15px] font-medium transition-colors ${
+                    className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       itemActive ? 'text-brand-700' : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
                     }`}
                   >
@@ -361,7 +362,7 @@ function NavGroupSection({
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -395,7 +396,7 @@ function NavGroupSection({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-[15px] font-medium transition-colors ${
+                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   itemActive
                     ? 'bg-brand-50 text-brand-700'
                     : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
@@ -413,11 +414,12 @@ function NavGroupSection({
 }
 
 // ─── Desktop Sidebar ────────────────────────────────
-export function ChefSidebar() {
+export function ChefSidebar({ primaryNavHrefs }: { primaryNavHrefs?: string[] }) {
   const pathname = usePathname()
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
+  const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
   // Auto-expand group containing active route
   useEffect(() => {
@@ -514,7 +516,7 @@ export function ChefSidebar() {
             <GlobalSearch />
 
             {/* Dashboard */}
-            {standaloneTop.map((item) => {
+            {primaryItems.map((item) => {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href)
               return (
@@ -566,7 +568,7 @@ export function ChefSidebar() {
           /* ── EXPANDED MODE ── */
           <div className="px-3 space-y-1">
             {/* Dashboard */}
-            {standaloneTop.map((item) => {
+            {primaryItems.map((item) => {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href)
               return (
@@ -746,7 +748,7 @@ function MobileGroupSection({
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -800,11 +802,12 @@ function MobileGroupSection({
 }
 
 // ─── Mobile Navigation ──────────────────────────────
-export function ChefMobileNav() {
+export function ChefMobileNav({ primaryNavHrefs }: { primaryNavHrefs?: string[] }) {
   const pathname = usePathname()
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
+  const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
   // Auto-expand group containing active route in mobile menu
   useEffect(() => {
@@ -899,7 +902,7 @@ export function ChefMobileNav() {
             </div>
             <nav className="p-3 overflow-y-auto max-h-[calc(100vh-3.5rem)]">
               {/* Dashboard */}
-              {standaloneTop.map((item) => {
+              {primaryItems.map((item) => {
                 const Icon = item.icon
                 const active = isItemActive(pathname, item.href)
                 return (

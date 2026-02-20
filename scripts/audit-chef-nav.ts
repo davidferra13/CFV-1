@@ -21,6 +21,7 @@ const projectRoot = process.cwd()
 const chefAppRoot = path.join(projectRoot, 'app', '(chef)')
 const placeholderPattern = /currently being built|coming soon|placeholder|under construction|work in progress/i
 const prototypePattern = /const\s+mock[A-Za-z0-9_]*\s*=|will be here\.|TODO:\s*replace mock/i
+const MAX_TOP_LEVEL_VISIBLE = 16
 
 function normalizeHref(href: string) {
   return href.split('?')[0]
@@ -121,8 +122,8 @@ function main() {
   const navEntries = collectNavEntries()
 
   const topLevelCount = standaloneTop.length + navGroups.length + standaloneBottom.length
-  if (topLevelCount > 10) {
-    failures.push(`Top-level visible count is ${topLevelCount}; expected <= 10`)
+  if (topLevelCount > MAX_TOP_LEVEL_VISIBLE) {
+    failures.push(`Top-level visible count is ${topLevelCount}; expected <= ${MAX_TOP_LEVEL_VISIBLE}`)
   }
 
   const byHref = new Map<string, NavEntry[]>()

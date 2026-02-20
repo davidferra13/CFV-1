@@ -1,10 +1,13 @@
 // Scheduled Follow-ups Cron Endpoint
 // GET /api/scheduled/follow-ups — invoked by Vercel Cron Job (Vercel sends GET)
 // POST /api/scheduled/follow-ups — invoked manually or by external schedulers
-// Notifies chefs about overdue inquiry follow-ups.
+// Built-in: notifies chefs about overdue inquiry follow-ups.
+// Respects chef_automation_settings.follow_up_reminders_enabled per tenant.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { getAutomationSettingsForTenant } from '@/lib/automations/settings-actions'
+import { recordCronHeartbeat } from '@/lib/cron/heartbeat'
 
 async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
   // Validate cron secret
@@ -47,15 +50,24 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ message: 'No overdue follow-ups', processed: 0 })
   }
 
-  const { createNotification, getChefAuthUserId } = await import(
+  const { createNotification, getChefAuthUserId, getChefProfile } = await import(
     '@/lib/notifications/actions'
   )
 
   let notified = 0
+  let skipped = 0
   let errors = 0
 
   for (const inquiry of overdueInquiries) {
     try {
+      // ── Check chef's opt-in preference ────────────────────────────────
+      const tenantSettings = await getAutomationSettingsForTenant(inquiry.tenant_id)
+
+      if (!tenantSettings.follow_up_reminders_enabled) {
+        skipped++
+        continue
+      }
+
       const chefUserId = await getChefAuthUserId(inquiry.tenant_id)
       if (!chefUserId) continue
 
@@ -75,13 +87,34 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
         clientId: (inquiry.client as { id: string } | null)?.id || undefined,
       })
 
-      // Set next follow-up 48h from now (repeating until resolved)
+      // Email the chef about the overdue follow-up (non-blocking)
+      try {
+        const chefProfile = await getChefProfile(inquiry.tenant_id)
+        if (chefProfile) {
+          const { sendFollowUpDueChefEmail } = await import('@/lib/email/notifications')
+          const daysOverdue = Math.floor(
+            (Date.now() - new Date(inquiry.follow_up_due_at!).getTime()) / (1000 * 60 * 60 * 24)
+          )
+          await sendFollowUpDueChefEmail({
+            chefEmail: chefProfile.email,
+            chefName: chefProfile.name,
+            clientName,
+            occasion: inquiry.confirmed_occasion,
+            followUpNote: null,
+            daysOverdue,
+            inquiryId: inquiry.id,
+          })
+        }
+      } catch (emailErr) {
+        console.error(`[Follow-ups Cron] Email failed for inquiry ${inquiry.id} (non-fatal):`, emailErr)
+      }
+
+      // Reschedule next follow-up using the tenant's configured interval
+      const intervalMs = tenantSettings.follow_up_reminder_interval_hours * 60 * 60 * 1000
       await supabase
         .from('inquiries')
         .update({
-          follow_up_due_at: new Date(
-            Date.now() + 48 * 60 * 60 * 1000,
-          ).toISOString(),
+          follow_up_due_at: new Date(Date.now() + intervalMs).toISOString(),
         })
         .eq('id', inquiry.id)
         .eq('tenant_id', inquiry.tenant_id)
@@ -97,11 +130,9 @@ async function handleFollowUps(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return NextResponse.json({
-    processed: overdueInquiries.length,
-    notified,
-    errors,
-  })
+  const result = { processed: overdueInquiries.length, notified, skipped, errors }
+  await recordCronHeartbeat('follow-ups', result)
+  return NextResponse.json(result)
 }
 
 export { handleFollowUps as GET, handleFollowUps as POST }

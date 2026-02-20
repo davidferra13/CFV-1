@@ -2,8 +2,6 @@
 // NEVER infer role from URL, client state, or JWT claims
 // ALWAYS query user_roles table (single source of truth)
 
-'use server'
-
 import { cache } from 'react'
 import { createServerClient } from '@/lib/supabase/server'
 
@@ -43,6 +41,11 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   if (roleError || !roleData) {
     // User exists but no role assigned - should not happen in normal flow
     console.error('[AUTH] User has no role assigned:', user.id, roleError)
+    return null
+  }
+
+  if (roleData.role !== 'chef' && roleData.role !== 'client') {
+    // system or unknown roles are not valid portal users
     return null
   }
 

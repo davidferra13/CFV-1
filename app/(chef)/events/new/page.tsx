@@ -3,12 +3,16 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
+import { getPartnersWithLocations } from '@/lib/partners/actions'
 import { EventForm } from '@/components/events/event-form'
 
 export default async function NewEventPage() {
   await requireChef()
 
-  const clients = await getClients()
+  const [clients, { partners, partnerLocations }] = await Promise.all([
+    getClients(),
+    getPartnersWithLocations(),
+  ])
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -17,7 +21,7 @@ export default async function NewEventPage() {
         <p className="text-stone-600 mt-1">Fill in the details for your new event</p>
       </div>
 
-      <EventForm clients={clients} mode="create" />
+      <EventForm clients={clients} mode="create" partners={partners} partnerLocations={partnerLocations} />
     </div>
   )
 }

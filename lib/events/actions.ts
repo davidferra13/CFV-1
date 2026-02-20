@@ -7,6 +7,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import {
+  EVENT_TIME_ACTIVITY_TYPES,
+  EVENT_TIME_ACTIVITY_CONFIG,
+  type EventTimeActivityType,
+  formatMinutesAsDuration,
+  getEventActivityLabel,
+  safeDurationMinutes,
+} from './time-tracking'
 
 // Validation schemas aligned with new events table
 const CreateEventSchema = z.object({
@@ -35,6 +43,8 @@ const CreateEventSchema = z.object({
   cannabis_preference: z.boolean().optional(),
   location_lat: z.number().optional(),
   location_lng: z.number().optional(),
+  referral_partner_id: z.string().uuid().nullable().optional(),
+  partner_location_id: z.string().uuid().nullable().optional(),
 })
 
 const UpdateEventSchema = z.object({
@@ -64,10 +74,20 @@ const UpdateEventSchema = z.object({
   payment_method_primary: z.enum(['cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other']).optional(),
   location_lat: z.number().optional(),
   location_lng: z.number().optional(),
+  referral_partner_id: z.string().uuid().nullable().optional(),
+  partner_location_id: z.string().uuid().nullable().optional(),
 })
 
 export type CreateEventInput = z.infer<typeof CreateEventSchema>
 export type UpdateEventInput = z.infer<typeof UpdateEventSchema>
+const EventTimeActivitySchema = z.enum(EVENT_TIME_ACTIVITY_TYPES)
+const LogCharityHoursSchema = z.object({
+  minutes: z.number().int().positive().max(24 * 60 * 31),
+  logged_for: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  note: z.string().trim().max(500).optional(),
+})
+
+export type LogCharityHoursInput = z.infer<typeof LogCharityHoursSchema>
 
 /**
  * Create event (chef-only)
@@ -120,6 +140,8 @@ export async function createEvent(input: CreateEventInput) {
     cannabis_preference: validated.cannabis_preference,
     location_lat: validated.location_lat,
     location_lng: validated.location_lng,
+    referral_partner_id: validated.referral_partner_id ?? null,
+    partner_location_id: validated.partner_location_id ?? null,
     created_by: user.id,
     updated_by: user.id,
   }
@@ -194,20 +216,25 @@ export async function getEvents() {
 }
 
 /**
- * Get single event by ID (chef-only, RLS enforces tenant scoping)
+ * Get single event by ID.
+ * Access is enforced entirely by RLS:
+ *   - Event owners via the existing tenant_id policy
+ *   - Accepted collaborators via the collaborators_can_view_events policy (migration 20260304000008)
+ * The explicit tenant_id filter has been removed so both groups can load the page.
  */
 export async function getEventById(eventId: string) {
-  const user = await requireChef()
+  await requireChef()
   const supabase = createServerClient()
 
   const { data: event, error } = await supabase
     .from('events')
     .select(`
       *,
-      client:clients(id, full_name, email, phone)
+      client:clients(id, full_name, email, phone),
+      referral_partner:referral_partners(id, name),
+      partner_location:partner_locations(id, name, city, state)
     `)
     .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (error) {
@@ -466,6 +493,210 @@ export async function getEventsNeedingClosure() {
   return events
 }
 
+function getActiveEventActivity(event: {
+  shopping_started_at: string | null
+  shopping_completed_at: string | null
+  prep_started_at: string | null
+  prep_completed_at: string | null
+  reset_started_at: string | null
+  reset_completed_at: string | null
+  travel_started_at: string | null
+  travel_completed_at: string | null
+  service_started_at: string | null
+  service_completed_at: string | null
+}): EventTimeActivityType | null {
+  for (const activity of EVENT_TIME_ACTIVITY_TYPES) {
+    const config = EVENT_TIME_ACTIVITY_CONFIG[activity]
+    const startedAt = event[config.startedAtColumn]
+    const completedAt = event[config.completedAtColumn]
+    if (startedAt && !completedAt) {
+      return activity
+    }
+  }
+
+  return null
+}
+
+/**
+ * Start a chef work phase timer on an event.
+ * One phase can be active at a time to keep tracking simple.
+ */
+export async function startEventActivity(
+  eventId: string,
+  activityInput: EventTimeActivityType
+) {
+  const user = await requireChef()
+  const activity = EventTimeActivitySchema.parse(activityInput)
+  const supabase = createServerClient()
+
+  const { data: event, error: fetchError } = await supabase
+    .from('events')
+    .select(`
+      id, tenant_id, client_id, occasion,
+      shopping_started_at, shopping_completed_at,
+      prep_started_at, prep_completed_at,
+      reset_started_at, reset_completed_at,
+      travel_started_at, travel_completed_at,
+      service_started_at, service_completed_at
+    `)
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (fetchError || !event) {
+    throw new Error('Event not found')
+  }
+
+  const activeActivity = getActiveEventActivity(event)
+  if (activeActivity && activeActivity !== activity) {
+    throw new Error(
+      `${getEventActivityLabel(activeActivity)} is already running. Stop it before starting ${getEventActivityLabel(activity)}.`
+    )
+  }
+
+  if (activeActivity === activity) {
+    return { success: true, startedAt: event[EVENT_TIME_ACTIVITY_CONFIG[activity].startedAtColumn] }
+  }
+
+  const nowIso = new Date().toISOString()
+  const config = EVENT_TIME_ACTIVITY_CONFIG[activity]
+
+  const updatePayload: Record<string, string | null> = {
+    [config.startedAtColumn]: nowIso,
+    [config.completedAtColumn]: null,
+    updated_by: user.id,
+  }
+
+  const { error: updateError } = await supabase
+    .from('events')
+    .update(updatePayload as any)
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (updateError) {
+    console.error('[startEventActivity] Error:', updateError)
+    throw new Error('Failed to start activity timer')
+  }
+
+  revalidatePath(`/events/${eventId}`)
+
+  // Non-blocking activity log
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'event_updated',
+      domain: 'operational',
+      entityType: 'event',
+      entityId: eventId,
+      summary: `Started ${getEventActivityLabel(activity).toLowerCase()} timer for ${event.occasion || 'event'}`,
+      context: {
+        event_id: eventId,
+        activity,
+        started_at: nowIso,
+      },
+      clientId: event.client_id,
+    })
+  } catch {
+    // non-fatal
+  }
+
+  return { success: true, startedAt: nowIso }
+}
+
+/**
+ * Stop a chef work phase timer and add elapsed minutes to the event total.
+ */
+export async function stopEventActivity(
+  eventId: string,
+  activityInput: EventTimeActivityType
+) {
+  const user = await requireChef()
+  const activity = EventTimeActivitySchema.parse(activityInput)
+  const supabase = createServerClient()
+
+  const config = EVENT_TIME_ACTIVITY_CONFIG[activity]
+  const { data: event, error: fetchError } = await supabase
+    .from('events')
+    .select(`
+      id, tenant_id, client_id, occasion,
+      ${config.startedAtColumn},
+      ${config.completedAtColumn},
+      ${config.minutesColumn}
+    `)
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (fetchError || !event) {
+    throw new Error('Event not found')
+  }
+
+  const eventRecord = event as Record<string, string | number | null>
+  const startedAt = eventRecord[config.startedAtColumn] as string | null
+  if (!startedAt) {
+    throw new Error(`No active ${getEventActivityLabel(activity).toLowerCase()} timer to stop`)
+  }
+
+  const endedAt = new Date().toISOString()
+  const elapsedMinutes = safeDurationMinutes(startedAt, endedAt)
+  const currentMinutes = (eventRecord[config.minutesColumn] as number | null) ?? 0
+  const totalMinutes = currentMinutes + elapsedMinutes
+
+  const updatePayload: Record<string, string | number | null> = {
+    [config.startedAtColumn]: null,
+    [config.completedAtColumn]: endedAt,
+    [config.minutesColumn]: totalMinutes,
+    updated_by: user.id,
+  }
+
+  const { error: updateError } = await supabase
+    .from('events')
+    .update(updatePayload as any)
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (updateError) {
+    console.error('[stopEventActivity] Error:', updateError)
+    throw new Error('Failed to stop activity timer')
+  }
+
+  revalidatePath(`/events/${eventId}`)
+
+  // Non-blocking activity log
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'event_updated',
+      domain: 'operational',
+      entityType: 'event',
+      entityId: eventId,
+      summary: `Stopped ${getEventActivityLabel(activity).toLowerCase()} timer (+${elapsedMinutes}m)`,
+      context: {
+        event_id: eventId,
+        activity,
+        started_at: startedAt,
+        ended_at: endedAt,
+        elapsed_minutes: elapsedMinutes,
+        total_minutes: totalMinutes,
+      },
+      clientId: event.client_id,
+    })
+  } catch {
+    // non-fatal
+  }
+
+  return {
+    success: true,
+    elapsedMinutes,
+    totalMinutes,
+    endedAt,
+  }
+}
+
 /**
  * Update time tracking and card fields on an event
  */
@@ -497,4 +728,44 @@ export async function updateEventTimeAndCard(
 
   revalidatePath(`/events/${eventId}`)
   return { success: true }
+}
+
+/**
+ * Log standalone charity/volunteer hours for the chef.
+ * Stored in chef_activity_log so it appears in Activity feed.
+ */
+export async function logCharityHours(input: LogCharityHoursInput) {
+  const user = await requireChef()
+  const validated = LogCharityHoursSchema.parse(input)
+
+  const loggedFor = validated.logged_for ?? new Date().toISOString().slice(0, 10)
+  const note = validated.note?.trim() || null
+
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'charity_hours_logged',
+      domain: 'operational',
+      entityType: 'charity_hours',
+      summary: `Logged charity hours: ${formatMinutesAsDuration(validated.minutes)}`,
+      context: {
+        minutes: validated.minutes,
+        logged_for: loggedFor,
+        note,
+      },
+    })
+  } catch (err) {
+    console.error('[logCharityHours] Activity log failed (non-blocking):', err)
+  }
+
+  revalidatePath('/activity')
+  revalidatePath('/dashboard')
+
+  return {
+    success: true,
+    minutes: validated.minutes,
+    loggedFor,
+  }
 }

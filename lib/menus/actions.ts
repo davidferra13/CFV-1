@@ -9,12 +9,12 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
+import type { ComponentCategory } from './constants'
 
 type MenuStatus = Database['public']['Enums']['menu_status']
 // 'draft' | 'shared' | 'locked' | 'archived'
 
 type ServiceStyle = Database['public']['Enums']['event_service_style']
-type ComponentCategory = Database['public']['Enums']['component_category']
 
 // ============================================
 // MENU SCHEMAS
@@ -52,6 +52,7 @@ const CreateDishSchema = z.object({
   menu_id: z.string().uuid(),
   course_name: z.string().min(1, 'Course name required'),
   course_number: z.number().int().positive(),
+  name: z.string().optional(),
   description: z.string().optional(),
   dietary_tags: z.array(z.string()).default([]),
   allergen_flags: z.array(z.string()).default([]),
@@ -63,6 +64,7 @@ const CreateDishSchema = z.object({
 const UpdateDishSchema = z.object({
   course_name: z.string().min(1).optional(),
   course_number: z.number().int().positive().optional(),
+  name: z.string().nullable().optional(),
   description: z.string().optional(),
   dietary_tags: z.array(z.string()).optional(),
   allergen_flags: z.array(z.string()).optional(),
@@ -78,18 +80,19 @@ export type UpdateDishInput = z.infer<typeof UpdateDishSchema>
 // COMPONENT SCHEMAS
 // ============================================
 
+// COMPONENT_CATEGORIES and TRANSPORT_CATEGORIES exported from lib/menus/constants.ts
+import { COMPONENT_CATEGORIES, TRANSPORT_CATEGORIES } from './constants'
+
 const CreateComponentSchema = z.object({
   dish_id: z.string().uuid(),
   name: z.string().min(1, 'Component name required'),
-  category: z.enum([
-    'sauce', 'protein', 'starch', 'vegetable', 'garnish',
-    'base', 'topping', 'seasoning', 'other'
-  ]),
+  category: z.enum(COMPONENT_CATEGORIES),
   description: z.string().optional(),
   recipe_id: z.string().uuid().optional(),
   scale_factor: z.number().positive().default(1),
   is_make_ahead: z.boolean().default(false),
   make_ahead_window_hours: z.number().int().positive().optional(),
+  transport_category: z.enum(TRANSPORT_CATEGORIES).optional(),
   execution_notes: z.string().optional(),
   storage_notes: z.string().optional(),
   sort_order: z.number().int().optional()
@@ -97,15 +100,13 @@ const CreateComponentSchema = z.object({
 
 const UpdateComponentSchema = z.object({
   name: z.string().min(1).optional(),
-  category: z.enum([
-    'sauce', 'protein', 'starch', 'vegetable', 'garnish',
-    'base', 'topping', 'seasoning', 'other'
-  ]).optional(),
+  category: z.enum(COMPONENT_CATEGORIES).optional(),
   description: z.string().optional(),
   recipe_id: z.string().uuid().nullable().optional(),
   scale_factor: z.number().positive().optional(),
   is_make_ahead: z.boolean().optional(),
   make_ahead_window_hours: z.number().int().positive().nullable().optional(),
+  transport_category: z.enum(TRANSPORT_CATEGORIES).nullable().optional(),
   execution_notes: z.string().optional(),
   storage_notes: z.string().optional(),
   sort_order: z.number().int().optional()
@@ -113,6 +114,8 @@ const UpdateComponentSchema = z.object({
 
 export type CreateComponentInput = z.infer<typeof CreateComponentSchema>
 export type UpdateComponentInput = z.infer<typeof UpdateComponentSchema>
+export type { ComponentCategory, TransportCategory } from './constants'
+// COMPONENT_CATEGORIES and TRANSPORT_CATEGORIES are in lib/menus/constants.ts
 
 // ============================================
 // MENU CRUD
@@ -644,6 +647,7 @@ export async function addDishToMenu(input: CreateDishInput) {
       menu_id: validated.menu_id,
       course_name: validated.course_name,
       course_number: validated.course_number,
+      name: validated.name,
       description: validated.description,
       dietary_tags: validated.dietary_tags,
       allergen_flags: validated.allergen_flags,
@@ -748,12 +752,13 @@ export async function addComponentToDish(input: CreateComponentInput) {
       tenant_id: user.tenantId!,
       dish_id: validated.dish_id,
       name: validated.name,
-      category: validated.category as ComponentCategory,
+      category: validated.category ,
       description: validated.description,
       recipe_id: validated.recipe_id,
       scale_factor: validated.scale_factor,
       is_make_ahead: validated.is_make_ahead,
       make_ahead_window_hours: validated.make_ahead_window_hours,
+      transport_category: validated.transport_category,
       execution_notes: validated.execution_notes,
       storage_notes: validated.storage_notes,
       sort_order: validated.sort_order ?? 0,
@@ -784,7 +789,7 @@ export async function updateComponent(componentId: string, input: UpdateComponen
     .from('components')
     .update({
       ...validated,
-      category: validated.category as ComponentCategory | undefined,
+      category: validated.category ,
       updated_by: user.id
     })
     .eq('id', componentId)
@@ -819,6 +824,118 @@ export async function deleteComponent(componentId: string) {
   }
 
   return { success: true }
+}
+
+// ============================================
+// ALL COMPONENTS (cross-menu)
+// ============================================
+
+export type ComponentListItem = {
+  id: string
+  name: string
+  category: string
+  is_make_ahead: boolean
+  make_ahead_window_hours: number | null
+  transport_category: string | null
+  storage_notes: string | null
+  execution_notes: string | null
+  recipe_id: string | null
+  dish_id: string
+  dish_name: string | null
+  menu_id: string | null
+  menu_name: string | null
+  created_at: string
+}
+
+export async function getAllComponents(filters?: {
+  is_make_ahead?: boolean
+  has_recipe?: boolean
+}): Promise<ComponentListItem[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  let query = supabase
+    .from('components')
+    .select(`
+      id, name, category, is_make_ahead, make_ahead_window_hours,
+      transport_category, storage_notes, execution_notes, recipe_id, dish_id, created_at,
+      dish:dishes(id, course_name, menu:menus(id, name))
+    `)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (filters?.is_make_ahead === true) {
+    query = query.eq('is_make_ahead', true)
+  }
+
+  const { data: components, error } = await query
+
+  if (error) {
+    console.error('[getAllComponents] Error:', error)
+    throw new Error('Failed to fetch components')
+  }
+
+  let result: ComponentListItem[] = (components || []).map(c => {
+    const dish = c.dish as any
+    const raw = c as any
+    return {
+      id: c.id,
+      name: c.name,
+      category: c.category,
+      is_make_ahead: c.is_make_ahead,
+      make_ahead_window_hours: c.make_ahead_window_hours,
+      transport_category: raw.transport_category ?? null,
+      storage_notes: c.storage_notes,
+      execution_notes: c.execution_notes,
+      recipe_id: c.recipe_id,
+      dish_id: c.dish_id,
+      dish_name: dish?.course_name ?? null,
+      menu_id: dish?.menu?.id ?? null,
+      menu_name: dish?.menu?.name ?? null,
+      created_at: c.created_at,
+    }
+  })
+
+  if (filters?.has_recipe === true) {
+    result = result.filter(c => c.recipe_id !== null)
+  } else if (filters?.has_recipe === false) {
+    result = result.filter(c => c.recipe_id === null)
+  }
+
+  return result
+}
+
+// ============================================
+// MENU COST SUMMARIES (from DB view)
+// ============================================
+
+export type MenuCostSummary = {
+  menu_id: string
+  menu_name: string | null
+  event_id: string | null
+  total_component_count: number | null
+  total_recipe_cost_cents: number | null
+  cost_per_guest_cents: number | null
+  food_cost_percentage: number | null
+  has_all_recipe_costs: boolean | null
+}
+
+export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('menu_cost_summary')
+    .select('menu_id, menu_name, event_id, total_component_count, total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs')
+    .eq('tenant_id', user.tenantId!)
+    .order('total_recipe_cost_cents', { ascending: false, nullsFirst: false })
+
+  if (error) {
+    console.error('[getMenuCostSummaries] Error:', error)
+    throw new Error('Failed to fetch menu cost summaries')
+  }
+
+  return (data || []) as MenuCostSummary[]
 }
 
 // ============================================

@@ -19,7 +19,7 @@ export type WasteReason =
   | 'EXPIRED'
   | 'OTHER'
 
-export const WASTE_REASONS: { value: WasteReason; label: string }[] = [
+const WASTE_REASONS: { value: WasteReason; label: string }[] = [
   { value: 'OVERPRODUCTION', label: 'Overproduction' },
   { value: 'SPOILAGE', label: 'Spoilage' },
   { value: 'TRIM', label: 'Trim / Yield Loss' },
@@ -32,7 +32,7 @@ export const WASTE_REASONS: { value: WasteReason; label: string }[] = [
 
 export type IngredientUnit = 'g' | 'kg' | 'oz' | 'lb' | 'ml' | 'L' | 'each' | 'bunch' | 'cup'
 
-export const UNITS: IngredientUnit[] = ['g', 'kg', 'oz', 'lb', 'ml', 'L', 'each', 'bunch', 'cup']
+const UNITS: IngredientUnit[] = ['g', 'kg', 'oz', 'lb', 'ml', 'L', 'each', 'bunch', 'cup']
 
 export interface WasteEntry {
   id: string

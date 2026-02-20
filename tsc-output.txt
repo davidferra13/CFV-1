@@ -1,0 +1,519 @@
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/calendar/day/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/calendar/week/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/calendar/year/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/calls/[id]/edit/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/calls/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/calls/new/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/chat/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/[id]/recurring/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/active/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/communication/follow-ups/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/communication/notes/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/communication/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/communication/upcoming-touchpoints/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/gift-cards/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/history/event-history/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/history/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/history/past-menus/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/history/spending-history/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/inactive/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/insights/at-risk/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/insights/most-frequent/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/insights/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/insights/top-clients/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/loyalty/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/loyalty/points/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/loyalty/referrals/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/loyalty/rewards/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/new/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/preferences/allergies/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/preferences/dietary-restrictions/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/preferences/dislikes/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/preferences/favorite-dishes/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/preferences/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/presence/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/clients/vip/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/components/ferments/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/components/garnishes/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/components/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/components/sauces/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/components/shared-elements/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/components/stocks/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/costing/food-cost/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/costing/menu/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/costing/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/costing/recipe/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/ingredients/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/ingredients/seasonal-availability/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/ingredients/vendor-notes/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/menus/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/menus/approved/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/menus/drafts/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/menus/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/menus/scaling/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/menus/substitutions/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/menus/templates/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/prep/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/prep/shopping/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/prep/timeline/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/recipes/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/recipes/dietary-flags/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/recipes/drafts/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/recipes/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/recipes/seasonal-notes/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/recipes/tags/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/culinary/vendors/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/aar/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/debrief/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/edit/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/financial/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/interactive/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/invoice/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/pack/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/receipts/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/schedule/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/[id]/travel/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/awaiting-deposit/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/cancelled/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/completed/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/confirmed/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/new/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/events/upcoming/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/expenses/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/expenses/new/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/food-ingredients/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/labor/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/marketing/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/miscellaneous/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/rentals-equipment/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/software/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/expenses/travel/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/invoices/cancelled/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/invoices/draft/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/invoices/overdue/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/invoices/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/invoices/paid/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/invoices/refunded/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/invoices/sent/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/ledger/adjustments/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/ledger/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/ledger/transaction-log/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/overview/cash-flow/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/overview/outstanding-payments/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/overview/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/overview/revenue-summary/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payments/deposits/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payments/failed/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payments/installments/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payments/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payments/refunds/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payouts/manual-payments/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payouts/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payouts/reconciliation/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/payouts/stripe-payouts/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/expense-by-category/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/profit-by-event/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/revenue-by-client/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/revenue-by-event/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/revenue-by-month/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/tax-summary/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/reporting/year-to-date-summary/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/finance/tax/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/goals/[id]/history/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/goals/setup/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inbox/history-scan/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inbox/triage/[threadId]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inbox/triage/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inquiries/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inquiries/awaiting-client-reply/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inquiries/awaiting-response/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inquiries/declined/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inquiries/menu-drafting/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inquiries/new/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/inquiries/sent-to-client/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/loyalty/rewards/new/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/menus/[id]/editor/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/network/channels/[slug]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/partners/[id]/edit/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/partners/[id]/report/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/quotes/[id]/edit/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/recipes/[id]/edit/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/settings/journal/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/settings/journey/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/settings/repertoire/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/social/planner/[month]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(chef)/social/posts/[id]/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(client)/my-events/[id]/approve-menu/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(client)/my-events/[id]/contract/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(client)/my-events/[id]/invoice/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(client)/my-events/[id]/pay/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(public)/chef/[slug]/gift-cards/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(public)/chef/[slug]/gift-cards/success/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(public)/chef/[slug]/inquire/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/(public)/chef/[slug]/partner-signup/page.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/auth/google/connect/callback/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/calendar/event/[id]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/documents/contract/[contractId]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/documents/financial-summary/[eventId]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/documents/foh-menu/[eventId]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/documents/invoice/[eventId]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/documents/quote-client/[quoteId]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/documents/quote/[quoteId]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/documents/receipt/[eventId]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/integrations/[provider]/callback/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/integrations/[provider]/connect/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/integrations/social/callback/[platform]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/integrations/social/connect/[platform]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/integrations/social/disconnect/[platform]/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/scheduled/integrations/pull/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'
+error TS6053: File 'C:/Users/david/Documents/CFv1/.next/types/app/api/scheduled/integrations/retry/route.ts' not found.
+  The file is in the program because:
+    Matched by include pattern '.next/types/**/*.ts' in 'C:/Users/david/Documents/CFv1/tsconfig.json'

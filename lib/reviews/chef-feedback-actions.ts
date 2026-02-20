@@ -16,7 +16,13 @@ import { z } from 'zod'
 const LogFeedbackSchema = z.object({
   client_id: z.string().uuid().nullable().optional(),
   event_id: z.string().uuid().nullable().optional(),
-  source: z.enum(['verbal', 'google', 'yelp', 'email', 'social_media', 'text_message', 'other']),
+  source: z.enum([
+    'verbal', 'google', 'yelp', 'email', 'social_media', 'text_message', 'other',
+    'airbnb', 'facebook', 'tripadvisor', 'thumbtack', 'bark',
+    'gigsalad', 'taskrabbit', 'houzz', 'angi', 'nextdoor',
+    'instagram', 'yelp_guest',
+  ]),
+  reviewer_name: z.string().max(200).nullable().optional(),
   rating: z.number().int().min(1).max(5).nullable().optional(),
   feedback_text: z.string().min(1, 'Feedback text is required').max(5000),
   source_url: z.string().url().optional().or(z.literal('')),
@@ -45,6 +51,7 @@ export async function logChefFeedback(input: LogFeedbackInput) {
       client_id: validated.client_id ?? null,
       event_id: validated.event_id ?? null,
       source: validated.source,
+      reviewer_name: validated.reviewer_name ?? null,
       rating: validated.rating ?? null,
       feedback_text: validated.feedback_text,
       source_url: validated.source_url || null,

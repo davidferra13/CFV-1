@@ -6,15 +6,20 @@ import {
   BarChart3,
   CalendarDays,
   ClipboardCheck,
+  Compass,
   DollarSign,
   FileText,
   Gift,
   Handshake,
+  Hash,
   Inbox,
   LayoutDashboard,
   ListChecks,
+  Mail,
+  MapPin,
   MessageCircle,
   Phone,
+  Rss,
   Settings,
   Target,
   Users,
@@ -30,13 +35,19 @@ type NavSubItem = {
 }
 type NavCollapsibleItem = NavItem & { children?: NavSubItem[] }
 type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavCollapsibleItem[] }
+type PrimaryShortcutOption = NavItem & { context: string }
 
 // Primary always-visible shortcuts
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/inquiries', label: 'Inquiries', icon: Inbox },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays },
+  { href: '/events', label: 'All Events', icon: CalendarDays },
+  { href: '/travel', label: 'Travel', icon: MapPin },
+  { href: '/activity', label: 'Activity', icon: Activity },
+  { href: '/goals', label: 'Goals', icon: Target },
 ]
 
 // Main domains
@@ -47,11 +58,10 @@ export const navGroups: NavGroup[] = [
     icon: Inbox,
     items: [
       {
-        href: '/inquiries',
-        label: 'Inquiries',
+        href: '/inquiries/awaiting-response',
+        label: 'Inquiry Stages',
         icon: Inbox,
         children: [
-          { href: '/inquiries/awaiting-response', label: 'Awaiting Response' },
           { href: '/inquiries/awaiting-client-reply', label: 'Awaiting Client Reply' },
           { href: '/inquiries/menu-drafting', label: 'Menu Drafting' },
           { href: '/inquiries/sent-to-client', label: 'Sent to Client' },
@@ -115,12 +125,11 @@ export const navGroups: NavGroup[] = [
     icon: CalendarDays,
     items: [
       {
-        href: '/events',
-        label: 'Events',
+        href: '/events/upcoming',
+        label: 'Event Status',
         icon: CalendarDays,
         children: [
           { href: '/events/new', label: 'Create Event' },
-          { href: '/events/upcoming', label: 'Upcoming' },
           { href: '/events/awaiting-deposit', label: 'Awaiting Deposit' },
           { href: '/events/confirmed', label: 'Confirmed' },
           { href: '/events/completed', label: 'Completed' },
@@ -132,6 +141,9 @@ export const navGroups: NavGroup[] = [
         label: 'Availability',
         icon: CalendarDays,
         children: [
+          { href: '/calendar/day', label: 'Day View' },
+          { href: '/calendar/week', label: 'Week Planner' },
+          { href: '/calendar/year', label: 'Year View' },
           { href: '/waitlist', label: 'Waitlist', visibility: 'advanced' },
         ],
       },
@@ -150,6 +162,7 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/components', label: 'Components', visibility: 'advanced' },
           { href: '/culinary/ingredients', label: 'Ingredients Database', visibility: 'advanced' },
           { href: '/culinary/costing', label: 'Costing', visibility: 'advanced' },
+          { href: '/culinary/vendors', label: 'Vendor Directory', visibility: 'advanced' },
         ],
       },
       {
@@ -160,6 +173,8 @@ export const navGroups: NavGroup[] = [
           { href: '/aar', label: 'After Action Reviews' },
           { href: '/reviews', label: 'Reviews' },
           { href: '/import', label: 'Smart Import' },
+          { href: '/operations/kitchen-rentals', label: 'Kitchen Rentals', visibility: 'advanced' },
+          { href: '/operations/equipment', label: 'Equipment Inventory', visibility: 'advanced' },
         ],
       },
     ],
@@ -186,6 +201,7 @@ export const navGroups: NavGroup[] = [
         label: 'Loyalty & Retention',
         icon: Gift,
         children: [
+          { href: '/loyalty/settings', label: 'Program Settings' },
           { href: '/loyalty/rewards/new', label: 'Create Reward' },
           { href: '/clients/communication', label: 'Communication', visibility: 'advanced' },
           { href: '/clients/communication/notes', label: 'Client Notes', visibility: 'advanced' },
@@ -247,6 +263,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/payments/refunds', label: 'Refunds', visibility: 'advanced' },
           { href: '/finance/payouts/stripe-payouts', label: 'Stripe Payouts', visibility: 'advanced' },
           { href: '/finance/ledger/transaction-log', label: 'Transaction Log', visibility: 'advanced' },
+          { href: '/finance/tax', label: 'Tax Center', visibility: 'advanced' },
         ],
       },
     ],
@@ -257,12 +274,9 @@ export const navGroups: NavGroup[] = [
     icon: ListChecks,
     items: [
       {
-        href: '/goals',
-        label: 'Goals',
+        href: '/goals/setup',
+        label: 'Goal Setup',
         icon: Target,
-        children: [
-          { href: '/goals/setup', label: 'Goal Setup', visibility: 'advanced' },
-        ],
       },
       {
         href: '/insights',
@@ -274,20 +288,43 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/activity',
-        label: 'Activity & Queue',
+        href: '/queue',
+        label: 'Priority Queue',
         icon: Activity,
-        children: [
-          { href: '/queue', label: 'Priority Queue' },
-        ],
       },
       {
         href: '/network',
-        label: 'Network & Social',
-        icon: Handshake,
+        label: 'Community',
+        icon: Rss,
         children: [
-          { href: '/social', label: 'Social Queue' },
+          { href: '/network?tab=feed',        label: 'Feed',               icon: Rss },
+          { href: '/network?tab=channels',    label: 'Channels',           icon: Hash },
+          { href: '/network?tab=discover',    label: 'Discover Chefs',     icon: Compass },
+          { href: '/network?tab=connections', label: 'Connections',        icon: Handshake },
+          { href: '/network/saved',           label: 'Saved Posts',        visibility: 'advanced' },
+          { href: '/network/notifications',   label: 'Notifications',      visibility: 'advanced' },
+          { href: '/network/channels/pastry',         label: '#pastry',        visibility: 'advanced' },
+          { href: '/network/channels/savory',         label: '#savory',        visibility: 'advanced' },
+          { href: '/network/channels/business',       label: '#business',      visibility: 'advanced' },
+          { href: '/network/channels/technique',      label: '#technique',     visibility: 'advanced' },
+          { href: '/network/channels/wins',           label: '#wins',          visibility: 'advanced' },
         ],
+      },
+      {
+        href: '/social/planner',
+        label: 'Marketing Agent',
+        icon: Mail,
+        children: [
+          { href: '/social/planner', label: 'Content Planner' },
+          { href: '/social/vault', label: 'Media Vault' },
+          { href: '/social/connections', label: 'Platform Connections' },
+          { href: '/social/settings', label: 'Queue Settings', visibility: 'advanced' },
+        ],
+      },
+      {
+        href: '/marketing',
+        label: 'Email Campaigns',
+        icon: Mail,
       },
       {
         href: '/inbox/history-scan',
@@ -312,4 +349,91 @@ export const mobileTabItems: NavItem[] = [
   { href: '/clients', label: 'Clients', icon: Users },
 ]
 
-export type { NavItem, NavSubItem, NavCollapsibleItem, NavGroup }
+const settingsShortcutOptions: PrimaryShortcutOption[] = [
+  { href: '/settings/navigation', label: 'Navigation', icon: Settings, context: 'Settings' },
+  { href: '/settings/dashboard', label: 'Dashboard Widgets', icon: Settings, context: 'Settings' },
+  { href: '/settings/my-profile', label: 'My Profile', icon: Settings, context: 'Settings' },
+  { href: '/settings/public-profile', label: 'Public Profile', icon: Settings, context: 'Settings' },
+  { href: '/settings/client-preview', label: 'Client Preview', icon: Settings, context: 'Settings' },
+  { href: '/settings/integrations', label: 'Integrations', icon: Settings, context: 'Settings' },
+  { href: '/settings/templates', label: 'Response Templates', icon: Settings, context: 'Settings' },
+  { href: '/settings/automations', label: 'Automations', icon: Settings, context: 'Settings' },
+  { href: '/settings/contracts', label: 'Contract Templates', icon: Settings, context: 'Settings' },
+  { href: '/settings/repertoire', label: 'Seasonal Palettes', icon: Settings, context: 'Settings' },
+  { href: '/settings/journal', label: 'Chef Journal', icon: Settings, context: 'Settings' },
+  { href: '/settings/profile', label: 'Network Profile', icon: Settings, context: 'Settings' },
+  { href: '/settings/compliance', label: 'Food Safety & Certifications', icon: Settings, context: 'Settings' },
+  { href: '/settings/emergency', label: 'Emergency Contacts', icon: Settings, context: 'Settings' },
+  { href: '/settings/professional', label: 'Professional Development', icon: Settings, context: 'Settings' },
+  { href: '/settings/change-password', label: 'Change Password', icon: Settings, context: 'Settings' },
+]
+
+function pushPrimaryShortcut(
+  map: Map<string, PrimaryShortcutOption>,
+  option: PrimaryShortcutOption
+) {
+  if (!option.href.startsWith('/')) return
+  if (map.has(option.href)) return
+  map.set(option.href, option)
+}
+
+function buildPrimaryShortcutOptions(): PrimaryShortcutOption[] {
+  const map = new Map<string, PrimaryShortcutOption>()
+
+  for (const item of standaloneTop) {
+    pushPrimaryShortcut(map, { ...item, context: 'Primary Shortcuts' })
+  }
+
+  for (const group of navGroups) {
+    for (const item of group.items) {
+      pushPrimaryShortcut(map, { ...item, context: group.label })
+
+      for (const child of item.children ?? []) {
+        pushPrimaryShortcut(map, {
+          href: child.href,
+          label: child.label,
+          icon: child.icon ?? item.icon,
+          context: `${group.label} > ${item.label}`,
+        })
+      }
+    }
+  }
+
+  for (const item of standaloneBottom) {
+    pushPrimaryShortcut(map, { ...item, context: 'Footer' })
+  }
+
+  for (const item of settingsShortcutOptions) {
+    pushPrimaryShortcut(map, item)
+  }
+
+  return Array.from(map.values())
+}
+
+const PRIMARY_SHORTCUT_OPTIONS: PrimaryShortcutOption[] = buildPrimaryShortcutOptions()
+
+export const DEFAULT_PRIMARY_SHORTCUT_HREFS = standaloneTop.map((item) => item.href)
+
+export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[] {
+  const byHref = new Map(PRIMARY_SHORTCUT_OPTIONS.map((item) => [item.href, item] as const))
+  const seen = new Set<string>()
+  const desired = (preferredHrefs ?? []).map((href) => href.trim()).filter(Boolean)
+  const resolved: NavItem[] = []
+
+  for (const href of desired) {
+    if (seen.has(href)) continue
+    const option = byHref.get(href)
+    if (!option) continue
+    seen.add(href)
+    resolved.push({ href: option.href, label: option.label, icon: option.icon })
+  }
+
+  if (resolved.length > 0) return resolved
+  return standaloneTop
+}
+
+export function getPrimaryShortcutOptions() {
+  return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
+}
+
+export type { NavItem, NavSubItem, NavCollapsibleItem, NavGroup, PrimaryShortcutOption }

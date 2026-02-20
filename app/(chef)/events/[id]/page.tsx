@@ -4,9 +4,15 @@
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getEventById, getEventClosureStatus, updateEventTimeAndCard } from '@/lib/events/actions'
+import {
+  getEventById,
+  getEventClosureStatus,
+  updateEventTimeAndCard,
+  startEventActivity,
+  stopEventActivity,
+} from '@/lib/events/actions'
 import { getAARByEventId } from '@/lib/aar/actions'
-import { getDocumentReadiness } from '@/lib/documents/actions'
+import { getDocumentReadiness, getBusinessDocInfo } from '@/lib/documents/actions'
 import { getEventExpenses, getEventProfitSummary, getBudgetGuardrail } from '@/lib/expenses/actions'
 import { getUnrecordedComponentsForEvent } from '@/lib/recipes/actions'
 import { isAIConfigured } from '@/lib/ai/parse'
@@ -33,10 +39,30 @@ import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
 import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
+import { getEventPhotosForChef } from '@/lib/events/photo-actions'
+import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
+import { getCancellationRefundRecommendation } from '@/lib/cancellation/refund-actions'
+import { RecordPaymentPanel, ProcessRefundPanel } from '@/components/events/payment-actions-panel'
 import { LocationMap } from '@/components/ui/location-map'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import { createServerClient } from '@/lib/supabase/server'
+import { getEventContingencyNotes, listEmergencyContacts } from '@/lib/contingency/actions'
+import { getEventTempLog } from '@/lib/compliance/actions'
+import { listStaffMembers, getEventStaffRoster } from '@/lib/staff/actions'
+import { getMenuApprovalStatus } from '@/lib/events/menu-approval-actions'
+import { ContingencyPanel } from '@/components/events/contingency-panel'
+import { TempLogPanel } from '@/components/events/temp-log-panel'
+import { EventStaffPanel } from '@/components/events/event-staff-panel'
+import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
+import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
+import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
+import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
+import { getEventReadiness } from '@/lib/events/readiness'
+import { getTakeAChefConversionData } from '@/lib/inquiries/take-a-chef-capture-actions'
+import { TakeAChefConvertBanner } from '@/components/events/take-a-chef-convert-banner'
+import { EventCollaboratorsPanel } from '@/components/events/event-collaborators-panel'
+import { getEventCollaborators } from '@/lib/collaboration/actions'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -50,6 +76,7 @@ async function getEventFinancialSummary(eventId: string) {
 
   return {
     totalPaid: summary?.total_paid_cents ?? 0,
+    totalRefunded: summary?.total_refunded_cents ?? 0,
     outstandingBalance: summary?.outstanding_balance_cents ?? 0,
     paymentStatus: summary?.payment_status ?? null
   }
@@ -67,7 +94,7 @@ async function getEventTransitions(eventId: string) {
   return transitions || []
 }
 
-async function getEventMenusForCheck(eventId: string) {
+async function getEventMenusForCheck(eventId: string): Promise<string | false> {
   const supabase = createServerClient()
 
   const { data: menus } = await supabase
@@ -76,7 +103,7 @@ async function getEventMenusForCheck(eventId: string) {
     .eq('event_id', eventId)
     .limit(1)
 
-  return (menus && menus.length > 0)
+  return (menus && menus.length > 0) ? menus[0].id : false
 }
 
 export default async function EventDetailPage({
@@ -94,13 +121,15 @@ export default async function EventDetailPage({
 
   // Get financial summary, transitions, and closure data in parallel
   const isCompletedOrBeyond = ['completed', 'in_progress'].includes(event.status)
+  const canTrackTime = !['draft', 'cancelled'].includes(event.status)
 
-  const [{ totalPaid, outstandingBalance }, transitions, closureStatus, aar, docReadiness, eventMenus, eventExpenseData, profitSummary, budgetGuardrail, unrecordedComponents, aiConfigured, dopProgress, messages, templates, eventLoyaltyTxs, menuMods, unusedItems, substitutionItems] = await Promise.all([
+  const [{ totalPaid, totalRefunded, outstandingBalance }, transitions, closureStatus, aar, docReadiness, businessDocs, eventMenus, eventExpenseData, profitSummary, budgetGuardrail, unrecordedComponents, aiConfigured, dopProgress, messages, templates, eventLoyaltyTxs, menuMods, unusedItems, substitutionItems, eventReadiness] = await Promise.all([
     getEventFinancialSummary(params.id),
     getEventTransitions(params.id),
     isCompletedOrBeyond ? getEventClosureStatus(params.id).catch(() => null) : Promise.resolve(null),
     isCompletedOrBeyond ? getAARByEventId(params.id) : Promise.resolve(null),
     getDocumentReadiness(params.id),
+    getBusinessDocInfo(params.id).catch(() => null),
     getEventMenusForCheck(params.id),
     getEventExpenses(params.id),
     getEventProfitSummary(params.id),
@@ -119,17 +148,54 @@ export default async function EventDetailPage({
     isCompletedOrBeyond ? getEventModifications(params.id) : Promise.resolve([]),
     isCompletedOrBeyond ? getUnusedIngredients(params.id) : Promise.resolve([]),
     getSubstitutions(params.id),
+    getEventReadiness(params.id).catch(() => null),
   ])
 
   const eventLoyaltyPoints = (eventLoyaltyTxs as { points: number }[]).reduce((sum, tx) => sum + tx.points, 0)
+  const isEventOwner = (event as any).tenant_id === user.entityId
 
-  // Fetch guest RSVP data (separate from main Promise.all to avoid breaking existing types)
-  const [guestShares, guestList, rsvpSummary] = await Promise.all([
+  const COLLAB_ROLE_LABELS: Record<string, string> = {
+    primary: 'Primary Chef',
+    co_host: 'Co-Host',
+    sous_chef: 'Sous Chef',
+    observer: 'Observer',
+  }
+
+  // Fetch refund recommendation for cancelled events with prior payments
+  const refundRecommendationData = event.status === 'cancelled' && totalPaid > 0
+    ? await getCancellationRefundRecommendation(params.id).catch(() => null)
+    : null
+
+  // Check if this is a Take a Chef-sourced event (only on completed events)
+  const tacConversion = event.status === 'completed'
+    ? await getTakeAChefConversionData(params.id).catch(() => null)
+    : null
+
+  // Fetch guest RSVP data and event photos
+  const [guestShares, guestList, rsvpSummary, eventPhotos] = await Promise.all([
     getEventShares(params.id),
     getEventGuests(params.id),
     getEventRSVPSummary(params.id),
+    isCompletedOrBeyond ? getEventPhotosForChef(params.id) : Promise.resolve([]),
   ])
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
+
+  // Fetch operational panel data — wrapped in catch so the page works before migrations are applied
+  const [contingencyNotes, emergencyContacts, tempLogs, staffMembers, staffAssignments, menuApprovalData, prepBlocks, eventCollaborators] = await Promise.all([
+    event.status !== 'cancelled' ? getEventContingencyNotes(params.id).catch(() => []) : Promise.resolve([]),
+    event.status !== 'cancelled' ? listEmergencyContacts().catch(() => []) : Promise.resolve([]),
+    ['in_progress', 'completed'].includes(event.status) ? getEventTempLog(params.id).catch(() => []) : Promise.resolve([]),
+    !['draft', 'cancelled'].includes(event.status) ? listStaffMembers().catch(() => []) : Promise.resolve([]),
+    !['draft', 'cancelled'].includes(event.status) ? getEventStaffRoster(params.id).catch(() => []) : Promise.resolve([]),
+    eventMenus && event.status !== 'cancelled' ? getMenuApprovalStatus(params.id).catch(() => null) : Promise.resolve(null),
+    event.status !== 'cancelled' ? getEventPrepBlocks(params.id).catch(() => []) : Promise.resolve([]),
+    getEventCollaborators(params.id).catch(() => []),
+  ])
+
+  // For collaborating chefs (non-owners): find their row to show role context in the banner
+  const myCollaboratorRow = !isEventOwner
+    ? (eventCollaborators as any[]).find((c: any) => c.chef_id === user.entityId && c.status === 'accepted')
+    : null
 
   return (
     <div className="space-y-6">
@@ -153,11 +219,45 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/schedule`}>
             <Button variant="secondary">Schedule</Button>
           </Link>
+          {!['draft', 'cancelled'].includes(event.status) && (
+            <Link href={`/events/${event.id}/pack`}>
+              <Button variant="secondary">Packing List</Button>
+            </Link>
+          )}
+          <Link href={`/events/${event.id}/travel`}>
+            <Button variant="secondary">Travel Plan</Button>
+          </Link>
           <Link href="/events">
             <Button variant="ghost">Back to Events</Button>
           </Link>
         </div>
       </div>
+
+      {/* Collaborator role banner — shown when viewing another chef's event */}
+      {!isEventOwner && myCollaboratorRow && (
+        <div className="rounded-lg border border-brand-200 bg-brand-50/50 px-4 py-3 flex items-center gap-3">
+          <div className="flex-1">
+            <p className="text-sm font-medium text-brand-900">
+              You are collaborating on this event as <span className="font-semibold">{COLLAB_ROLE_LABELS[myCollaboratorRow.role] ?? myCollaboratorRow.role}</span>
+            </p>
+            <p className="text-xs text-brand-700 mt-0.5">
+              This event is owned by another chef. Some sections may be limited to the owner.
+            </p>
+          </div>
+          <Link href="/dashboard">
+            <Button variant="ghost" size="sm">Back to Dashboard</Button>
+          </Link>
+        </div>
+      )}
+
+      {/* Take a Chef → Direct Conversion Banner */}
+      {tacConversion?.isTakeAChef && tacConversion.directBookingUrl && (
+        <TakeAChefConvertBanner
+          clientName={tacConversion.clientName}
+          directBookingUrl={tacConversion.directBookingUrl}
+          eventId={params.id}
+        />
+      )}
 
       {/* Schedule Summary & DOP Progress */}
       {dopProgress && !['cancelled'].includes(event.status) && (
@@ -174,6 +274,11 @@ export default async function EventDetailPage({
             </div>
           </div>
         </Card>
+      )}
+
+      {/* Prep Schedule */}
+      {event.status !== 'cancelled' && (
+        <EventPrepSchedule eventId={event.id} initialBlocks={prepBlocks as any} />
       )}
 
       {/* Main Content Grid */}
@@ -199,6 +304,29 @@ export default async function EventDetailPage({
                 </div>
               )}
             </div>
+            {(event as any).referral_partner && (
+              <div>
+                <dt className="text-sm font-medium text-stone-500">Partner Venue</dt>
+                <dd className="text-sm text-stone-900 mt-1">
+                  <Link
+                    href={`/partners/${(event as any).referral_partner_id}`}
+                    className="text-brand-600 hover:underline font-medium"
+                  >
+                    {(event as any).referral_partner.name}
+                  </Link>
+                  {(event as any).partner_location && (
+                    <span className="text-stone-500">
+                      {' '}→ {(event as any).partner_location.name}
+                      {(event as any).partner_location.city && (
+                        <span className="text-stone-400">
+                          {' '}({[(event as any).partner_location.city, (event as any).partner_location.state].filter(Boolean).join(', ')})
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </dd>
+              </div>
+            )}
             <div>
               <dt className="text-sm font-medium text-stone-500">Number of Guests</dt>
               <dd className="text-sm text-stone-900 mt-1">{event.guest_count}</dd>
@@ -280,11 +408,37 @@ export default async function EventDetailPage({
         </div>
       </Card>
 
+      {/* Menu Approval */}
+      {eventMenus && event.status !== 'cancelled' && menuApprovalData && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold">Menu Approval</h2>
+            {typeof eventMenus === 'string' && (
+              <Link href={`/menus/${eventMenus}/editor`}>
+                <Button variant="secondary" size="sm">Edit Menu</Button>
+              </Link>
+            )}
+          </div>
+          <MenuApprovalStatus
+            eventId={event.id}
+            status={((menuApprovalData as any).event?.menu_approval_status ?? 'not_sent') as any}
+            sentAt={(menuApprovalData as any).event?.menu_sent_at ?? null}
+            approvedAt={(menuApprovalData as any).event?.menu_approved_at ?? null}
+            revisionNotes={(menuApprovalData as any).event?.menu_revision_notes ?? null}
+          />
+        </Card>
+      )}
+
       {/* Financial Summary */}
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Financial Summary</h2>
-          <EventExportButton eventId={event.id} />
+          <div className="flex items-center gap-2">
+            <Link href={`/events/${event.id}/invoice`}>
+              <Button variant="ghost" size="sm">View Invoice</Button>
+            </Link>
+            <EventExportButton eventId={event.id} />
+          </div>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
@@ -301,18 +455,39 @@ export default async function EventDetailPage({
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Amount Paid</dt>
-            <dd className="text-xl sm:text-2xl font-bold text-green-600 mt-1">
+            <dd className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
               {formatCurrency(totalPaid)}
             </dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Balance Due</dt>
-            <dd className={`text-xl sm:text-2xl font-bold mt-1 ${outstandingBalance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+            <dd className={`text-xl sm:text-2xl font-bold mt-1 ${outstandingBalance > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
               {formatCurrency(outstandingBalance)}
             </dd>
           </div>
         </div>
       </Card>
+
+      {/* Record Payment — for accepted events with outstanding balance */}
+      {['accepted', 'paid'].includes(event.status) && outstandingBalance > 0 && (
+        <RecordPaymentPanel
+          eventId={event.id}
+          outstandingBalanceCents={outstandingBalance}
+          depositAmountCents={event.deposit_amount_cents ?? 0}
+          totalPaidCents={totalPaid}
+        />
+      )}
+
+      {/* Process Refund — for cancelled events with prior payments */}
+      {event.status === 'cancelled' && totalPaid > 0 && refundRecommendationData && (
+        <ProcessRefundPanel
+          eventId={event.id}
+          totalPaidCents={totalPaid}
+          totalRefundedCents={totalRefunded}
+          depositPaidCents={refundRecommendationData.depositPaidCents}
+          recommendation={refundRecommendationData.recommendation}
+        />
+      )}
 
       {/* Budget Guardrail — shown when event has pricing but few expenses */}
       {budgetGuardrail.quotedPriceCents > 0 && eventExpenseData.expenses.length === 0 && (
@@ -366,9 +541,14 @@ export default async function EventDetailPage({
         <Card className="p-6">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Expenses</h2>
-            <Link href={`/expenses/new?event_id=${event.id}`}>
-              <Button size="sm" variant="secondary">Add Expense</Button>
-            </Link>
+            <div className="flex items-center gap-2">
+              <Link href={`/events/${event.id}/receipts`}>
+                <Button size="sm" variant="ghost">Receipt Summary</Button>
+              </Link>
+              <Link href={`/expenses/new?event_id=${event.id}`}>
+                <Button size="sm" variant="secondary">Add Expense</Button>
+              </Link>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -429,7 +609,7 @@ export default async function EventDetailPage({
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <dt className="text-sm font-medium text-stone-500">Revenue</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-green-600 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">
                 {formatCurrency(profitSummary.revenue.totalPaidCents + profitSummary.revenue.tipCents)}
               </dd>
             </div>
@@ -442,7 +622,7 @@ export default async function EventDetailPage({
             <div>
               <dt className="text-sm font-medium text-stone-500">Profit</dt>
               <dd className={`text-xl sm:text-2xl font-bold mt-1 ${
-                profitSummary.profit.grossProfitCents >= 0 ? 'text-green-600' : 'text-red-600'
+                profitSummary.profit.grossProfitCents >= 0 ? 'text-emerald-600' : 'text-red-600'
               }`}>
                 {formatCurrency(profitSummary.profit.grossProfitCents)}
               </dd>
@@ -450,7 +630,7 @@ export default async function EventDetailPage({
             <div>
               <dt className="text-sm font-medium text-stone-500">Margin</dt>
               <dd className={`text-xl sm:text-2xl font-bold mt-1 ${
-                profitSummary.profit.profitMarginPercent >= 60 ? 'text-green-600' :
+                profitSummary.profit.profitMarginPercent >= 60 ? 'text-emerald-600' :
                 profitSummary.profit.profitMarginPercent >= 40 ? 'text-yellow-600' :
                 'text-red-600'
               }`}>
@@ -468,7 +648,7 @@ export default async function EventDetailPage({
               </span>
             )}
             {profitSummary.cashback && (
-              <span className="text-green-600">
+              <span className="text-emerald-600">
                 Est. cash back: {formatCurrency(profitSummary.cashback.estimatedCents)}
               </span>
             )}
@@ -495,8 +675,8 @@ export default async function EventDetailPage({
         </Card>
       )}
 
-      {/* Time Tracking — for completed events */}
-      {isCompletedOrBeyond && (
+      {/* Time Tracking */}
+      {canTrackTime && (
         <TimeTracking
           eventId={event.id}
           initialData={{
@@ -505,9 +685,53 @@ export default async function EventDetailPage({
             time_travel_minutes: (event as any).time_travel_minutes ?? null,
             time_service_minutes: (event as any).time_service_minutes ?? null,
             time_reset_minutes: (event as any).time_reset_minutes ?? null,
+            shopping_started_at: (event as any).shopping_started_at ?? null,
+            shopping_completed_at: (event as any).shopping_completed_at ?? null,
+            prep_started_at: (event as any).prep_started_at ?? null,
+            prep_completed_at: (event as any).prep_completed_at ?? null,
+            travel_started_at: (event as any).travel_started_at ?? null,
+            travel_completed_at: (event as any).travel_completed_at ?? null,
+            service_started_at: (event as any).service_started_at ?? null,
+            service_completed_at: (event as any).service_completed_at ?? null,
+            reset_started_at: (event as any).reset_started_at ?? null,
+            reset_completed_at: (event as any).reset_completed_at ?? null,
           }}
           onSave={updateEventTimeAndCard}
+          onStart={startEventActivity}
+          onStop={stopEventActivity}
         />
+      )}
+
+      {/* Event Staff */}
+      {!['draft', 'cancelled'].includes(event.status) && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Event Staff</h2>
+          <EventStaffPanel
+            eventId={event.id}
+            roster={staffMembers as any}
+            assignments={staffAssignments as any}
+          />
+        </Card>
+      )}
+
+      {/* Chef Collaboration — shown to event owner on any non-cancelled event */}
+      {event.status !== 'cancelled' && (
+        <EventCollaboratorsPanel
+          eventId={event.id}
+          isOwner={isEventOwner}
+          collaborators={eventCollaborators as any}
+        />
+      )}
+
+      {/* Temperature Log — active and completed events */}
+      {['in_progress', 'completed'].includes(event.status) && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Temperature Log</h2>
+          <TempLogPanel
+            eventId={event.id}
+            initialLogs={tempLogs as any}
+          />
+        </Card>
       )}
 
       {/* Shopping Substitutions — available for any non-draft event */}
@@ -534,15 +758,40 @@ export default async function EventDetailPage({
         />
       )}
 
-      {/* Printed Documents (3 Sheets) */}
+      {/* Contingency Plans */}
+      {event.status !== 'cancelled' && (
+        <Card className="p-6">
+          <ContingencyPanel
+            eventId={event.id}
+            initialNotes={contingencyNotes as any}
+            emergencyContacts={emergencyContacts as any}
+          />
+        </Card>
+      )}
+
+      {/* Printed Documents (8 Sheets) + Business Documents */}
       <DocumentSection
         eventId={event.id}
         readiness={docReadiness}
-        hasMenu={eventMenus ?? false}
+        businessDocs={businessDocs}
       />
 
+      {/* Readiness Gate Panel — shown for events approaching their next transition */}
+      {eventReadiness && eventReadiness.gates.length > 0 && (
+        <ReadinessGatePanel
+          eventId={event.id}
+          readiness={eventReadiness}
+          targetLabel={
+            event.status === 'paid' ? 'Confirm Event' :
+            event.status === 'confirmed' ? 'Start Service' :
+            event.status === 'in_progress' ? 'Complete Service' :
+            'Next Step'
+          }
+        />
+      )}
+
       {/* Event Transitions (Actions) */}
-      <EventTransitions event={event} />
+      <EventTransitions event={event} readiness={eventReadiness} />
 
       {/* Closure Status — for completed events */}
       {event.status === 'completed' && closureStatus && (
@@ -558,25 +807,25 @@ export default async function EventDetailPage({
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div className="flex items-center gap-2">
-              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.aarFiled ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.aarFiled ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
                 {closureStatus.aarFiled ? '\u2713' : '\u2717'}
               </span>
               <span className="text-sm text-stone-700">AAR Filed</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.resetComplete ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.resetComplete ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
                 {closureStatus.resetComplete ? '\u2713' : '\u2717'}
               </span>
               <span className="text-sm text-stone-700">Reset Complete</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.followUpSent ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.followUpSent ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
                 {closureStatus.followUpSent ? '\u2713' : '\u2717'}
               </span>
               <span className="text-sm text-stone-700">Follow-Up Sent</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.financiallyClosed ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+              <span className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.financiallyClosed ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
                 {closureStatus.financiallyClosed ? '\u2713' : '\u2717'}
               </span>
               <span className="text-sm text-stone-700">Financially Closed</span>
@@ -595,6 +844,11 @@ export default async function EventDetailPage({
               resetComplete={closureStatus.resetComplete}
               followUpSent={closureStatus.followUpSent}
             />
+            <Link href={`/events/${event.id}/financial`}>
+              <Button size="sm" variant={closureStatus.financiallyClosed ? 'ghost' : 'secondary'}>
+                {closureStatus.financiallyClosed ? 'View Financial Summary' : 'Open Financial Summary'}
+              </Button>
+            </Link>
           </div>
         </Card>
       )}
@@ -655,6 +909,14 @@ export default async function EventDetailPage({
         </Card>
       )}
 
+      {/* Dinner Photos — upload and manage dish photos after the event */}
+      {isCompletedOrBeyond && (
+        <EventPhotoGallery
+          eventId={event.id}
+          initialPhotos={eventPhotos}
+        />
+      )}
+
       {/* Recipe Capture — for completed/in_progress events with menus */}
       {isCompletedOrBeyond && eventMenus && (
         <RecipeCapturePrompt
@@ -674,6 +936,41 @@ export default async function EventDetailPage({
             </div>
             <Link href={`/events/${event.id}/aar`}>
               <Button>File After Action Review</Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* Post-Event Debrief CTA — capture what you learned while it's fresh */}
+      {event.status === 'completed' && !(event as any).debrief_completed_at && (
+        <Card className="p-6 border-amber-200 bg-amber-50">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-amber-900">Capture what you learned tonight</h2>
+              <p className="text-sm text-amber-700 mt-1">
+                Client insights, recipe notes, dish photos &#8212; while it&#39;s still fresh.
+              </p>
+            </div>
+            <Link href={`/events/${event.id}/debrief`}>
+              <Button>Start Debrief</Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* Debrief complete indicator */}
+      {event.status === 'completed' && (event as any).debrief_completed_at && (
+        <Card className="p-4 border-green-200 bg-green-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-emerald-600 font-medium">&#10003;</span>
+              <span className="text-sm font-medium text-green-900">Debrief complete</span>
+              <span className="text-xs text-emerald-600">
+                {format(new Date((event as any).debrief_completed_at), 'MMM d')}
+              </span>
+            </div>
+            <Link href={`/events/${event.id}/debrief`}>
+              <Button variant="ghost" size="sm">View / Edit</Button>
             </Link>
           </div>
         </Card>

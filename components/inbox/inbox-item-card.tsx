@@ -49,7 +49,7 @@ function getItemHref(item: UnifiedInboxItem): string {
       return '/inquiries'
     case 'wix':
       if (item.inquiry_id) return `/inquiries/${item.inquiry_id}`
-      return '/inquiries'
+      return `/wix-submissions/${item.id}`
     case 'notification':
       if (item.inquiry_id) return `/inquiries/${item.inquiry_id}`
       if (item.event_id) return `/events/${item.event_id}`

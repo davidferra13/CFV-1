@@ -42,6 +42,47 @@ export async function listRecentMessages(
   return data.messages || []
 }
 
+// ─── List Messages Page (paginated — for historical scan) ───────────────────
+
+interface ListMessagesPageOptions {
+  pageToken?: string
+  query?: string
+  maxResults?: number
+}
+
+interface ListMessagesPageResult {
+  messages: GmailMessageRef[]
+  nextPageToken?: string
+}
+
+export async function listMessagesPage(
+  accessToken: string,
+  options: ListMessagesPageOptions = {}
+): Promise<ListMessagesPageResult> {
+  const { pageToken, query, maxResults = 100 } = options
+
+  const params = new URLSearchParams({
+    maxResults: String(maxResults),
+  })
+  if (query) params.set('q', query)
+  if (pageToken) params.set('pageToken', pageToken)
+
+  const response = await fetch(`${GMAIL_API}/messages?${params}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+
+  if (!response.ok) {
+    const err = await response.text()
+    throw new Error(`Gmail API list messages page failed: ${err}`)
+  }
+
+  const data = await response.json()
+  return {
+    messages: data.messages || [],
+    nextPageToken: data.nextPageToken,
+  }
+}
+
 // ─── List Messages via History (incremental sync) ───────────────────────────
 
 export async function listMessagesSinceHistory(

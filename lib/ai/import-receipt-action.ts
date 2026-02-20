@@ -29,7 +29,7 @@ export async function importReceiptAsExpense(
     description: desc,
     expense_date: extraction.purchaseDate || new Date().toISOString().split('T')[0],
     vendor_name: extraction.storeName || null,
-    notes: `AI receipt import: ${extraction.itemCount} items, ${extraction.confidence} confidence`,
+    notes: `Smart receipt import: ${extraction.itemCount} items, ${extraction.confidence} confidence`,
     is_business: true,
   })
 }

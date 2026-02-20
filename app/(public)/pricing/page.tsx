@@ -124,7 +124,7 @@ export default function PricingPage() {
                 href="/auth/signup"
                 className="block w-full bg-brand-500 text-white text-center px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium"
               >
-                Start Free 14-Day Trial
+                Sign up
               </Link>
               <p className="text-xs text-stone-500 text-center">
                 No credit card required for trial
@@ -192,7 +192,7 @@ export default function PricingPage() {
                 href="/auth/signup"
                 className="w-full sm:w-auto bg-brand-500 text-white px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium text-center"
               >
-                Start Free Trial
+                Sign up
               </Link>
               <Link
                 href="/contact"

@@ -3,7 +3,7 @@
 
 import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
-import { getClientWithStats, getClientEvents } from '@/lib/clients/actions'
+import { getClientWithStats, getClientEvents, getClientFinancialDetail } from '@/lib/clients/actions'
 import { getClientLoyaltyProfile } from '@/lib/loyalty/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { MessageThread } from '@/components/messages/message-thread'
@@ -28,6 +28,14 @@ import { getClientChefActivity } from '@/lib/activity/chef-actions'
 import { getClientTimeline } from '@/lib/activity/actions'
 import { ClientActivityTimeline } from '@/components/activity/client-activity-timeline'
 import type { Milestone } from '@/lib/clients/milestones'
+import { ClientEmailToggle } from '@/components/clients/client-email-toggle'
+import { ClientFinancialPanel } from '@/components/clients/client-financial-panel'
+import { FunQADisplay } from '@/components/clients/fun-qa-display'
+import { getClientFunQA } from '@/lib/clients/client-profile-actions'
+import { getClientAllergyRecords } from '@/lib/events/readiness'
+import { AllergyRecordsPanel } from '@/components/clients/allergy-records-panel'
+import { getClientOutreachHistory } from '@/lib/marketing/actions'
+import { DirectOutreachPanel } from '@/components/marketing/direct-outreach-panel'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-100 text-amber-800',
@@ -52,7 +60,7 @@ interface ClientDetailPageProps {
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
   await requireChef()
 
-  const [client, messages, templates, loyaltyProfile, clientNotes, connections, allClients, chefActivity, clientPortalActivity] = await Promise.all([
+  const [client, messages, templates, loyaltyProfile, clientNotes, connections, allClients, chefActivity, clientPortalActivity, financialDetail, funQAAnswers, allergyRecords, outreachHistory] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
     getResponseTemplates(),
@@ -62,6 +70,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClients(),
     getClientChefActivity(params.id).catch(() => []),
     getClientTimeline(params.id).catch(() => []),
+    getClientFinancialDetail(params.id).catch(() => null),
+    getClientFunQA(params.id).catch(() => ({})),
+    getClientAllergyRecords(params.id).catch(() => []),
+    getClientOutreachHistory(params.id).catch(() => []),
   ])
 
   if (!client) {
@@ -109,6 +121,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 {format(new Date(client.created_at), 'PPPP')}
               </p>
             </div>
+            <div>
+              <ClientEmailToggle
+                clientId={client.id}
+                initialEnabled={(client as any).automated_emails_enabled !== false}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -147,6 +165,31 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </CardContent>
         </Card>
       </div>
+
+      {/* Direct Outreach */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Send Message</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DirectOutreachPanel
+            clientId={client.id}
+            clientEmail={client.email ?? null}
+            clientPhone={(client as any).phone ?? null}
+            preferredContactMethod={(client as any).preferred_contact_method ?? null}
+            history={outreachHistory as any}
+          />
+        </CardContent>
+      </Card>
+
+      {/* Financial Detail */}
+      {financialDetail && (
+        <ClientFinancialPanel
+          eventBreakdown={financialDetail.eventBreakdown}
+          ledgerEntries={financialDetail.ledgerEntries as any}
+          summary={financialDetail.summary}
+        />
+      )}
 
       {/* Loyalty Program */}
       {loyaltyProfile && (
@@ -232,7 +275,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 {loyaltyProfile.transactionHistory.slice(0, 5).map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between text-sm py-1">
                     <span className="text-stone-600">{tx.description}</span>
-                    <span className={`font-medium ${tx.points > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    <span className={`font-medium ${tx.points > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                       {tx.points > 0 ? '+' : ''}{tx.points}
                     </span>
                   </div>
@@ -259,6 +302,15 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         clientId={client.id}
         connections={connections}
         allClients={allClients.map((c) => ({ id: c.id, full_name: c.full_name, email: c.email }))}
+      />
+
+      {/* Fun Q&A — client's personality answers */}
+      <FunQADisplay answers={funQAAnswers} clientName={client.full_name} />
+
+      {/* Allergy & Dietary Records */}
+      <AllergyRecordsPanel
+        clientId={client.id}
+        initialRecords={allergyRecords as any}
       />
 
       {/* Quick Notes */}

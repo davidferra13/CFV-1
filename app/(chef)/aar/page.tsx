@@ -3,8 +3,6 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-
-export const metadata: Metadata = { title: 'After Action Reviews - ChefFlow' }
 import { getRecentAARs, getAARStats } from '@/lib/aar/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
@@ -12,8 +10,10 @@ import { Button } from '@/components/ui/button'
 import { FileAARButton } from '@/components/aar/file-aar-button'
 import { format } from 'date-fns'
 
+export const metadata: Metadata = { title: 'After Action Reviews - ChefFlow' }
+
 export default async function AARHistoryPage() {
-  const user = await requireChef()
+  await requireChef()
 
   const [aars, stats] = await Promise.all([
     getRecentAARs(20),
@@ -49,7 +49,7 @@ export default async function AARHistoryPage() {
               {stats.totalReviews >= 5 && (
                 <p className="text-xs mt-2">
                   {stats.trendDirection === 'improving' && (
-                    <span className="text-green-600">Trending up from {stats.avgCalmRating} overall</span>
+                    <span className="text-emerald-600">Trending up from {stats.avgCalmRating} overall</span>
                   )}
                   {stats.trendDirection === 'declining' && (
                     <span className="text-red-600">Trending down from {stats.avgCalmRating} overall</span>
@@ -140,7 +140,7 @@ export default async function AARHistoryPage() {
         </Card>
       ) : (
         <div className="space-y-3">
-          {aars.map((aar) => (
+          {(aars as any[]).map((aar: any) => (
             <Link key={aar.id} href={`/events/${aar.event_id}/aar`}>
               <Card className="p-4 hover:bg-stone-50 transition-colors">
                 <div className="flex items-center justify-between">

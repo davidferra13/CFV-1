@@ -12,7 +12,7 @@ export type CourseType =
   | 'AMUSE' | 'APP' | 'SOUP' | 'SALAD' | 'FISH'
   | 'INTERMEZZO' | 'MAIN' | 'CHEESE' | 'DESSERT' | 'PETIT_FOUR'
 
-export const COURSE_COLORS: Record<CourseType, string> = {
+const COURSE_COLORS: Record<CourseType, string> = {
   AMUSE: '#8b5cf6',
   APP: '#3b82f6',
   SOUP: '#ef4444',
@@ -25,7 +25,7 @@ export const COURSE_COLORS: Record<CourseType, string> = {
   PETIT_FOUR: '#f97316',
 }
 
-export const COURSE_ORDER: CourseType[] = [
+const COURSE_ORDER: CourseType[] = [
   'AMUSE', 'APP', 'SOUP', 'SALAD', 'FISH',
   'INTERMEZZO', 'MAIN', 'CHEESE', 'DESSERT', 'PETIT_FOUR',
 ]
@@ -60,7 +60,7 @@ export type StationType =
   | 'FRITURIER' | 'ENTREMETIER' | 'TOURNANT' | 'PATISSIER'
   | 'GARDE_MANGER' | 'BOUCHER'
 
-export const STATION_LABELS: Record<StationType, string> = {
+const STATION_LABELS: Record<StationType, string> = {
   SAUCIER: 'Saucier (Sauces)',
   POISSONNIER: 'Poissonnier (Fish)',
   ROTISSEUR: 'Rotisseur (Roast)',

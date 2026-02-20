@@ -5,6 +5,7 @@ import { notFound, redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getClients } from '@/lib/clients/actions'
+import { getPartnersWithLocations } from '@/lib/partners/actions'
 import { EventForm } from '@/components/events/event-form'
 import { Alert } from '@/components/ui/alert'
 
@@ -26,7 +27,10 @@ export default async function EditEventPage({
     redirect(`/events/${params.id}`)
   }
 
-  const clients = await getClients()
+  const [clients, { partners, partnerLocations }] = await Promise.all([
+    getClients(),
+    getPartnersWithLocations(),
+  ])
 
   // Map to the shape EventForm expects
   const formEvent = {
@@ -43,6 +47,8 @@ export default async function EditEventPage({
     special_requests: event.special_requests,
     quoted_price_cents: event.quoted_price_cents,
     deposit_amount_cents: event.deposit_amount_cents,
+    referral_partner_id: (event as any).referral_partner_id ?? null,
+    partner_location_id: (event as any).partner_location_id ?? null,
   }
 
   return (
@@ -59,7 +65,7 @@ export default async function EditEventPage({
         </Alert>
       )}
 
-      <EventForm clients={clients} mode="edit" event={formEvent} />
+      <EventForm clients={clients} mode="edit" event={formEvent} partners={partners} partnerLocations={partnerLocations} />
     </div>
   )
 }

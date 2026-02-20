@@ -474,7 +474,7 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
 
   // Read chef preferences for configurable revenue target (falls back to $10,000)
   const prefs = await getChefPreferences()
-  const TARGET_MONTHLY_REVENUE_CENTS = (prefs as any).target_monthly_revenue_cents ?? 1000000
+  const TARGET_MONTHLY_REVENUE_CENTS = prefs.target_monthly_revenue_cents ?? 1000000
 
   // Build per-event breakdown
   const eventBreakdown = (monthEvents || []).map(event => {

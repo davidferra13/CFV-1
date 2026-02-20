@@ -29,6 +29,8 @@ export type LoyaltyConfig = {
   tier_gold_min: number
   tier_platinum_min: number
   is_active: boolean
+  welcome_points: number       // Auto-awarded on invitation-based signup
+  referral_points: number      // Manual award when a client refers someone new
 }
 
 export type LoyaltyTransaction = {
@@ -99,7 +101,9 @@ const UpdateLoyaltyConfigSchema = z.object({
   tier_silver_min: z.number().int().positive().optional(),
   tier_gold_min: z.number().int().positive().optional(),
   tier_platinum_min: z.number().int().positive().optional(),
-  is_active: z.boolean().optional()
+  is_active: z.boolean().optional(),
+  welcome_points: z.number().int().nonnegative().optional(),
+  referral_points: z.number().int().nonnegative().optional(),
 })
 
 const CreateRewardSchema = z.object({
@@ -173,7 +177,7 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: config, error } = await supabase
+  const { data: config, error } = await (supabase as any)
     .from('loyalty_config')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -208,17 +212,21 @@ export async function getLoyaltyConfig(): Promise<LoyaltyConfig> {
       updated_by: user.id,
     }))
 
-    await supabase.from('loyalty_rewards').insert(rewardsToInsert)
+    await (supabase as any).from('loyalty_rewards').insert(rewardsToInsert)
 
     return {
-      ...newConfig,
-      milestone_bonuses: newConfig.milestone_bonuses as { events: number; bonus: number }[],
+      ...(newConfig as any),
+      milestone_bonuses: (newConfig as any).milestone_bonuses as { events: number; bonus: number }[],
+      welcome_points: (newConfig as any).welcome_points ?? 0,
+      referral_points: (newConfig as any).referral_points ?? 0,
     }
   }
 
   return {
-    ...config,
-    milestone_bonuses: config.milestone_bonuses as { events: number; bonus: number }[],
+    ...(config as any),
+    milestone_bonuses: (config as any).milestone_bonuses as { events: number; bonus: number }[],
+    welcome_points: (config as any).welcome_points ?? 0,
+    referral_points: (config as any).referral_points ?? 0,
   }
 }
 
@@ -234,7 +242,7 @@ export async function updateLoyaltyConfig(input: z.infer<typeof UpdateLoyaltyCon
   // Ensure config exists
   await getLoyaltyConfig()
 
-  const { data: config, error } = await supabase
+  const { data: config, error } = await (supabase as any)
     .from('loyalty_config')
     .update(validated)
     .eq('tenant_id', user.tenantId!)
@@ -316,7 +324,7 @@ export async function awardEventPoints(eventId: string) {
     .single()
 
   // Compute old lifetime earned points BEFORE any new transactions are inserted (for tier change detection)
-  const { data: oldLifetimeData } = await supabase
+  const { data: oldLifetimeData } = await (supabase as any)
     .from('loyalty_transactions')
     .select('points')
     .eq('client_id', event.client_id)
@@ -364,14 +372,14 @@ export async function awardEventPoints(eventId: string) {
   const newGuestsServed = (client?.total_guests_served || 0) + guestCount
 
   // Compute lifetime earned points for tier calculation
-  const { data: lifetimeData } = await supabase
+  const { data: lifetimeData } = await (supabase as any)
     .from('loyalty_transactions')
     .select('points')
     .eq('client_id', event.client_id)
     .eq('tenant_id', user.tenantId!)
     .in('type', ['earned', 'bonus'])
 
-  const lifetimeEarned = (lifetimeData || []).reduce((sum, tx) => sum + tx.points, 0)
+  const lifetimeEarned = (lifetimeData || []).reduce((sum: number, tx: any) => sum + tx.points, 0)
   const newTier = computeTier(lifetimeEarned, config)
 
   const { error: updateError } = await supabase
@@ -436,7 +444,7 @@ export async function awardBonusPoints(clientId: string, points: number, descrip
   }
 
   // Insert bonus transaction
-  const { error: txError } = await supabase
+  const { error: txError } = await (supabase as any)
     .from('loyalty_transactions')
     .insert({
       tenant_id: user.tenantId!,
@@ -457,14 +465,14 @@ export async function awardBonusPoints(clientId: string, points: number, descrip
 
   // Recalculate tier based on lifetime earned
   const config = await getLoyaltyConfig()
-  const { data: lifetimeData } = await supabase
+  const { data: lifetimeData } = await (supabase as any)
     .from('loyalty_transactions')
     .select('points')
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
     .in('type', ['earned', 'bonus'])
 
-  const lifetimeEarned = (lifetimeData || []).reduce((sum, tx) => sum + tx.points, 0)
+  const lifetimeEarned = (lifetimeData || []).reduce((sum: number, tx: any) => sum + tx.points, 0)
   const newTier = computeTier(lifetimeEarned, config)
 
   await supabase
@@ -502,7 +510,7 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
   }
 
   // Get reward
-  const { data: reward } = await supabase
+  const { data: reward } = await (supabase as any)
     .from('loyalty_rewards')
     .select('*')
     .eq('id', rewardId)
@@ -520,7 +528,7 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
   }
 
   // Insert redemption transaction (negative points)
-  const { error: txError } = await supabase
+  const { data: txData, error: txError } = await (supabase as any)
     .from('loyalty_transactions')
     .insert({
       tenant_id: user.tenantId!,
@@ -531,6 +539,8 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
       description: `Redeemed: ${reward.name}`,
       created_by: user.id,
     })
+    .select('id')
+    .single()
 
   if (txError) {
     console.error('[redeemReward] Error:', txError)
@@ -548,6 +558,25 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
     })
     .eq('id', clientId)
     .eq('tenant_id', user.tenantId!)
+
+  // Create pending delivery record (non-blocking)
+  if (txData?.id) {
+    try {
+      const { createPendingDelivery } = await import('@/lib/loyalty/auto-award')
+      await createPendingDelivery({
+        tenantId: user.tenantId!,
+        clientId,
+        loyaltyTransactionId: txData.id,
+        rewardId: reward.id,
+        rewardName: reward.name,
+        rewardType: reward.reward_type,
+        pointsSpent: reward.points_required,
+        redeemedBy: 'chef',
+      })
+    } catch (delivErr) {
+      console.error('[redeemReward] Pending delivery creation failed (non-blocking):', delivErr)
+    }
+  }
 
   revalidatePath(`/clients/${clientId}`)
   revalidatePath('/loyalty')
@@ -583,17 +612,17 @@ export async function getClientLoyaltyProfile(clientId: string): Promise<ClientL
   const config = await getLoyaltyConfig()
 
   // Get lifetime earned points
-  const { data: lifetimeData } = await supabase
+  const { data: lifetimeData } = await (supabase as any)
     .from('loyalty_transactions')
     .select('points')
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
     .in('type', ['earned', 'bonus'])
 
-  const lifetimeEarned = (lifetimeData || []).reduce((sum, tx) => sum + tx.points, 0)
+  const lifetimeEarned = (lifetimeData || []).reduce((sum: number, tx: any) => sum + tx.points, 0)
 
   // Get transaction history
-  const { data: transactions } = await supabase
+  const { data: transactions } = await (supabase as any)
     .from('loyalty_transactions')
     .select('*')
     .eq('client_id', clientId)
@@ -602,7 +631,7 @@ export async function getClientLoyaltyProfile(clientId: string): Promise<ClientL
     .limit(50)
 
   // Get available rewards
-  const { data: rewards } = await supabase
+  const { data: rewards } = await (supabase as any)
     .from('loyalty_rewards')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -651,7 +680,7 @@ export async function getLoyaltyTransactions(clientId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: transactions, error } = await supabase
+  const { data: transactions, error } = await (supabase as any)
     .from('loyalty_transactions')
     .select('*')
     .eq('client_id', clientId)
@@ -675,7 +704,7 @@ export async function createReward(input: CreateRewardInput) {
   const validated = CreateRewardSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data: reward, error } = await supabase
+  const { data: reward, error } = await (supabase as any)
     .from('loyalty_rewards')
     .insert({
       tenant_id: user.tenantId!,
@@ -708,7 +737,7 @@ export async function getRewards() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: rewards, error } = await supabase
+  const { data: rewards, error } = await (supabase as any)
     .from('loyalty_rewards')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -732,7 +761,7 @@ export async function updateReward(rewardId: string, input: UpdateRewardInput) {
   const validated = UpdateRewardSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data: reward, error } = await supabase
+  const { data: reward, error } = await (supabase as any)
     .from('loyalty_rewards')
     .update({
       ...validated,
@@ -760,7 +789,7 @@ export async function deactivateReward(rewardId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from('loyalty_rewards')
     .update({
       is_active: false,
@@ -818,7 +847,7 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
   }))
 
   // Recent awards
-  const { data: recentAwards } = await supabase
+  const { data: recentAwards } = await (supabase as any)
     .from('loyalty_transactions')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -871,7 +900,7 @@ export async function getClientsApproachingRewards() {
   const supabase = createServerClient()
 
   // Get all active rewards
-  const { data: rewards } = await supabase
+  const { data: rewards } = await (supabase as any)
     .from('loyalty_rewards')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -896,11 +925,11 @@ export async function getClientsApproachingRewards() {
     .map(client => {
       const balance = client.loyalty_points || 0
       const nearbyRewards = rewards
-        .filter(r => {
+        .filter((r: any) => {
           const deficit = r.points_required - balance
           return deficit > 0 && deficit <= r.points_required * 0.2
         })
-        .map(r => ({
+        .map((r: any) => ({
           rewardName: r.name,
           pointsNeeded: r.points_required - balance,
           guestsNeeded: Math.ceil((r.points_required - balance) / pointsPerGuest),
@@ -941,7 +970,7 @@ export async function getMyLoyaltyStatus() {
   }
 
   // Get available rewards for this tenant
-  const { data: rewards } = await supabase
+  const { data: rewards } = await (supabase as any)
     .from('loyalty_rewards')
     .select('*')
     .eq('tenant_id', client.tenant_id)
@@ -949,7 +978,7 @@ export async function getMyLoyaltyStatus() {
     .order('points_required', { ascending: true })
 
   // Get recent transactions
-  const { data: transactions } = await supabase
+  const { data: transactions } = await (supabase as any)
     .from('loyalty_transactions')
     .select('*')
     .eq('client_id', user.entityId)
@@ -958,8 +987,8 @@ export async function getMyLoyaltyStatus() {
 
   const balance = client.loyalty_points || 0
   const allRewards = rewards || []
-  const availableRewards = allRewards.filter(r => r.points_required <= balance)
-  const nextReward = allRewards.find(r => r.points_required > balance)
+  const availableRewards = allRewards.filter((r: any) => r.points_required <= balance)
+  const nextReward = allRewards.find((r: any) => r.points_required > balance)
 
   return {
     tier: (client.loyalty_tier || 'bronze') as LoyaltyTier,

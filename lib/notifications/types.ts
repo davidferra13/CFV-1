@@ -8,6 +8,7 @@ export type NotificationCategory =
   | 'payment'
   | 'chat'
   | 'client'
+  | 'loyalty'
   | 'system'
 
 export type NotificationAction =
@@ -30,6 +31,7 @@ export type NotificationAction =
   | 'payment_failed'
   | 'refund_processed'
   | 'dispute_created'
+  | 'gift_card_purchased'
   // Chat
   | 'new_message'
   // Clients
@@ -37,8 +39,24 @@ export type NotificationAction =
   | 'review_submitted'
   // Wix
   | 'wix_submission'
+  // Client behavior / intent signals
+  | 'client_on_payment_page'
+  | 'client_viewed_quote'
+  | 'quote_viewed_after_delay'
+  | 'client_viewed_proposal'
   // System
   | 'system_alert'
+  // Client-facing notifications (recipient_role = 'client')
+  | 'quote_sent_to_client'
+  | 'event_proposed_to_client'
+  | 'event_confirmed_to_client'
+  | 'event_reminder_7d'
+  | 'event_reminder_2d'
+  | 'event_reminder_1d'
+  | 'quote_expiring_soon'
+  | 'photos_ready'
+  // Loyalty
+  | 'reward_redeemed_by_client'
 
 export type Notification = {
   id: string
@@ -86,6 +104,7 @@ export const NOTIFICATION_CONFIG: Record<
   payment_failed: { category: 'payment', icon: 'AlertCircle', toastByDefault: true },
   refund_processed: { category: 'payment', icon: 'RotateCcw', toastByDefault: true },
   dispute_created: { category: 'payment', icon: 'ShieldAlert', toastByDefault: true },
+  gift_card_purchased: { category: 'payment', icon: 'Gift', toastByDefault: true },
 
   // Chat - silent by default (has its own unread system)
   new_message: { category: 'chat', icon: 'MessageCircle', toastByDefault: false },
@@ -97,8 +116,27 @@ export const NOTIFICATION_CONFIG: Record<
   // Wix - toast new submissions (time-sensitive leads)
   wix_submission: { category: 'inquiry', icon: 'Globe', toastByDefault: true },
 
+  // Client behavior / intent signals — always toast (time-sensitive, act now)
+  client_on_payment_page: { category: 'payment', icon: 'CreditCard', toastByDefault: true },
+  client_viewed_quote: { category: 'quote', icon: 'Eye', toastByDefault: true },
+  quote_viewed_after_delay: { category: 'quote', icon: 'Clock', toastByDefault: true },
+  client_viewed_proposal: { category: 'event', icon: 'Eye', toastByDefault: true },
+
   // System
   system_alert: { category: 'system', icon: 'Bell', toastByDefault: true },
+
+  // Client-facing notifications (recipient_role = 'client')
+  quote_sent_to_client: { category: 'quote', icon: 'FileText', toastByDefault: true },
+  event_proposed_to_client: { category: 'event', icon: 'CalendarCheck', toastByDefault: true },
+  event_confirmed_to_client: { category: 'event', icon: 'CheckCircle', toastByDefault: true },
+  event_reminder_7d: { category: 'event', icon: 'Calendar', toastByDefault: false },
+  event_reminder_2d: { category: 'event', icon: 'Calendar', toastByDefault: false },
+  event_reminder_1d: { category: 'event', icon: 'Bell', toastByDefault: true },
+  quote_expiring_soon: { category: 'quote', icon: 'AlertTriangle', toastByDefault: true },
+  photos_ready: { category: 'event', icon: 'Camera', toastByDefault: true },
+
+  // Loyalty
+  reward_redeemed_by_client: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
 }
 
 // Category display names for preferences UI
@@ -109,5 +147,6 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   payment: 'Payments',
   chat: 'Chat Messages',
   client: 'Clients',
+  loyalty: 'Loyalty & Rewards',
   system: 'System',
 }

@@ -10,13 +10,16 @@ import { Badge } from '@/components/ui/badge'
 import { initiateGoogleConnect, disconnectGoogle } from '@/lib/gmail/google-auth'
 import { triggerGmailSync } from '@/lib/gmail/actions'
 import type { GoogleConnectionStatus, GmailSyncLogEntry } from '@/lib/gmail/types'
+import { HistoricalScanSection } from '@/components/gmail/historical-scan-section'
+import type { HistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 
 interface ConnectedAccountsProps {
   connection: GoogleConnectionStatus
   recentSyncs: GmailSyncLogEntry[]
+  historicalScanStatus?: HistoricalScanStatus | null
 }
 
-export function ConnectedAccounts({ connection, recentSyncs }: ConnectedAccountsProps) {
+export function ConnectedAccounts({ connection, recentSyncs, historicalScanStatus }: ConnectedAccountsProps) {
   const router = useRouter()
   const [connecting, setConnecting] = useState(false)
   const [syncing, setSyncing] = useState(false)
@@ -201,6 +204,9 @@ export function ConnectedAccounts({ connection, recentSyncs }: ConnectedAccounts
                 </div>
               </div>
             )}
+
+            {/* Historical email scan (opt-in subsection) */}
+            <HistoricalScanSection initialStatus={historicalScanStatus ?? null} />
           </>
         )}
       </CardContent>

@@ -885,6 +885,134 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
 }
 
 // ============================================
+// 16. GET RECIPE DEBT (dashboard widget)
+// ============================================
+
+export type RecipeDebt = {
+  last7Days: number
+  last30Days: number
+  older: number
+  total: number
+  totalRecipes: number
+}
+
+export async function getRecipeDebt(): Promise<RecipeDebt> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const now = new Date()
+  const sevenDaysAgo = new Date(now)
+  sevenDaysAgo.setDate(now.getDate() - 7)
+  const thirtyDaysAgo = new Date(now)
+  thirtyDaysAgo.setDate(now.getDate() - 30)
+
+  // All components with no recipe, joined through their event
+  const { data: components } = await supabase
+    .from('components')
+    .select(`
+      id,
+      dish:dishes(
+        menu:menus(
+          event:events(id, event_date)
+        )
+      )
+    `)
+    .eq('tenant_id', user.tenantId!)
+    .is('recipe_id', null)
+
+  let last7Days = 0
+  let last30Days = 0
+  let older = 0
+
+  for (const comp of components || []) {
+    const dish = comp.dish as any
+    const event = dish?.menu?.event
+    if (!event?.event_date) continue
+
+    const eventDate = new Date(event.event_date)
+    if (eventDate >= sevenDaysAgo) {
+      last7Days++
+    } else if (eventDate >= thirtyDaysAgo) {
+      last30Days++
+    } else {
+      older++
+    }
+  }
+
+  const { count: totalRecipes } = await supabase
+    .from('recipes')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', user.tenantId!)
+    .eq('archived', false)
+
+  return {
+    last7Days,
+    last30Days,
+    older,
+    total: last7Days + last30Days + older,
+    totalRecipes: totalRecipes ?? 0,
+  }
+}
+
+// ============================================
+// 17. GET ALL UNRECORDED COMPONENTS (sprint mode)
+// ============================================
+
+export type UnrecordedComponentForSprint = {
+  componentId: string
+  componentName: string
+  componentCategory: string
+  eventId: string
+  eventOccasion: string | null
+  eventDate: string
+  clientName: string | null
+}
+
+export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentForSprint[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: components } = await supabase
+    .from('components')
+    .select(`
+      id, name, category,
+      dish:dishes(
+        menu:menus(
+          event:events(
+            id, occasion, event_date,
+            client:clients(full_name)
+          )
+        )
+      )
+    `)
+    .eq('tenant_id', user.tenantId!)
+    .is('recipe_id', null)
+
+  const results: UnrecordedComponentForSprint[] = []
+
+  for (const comp of components || []) {
+    const dish = comp.dish as any
+    const event = dish?.menu?.event
+    if (!event?.id || !event?.event_date) continue
+
+    results.push({
+      componentId: comp.id,
+      componentName: comp.name,
+      componentCategory: comp.category,
+      eventId: event.id,
+      eventOccasion: event.occasion ?? null,
+      eventDate: event.event_date,
+      clientName: (event.client as any)?.full_name ?? null,
+    })
+  }
+
+  // Sort most recent events first so chef starts with freshest memory
+  results.sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime())
+
+  return results
+}
+
+// ============================================
 // SEARCH RECIPES (lightweight, for link modals)
 // ============================================
 

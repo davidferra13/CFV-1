@@ -269,7 +269,7 @@ export default async function SharePage({
             Want to save your profile for future events?
           </p>
           <a
-            href={`/auth/signup${existingGuest ? `?guest_token=${existingGuest.guest_token}` : ''}`}
+            href={`/auth/client-signup${existingGuest ? `?guest_token=${existingGuest.guest_token}` : ''}`}
             className="text-brand-600 hover:text-brand-700 font-medium text-sm"
           >
             Create a free account

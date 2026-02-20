@@ -1,6 +1,6 @@
 /**
  * Supabase Connection Verification Script
- * Tests connection and checks database setup
+ * Tests connectivity, table availability, and reports key row counts.
  */
 
 import { config } from 'dotenv'
@@ -8,44 +8,39 @@ import { resolve } from 'path'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
-// Load environment variables from .env.local
 config({ path: resolve(process.cwd(), '.env.local') })
 
+function required(name: string): string {
+  const value = process.env[name]
+  if (!value) throw new Error(`Missing environment variable: ${name}`)
+  return value
+}
+
 async function verifySupabase() {
-  console.log('🔍 Verifying Supabase Connection...\n')
+  console.log('Verifying Supabase connection...\n')
 
-  // Check environment variables
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseUrl = required('NEXT_PUBLIC_SUPABASE_URL')
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabaseKey = serviceRoleKey || anonKey
 
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('❌ Missing environment variables!')
-    console.error('  - NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? '✓' : '✗')
-    console.error('  - NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseKey ? '✓' : '✗')
-    process.exit(1)
+  if (!supabaseKey) {
+    throw new Error('Missing key: SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY')
   }
 
-  console.log('✅ Environment variables found')
-  console.log(`   URL: ${supabaseUrl}\n`)
+  const usingServiceRole = Boolean(serviceRoleKey)
 
-  // Create Supabase client
+  console.log(`URL: ${supabaseUrl}`)
+  console.log(`Auth mode: ${usingServiceRole ? 'service_role' : 'anon'}\n`)
+
   const supabase = createClient<Database>(supabaseUrl, supabaseKey)
 
-  // Test 1: Check connection by querying chefs table
-  console.log('📊 Testing database connection...')
-  const { count: chefsCount, error: chefsError } = await supabase
-    .from('chefs')
-    .select('*', { count: 'exact', head: true })
-
-  if (chefsError) {
-    console.error('❌ Failed to connect to database:', chefsError.message)
-    process.exit(1)
+  const health = await supabase.from('chefs').select('id', { head: true, count: 'exact' })
+  if (health.error) {
+    throw new Error(`Database connectivity failed: ${health.error.message}`)
   }
 
-  console.log(`✅ Connected! Found ${chefsCount} chef(s)\n`)
-
-  // Test 2: Check all tables exist
-  console.log('📋 Verifying tables...')
+  console.log('Connection OK\n')
 
   const tables = [
     'chefs',
@@ -53,64 +48,54 @@ async function verifySupabase() {
     'user_roles',
     'client_invitations',
     'events',
-    'event_transitions',
-    'ledger_entries',
-    'menus',
-    'event_menus'
+    'inquiries',
+    'messages',
+    'integration_connections',
+    'integration_events',
   ]
 
-  let allTablesExist = true
-
+  console.log('Checking required tables...')
   for (const table of tables) {
-    const { error } = await supabase
-      .from(table as any)
-      .select('*', { count: 'exact', head: true })
-
+    const { error } = await supabase.from(table as any).select('*', { head: true, count: 'exact' })
     if (error) {
-      console.error(`   ❌ ${table}: ${error.message}`)
-      allTablesExist = false
+      throw new Error(`Table check failed for ${table}: ${error.message}`)
+    }
+    console.log(`  OK ${table}`)
+  }
+
+  console.log('\nChecking required view...')
+  const viewCheck = await supabase
+    .from('event_financial_summary')
+    .select('*', { head: true, count: 'exact' })
+
+  if (viewCheck.error) {
+    throw new Error(`View check failed for event_financial_summary: ${viewCheck.error.message}`)
+  }
+  console.log('  OK event_financial_summary')
+
+  console.log('\nSample row counts:')
+  const countsToShow = [
+    'chefs',
+    'clients',
+    'inquiries',
+    'events',
+    'integration_connections',
+    'integration_events',
+  ]
+
+  for (const table of countsToShow) {
+    const { count, error } = await supabase.from(table as any).select('*', { head: true, count: 'exact' })
+    if (error) {
+      console.log(`  ${table}: error (${error.message})`)
     } else {
-      console.log(`   ✅ ${table}`)
+      console.log(`  ${table}: ${count ?? 0}`)
     }
   }
 
-  if (!allTablesExist) {
-    console.error('\n❌ Some tables are missing!')
-    process.exit(1)
-  }
-
-  // Test 3: Check views
-  console.log('\n📊 Verifying views...')
-  const { error: viewError } = await supabase
-    .from('event_financial_summary')
-    .select('*', { count: 'exact', head: true })
-
-  if (viewError) {
-    console.error(`   ❌ event_financial_summary: ${viewError.message}`)
-  } else {
-    console.log('   ✅ event_financial_summary')
-  }
-
-  // Summary
-  console.log('\n' + '='.repeat(50))
-  console.log('✅ Supabase Setup Complete!')
-  console.log('='.repeat(50))
-  console.log('\n📚 Your database includes:')
-  console.log('   • 9 tables (chefs, clients, events, ledger, etc.)')
-  console.log('   • 1 view (event_financial_summary)')
-  console.log('   • RLS policies (Row Level Security)')
-  console.log('   • Immutability triggers (ledger, transitions)')
-  console.log('   • Helper functions (auth, tenant scoping)')
-  console.log('\n🎯 Next steps:')
-  console.log('   1. Run: npm run dev')
-  console.log('   2. Visit: http://localhost:3000')
-  console.log('   3. Test chef signup flow')
-  console.log('   4. Verify data in Supabase Dashboard')
-  console.log('\n📖 Documentation:')
-  console.log('   • Database: DATABASE.md')
-  console.log('   • Security: RLS_POLICIES.md')
-  console.log('   • Setup: SUPABASE_SETUP.md')
-  console.log('')
+  console.log('\nSupabase verification complete.')
 }
 
-verifySupabase().catch(console.error)
+verifySupabase().catch((error) => {
+  console.error(`Verification failed: ${error.message}`)
+  process.exit(1)
+})

@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -7,6 +7,11 @@
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -136,6 +141,68 @@ export type Database = {
           tenant_id?: string
         }
         Relationships: []
+      }
+      admin_time_logs: {
+        Row: {
+          category: string
+          chef_id: string
+          created_at: string
+          event_id: string | null
+          id: string
+          log_date: string
+          minutes: number
+          notes: string | null
+        }
+        Insert: {
+          category?: string
+          chef_id: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          log_date?: string
+          minutes: number
+          notes?: string | null
+        }
+        Update: {
+          category?: string
+          chef_id?: string
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          log_date?: string
+          minutes?: number
+          notes?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_time_logs_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_time_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "admin_time_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "admin_time_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       after_action_reviews: {
         Row: {
@@ -279,6 +346,47 @@ export type Database = {
           },
         ]
       }
+      automated_sequences: {
+        Row: {
+          chef_id: string
+          created_at: string
+          days_before_trigger: number | null
+          id: string
+          is_active: boolean
+          name: string
+          trigger_type: string
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          days_before_trigger?: number | null
+          id?: string
+          is_active?: boolean
+          name: string
+          trigger_type: string
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          days_before_trigger?: number | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          trigger_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automated_sequences_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_executions: {
         Row: {
           action_result: Json | null
@@ -395,90 +503,171 @@ export type Database = {
           },
         ]
       }
-      chat_insights: {
+      availability_signal_notification_log: {
         Row: {
-          applied_at: string | null
-          applied_to: string | null
-          client_id: string | null
-          confidence: number
-          conversation_id: string
-          created_at: string
-          detail: string | null
-          dismissed_at: string | null
-          extracted_data: Json | null
+          calendar_entry_id: string
+          chef_id: string
+          client_id: string
           id: string
-          insight_type: Database["public"]["Enums"]["insight_type"]
-          message_id: string
-          status: Database["public"]["Enums"]["insight_status"]
-          tenant_id: string
-          title: string
+          notified_at: string
         }
         Insert: {
-          applied_at?: string | null
-          applied_to?: string | null
-          client_id?: string | null
-          confidence?: number
-          conversation_id: string
-          created_at?: string
-          detail?: string | null
-          dismissed_at?: string | null
-          extracted_data?: Json | null
+          calendar_entry_id: string
+          chef_id: string
+          client_id: string
           id?: string
-          insight_type: Database["public"]["Enums"]["insight_type"]
-          message_id: string
-          status?: Database["public"]["Enums"]["insight_status"]
-          tenant_id: string
-          title: string
+          notified_at?: string
         }
         Update: {
-          applied_at?: string | null
-          applied_to?: string | null
-          client_id?: string | null
-          confidence?: number
-          conversation_id?: string
-          created_at?: string
-          detail?: string | null
-          dismissed_at?: string | null
-          extracted_data?: Json | null
+          calendar_entry_id?: string
+          chef_id?: string
+          client_id?: string
           id?: string
-          insight_type?: Database["public"]["Enums"]["insight_type"]
-          message_id?: string
-          status?: Database["public"]["Enums"]["insight_status"]
-          tenant_id?: string
-          title?: string
+          notified_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "chat_insights_client_id_fkey"
+            foreignKeyName: "availability_signal_notification_log_calendar_entry_id_fkey"
+            columns: ["calendar_entry_id"]
+            isOneToOne: false
+            referencedRelation: "chef_calendar_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_signal_notification_log_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "availability_signal_notification_log_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "client_financial_summary"
             referencedColumns: ["client_id"]
           },
           {
-            foreignKeyName: "chat_insights_client_id_fkey"
+            foreignKeyName: "availability_signal_notification_log_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      campaign_recipients: {
+        Row: {
+          campaign_id: string
+          chef_id: string
+          clicked_at: string | null
+          client_id: string | null
+          created_at: string
+          email: string
+          error_message: string | null
+          id: string
+          opened_at: string | null
+          resend_message_id: string | null
+          sent_at: string | null
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          campaign_id: string
+          chef_id: string
+          clicked_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          email: string
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          resend_message_id?: string | null
+          sent_at?: string | null
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          chef_id?: string
+          clicked_at?: string | null
+          client_id?: string | null
+          created_at?: string
+          email?: string
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          resend_message_id?: string | null
+          sent_at?: string | null
+          unsubscribed_at?: string | null
+        }
+        Relationships: [
           {
-            foreignKeyName: "chat_insights_conversation_id_fkey"
-            columns: ["conversation_id"]
+            foreignKeyName: "campaign_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
             isOneToOne: false
-            referencedRelation: "conversations"
+            referencedRelation: "marketing_campaigns"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "chat_insights_message_id_fkey"
-            columns: ["message_id"]
+            foreignKeyName: "campaign_recipients_chef_id_fkey"
+            columns: ["chef_id"]
             isOneToOne: false
-            referencedRelation: "chat_messages"
+            referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "chat_insights_tenant_id_fkey"
-            columns: ["tenant_id"]
+            foreignKeyName: "campaign_recipients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "campaign_recipients_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      campaign_templates: {
+        Row: {
+          body_html: string
+          campaign_type: string
+          chef_id: string
+          created_at: string
+          id: string
+          is_system: boolean
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          body_html: string
+          campaign_type?: string
+          chef_id: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string
+          campaign_type?: string
+          chef_id?: string
+          created_at?: string
+          id?: string
+          is_system?: boolean
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaign_templates_chef_id_fkey"
+            columns: ["chef_id"]
             isOneToOne: false
             referencedRelation: "chefs"
             referencedColumns: ["id"]
@@ -644,6 +833,371 @@ export type Database = {
           },
         ]
       }
+      chef_automation_settings: {
+        Row: {
+          client_event_reminders_enabled: boolean
+          created_at: string
+          event_approaching_alerts_enabled: boolean
+          event_approaching_hours: number
+          follow_up_reminder_interval_hours: number
+          follow_up_reminders_enabled: boolean
+          id: string
+          inquiry_auto_expiry_enabled: boolean
+          inquiry_expiry_days: number
+          no_response_alerts_enabled: boolean
+          no_response_threshold_days: number
+          quote_auto_expiry_enabled: boolean
+          tenant_id: string
+          time_tracking_reminders_enabled: boolean
+          updated_at: string
+        }
+        Insert: {
+          client_event_reminders_enabled?: boolean
+          created_at?: string
+          event_approaching_alerts_enabled?: boolean
+          event_approaching_hours?: number
+          follow_up_reminder_interval_hours?: number
+          follow_up_reminders_enabled?: boolean
+          id?: string
+          inquiry_auto_expiry_enabled?: boolean
+          inquiry_expiry_days?: number
+          no_response_alerts_enabled?: boolean
+          no_response_threshold_days?: number
+          quote_auto_expiry_enabled?: boolean
+          tenant_id: string
+          time_tracking_reminders_enabled?: boolean
+          updated_at?: string
+        }
+        Update: {
+          client_event_reminders_enabled?: boolean
+          created_at?: string
+          event_approaching_alerts_enabled?: boolean
+          event_approaching_hours?: number
+          follow_up_reminder_interval_hours?: number
+          follow_up_reminders_enabled?: boolean
+          id?: string
+          inquiry_auto_expiry_enabled?: boolean
+          inquiry_expiry_days?: number
+          no_response_alerts_enabled?: boolean
+          no_response_threshold_days?: number
+          quote_auto_expiry_enabled?: boolean
+          tenant_id?: string
+          time_tracking_reminders_enabled?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_automation_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_availability_blocks: {
+        Row: {
+          block_date: string
+          block_type: string
+          chef_id: string
+          created_at: string
+          end_time: string | null
+          event_id: string | null
+          id: string
+          is_event_auto: boolean
+          reason: string | null
+          start_time: string | null
+        }
+        Insert: {
+          block_date: string
+          block_type?: string
+          chef_id: string
+          created_at?: string
+          end_time?: string | null
+          event_id?: string | null
+          id?: string
+          is_event_auto?: boolean
+          reason?: string | null
+          start_time?: string | null
+        }
+        Update: {
+          block_date?: string
+          block_type?: string
+          chef_id?: string
+          created_at?: string
+          end_time?: string | null
+          event_id?: string | null
+          id?: string
+          is_event_auto?: boolean
+          reason?: string | null
+          start_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_availability_blocks_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_availability_blocks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "chef_availability_blocks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "chef_availability_blocks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_calendar_entries: {
+        Row: {
+          actual_revenue_cents: number | null
+          all_day: boolean
+          blocks_bookings: boolean
+          chef_id: string
+          color_override: string | null
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          end_date: string
+          end_time: string | null
+          entry_type: Database["public"]["Enums"]["chef_calendar_entry_type"]
+          expected_revenue_cents: number | null
+          id: string
+          is_completed: boolean
+          is_private: boolean
+          is_public: boolean
+          is_recurring: boolean
+          is_revenue_generating: boolean
+          public_note: string | null
+          recurrence_end_date: string | null
+          recurrence_rule: string | null
+          revenue_notes: string | null
+          revenue_type: string | null
+          start_date: string
+          start_time: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          actual_revenue_cents?: number | null
+          all_day?: boolean
+          blocks_bookings?: boolean
+          chef_id: string
+          color_override?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          end_date: string
+          end_time?: string | null
+          entry_type: Database["public"]["Enums"]["chef_calendar_entry_type"]
+          expected_revenue_cents?: number | null
+          id?: string
+          is_completed?: boolean
+          is_private?: boolean
+          is_public?: boolean
+          is_recurring?: boolean
+          is_revenue_generating?: boolean
+          public_note?: string | null
+          recurrence_end_date?: string | null
+          recurrence_rule?: string | null
+          revenue_notes?: string | null
+          revenue_type?: string | null
+          start_date: string
+          start_time?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          actual_revenue_cents?: number | null
+          all_day?: boolean
+          blocks_bookings?: boolean
+          chef_id?: string
+          color_override?: string | null
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          end_date?: string
+          end_time?: string | null
+          entry_type?: Database["public"]["Enums"]["chef_calendar_entry_type"]
+          expected_revenue_cents?: number | null
+          id?: string
+          is_completed?: boolean
+          is_private?: boolean
+          is_public?: boolean
+          is_recurring?: boolean
+          is_revenue_generating?: boolean
+          public_note?: string | null
+          recurrence_end_date?: string | null
+          recurrence_rule?: string | null
+          revenue_notes?: string | null
+          revenue_type?: string | null
+          start_date?: string
+          start_time?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_calendar_entries_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_certifications: {
+        Row: {
+          cert_number: string | null
+          cert_type: string
+          chef_id: string
+          created_at: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          issued_date: string | null
+          issuing_body: string | null
+          name: string
+          reminder_days_before: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          cert_number?: string | null
+          cert_type?: string
+          chef_id: string
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issued_date?: string | null
+          issuing_body?: string | null
+          name: string
+          reminder_days_before?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          cert_number?: string | null
+          cert_type?: string
+          chef_id?: string
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issued_date?: string | null
+          issuing_body?: string | null
+          name?: string
+          reminder_days_before?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_certifications_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_channel_memberships: {
+        Row: {
+          channel_id: string
+          chef_id: string
+          id: string
+          joined_at: string
+          notifications_enabled: boolean
+          role: string
+        }
+        Insert: {
+          channel_id: string
+          chef_id: string
+          id?: string
+          joined_at?: string
+          notifications_enabled?: boolean
+          role?: string
+        }
+        Update: {
+          channel_id?: string
+          chef_id?: string
+          id?: string
+          joined_at?: string
+          notifications_enabled?: boolean
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_channel_memberships_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_channel_memberships_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_comment_reactions: {
+        Row: {
+          chef_id: string
+          comment_id: string
+          created_at: string
+          id: string
+          reaction_type: string
+        }
+        Insert: {
+          chef_id: string
+          comment_id: string
+          created_at?: string
+          id?: string
+          reaction_type?: string
+        }
+        Update: {
+          chef_id?: string
+          comment_id?: string
+          created_at?: string
+          id?: string
+          reaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_comment_reactions_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_comment_reactions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "chef_post_comments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chef_connections: {
         Row: {
           accepted_at: string | null
@@ -798,6 +1352,53 @@ export type Database = {
           },
         ]
       }
+      chef_emergency_contacts: {
+        Row: {
+          chef_id: string
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          relationship: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          relationship: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          relationship?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_emergency_contacts_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chef_feedback: {
         Row: {
           client_id: string | null
@@ -808,6 +1409,7 @@ export type Database = {
           id: string
           logged_by: string
           rating: number | null
+          reviewer_name: string | null
           source: string
           source_url: string | null
           tenant_id: string
@@ -822,6 +1424,7 @@ export type Database = {
           id?: string
           logged_by: string
           rating?: number | null
+          reviewer_name?: string | null
           source: string
           source_url?: string | null
           tenant_id: string
@@ -836,6 +1439,7 @@ export type Database = {
           id?: string
           logged_by?: string
           rating?: number | null
+          reviewer_name?: string | null
           source?: string
           source_url?: string | null
           tenant_id?: string
@@ -879,6 +1483,527 @@ export type Database = {
           },
           {
             foreignKeyName: "chef_feedback_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_follows: {
+        Row: {
+          created_at: string
+          follower_chef_id: string
+          following_chef_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          follower_chef_id: string
+          following_chef_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          follower_chef_id?: string
+          following_chef_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_follows_follower_chef_id_fkey"
+            columns: ["follower_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_follows_following_chef_id_fkey"
+            columns: ["following_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_goals: {
+        Row: {
+          created_at: string
+          goal_type: Database["public"]["Enums"]["chef_goal_type"]
+          id: string
+          label: string
+          notes: string | null
+          nudge_enabled: boolean
+          nudge_level: string
+          period_end: string
+          period_start: string
+          status: Database["public"]["Enums"]["chef_goal_status"]
+          target_value: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          goal_type: Database["public"]["Enums"]["chef_goal_type"]
+          id?: string
+          label: string
+          notes?: string | null
+          nudge_enabled?: boolean
+          nudge_level?: string
+          period_end: string
+          period_start: string
+          status?: Database["public"]["Enums"]["chef_goal_status"]
+          target_value: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          goal_type?: Database["public"]["Enums"]["chef_goal_type"]
+          id?: string
+          label?: string
+          notes?: string | null
+          nudge_enabled?: boolean
+          nudge_level?: string
+          period_end?: string
+          period_start?: string
+          status?: Database["public"]["Enums"]["chef_goal_status"]
+          target_value?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_goals_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_journal_media: {
+        Row: {
+          caption: string
+          created_at: string
+          created_by: string
+          entry_id: string | null
+          id: string
+          is_cover: boolean
+          journey_id: string
+          latitude: number | null
+          location_label: string
+          longitude: number | null
+          media_type: Database["public"]["Enums"]["chef_journal_media_type"]
+          media_url: string
+          taken_on: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string
+          created_at?: string
+          created_by: string
+          entry_id?: string | null
+          id?: string
+          is_cover?: boolean
+          journey_id: string
+          latitude?: number | null
+          location_label?: string
+          longitude?: number | null
+          media_type?: Database["public"]["Enums"]["chef_journal_media_type"]
+          media_url: string
+          taken_on?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string
+          created_at?: string
+          created_by?: string
+          entry_id?: string | null
+          id?: string
+          is_cover?: boolean
+          journey_id?: string
+          latitude?: number | null
+          location_label?: string
+          longitude?: number | null
+          media_type?: Database["public"]["Enums"]["chef_journal_media_type"]
+          media_url?: string
+          taken_on?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_journal_media_entry_fk"
+            columns: ["entry_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chef_journey_entries"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "chef_journal_media_journey_fk"
+            columns: ["journey_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chef_journeys"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "chef_journal_media_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_journal_recipe_links: {
+        Row: {
+          adaptation_notes: string
+          created_at: string
+          created_by: string
+          entry_id: string | null
+          first_tested_on: string | null
+          id: string
+          journey_id: string
+          outcome_notes: string
+          outcome_rating: number | null
+          recipe_id: string
+          tenant_id: string
+          updated_at: string
+          would_repeat: boolean
+        }
+        Insert: {
+          adaptation_notes?: string
+          created_at?: string
+          created_by: string
+          entry_id?: string | null
+          first_tested_on?: string | null
+          id?: string
+          journey_id: string
+          outcome_notes?: string
+          outcome_rating?: number | null
+          recipe_id: string
+          tenant_id: string
+          updated_at?: string
+          would_repeat?: boolean
+        }
+        Update: {
+          adaptation_notes?: string
+          created_at?: string
+          created_by?: string
+          entry_id?: string | null
+          first_tested_on?: string | null
+          id?: string
+          journey_id?: string
+          outcome_notes?: string
+          outcome_rating?: number | null
+          recipe_id?: string
+          tenant_id?: string
+          updated_at?: string
+          would_repeat?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_journal_recipe_links_entry_fk"
+            columns: ["entry_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chef_journey_entries"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "chef_journal_recipe_links_journey_fk"
+            columns: ["journey_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chef_journeys"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "chef_journal_recipe_links_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_cost_summary"
+            referencedColumns: ["recipe_id"]
+          },
+          {
+            foreignKeyName: "chef_journal_recipe_links_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_journal_recipe_links_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_journey_entries: {
+        Row: {
+          created_at: string
+          created_by: string
+          dishes_to_explore: string[]
+          entry_date: string
+          entry_type: Database["public"]["Enums"]["chef_journey_entry_type"]
+          favorite_experience: string
+          favorite_meal: string
+          formatted_address: string
+          id: string
+          inspiration_taken: string[]
+          is_highlight: boolean
+          journey_id: string
+          latitude: number | null
+          location_label: string
+          longitude: number | null
+          mistakes_made: string[]
+          narrative: string
+          proud_moments: string[]
+          source_links: string[]
+          tenant_id: string
+          title: string
+          updated_at: string
+          what_i_learned: string[]
+          what_to_change_next_time: string[]
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          dishes_to_explore?: string[]
+          entry_date?: string
+          entry_type?: Database["public"]["Enums"]["chef_journey_entry_type"]
+          favorite_experience?: string
+          favorite_meal?: string
+          formatted_address?: string
+          id?: string
+          inspiration_taken?: string[]
+          is_highlight?: boolean
+          journey_id: string
+          latitude?: number | null
+          location_label?: string
+          longitude?: number | null
+          mistakes_made?: string[]
+          narrative?: string
+          proud_moments?: string[]
+          source_links?: string[]
+          tenant_id: string
+          title: string
+          updated_at?: string
+          what_i_learned?: string[]
+          what_to_change_next_time?: string[]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          dishes_to_explore?: string[]
+          entry_date?: string
+          entry_type?: Database["public"]["Enums"]["chef_journey_entry_type"]
+          favorite_experience?: string
+          favorite_meal?: string
+          formatted_address?: string
+          id?: string
+          inspiration_taken?: string[]
+          is_highlight?: boolean
+          journey_id?: string
+          latitude?: number | null
+          location_label?: string
+          longitude?: number | null
+          mistakes_made?: string[]
+          narrative?: string
+          proud_moments?: string[]
+          source_links?: string[]
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+          what_i_learned?: string[]
+          what_to_change_next_time?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_journey_entries_journey_fk"
+            columns: ["journey_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chef_journeys"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "chef_journey_entries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_journey_ideas: {
+        Row: {
+          adopted_on: string | null
+          adopted_recipe_id: string | null
+          application_area: Database["public"]["Enums"]["chef_journey_idea_area"]
+          concept_notes: string
+          created_at: string
+          created_by: string
+          expected_impact: string
+          first_test_date: string | null
+          id: string
+          journey_id: string
+          priority: number
+          source_entry_id: string | null
+          status: Database["public"]["Enums"]["chef_journey_idea_status"]
+          tenant_id: string
+          test_plan: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          adopted_on?: string | null
+          adopted_recipe_id?: string | null
+          application_area?: Database["public"]["Enums"]["chef_journey_idea_area"]
+          concept_notes?: string
+          created_at?: string
+          created_by: string
+          expected_impact?: string
+          first_test_date?: string | null
+          id?: string
+          journey_id: string
+          priority?: number
+          source_entry_id?: string | null
+          status?: Database["public"]["Enums"]["chef_journey_idea_status"]
+          tenant_id: string
+          test_plan?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          adopted_on?: string | null
+          adopted_recipe_id?: string | null
+          application_area?: Database["public"]["Enums"]["chef_journey_idea_area"]
+          concept_notes?: string
+          created_at?: string
+          created_by?: string
+          expected_impact?: string
+          first_test_date?: string | null
+          id?: string
+          journey_id?: string
+          priority?: number
+          source_entry_id?: string | null
+          status?: Database["public"]["Enums"]["chef_journey_idea_status"]
+          tenant_id?: string
+          test_plan?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_journey_ideas_adopted_recipe_id_fkey"
+            columns: ["adopted_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_cost_summary"
+            referencedColumns: ["recipe_id"]
+          },
+          {
+            foreignKeyName: "chef_journey_ideas_adopted_recipe_id_fkey"
+            columns: ["adopted_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_journey_ideas_journey_fk"
+            columns: ["journey_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chef_journeys"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "chef_journey_ideas_source_entry_fk"
+            columns: ["source_entry_id", "tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chef_journey_entries"
+            referencedColumns: ["id", "tenant_id"]
+          },
+          {
+            foreignKeyName: "chef_journey_ideas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_journeys: {
+        Row: {
+          collaborators: string[]
+          cover_image_url: string | null
+          created_at: string
+          created_by: string
+          culinary_focus_tags: string[]
+          destination_city: string | null
+          destination_country: string | null
+          destination_region: string | null
+          ended_on: string | null
+          favorite_experience: string
+          favorite_meal: string
+          id: string
+          inspiration_ideas: string[]
+          key_learnings: string[]
+          started_on: string | null
+          status: Database["public"]["Enums"]["chef_journey_status"]
+          tenant_id: string
+          title: string
+          trip_summary: string
+          updated_at: string
+        }
+        Insert: {
+          collaborators?: string[]
+          cover_image_url?: string | null
+          created_at?: string
+          created_by: string
+          culinary_focus_tags?: string[]
+          destination_city?: string | null
+          destination_country?: string | null
+          destination_region?: string | null
+          ended_on?: string | null
+          favorite_experience?: string
+          favorite_meal?: string
+          id?: string
+          inspiration_ideas?: string[]
+          key_learnings?: string[]
+          started_on?: string | null
+          status?: Database["public"]["Enums"]["chef_journey_status"]
+          tenant_id: string
+          title: string
+          trip_summary?: string
+          updated_at?: string
+        }
+        Update: {
+          collaborators?: string[]
+          cover_image_url?: string | null
+          created_at?: string
+          created_by?: string
+          culinary_focus_tags?: string[]
+          destination_city?: string | null
+          destination_country?: string | null
+          destination_region?: string | null
+          ended_on?: string | null
+          favorite_experience?: string
+          favorite_meal?: string
+          id?: string
+          inspiration_ideas?: string[]
+          key_learnings?: string[]
+          started_on?: string | null
+          status?: Database["public"]["Enums"]["chef_journey_status"]
+          tenant_id?: string
+          title?: string
+          trip_summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_journeys_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -954,24 +2079,30 @@ export type Database = {
           chef_id: string
           created_at: string
           enabled: boolean
+          event_collaboration: boolean
           feature_key: Database["public"]["Enums"]["chef_network_feature_key"]
           id: string
+          recipe_sharing: boolean
           updated_at: string
         }
         Insert: {
           chef_id: string
           created_at?: string
           enabled?: boolean
+          event_collaboration?: boolean
           feature_key: Database["public"]["Enums"]["chef_network_feature_key"]
           id?: string
+          recipe_sharing?: boolean
           updated_at?: string
         }
         Update: {
           chef_id?: string
           created_at?: string
           enabled?: boolean
+          event_collaboration?: boolean
           feature_key?: Database["public"]["Enums"]["chef_network_feature_key"]
           id?: string
+          recipe_sharing?: boolean
           updated_at?: string
         }
         Relationships: [
@@ -1016,10 +2147,237 @@ export type Database = {
           },
         ]
       }
-      chef_preferences: {
+      chef_post_comments: {
+        Row: {
+          chef_id: string
+          content: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          id: string
+          is_deleted: boolean
+          is_edited: boolean
+          parent_comment_id: string | null
+          post_id: string
+          reactions_count: number
+          replies_count: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          content: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          is_edited?: boolean
+          parent_comment_id?: string | null
+          post_id: string
+          reactions_count?: number
+          replies_count?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          content?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          id?: string
+          is_deleted?: boolean
+          is_edited?: boolean
+          parent_comment_id?: string | null
+          post_id?: string
+          reactions_count?: number
+          replies_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_post_comments_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_post_comments_parent_comment_id_fkey"
+            columns: ["parent_comment_id"]
+            isOneToOne: false
+            referencedRelation: "chef_post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_post_hashtags: {
+        Row: {
+          hashtag_id: string
+          post_id: string
+        }
+        Insert: {
+          hashtag_id: string
+          post_id: string
+        }
+        Update: {
+          hashtag_id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_post_hashtags_hashtag_id_fkey"
+            columns: ["hashtag_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_hashtags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_post_hashtags_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_post_mentions: {
+        Row: {
+          comment_id: string | null
+          created_at: string
+          id: string
+          mentioned_chef_id: string
+          post_id: string | null
+        }
+        Insert: {
+          comment_id?: string | null
+          created_at?: string
+          id?: string
+          mentioned_chef_id: string
+          post_id?: string | null
+        }
+        Update: {
+          comment_id?: string | null
+          created_at?: string
+          id?: string
+          mentioned_chef_id?: string
+          post_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_post_mentions_comment_id_fkey"
+            columns: ["comment_id"]
+            isOneToOne: false
+            referencedRelation: "chef_post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_post_mentions_mentioned_chef_id_fkey"
+            columns: ["mentioned_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_post_mentions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_post_reactions: {
         Row: {
           chef_id: string
           created_at: string
+          id: string
+          post_id: string
+          reaction_type: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          id?: string
+          post_id: string
+          reaction_type?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+          reaction_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_post_reactions_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_post_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_post_saves: {
+        Row: {
+          chef_id: string
+          collection_name: string
+          created_at: string
+          id: string
+          post_id: string
+        }
+        Insert: {
+          chef_id: string
+          collection_name?: string
+          created_at?: string
+          id?: string
+          post_id: string
+        }
+        Update: {
+          chef_id?: string
+          collection_name?: string
+          created_at?: string
+          id?: string
+          post_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_post_saves_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_post_saves_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_preferences: {
+        Row: {
+          business_address: string | null
+          business_legal_name: string | null
+          chef_id: string
+          created_at: string
+          dashboard_widgets: Json
           default_buffer_minutes: number
           default_grocery_address: string | null
           default_grocery_store: string | null
@@ -1034,17 +2392,30 @@ export type Database = {
           home_state: string | null
           home_zip: string | null
           id: string
+          is_business: boolean
           network_discoverable: boolean
+          primary_nav_hrefs: Json
+          revenue_goal_custom: Json
+          revenue_goal_nudge_level: string
+          revenue_goal_program_enabled: boolean
           shop_day_before: boolean
+          sms_notify_phone: string | null
+          sms_opt_in: boolean
+          sms_opt_in_at: string | null
+          target_annual_revenue_cents: number | null
           target_margin_percent: number
+          target_monthly_revenue_cents: number
           tenant_id: string
           updated_at: string
           wake_time_earliest: string
           wake_time_latest: string
         }
         Insert: {
+          business_address?: string | null
+          business_legal_name?: string | null
           chef_id: string
           created_at?: string
+          dashboard_widgets?: Json
           default_buffer_minutes?: number
           default_grocery_address?: string | null
           default_grocery_store?: string | null
@@ -1059,17 +2430,30 @@ export type Database = {
           home_state?: string | null
           home_zip?: string | null
           id?: string
+          is_business?: boolean
           network_discoverable?: boolean
+          primary_nav_hrefs?: Json
+          revenue_goal_custom?: Json
+          revenue_goal_nudge_level?: string
+          revenue_goal_program_enabled?: boolean
           shop_day_before?: boolean
+          sms_notify_phone?: string | null
+          sms_opt_in?: boolean
+          sms_opt_in_at?: string | null
+          target_annual_revenue_cents?: number | null
           target_margin_percent?: number
+          target_monthly_revenue_cents?: number
           tenant_id: string
           updated_at?: string
           wake_time_earliest?: string
           wake_time_latest?: string
         }
         Update: {
+          business_address?: string | null
+          business_legal_name?: string | null
           chef_id?: string
           created_at?: string
+          dashboard_widgets?: Json
           default_buffer_minutes?: number
           default_grocery_address?: string | null
           default_grocery_store?: string | null
@@ -1084,9 +2468,19 @@ export type Database = {
           home_state?: string | null
           home_zip?: string | null
           id?: string
+          is_business?: boolean
           network_discoverable?: boolean
+          primary_nav_hrefs?: Json
+          revenue_goal_custom?: Json
+          revenue_goal_nudge_level?: string
+          revenue_goal_program_enabled?: boolean
           shop_day_before?: boolean
+          sms_notify_phone?: string | null
+          sms_opt_in?: boolean
+          sms_opt_in_at?: string | null
+          target_annual_revenue_cents?: number | null
           target_margin_percent?: number
+          target_monthly_revenue_cents?: number
           tenant_id?: string
           updated_at?: string
           wake_time_earliest?: string
@@ -1109,12 +2503,408 @@ export type Database = {
           },
         ]
       }
+      chef_social_channels: {
+        Row: {
+          category: string
+          color: string | null
+          created_at: string
+          created_by_chef_id: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_official: boolean
+          member_count: number
+          name: string
+          post_count: number
+          slug: string
+          visibility: string
+        }
+        Insert: {
+          category?: string
+          color?: string | null
+          created_at?: string
+          created_by_chef_id?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_official?: boolean
+          member_count?: number
+          name: string
+          post_count?: number
+          slug: string
+          visibility?: string
+        }
+        Update: {
+          category?: string
+          color?: string | null
+          created_at?: string
+          created_by_chef_id?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_official?: boolean
+          member_count?: number
+          name?: string
+          post_count?: number
+          slug?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_social_channels_created_by_chef_id_fkey"
+            columns: ["created_by_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_social_hashtags: {
+        Row: {
+          id: string
+          last_used_at: string
+          post_count: number
+          tag: string
+        }
+        Insert: {
+          id?: string
+          last_used_at?: string
+          post_count?: number
+          tag: string
+        }
+        Update: {
+          id?: string
+          last_used_at?: string
+          post_count?: number
+          tag?: string
+        }
+        Relationships: []
+      }
+      chef_social_notifications: {
+        Row: {
+          actor_chef_id: string | null
+          agg_count: number
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          is_read: boolean
+          notification_type: string
+          read_at: string | null
+          recipient_chef_id: string
+        }
+        Insert: {
+          actor_chef_id?: string | null
+          agg_count?: number
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          is_read?: boolean
+          notification_type: string
+          read_at?: string | null
+          recipient_chef_id: string
+        }
+        Update: {
+          actor_chef_id?: string | null
+          agg_count?: number
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          is_read?: boolean
+          notification_type?: string
+          read_at?: string | null
+          recipient_chef_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_social_notifications_actor_chef_id_fkey"
+            columns: ["actor_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_social_notifications_recipient_chef_id_fkey"
+            columns: ["recipient_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_social_posts: {
+        Row: {
+          channel_id: string | null
+          chef_id: string
+          comments_count: number
+          content: string
+          created_at: string
+          edited_at: string | null
+          hashtags: string[]
+          id: string
+          is_edited: boolean
+          location_tag: string | null
+          media_types: string[]
+          media_urls: string[]
+          original_post_id: string | null
+          poll_closes_at: string | null
+          poll_options: Json | null
+          poll_question: string | null
+          post_type: string
+          reactions_count: number
+          saves_count: number
+          share_comment: string | null
+          shares_count: number
+          updated_at: string
+          visibility: string
+        }
+        Insert: {
+          channel_id?: string | null
+          chef_id: string
+          comments_count?: number
+          content: string
+          created_at?: string
+          edited_at?: string | null
+          hashtags?: string[]
+          id?: string
+          is_edited?: boolean
+          location_tag?: string | null
+          media_types?: string[]
+          media_urls?: string[]
+          original_post_id?: string | null
+          poll_closes_at?: string | null
+          poll_options?: Json | null
+          poll_question?: string | null
+          post_type?: string
+          reactions_count?: number
+          saves_count?: number
+          share_comment?: string | null
+          shares_count?: number
+          updated_at?: string
+          visibility?: string
+        }
+        Update: {
+          channel_id?: string | null
+          chef_id?: string
+          comments_count?: number
+          content?: string
+          created_at?: string
+          edited_at?: string | null
+          hashtags?: string[]
+          id?: string
+          is_edited?: boolean
+          location_tag?: string | null
+          media_types?: string[]
+          media_urls?: string[]
+          original_post_id?: string | null
+          poll_closes_at?: string | null
+          poll_options?: Json | null
+          poll_question?: string | null
+          post_type?: string
+          reactions_count?: number
+          saves_count?: number
+          share_comment?: string | null
+          shares_count?: number
+          updated_at?: string
+          visibility?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_social_posts_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_channels"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_social_posts_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_social_posts_original_post_id_fkey"
+            columns: ["original_post_id"]
+            isOneToOne: false
+            referencedRelation: "chef_social_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_stories: {
+        Row: {
+          caption: string | null
+          chef_id: string
+          created_at: string
+          duration_seconds: number
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          reactions_count: number
+          views_count: number
+        }
+        Insert: {
+          caption?: string | null
+          chef_id: string
+          created_at?: string
+          duration_seconds?: number
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url: string
+          reactions_count?: number
+          views_count?: number
+        }
+        Update: {
+          caption?: string | null
+          chef_id?: string
+          created_at?: string
+          duration_seconds?: number
+          expires_at?: string
+          id?: string
+          media_type?: string
+          media_url?: string
+          reactions_count?: number
+          views_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_stories_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_story_reactions: {
+        Row: {
+          chef_id: string
+          created_at: string
+          emoji: string
+          id: string
+          story_id: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          emoji: string
+          id?: string
+          story_id: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          emoji?: string
+          id?: string
+          story_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_story_reactions_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_story_reactions_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "chef_stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string
+          viewer_chef_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string
+          viewer_chef_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string
+          viewer_chef_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "chef_stories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chef_story_views_viewer_chef_id_fkey"
+            columns: ["viewer_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chef_todos: {
+        Row: {
+          chef_id: string
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          sort_order: number
+          text: string
+        }
+        Insert: {
+          chef_id: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          sort_order?: number
+          text: string
+        }
+        Update: {
+          chef_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          sort_order?: number
+          text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chef_todos_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chefs: {
         Row: {
           auth_user_id: string
           bio: string | null
           business_name: string
+          cancellation_cutoff_days: number
           created_at: string
+          deposit_refundable: boolean
           display_name: string | null
           email: string
           google_review_url: string | null
@@ -1125,6 +2915,7 @@ export type Database = {
           portal_primary_color: string | null
           preferred_inquiry_destination: string
           profile_image_url: string | null
+          show_availability_signals: boolean
           show_website_on_public_profile: boolean
           slug: string | null
           tagline: string | null
@@ -1135,7 +2926,9 @@ export type Database = {
           auth_user_id: string
           bio?: string | null
           business_name: string
+          cancellation_cutoff_days?: number
           created_at?: string
+          deposit_refundable?: boolean
           display_name?: string | null
           email: string
           google_review_url?: string | null
@@ -1146,6 +2939,7 @@ export type Database = {
           portal_primary_color?: string | null
           preferred_inquiry_destination?: string
           profile_image_url?: string | null
+          show_availability_signals?: boolean
           show_website_on_public_profile?: boolean
           slug?: string | null
           tagline?: string | null
@@ -1156,7 +2950,9 @@ export type Database = {
           auth_user_id?: string
           bio?: string | null
           business_name?: string
+          cancellation_cutoff_days?: number
           created_at?: string
+          deposit_refundable?: boolean
           display_name?: string | null
           email?: string
           google_review_url?: string | null
@@ -1167,6 +2963,7 @@ export type Database = {
           portal_primary_color?: string | null
           preferred_inquiry_destination?: string
           profile_image_url?: string | null
+          show_availability_signals?: boolean
           show_website_on_public_profile?: boolean
           slug?: string | null
           tagline?: string | null
@@ -1174,6 +2971,80 @@ export type Database = {
           website_url?: string | null
         }
         Relationships: []
+      }
+      client_allergy_records: {
+        Row: {
+          allergen: string
+          client_id: string
+          confirmed_at: string | null
+          confirmed_by_chef: boolean
+          created_at: string
+          detected_in_message_id: string | null
+          id: string
+          notes: string | null
+          severity: string
+          source: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          allergen: string
+          client_id: string
+          confirmed_at?: string | null
+          confirmed_by_chef?: boolean
+          created_at?: string
+          detected_in_message_id?: string | null
+          id?: string
+          notes?: string | null
+          severity?: string
+          source?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          allergen?: string
+          client_id?: string
+          confirmed_at?: string | null
+          confirmed_by_chef?: boolean
+          created_at?: string
+          detected_in_message_id?: string | null
+          id?: string
+          notes?: string | null
+          severity?: string
+          source?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_allergy_records_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "client_allergy_records_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_allergy_records_detected_in_message_id_fkey"
+            columns: ["detected_in_message_id"]
+            isOneToOne: false
+            referencedRelation: "chat_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_allergy_records_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_connections: {
         Row: {
@@ -1234,6 +3105,123 @@ export type Database = {
           },
           {
             foreignKeyName: "client_connections_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_incentives: {
+        Row: {
+          amount_cents: number | null
+          code: string
+          created_at: string
+          created_by_client_id: string | null
+          created_by_role: Database["public"]["Enums"]["user_role"]
+          created_by_user_id: string | null
+          currency_code: string
+          discount_percent: number | null
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_redemptions: number
+          note: string | null
+          purchase_status: string
+          purchase_stripe_payment_intent_id: string | null
+          purchased_by_email: string | null
+          purchased_by_user_id: string | null
+          redemptions_used: number
+          remaining_balance_cents: number | null
+          target_client_id: string | null
+          tenant_id: string
+          title: string
+          type: Database["public"]["Enums"]["incentive_type"]
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number | null
+          code: string
+          created_at?: string
+          created_by_client_id?: string | null
+          created_by_role: Database["public"]["Enums"]["user_role"]
+          created_by_user_id?: string | null
+          currency_code?: string
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number
+          note?: string | null
+          purchase_status?: string
+          purchase_stripe_payment_intent_id?: string | null
+          purchased_by_email?: string | null
+          purchased_by_user_id?: string | null
+          redemptions_used?: number
+          remaining_balance_cents?: number | null
+          target_client_id?: string | null
+          tenant_id: string
+          title: string
+          type: Database["public"]["Enums"]["incentive_type"]
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number | null
+          code?: string
+          created_at?: string
+          created_by_client_id?: string | null
+          created_by_role?: Database["public"]["Enums"]["user_role"]
+          created_by_user_id?: string | null
+          currency_code?: string
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_redemptions?: number
+          note?: string | null
+          purchase_status?: string
+          purchase_stripe_payment_intent_id?: string | null
+          purchased_by_email?: string | null
+          purchased_by_user_id?: string | null
+          redemptions_used?: number
+          remaining_balance_cents?: number | null
+          target_client_id?: string | null
+          tenant_id?: string
+          title?: string
+          type?: Database["public"]["Enums"]["incentive_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_incentives_created_by_client_id_fkey"
+            columns: ["created_by_client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "client_incentives_created_by_client_id_fkey"
+            columns: ["created_by_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_incentives_target_client_id_fkey"
+            columns: ["target_client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "client_incentives_target_client_id_fkey"
+            columns: ["target_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_incentives_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -1462,6 +3450,8 @@ export type Database = {
           address: string | null
           allergies: string[] | null
           auth_user_id: string | null
+          automated_emails_enabled: boolean
+          availability_signal_notifications: boolean
           average_spend_cents: number | null
           children: string[] | null
           created_at: string
@@ -1476,6 +3466,7 @@ export type Database = {
           favorite_dishes: string[] | null
           first_event_date: string | null
           full_name: string
+          fun_qa_answers: Json | null
           house_rules: string | null
           id: string
           kitchen_constraints: string | null
@@ -1484,6 +3475,8 @@ export type Database = {
           lifetime_value_cents: number | null
           loyalty_points: number | null
           loyalty_tier: Database["public"]["Enums"]["loyalty_tier"]
+          marketing_unsubscribed: boolean
+          marketing_unsubscribed_at: string | null
           parking_instructions: string | null
           partner_name: string | null
           partner_preferred_name: string | null
@@ -1516,6 +3509,8 @@ export type Database = {
           address?: string | null
           allergies?: string[] | null
           auth_user_id?: string | null
+          automated_emails_enabled?: boolean
+          availability_signal_notifications?: boolean
           average_spend_cents?: number | null
           children?: string[] | null
           created_at?: string
@@ -1530,6 +3525,7 @@ export type Database = {
           favorite_dishes?: string[] | null
           first_event_date?: string | null
           full_name: string
+          fun_qa_answers?: Json | null
           house_rules?: string | null
           id?: string
           kitchen_constraints?: string | null
@@ -1538,6 +3534,8 @@ export type Database = {
           lifetime_value_cents?: number | null
           loyalty_points?: number | null
           loyalty_tier?: Database["public"]["Enums"]["loyalty_tier"]
+          marketing_unsubscribed?: boolean
+          marketing_unsubscribed_at?: string | null
           parking_instructions?: string | null
           partner_name?: string | null
           partner_preferred_name?: string | null
@@ -1574,6 +3572,8 @@ export type Database = {
           address?: string | null
           allergies?: string[] | null
           auth_user_id?: string | null
+          automated_emails_enabled?: boolean
+          availability_signal_notifications?: boolean
           average_spend_cents?: number | null
           children?: string[] | null
           created_at?: string
@@ -1588,6 +3588,7 @@ export type Database = {
           favorite_dishes?: string[] | null
           first_event_date?: string | null
           full_name?: string
+          fun_qa_answers?: Json | null
           house_rules?: string | null
           id?: string
           kitchen_constraints?: string | null
@@ -1596,6 +3597,8 @@ export type Database = {
           lifetime_value_cents?: number | null
           loyalty_points?: number | null
           loyalty_tier?: Database["public"]["Enums"]["loyalty_tier"]
+          marketing_unsubscribed?: boolean
+          marketing_unsubscribed_at?: string | null
           parking_instructions?: string | null
           partner_name?: string | null
           partner_preferred_name?: string | null
@@ -1871,6 +3874,7 @@ export type Database = {
           sort_order: number
           storage_notes: string | null
           tenant_id: string
+          transport_category: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -1890,6 +3894,7 @@ export type Database = {
           sort_order?: number
           storage_notes?: string | null
           tenant_id: string
+          transport_category?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -1909,6 +3914,7 @@ export type Database = {
           sort_order?: number
           storage_notes?: string | null
           tenant_id?: string
+          transport_category?: string | null
           updated_at?: string
           updated_by?: string | null
         }
@@ -2000,6 +4006,47 @@ export type Database = {
             columns: ["inquiry_id"]
             isOneToOne: false
             referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contract_templates: {
+        Row: {
+          body_markdown: string
+          chef_id: string
+          created_at: string
+          id: string
+          is_default: boolean
+          name: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          body_markdown: string
+          chef_id: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          body_markdown?: string
+          chef_id?: string
+          created_at?: string
+          id?: string
+          is_default?: boolean
+          name?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contract_templates_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
         ]
@@ -2400,6 +4447,64 @@ export type Database = {
           },
         ]
       }
+      direct_outreach_log: {
+        Row: {
+          body: string
+          channel: string
+          chef_id: string
+          client_id: string
+          delivered: boolean | null
+          error_msg: string | null
+          id: string
+          sent_at: string
+          subject: string | null
+        }
+        Insert: {
+          body: string
+          channel: string
+          chef_id: string
+          client_id: string
+          delivered?: boolean | null
+          error_msg?: string | null
+          id?: string
+          sent_at?: string
+          subject?: string | null
+        }
+        Update: {
+          body?: string
+          channel?: string
+          chef_id?: string
+          client_id?: string
+          delivered?: boolean | null
+          error_msg?: string | null
+          id?: string
+          sent_at?: string
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_outreach_log_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_outreach_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "direct_outreach_log_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dishes: {
         Row: {
           allergen_flags: string[]
@@ -2472,6 +4577,384 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_items: {
+        Row: {
+          category: Database["public"]["Enums"]["equipment_category"]
+          chef_id: string
+          created_at: string
+          current_value_cents: number | null
+          id: string
+          last_maintained_at: string | null
+          maintenance_interval_days: number | null
+          name: string
+          notes: string | null
+          purchase_date: string | null
+          purchase_price_cents: number | null
+          serial_number: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["equipment_category"]
+          chef_id: string
+          created_at?: string
+          current_value_cents?: number | null
+          id?: string
+          last_maintained_at?: string | null
+          maintenance_interval_days?: number | null
+          name: string
+          notes?: string | null
+          purchase_date?: string | null
+          purchase_price_cents?: number | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["equipment_category"]
+          chef_id?: string
+          created_at?: string
+          current_value_cents?: number | null
+          id?: string
+          last_maintained_at?: string | null
+          maintenance_interval_days?: number | null
+          name?: string
+          notes?: string | null
+          purchase_date?: string | null
+          purchase_price_cents?: number | null
+          serial_number?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_items_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_rentals: {
+        Row: {
+          chef_id: string
+          cost_cents: number
+          created_at: string
+          equipment_name: string
+          event_id: string | null
+          id: string
+          notes: string | null
+          rental_date: string
+          return_date: string | null
+          vendor_name: string | null
+        }
+        Insert: {
+          chef_id: string
+          cost_cents?: number
+          created_at?: string
+          equipment_name: string
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          rental_date: string
+          return_date?: string | null
+          vendor_name?: string | null
+        }
+        Update: {
+          chef_id?: string
+          cost_cents?: number
+          created_at?: string
+          equipment_name?: string
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          rental_date?: string
+          return_date?: string | null
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_rentals_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_rentals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "equipment_rentals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "equipment_rentals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_collaborators: {
+        Row: {
+          chef_id: string
+          created_at: string
+          event_id: string
+          id: string
+          invited_by_chef_id: string
+          note: string | null
+          permissions: Json
+          responded_at: string | null
+          role: string
+          status: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          invited_by_chef_id: string
+          note?: string | null
+          permissions?: Json
+          responded_at?: string | null
+          role?: string
+          status?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          invited_by_chef_id?: string
+          note?: string | null
+          permissions?: Json
+          responded_at?: string | null
+          role?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_collaborators_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_collaborators_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_collaborators_invited_by_chef_id_fkey"
+            columns: ["invited_by_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_contingency_notes: {
+        Row: {
+          backup_contact_id: string | null
+          chef_id: string
+          event_id: string
+          id: string
+          mitigation_notes: string
+          scenario_type: string
+          updated_at: string
+        }
+        Insert: {
+          backup_contact_id?: string | null
+          chef_id: string
+          event_id: string
+          id?: string
+          mitigation_notes: string
+          scenario_type?: string
+          updated_at?: string
+        }
+        Update: {
+          backup_contact_id?: string | null
+          chef_id?: string
+          event_id?: string
+          id?: string
+          mitigation_notes?: string
+          scenario_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_contingency_notes_backup_contact_id_fkey"
+            columns: ["backup_contact_id"]
+            isOneToOne: false
+            referencedRelation: "chef_emergency_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_contingency_notes_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_contingency_notes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_contingency_notes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_contingency_notes_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_contracts: {
+        Row: {
+          body_snapshot: string
+          chef_id: string
+          client_id: string
+          created_at: string
+          event_id: string
+          id: string
+          sent_at: string | null
+          signature_data_url: string | null
+          signed_at: string | null
+          signer_ip_address: string | null
+          signer_user_agent: string | null
+          status: Database["public"]["Enums"]["contract_status"]
+          template_id: string | null
+          updated_at: string
+          viewed_at: string | null
+          void_reason: string | null
+          voided_at: string | null
+        }
+        Insert: {
+          body_snapshot: string
+          chef_id: string
+          client_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          sent_at?: string | null
+          signature_data_url?: string | null
+          signed_at?: string | null
+          signer_ip_address?: string | null
+          signer_user_agent?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          template_id?: string | null
+          updated_at?: string
+          viewed_at?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
+        }
+        Update: {
+          body_snapshot?: string
+          chef_id?: string
+          client_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          sent_at?: string | null
+          signature_data_url?: string | null
+          signed_at?: string | null
+          signer_ip_address?: string | null
+          signer_user_agent?: string | null
+          status?: Database["public"]["Enums"]["contract_status"]
+          template_id?: string | null
+          updated_at?: string
+          viewed_at?: string | null
+          void_reason?: string | null
+          voided_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_contracts_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_contracts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "event_contracts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_contracts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_contracts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_contracts_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_contracts_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "contract_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -2566,6 +5049,83 @@ export type Database = {
           },
         ]
       }
+      event_photos: {
+        Row: {
+          caption: string | null
+          content_type: string
+          created_at: string
+          deleted_at: string | null
+          display_order: number
+          event_id: string
+          filename_original: string
+          id: string
+          size_bytes: number
+          storage_path: string
+          tenant_id: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          caption?: string | null
+          content_type: string
+          created_at?: string
+          deleted_at?: string | null
+          display_order?: number
+          event_id: string
+          filename_original?: string
+          id?: string
+          size_bytes?: number
+          storage_path: string
+          tenant_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          caption?: string | null
+          content_type?: string
+          created_at?: string
+          deleted_at?: string | null
+          display_order?: number
+          event_id?: string
+          filename_original?: string
+          id?: string
+          size_bytes?: number
+          storage_path?: string
+          tenant_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_photos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_shares: {
         Row: {
           created_at: string
@@ -2648,6 +5208,90 @@ export type Database = {
           },
         ]
       }
+      event_staff_assignments: {
+        Row: {
+          actual_hours: number | null
+          chef_id: string
+          created_at: string
+          event_id: string
+          id: string
+          notes: string | null
+          pay_amount_cents: number | null
+          rate_override_cents: number | null
+          role_override: Database["public"]["Enums"]["staff_role"] | null
+          scheduled_hours: number | null
+          staff_member_id: string
+          status: Database["public"]["Enums"]["staff_assignment_status"]
+          updated_at: string
+        }
+        Insert: {
+          actual_hours?: number | null
+          chef_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          notes?: string | null
+          pay_amount_cents?: number | null
+          rate_override_cents?: number | null
+          role_override?: Database["public"]["Enums"]["staff_role"] | null
+          scheduled_hours?: number | null
+          staff_member_id: string
+          status?: Database["public"]["Enums"]["staff_assignment_status"]
+          updated_at?: string
+        }
+        Update: {
+          actual_hours?: number | null
+          chef_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          notes?: string | null
+          pay_amount_cents?: number | null
+          rate_override_cents?: number | null
+          role_override?: Database["public"]["Enums"]["staff_role"] | null
+          scheduled_hours?: number | null
+          staff_member_id?: string
+          status?: Database["public"]["Enums"]["staff_assignment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_staff_assignments_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_staff_assignments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_staff_assignments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_staff_assignments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_staff_assignments_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_state_transitions: {
         Row: {
           event_id: string
@@ -2713,6 +5357,181 @@ export type Database = {
           },
         ]
       }
+      event_temp_logs: {
+        Row: {
+          chef_id: string
+          event_id: string
+          id: string
+          is_safe: boolean | null
+          item_description: string
+          logged_at: string
+          notes: string | null
+          phase: string
+          temp_fahrenheit: number
+        }
+        Insert: {
+          chef_id: string
+          event_id: string
+          id?: string
+          is_safe?: boolean | null
+          item_description: string
+          logged_at?: string
+          notes?: string | null
+          phase?: string
+          temp_fahrenheit: number
+        }
+        Update: {
+          chef_id?: string
+          event_id?: string
+          id?: string
+          is_safe?: boolean | null
+          item_description?: string
+          logged_at?: string
+          notes?: string | null
+          phase?: string
+          temp_fahrenheit?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_temp_logs_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_temp_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_temp_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_temp_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_travel_legs: {
+        Row: {
+          chef_id: string
+          completed_at: string | null
+          created_at: string
+          departure_time: string | null
+          destination_address: string | null
+          destination_label: string | null
+          destination_type: string | null
+          estimated_return_time: string | null
+          id: string
+          leg_date: string
+          leg_type: string
+          linked_event_ids: string[] | null
+          origin_address: string | null
+          origin_label: string | null
+          origin_type: string | null
+          primary_event_id: string | null
+          purpose_notes: string | null
+          status: string
+          stops: Json
+          tenant_id: string
+          total_drive_minutes: number | null
+          total_estimated_minutes: number | null
+          total_stop_minutes: number | null
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          completed_at?: string | null
+          created_at?: string
+          departure_time?: string | null
+          destination_address?: string | null
+          destination_label?: string | null
+          destination_type?: string | null
+          estimated_return_time?: string | null
+          id?: string
+          leg_date: string
+          leg_type: string
+          linked_event_ids?: string[] | null
+          origin_address?: string | null
+          origin_label?: string | null
+          origin_type?: string | null
+          primary_event_id?: string | null
+          purpose_notes?: string | null
+          status?: string
+          stops?: Json
+          tenant_id: string
+          total_drive_minutes?: number | null
+          total_estimated_minutes?: number | null
+          total_stop_minutes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          completed_at?: string | null
+          created_at?: string
+          departure_time?: string | null
+          destination_address?: string | null
+          destination_label?: string | null
+          destination_type?: string | null
+          estimated_return_time?: string | null
+          id?: string
+          leg_date?: string
+          leg_type?: string
+          linked_event_ids?: string[] | null
+          origin_address?: string | null
+          origin_label?: string | null
+          origin_type?: string | null
+          primary_event_id?: string | null
+          purpose_notes?: string | null
+          status?: string
+          stops?: Json
+          tenant_id?: string
+          total_drive_minutes?: number | null
+          total_estimated_minutes?: number | null
+          total_stop_minutes?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_travel_legs_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_travel_legs_primary_event_id_fkey"
+            columns: ["primary_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_travel_legs_primary_event_id_fkey"
+            columns: ["primary_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_travel_legs_primary_event_id_fkey"
+            columns: ["primary_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           aar_filed: boolean
@@ -2729,16 +5548,24 @@ export type Database = {
           car_packed: boolean
           car_packed_at: string | null
           card_cashback_percent: number | null
+          chef_outcome_notes: string | null
+          chef_outcome_rating: number | null
           client_id: string
+          client_reminder_1d_sent_at: string | null
+          client_reminder_2d_sent_at: string | null
+          client_reminder_7d_sent_at: string | null
           component_count_total: number | null
           created_at: string
           created_by: string | null
+          debrief_completed_at: string | null
           departure_time: string | null
           deposit_amount_cents: number | null
           dietary_restrictions: string[]
           equipment_list_ready: boolean
           event_date: string
           execution_sheet_ready: boolean
+          financial_closed: boolean
+          financial_closed_at: string | null
           financially_closed: boolean
           follow_up_sent: boolean
           follow_up_sent_at: string | null
@@ -2748,6 +5575,8 @@ export type Database = {
           household_id: string | null
           id: string
           inquiry_id: string | null
+          invoice_issued_at: string | null
+          invoice_number: string | null
           kitchen_notes: string | null
           leftover_notes: string | null
           leftover_value_carried_forward_cents: number | null
@@ -2760,7 +5589,12 @@ export type Database = {
           location_state: string
           location_zip: string
           loyalty_points_awarded: boolean
+          menu_approval_status: Database["public"]["Enums"]["menu_approval_status"]
+          menu_approved_at: string | null
           menu_id: string | null
+          menu_revision_notes: string | null
+          menu_sent_at: string | null
+          mileage_miles: number | null
           non_negotiables_checked: boolean
           occasion: string | null
           packing_list_ready: boolean
@@ -2769,6 +5603,9 @@ export type Database = {
           payment_method_primary:
             | Database["public"]["Enums"]["payment_method"]
             | null
+          payment_reminder_1d_sent_at: string | null
+          payment_reminder_3d_sent_at: string | null
+          payment_reminder_7d_sent_at: string | null
           payment_status: Database["public"]["Enums"]["payment_status"]
           prep_completed_at: string | null
           prep_list_ready: boolean
@@ -2800,6 +5637,7 @@ export type Database = {
           timeline_ready: boolean
           tip_amount_cents: number
           travel_completed_at: string | null
+          travel_route_ready: boolean
           travel_started_at: string | null
           travel_time_minutes: number | null
           updated_at: string
@@ -2820,16 +5658,24 @@ export type Database = {
           car_packed?: boolean
           car_packed_at?: string | null
           card_cashback_percent?: number | null
+          chef_outcome_notes?: string | null
+          chef_outcome_rating?: number | null
           client_id: string
+          client_reminder_1d_sent_at?: string | null
+          client_reminder_2d_sent_at?: string | null
+          client_reminder_7d_sent_at?: string | null
           component_count_total?: number | null
           created_at?: string
           created_by?: string | null
+          debrief_completed_at?: string | null
           departure_time?: string | null
           deposit_amount_cents?: number | null
           dietary_restrictions?: string[]
           equipment_list_ready?: boolean
           event_date: string
           execution_sheet_ready?: boolean
+          financial_closed?: boolean
+          financial_closed_at?: string | null
           financially_closed?: boolean
           follow_up_sent?: boolean
           follow_up_sent_at?: string | null
@@ -2839,6 +5685,8 @@ export type Database = {
           household_id?: string | null
           id?: string
           inquiry_id?: string | null
+          invoice_issued_at?: string | null
+          invoice_number?: string | null
           kitchen_notes?: string | null
           leftover_notes?: string | null
           leftover_value_carried_forward_cents?: number | null
@@ -2851,7 +5699,12 @@ export type Database = {
           location_state?: string
           location_zip: string
           loyalty_points_awarded?: boolean
+          menu_approval_status?: Database["public"]["Enums"]["menu_approval_status"]
+          menu_approved_at?: string | null
           menu_id?: string | null
+          menu_revision_notes?: string | null
+          menu_sent_at?: string | null
+          mileage_miles?: number | null
           non_negotiables_checked?: boolean
           occasion?: string | null
           packing_list_ready?: boolean
@@ -2860,6 +5713,9 @@ export type Database = {
           payment_method_primary?:
             | Database["public"]["Enums"]["payment_method"]
             | null
+          payment_reminder_1d_sent_at?: string | null
+          payment_reminder_3d_sent_at?: string | null
+          payment_reminder_7d_sent_at?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           prep_completed_at?: string | null
           prep_list_ready?: boolean
@@ -2891,6 +5747,7 @@ export type Database = {
           timeline_ready?: boolean
           tip_amount_cents?: number
           travel_completed_at?: string | null
+          travel_route_ready?: boolean
           travel_started_at?: string | null
           travel_time_minutes?: number | null
           updated_at?: string
@@ -2911,16 +5768,24 @@ export type Database = {
           car_packed?: boolean
           car_packed_at?: string | null
           card_cashback_percent?: number | null
+          chef_outcome_notes?: string | null
+          chef_outcome_rating?: number | null
           client_id?: string
+          client_reminder_1d_sent_at?: string | null
+          client_reminder_2d_sent_at?: string | null
+          client_reminder_7d_sent_at?: string | null
           component_count_total?: number | null
           created_at?: string
           created_by?: string | null
+          debrief_completed_at?: string | null
           departure_time?: string | null
           deposit_amount_cents?: number | null
           dietary_restrictions?: string[]
           equipment_list_ready?: boolean
           event_date?: string
           execution_sheet_ready?: boolean
+          financial_closed?: boolean
+          financial_closed_at?: string | null
           financially_closed?: boolean
           follow_up_sent?: boolean
           follow_up_sent_at?: string | null
@@ -2930,6 +5795,8 @@ export type Database = {
           household_id?: string | null
           id?: string
           inquiry_id?: string | null
+          invoice_issued_at?: string | null
+          invoice_number?: string | null
           kitchen_notes?: string | null
           leftover_notes?: string | null
           leftover_value_carried_forward_cents?: number | null
@@ -2942,7 +5809,12 @@ export type Database = {
           location_state?: string
           location_zip?: string
           loyalty_points_awarded?: boolean
+          menu_approval_status?: Database["public"]["Enums"]["menu_approval_status"]
+          menu_approved_at?: string | null
           menu_id?: string | null
+          menu_revision_notes?: string | null
+          menu_sent_at?: string | null
+          mileage_miles?: number | null
           non_negotiables_checked?: boolean
           occasion?: string | null
           packing_list_ready?: boolean
@@ -2951,6 +5823,9 @@ export type Database = {
           payment_method_primary?:
             | Database["public"]["Enums"]["payment_method"]
             | null
+          payment_reminder_1d_sent_at?: string | null
+          payment_reminder_3d_sent_at?: string | null
+          payment_reminder_7d_sent_at?: string | null
           payment_status?: Database["public"]["Enums"]["payment_status"]
           prep_completed_at?: string | null
           prep_list_ready?: boolean
@@ -2982,6 +5857,7 @@ export type Database = {
           timeline_ready?: boolean
           tip_amount_cents?: number
           travel_completed_at?: string | null
+          travel_route_ready?: boolean
           travel_started_at?: string | null
           travel_time_minutes?: number | null
           updated_at?: string
@@ -3157,6 +6033,131 @@ export type Database = {
           },
         ]
       }
+      external_review_sources: {
+        Row: {
+          active: boolean
+          config: Json
+          created_at: string
+          created_by: string
+          id: string
+          label: string
+          last_cursor: string | null
+          last_error: string | null
+          last_synced_at: string | null
+          provider: string
+          sync_interval_minutes: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          label: string
+          last_cursor?: string | null
+          last_error?: string | null
+          last_synced_at?: string | null
+          provider: string
+          sync_interval_minutes?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          config?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          label?: string
+          last_cursor?: string | null
+          last_error?: string | null
+          last_synced_at?: string | null
+          provider?: string
+          sync_interval_minutes?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_review_sources_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      external_reviews: {
+        Row: {
+          author_name: string | null
+          created_at: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          provider: string
+          rating: number | null
+          raw_payload: Json
+          review_date: string | null
+          review_text: string
+          source_id: string
+          source_review_id: string
+          source_url: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          author_name?: string | null
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          provider: string
+          rating?: number | null
+          raw_payload?: Json
+          review_date?: string | null
+          review_text: string
+          source_id: string
+          source_review_id: string
+          source_url?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          author_name?: string | null
+          created_at?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          provider?: string
+          rating?: number | null
+          raw_payload?: Json
+          review_date?: string | null
+          review_text?: string
+          source_id?: string
+          source_review_id?: string
+          source_url?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "external_reviews_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "external_review_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "external_reviews_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_up_timers: {
         Row: {
           completed_at: string | null
@@ -3211,6 +6212,151 @@ export type Database = {
             columns: ["thread_id"]
             isOneToOne: false
             referencedRelation: "conversation_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gift_card_purchase_intents: {
+        Row: {
+          amount_cents: number
+          buyer_email: string
+          buyer_user_id: string | null
+          created_at: string
+          created_incentive_id: string | null
+          currency_code: string
+          expires_at: string
+          id: string
+          personal_message: string | null
+          recipient_email: string
+          recipient_name: string | null
+          status: string
+          stripe_checkout_session_id: string | null
+          tenant_id: string
+        }
+        Insert: {
+          amount_cents: number
+          buyer_email: string
+          buyer_user_id?: string | null
+          created_at?: string
+          created_incentive_id?: string | null
+          currency_code?: string
+          expires_at?: string
+          id?: string
+          personal_message?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          tenant_id: string
+        }
+        Update: {
+          amount_cents?: number
+          buyer_email?: string
+          buyer_user_id?: string | null
+          created_at?: string
+          created_incentive_id?: string | null
+          currency_code?: string
+          expires_at?: string
+          id?: string
+          personal_message?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          status?: string
+          stripe_checkout_session_id?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_card_purchase_intents_created_incentive_id_fkey"
+            columns: ["created_incentive_id"]
+            isOneToOne: false
+            referencedRelation: "client_incentives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gift_card_purchase_intents_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gmail_historical_findings: {
+        Row: {
+          ai_reasoning: string | null
+          body_preview: string | null
+          chef_id: string
+          classification: string
+          confidence: string
+          created_at: string
+          from_address: string
+          gmail_message_id: string
+          gmail_thread_id: string | null
+          id: string
+          imported_inquiry_id: string | null
+          received_at: string | null
+          reviewed_at: string | null
+          status: string
+          subject: string | null
+          tenant_id: string
+        }
+        Insert: {
+          ai_reasoning?: string | null
+          body_preview?: string | null
+          chef_id: string
+          classification: string
+          confidence: string
+          created_at?: string
+          from_address: string
+          gmail_message_id: string
+          gmail_thread_id?: string | null
+          id?: string
+          imported_inquiry_id?: string | null
+          received_at?: string | null
+          reviewed_at?: string | null
+          status?: string
+          subject?: string | null
+          tenant_id: string
+        }
+        Update: {
+          ai_reasoning?: string | null
+          body_preview?: string | null
+          chef_id?: string
+          classification?: string
+          confidence?: string
+          created_at?: string
+          from_address?: string
+          gmail_message_id?: string
+          gmail_thread_id?: string | null
+          id?: string
+          imported_inquiry_id?: string | null
+          received_at?: string | null
+          reviewed_at?: string | null
+          status?: string
+          subject?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gmail_historical_findings_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gmail_historical_findings_imported_inquiry_id_fkey"
+            columns: ["imported_inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gmail_historical_findings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
         ]
@@ -3285,6 +6431,179 @@ export type Database = {
           },
         ]
       }
+      goal_client_suggestions: {
+        Row: {
+          avg_spend_cents: number | null
+          booked_event_id: string | null
+          client_id: string
+          contacted_at: string | null
+          created_at: string
+          days_dormant: number | null
+          goal_id: string
+          id: string
+          lifetime_value_cents: number | null
+          rank: number
+          reason: string
+          status: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          avg_spend_cents?: number | null
+          booked_event_id?: string | null
+          client_id: string
+          contacted_at?: string | null
+          created_at?: string
+          days_dormant?: number | null
+          goal_id: string
+          id?: string
+          lifetime_value_cents?: number | null
+          rank?: number
+          reason: string
+          status?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          avg_spend_cents?: number | null
+          booked_event_id?: string | null
+          client_id?: string
+          contacted_at?: string | null
+          created_at?: string
+          days_dormant?: number | null
+          goal_id?: string
+          id?: string
+          lifetime_value_cents?: number | null
+          rank?: number
+          reason?: string
+          status?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_client_suggestions_booked_event_id_fkey"
+            columns: ["booked_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "goal_client_suggestions_booked_event_id_fkey"
+            columns: ["booked_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "goal_client_suggestions_booked_event_id_fkey"
+            columns: ["booked_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_client_suggestions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "goal_client_suggestions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_client_suggestions_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "chef_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_client_suggestions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_snapshots: {
+        Row: {
+          avg_booking_value_cents: number | null
+          client_suggestions_json: Json
+          computed_at: string
+          current_value: number
+          events_needed: number | null
+          gap_value: number
+          goal_id: string
+          id: string
+          pricing_scenarios: Json
+          progress_percent: number
+          projected_cents: number | null
+          realized_cents: number | null
+          snapshot_date: string
+          snapshot_month: string
+          target_value: number
+          tenant_id: string
+        }
+        Insert: {
+          avg_booking_value_cents?: number | null
+          client_suggestions_json?: Json
+          computed_at?: string
+          current_value?: number
+          events_needed?: number | null
+          gap_value?: number
+          goal_id: string
+          id?: string
+          pricing_scenarios?: Json
+          progress_percent?: number
+          projected_cents?: number | null
+          realized_cents?: number | null
+          snapshot_date: string
+          snapshot_month: string
+          target_value: number
+          tenant_id: string
+        }
+        Update: {
+          avg_booking_value_cents?: number | null
+          client_suggestions_json?: Json
+          computed_at?: string
+          current_value?: number
+          events_needed?: number | null
+          gap_value?: number
+          goal_id?: string
+          id?: string
+          pricing_scenarios?: Json
+          progress_percent?: number
+          projected_cents?: number | null
+          realized_cents?: number | null
+          snapshot_date?: string
+          snapshot_month?: string
+          target_value?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_snapshots_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "chef_goals"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "goal_snapshots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       google_connections: {
         Row: {
           access_token: string | null
@@ -3296,6 +6615,14 @@ export type Database = {
           gmail_history_id: string | null
           gmail_last_sync_at: string | null
           gmail_sync_errors: number
+          historical_scan_completed_at: string | null
+          historical_scan_enabled: boolean
+          historical_scan_last_run_at: string | null
+          historical_scan_lookback_days: number
+          historical_scan_page_token: string | null
+          historical_scan_started_at: string | null
+          historical_scan_status: string
+          historical_scan_total_processed: number
           id: string
           refresh_token: string | null
           scopes: string[]
@@ -3313,6 +6640,14 @@ export type Database = {
           gmail_history_id?: string | null
           gmail_last_sync_at?: string | null
           gmail_sync_errors?: number
+          historical_scan_completed_at?: string | null
+          historical_scan_enabled?: boolean
+          historical_scan_last_run_at?: string | null
+          historical_scan_lookback_days?: number
+          historical_scan_page_token?: string | null
+          historical_scan_started_at?: string | null
+          historical_scan_status?: string
+          historical_scan_total_processed?: number
           id?: string
           refresh_token?: string | null
           scopes?: string[]
@@ -3330,6 +6665,14 @@ export type Database = {
           gmail_history_id?: string | null
           gmail_last_sync_at?: string | null
           gmail_sync_errors?: number
+          historical_scan_completed_at?: string | null
+          historical_scan_enabled?: boolean
+          historical_scan_last_run_at?: string | null
+          historical_scan_lookback_days?: number
+          historical_scan_page_token?: string | null
+          historical_scan_started_at?: string | null
+          historical_scan_status?: string
+          historical_scan_total_processed?: number
           id?: string
           refresh_token?: string | null
           scopes?: string[]
@@ -3445,6 +6788,168 @@ export type Database = {
           },
           {
             foreignKeyName: "households_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incentive_deliveries: {
+        Row: {
+          delivery_channel: Database["public"]["Enums"]["incentive_delivery_channel"]
+          id: string
+          incentive_id: string
+          message: string | null
+          recipient_email: string
+          recipient_name: string | null
+          sent_at: string
+          sent_by_user_id: string
+          tenant_id: string
+        }
+        Insert: {
+          delivery_channel?: Database["public"]["Enums"]["incentive_delivery_channel"]
+          id?: string
+          incentive_id: string
+          message?: string | null
+          recipient_email: string
+          recipient_name?: string | null
+          sent_at?: string
+          sent_by_user_id: string
+          tenant_id: string
+        }
+        Update: {
+          delivery_channel?: Database["public"]["Enums"]["incentive_delivery_channel"]
+          id?: string
+          incentive_id?: string
+          message?: string | null
+          recipient_email?: string
+          recipient_name?: string | null
+          sent_at?: string
+          sent_by_user_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incentive_deliveries_incentive_id_fkey"
+            columns: ["incentive_id"]
+            isOneToOne: false
+            referencedRelation: "client_incentives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_deliveries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incentive_redemptions: {
+        Row: {
+          applied_amount_cents: number
+          applied_discount_percent: number | null
+          balance_after_cents: number | null
+          balance_before_cents: number | null
+          client_id: string
+          code: string
+          created_at: string
+          event_id: string
+          id: string
+          incentive_id: string
+          ledger_entry_id: string | null
+          redeemed_at: string
+          redeemed_by_user_id: string | null
+          tenant_id: string
+          type: string
+        }
+        Insert: {
+          applied_amount_cents: number
+          applied_discount_percent?: number | null
+          balance_after_cents?: number | null
+          balance_before_cents?: number | null
+          client_id: string
+          code: string
+          created_at?: string
+          event_id: string
+          id?: string
+          incentive_id: string
+          ledger_entry_id?: string | null
+          redeemed_at?: string
+          redeemed_by_user_id?: string | null
+          tenant_id: string
+          type: string
+        }
+        Update: {
+          applied_amount_cents?: number
+          applied_discount_percent?: number | null
+          balance_after_cents?: number | null
+          balance_before_cents?: number | null
+          client_id?: string
+          code?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          incentive_id?: string
+          ledger_entry_id?: string | null
+          redeemed_at?: string
+          redeemed_by_user_id?: string | null
+          tenant_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incentive_redemptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "incentive_redemptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_redemptions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "incentive_redemptions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "incentive_redemptions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_redemptions_incentive_id_fkey"
+            columns: ["incentive_id"]
+            isOneToOne: false
+            referencedRelation: "client_incentives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_redemptions_ledger_entry_id_fkey"
+            columns: ["ledger_entry_id"]
+            isOneToOne: false
+            referencedRelation: "ledger_entries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incentive_redemptions_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -3740,6 +7245,119 @@ export type Database = {
           },
           {
             foreignKeyName: "inquiries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inquiry_notes: {
+        Row: {
+          attachment_filename: string | null
+          attachment_url: string | null
+          category: Database["public"]["Enums"]["inquiry_note_category"]
+          created_at: string
+          id: string
+          inquiry_id: string
+          note_text: string
+          pinned: boolean
+          source: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          attachment_filename?: string | null
+          attachment_url?: string | null
+          category?: Database["public"]["Enums"]["inquiry_note_category"]
+          created_at?: string
+          id?: string
+          inquiry_id: string
+          note_text: string
+          pinned?: boolean
+          source?: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          attachment_filename?: string | null
+          attachment_url?: string | null
+          category?: Database["public"]["Enums"]["inquiry_note_category"]
+          created_at?: string
+          id?: string
+          inquiry_id?: string
+          note_text?: string
+          pinned?: boolean
+          source?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_notes_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiry_notes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inquiry_recipe_links: {
+        Row: {
+          created_at: string
+          id: string
+          inquiry_id: string
+          note: string | null
+          recipe_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inquiry_id: string
+          note?: string | null
+          recipe_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inquiry_id?: string
+          note?: string | null
+          recipe_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inquiry_recipe_links_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiry_recipe_links_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_cost_summary"
+            referencedColumns: ["recipe_id"]
+          },
+          {
+            foreignKeyName: "inquiry_recipe_links_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inquiry_recipe_links_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -4121,6 +7739,136 @@ export type Database = {
           },
         ]
       }
+      kitchen_rentals: {
+        Row: {
+          address: string | null
+          booking_confirmation: string | null
+          chef_id: string
+          cost_cents: number
+          created_at: string
+          end_time: string | null
+          event_id: string | null
+          facility_name: string
+          hours_booked: number | null
+          id: string
+          notes: string | null
+          purpose: string | null
+          rental_date: string
+          start_time: string | null
+        }
+        Insert: {
+          address?: string | null
+          booking_confirmation?: string | null
+          chef_id: string
+          cost_cents?: number
+          created_at?: string
+          end_time?: string | null
+          event_id?: string | null
+          facility_name: string
+          hours_booked?: number | null
+          id?: string
+          notes?: string | null
+          purpose?: string | null
+          rental_date: string
+          start_time?: string | null
+        }
+        Update: {
+          address?: string | null
+          booking_confirmation?: string | null
+          chef_id?: string
+          cost_cents?: number
+          created_at?: string
+          end_time?: string | null
+          event_id?: string | null
+          facility_name?: string
+          hours_booked?: number | null
+          id?: string
+          notes?: string | null
+          purpose?: string | null
+          rental_date?: string
+          start_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kitchen_rentals_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kitchen_rentals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "kitchen_rentals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "kitchen_rentals_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_goals: {
+        Row: {
+          category: string
+          chef_id: string
+          completed_at: string | null
+          created_at: string
+          description: string | null
+          id: string
+          notes: string | null
+          status: string
+          target_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          chef_id: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          target_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          chef_id?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          notes?: string | null
+          status?: string
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_goals_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ledger_entries: {
         Row: {
           amount_cents: number
@@ -4424,6 +8172,144 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketing_campaigns: {
+        Row: {
+          body_html: string
+          campaign_type: string
+          chef_id: string
+          created_at: string
+          id: string
+          name: string
+          recipient_count: number | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          target_segment: Json
+          updated_at: string
+        }
+        Insert: {
+          body_html: string
+          campaign_type?: string
+          chef_id: string
+          created_at?: string
+          id?: string
+          name: string
+          recipient_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          target_segment?: Json
+          updated_at?: string
+        }
+        Update: {
+          body_html?: string
+          campaign_type?: string
+          chef_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          recipient_count?: number | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          target_segment?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketing_campaigns_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      menu_approval_requests: {
+        Row: {
+          chef_id: string
+          client_id: string
+          created_at: string
+          event_id: string
+          id: string
+          menu_snapshot: Json
+          responded_at: string | null
+          revision_notes: string | null
+          sent_at: string
+          status: Database["public"]["Enums"]["menu_approval_status"]
+        }
+        Insert: {
+          chef_id: string
+          client_id: string
+          created_at?: string
+          event_id: string
+          id?: string
+          menu_snapshot?: Json
+          responded_at?: string | null
+          revision_notes?: string | null
+          sent_at?: string
+          status?: Database["public"]["Enums"]["menu_approval_status"]
+        }
+        Update: {
+          chef_id?: string
+          client_id?: string
+          created_at?: string
+          event_id?: string
+          id?: string
+          menu_snapshot?: Json
+          responded_at?: string | null
+          revision_notes?: string | null
+          sent_at?: string
+          status?: Database["public"]["Enums"]["menu_approval_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "menu_approval_requests_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_approval_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "menu_approval_requests_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "menu_approval_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "menu_approval_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "menu_approval_requests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -4772,13 +8658,136 @@ export type Database = {
           },
         ]
       }
+      mileage_logs: {
+        Row: {
+          chef_id: string
+          created_at: string
+          deduction_cents: number | null
+          event_id: string | null
+          from_address: string
+          id: string
+          irs_rate_cents_per_mile: number
+          log_date: string
+          miles: number
+          notes: string | null
+          purpose: string
+          to_address: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          deduction_cents?: number | null
+          event_id?: string | null
+          from_address: string
+          id?: string
+          irs_rate_cents_per_mile?: number
+          log_date: string
+          miles: number
+          notes?: string | null
+          purpose?: string
+          to_address: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          deduction_cents?: number | null
+          event_id?: string | null
+          from_address?: string
+          id?: string
+          irs_rate_cents_per_mile?: number
+          log_date?: string
+          miles?: number
+          notes?: string | null
+          purpose?: string
+          to_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mileage_logs_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mileage_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "mileage_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "mileage_logs_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_delivery_log: {
+        Row: {
+          channel: string
+          error_message: string | null
+          id: string
+          notification_id: string
+          sent_at: string
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          channel: string
+          error_message?: string | null
+          id?: string
+          notification_id: string
+          sent_at?: string
+          status: string
+          tenant_id: string
+        }
+        Update: {
+          channel?: string
+          error_message?: string | null
+          id?: string
+          notification_id?: string
+          sent_at?: string
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_delivery_log_notification_id_fkey"
+            columns: ["notification_id"]
+            isOneToOne: false
+            referencedRelation: "notifications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_delivery_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_preferences: {
         Row: {
           auth_user_id: string
           category: string
           created_at: string
+          email_enabled: boolean | null
           id: string
+          push_enabled: boolean | null
+          sms_enabled: boolean | null
           tenant_id: string
+          tier: string | null
           toast_enabled: boolean
           updated_at: string
         }
@@ -4786,8 +8795,12 @@ export type Database = {
           auth_user_id: string
           category: string
           created_at?: string
+          email_enabled?: boolean | null
           id?: string
+          push_enabled?: boolean | null
+          sms_enabled?: boolean | null
           tenant_id: string
+          tier?: string | null
           toast_enabled?: boolean
           updated_at?: string
         }
@@ -4795,8 +8808,12 @@ export type Database = {
           auth_user_id?: string
           category?: string
           created_at?: string
+          email_enabled?: boolean | null
           id?: string
+          push_enabled?: boolean | null
+          sms_enabled?: boolean | null
           tenant_id?: string
+          tier?: string | null
           toast_enabled?: boolean
           updated_at?: string
         }
@@ -4825,6 +8842,7 @@ export type Database = {
           metadata: Json | null
           read_at: string | null
           recipient_id: string
+          recipient_role: string
           tenant_id: string
           title: string
         }
@@ -4842,6 +8860,7 @@ export type Database = {
           metadata?: Json | null
           read_at?: string | null
           recipient_id: string
+          recipient_role?: string
           tenant_id: string
           title: string
         }
@@ -4859,6 +8878,7 @@ export type Database = {
           metadata?: Json | null
           read_at?: string | null
           recipient_id?: string
+          recipient_role?: string
           tenant_id?: string
           title?: string
         }
@@ -5041,6 +9061,115 @@ export type Database = {
           },
         ]
       }
+      professional_achievements: {
+        Row: {
+          achieve_date: string | null
+          achieve_type: string
+          chef_id: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_public: boolean
+          organization: string | null
+          outcome: string | null
+          title: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          achieve_date?: string | null
+          achieve_type?: string
+          chef_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_public?: boolean
+          organization?: string | null
+          outcome?: string | null
+          title: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          achieve_date?: string | null
+          achieve_type?: string
+          chef_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_public?: boolean
+          organization?: string | null
+          outcome?: string | null
+          title?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "professional_achievements_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth_key: string
+          auth_user_id: string
+          created_at: string
+          device_label: string | null
+          endpoint: string
+          failed_count: number
+          id: string
+          is_active: boolean
+          last_used_at: string | null
+          p256dh: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          auth_key: string
+          auth_user_id: string
+          created_at?: string
+          device_label?: string | null
+          endpoint: string
+          failed_count?: number
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          p256dh: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          auth_key?: string
+          auth_user_id?: string
+          created_at?: string
+          device_label?: string | null
+          endpoint?: string
+          failed_count?: number
+          id?: string
+          is_active?: boolean
+          last_used_at?: string | null
+          p256dh?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quote_state_transitions: {
         Row: {
           from_status: Database["public"]["Enums"]["quote_status"] | null
@@ -5103,6 +9232,7 @@ export type Database = {
           deposit_required: boolean
           event_id: string | null
           expired_at: string | null
+          expiry_warning_sent_at: string | null
           guest_count_estimated: number | null
           id: string
           inquiry_id: string | null
@@ -5133,6 +9263,7 @@ export type Database = {
           deposit_required?: boolean
           event_id?: string | null
           expired_at?: string | null
+          expiry_warning_sent_at?: string | null
           guest_count_estimated?: number | null
           id?: string
           inquiry_id?: string | null
@@ -5163,6 +9294,7 @@ export type Database = {
           deposit_required?: boolean
           event_id?: string | null
           expired_at?: string | null
+          expiry_warning_sent_at?: string | null
           guest_count_estimated?: number | null
           id?: string
           inquiry_id?: string | null
@@ -5228,6 +9360,200 @@ export type Database = {
           },
           {
             foreignKeyName: "quotes_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipt_extractions: {
+        Row: {
+          created_at: string
+          extraction_confidence: number | null
+          id: string
+          payment_method: string | null
+          purchase_date: string | null
+          receipt_photo_id: string
+          store_location: string | null
+          store_name: string | null
+          subtotal_cents: number | null
+          tax_cents: number | null
+          tenant_id: string
+          total_cents: number | null
+        }
+        Insert: {
+          created_at?: string
+          extraction_confidence?: number | null
+          id?: string
+          payment_method?: string | null
+          purchase_date?: string | null
+          receipt_photo_id: string
+          store_location?: string | null
+          store_name?: string | null
+          subtotal_cents?: number | null
+          tax_cents?: number | null
+          tenant_id: string
+          total_cents?: number | null
+        }
+        Update: {
+          created_at?: string
+          extraction_confidence?: number | null
+          id?: string
+          payment_method?: string | null
+          purchase_date?: string | null
+          receipt_photo_id?: string
+          store_location?: string | null
+          store_name?: string | null
+          subtotal_cents?: number | null
+          tax_cents?: number | null
+          tenant_id?: string
+          total_cents?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_extractions_receipt_photo_id_fkey"
+            columns: ["receipt_photo_id"]
+            isOneToOne: false
+            referencedRelation: "receipt_photos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipt_extractions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipt_line_items: {
+        Row: {
+          created_at: string
+          description: string
+          event_id: string | null
+          expense_tag: string
+          id: string
+          ingredient_category: string | null
+          price_cents: number | null
+          receipt_extraction_id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          event_id?: string | null
+          expense_tag?: string
+          id?: string
+          ingredient_category?: string | null
+          price_cents?: number | null
+          receipt_extraction_id: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          event_id?: string | null
+          expense_tag?: string
+          id?: string
+          ingredient_category?: string | null
+          price_cents?: number | null
+          receipt_extraction_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_line_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "receipt_line_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "receipt_line_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipt_line_items_receipt_extraction_id_fkey"
+            columns: ["receipt_extraction_id"]
+            isOneToOne: false
+            referencedRelation: "receipt_extractions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipt_line_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receipt_photos: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          event_id: string
+          id: string
+          ocr_raw: string | null
+          photo_url: string
+          tenant_id: string
+          upload_status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          event_id: string
+          id?: string
+          ocr_raw?: string | null
+          photo_url: string
+          tenant_id: string
+          upload_status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          event_id?: string
+          id?: string
+          ocr_raw?: string | null
+          photo_url?: string
+          tenant_id?: string
+          upload_status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receipt_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "receipt_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "receipt_photos_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receipt_photos_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -5302,6 +9628,85 @@ export type Database = {
             columns: ["recipe_id"]
             isOneToOne: false
             referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipe_shares: {
+        Row: {
+          created_at: string
+          created_recipe_id: string | null
+          from_chef_id: string
+          id: string
+          note: string | null
+          original_recipe_id: string
+          responded_at: string | null
+          status: string
+          to_chef_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_recipe_id?: string | null
+          from_chef_id: string
+          id?: string
+          note?: string | null
+          original_recipe_id: string
+          responded_at?: string | null
+          status?: string
+          to_chef_id: string
+        }
+        Update: {
+          created_at?: string
+          created_recipe_id?: string | null
+          from_chef_id?: string
+          id?: string
+          note?: string | null
+          original_recipe_id?: string
+          responded_at?: string | null
+          status?: string
+          to_chef_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_shares_created_recipe_id_fkey"
+            columns: ["created_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_cost_summary"
+            referencedColumns: ["recipe_id"]
+          },
+          {
+            foreignKeyName: "recipe_shares_created_recipe_id_fkey"
+            columns: ["created_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_shares_from_chef_id_fkey"
+            columns: ["from_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_shares_original_recipe_id_fkey"
+            columns: ["original_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_cost_summary"
+            referencedColumns: ["recipe_id"]
+          },
+          {
+            foreignKeyName: "recipe_shares_original_recipe_id_fkey"
+            columns: ["original_recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_shares_to_chef_id_fkey"
+            columns: ["to_chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
         ]
@@ -5398,6 +9803,79 @@ export type Database = {
           },
         ]
       }
+      recurring_services: {
+        Row: {
+          chef_id: string
+          client_id: string
+          created_at: string
+          day_of_week: Json | null
+          end_date: string | null
+          frequency: string
+          id: string
+          notes: string | null
+          rate_cents: number
+          service_type: string
+          start_date: string
+          status: string
+          typical_guest_count: number | null
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          client_id: string
+          created_at?: string
+          day_of_week?: Json | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          notes?: string | null
+          rate_cents: number
+          service_type?: string
+          start_date: string
+          status?: string
+          typical_guest_count?: number | null
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          client_id?: string
+          created_at?: string
+          day_of_week?: Json | null
+          end_date?: string | null
+          frequency?: string
+          id?: string
+          notes?: string | null
+          rate_cents?: number
+          service_type?: string
+          start_date?: string
+          status?: string
+          typical_guest_count?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_services_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "recurring_services_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_partners: {
         Row: {
           booking_url: string | null
@@ -5413,6 +9891,7 @@ export type Database = {
           notes: string | null
           partner_type: Database["public"]["Enums"]["partner_type"]
           phone: string | null
+          share_token: string | null
           showcase_order: number | null
           status: Database["public"]["Enums"]["partner_status"]
           tenant_id: string
@@ -5433,6 +9912,7 @@ export type Database = {
           notes?: string | null
           partner_type?: Database["public"]["Enums"]["partner_type"]
           phone?: string | null
+          share_token?: string | null
           showcase_order?: number | null
           status?: Database["public"]["Enums"]["partner_status"]
           tenant_id: string
@@ -5453,6 +9933,7 @@ export type Database = {
           notes?: string | null
           partner_type?: Database["public"]["Enums"]["partner_type"]
           phone?: string | null
+          share_token?: string | null
           showcase_order?: number | null
           status?: Database["public"]["Enums"]["partner_status"]
           tenant_id?: string
@@ -5506,6 +9987,152 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "response_templates_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_calls: {
+        Row: {
+          actual_duration_minutes: number | null
+          agenda_items: Json
+          call_notes: string | null
+          call_type: string
+          cancelled_at: string | null
+          client_id: string | null
+          client_notified_at: string | null
+          completed_at: string | null
+          contact_company: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          duration_minutes: number
+          event_id: string | null
+          id: string
+          inquiry_id: string | null
+          next_action: string | null
+          next_action_due_at: string | null
+          notify_client: boolean
+          outcome_summary: string | null
+          prep_notes: string | null
+          reminder_1h_sent_at: string | null
+          reminder_24h_sent_at: string | null
+          scheduled_at: string
+          status: string
+          tenant_id: string
+          timezone: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          actual_duration_minutes?: number | null
+          agenda_items?: Json
+          call_notes?: string | null
+          call_type: string
+          cancelled_at?: string | null
+          client_id?: string | null
+          client_notified_at?: string | null
+          completed_at?: string | null
+          contact_company?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          duration_minutes?: number
+          event_id?: string | null
+          id?: string
+          inquiry_id?: string | null
+          next_action?: string | null
+          next_action_due_at?: string | null
+          notify_client?: boolean
+          outcome_summary?: string | null
+          prep_notes?: string | null
+          reminder_1h_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
+          scheduled_at: string
+          status?: string
+          tenant_id: string
+          timezone?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          actual_duration_minutes?: number | null
+          agenda_items?: Json
+          call_notes?: string | null
+          call_type?: string
+          cancelled_at?: string | null
+          client_id?: string | null
+          client_notified_at?: string | null
+          completed_at?: string | null
+          contact_company?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          duration_minutes?: number
+          event_id?: string | null
+          id?: string
+          inquiry_id?: string | null
+          next_action?: string | null
+          next_action_due_at?: string | null
+          notify_client?: boolean
+          outcome_summary?: string | null
+          prep_notes?: string | null
+          reminder_1h_sent_at?: string | null
+          reminder_24h_sent_at?: string | null
+          scheduled_at?: string
+          status?: string
+          tenant_id?: string
+          timezone?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_calls_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "scheduled_calls_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_calls_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "scheduled_calls_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "scheduled_calls_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_calls_inquiry_id_fkey"
+            columns: ["inquiry_id"]
+            isOneToOne: false
+            referencedRelation: "inquiries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_calls_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -5581,6 +10208,205 @@ export type Database = {
           },
         ]
       }
+      sequence_enrollments: {
+        Row: {
+          cancelled_at: string | null
+          chef_id: string
+          client_id: string
+          completed_at: string | null
+          current_step: number
+          enrolled_at: string
+          id: string
+          next_send_at: string
+          sequence_id: string
+        }
+        Insert: {
+          cancelled_at?: string | null
+          chef_id: string
+          client_id: string
+          completed_at?: string | null
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          next_send_at: string
+          sequence_id: string
+        }
+        Update: {
+          cancelled_at?: string | null
+          chef_id?: string
+          client_id?: string
+          completed_at?: string | null
+          current_step?: number
+          enrolled_at?: string
+          id?: string
+          next_send_at?: string
+          sequence_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_enrollments_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_enrollments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "sequence_enrollments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sequence_enrollments_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "automated_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sequence_steps: {
+        Row: {
+          body_html: string
+          created_at: string
+          delay_days: number
+          id: string
+          sequence_id: string
+          step_number: number
+          subject: string
+        }
+        Insert: {
+          body_html: string
+          created_at?: string
+          delay_days?: number
+          id?: string
+          sequence_id: string
+          step_number: number
+          subject: string
+        }
+        Update: {
+          body_html?: string
+          created_at?: string
+          delay_days?: number
+          id?: string
+          sequence_id?: string
+          step_number?: number
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "automated_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      served_dish_history: {
+        Row: {
+          chef_id: string
+          client_id: string
+          client_reaction: string | null
+          created_at: string
+          dish_name: string
+          event_id: string | null
+          id: string
+          notes: string | null
+          recipe_id: string | null
+          served_date: string
+        }
+        Insert: {
+          chef_id: string
+          client_id: string
+          client_reaction?: string | null
+          created_at?: string
+          dish_name: string
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          recipe_id?: string | null
+          served_date: string
+        }
+        Update: {
+          chef_id?: string
+          client_id?: string
+          client_reaction?: string | null
+          created_at?: string
+          dish_name?: string
+          event_id?: string | null
+          id?: string
+          notes?: string | null
+          recipe_id?: string | null
+          served_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "served_dish_history_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "served_dish_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "served_dish_history_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "served_dish_history_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "served_dish_history_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "served_dish_history_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "served_dish_history_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipe_cost_summary"
+            referencedColumns: ["recipe_id"]
+          },
+          {
+            foreignKeyName: "served_dish_history_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shopping_substitutions: {
         Row: {
           actual_ingredient: string
@@ -5646,6 +10472,662 @@ export type Database = {
           },
         ]
       }
+      sms_send_log: {
+        Row: {
+          action: string
+          id: string
+          sent_at: string
+          tenant_id: string
+        }
+        Insert: {
+          action: string
+          id?: string
+          sent_at?: string
+          tenant_id: string
+        }
+        Update: {
+          action?: string
+          id?: string
+          sent_at?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_send_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_connected_accounts: {
+        Row: {
+          access_token: string
+          connected_at: string
+          error_count: number
+          granted_scopes: string[]
+          id: string
+          is_active: boolean
+          last_error: string | null
+          last_refreshed_at: string | null
+          last_used_at: string | null
+          meta_ig_account_id: string | null
+          meta_page_id: string | null
+          meta_page_name: string | null
+          platform: string
+          platform_account_avatar: string | null
+          platform_account_handle: string | null
+          platform_account_id: string
+          platform_account_name: string | null
+          platform_account_type: string | null
+          refresh_token: string | null
+          tenant_id: string
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          connected_at?: string
+          error_count?: number
+          granted_scopes?: string[]
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_refreshed_at?: string | null
+          last_used_at?: string | null
+          meta_ig_account_id?: string | null
+          meta_page_id?: string | null
+          meta_page_name?: string | null
+          platform: string
+          platform_account_avatar?: string | null
+          platform_account_handle?: string | null
+          platform_account_id: string
+          platform_account_name?: string | null
+          platform_account_type?: string | null
+          refresh_token?: string | null
+          tenant_id: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          connected_at?: string
+          error_count?: number
+          granted_scopes?: string[]
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_refreshed_at?: string | null
+          last_used_at?: string | null
+          meta_ig_account_id?: string | null
+          meta_page_id?: string | null
+          meta_page_name?: string | null
+          platform?: string
+          platform_account_avatar?: string | null
+          platform_account_handle?: string | null
+          platform_account_id?: string
+          platform_account_name?: string | null
+          platform_account_type?: string | null
+          refresh_token?: string | null
+          tenant_id?: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_connected_accounts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_hashtag_sets: {
+        Row: {
+          created_at: string
+          created_by: string
+          hashtags: string[]
+          id: string
+          pillar: Database["public"]["Enums"]["social_pillar"] | null
+          set_name: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          hashtags?: string[]
+          id?: string
+          pillar?: Database["public"]["Enums"]["social_pillar"] | null
+          set_name: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          hashtags?: string[]
+          id?: string
+          pillar?: Database["public"]["Enums"]["social_pillar"] | null
+          set_name?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_hashtag_sets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_media_assets: {
+        Row: {
+          asset_kind: Database["public"]["Enums"]["social_asset_kind"]
+          asset_name: string
+          asset_tags: string[]
+          created_at: string
+          created_by: string
+          duration_seconds: number | null
+          file_size_bytes: number
+          height_px: number | null
+          id: string
+          is_archived: boolean
+          is_client_approved: boolean
+          mime_type: string
+          original_filename: string
+          public_url: string
+          storage_path: string
+          tenant_id: string
+          updated_at: string
+          updated_by: string | null
+          usage_context: string
+          width_px: number | null
+        }
+        Insert: {
+          asset_kind: Database["public"]["Enums"]["social_asset_kind"]
+          asset_name?: string
+          asset_tags?: string[]
+          created_at?: string
+          created_by: string
+          duration_seconds?: number | null
+          file_size_bytes?: number
+          height_px?: number | null
+          id?: string
+          is_archived?: boolean
+          is_client_approved?: boolean
+          mime_type: string
+          original_filename: string
+          public_url: string
+          storage_path: string
+          tenant_id: string
+          updated_at?: string
+          updated_by?: string | null
+          usage_context?: string
+          width_px?: number | null
+        }
+        Update: {
+          asset_kind?: Database["public"]["Enums"]["social_asset_kind"]
+          asset_name?: string
+          asset_tags?: string[]
+          created_at?: string
+          created_by?: string
+          duration_seconds?: number | null
+          file_size_bytes?: number
+          height_px?: number | null
+          id?: string
+          is_archived?: boolean
+          is_client_approved?: boolean
+          mime_type?: string
+          original_filename?: string
+          public_url?: string
+          storage_path?: string
+          tenant_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          usage_context?: string
+          width_px?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_media_assets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_oauth_states: {
+        Row: {
+          code_verifier: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          platform: string
+          redirect_to: string | null
+          state: string
+          tenant_id: string
+        }
+        Insert: {
+          code_verifier?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          platform: string
+          redirect_to?: string | null
+          state: string
+          tenant_id: string
+        }
+        Update: {
+          code_verifier?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          platform?: string
+          redirect_to?: string | null
+          state?: string
+          tenant_id?: string
+        }
+        Relationships: []
+      }
+      social_platform_credentials: {
+        Row: {
+          access_token: string
+          additional_data: Json
+          connected_at: string
+          created_at: string
+          disconnected_at: string | null
+          external_account_avatar_url: string | null
+          external_account_id: string
+          external_account_name: string | null
+          external_account_username: string | null
+          failed_attempts: number
+          id: string
+          is_active: boolean
+          last_error: string | null
+          last_used_at: string | null
+          platform: string
+          refresh_token: string | null
+          scopes: string[]
+          tenant_id: string
+          token_expires_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_token: string
+          additional_data?: Json
+          connected_at?: string
+          created_at?: string
+          disconnected_at?: string | null
+          external_account_avatar_url?: string | null
+          external_account_id: string
+          external_account_name?: string | null
+          external_account_username?: string | null
+          failed_attempts?: number
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_used_at?: string | null
+          platform: string
+          refresh_token?: string | null
+          scopes?: string[]
+          tenant_id: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          additional_data?: Json
+          connected_at?: string
+          created_at?: string
+          disconnected_at?: string | null
+          external_account_avatar_url?: string | null
+          external_account_id?: string
+          external_account_name?: string | null
+          external_account_username?: string | null
+          failed_attempts?: number
+          id?: string
+          is_active?: boolean
+          last_error?: string | null
+          last_used_at?: string | null
+          platform?: string
+          refresh_token?: string | null
+          scopes?: string[]
+          tenant_id?: string
+          token_expires_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_platform_credentials_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_post_assets: {
+        Row: {
+          asset_id: string
+          created_at: string
+          created_by: string
+          display_order: number
+          id: string
+          is_primary: boolean
+          post_id: string
+          tenant_id: string
+        }
+        Insert: {
+          asset_id: string
+          created_at?: string
+          created_by: string
+          display_order?: number
+          id?: string
+          is_primary?: boolean
+          post_id: string
+          tenant_id: string
+        }
+        Update: {
+          asset_id?: string
+          created_at?: string
+          created_by?: string
+          display_order?: number
+          id?: string
+          is_primary?: boolean
+          post_id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_post_assets_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "social_media_assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_post_assets_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "social_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "social_post_assets_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_posts: {
+        Row: {
+          alt_text: string
+          campaign: string
+          caption_facebook: string
+          caption_instagram: string
+          caption_linkedin: string
+          caption_master: string
+          caption_pinterest: string
+          caption_tiktok: string
+          caption_x: string
+          caption_youtube_shorts: string
+          collaborator_tags: string[]
+          created_at: string
+          created_by: string
+          cta: string
+          editable_until: string | null
+          hashtags: string[]
+          hot_swap_ready: boolean
+          id: string
+          last_publish_at: string | null
+          last_publish_error: string | null
+          location_tag: string
+          media_type: Database["public"]["Enums"]["social_media_type"]
+          media_url: string | null
+          mention_handles: string[]
+          notes: string
+          offer_link: string | null
+          pillar: Database["public"]["Enums"]["social_pillar"]
+          platforms: Database["public"]["Enums"]["social_platform"][]
+          post_code: string
+          preflight_missing_items: string[]
+          preflight_ready: boolean
+          publish_attempts: number
+          publish_checklist_notes: string
+          publish_errors: Json
+          published_external_ids: Json
+          published_to_platforms: Database["public"]["Enums"]["social_platform"][]
+          queued_to_platforms: Database["public"]["Enums"]["social_platform"][]
+          schedule_at: string
+          seasonal_flag: boolean
+          slot_number: number
+          status: Database["public"]["Enums"]["social_post_status"]
+          target_year: number
+          tenant_id: string
+          thumbnail_time_seconds: number | null
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+          updated_by: string | null
+          week_number: number
+        }
+        Insert: {
+          alt_text?: string
+          campaign?: string
+          caption_facebook?: string
+          caption_instagram?: string
+          caption_linkedin?: string
+          caption_master?: string
+          caption_pinterest?: string
+          caption_tiktok?: string
+          caption_x?: string
+          caption_youtube_shorts?: string
+          collaborator_tags?: string[]
+          created_at?: string
+          created_by: string
+          cta?: string
+          editable_until?: string | null
+          hashtags?: string[]
+          hot_swap_ready?: boolean
+          id?: string
+          last_publish_at?: string | null
+          last_publish_error?: string | null
+          location_tag?: string
+          media_type?: Database["public"]["Enums"]["social_media_type"]
+          media_url?: string | null
+          mention_handles?: string[]
+          notes?: string
+          offer_link?: string | null
+          pillar: Database["public"]["Enums"]["social_pillar"]
+          platforms?: Database["public"]["Enums"]["social_platform"][]
+          post_code: string
+          preflight_missing_items?: string[]
+          preflight_ready?: boolean
+          publish_attempts?: number
+          publish_checklist_notes?: string
+          publish_errors?: Json
+          published_external_ids?: Json
+          published_to_platforms?: Database["public"]["Enums"]["social_platform"][]
+          queued_to_platforms?: Database["public"]["Enums"]["social_platform"][]
+          schedule_at: string
+          seasonal_flag?: boolean
+          slot_number: number
+          status?: Database["public"]["Enums"]["social_post_status"]
+          target_year: number
+          tenant_id: string
+          thumbnail_time_seconds?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          week_number: number
+        }
+        Update: {
+          alt_text?: string
+          campaign?: string
+          caption_facebook?: string
+          caption_instagram?: string
+          caption_linkedin?: string
+          caption_master?: string
+          caption_pinterest?: string
+          caption_tiktok?: string
+          caption_x?: string
+          caption_youtube_shorts?: string
+          collaborator_tags?: string[]
+          created_at?: string
+          created_by?: string
+          cta?: string
+          editable_until?: string | null
+          hashtags?: string[]
+          hot_swap_ready?: boolean
+          id?: string
+          last_publish_at?: string | null
+          last_publish_error?: string | null
+          location_tag?: string
+          media_type?: Database["public"]["Enums"]["social_media_type"]
+          media_url?: string | null
+          mention_handles?: string[]
+          notes?: string
+          offer_link?: string | null
+          pillar?: Database["public"]["Enums"]["social_pillar"]
+          platforms?: Database["public"]["Enums"]["social_platform"][]
+          post_code?: string
+          preflight_missing_items?: string[]
+          preflight_ready?: boolean
+          publish_attempts?: number
+          publish_checklist_notes?: string
+          publish_errors?: Json
+          published_external_ids?: Json
+          published_to_platforms?: Database["public"]["Enums"]["social_platform"][]
+          queued_to_platforms?: Database["public"]["Enums"]["social_platform"][]
+          schedule_at?: string
+          seasonal_flag?: boolean
+          slot_number?: number
+          status?: Database["public"]["Enums"]["social_post_status"]
+          target_year?: number
+          tenant_id?: string
+          thumbnail_time_seconds?: number | null
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_queue_settings: {
+        Row: {
+          created_at: string
+          created_by: string
+          holdout_slots_per_month: number
+          posts_per_week: number
+          queue_days: number[]
+          queue_times: string[]
+          target_year: number
+          tenant_id: string
+          timezone: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          holdout_slots_per_month?: number
+          posts_per_week?: number
+          queue_days?: number[]
+          queue_times?: string[]
+          target_year?: number
+          tenant_id: string
+          timezone?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          holdout_slots_per_month?: number
+          posts_per_week?: number
+          queue_days?: number[]
+          queue_times?: string[]
+          target_year?: number
+          tenant_id?: string
+          timezone?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_queue_settings_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: true
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_members: {
+        Row: {
+          chef_id: string
+          created_at: string
+          email: string | null
+          hourly_rate_cents: number
+          id: string
+          name: string
+          notes: string | null
+          phone: string | null
+          role: Database["public"]["Enums"]["staff_role"]
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          email?: string | null
+          hourly_rate_cents?: number
+          id?: string
+          name: string
+          notes?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["staff_role"]
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          email?: string | null
+          hourly_rate_cents?: number
+          id?: string
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          role?: Database["public"]["Enums"]["staff_role"]
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_members_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suggested_links: {
         Row: {
           communication_event_id: string
@@ -5700,6 +11182,135 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tax_settings: {
+        Row: {
+          chef_id: string
+          created_at: string
+          filing_status: string
+          home_office_sqft: number | null
+          home_total_sqft: number | null
+          id: string
+          quarterly_payments: Json
+          tax_year: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          filing_status?: string
+          home_office_sqft?: number | null
+          home_total_sqft?: number | null
+          id?: string
+          quarterly_payments?: Json
+          tax_year: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          filing_status?: string
+          home_office_sqft?: number | null
+          home_total_sqft?: number | null
+          id?: string
+          quarterly_payments?: Json
+          tax_year?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tax_settings_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      travel_leg_ingredients: {
+        Row: {
+          created_at: string
+          event_id: string | null
+          id: string
+          ingredient_id: string
+          leg_id: string
+          notes: string | null
+          quantity: number | null
+          sourced_at: string | null
+          status: string
+          store_name: string | null
+          unit: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          ingredient_id: string
+          leg_id: string
+          notes?: string | null
+          quantity?: number | null
+          sourced_at?: string | null
+          status?: string
+          store_name?: string | null
+          unit?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_id?: string | null
+          id?: string
+          ingredient_id?: string
+          leg_id?: string
+          notes?: string | null
+          quantity?: number | null
+          sourced_at?: string | null
+          status?: string
+          store_name?: string | null
+          unit?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "travel_leg_ingredients_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "travel_leg_ingredients_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "travel_leg_ingredients_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_leg_ingredients_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredient_usage_summary"
+            referencedColumns: ["ingredient_id"]
+          },
+          {
+            foreignKeyName: "travel_leg_ingredients_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "travel_leg_ingredients_leg_id_fkey"
+            columns: ["leg_id"]
+            isOneToOne: false
+            referencedRelation: "event_travel_legs"
             referencedColumns: ["id"]
           },
         ]
@@ -5813,6 +11424,224 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"]
         }
         Relationships: []
+      }
+      vendor_price_points: {
+        Row: {
+          chef_id: string
+          created_at: string
+          id: string
+          ingredient_id: string | null
+          item_name: string
+          notes: string | null
+          price_cents: number
+          recorded_at: string
+          unit: string
+          vendor_id: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          item_name: string
+          notes?: string | null
+          price_cents: number
+          recorded_at?: string
+          unit: string
+          vendor_id: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          item_name?: string
+          notes?: string | null
+          price_cents?: number
+          recorded_at?: string
+          unit?: string
+          vendor_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_price_points_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_price_points_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredient_usage_summary"
+            referencedColumns: ["ingredient_id"]
+          },
+          {
+            foreignKeyName: "vendor_price_points_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_price_points_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendors: {
+        Row: {
+          address: string | null
+          chef_id: string
+          created_at: string
+          email: string | null
+          id: string
+          is_preferred: boolean
+          name: string
+          notes: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          vendor_type: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          chef_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_preferred?: boolean
+          name: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          vendor_type?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          chef_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_preferred?: boolean
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          vendor_type?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendors_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waitlist_entries: {
+        Row: {
+          chef_id: string
+          client_id: string | null
+          contacted_at: string | null
+          converted_event_id: string | null
+          created_at: string
+          expires_at: string | null
+          guest_count_estimate: number | null
+          id: string
+          notes: string | null
+          occasion: string | null
+          requested_date: string
+          requested_date_end: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          client_id?: string | null
+          contacted_at?: string | null
+          converted_event_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          guest_count_estimate?: number | null
+          id?: string
+          notes?: string | null
+          occasion?: string | null
+          requested_date: string
+          requested_date_end?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          client_id?: string | null
+          contacted_at?: string | null
+          converted_event_id?: string | null
+          created_at?: string
+          expires_at?: string | null
+          guest_count_estimate?: number | null
+          id?: string
+          notes?: string | null
+          occasion?: string | null
+          requested_date?: string
+          requested_date_end?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_entries_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_entries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "waitlist_entries_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waitlist_entries_converted_event_id_fkey"
+            columns: ["converted_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "waitlist_entries_converted_event_id_fkey"
+            columns: ["converted_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "waitlist_entries_converted_event_id_fkey"
+            columns: ["converted_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       wix_connections: {
         Row: {
@@ -6384,6 +12213,7 @@ export type Database = {
         Args: { chef_a: string; chef_b: string }
         Returns: boolean
       }
+      cleanup_expired_social_oauth_states: { Args: never; Returns: undefined }
       compute_client_lifetime_value: {
         Args: { p_client_id: string }
         Returns: number
@@ -6441,6 +12271,20 @@ export type Database = {
         Args: { conv_id: string }
         Returns: boolean
       }
+      redeem_incentive: {
+        Args: {
+          p_applied_cents: number
+          p_balance_before_cents: number
+          p_client_id: string
+          p_code: string
+          p_event_id: string
+          p_incentive_id: string
+          p_incentive_type: string
+          p_redeemed_by: string
+          p_tenant_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       cancellation_initiator: "chef" | "client" | "mutual"
@@ -6451,7 +12295,50 @@ export type Database = {
         | "event_ref"
         | "system"
         | "file"
+      chef_calendar_entry_type:
+        | "vacation"
+        | "time_off"
+        | "personal"
+        | "market"
+        | "festival"
+        | "class"
+        | "photo_shoot"
+        | "media"
+        | "meeting"
+        | "admin_block"
+        | "other"
+        | "target_booking"
+        | "soft_preference"
       chef_connection_status: "pending" | "accepted" | "declined"
+      chef_goal_status: "active" | "paused" | "completed" | "archived"
+      chef_goal_type:
+        | "revenue_monthly"
+        | "revenue_annual"
+        | "revenue_custom"
+        | "booking_count"
+        | "new_clients"
+        | "recipe_library"
+        | "profit_margin"
+        | "expense_ratio"
+      chef_journal_media_type: "photo" | "video" | "document"
+      chef_journey_entry_type:
+        | "destination"
+        | "meal"
+        | "lesson"
+        | "experience"
+        | "idea"
+        | "reflection"
+        | "technique"
+        | "ingredient"
+      chef_journey_idea_area:
+        | "menu"
+        | "technique"
+        | "service"
+        | "sourcing"
+        | "team"
+        | "operations"
+      chef_journey_idea_status: "backlog" | "testing" | "adopted" | "parked"
+      chef_journey_status: "planning" | "in_progress" | "completed" | "archived"
       chef_network_contact_share_status: "open" | "accepted" | "passed"
       chef_network_feature_key:
         | "availability"
@@ -6495,8 +12382,18 @@ export type Database = {
         | "beverage"
         | "other"
       contact_method: "phone" | "email" | "text" | "instagram"
+      contract_status: "draft" | "sent" | "viewed" | "signed" | "voided"
       conversation_context_type: "standalone" | "inquiry" | "event"
       conversation_thread_state: "active" | "snoozed" | "closed"
+      equipment_category:
+        | "cookware"
+        | "knives"
+        | "smallwares"
+        | "appliances"
+        | "serving"
+        | "transport"
+        | "linen"
+        | "other"
       event_service_style:
         | "plated"
         | "family_style"
@@ -6537,6 +12434,8 @@ export type Database = {
         | "child"
         | "family_member"
         | "regular_guest"
+      incentive_delivery_channel: "email" | "manual"
+      incentive_type: "voucher" | "gift_card"
       ingredient_category:
         | "protein"
         | "produce"
@@ -6565,6 +12464,14 @@ export type Database = {
         | "referral"
         | "walk_in"
         | "wix"
+      inquiry_note_category:
+        | "general"
+        | "inspiration"
+        | "menu_planning"
+        | "sourcing"
+        | "logistics"
+        | "staffing"
+        | "post_event"
       inquiry_status:
         | "new"
         | "awaiting_client"
@@ -6573,17 +12480,6 @@ export type Database = {
         | "confirmed"
         | "declined"
         | "expired"
-      insight_status: "pending" | "accepted" | "dismissed"
-      insight_type:
-        | "inquiry_intent"
-        | "dietary_preference"
-        | "allergy_mention"
-        | "important_date"
-        | "guest_count"
-        | "event_detail"
-        | "budget_mention"
-        | "location_mention"
-        | "general_preference"
       integration_auth_type: "oauth2" | "api_key" | "pat" | "none"
       integration_provider:
         | "square"
@@ -6633,6 +12529,11 @@ export type Database = {
         | "bonus"
         | "adjustment"
         | "expired"
+      menu_approval_status:
+        | "not_sent"
+        | "sent"
+        | "approved"
+        | "revision_requested"
       menu_status: "draft" | "shared" | "locked" | "archived"
       message_channel:
         | "text"
@@ -6670,6 +12571,7 @@ export type Database = {
         | "card"
         | "check"
         | "other"
+        | "gift_card"
       payment_status:
         | "unpaid"
         | "deposit_paid"
@@ -6702,7 +12604,44 @@ export type Database = {
         | "email"
         | "other"
       rsvp_status: "pending" | "attending" | "declined" | "maybe"
+      social_asset_kind: "image" | "video"
+      social_media_type: "image" | "video" | "carousel" | "text"
+      social_pillar:
+        | "recipe"
+        | "behind_scenes"
+        | "education"
+        | "social_proof"
+        | "offers"
+        | "seasonal"
+      social_platform:
+        | "instagram"
+        | "facebook"
+        | "tiktok"
+        | "linkedin"
+        | "x"
+        | "pinterest"
+        | "youtube_shorts"
+      social_post_status:
+        | "idea"
+        | "draft"
+        | "approved"
+        | "queued"
+        | "published"
+        | "archived"
       spice_tolerance: "none" | "mild" | "medium" | "hot" | "very_hot"
+      staff_assignment_status:
+        | "scheduled"
+        | "confirmed"
+        | "completed"
+        | "no_show"
+      staff_role:
+        | "sous_chef"
+        | "kitchen_assistant"
+        | "service_staff"
+        | "server"
+        | "bartender"
+        | "dishwasher"
+        | "other"
       substitution_reason:
         | "unavailable"
         | "price"
@@ -6712,7 +12651,7 @@ export type Database = {
         | "other"
       suggested_link_status: "pending" | "accepted" | "rejected"
       unused_reason: "leftover_reusable" | "wasted" | "returned"
-      user_role: "chef" | "client"
+      user_role: "chef" | "client" | "system"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -6852,7 +12791,54 @@ export const Constants = {
         "system",
         "file",
       ],
+      chef_calendar_entry_type: [
+        "vacation",
+        "time_off",
+        "personal",
+        "market",
+        "festival",
+        "class",
+        "photo_shoot",
+        "media",
+        "meeting",
+        "admin_block",
+        "other",
+        "target_booking",
+        "soft_preference",
+      ],
       chef_connection_status: ["pending", "accepted", "declined"],
+      chef_goal_status: ["active", "paused", "completed", "archived"],
+      chef_goal_type: [
+        "revenue_monthly",
+        "revenue_annual",
+        "revenue_custom",
+        "booking_count",
+        "new_clients",
+        "recipe_library",
+        "profit_margin",
+        "expense_ratio",
+      ],
+      chef_journal_media_type: ["photo", "video", "document"],
+      chef_journey_entry_type: [
+        "destination",
+        "meal",
+        "lesson",
+        "experience",
+        "idea",
+        "reflection",
+        "technique",
+        "ingredient",
+      ],
+      chef_journey_idea_area: [
+        "menu",
+        "technique",
+        "service",
+        "sourcing",
+        "team",
+        "operations",
+      ],
+      chef_journey_idea_status: ["backlog", "testing", "adopted", "parked"],
+      chef_journey_status: ["planning", "in_progress", "completed", "archived"],
       chef_network_contact_share_status: ["open", "accepted", "passed"],
       chef_network_feature_key: [
         "availability",
@@ -6900,8 +12886,19 @@ export const Constants = {
         "other",
       ],
       contact_method: ["phone", "email", "text", "instagram"],
+      contract_status: ["draft", "sent", "viewed", "signed", "voided"],
       conversation_context_type: ["standalone", "inquiry", "event"],
       conversation_thread_state: ["active", "snoozed", "closed"],
+      equipment_category: [
+        "cookware",
+        "knives",
+        "smallwares",
+        "appliances",
+        "serving",
+        "transport",
+        "linen",
+        "other",
+      ],
       event_service_style: [
         "plated",
         "family_style",
@@ -6946,6 +12943,8 @@ export const Constants = {
         "family_member",
         "regular_guest",
       ],
+      incentive_delivery_channel: ["email", "manual"],
+      incentive_type: ["voucher", "gift_card"],
       ingredient_category: [
         "protein",
         "produce",
@@ -6976,6 +12975,15 @@ export const Constants = {
         "walk_in",
         "wix",
       ],
+      inquiry_note_category: [
+        "general",
+        "inspiration",
+        "menu_planning",
+        "sourcing",
+        "logistics",
+        "staffing",
+        "post_event",
+      ],
       inquiry_status: [
         "new",
         "awaiting_client",
@@ -6984,18 +12992,6 @@ export const Constants = {
         "confirmed",
         "declined",
         "expired",
-      ],
-      insight_status: ["pending", "accepted", "dismissed"],
-      insight_type: [
-        "inquiry_intent",
-        "dietary_preference",
-        "allergy_mention",
-        "important_date",
-        "guest_count",
-        "event_detail",
-        "budget_mention",
-        "location_mention",
-        "general_preference",
       ],
       integration_auth_type: ["oauth2", "api_key", "pat", "none"],
       integration_provider: [
@@ -7052,6 +13048,12 @@ export const Constants = {
         "adjustment",
         "expired",
       ],
+      menu_approval_status: [
+        "not_sent",
+        "sent",
+        "approved",
+        "revision_requested",
+      ],
       menu_status: ["draft", "shared", "locked", "archived"],
       message_channel: [
         "text",
@@ -7093,6 +13095,7 @@ export const Constants = {
         "card",
         "check",
         "other",
+        "gift_card",
       ],
       payment_status: ["unpaid", "deposit_paid", "partial", "paid", "refunded"],
       pricing_model: ["per_person", "flat_rate", "custom"],
@@ -7123,7 +13126,49 @@ export const Constants = {
         "other",
       ],
       rsvp_status: ["pending", "attending", "declined", "maybe"],
+      social_asset_kind: ["image", "video"],
+      social_media_type: ["image", "video", "carousel", "text"],
+      social_pillar: [
+        "recipe",
+        "behind_scenes",
+        "education",
+        "social_proof",
+        "offers",
+        "seasonal",
+      ],
+      social_platform: [
+        "instagram",
+        "facebook",
+        "tiktok",
+        "linkedin",
+        "x",
+        "pinterest",
+        "youtube_shorts",
+      ],
+      social_post_status: [
+        "idea",
+        "draft",
+        "approved",
+        "queued",
+        "published",
+        "archived",
+      ],
       spice_tolerance: ["none", "mild", "medium", "hot", "very_hot"],
+      staff_assignment_status: [
+        "scheduled",
+        "confirmed",
+        "completed",
+        "no_show",
+      ],
+      staff_role: [
+        "sous_chef",
+        "kitchen_assistant",
+        "service_staff",
+        "server",
+        "bartender",
+        "dishwasher",
+        "other",
+      ],
       substitution_reason: [
         "unavailable",
         "price",
@@ -7134,8 +13179,7 @@ export const Constants = {
       ],
       suggested_link_status: ["pending", "accepted", "rejected"],
       unused_reason: ["leftover_reusable", "wasted", "returned"],
-      user_role: ["chef", "client"],
+      user_role: ["chef", "client", "system"],
     },
   },
 } as const
-

@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { formatDistanceToNow } from 'date-fns'
+import { ActivityTracker } from '@/components/activity/activity-tracker'
 
 const STATUS_DISPLAY: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
   sent: { label: 'Pending Review', variant: 'info' },
@@ -100,6 +101,11 @@ export default async function ClientQuotesPage() {
           })}
         </div>
       )}
+
+      <ActivityTracker
+        eventType="quotes_list_viewed"
+        metadata={{ quote_count: quotes.length }}
+      />
     </div>
   )
 }

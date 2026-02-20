@@ -4,18 +4,19 @@
 import type { Metadata } from 'next'
 import type { ChefActivityDomain } from '@/lib/activity/chef-types'
 import { getResumeItems } from '@/lib/activity/resume'
-import { getChefActivity, getActivityCountsByDomain } from '@/lib/activity/chef-actions'
-import { getRecentActivity } from '@/lib/activity/actions'
+import { getActivityCountsByDomain, getChefActivityFeed } from '@/lib/activity/chef-actions'
+import { getRecentClientActivity } from '@/lib/activity/actions'
 import { ActivityPageClient } from './activity-page-client'
 
 export const metadata: Metadata = { title: 'Activity - ChefFlow' }
 
 export default async function ActivityPage() {
-  // Fetch all data in parallel
-  const [resumeItems, chefActivity, clientActivity, domainCounts] = await Promise.all([
+  // Fetch initial state for default filters:
+  // tab=my, timeRange=7, actor=all, no domain filter.
+  const [resumeItems, chefActivityResult, clientActivityResult, domainCounts] = await Promise.all([
     safe('resumeItems', () => getResumeItems(), []),
-    safe('chefActivity', () => getChefActivity({ limit: 100, daysBack: 30 }), []),
-    safe('clientActivity', () => getRecentActivity(50), []),
+    safe('chefActivity', () => getChefActivityFeed({ limit: 25, daysBack: 7 }), { items: [], nextCursor: null }),
+    safe('clientActivity', () => getRecentClientActivity({ limit: 25, daysBack: 7 }), { items: [], nextCursor: null }),
     safe('domainCounts', () => getActivityCountsByDomain(7), {} as Partial<Record<ChefActivityDomain, number>>),
   ])
 
@@ -28,8 +29,10 @@ export default async function ActivityPage() {
 
       <ActivityPageClient
         resumeItems={resumeItems}
-        chefActivity={chefActivity}
-        clientActivity={clientActivity}
+        initialChefActivity={chefActivityResult.items}
+        initialChefCursor={chefActivityResult.nextCursor}
+        initialClientActivity={clientActivityResult.items}
+        initialClientCursor={clientActivityResult.nextCursor}
         domainCounts={domainCounts}
       />
     </div>

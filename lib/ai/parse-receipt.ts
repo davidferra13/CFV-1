@@ -132,7 +132,7 @@ export async function parseReceiptImage(
   const rawText = response.text
 
   if (!rawText) {
-    throw new Error('No text response from AI')
+    throw new Error('No text response from parser')
   }
 
   // Parse JSON — handle potential markdown wrapping
@@ -146,14 +146,14 @@ export async function parseReceiptImage(
   try {
     parsed = JSON.parse(jsonStr)
   } catch {
-    throw new Error('AI returned invalid JSON. Please try again with a clearer photo.')
+    throw new Error('Parser returned invalid JSON. Please try again with a clearer photo.')
   }
 
   // Validate with Zod
   const zodResult = ReceiptExtractionSchema.safeParse(parsed)
   if (!zodResult.success) {
     console.error('[parseReceiptImage] Validation errors:', zodResult.error.issues)
-    throw new Error('AI extraction did not match expected format. Please try again.')
+    throw new Error('Receipt extraction did not match expected format. Please try again.')
   }
 
   return zodResult.data

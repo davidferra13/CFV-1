@@ -61,11 +61,11 @@ export function InquiryForm({
       const available = await isAIConfigured()
       setAiAvailable(available)
       if (!available) {
-        setError('AI import not configured. Set GEMINI_API_KEY in .env.local.')
+        setError('Smart import not configured. Set GEMINI_API_KEY in .env.local.')
         return
       }
     } else if (!aiAvailable) {
-      setError('AI import not configured. Set GEMINI_API_KEY in .env.local.')
+      setError('Smart import not configured. Set GEMINI_API_KEY in .env.local.')
       return
     }
     setSmartFillOpen(true)
@@ -219,7 +219,7 @@ export function InquiryForm({
           >
             Paste from text
           </button>
-          <span className="text-xs text-stone-400">AI-powered form fill from messages, emails, or notes</span>
+          <span className="text-xs text-stone-400">Quick form fill from messages, emails, or notes</span>
         </div>
 
         <SmartFillModal

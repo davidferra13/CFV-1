@@ -6,8 +6,9 @@
 
 import { z } from 'zod'
 import { parseWithAI, type ParseResult } from './parse'
-import { ParsedClientSchema, type ParsedClient } from './parse-client'
-import { ParsedRecipeSchema, type ParsedRecipe } from './parse-recipe'
+import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
+import { ParsedRecipeSchema, type ParsedRecipe } from './parse-recipe-schema'
+import { parseClientsHeuristically, parseRecipesHeuristically, toFallbackWarning } from './fallback-parsers'
 
 // ============================================
 // BRAIN DUMP RESPONSE SCHEMA
@@ -76,10 +77,40 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  * Parse a brain dump into categorized structured data
  */
 export async function parseBrainDump(rawText: string): Promise<ParseResult<BrainDumpResult>> {
-  const result = await parseWithAI(
-    BRAIN_DUMP_SYSTEM_PROMPT,
-    rawText,
-    BrainDumpResponseSchema
-  )
-  return result
+  try {
+    const result = await parseWithAI(
+      BRAIN_DUMP_SYSTEM_PROMPT,
+      rawText,
+      BrainDumpResponseSchema
+    )
+    return result
+  } catch (error) {
+    const clientFallback = parseClientsHeuristically(rawText, toFallbackWarning(error))
+    const recipes = parseRecipesHeuristically(rawText)
+    const hasStructuredData = clientFallback.parsed.length > 0 || recipes.length > 0
+
+    return {
+      parsed: {
+        clients: clientFallback.parsed,
+        recipes,
+        notes: hasStructuredData
+          ? [{
+              type: 'general',
+              content: 'Imported using fallback parsing. Please review all fields before saving.',
+              suggestedAction: 'Review extracted data and adjust details as needed.',
+            }]
+          : [{
+              type: 'general',
+              content: rawText.slice(0, 400),
+              suggestedAction: 'Review and classify this note manually.',
+            }],
+        unstructured: hasStructuredData ? [] : [rawText],
+      },
+      confidence: 'low',
+      warnings: [
+        ...clientFallback.warnings,
+        'Used fallback parser for brain dump. Review extracted data carefully before saving.',
+      ],
+    }
+  }
 }

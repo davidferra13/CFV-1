@@ -4,8 +4,8 @@
   "description": "Ops for Artists — Private chef business operating system",
   "start_url": "/dashboard",
   "display": "standalone",
-  "background_color": "#111827",
-  "theme_color": "#111827",
+  "background_color": "#faf9f7",
+  "theme_color": "#e88f47",
   "orientation": "portrait",
   "categories": ["business", "productivity"],
   "shortcuts": [

@@ -12,11 +12,21 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import AcceptProposalButton from './accept-proposal-button'
+import CancelEventButton from './cancel-event-button'
 import { ClientFeedbackForm } from '@/components/reviews/client-feedback-form'
 import { SubmittedReview } from '@/components/reviews/submitted-review'
 import { ShareEventButton } from '@/components/sharing/share-event-button'
 import { ClientRSVPSummary } from '@/components/sharing/client-rsvp-summary'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
+import { getEventPhotosForClient } from '@/lib/events/photo-actions'
+import { ClientEventPhotoGallery } from '@/components/events/client-event-photo-gallery'
+import { ActivityTracker } from '@/components/activity/activity-tracker'
+import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
+import { TrackedDownloadLink } from '@/components/activity/tracked-download-link'
+import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
+import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
+import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
+import { buildJourneySteps } from '@/lib/events/journey-steps'
 import type { Database } from '@/types/database'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -64,13 +74,15 @@ export default async function EventDetailPage({
   ])
   const activeShare = shares.find((s: any) => s.is_active) || null
 
-  // Fetch review data for completed events
+  // Fetch review data and photos for completed events
   let existingReview = null
   let googleReviewUrl: string | null = null
+  let eventPhotos: Awaited<ReturnType<typeof getEventPhotosForClient>> = []
   if (event.status === 'completed') {
-    ;[existingReview, googleReviewUrl] = await Promise.all([
+    ;[existingReview, googleReviewUrl, eventPhotos] = await Promise.all([
       getClientReviewForEvent(params.id),
       getGoogleReviewUrlForTenant(event.tenant_id),
+      getEventPhotosForClient(params.id),
     ])
   }
 
@@ -120,6 +132,24 @@ export default async function EventDetailPage({
         </Alert>
       )}
 
+      {/* Journey Timeline */}
+      {event.status !== 'cancelled' && (
+        <Card className="mb-6 overflow-hidden">
+          <CardHeader>
+            <CardTitle>Your Journey</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EventJourneyStepper
+              steps={buildJourneySteps({
+                eventStatus: event.status,
+                eventTransitions: event.transitions,
+                hasPhotos: event.hasPhotos,
+              })}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Event Details Card */}
       <Card className="mb-6">
         <CardHeader>
@@ -159,6 +189,21 @@ export default async function EventDetailPage({
               </div>
             )}
           </div>
+
+          {/* Calendar add buttons — shown when event is locked in */}
+          {['paid', 'confirmed', 'in_progress'].includes(event.status) && (
+            <div className="mt-4 pt-4 border-t border-stone-100">
+              <CalendarAddButtons
+                eventId={event.id}
+                occasion={event.occasion || 'Private Chef Dinner'}
+                eventDate={event.event_date}
+                startTime={event.serve_time ?? undefined}
+                location={[event.location_address, event.location_city, event.location_state]
+                  .filter(Boolean)
+                  .join(', ') || undefined}
+              />
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -178,7 +223,7 @@ export default async function EventDetailPage({
 
             <div className="flex justify-between items-center">
               <span className="text-stone-600">Amount Paid</span>
-              <span className="font-semibold text-green-600">
+              <span className="font-semibold text-emerald-600">
                 {formatCurrency(totalPaidCents)}
               </span>
             </div>
@@ -211,8 +256,16 @@ export default async function EventDetailPage({
       {/* Payment History */}
       {event.ledgerEntries && event.ledgerEntries.length > 0 && (
         <Card className="mb-6">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Payment History</CardTitle>
+            <TrackedDownloadLink
+              href={`/api/documents/receipt/${event.id}`}
+              documentType="receipt"
+              entityId={event.id}
+              className="text-sm font-medium text-brand-600 hover:text-brand-700"
+            >
+              Download Receipt
+            </TrackedDownloadLink>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -235,6 +288,9 @@ export default async function EventDetailPage({
           </CardContent>
         </Card>
       )}
+
+      {/* Dinner Photos — visible on completed events that have photos */}
+      <ClientEventPhotoGallery photos={eventPhotos} />
 
       {/* Attached Menus */}
       {event.menus && event.menus.length > 0 && (
@@ -261,6 +317,39 @@ export default async function EventDetailPage({
         </Card>
       )}
 
+      {/* Printable Front-of-House Menu — available once event is confirmed */}
+      {event.menus && event.menus.length > 0 &&
+        ['confirmed', 'in_progress', 'completed'].includes(event.status) && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Printable Menu</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-stone-600 text-sm mb-4">
+              Your printable front-of-house menu is ready. Download and print it to place on the dining table.
+            </p>
+            <TrackedDownloadLink
+              href={`/api/documents/foh-menu/${event.id}`}
+              documentType="foh_menu"
+              entityId={event.id}
+              className="inline-flex items-center gap-2 bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-stone-800 transition"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download Menu PDF
+            </TrackedDownloadLink>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Cancellation policy — shown on paid/confirmed events so clients understand terms */}
+      {['accepted', 'paid', 'confirmed', 'in_progress'].includes(event.status) && (
+        <div className="mb-4">
+          <CancellationPolicyDisplay variant="compact" />
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
         {event.status === 'proposed' && (
@@ -273,6 +362,13 @@ export default async function EventDetailPage({
               Proceed to Payment
             </button>
           </Link>
+        )}
+
+        {['proposed', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(event.status) && (
+          <CancelEventButton
+            eventId={event.id}
+            status={event.status as 'proposed' | 'accepted' | 'paid' | 'confirmed' | 'in_progress'}
+          />
         )}
       </div>
 
@@ -325,6 +421,31 @@ export default async function EventDetailPage({
           )}
         </div>
       )}
+
+      {/* Activity tracking */}
+      <ActivityTracker
+        eventType="event_viewed"
+        entityType="event"
+        entityId={event.id}
+        metadata={{
+          event_status: event.status,
+          occasion: event.occasion,
+          event_date: event.event_date,
+          outstanding_balance_cents: outstandingBalanceCents,
+        }}
+      />
+      {event.status === 'proposed' && (
+        <ActivityTracker
+          eventType="proposal_viewed"
+          entityType="event"
+          entityId={event.id}
+          metadata={{
+            occasion: event.occasion,
+            quoted_price_cents: quotedPriceCents,
+          }}
+        />
+      )}
+      <SessionHeartbeat entityType="event" entityId={event.id} />
     </div>
   )
 }

@@ -57,7 +57,7 @@ This document is the **final authority on all pricing logic**. It defines the ac
 ## Holiday & Premium Date Pricing
 
 ### Tier 1 — Major Cooking Holidays (+40–50% premium)
-Thanksgiving, Christmas Eve, Christmas Day, New Year's Eve, Valentine's Day
+Thanksgiving, Christmas Eve, Christmas Day, New Year's Eve, New Year's Day, Valentine's Day
 
 ### Tier 2 — High-Demand Family Holidays (+25–35% premium)
 Mother's Day, Father's Day, Easter, Fourth of July

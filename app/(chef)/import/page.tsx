@@ -7,8 +7,16 @@ import { requireChef } from '@/lib/auth/get-user'
 export const metadata: Metadata = { title: 'Smart Import - ChefFlow' }
 import { isAIConfigured } from '@/lib/ai/parse'
 import { createServerClient } from '@/lib/supabase/server'
-import { SmartImportHub } from '@/components/import/smart-import-hub'
+import { SmartImportHub, type ImportMode } from '@/components/import/smart-import-hub'
+import { getClientsForHistoricalImport } from '@/lib/events/historical-import-actions'
 import { Alert } from '@/components/ui/alert'
+
+const IMPORT_MODES: ImportMode[] = ['brain-dump', 'csv', 'past-events', 'take-a-chef', 'clients', 'recipe', 'receipt', 'document', 'file-upload']
+
+function getInitialMode(mode?: string): ImportMode {
+  if (!mode) return 'brain-dump'
+  return IMPORT_MODES.includes(mode as ImportMode) ? (mode as ImportMode) : 'brain-dump'
+}
 
 async function getEventsForDropdown() {
   const supabase = createServerClient()
@@ -21,11 +29,17 @@ async function getEventsForDropdown() {
   return data || []
 }
 
-export default async function ImportPage() {
+export default async function ImportPage({
+  searchParams,
+}: {
+  searchParams: { mode?: string }
+}) {
   await requireChef()
-  const [aiConfigured, events] = await Promise.all([
+  const initialMode = getInitialMode(searchParams.mode)
+  const [aiConfigured, events, existingClients] = await Promise.all([
     isAIConfigured(),
     getEventsForDropdown(),
+    getClientsForHistoricalImport(),
   ])
 
   return (
@@ -33,18 +47,23 @@ export default async function ImportPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-900">Smart Import</h1>
         <p className="text-stone-600 mt-1">
-          Paste text, upload photos, or drop files and let AI parse them into structured records.
-          Review everything before saving.
+          Paste text, upload photos, or drop files — we&apos;ll pull out the details and
+          let you review everything before it saves.
         </p>
       </div>
 
       {!aiConfigured && (
-        <Alert variant="warning" title="AI Import Not Configured">
-          Set the <code className="font-mono text-sm bg-yellow-100 px-1 rounded">GEMINI_API_KEY</code> environment variable to enable AI-powered parsing. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="underline">ai.google.dev</a>.
+        <Alert variant="warning" title="Smart Import Not Configured">
+          Set the <code className="font-mono text-sm bg-yellow-100 px-1 rounded">GEMINI_API_KEY</code> environment variable to enable parsing. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="underline">Google Studio</a>.
         </Alert>
       )}
 
-      <SmartImportHub aiConfigured={aiConfigured} events={events} />
+      <SmartImportHub
+        aiConfigured={aiConfigured}
+        events={events}
+        existingClients={existingClients}
+        initialMode={initialMode}
+      />
     </div>
   )
 }

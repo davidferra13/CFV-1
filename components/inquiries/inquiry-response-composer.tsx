@@ -160,9 +160,9 @@ export function InquiryResponseComposer({
   if (!gmailConnected) {
     return (
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-3">AI Response</h2>
+        <h2 className="text-xl font-semibold mb-3">Response Draft</h2>
         <p className="text-sm text-stone-500">
-          Connect your Gmail account in Settings to enable AI-powered response drafting and sending.
+          Connect your Gmail account in Settings to enable response drafting and sending.
         </p>
       </Card>
     )
@@ -171,7 +171,7 @@ export function InquiryResponseComposer({
   if (!clientId || !clientEmail) {
     return (
       <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-3">AI Response</h2>
+        <h2 className="text-xl font-semibold mb-3">Response Draft</h2>
         <p className="text-sm text-stone-500">
           This inquiry needs a linked client with an email address before you can send responses.
         </p>
@@ -197,7 +197,7 @@ export function InquiryResponseComposer({
   return (
     <Card className="p-6">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">AI Response</h2>
+        <h2 className="text-xl font-semibold">Response Draft</h2>
         {!draftState && (
           <Button
             variant="primary"
@@ -345,8 +345,7 @@ export function InquiryResponseComposer({
       {/* Empty State */}
       {!draftState && !generating && !success && (
         <p className="text-sm text-stone-500">
-          Use the AI correspondence engine to generate a contextual response draft.
-          The AI analyzes the inquiry lifecycle state, client history, and your brand voice to craft an appropriate reply.
+          Generate a contextual response draft based on lifecycle state, client history, and brand voice.
         </p>
       )}
     </Card>

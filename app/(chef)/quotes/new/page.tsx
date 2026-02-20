@@ -21,6 +21,8 @@ export default async function NewQuotePage({
   let prefilledInquiryId = searchParams.inquiry_id
   let prefilledGuestCount: number | null = null
   let prefilledBudgetCents: number | null = null
+  let prefilledOccasion: string | null = null
+  let prefilledEventDate: string | null = null
 
   if (prefilledInquiryId) {
     const inquiry = await getInquiryById(prefilledInquiryId)
@@ -28,6 +30,8 @@ export default async function NewQuotePage({
       prefilledClientId = inquiry.client_id || prefilledClientId
       prefilledGuestCount = inquiry.confirmed_guest_count
       prefilledBudgetCents = inquiry.confirmed_budget_cents
+      prefilledOccasion = inquiry.confirmed_occasion ?? null
+      prefilledEventDate = inquiry.confirmed_date ?? null
     }
   }
 
@@ -53,6 +57,8 @@ export default async function NewQuotePage({
         prefilledInquiryId={prefilledInquiryId}
         prefilledGuestCount={prefilledGuestCount}
         prefilledBudgetCents={prefilledBudgetCents}
+        prefilledOccasion={prefilledOccasion}
+        prefilledEventDate={prefilledEventDate}
       />
     </div>
   )

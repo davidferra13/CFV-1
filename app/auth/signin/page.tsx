@@ -1,8 +1,8 @@
 // Sign In Page
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, type SignInInput } from '@/lib/auth/actions'
 
@@ -11,26 +11,48 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 
-export default function SignInPage() {
+// Guard against open redirect: only allow same-origin paths (no external URLs)
+function safeRedirectPath(raw: string | null): string {
+  if (!raw) return '/'
+  try {
+    // Parse as if relative to localhost — rejects anything with an external host
+    const url = new URL(raw, 'http://localhost')
+    if (url.origin !== 'http://localhost') return '/'
+    return url.pathname + url.search
+  } catch {
+    return '/'
+  }
+}
+
+function SignInForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(false)
 
   const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState<SignInInput>({
     email: '',
     password: '',
     rememberMe: true
   })
+  const redirectPath = safeRedirectPath(searchParams.get('redirect'))
+  useEffect(() => {
+    const callbackError = searchParams.get('error')
+    const callbackMessage = searchParams.get('message')
+    setError(callbackError || null)
+    setMessage(callbackMessage || null)
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
+    setMessage(null)
     setLoading(true)
 
     try {
       await signIn(formData)
-      // Middleware redirects authenticated users from / to their role-based dashboard
-      router.push('/')
+      router.push(redirectPath)
       router.refresh()
     } catch (err) {
       const error = err as Error
@@ -55,6 +77,10 @@ export default function SignInPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
+              {message && (
+                <Alert variant="success">{message}</Alert>
+              )}
+
               {error && (
                 <Alert variant="error">{error}</Alert>
               )}
@@ -107,7 +133,11 @@ export default function SignInPage() {
               <div className="text-sm text-center text-stone-600">
                 Don&apos;t have an account?{' '}
                 <Link href="/auth/signup" className="text-brand-600 hover:text-brand-700 font-medium">
-                  Sign up as Chef
+                  Chef sign up
+                </Link>
+                {' '}or{' '}
+                <Link href="/auth/client-signup" className="text-brand-600 hover:text-brand-700 font-medium">
+                  Client sign up
                 </Link>
               </div>
             </CardFooter>
@@ -115,5 +145,17 @@ export default function SignInPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-surface-muted flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
+      </div>
+    }>
+      <SignInForm />
+    </Suspense>
   )
 }
