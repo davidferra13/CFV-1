@@ -66,6 +66,11 @@ build_latest.txt
 build-investigation.txt
 nul
 *.tmp
+tsc_stdout.txt
+tsc_stderr.txt
+
+# Stray system/home files
+HOME-*.xml
 
 # Pages Router artifacts (this project uses App Router)
 /pages/
