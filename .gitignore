@@ -81,3 +81,7 @@ types/gen-stderr.txt
 # Playwright test output
 /test-results/
 /playwright-report/
+
+# Playwright auth state (session tokens — never commit)
+# Regenerated automatically on every globalSetup run
+/.auth/

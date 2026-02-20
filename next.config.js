@@ -16,6 +16,10 @@ try {
 }
 
 const nextConfig = {
+  // Pin the build ID so the PWA wrapper's separate webpack pass uses the same
+  // directory as the main Next.js build. Without this, the two passes generate
+  // different IDs and the _ssgManifest.js write fails with ENOENT.
+  generateBuildId: async () => 'chefflow-build',
   images: {
     remotePatterns: [
       {
@@ -30,42 +34,30 @@ const nextConfig = {
       {
         source: '/(.*)',
         headers: [
-          // Force HTTPS for 1 year (preload-ready)
           {
             key: 'Strict-Transport-Security',
             value: 'max-age=31536000; includeSubDomains',
           },
-          // Block MIME-type sniffing
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
           },
-          // Prevent clickjacking via iframe embedding
-          // Note: frame-ancestors in CSP below also covers modern browsers
           {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
-          // Don't leak full URL in the Referer header to third parties
           {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
-          // Legacy XSS filter (belt + suspenders for older browsers)
           {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
-          // Restrict browser API access the app doesn't need
           {
             key: 'Permissions-Policy',
             value: 'geolocation=(), microphone=(), camera=(), payment=(self "https://js.stripe.com")',
           },
-          // Content Security Policy
-          // unsafe-inline is required for Next.js 14 RSC hydration scripts.
-          // To remove it, switch to a nonce-based CSP (larger refactor).
-          // Key protections: object-src none, base-uri self, frame-ancestors none,
-          // connect-src locked to known origins, frame-src locked to Stripe.
           {
             key: 'Content-Security-Policy',
             value: [

@@ -26,7 +26,15 @@
     "test:e2e:headed": "npm run verify:e2e-contract && npx playwright test --headed",
     "test:e2e:debug": "npx playwright test --debug",
     "test:e2e:report": "npx playwright show-report",
-    "verify:e2e-contract": "node scripts/verify-e2e-contract.js"
+    "verify:e2e-contract": "node scripts/verify-e2e-contract.js",
+    "seed:e2e": "tsx scripts/seed-e2e-remote.ts",
+    "cleanup:e2e": "tsx scripts/cleanup-e2e-data.ts",
+    "test:e2e:full": "npx playwright test",
+    "test:e2e:smoke": "npx playwright test --project=smoke",
+    "test:e2e:chef": "npx playwright test --project=chef",
+    "test:e2e:client": "npx playwright test --project=client",
+    "test:e2e:ui": "npx playwright test --ui",
+    "test:all": "npm run test:unit && npm run test:e2e:smoke"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",

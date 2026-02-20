@@ -3467,6 +3467,7 @@ export type Database = {
           first_event_date: string | null
           full_name: string
           fun_qa_answers: Json | null
+          has_received_welcome_points: boolean
           house_rules: string | null
           id: string
           kitchen_constraints: string | null
@@ -3526,6 +3527,7 @@ export type Database = {
           first_event_date?: string | null
           full_name: string
           fun_qa_answers?: Json | null
+          has_received_welcome_points?: boolean
           house_rules?: string | null
           id?: string
           kitchen_constraints?: string | null
@@ -3589,6 +3591,7 @@ export type Database = {
           first_event_date?: string | null
           full_name?: string
           fun_qa_answers?: Json | null
+          has_received_welcome_points?: boolean
           house_rules?: string | null
           id?: string
           kitchen_constraints?: string | null
@@ -4447,6 +4450,36 @@ export type Database = {
           },
         ]
       }
+      cron_executions: {
+        Row: {
+          cron_name: string
+          duration_ms: number | null
+          error_text: string | null
+          executed_at: string
+          id: string
+          result: Json | null
+          status: string
+        }
+        Insert: {
+          cron_name: string
+          duration_ms?: number | null
+          error_text?: string | null
+          executed_at?: string
+          id?: string
+          result?: Json | null
+          status?: string
+        }
+        Update: {
+          cron_name?: string
+          duration_ms?: number | null
+          error_text?: string | null
+          executed_at?: string
+          id?: string
+          result?: Json | null
+          status?: string
+        }
+        Relationships: []
+      }
       direct_outreach_log: {
         Row: {
           body: string
@@ -4518,6 +4551,7 @@ export type Database = {
           dietary_tags: string[]
           id: string
           menu_id: string
+          name: string | null
           sort_order: number
           tenant_id: string
           updated_at: string
@@ -4535,6 +4569,7 @@ export type Database = {
           dietary_tags?: string[]
           id?: string
           menu_id: string
+          name?: string | null
           sort_order?: number
           tenant_id: string
           updated_at?: string
@@ -4552,6 +4587,7 @@ export type Database = {
           dietary_tags?: string[]
           id?: string
           menu_id?: string
+          name?: string | null
           sort_order?: number
           tenant_id?: string
           updated_at?: string
@@ -7991,12 +8027,14 @@ export type Database = {
           is_active: boolean
           milestone_bonuses: Json
           points_per_guest: number
+          referral_points: number
           tenant_id: string
           tier_bronze_min: number
           tier_gold_min: number
           tier_platinum_min: number
           tier_silver_min: number
           updated_at: string
+          welcome_points: number
         }
         Insert: {
           bonus_large_party_points?: number | null
@@ -8006,12 +8044,14 @@ export type Database = {
           is_active?: boolean
           milestone_bonuses?: Json
           points_per_guest?: number
+          referral_points?: number
           tenant_id: string
           tier_bronze_min?: number
           tier_gold_min?: number
           tier_platinum_min?: number
           tier_silver_min?: number
           updated_at?: string
+          welcome_points?: number
         }
         Update: {
           bonus_large_party_points?: number | null
@@ -8021,18 +8061,131 @@ export type Database = {
           is_active?: boolean
           milestone_bonuses?: Json
           points_per_guest?: number
+          referral_points?: number
           tenant_id?: string
           tier_bronze_min?: number
           tier_gold_min?: number
           tier_platinum_min?: number
           tier_silver_min?: number
           updated_at?: string
+          welcome_points?: number
         }
         Relationships: [
           {
             foreignKeyName: "loyalty_config_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: true
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      loyalty_reward_redemptions: {
+        Row: {
+          client_id: string
+          created_at: string
+          delivered_at: string | null
+          delivery_note: string | null
+          delivery_status: string
+          event_id: string | null
+          id: string
+          loyalty_transaction_id: string
+          points_spent: number
+          redeemed_by: string
+          reward_id: string
+          reward_name: string
+          reward_type: string
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_note?: string | null
+          delivery_status?: string
+          event_id?: string | null
+          id?: string
+          loyalty_transaction_id: string
+          points_spent: number
+          redeemed_by?: string
+          reward_id: string
+          reward_name: string
+          reward_type: string
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          delivered_at?: string | null
+          delivery_note?: string | null
+          delivery_status?: string
+          event_id?: string | null
+          id?: string
+          loyalty_transaction_id?: string
+          points_spent?: number
+          redeemed_by?: string
+          reward_id?: string
+          reward_name?: string
+          reward_type?: string
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loyalty_reward_redemptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_loyalty_transaction_id_fkey"
+            columns: ["loyalty_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "loyalty_rewards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loyalty_reward_redemptions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
             referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
@@ -8457,10 +8610,13 @@ export type Database = {
           locked_at: string | null
           name: string
           notes: string | null
+          price_per_person_cents: number | null
           service_style:
             | Database["public"]["Enums"]["event_service_style"]
             | null
           shared_at: string | null
+          simple_mode: boolean
+          simple_mode_content: string | null
           status: Database["public"]["Enums"]["menu_status"]
           target_guest_count: number | null
           tenant_id: string
@@ -8479,10 +8635,13 @@ export type Database = {
           locked_at?: string | null
           name: string
           notes?: string | null
+          price_per_person_cents?: number | null
           service_style?:
             | Database["public"]["Enums"]["event_service_style"]
             | null
           shared_at?: string | null
+          simple_mode?: boolean
+          simple_mode_content?: string | null
           status?: Database["public"]["Enums"]["menu_status"]
           target_guest_count?: number | null
           tenant_id: string
@@ -8501,10 +8660,13 @@ export type Database = {
           locked_at?: string | null
           name?: string
           notes?: string | null
+          price_per_person_cents?: number | null
           service_style?:
             | Database["public"]["Enums"]["event_service_style"]
             | null
           shared_at?: string | null
+          simple_mode?: boolean
+          simple_mode_content?: string | null
           status?: Database["public"]["Enums"]["menu_status"]
           target_guest_count?: number | null
           tenant_id?: string
@@ -11642,6 +11804,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      webhook_events: {
+        Row: {
+          error_text: string | null
+          event_type: string
+          id: string
+          payload_size_bytes: number | null
+          provider: string
+          provider_event_id: string | null
+          received_at: string
+          result: Json | null
+          status: string
+        }
+        Insert: {
+          error_text?: string | null
+          event_type: string
+          id?: string
+          payload_size_bytes?: number | null
+          provider: string
+          provider_event_id?: string | null
+          received_at?: string
+          result?: Json | null
+          status?: string
+        }
+        Update: {
+          error_text?: string | null
+          event_type?: string
+          id?: string
+          payload_size_bytes?: number | null
+          provider?: string
+          provider_event_id?: string | null
+          received_at?: string
+          result?: Json | null
+          status?: string
+        }
+        Relationships: []
       }
       wix_connections: {
         Row: {
