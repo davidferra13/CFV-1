@@ -757,7 +757,7 @@ export async function getPendingRecipeShares(): Promise<RecipeShare[]> {
       id, original_recipe_id, from_chef_id, to_chef_id, status, note, created_recipe_id, responded_at, created_at,
       from_chef:chefs!recipe_shares_from_chef_id_fkey(${CHEF_PROFILE_SELECT}),
       to_chef:chefs!recipe_shares_to_chef_id_fkey(${CHEF_PROFILE_SELECT}),
-      recipe:recipes(id, name, category)
+      recipe:recipes!recipe_shares_original_recipe_id_fkey(id, name, category)
     `)
     .eq('to_chef_id', user.entityId)
     .eq('status', 'pending')

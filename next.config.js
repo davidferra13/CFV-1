@@ -7,8 +7,7 @@ try {
     dest: 'public',
     register: true,
     skipWaiting: true,
-    disable: process.env.NODE_ENV === 'development',
-    fallbacks: { document: '/offline.html' },
+    disable: true, // Temporarily disabled — PWA plugin interferes with App Router RSC manifest on Windows
   })
 } catch {
   // @ducanh2912/next-pwa not installed — PWA disabled for this build.
