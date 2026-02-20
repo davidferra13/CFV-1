@@ -22,18 +22,46 @@ export function generateValidPassword(): string {
  * Application routes — single source of truth for test navigation.
  */
 export const ROUTES = {
+  // Public
   home: '/',
-  signIn: '/auth/signin',
-  signUp: '/auth/signup',
-  chefDashboard: '/dashboard',
-  clientEvents: '/my-events',
-  inquiries: '/inquiries',
-  events: '/events',
-  clients: '/clients',
-  menus: '/menus',
-  settings: '/settings',
   pricing: '/pricing',
   contact: '/contact',
+  privacy: '/privacy',
+  terms: '/terms',
+  // Auth
+  signIn: '/auth/signin',
+  signUp: '/auth/signup',
+  // Chef portal
+  chefDashboard: '/dashboard',
+  events: '/events',
+  eventsNew: '/events/new',
+  inquiries: '/inquiries',
+  clients: '/clients',
+  menus: '/menus',
+  recipes: '/recipes',
+  quotes: '/quotes',
+  financials: '/financials',
+  expenses: '/expenses',
+  inbox: '/inbox',
+  network: '/network',
+  aar: '/aar',
+  settings: '/settings',
+  settingsProfile: '/settings/profile',
+  settingsPublicProfile: '/settings/public-profile',
+  settingsAutomations: '/settings/automations',
+  settingsNotifications: '/settings/notifications',
+  settingsDashboard: '/settings/dashboard',
+  settingsNavigation: '/settings/navigation',
+  settingsIntegrations: '/settings/integrations',
+  settingsEmergency: '/settings/emergency',
+  settingsCompliance: '/settings/compliance',
+  // Client portal
+  clientEvents: '/my-events',
+  myQuotes: '/my-quotes',
+  myChat: '/my-chat',
+  myProfile: '/my-profile',
+  myRewards: '/my-rewards',
+  myInquiries: '/my-inquiries',
 } as const
 
 /**
