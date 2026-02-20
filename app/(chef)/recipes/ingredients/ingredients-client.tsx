@@ -55,7 +55,7 @@ type Props = {
 
 export function IngredientsClient({ ingredients }: Props) {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editName, setEditName] = useState('')

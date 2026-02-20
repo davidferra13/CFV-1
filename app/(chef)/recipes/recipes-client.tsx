@@ -50,7 +50,7 @@ type Props = {
 
 export function RecipeLibraryClient({ recipes }: Props) {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const [search, setSearch] = useState(searchParams.get('search') || '')
 
   const currentCategory = searchParams.get('category') || ''
