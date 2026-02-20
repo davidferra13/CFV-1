@@ -2,9 +2,23 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CheckCircle2, CalendarDays, CreditCard, UsersRound } from 'lucide-react'
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+
 export const metadata: Metadata = {
   title: 'ChefFlow | Private Chef Business OS',
   description: 'Run events, menus, clients, and payments from one calm workspace.',
+  openGraph: {
+    title: 'ChefFlow | Private Chef Business OS',
+    description: 'Run events, menus, clients, and payments from one calm workspace.',
+    url: BASE_URL,
+    siteName: 'ChefFlow',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ChefFlow | Private Chef Business OS',
+    description: 'Run events, menus, clients, and payments from one calm workspace.',
+  },
 }
 
 const FEATURES = [

@@ -14,9 +14,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
   if (!data) return { title: 'Chef Not Found' }
 
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+  const title = `${data.chef.display_name} — Private Chef`
+  const description = data.chef.tagline || data.chef.bio || `Book ${data.chef.display_name} for your next private dining experience`
+  const profileUrl = `${BASE_URL}/chef/${params.slug}`
+  const imageUrl = (data.chef as any).profile_image_url as string | undefined
+
   return {
-    title: `${data.chef.display_name} — Private Chef`,
-    description: data.chef.tagline || data.chef.bio || `Book ${data.chef.display_name} for your next private dining experience`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: profileUrl,
+      siteName: 'ChefFlow',
+      type: 'profile',
+      ...(imageUrl ? { images: [{ url: imageUrl, alt: data.chef.display_name }] } : {}),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      ...(imageUrl ? { images: [imageUrl] } : {}),
+    },
   }
 }
 
@@ -51,6 +71,16 @@ export default async function ChefProfilePage({ params }: Props) {
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-white/70 backdrop-blur-[1px]">
         <div className="max-w-4xl mx-auto px-6 text-center">
+          {(chef as any).logo_url && (
+            <div className="flex justify-center mb-6">
+              <img
+                src={(chef as any).logo_url}
+                alt={`${chef.display_name} logo`}
+                className="max-h-16 max-w-[220px] object-contain"
+              />
+            </div>
+          )}
+
           {chef.profile_image_url ? (
             <img
               src={chef.profile_image_url}
