@@ -205,18 +205,26 @@ NEXT_PUBLIC_APP_URL=https://yourchefflowdomain.com
 
 ---
 
-## Applying Migrations
+## Migration Status (as of 2026-02-20)
+
+All analytics migrations have been applied to the remote Supabase project. Types regenerated at 454 KB.
+
+| Migration | Status | Notes |
+|---|---|---|
+| `20260306000004_analytics_social_stats_snapshots.sql` | Applied | `social_stats_snapshots` table live |
+| `20260306000005_analytics_marketing_spend.sql` | Applied | `marketing_spend_log`, `competitor_benchmarks`, `website_stats_snapshots` live |
+| `20260306000006_analytics_client_surveys.sql` | Applied | `client_satisfaction_surveys` live; token column uses `gen_random_uuid()::text` |
+| `20260306000007_analytics_inquiry_quote_columns.sql` | Applied | `decline_reason`, `ghost_at`, `negotiation_occurred`, `original_quoted_cents` live |
+| `20260306000008_analytics_event_campaign_columns.sql` | Applied | `actual_menu_deviations`, `parking_tolls_cents`, `inquiry_received_at`, `bounced_at`, `spam_at` live |
+| `20260306000009_analytics_chef_prefs_capacity.sql` | Applied | `max_events_per_month`, `owner_hourly_rate_cents` live |
+| `20260307000002_catchup_missing_schema.sql` | Applied | Catch-up: `event_surveys`, `onboarding_completed_at`, `stripe_account_id`, `logo_url`, `photo_url` |
+
+`types/database.ts` regenerated after all migrations — all new tables and columns are fully typed.
+
+## Applying Migrations (future changes)
 
 ```bash
 # Always back up first
 supabase db push --linked
 supabase gen types typescript --linked > types/database.ts
 ```
-
-Migrations to apply (in order):
-1. `20260306000004_analytics_social_stats_snapshots.sql`
-2. `20260306000005_analytics_marketing_spend.sql`
-3. `20260306000006_analytics_client_surveys.sql`
-4. `20260306000007_analytics_inquiry_quote_columns.sql`
-5. `20260306000008_analytics_event_campaign_columns.sql`
-6. `20260306000009_analytics_chef_prefs_capacity.sql`
