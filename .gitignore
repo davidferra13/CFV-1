@@ -80,8 +80,9 @@ scripts/parse-pw-results.*
 # Stray system/home files
 HOME-*.xml
 
-# Pages Router artifacts (this project uses App Router)
-/pages/
+# Pages Router generated output only (source .tsx files are tracked — build requires them)
+/pages/*.js
+/pages/*.js.map
 
 # Supabase temp type exports
 supabase-types-temp.ts
