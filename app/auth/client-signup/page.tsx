@@ -12,7 +12,7 @@ import { Alert } from '@/components/ui/alert'
 
 function ClientSignUpForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const token = searchParams.get('token')
 
   const [loading, setLoading] = useState(false)

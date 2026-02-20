@@ -26,7 +26,7 @@ function safeRedirectPath(raw: string | null): string {
 
 function SignInForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
+  const searchParams = useSearchParams() ?? new URLSearchParams()
   const [loading, setLoading] = useState(false)
 
   const [error, setError] = useState<string | null>(null)
