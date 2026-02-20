@@ -56,7 +56,7 @@ export async function getMenuRecommendations(params: {
 
   // Fetch allergen flags for required ingredients
   const recipeIds = recipes.map(r => r.id)
-  const { data: ingredients } = await supabase
+  const { data: ingredients } = await (supabase as any)
     .from('recipe_ingredients')
     .select('recipe_id, allergen_flags')
     .in('recipe_id', recipeIds)
