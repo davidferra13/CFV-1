@@ -64,10 +64,18 @@ build.log
 gen_error.txt
 build_latest.txt
 build-investigation.txt
+build_*.txt
+build-*.txt
 nul
 *.tmp
 tsc_stdout.txt
 tsc_stderr.txt
+
+# Playwright ad-hoc output
+pw-results.json
+pw-run.txt
+runbuild.bat
+scripts/parse-pw-results.*
 
 # Stray system/home files
 HOME-*.xml

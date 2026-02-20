@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS client_satisfaction_surveys (
   client_id            UUID        REFERENCES clients(id) ON DELETE SET NULL,
 
   -- Survey delivery
-  token                TEXT        NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(24), 'hex'),
+  token                TEXT        NOT NULL UNIQUE DEFAULT gen_random_uuid()::text,
   sent_at              TIMESTAMPTZ,
   responded_at         TIMESTAMPTZ,
   reminder_sent_at     TIMESTAMPTZ,
