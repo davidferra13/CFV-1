@@ -1,4 +1,4 @@
-I.# ChefFlow V1 — Project Rules
+# ChefFlow V1 — Project Rules
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
@@ -55,8 +55,10 @@ These rules exist because this is a **live production app with real client data*
 
 - Use **feature branches** for new work, not direct commits to `main`.
 - Branch naming: `feature/description` or `fix/description`.
-- **NEVER** run `git push`, merge to `main`, or deploy to Vercel unless the user explicitly says so.
-- `git commit` is fine. `git push` is not unless told to.
+- **NEVER** merge to `main` or deploy to Vercel unless the user explicitly says so.
+- **ALWAYS `git push` the current branch to GitHub at the end of every session.** This is the off-machine backup. Do not wait to be asked.
+- Pushing feature branches is **always safe** — `vercel.json` has `ignoreCommand` set so Vercel only builds when code is pushed to `main`. Feature branch pushes cost $0.
+- `git commit` + `git push origin <current-branch>` is the default. Merging to `main` is not.
 
 ### Feature Close-Out (run when user asks to close out a feature)
 
