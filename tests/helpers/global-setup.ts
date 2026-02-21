@@ -87,6 +87,36 @@ export default async function globalSetup() {
     'Client'
   )
 
+  await loginAndSaveState(
+    browser,
+    seedResult.chefBEmail,
+    seedResult.chefBPassword,
+    /\/dashboard/,
+    '.auth/chef-b.json',
+    'Chef B'
+  )
+
+  // Admin auth — only runs if ADMIN_E2E_EMAIL and ADMIN_E2E_PASSWORD are set.
+  // These are the credentials for davidferra13@gmail.com (the platform admin).
+  // Without them, coverage-admin tests are skipped gracefully.
+  const adminEmail = process.env.ADMIN_E2E_EMAIL
+  const adminPassword = process.env.ADMIN_E2E_PASSWORD
+  if (adminEmail && adminPassword) {
+    await loginAndSaveState(
+      browser,
+      adminEmail,
+      adminPassword,
+      /\/admin/,
+      '.auth/admin.json',
+      'Admin'
+    )
+  } else {
+    console.log('[globalSetup] ADMIN_E2E_EMAIL/ADMIN_E2E_PASSWORD not set — skipping admin auth state. Admin coverage tests will be skipped.')
+    // Write an empty storage state so coverage-admin project does not crash on missing file
+    const { writeFileSync } = await import('fs')
+    writeFileSync('.auth/admin.json', JSON.stringify({ cookies: [], origins: [] }), 'utf-8')
+  }
+
   await browser.close()
   console.log('[globalSetup] Complete. Ready to run tests.\n')
 }

@@ -1,18 +1,25 @@
 /** @type {import('next').NextConfig} */
-// Use @ducanh2912/next-pwa (App Router-compatible fork) if available,
-// otherwise fall back to no-op wrapper (avoids pages-manifest.json crash with next-pwa v5)
+// PWA: @ducanh2912/next-pwa's dual webpack compilation pass corrupts
+// build-manifest.json / pages-manifest.json on Windows. Bypass the wrapper
+// entirely — the service worker in public/sw.js is served correctly at runtime.
+// To rebuild the SW, temporarily set ENABLE_PWA_BUILD=1 and run `npx next build`.
+//
+// Sentry: wrapped with withSentryConfig at the bottom for source maps + error tracking.
+// Requires NEXT_PUBLIC_SENTRY_DSN (and optionally SENTRY_ORG / SENTRY_PROJECT) in env.
 let withPWA
-try {
-  withPWA = require('@ducanh2912/next-pwa').default({
-    dest: 'public',
-    register: true,
-    skipWaiting: true,
-    disable: process.env.NODE_ENV === 'development',
-  })
-} catch {
-  // @ducanh2912/next-pwa not installed — PWA disabled for this build.
-  // Run `npm install @ducanh2912/next-pwa` to restore service worker support.
-  console.warn('[next.config] WARNING: @ducanh2912/next-pwa not found — PWA features disabled.')
+if (process.env.ENABLE_PWA_BUILD === '1') {
+  try {
+    withPWA = require('@ducanh2912/next-pwa').default({
+      dest: 'public',
+      register: true,
+      skipWaiting: true,
+      disable: process.env.NODE_ENV === 'development',
+    })
+  } catch {
+    console.warn('[next.config] WARNING: @ducanh2912/next-pwa not found — PWA features disabled.')
+    withPWA = (config) => config
+  }
+} else {
   withPWA = (config) => config
 }
 
@@ -93,4 +100,21 @@ const nextConfig = {
   },
 }
 
-module.exports = withPWA(nextConfig)
+// Sentry source-map upload and performance instrumentation.
+// withSentryConfig is a no-op if SENTRY_DSN is not set.
+const { withSentryConfig } = require('@sentry/nextjs')
+
+const sentryConfig = {
+  // Upload source maps to Sentry during build (requires SENTRY_ORG + SENTRY_PROJECT in env).
+  // Disable source map upload in development or when Sentry is not configured.
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  // Source maps are uploaded but NOT shipped to the browser (better security)
+  hideSourceMaps: true,
+  // Don't fail the build if Sentry upload fails (graceful degradation)
+  dryRun: !process.env.SENTRY_AUTH_TOKEN,
+  disableLogger: true,
+}
+
+module.exports = withSentryConfig(withPWA(nextConfig), sentryConfig)

@@ -5,10 +5,16 @@
 // This matches package.json "dev": "next dev -p 3100"
 //
 // Projects:
-//   smoke  — unauthenticated, no globalSetup dependency (tests/smoke/)
-//   chef   — chef role, uses .auth/chef.json (tests/e2e/01-13)
-//   client — client role, uses .auth/client.json (tests/e2e/14)
-//   public — no auth, public-facing pages (tests/e2e/15)
+//   smoke              — unauthenticated, no globalSetup dependency (tests/smoke/)
+//   chef               — chef role, uses .auth/chef.json (tests/e2e/01-13)
+//   client             — client role, uses .auth/client.json (tests/e2e/14)
+//   public             — no auth, public-facing pages (tests/e2e/15)
+//   interactions-chef  — Phase 1-4 chef interaction tests (files 01-38 excl admin)
+//   interactions-admin — Admin panel interaction tests (file 37)
+//   interactions-client — Client-role interaction tests
+//   interactions-public — Unauthenticated interaction tests
+//   isolation-tests    — Multi-tenant security tests (SECURITY CRITICAL)
+//   coverage-*         — Full URL coverage by role
 
 import { defineConfig } from '@playwright/test'
 
@@ -59,6 +65,122 @@ export default defineConfig({
     {
       name: 'public',
       testMatch: ['**/e2e/15-*.spec.ts'],
+    },
+    // ── Coverage Layer ────────────────────────────────────────────────────────
+    // Visits every single URL for every role. Read-only GET requests only.
+    // Run: npm run test:coverage
+    {
+      name: 'coverage-public',
+      testMatch: ['**/coverage/01-public-routes.spec.ts'],
+      // No storageState — unauthenticated
+    },
+    {
+      name: 'coverage-chef',
+      testMatch: ['**/coverage/02-chef-routes.spec.ts'],
+      use: { storageState: '.auth/chef.json' },
+    },
+    {
+      name: 'coverage-client',
+      testMatch: ['**/coverage/03-client-routes.spec.ts'],
+      use: { storageState: '.auth/client.json' },
+    },
+    {
+      name: 'coverage-admin',
+      testMatch: ['**/coverage/04-admin-routes.spec.ts'],
+      use: { storageState: '.auth/admin.json' },
+    },
+    {
+      name: 'coverage-auth-boundaries',
+      testMatch: ['**/coverage/05-auth-boundaries.spec.ts'],
+      // No default storageState — tests manage their own auth per-test
+    },
+    {
+      name: 'coverage-api',
+      testMatch: ['**/coverage/06-api-routes.spec.ts'],
+      use: { storageState: '.auth/chef.json' },
+    },
+    // ── Interaction Layer ─────────────────────────────────────────────────────
+    // Tests forms, buttons, FSM transitions, and state mutations.
+    // Sequential (workers: 1) to prevent tenant state leaks.
+    // Run: npm run test:interactions
+    {
+      name: 'interactions-chef',
+      testMatch: [
+        // Phase 1 — core interactions
+        '**/interactions/01-create-flows.spec.ts',
+        '**/interactions/02-fsm-transitions.spec.ts',
+        '**/interactions/03-quote-flows.spec.ts',
+        '**/interactions/04-forms-validation.spec.ts',
+        '**/interactions/05-settings-flows.spec.ts',
+        // Phase 2 — gap closure (all chef-authenticated flows)
+        '**/interactions/06-close-out-wizard.spec.ts',
+        '**/interactions/07-dop-and-kds.spec.ts',
+        '**/interactions/08-chat-and-activity.spec.ts',
+        '**/interactions/09-calendar-and-schedule.spec.ts',
+        '**/interactions/10-aar-and-debrief.spec.ts',
+        '**/interactions/11-onboarding-wizard.spec.ts',
+        '**/interactions/14-inquiry-pipeline.spec.ts',
+        '**/interactions/15-search-and-filter.spec.ts',
+        '**/interactions/16-export-and-reports.spec.ts',
+        '**/interactions/17-mobile-viewports.spec.ts',
+        '**/interactions/18-data-persistence.spec.ts',
+        '**/interactions/19-error-handling.spec.ts',
+        '**/interactions/20-navigation-completeness.spec.ts',
+        // Phase 3 — untested feature areas + mutation verification
+        '**/interactions/21-staff-management.spec.ts',
+        '**/interactions/22-menus-deep.spec.ts',
+        '**/interactions/23-grocery-quote.spec.ts',
+        '**/interactions/24-inventory-waste-costing.spec.ts',
+        '**/interactions/25-loyalty-program.spec.ts',
+        '**/interactions/26-proposals-goals-partners.spec.ts',
+        '**/interactions/27-marketing-campaigns.spec.ts',
+        '**/interactions/28-waitlist-surveys-wix.spec.ts',
+        '**/interactions/29-mutation-verification.spec.ts',
+        // Phase 4 — remaining routes: analytics, finance, culinary, clients, leads, social, partners
+        '**/interactions/31-analytics-deep.spec.ts',
+        '**/interactions/32-finance-deep.spec.ts',
+        '**/interactions/33-culinary-deep.spec.ts',
+        '**/interactions/34-client-subsections.spec.ts',
+        '**/interactions/35-leads-calls-inbox.spec.ts',
+        '**/interactions/36-social-network-community.spec.ts',
+        '**/interactions/38-partners-deep.spec.ts',
+        // Phase 5 — missing mutation verification + core flow completions
+        '**/interactions/39-mutation-verification-phase4.spec.ts',
+        '**/interactions/40-core-flow-completions.spec.ts',
+        // Phase 6 — remaining routes not yet reached by files 01-40
+        '**/interactions/41-remaining-routes.spec.ts',
+      ],
+      use: { storageState: '.auth/chef.json' },
+    },
+    // Admin interaction tests — authenticated as test admin
+    // Run: npm run test:interactions:admin
+    {
+      name: 'interactions-admin',
+      testMatch: ['**/interactions/37-admin-panel.spec.ts'],
+      use: { storageState: '.auth/admin.json' },
+    },
+    // Multi-tenant isolation — Chef A session attempts to access Chef B's data
+    // SECURITY CRITICAL: a failure here means a real tenant data leak
+    // Run: npm run test:isolation
+    {
+      name: 'isolation-tests',
+      testMatch: ['**/interactions/30-multi-tenant-isolation.spec.ts'],
+      use: { storageState: '.auth/chef.json' }, // Chef A session intentionally
+    },
+    // Client-role interaction tests (quote accept/reject, menu approval, payment)
+    {
+      name: 'interactions-client',
+      testMatch: [
+        '**/interactions/03-quote-flows.spec.ts',
+        '**/interactions/12-client-portal-deep.spec.ts',
+      ],
+      use: { storageState: '.auth/client.json' },
+    },
+    // Unauthenticated interaction tests (auth signup pages, public flows)
+    {
+      name: 'interactions-public',
+      testMatch: ['**/interactions/13-auth-signup-flows.spec.ts'],
+      // No storageState — unauthenticated
     },
   ],
   webServer: {

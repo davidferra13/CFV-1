@@ -38,6 +38,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EventExportButton } from '@/components/exports/event-export-button'
 import { ChefGuestPanel } from '@/components/sharing/chef-guest-panel'
+import { EventStatusRealtimeSync } from '@/components/events/event-status-realtime-sync'
 import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
 import { getEventPhotosForChef } from '@/lib/events/photo-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
@@ -219,6 +220,8 @@ export default async function EventDetailPage({
 
   return (
     <div className="space-y-6">
+      {/* Realtime event status subscription — auto-refreshes when FSM state changes */}
+      <EventStatusRealtimeSync eventId={params.id} />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>

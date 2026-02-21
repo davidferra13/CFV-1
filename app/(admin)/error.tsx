@@ -5,6 +5,7 @@
 // Provides admin-specific recovery context.
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -16,6 +17,9 @@ export default function AdminError({
   reset: () => void
 }) {
   useEffect(() => {
+    Sentry.captureException(error, {
+      tags: { boundary: 'admin', digest: error.digest },
+    })
     console.error('[Admin Error]', error)
   }, [error])
 

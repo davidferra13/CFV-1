@@ -3,6 +3,7 @@
 // Not a server action module — called internally by server actions.
 
 import { createServerClient } from '@/lib/supabase/server'
+import { breakers } from '@/lib/resilience/circuit-breaker'
 import type Stripe from 'stripe'
 
 function getStripe(): Stripe {
@@ -98,7 +99,7 @@ export async function createPaymentCheckoutUrl(
     }
   }
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await breakers.stripe.execute(() => stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [
       {
@@ -117,7 +118,7 @@ export async function createPaymentCheckoutUrl(
     cancel_url: `${appUrl}/my-events/${eventId}?payment=cancelled`,
     customer_email: (event.client as { email: string | null })?.email || undefined,
     expires_at: Math.floor(Date.now() / 1000) + 72 * 3600, // 72 hours
-  })
+  }))
 
   return session.url
 }

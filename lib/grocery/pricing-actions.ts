@@ -11,6 +11,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { buildInstacartCartLink } from './instacart-actions'
+import { lookupUsdaPrice } from './usda-prices'
+import { getNeMultiplier } from './regional-multipliers'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -19,11 +21,14 @@ export type IngredientPriceResult = {
   ingredientName: string
   quantity: number
   unit: string
-  spoonacularCents: number | null
-  krogerCents: number | null
+  category: string | null
+  spoonacularCents: number | null      // raw national API price
+  krogerCents: number | null           // raw national API price
+  usdaCents: number | null             // USDA NE average (already regional)
   mealMeCents: number | null
-  averageCents: number | null
+  averageCents: number | null          // NE-adjusted average of all sources
   recipeBibleCents: number | null
+  hasNoApiData: boolean                // true = fell back to Recipe Bible or null
   isOptional: boolean
 }
 
@@ -33,6 +38,7 @@ export type GroceryQuoteResult = {
   items: IngredientPriceResult[]
   spoonacularTotalCents: number | null
   krogerTotalCents: number | null
+  usdaTotalCents: number | null
   mealMeTotalCents: number | null
   mealMeConfigured: boolean
   averageTotalCents: number
@@ -41,6 +47,8 @@ export type GroceryQuoteResult = {
   ingredientCount: number
   budgetCeilingCents: number | null
   quotedPriceCents: number | null
+  actualGroceryCostCents: number | null
+  accuracyDeltaPct: number | null
   isFromCache: boolean
 }
 
@@ -51,6 +59,7 @@ type RawIngredient = {
   name: string
   quantity: number
   unit: string
+  category: string | null
   lastPriceCents: number | null
   isOptional: boolean
 }
@@ -138,6 +147,7 @@ async function getEventIngredients(
         name: ing.name,
         quantity: scaledQty,
         unit: ri.unit,
+        category: ing.category ?? null,
         lastPriceCents: ing.last_price_cents,
         isOptional: ri.is_optional,
       })
@@ -323,6 +333,29 @@ async function getMealMePrice(
   }
 }
 
+// ─── USDA unit family matching ────────────────────────────────────────────────
+// USDA prices are per a specific unit (lb, pint, bunch, etc.). We only scale by
+// recipe quantity when the recipe unit belongs to the same unit family, avoiding
+// nonsensical multiplication (e.g. 499 cents/pint × 2 cups = $9.98 instead of ~$4.99).
+
+const USDA_UNIT_FAMILIES: string[][] = [
+  ['lb', 'lbs', 'pound', 'pounds'],
+  ['oz', 'ounce', 'ounces'],
+  ['pint', 'pt'],
+  ['each', 'whole', 'piece', 'head', 'clove', 'item'],
+  ['bunch', 'bunches'],
+  ['qt', 'quart', 'quarts'],
+  ['dozen', 'doz'],
+]
+
+function usdaUnitMatches(usdaUnit: string, recipeUnit: string): boolean {
+  const norm = (s: string) => s.toLowerCase().trim()
+  const u1 = norm(usdaUnit)
+  const u2 = norm(recipeUnit)
+  if (u1 === u2) return true
+  return USDA_UNIT_FAMILIES.some((fam) => fam.includes(u1) && fam.includes(u2))
+}
+
 // ─── Main: run a quote ────────────────────────────────────────────────────────
 
 export async function runGroceryPriceQuote(
@@ -386,9 +419,26 @@ export async function runGroceryPriceQuote(
         getMealMePrice(ing.name, chefZip),
       ])
 
-      const apiPrices = [spoonacularCents, krogerCents, mealMeCents].filter(
+      // USDA NE lookup — free, no API call, already Northeast-regional.
+      // Only applied when the recipe unit matches the USDA unit family to avoid
+      // nonsensical math (e.g. USDA price/pint × recipe quantity in cups).
+      const usdaEntry = lookupUsdaPrice(ing.name)
+      const usdaCents =
+        usdaEntry && usdaUnitMatches(usdaEntry.unit, ing.unit)
+          ? Math.round(usdaEntry.cents * ing.quantity)
+          : null
+
+      // Apply NE multiplier to national API prices before averaging
+      const multiplier = getNeMultiplier(ing.category)
+      const adjSpoonacular = spoonacularCents ? Math.round(spoonacularCents * multiplier) : null
+      const adjKroger = krogerCents ? Math.round(krogerCents * multiplier) : null
+
+      // Average all NE-calibrated sources (USDA is already NE — no multiplier)
+      const apiPrices = [adjSpoonacular, adjKroger, usdaCents, mealMeCents].filter(
         (p): p is number => p !== null
       )
+
+      const hasNoApiData = apiPrices.length === 0
 
       let averageCents: number | null = null
       if (apiPrices.length > 0) {
@@ -405,14 +455,17 @@ export async function runGroceryPriceQuote(
         ingredientName: ing.name,
         quantity: ing.quantity,
         unit: ing.unit,
+        category: ing.category,
         spoonacularCents,
         krogerCents,
+        usdaCents,
         mealMeCents,
         averageCents,
         recipeBibleCents:
           ing.lastPriceCents !== null
             ? Math.round(ing.lastPriceCents * ing.quantity)
             : null,
+        hasNoApiData,
         isOptional: ing.isOptional,
       }
     })
@@ -436,6 +489,7 @@ export async function runGroceryPriceQuote(
   // Compute totals
   const spoonacularTotal = sumNullable(results.map((r) => r.spoonacularCents))
   const krogerTotal = sumNullable(results.map((r) => r.krogerCents))
+  const usdaTotal = sumNullable(results.map((r) => r.usdaCents))
   const mealMeTotal = sumNullable(results.map((r) => r.mealMeCents))
   const averageTotal = results.reduce((sum, r) => sum + (r.averageCents ?? 0), 0)
 
@@ -469,6 +523,7 @@ export async function runGroceryPriceQuote(
     items: results,
     spoonacularTotalCents: spoonacularTotal,
     krogerTotalCents: krogerTotal,
+    usdaTotalCents: usdaTotal,
     mealMeTotalCents: mealMeTotal,
     mealMeConfigured,
     averageTotalCents: averageTotal,
@@ -477,6 +532,8 @@ export async function runGroceryPriceQuote(
     ingredientCount: ingredients.length,
     budgetCeilingCents,
     quotedPriceCents,
+    actualGroceryCostCents: null,
+    accuracyDeltaPct: null,
     isFromCache: false,
   }
 }
@@ -539,6 +596,51 @@ async function getEventBudgetContext(
   return { budgetCeilingCents, quotedPriceCents }
 }
 
+// ─── Log actual grocery cost (post-event) ────────────────────────────────────
+// Called from the close-out wizard after the chef enters what they actually spent.
+// Computes accuracy_delta_pct vs the stored estimate so the system can self-calibrate.
+
+export async function logActualGroceryCost(
+  eventId: string,
+  actualCostCents: number
+): Promise<void> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Find the most recent complete quote for this event
+  const { data: quote } = await supabase
+    .from('grocery_price_quotes')
+    .select('id, average_total_cents')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'complete')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!quote) return
+
+  const accuracyDeltaPct =
+    quote.average_total_cents && quote.average_total_cents > 0
+      ? parseFloat(
+          (
+            ((actualCostCents - quote.average_total_cents) /
+              quote.average_total_cents) *
+            100
+          ).toFixed(2)
+        )
+      : null
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase.from('grocery_price_quotes') as any)
+    .update({
+      actual_grocery_cost_cents: actualCostCents,
+      accuracy_delta_pct: accuracyDeltaPct,
+      actual_cost_logged_at: new Date().toISOString(),
+    })
+    .eq('id', quote.id)
+}
+
 async function buildResultFromRow(
   row: any,
   eventId: string,
@@ -552,11 +654,14 @@ async function buildResultFromRow(
       ingredientName: item.ingredient_name,
       quantity: Number(item.quantity),
       unit: item.unit ?? '',
+      category: null,          // not stored per-item in DB — null for cached results
       spoonacularCents: item.spoonacular_price_cents,
       krogerCents: item.kroger_price_cents,
+      usdaCents: null,         // not stored per-item in DB — null for cached results
       mealMeCents: item.mealme_price_cents ?? null,
       averageCents: item.average_price_cents,
       recipeBibleCents: null,
+      hasNoApiData: false,     // can't determine from cache; default false
       isOptional: false,
     })
   )
@@ -573,6 +678,7 @@ async function buildResultFromRow(
     items,
     spoonacularTotalCents: row.spoonacular_total_cents,
     krogerTotalCents: row.kroger_total_cents,
+    usdaTotalCents: null,      // not stored in DB — null for cached results
     mealMeTotalCents: row.mealme_total_cents ?? null,
     mealMeConfigured: !!process.env.MEALME_API_KEY,
     averageTotalCents: row.average_total_cents ?? 0,
@@ -581,6 +687,9 @@ async function buildResultFromRow(
     ingredientCount: row.ingredient_count ?? items.length,
     budgetCeilingCents,
     quotedPriceCents,
+    actualGroceryCostCents: row.actual_grocery_cost_cents ?? null,
+    // Supabase returns DECIMAL columns as strings — parse to number before use in the UI
+    accuracyDeltaPct: row.accuracy_delta_pct != null ? Number(row.accuracy_delta_pct) : null,
     isFromCache,
   }
 }

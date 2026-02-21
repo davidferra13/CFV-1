@@ -4,6 +4,7 @@
 // in the webhook handler writes the ledger entry — so callers must NOT write a ledger
 // entry for Stripe refunds (double-entry prevention).
 
+import { breakers } from '@/lib/resilience/circuit-breaker'
 import type Stripe from 'stripe'
 
 function getStripe(): Stripe {
@@ -35,9 +36,9 @@ export async function createStripeRefund(
   const stripe = getStripe()
 
   // Retrieve the PaymentIntent to get the charge ID
-  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
-    expand: ['latest_charge'],
-  })
+  const paymentIntent = await breakers.stripe.execute(() =>
+    stripe.paymentIntents.retrieve(paymentIntentId, { expand: ['latest_charge'] })
+  )
 
   const charge = paymentIntent.latest_charge as Stripe.Charge | null
 
@@ -53,15 +54,17 @@ export async function createStripeRefund(
   // and refund the application fee so the connected account is properly debited.
   const hasTransfer = !!(charge as any).transfer
 
-  const refund = await stripe.refunds.create({
-    charge: charge.id,
-    amount: amountCents,
-    reason: (reason as Stripe.RefundCreateParams.Reason) || 'requested_by_customer',
-    ...(hasTransfer ? {
-      reverse_transfer: true,
-      refund_application_fee: true,
-    } : {}),
-  })
+  const refund = await breakers.stripe.execute(() =>
+    stripe.refunds.create({
+      charge: charge.id,
+      amount: amountCents,
+      reason: (reason as Stripe.RefundCreateParams.Reason) || 'requested_by_customer',
+      ...(hasTransfer ? {
+        reverse_transfer: true,
+        refund_application_fee: true,
+      } : {}),
+    })
+  )
 
   return {
     refundId: refund.id,

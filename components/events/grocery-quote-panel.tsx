@@ -138,8 +138,8 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             )}
             {!hasQuote && (
               <p className="text-sm text-stone-500 mt-1">
-                Queries Spoonacular, Kroger
-                {mealMeConfigured ? ', and MealMe (your local stores)' : ', and MealMe when configured'} for real grocery prices.
+                Uses USDA Northeast prices + Spoonacular, Kroger
+                {mealMeConfigured ? ', and MealMe (your local stores)' : ', and MealMe when configured'} — NE-calibrated average of all sources.
               </p>
             )}
           </div>
@@ -173,7 +173,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             <div className="h-4 bg-stone-100 rounded animate-pulse w-4/5" />
             <div className="h-4 bg-stone-100 rounded animate-pulse w-3/5" />
             <p className="text-xs text-stone-400 mt-3">
-              Checking Spoonacular + Kroger for each ingredient — this may take 10–30s...
+              Checking USDA NE data, Spoonacular, and Kroger for each ingredient — this may take 10–30s...
             </p>
           </div>
         )}
@@ -216,6 +216,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                     <th className="text-left py-2 pr-4 font-medium text-stone-600 whitespace-nowrap">
                       Qty
                     </th>
+                    <th className="text-right py-2 pr-4 font-medium text-blue-700 whitespace-nowrap">
+                      USDA (NE)
+                    </th>
                     <th className="text-right py-2 pr-4 font-medium text-stone-500 whitespace-nowrap">
                       Spoonacular
                     </th>
@@ -235,16 +238,22 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   {quote.items.map((item, i) => (
                     <tr
                       key={`${item.ingredientId}-${i}`}
-                      className="border-b border-stone-100 last:border-0"
+                      className={`border-b border-stone-100 last:border-0 ${item.hasNoApiData ? 'bg-amber-50' : ''}`}
                     >
                       <td className="py-2 pr-4 text-stone-900">
                         {item.ingredientName}
                         {item.isOptional && (
                           <span className="ml-1.5 text-xs text-stone-400">(optional)</span>
                         )}
+                        {item.hasNoApiData && (
+                          <span className="ml-1.5 text-xs text-amber-600 font-medium">no market data</span>
+                        )}
                       </td>
                       <td className="py-2 pr-4 text-stone-500 whitespace-nowrap">
                         {formatQty(item.quantity, item.unit)}
+                      </td>
+                      <td className="py-2 pr-4 text-right text-blue-700 font-medium">
+                        <PriceCell cents={item.usdaCents} />
                       </td>
                       <td className="py-2 pr-4 text-right text-stone-500">
                         <PriceCell cents={item.spoonacularCents} />
@@ -268,6 +277,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                     <td colSpan={2} className="py-3 font-semibold text-stone-900">
                       Total Estimate
                     </td>
+                    <td className="py-3 text-right font-semibold text-blue-700">
+                      <PriceCell cents={quote.usdaTotalCents} />
+                    </td>
                     <td className="py-3 text-right text-stone-500">
                       <PriceCell cents={quote.spoonacularTotalCents} />
                     </td>
@@ -290,12 +302,12 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             {/* Source legend */}
             <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-400 border-t border-stone-100 pt-4">
               <span>
-                <span className="font-medium text-stone-600">Spoonacular</span> — US average
-                supermarket price for quantity requested
+                <span className="font-medium text-blue-700">USDA (NE)</span> — USDA Northeast
+                Urban average retail prices. Already NE-regional, no API key needed.
               </span>
               <span>
-                <span className="font-medium text-stone-600">Kroger</span> — real shelf price of
-                closest matching product
+                <span className="font-medium text-stone-600">Spoonacular / Kroger</span> — US
+                national averages. A Northeast regional multiplier is applied before averaging.
               </span>
               <span>
                 <span className={`font-medium ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-400'}`}>
@@ -306,8 +318,8 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   : '— not configured. Add MEALME_API_KEY to see prices from your actual NE stores.'}
               </span>
               <span>
-                <span className="font-medium text-stone-600">Avg Estimate</span> — average of
-                available sources (falls back to Recipe Bible if no API data)
+                <span className="font-medium text-stone-600">Avg Estimate</span> — NE-calibrated
+                average of all sources. Falls back to Recipe Bible if no data found.
               </span>
             </div>
           </Card>
@@ -321,6 +333,38 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                 ceilingCents={quote.budgetCeilingCents}
                 quotedCents={quote.quotedPriceCents}
               />
+            </Card>
+          )}
+
+          {/* Accuracy check — shown when chef has logged actual grocery spend post-event */}
+          {quote.actualGroceryCostCents !== null && (
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-stone-700 mb-3">Accuracy Check</h3>
+              <div className="flex gap-6 text-sm mb-3">
+                <div>
+                  <p className="text-stone-500 text-xs mb-0.5">Estimated</p>
+                  <p className="font-semibold text-stone-900">{formatCurrency(quote.averageTotalCents)}</p>
+                </div>
+                <div>
+                  <p className="text-stone-500 text-xs mb-0.5">Actual spent</p>
+                  <p className="font-semibold text-stone-900">{formatCurrency(quote.actualGroceryCostCents)}</p>
+                </div>
+                {quote.accuracyDeltaPct !== null && (
+                  <div>
+                    <p className="text-stone-500 text-xs mb-0.5">Delta</p>
+                    <p className={`font-semibold ${Math.abs(quote.accuracyDeltaPct) < 10 ? 'text-emerald-700' : 'text-amber-600'}`}>
+                      {quote.accuracyDeltaPct > 0 ? '+' : ''}
+                      {quote.accuracyDeltaPct.toFixed(1)}%
+                    </p>
+                  </div>
+                )}
+              </div>
+              <p className="text-xs text-stone-400">
+                Within 10% = good estimate.
+                {quote.accuracyDeltaPct !== null && Math.abs(quote.accuracyDeltaPct) >= 10
+                  ? ' Consistent drift in the same direction means the regional multipliers need tuning.'
+                  : ' Keep logging actual costs to improve future estimates.'}
+              </p>
             </Card>
           )}
 

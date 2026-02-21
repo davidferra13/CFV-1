@@ -6,6 +6,7 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { breakers } from '@/lib/resilience/circuit-breaker'
 import type Stripe from 'stripe'
 
 /**
@@ -116,7 +117,10 @@ export async function createPaymentIntent(eventId: string) {
   }
 
   // Create PaymentIntent with metadata for webhook processing
-  const paymentIntent = await stripe.paymentIntents.create(createParams)
+  // Circuit breaker: trips after 3 consecutive Stripe failures (30s reset)
+  const paymentIntent = await breakers.stripe.execute(() =>
+    stripe.paymentIntents.create(createParams)
+  )
 
   return {
     clientSecret: paymentIntent.client_secret,

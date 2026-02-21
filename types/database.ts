@@ -477,13 +477,76 @@ export type Database = {
           },
         ]
       }
+      automation_execution_log: {
+        Row: {
+          attempt_number: number
+          automation_id: string | null
+          completed_at: string | null
+          created_at: string
+          dlq_id: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          idempotency_key: string
+          last_error: string | null
+          started_at: string
+          status: string
+          tenant_id: string
+          trigger_type: string
+        }
+        Insert: {
+          attempt_number?: number
+          automation_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          dlq_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          idempotency_key: string
+          last_error?: string | null
+          started_at?: string
+          status?: string
+          tenant_id: string
+          trigger_type: string
+        }
+        Update: {
+          attempt_number?: number
+          automation_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          dlq_id?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          idempotency_key?: string
+          last_error?: string | null
+          started_at?: string
+          status?: string
+          tenant_id?: string
+          trigger_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "automation_execution_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       automation_executions: {
         Row: {
           action_result: Json | null
           action_type: string
+          attempt_number: number | null
+          dlq_id: string | null
           error: string | null
           executed_at: string
           id: string
+          idempotency_key: string | null
+          last_error: string | null
           rule_id: string
           status: string
           tenant_id: string
@@ -494,9 +557,13 @@ export type Database = {
         Insert: {
           action_result?: Json | null
           action_type: string
+          attempt_number?: number | null
+          dlq_id?: string | null
           error?: string | null
           executed_at?: string
           id?: string
+          idempotency_key?: string | null
+          last_error?: string | null
           rule_id: string
           status?: string
           tenant_id: string
@@ -507,9 +574,13 @@ export type Database = {
         Update: {
           action_result?: Json | null
           action_type?: string
+          attempt_number?: number | null
+          dlq_id?: string | null
           error?: string | null
           executed_at?: string
           id?: string
+          idempotency_key?: string | null
+          last_error?: string | null
           rule_id?: string
           status?: string
           tenant_id?: string
@@ -5615,6 +5686,62 @@ export type Database = {
           },
         ]
       }
+      dead_letter_queue: {
+        Row: {
+          attempts: number
+          created_at: string
+          error_message: string | null
+          first_failed_at: string
+          id: string
+          job_id: string | null
+          job_type: string
+          last_failed_at: string
+          payload: Json
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          tenant_id: string | null
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          first_failed_at?: string
+          id?: string
+          job_id?: string | null
+          job_type: string
+          last_failed_at?: string
+          payload?: Json
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          tenant_id?: string | null
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          error_message?: string | null
+          first_failed_at?: string
+          id?: string
+          job_id?: string | null
+          job_type?: string
+          last_failed_at?: string
+          payload?: Json
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dead_letter_queue_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demand_forecasts: {
         Row: {
           actual_inquiry_count: number
@@ -8354,6 +8481,7 @@ export type Database = {
           ingredient_id: string | null
           ingredient_name: string
           kroger_price_cents: number | null
+          mealme_price_cents: number | null
           quantity: number | null
           quote_id: string
           spoonacular_price_cents: number | null
@@ -8365,6 +8493,7 @@ export type Database = {
           ingredient_id?: string | null
           ingredient_name: string
           kroger_price_cents?: number | null
+          mealme_price_cents?: number | null
           quantity?: number | null
           quote_id: string
           spoonacular_price_cents?: number | null
@@ -8376,6 +8505,7 @@ export type Database = {
           ingredient_id?: string | null
           ingredient_name?: string
           kroger_price_cents?: number | null
+          mealme_price_cents?: number | null
           quantity?: number | null
           quote_id?: string
           spoonacular_price_cents?: number | null
@@ -8407,6 +8537,9 @@ export type Database = {
       }
       grocery_price_quotes: {
         Row: {
+          accuracy_delta_pct: number | null
+          actual_cost_logged_at: string | null
+          actual_grocery_cost_cents: number | null
           average_total_cents: number | null
           created_at: string
           event_id: string
@@ -8414,11 +8547,15 @@ export type Database = {
           ingredient_count: number | null
           instacart_link: string | null
           kroger_total_cents: number | null
+          mealme_total_cents: number | null
           spoonacular_total_cents: number | null
           status: string
           tenant_id: string
         }
         Insert: {
+          accuracy_delta_pct?: number | null
+          actual_cost_logged_at?: string | null
+          actual_grocery_cost_cents?: number | null
           average_total_cents?: number | null
           created_at?: string
           event_id: string
@@ -8426,11 +8563,15 @@ export type Database = {
           ingredient_count?: number | null
           instacart_link?: string | null
           kroger_total_cents?: number | null
+          mealme_total_cents?: number | null
           spoonacular_total_cents?: number | null
           status?: string
           tenant_id: string
         }
         Update: {
+          accuracy_delta_pct?: number | null
+          actual_cost_logged_at?: string | null
+          actual_grocery_cost_cents?: number | null
           average_total_cents?: number | null
           created_at?: string
           event_id?: string
@@ -8438,6 +8579,7 @@ export type Database = {
           ingredient_count?: number | null
           instacart_link?: string | null
           kroger_total_cents?: number | null
+          mealme_total_cents?: number | null
           spoonacular_total_cents?: number | null
           status?: string
           tenant_id?: string
@@ -9591,6 +9733,53 @@ export type Database = {
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_retry_log: {
+        Row: {
+          attempt_number: number
+          created_at: string
+          id: string
+          job_id: string
+          job_type: string
+          last_error: string | null
+          next_retry_at: string | null
+          status: string
+          tenant_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempt_number?: number
+          created_at?: string
+          id?: string
+          job_id: string
+          job_type: string
+          last_error?: string | null
+          next_retry_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempt_number?: number
+          created_at?: string
+          id?: string
+          job_id?: string
+          job_type?: string
+          last_error?: string | null
+          next_retry_at?: string | null
+          status?: string
+          tenant_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_retry_log_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
         ]
@@ -15849,6 +16038,17 @@ export type Database = {
           p_tenant_id: string
         }
         Returns: string
+      }
+      transition_event_atomic: {
+        Args: {
+          p_event_id: string
+          p_from_status: string
+          p_metadata?: Json
+          p_tenant_id: string
+          p_to_status: string
+          p_transitioned_by: string
+        }
+        Returns: Json
       }
     }
     Enums: {

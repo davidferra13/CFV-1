@@ -2,6 +2,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -14,7 +15,9 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
+    Sentry.captureException(error, {
+      tags: { boundary: 'global', digest: error.digest },
+    })
     console.error('Error boundary caught:', error)
   }, [error])
 

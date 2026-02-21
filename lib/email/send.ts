@@ -3,6 +3,7 @@
 // All email sends are fire-and-forget side effects
 
 import { getResendClient, FROM_EMAIL, FROM_NAME } from './resend-client'
+import { breakers } from '@/lib/resilience/circuit-breaker'
 import type { ReactElement } from 'react'
 
 type SendEmailParams = {
@@ -32,14 +33,17 @@ export async function sendEmail({ to, subject, react, replyTo, attachments }: Se
   try {
     const resend = getResendClient()
 
-    const { error } = await resend.emails.send({
-      from: `${FROM_NAME} <${FROM_EMAIL}>`,
-      to,
-      subject,
-      react,
-      replyTo,
-      attachments,
-    })
+    // Circuit breaker: trips after 5 consecutive Resend failures (60s reset)
+    const { error } = await breakers.resend.execute(() =>
+      resend.emails.send({
+        from: `${FROM_NAME} <${FROM_EMAIL}>`,
+        to,
+        subject,
+        react,
+        replyTo,
+        attachments,
+      })
+    )
 
     if (error) {
       console.error('[sendEmail] Resend error:', error)

@@ -5,6 +5,7 @@
 // Provides chef-specific recovery context and navigation.
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +18,9 @@ export default function ChefError({
   reset: () => void
 }) {
   useEffect(() => {
+    Sentry.captureException(error, {
+      tags: { boundary: 'chef', digest: error.digest },
+    })
     console.error('[Chef Portal Error]', error)
   }, [error])
 

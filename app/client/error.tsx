@@ -5,6 +5,7 @@
 // No auth context — visitor is accessing via magic link token.
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 export default function ClientPortalError({
   error,
@@ -14,6 +15,9 @@ export default function ClientPortalError({
   reset: () => void
 }) {
   useEffect(() => {
+    Sentry.captureException(error, {
+      tags: { boundary: 'client-portal', digest: error.digest },
+    })
     console.error('[Client Portal Error]', error)
   }, [error])
 

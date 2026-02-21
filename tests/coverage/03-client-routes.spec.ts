@@ -1,0 +1,145 @@
+// Coverage Layer — Client Portal Routes
+// Visits every client-portal URL authenticated as the E2E test client (Alice).
+// Asserts: page loads, no crash, no JS error, has content.
+// Also verifies chef-portal routes correctly reject the client session.
+//
+// Run: npm run test:coverage:client
+
+import { test, expect } from '../helpers/fixtures'
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
+async function assertClientPageLoads(
+  page: Parameters<Parameters<typeof test>[1]>[0]['page'],
+  url: string
+) {
+  const errors: string[] = []
+  page.on('pageerror', (err) => errors.push(err.message))
+
+  const response = await page.goto(url, { waitUntil: 'domcontentloaded' })
+  const status = response?.status() ?? 0
+
+  expect(status, `[client] ${url} returned HTTP ${status}`).toBeLessThan(500)
+  expect(errors, `[client] ${url} had JS errors: ${errors.join('; ')}`).toHaveLength(0)
+
+  const currentUrl = page.url()
+  expect(currentUrl, `[client] ${url} redirected to login`).not.toMatch(/auth\/signin/)
+
+  const bodyText = await page.locator('body').innerText()
+  expect(bodyText.trim().length, `[client] ${url} rendered blank`).toBeGreaterThan(10)
+}
+
+// ─── Core Client Pages ────────────────────────────────────────────────────────
+
+test.describe('Client Portal — Core Pages', () => {
+  test('/my-events — events list', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-events')
+    await page.waitForLoadState('networkidle')
+    // Should show some event content (seeded completed event is visible)
+  })
+
+  test('/my-events/history — past events', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-events/history')
+  })
+
+  test('/my-inquiries — inquiries list', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-inquiries')
+  })
+
+  test('/my-quotes — quotes list', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-quotes')
+  })
+
+  test('/my-profile — client profile', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-profile')
+    await page.waitForLoadState('networkidle')
+  })
+
+  test('/my-chat — chat list', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-chat')
+  })
+
+  test('/my-rewards — loyalty rewards', async ({ page }) => {
+    await assertClientPageLoads(page, '/my-rewards')
+  })
+
+  test('/book-now — browse chefs', async ({ page }) => {
+    await assertClientPageLoads(page, '/book-now')
+  })
+})
+
+// ─── Client Event Detail Pages ────────────────────────────────────────────────
+
+test.describe('Client Portal — Event Detail Pages', () => {
+  test('/my-events/[completed] — completed event detail', async ({ page, seedIds }) => {
+    await assertClientPageLoads(page, `/my-events/${seedIds.eventIds.completed}`)
+  })
+
+  test('/my-events/[confirmed] — confirmed event detail', async ({ page, seedIds }) => {
+    // confirmed event is scoped to a different client (Dave), so this may redirect
+    // We just verify no 500 crash
+    const response = await page.goto(`/my-events/${seedIds.eventIds.confirmed}`, { waitUntil: 'domcontentloaded' })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/my-events/[completed]/invoice — invoice page', async ({ page, seedIds }) => {
+    await assertClientPageLoads(page, `/my-events/${seedIds.eventIds.completed}/invoice`)
+  })
+
+  test('/my-events/[completed]/countdown — countdown page', async ({ page, seedIds }) => {
+    // Countdown for a past event may redirect or show a different view
+    const response = await page.goto(`/my-events/${seedIds.eventIds.completed}/countdown`, { waitUntil: 'domcontentloaded' })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+})
+
+// ─── Client Quote Pages ───────────────────────────────────────────────────────
+
+test.describe('Client Portal — Quote Detail Pages', () => {
+  test('/my-quotes/[sent] — sent quote detail', async ({ page, seedIds }) => {
+    // The sent quote is for Bob (secondary), not Alice — may redirect
+    const response = await page.goto(`/my-quotes/${seedIds.quoteIds.sent}`, { waitUntil: 'domcontentloaded' })
+    expect(response?.status() ?? 0).toBeLessThan(500)
+  })
+
+  test('/my-quotes/[draft] — draft quote detail', async ({ page, seedIds }) => {
+    await assertClientPageLoads(page, `/my-quotes/${seedIds.quoteIds.draft}`)
+  })
+})
+
+// ─── Client Inquiry Detail ────────────────────────────────────────────────────
+
+test.describe('Client Portal — Inquiry Detail Pages', () => {
+  test('/my-inquiries/[awaitingChef] — inquiry detail', async ({ page, seedIds }) => {
+    await assertClientPageLoads(page, `/my-inquiries/${seedIds.inquiryIds.awaitingChef}`)
+  })
+})
+
+// ─── Chef Portal Rejection (Client Role) ─────────────────────────────────────
+
+test.describe('Client Portal — Chef Route Rejection', () => {
+  test('/dashboard — client redirected away from chef dashboard', async ({ page }) => {
+    await page.goto('/dashboard', { waitUntil: 'domcontentloaded' })
+    // Should redirect to client portal or unauthorized — not actually show chef dashboard
+    const url = page.url()
+    expect(url).not.toMatch(/\/dashboard$/)
+  })
+
+  test('/events — client redirected away from chef events', async ({ page }) => {
+    await page.goto('/events', { waitUntil: 'domcontentloaded' })
+    const url = page.url()
+    expect(url).not.toMatch(/\/events$/)
+  })
+
+  test('/clients — client cannot access chef client list', async ({ page }) => {
+    await page.goto('/clients', { waitUntil: 'domcontentloaded' })
+    const url = page.url()
+    expect(url).not.toMatch(/\/clients$/)
+  })
+
+  test('/financials — client cannot access chef financials', async ({ page }) => {
+    await page.goto('/financials', { waitUntil: 'domcontentloaded' })
+    const url = page.url()
+    expect(url).not.toMatch(/\/financials$/)
+  })
+})

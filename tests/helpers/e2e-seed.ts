@@ -42,6 +42,12 @@ export type SeedResult = {
   }
   menuId: string
   recipeId: string
+  // Chef B — second independent tenant for multi-tenant isolation tests
+  chefBId: string
+  chefBEmail: string
+  chefBPassword: string
+  chefBEventId: string
+  chefBClientId: string
 }
 
 function assertRemoteTestAllowed(url: string) {
@@ -145,6 +151,37 @@ async function upsertChef(admin, authUserId: string, suffix: string): Promise<st
     .single()
 
   if (error || !inserted) throw new Error(`[e2e-seed] Failed to insert chef: ${error?.message}`)
+  return inserted.id as string
+}
+
+async function upsertChefB(admin, authUserId: string, suffix: string): Promise<string> {
+  const slug = `e2e-chef-b-${suffix}`
+  const fields = {
+    business_name: 'TEST - E2E Kitchen B',
+    display_name: 'E2E Test Chef B',
+    email: `e2e.chef-b.${suffix}@chefflow.test`,
+    phone: '617-555-9010',
+    slug,
+    tagline: 'Automated E2E test account B. Used for multi-tenant isolation tests.',
+    bio: 'Chef B profile created for isolation testing. Safe to ignore.',
+    show_website_on_public_profile: false,
+    preferred_inquiry_destination: 'both',
+  }
+
+  const { data: existing } = await admin.from('chefs').select('id').eq('auth_user_id', authUserId).maybeSingle()
+
+  if (existing?.id) {
+    await admin.from('chefs').update(fields).eq('id', existing.id)
+    return existing.id as string
+  }
+
+  const { data: inserted, error } = await admin
+    .from('chefs')
+    .insert({ auth_user_id: authUserId, ...fields })
+    .select('id')
+    .single()
+
+  if (error || !inserted) throw new Error(`[e2e-seed] Failed to insert chef B: ${error?.message}`)
   return inserted.id as string
 }
 
@@ -607,6 +644,26 @@ export async function seedE2EData(): Promise<SeedResult> {
   // 10. Recipe
   const recipeId = await ensureRecipe(admin, chefId, chefAuth.id)
 
+  // 11. Chef B — second independent tenant for multi-tenant isolation tests
+  const chefBAuth = await ensureAuthUser(admin, {
+    email: `e2e.chef-b.${suffix}@chefflow.test`,
+    password: 'E2eChefTest!2026',
+    metadata: { role: 'chef', e2e: true, suffix, label: 'b' },
+  })
+  const chefBId = await upsertChefB(admin, chefBAuth.id, suffix)
+  await ensureChefRole(admin, chefBAuth.id, chefBId)
+  await ensureChefPreferences(admin, chefBId)
+  const chefBClientId = await upsertExtraClient(
+    admin, chefBId,
+    'TEST - Chef B Client E2E',
+    `e2e.chef-b-client.${suffix}@chefflow.test`,
+    'active'
+  )
+  const chefBEventId = await ensureEvent(
+    admin, chefBId, chefBClientId,
+    'TEST Chef B Private Dinner', 'confirmed', 15
+  )
+
   const result: SeedResult = {
     chefId,
     chefAuthId: chefAuth.id,
@@ -623,8 +680,13 @@ export async function seedE2EData(): Promise<SeedResult> {
     quoteIds: { draft: draftQuoteId, sent: sentQuoteId, accepted: acceptedQuoteId },
     menuId,
     recipeId,
+    chefBId,
+    chefBEmail: `e2e.chef-b.${suffix}@chefflow.test`,
+    chefBPassword: 'E2eChefTest!2026',
+    chefBEventId,
+    chefBClientId,
   }
 
-  console.log(`[e2e-seed] Complete — chef: ${result.chefEmail}, client: ${result.clientEmail}`)
+  console.log(`[e2e-seed] Complete — chef: ${result.chefEmail}, chefB: ${result.chefBEmail}, client: ${result.clientEmail}`)
   return result
 }

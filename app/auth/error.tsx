@@ -5,6 +5,7 @@
 // Keeps the user on a friendly page rather than a blank crash screen.
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -17,6 +18,9 @@ export default function AuthError({
   reset: () => void
 }) {
   useEffect(() => {
+    Sentry.captureException(error, {
+      tags: { boundary: 'auth', digest: error.digest },
+    })
     console.error('[Auth Error]', error)
   }, [error])
 

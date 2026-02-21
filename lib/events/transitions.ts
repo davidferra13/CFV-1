@@ -6,6 +6,7 @@
 import { requireChef, requireClient, getCurrentUser } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { TransitionEventInputSchema } from '@/lib/validation/schemas'
 
 export type EventStatus =
   | 'draft'
@@ -61,7 +62,9 @@ export async function transitionEvent({
   metadata?: Record<string, unknown>
   systemTransition?: boolean // True if called from webhook
 }) {
-  const supabase = createServerClient({ admin: systemTransition })
+  // Validate inputs before any DB access
+  const parsed = TransitionEventInputSchema.parse({ eventId, toStatus, metadata, systemTransition })
+  const supabase = createServerClient({ admin: parsed.systemTransition })
 
   // Fetch current event
   const { data: event, error: fetchError } = await supabase
@@ -126,26 +129,6 @@ export async function transitionEvent({
   const user = systemTransition ? null : await getCurrentUser()
   const transitionedBy = user?.id || null
 
-  // Build update payload
-  const updatePayload: Record<string, unknown> = {
-    status: toStatus,
-    updated_by: transitionedBy
-  }
-
-  // Add cancellation-specific fields
-  if (toStatus === 'cancelled') {
-    updatePayload.cancelled_at = new Date().toISOString()
-    updatePayload.cancellation_reason = (metadata.reason as string) || null
-    // Determine initiator based on who triggered it
-    if (systemTransition) {
-      updatePayload.cancellation_initiated_by = 'mutual'
-    } else if (user?.role === 'chef') {
-      updatePayload.cancellation_initiated_by = 'chef'
-    } else if (user?.role === 'client') {
-      updatePayload.cancellation_initiated_by = 'client'
-    }
-  }
-
   // ── Readiness Gate Check (pre-transition) ────────────────────────────────
   // Evaluate gates for this transition. Hard blocks (e.g., unconfirmed anaphylaxis)
   // throw and abort. Soft warnings are logged in metadata but do not block.
@@ -177,37 +160,30 @@ export async function transitionEvent({
     }
   }
 
-  // Update event status
-  const { error: updateError } = await supabase
-    .from('events')
-    .update(updatePayload)
-    .eq('id', eventId)
-
-  if (updateError) {
-    console.error('[transitionEvent] Update error:', updateError)
-    throw new Error('Failed to update event status')
+  // Atomically update event status + insert transition audit log in one DB transaction.
+  // transition_event_atomic() is a SECURITY DEFINER Postgres function that handles:
+  //   - events.status, events.updated_by, events.cancelled_at, events.cancellation_reason,
+  //     events.cancellation_initiated_by (for cancellations)
+  //   - event_state_transitions INSERT (both writes are atomic — one commit or both roll back)
+  const transitionMetadata = {
+    ...parsed.metadata,
+    source: parsed.systemTransition ? 'system' : 'user',
+    actor_role: user?.role ?? null,
+    ...(readinessWarnings.length > 0 && { readiness_warnings: readinessWarnings }),
   }
 
-  // Log transition (immutable audit trail)
-  const { error: logError } = await supabase
-    .from('event_state_transitions')
-    .insert({
-      tenant_id: event.tenant_id,
-      event_id: eventId,
-      from_status: fromStatus,
-      to_status: toStatus,
-      transitioned_by: transitionedBy,
-      metadata: {
-        ...metadata,
-        timestamp: new Date().toISOString(),
-        source: systemTransition ? 'system' : 'user',
-        ...(readinessWarnings.length > 0 && { readiness_warnings: readinessWarnings }),
-      }
-    })
+  const { error: transitionError } = await supabase.rpc('transition_event_atomic', {
+    p_event_id: parsed.eventId,
+    p_to_status: parsed.toStatus,
+    p_from_status: fromStatus,
+    p_transitioned_by: transitionedBy ?? '00000000-0000-0000-0000-000000000000',
+    p_tenant_id: event.tenant_id,
+    p_metadata: transitionMetadata,
+  })
 
-  if (logError) {
-    console.error('[transitionEvent] Log error:', logError)
-    // Don't throw - transition succeeded, logging failed
+  if (transitionError) {
+    console.error('[transitionEvent] Atomic transition error:', transitionError)
+    throw new Error('Failed to transition event status')
   }
 
   revalidatePath(`/events/${eventId}`)

@@ -18,6 +18,7 @@ import {
   markFinancialClosed,
   type CloseOutData,
 } from '@/lib/events/financial-summary-actions'
+import { logActualGroceryCost } from '@/lib/grocery/pricing-actions'
 import { createAAR } from '@/lib/aar/actions'
 import { markFollowUpSent } from '@/lib/events/actions'
 
@@ -257,6 +258,47 @@ function ReceiptsStep({
   onNext: () => void
 }) {
   const { expensesNeedingReceipts, hasAnyExpenses, event } = data
+  const [actualGroceryCost, setActualGroceryCost] = useState('')
+  const [logPending, setLogPending] = useState(false)
+
+  async function handleProceed() {
+    const costStr = actualGroceryCost.trim()
+    if (costStr && parseFloat(costStr) > 0) {
+      setLogPending(true)
+      try {
+        await logActualGroceryCost(event.id, Math.round(parseFloat(costStr) * 100))
+      } catch {
+        // Non-blocking — don't stop the chef
+      } finally {
+        setLogPending(false)
+      }
+    }
+    onNext()
+  }
+
+  // Grocery cost input — always shown regardless of receipts state
+  const groceryCostSection = (
+    <div className="mt-6 border-t border-stone-100 pt-6">
+      <label className="block text-sm font-medium text-stone-700 mb-1">
+        What did you actually spend at the grocery store?
+      </label>
+      <p className="text-xs text-stone-400 mb-3">
+        Helps calibrate future grocery estimate accuracy. Optional — skip if you did not run a grocery quote.
+      </p>
+      <div className="relative w-48">
+        <span className="absolute left-3 top-2.5 text-stone-400 text-sm">$</span>
+        <input
+          type="number"
+          step="0.01"
+          min="0"
+          placeholder="0.00"
+          value={actualGroceryCost}
+          onChange={(e) => setActualGroceryCost(e.target.value)}
+          className="pl-7 pr-3 py-2 w-full border border-stone-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-stone-500/20 focus:border-stone-500"
+        />
+      </div>
+    </div>
+  )
 
   if (!hasAnyExpenses) {
     return (
@@ -266,8 +308,9 @@ function ReceiptsStep({
           No expenses have been logged for this event yet. You can add them from
           the event page at any time.
         </Alert>
-        <div className="flex gap-3">
-          <Button onClick={onNext}>Continue</Button>
+        {groceryCostSection}
+        <div className="flex gap-3 mt-6">
+          <Button onClick={handleProceed} loading={logPending} disabled={logPending}>Continue</Button>
           <Link href={`/events/${event.id}`}>
             <Button variant="secondary">Go add expenses</Button>
           </Link>
@@ -288,7 +331,10 @@ function ReceiptsStep({
             <span className="font-semibold text-emerald-800">All receipts uploaded</span>
           </div>
         </div>
-        <Button onClick={onNext}>Continue</Button>
+        {groceryCostSection}
+        <div className="mt-6">
+          <Button onClick={handleProceed} loading={logPending} disabled={logPending}>Continue</Button>
+        </div>
       </div>
     )
   }
@@ -310,11 +356,15 @@ function ReceiptsStep({
         ))}
       </div>
 
-      <div className="flex gap-3">
+      {groceryCostSection}
+
+      <div className="flex gap-3 mt-6">
         <Link href={`/events/${event.id}`}>
           <Button variant="primary">Upload receipts</Button>
         </Link>
-        <Button variant="secondary" onClick={onNext}>Continue anyway</Button>
+        <Button variant="secondary" onClick={handleProceed} loading={logPending} disabled={logPending}>
+          Continue anyway
+        </Button>
       </div>
     </div>
   )

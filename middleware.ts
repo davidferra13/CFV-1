@@ -5,6 +5,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+/** Generate a short, URL-safe correlation ID for request tracing. */
+function generateRequestId(): string {
+  // crypto.randomUUID() is available in the Edge Runtime (middleware)
+  return crypto.randomUUID().replace(/-/g, '').slice(0, 16)
+}
+
 // Routes that require chef role (route groups don't create URL segments)
 const chefPaths = [
   '/dashboard', '/queue', '/leads', '/clients', '/events', '/financials', '/menus',
@@ -55,8 +61,13 @@ export async function middleware(request: NextRequest) {
   // Build request headers with current pathname so server components can read it
   // without an additional DB call or breaking the App Router server component model.
   // Used by app/(chef)/layout.tsx for the onboarding gate.
+  //
+  // X-Request-ID: correlation ID for distributed tracing and log correlation.
+  // Reuses the incoming header if already set (e.g. by a proxy/load balancer).
+  const requestId = request.headers.get('x-request-id') ?? generateRequestId()
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-pathname', pathname)
+  requestHeaders.set('x-request-id', requestId)
 
   // Create Supabase client for middleware with getAll/setAll cookie API
   let response = NextResponse.next({
@@ -185,6 +196,8 @@ export async function middleware(request: NextRequest) {
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
 
+  // Propagate the correlation ID on every response so clients can include it in support requests
+  response.headers.set('x-request-id', requestId)
   return response
 }
 
