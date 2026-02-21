@@ -88,14 +88,17 @@ import {
   getPendingCollaborationInvitations,
   getPendingRecipeShares,
 } from '@/lib/collaboration/actions'
-import { CollaborationInvitationCard, PendingRecipeShareCard } from '@/components/events/event-collaborators-panel'
+import {
+  CollaborationInvitationCard,
+  PendingRecipeShareCard,
+} from '@/components/events/event-collaborators-panel'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import {
-  Plus, ArrowRight, TrendingUp, TrendingDown, Minus,
-  Calendar, Gift,
-} from 'lucide-react'
+import { Plus, ArrowRight, TrendingUp, TrendingDown, Minus, Calendar, Gift } from 'lucide-react'
 import type { PriorityQueue } from '@/lib/queue/types'
+import { MobileDashboardExpander } from '@/components/dashboard/mobile-dashboard-expander'
+
+import { BusinessInsightsPanel } from '@/components/ai/business-insights-panel'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback
@@ -119,19 +122,66 @@ const emptyQueue: PriorityQueue = {
   nextAction: null,
   summary: {
     totalItems: 0,
-    byDomain: { inquiry: 0, message: 0, quote: 0, event: 0, financial: 0, post_event: 0, client: 0, culinary: 0 },
+    byDomain: {
+      inquiry: 0,
+      message: 0,
+      quote: 0,
+      event: 0,
+      financial: 0,
+      post_event: 0,
+      client: 0,
+      culinary: 0,
+    },
     byUrgency: { critical: 0, high: 0, normal: 0, low: 0 },
     allCaughtUp: true,
   },
   computedAt: new Date().toISOString(),
 }
 
-const emptyInquiryStats = { new: 0, awaiting_client: 0, awaiting_chef: 0, quoted: 0, confirmed: 0, declined: 0, expired: 0 }
-const emptyFinancials = { totalRevenueCents: 0, totalRefundsCents: 0, totalTipsCents: 0, netRevenueCents: 0, totalWithTipsCents: 0 }
-const emptyWeekSchedule: Awaited<ReturnType<typeof getWeekSchedule>> = { weekStart: '', weekEnd: '', days: [], warnings: [] }
-const emptyQuoteStats = { draft: 0, sent: 0, expiringSoon: 0, total: 0, expiringDetails: [] as { clientName: string; validUntil: string; amountCents: number }[] }
-const emptyEventCounts = { thisMonth: 0, ytd: 0, completedThisMonth: 0, completedYtd: 0, upcomingThisMonth: 0, totalGuestsThisMonth: 0, totalGuestsYtd: 0 }
-const emptyMonthRevenue = { currentMonthRevenueCents: 0, previousMonthRevenueCents: 0, currentMonthProfitCents: 0, changePercent: 0 }
+const emptyInquiryStats = {
+  new: 0,
+  awaiting_client: 0,
+  awaiting_chef: 0,
+  quoted: 0,
+  confirmed: 0,
+  declined: 0,
+  expired: 0,
+}
+const emptyFinancials = {
+  totalRevenueCents: 0,
+  totalRefundsCents: 0,
+  totalTipsCents: 0,
+  netRevenueCents: 0,
+  totalWithTipsCents: 0,
+}
+const emptyWeekSchedule: Awaited<ReturnType<typeof getWeekSchedule>> = {
+  weekStart: '',
+  weekEnd: '',
+  days: [],
+  warnings: [],
+}
+const emptyQuoteStats = {
+  draft: 0,
+  sent: 0,
+  expiringSoon: 0,
+  total: 0,
+  expiringDetails: [] as { clientName: string; validUntil: string; amountCents: number }[],
+}
+const emptyEventCounts = {
+  thisMonth: 0,
+  ytd: 0,
+  completedThisMonth: 0,
+  completedYtd: 0,
+  upcomingThisMonth: 0,
+  totalGuestsThisMonth: 0,
+  totalGuestsYtd: 0,
+}
+const emptyMonthRevenue = {
+  currentMonthRevenueCents: 0,
+  previousMonthRevenueCents: 0,
+  currentMonthProfitCents: 0,
+  changePercent: 0,
+}
 const emptyExpenses = { totalCents: 0, businessCents: 0 }
 const emptyRecipeDebt = { last7Days: 0, last30Days: 0, older: 0, total: 0, totalRecipes: 0 }
 const emptyTopEvents: TopProfitEvent[] = []
@@ -144,8 +194,10 @@ const emptyFoodCostTrend: FoodCostTrend = {
 const emptySeasonality: BookingSeasonality = {
   months: Array.from({ length: 12 }, (_, i) => ({
     month: i + 1,
-    monthName: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
-    shortName: ['J','F','M','A','M','J','J','A','S','O','N','D'][i],
+    monthName: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][
+      i
+    ],
+    shortName: ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i],
     eventCount: 0,
     avgRevenueCents: null,
   })),
@@ -200,9 +252,27 @@ const emptyOnboardingProgress: OnboardingProgress = {
   totalPhases: 5,
 }
 const emptyYoY: YoYData = {
-  revenueMetric: { label: 'Total Revenue', currentYear: 0, previousYear: 0, changePercent: null, changeDirection: 'flat' },
-  eventCountMetric: { label: 'Events', currentYear: 0, previousYear: 0, changePercent: null, changeDirection: 'flat' },
-  avgEventValueMetric: { label: 'Avg Event Value', currentYear: 0, previousYear: 0, changePercent: null, changeDirection: 'flat' },
+  revenueMetric: {
+    label: 'Total Revenue',
+    currentYear: 0,
+    previousYear: 0,
+    changePercent: null,
+    changeDirection: 'flat',
+  },
+  eventCountMetric: {
+    label: 'Events',
+    currentYear: 0,
+    previousYear: 0,
+    changePercent: null,
+    changeDirection: 'flat',
+  },
+  avgEventValueMetric: {
+    label: 'Avg Event Value',
+    currentYear: 0,
+    previousYear: 0,
+    changePercent: null,
+    changeDirection: 'flat',
+  },
   currentYearLabel: String(new Date().getFullYear()),
   previousYearLabel: String(new Date().getFullYear() - 1),
 }
@@ -212,7 +282,14 @@ const emptyHoursSnapshot = {
   weekMinutes: 0,
   allTimeMinutes: 0,
   topActivity: null,
-  recentEntries: [] as { id: string; minutes: number; loggedFor: string; category: null; note: string | null; createdAt: string }[],
+  recentEntries: [] as {
+    id: string
+    minutes: number
+    loggedFor: string
+    category: null
+    note: string | null
+    createdAt: string
+  }[],
   trackingStreak: 0,
   todayLogged: false,
   weekCategoryBreakdown: [] as DashboardHoursCategoryEntry[],
@@ -253,7 +330,20 @@ const emptyJournalInsights = {
   top_learning_topics: [],
 }
 
-const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+const MONTH_NAMES = [
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
+]
 
 // ============================================
 // DASHBOARD PAGE
@@ -331,7 +421,11 @@ export default async function ChefDashboard() {
     safe('loyaltyApproaching', getClientsApproachingRewards, []),
     safe('nextEvent', getNextUpcomingEvent, null),
     safe('activeClients', () => getActiveClients(30), []),
-    safe('recentActivity', async () => (await getRecentClientActivity({ limit: 15, daysBack: 7 })).items, []),
+    safe(
+      'recentActivity',
+      async () => (await getRecentClientActivity({ limit: 15, daysBack: 7 })).items,
+      []
+    ),
     safe('chefActivity', () => getChefActivitySummary(5), []),
     safe('hoursSnapshot', getDashboardHoursSnapshot, emptyHoursSnapshot),
     safe('journalInsights', getChefJourneyInsights, emptyJournalInsights),
@@ -361,12 +455,25 @@ export default async function ChefDashboard() {
   ])
 
   // Fetched separately — TypeScript's Promise.all tuple inference caps at 44 elements
-  const onboardingProgress = await safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress)
-  const nextBestActions = await safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions)
+  const onboardingProgress = await safe(
+    'onboardingProgress',
+    getOnboardingProgress,
+    emptyOnboardingProgress
+  )
+  const nextBestActions = await safe(
+    'nextBestActions',
+    () => getNextBestActions(5),
+    emptyNextBestActions
+  )
 
-  const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
+  const activeInquiryCount =
+    inquiryStats.new +
+    inquiryStats.awaiting_client +
+    inquiryStats.awaiting_chef +
+    inquiryStats.quoted
   const totalInquiryCount = Object.values(inquiryStats).reduce((sum, value) => sum + value, 0)
-  const shouldShowOnboardingAccelerator = eventCounts.ytd === 0 && (clients.length <= 10 || totalInquiryCount <= 10)
+  const shouldShowOnboardingAccelerator =
+    eventCounts.ytd === 0 && (clients.length <= 10 || totalInquiryCount <= 10)
   const widgetPreferences = preferences.dashboard_widgets?.length
     ? preferences.dashboard_widgets
     : DEFAULT_PREFERENCES.dashboard_widgets
@@ -379,11 +486,11 @@ export default async function ChefDashboard() {
   }
 
   const isWidgetEnabled = (widgetId: DashboardWidgetId) => widgetEnabled.get(widgetId) ?? true
-  const getWidgetOrder = (widgetId: DashboardWidgetId) => widgetOrder.get(widgetId) ?? Number.MAX_SAFE_INTEGER
+  const getWidgetOrder = (widgetId: DashboardWidgetId) =>
+    widgetOrder.get(widgetId) ?? Number.MAX_SAFE_INTEGER
 
   return (
     <div className="flex flex-col gap-8">
-
       {/* ============================================ */}
       {/* HEADER                                       */}
       {/* ============================================ */}
@@ -392,7 +499,7 @@ export default async function ChefDashboard() {
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">Dashboard</h1>
           <p className="text-stone-600 mt-1">Your command center - everything at a glance.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-center flex-wrap">
           <DashboardQuickSettings initialWidgets={widgetPreferences} />
           <Link
             href="/queue"
@@ -416,22 +523,30 @@ export default async function ChefDashboard() {
       <section>
         {queue.nextAction ? (
           <Link href={queue.nextAction.href} className="block">
-            <div className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:opacity-90 ${
-              queue.nextAction.urgency === 'critical'
-                ? 'bg-red-50 border-red-200 text-red-900'
-                : queue.nextAction.urgency === 'high'
-                ? 'bg-amber-50 border-amber-200 text-amber-900'
-                : 'bg-brand-50 border-brand-200 text-brand-900'
-            }`}>
+            <div
+              className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:opacity-90 ${
+                queue.nextAction.urgency === 'critical'
+                  ? 'bg-red-50 border-red-200 text-red-900'
+                  : queue.nextAction.urgency === 'high'
+                    ? 'bg-amber-50 border-amber-200 text-amber-900'
+                    : 'bg-brand-50 border-brand-200 text-brand-900'
+              }`}
+            >
               <div className="flex items-center gap-3 min-w-0">
                 <span className="text-lg shrink-0" aria-hidden="true">
-                  {queue.nextAction.urgency === 'critical' ? '🔴' : queue.nextAction.urgency === 'high' ? '🟡' : '🟢'}
+                  {queue.nextAction.urgency === 'critical'
+                    ? '🔴'
+                    : queue.nextAction.urgency === 'high'
+                      ? '🟡'
+                      : '🟢'}
                 </span>
                 <div className="min-w-0">
                   <p className="text-sm font-semibold truncate">{queue.nextAction.title}</p>
                   <p className="text-xs opacity-75 mt-0.5 truncate">
                     {queue.nextAction.context.primaryLabel}
-                    {queue.nextAction.context.secondaryLabel ? ` · ${queue.nextAction.context.secondaryLabel}` : ''}
+                    {queue.nextAction.context.secondaryLabel
+                      ? ` · ${queue.nextAction.context.secondaryLabel}`
+                      : ''}
                   </p>
                 </div>
               </div>
@@ -440,8 +555,12 @@ export default async function ChefDashboard() {
           </Link>
         ) : (
           <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-            <span className="text-lg" aria-hidden="true">✅</span>
-            <p className="text-sm font-medium text-green-800">All caught up — nothing urgent right now.</p>
+            <span className="text-lg" aria-hidden="true">
+              ✅
+            </span>
+            <p className="text-sm font-medium text-green-800">
+              All caught up — nothing urgent right now.
+            </p>
           </div>
         )}
       </section>
@@ -451,14 +570,17 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {schedulingGaps.length > 0 && (
         <section>
-          <div className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
-            schedulingGaps.some((g: any) => g.severity === 'critical')
-              ? 'bg-red-50 border-red-200 text-red-900'
-              : 'bg-amber-50 border-amber-200 text-amber-900'
-          }`}>
+          <div
+            className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
+              schedulingGaps.some((g: any) => g.severity === 'critical')
+                ? 'bg-red-50 border-red-200 text-red-900'
+                : 'bg-amber-50 border-amber-200 text-amber-900'
+            }`}
+          >
             <div>
               <p className="text-sm font-semibold">
-                {schedulingGaps.length} event{schedulingGaps.length !== 1 ? 's' : ''} missing prep blocks
+                {schedulingGaps.length} event{schedulingGaps.length !== 1 ? 's' : ''} missing prep
+                blocks
               </p>
               <p className="text-xs mt-0.5 opacity-80">
                 {schedulingGaps.some((g: any) => g.severity === 'critical')
@@ -557,9 +679,13 @@ export default async function ChefDashboard() {
                   className="flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 hover:bg-stone-100 transition-colors"
                 >
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{item.event?.occasion || 'Untitled Event'}</p>
+                    <p className="text-sm font-medium text-stone-900">
+                      {item.event?.occasion || 'Untitled Event'}
+                    </p>
                     <p className="text-xs text-stone-500">
-                      {item.event?.event_date ? format(new Date(item.event.event_date), 'MMM d, yyyy') : 'Date TBD'}
+                      {item.event?.event_date
+                        ? format(new Date(item.event.event_date), 'MMM d, yyyy')
+                        : 'Date TBD'}
                       {item.event?.client ? ` · ${item.event.client.full_name}` : ''}
                     </p>
                   </div>
@@ -600,14 +726,14 @@ export default async function ChefDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="mb-2 text-sm text-stone-600">
-                  {todaysSchedule.event.client?.full_name} &mdash; {todaysSchedule.event.guest_count} guests
-                  {todaysSchedule.event.location_city && ` \u2014 ${todaysSchedule.event.location_city}`}
+                  {todaysSchedule.event.client?.full_name} &mdash;{' '}
+                  {todaysSchedule.event.guest_count} guests
+                  {todaysSchedule.event.location_city &&
+                    ` \u2014 ${todaysSchedule.event.location_city}`}
                 </div>
                 {todaysSchedule.dop.isCompressed && (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-4">
-                    <p className="text-sm font-medium text-amber-900">
-                      Compressed timeline active
-                    </p>
+                    <p className="text-sm font-medium text-amber-900">Compressed timeline active</p>
                   </div>
                 )}
                 <TimelineView timeline={todaysSchedule.timeline} />
@@ -616,13 +742,17 @@ export default async function ChefDashboard() {
           ) : (
             <Card className="border-stone-200 bg-stone-50">
               <CardContent className="py-8 text-center">
-                <p className="text-stone-500 text-sm">No dinners on the schedule today. A quiet day to plan ahead.</p>
+                <p className="text-stone-500 text-sm">
+                  No dinners on the schedule today. A quiet day to plan ahead.
+                </p>
                 {nextEvent && (
                   <Link href={`/events/${nextEvent.id}`} className="inline-block mt-3">
                     <p className="text-sm text-brand-600 hover:text-brand-700 font-medium">
-                      Next up: {nextEvent.occasion || 'Event'} &mdash; {format(new Date(nextEvent.eventDate + 'T12:00:00'), 'EEEE, MMM d')}
+                      Next up: {nextEvent.occasion || 'Event'} &mdash;{' '}
+                      {format(new Date(nextEvent.eventDate + 'T12:00:00'), 'EEEE, MMM d')}
                       <span className="text-stone-500 font-normal ml-1">
-                        ({nextEvent.clientName}, {nextEvent.guestCount} guests, {nextEvent.serveTime})
+                        ({nextEvent.clientName}, {nextEvent.guestCount} guests,{' '}
+                        {nextEvent.serveTime})
                       </span>
                     </p>
                   </Link>
@@ -686,17 +816,25 @@ export default async function ChefDashboard() {
           <Card className="border-amber-200">
             <CardHeader>
               <div className="flex justify-between items-center">
-                <CardTitle className="text-amber-900">Follow-Ups Overdue ({overdueFollowUps.length})</CardTitle>
-                <Link href="/events?status=completed" className="text-sm text-amber-700 hover:text-amber-900 font-medium">
+                <CardTitle className="text-amber-900">
+                  Follow-Ups Overdue ({overdueFollowUps.length})
+                </CardTitle>
+                <Link
+                  href="/events?status=completed"
+                  className="text-sm text-amber-700 hover:text-amber-900 font-medium"
+                >
                   All Events
                 </Link>
               </div>
             </CardHeader>
             <CardContent className="space-y-3">
-              {overdueFollowUps.map(e => (
+              {overdueFollowUps.map((e) => (
                 <div key={e.eventId} className="flex items-center justify-between">
                   <div className="min-w-0">
-                    <Link href={`/events/${e.eventId}`} className="text-sm font-medium text-stone-900 hover:text-brand-600 truncate block">
+                    <Link
+                      href={`/events/${e.eventId}`}
+                      className="text-sm font-medium text-stone-900 hover:text-brand-600 truncate block"
+                    >
                       {e.occasion || 'Event'} — {e.clientName}
                     </Link>
                     <p className="text-xs text-amber-600">{e.hoursOverdue}h overdue</p>
@@ -743,744 +881,948 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
-      {/* SECTION 6: SERVICE QUALITY (AAR)              */}
+      {/* ANALYTICS SECTIONS — collapsed on mobile     */}
       {/* ============================================ */}
-      {isWidgetEnabled('service_quality') && aarStats && aarStats.totalReviews > 0 && (
-        <section style={{ order: getWidgetOrder('service_quality') }}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Service Quality</CardTitle>
-                <Link href="/aar" className="text-sm text-brand-600 hover:text-brand-700">
-                  All Reviews
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-8">
-                <div>
-                  <div className="text-2xl font-bold text-stone-900">{aarStats.last5AvgCalm}/5</div>
-                  <p className="text-sm text-stone-500">calm (last 5)</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-stone-900">{aarStats.last5AvgPrep}/5</div>
-                  <p className="text-sm text-stone-500">prep (last 5)</p>
-                </div>
-              </div>
-              {aarStats.totalReviews >= 5 && (
-                <p className="text-sm mt-3 flex items-center gap-1.5">
-                  {aarStats.trendDirection === 'improving' && (
-                    <>
-                      <TrendingUp className="h-4 w-4 text-emerald-600" />
-                      <span className="text-emerald-600">Trending up - your dinners are getting calmer</span>
-                    </>
-                  )}
-                  {aarStats.trendDirection === 'declining' && (
-                    <>
-                      <TrendingDown className="h-4 w-4 text-amber-600" />
-                      <span className="text-amber-600">Trending down - review your recent prep patterns</span>
-                    </>
-                  )}
-                  {aarStats.trendDirection === 'neutral' && (
-                    <>
-                      <Minus className="h-4 w-4 text-stone-500" />
-                      <span className="text-stone-500">Holding steady across {aarStats.totalReviews} reviews</span>
-                    </>
-                  )}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {aarStats.topForgottenItems.filter(i => i.count >= 2).length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Frequently Forgotten</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {aarStats.topForgottenItems.filter(i => i.count >= 2).slice(0, 4).map(({ item, count }) => (
-                    <div key={item} className="flex justify-between items-center">
-                      <span className="text-sm text-stone-700 capitalize">{item}</span>
-                      <span className="text-sm font-medium text-red-600">{count}x forgotten</span>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-stone-500 mt-3">
-                  These items have been auto-added to your pre-event checklist
-                </p>
-              </CardContent>
-            </Card>
-          )}
-          </div>
-        </section>
-      )}
-
-      {/* ============================================ */}
-      {/* SECTION 7: BUSINESS SNAPSHOT                  */}
-      {/* ============================================ */}
-      {isWidgetEnabled('business_snapshot') && (
-        <section className="space-y-3" style={{ order: getWidgetOrder('business_snapshot') }}>
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Business Snapshot</h2>
-            {closureStreak.currentStreak >= 2 && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-lg">🔥</span>
-                <span className="font-semibold text-stone-800">{closureStreak.currentStreak} events closed on time in a row</span>
-                {closureStreak.milestoneMessage && (
-                  <span className="text-xs text-emerald-600 font-medium hidden sm:inline">— {closureStreak.milestoneMessage}</span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
-          {/* Revenue — enhanced with MoM comparison */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Revenue</CardTitle>
-                <Link href="/financials" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                  Details <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-stone-900">
-                {formatCurrency(financials.netRevenueCents)}
-              </div>
-              <p className="text-sm text-stone-500 mt-1">net revenue (all time)</p>
-              <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
-                {(monthRevenue.currentMonthRevenueCents > 0 || monthRevenue.previousMonthRevenueCents > 0) && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-stone-600">
-                      {currentMonthName}: {formatCurrency(monthRevenue.currentMonthRevenueCents)}
-                    </span>
-                    {monthRevenue.changePercent !== 0 && (
-                      <span className={`text-xs font-medium flex items-center gap-0.5 ${monthRevenue.changePercent > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
-                        {monthRevenue.changePercent > 0 ? (
-                          <TrendingUp className="h-3 w-3" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3" />
-                        )}
-                        {monthRevenue.changePercent > 0 ? '+' : ''}{monthRevenue.changePercent}%
-                      </span>
-                    )}
-                  </div>
-                )}
-                {financials.totalTipsCents > 0 && (
-                  <p className="text-sm text-stone-500">
-                    + {formatCurrency(financials.totalTipsCents)} in tips
-                  </p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Revenue Goal</CardTitle>
-                <Link href="/financials" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                  View <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {!revenueGoal.enabled ? (
-                <>
-                  <div className="text-lg font-semibold text-stone-900">Program Off</div>
-                  <p className="text-sm text-stone-500 mt-1">
-                    Enable revenue goals in Settings to get booking and calendar suggestions.
-                  </p>
-                </>
-              ) : (
-                <>
-                  <div className="text-3xl font-bold text-stone-900">
-                    {Math.max(0, revenueGoal.monthly.progressPercent)}%
-                  </div>
-                  <p className="text-sm text-stone-500 mt-1">
-                    projected toward {formatCurrency(revenueGoal.monthly.targetCents)} this month
-                  </p>
-                  <div className="mt-3 pt-3 border-t border-stone-100 space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-stone-500">Projected</span>
-                      <span className="text-stone-900 font-medium">{formatCurrency(revenueGoal.monthly.projectedCents)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-stone-500">Gap</span>
-                      <span className={revenueGoal.monthly.gapCents > 0 ? 'text-amber-600 font-medium' : 'text-emerald-600 font-medium'}>
-                        {formatCurrency(revenueGoal.monthly.gapCents)}
-                      </span>
-                    </div>
-                    {revenueGoal.monthly.gapCents > 0 && (
-                      <div className="flex justify-between">
-                        <span className="text-stone-500">Dinners Needed</span>
-                        <span className="text-stone-900 font-medium">{revenueGoal.dinnersNeededThisMonth}</span>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Profit — this month with margin */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Profit ({currentMonthName})</CardTitle>
-                <Link href="/financials" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                  Details <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className={`text-3xl font-bold ${monthRevenue.currentMonthProfitCents >= 0 ? 'text-stone-900' : 'text-red-600'}`}>
-                {formatCurrency(monthRevenue.currentMonthProfitCents)}
-              </div>
-              <p className="text-sm text-stone-500 mt-1">revenue minus expenses</p>
-              {monthRevenue.currentMonthRevenueCents > 0 && (
-                <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
-                  <span className="text-sm text-stone-600">
-                    {monthRevenue.currentMonthRevenueCents > 0
-                      ? `${Math.round((monthRevenue.currentMonthProfitCents / monthRevenue.currentMonthRevenueCents) * 100)}% margin`
-                      : 'No revenue yet'}
-                  </span>
-                  {avgHourlyRate !== null && (
-                    <div className="text-sm text-stone-500">
-                      Avg {formatCurrency(avgHourlyRate)}/hr this month
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Events — this month + YTD */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Events</CardTitle>
-                <Link href="/events" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                  <Calendar className="h-3.5 w-3.5" />
-                  All Events <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-stone-900">{eventCounts.thisMonth}</div>
-              <p className="text-sm text-stone-500 mt-1">
-                this month
-                {eventCounts.totalGuestsThisMonth > 0 && ` \u00B7 ${eventCounts.totalGuestsThisMonth} guests`}
-              </p>
-              <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
-                <div className="flex gap-3 text-sm text-stone-600">
-                  {eventCounts.upcomingThisMonth > 0 && (
-                    <span>{eventCounts.upcomingThisMonth} upcoming</span>
-                  )}
-                  {eventCounts.completedThisMonth > 0 && (
-                    <>
-                      {eventCounts.upcomingThisMonth > 0 && <span className="text-stone-300">&middot;</span>}
-                      <span>{eventCounts.completedThisMonth} completed</span>
-                    </>
-                  )}
-                </div>
-                <div className="flex gap-3 text-sm text-stone-500">
-                  <span>{eventCounts.ytd} YTD</span>
-                  {eventCounts.totalGuestsYtd > 0 && (
-                    <>
-                      <span className="text-stone-300">&middot;</span>
-                      <span>{eventCounts.totalGuestsYtd} guests served</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Inquiries — enhanced with quote pipeline */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Inquiries</CardTitle>
-                <Link href="/inquiries" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                  Pipeline <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-stone-900">{activeInquiryCount}</div>
-              <p className="text-sm text-stone-500 mt-1">active in pipeline</p>
-              <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
-                <div className="flex gap-3 text-sm text-stone-600">
-                  {inquiryStats.new > 0 && <span>{inquiryStats.new} new</span>}
-                  {inquiryStats.quoted > 0 && <span>{inquiryStats.quoted} quoted</span>}
-                  {inquiryStats.awaiting_client > 0 && <span>{inquiryStats.awaiting_client} awaiting</span>}
-                </div>
-                {quoteStats.total > 0 && (
-                  <div className="text-sm text-stone-500">
-                    {quoteStats.sent} {quoteStats.sent === 1 ? 'quote' : 'quotes'} pending response
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Year-over-Year */}
-          {(yoyData.revenueMetric.currentYear > 0 || yoyData.revenueMetric.previousYear > 0) && (
-            <Card>
-              <CardContent className="pt-4">
-                <YoYCards data={yoyData} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Pipeline Forecast */}
-          <PipelineForecastWidget forecast={pipelineForecast} />
-
-          {/* Stuck Events */}
-          <StuckEventsWidget events={stuckEvents} />
-
-          {/* Multi-Event Day Warnings */}
-          {multiEventDays.length > 0 && (
-            <Card>
-              <CardContent className="pt-4">
-                <MultiEventDayAlert days={multiEventDays} />
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Clients */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Clients</CardTitle>
-                <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                  Manage <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-stone-900">{clients.length}</div>
-              <p className="text-sm text-stone-500 mt-1">total clients</p>
-              {loyaltyApproaching.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-stone-100">
-                  <Link href="/loyalty" className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1">
-                    <Gift className="h-3.5 w-3.5" />
-                    {loyaltyApproaching.length} near a reward
-                  </Link>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Dormant Clients — re-engagement prompt */}
-          {dormantClients.length > 0 && (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Re-Engage Clients</CardTitle>
-                  <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                    All Clients <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {dormantClients.map(c => (
-                    <Link
-                      key={c.clientId}
-                      href={`/clients/${c.clientId}`}
-                      className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-stone-900 truncate">{c.clientName}</p>
-                        <p className="text-xs text-amber-600">
-                          {c.daysSinceLastEvent}+ days quiet
-                        </p>
-                      </div>
-                      <span className="text-xs text-brand-600 hover:underline shrink-0 ml-3">Reach out →</span>
-                    </Link>
-                  ))}
-                </div>
-                <p className="text-xs text-stone-400 mt-3">
-                  {dormantClients.length} client{dormantClients.length !== 1 ? 's' : ''} haven't booked in 90+ days
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Next Best Actions per Client */}
-          <NextBestActionsWidget actions={nextBestActions} />
-
-          {/* Birthday & Anniversary Alerts — 14-day lookahead */}
-          {upcomingMilestones.length > 0 && (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle className="flex items-center gap-2">
-                    <Gift className="h-4 w-4 text-pink-500" />
-                    Upcoming Occasions
-                  </CardTitle>
-                  <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                    All Clients <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {upcomingMilestones.map((m, i) => (
-                    <Link
-                      key={`${m.clientId}-${i}`}
-                      href={`/clients/${m.clientId}`}
-                      className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-stone-900 truncate">{m.clientName}</p>
-                        <p className="text-xs text-stone-500">{m.label}</p>
-                      </div>
-                      <span className={`text-xs font-medium shrink-0 ml-3 ${
-                        m.daysUntil === 0
-                          ? 'text-pink-600'
-                          : m.daysUntil <= 3
-                          ? 'text-amber-600'
-                          : 'text-stone-500'
-                      }`}>
-                        {m.daysUntil === 0 ? 'Today!' : m.daysUntil === 1 ? 'Tomorrow' : `in ${m.daysUntil}d`}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Expenses — this month */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>Expenses ({currentMonthName})</CardTitle>
-                <Link href="/expenses" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                  Details <ArrowRight className="h-3.5 w-3.5" />
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-stone-900">
-                {formatCurrency(monthExpenses.businessCents)}
-              </div>
-              <p className="text-sm text-stone-500 mt-1">business expenses</p>
-              {monthExpenses.totalCents > monthExpenses.businessCents && (
-                <div className="mt-3 pt-3 border-t border-stone-100">
-                  <span className="text-sm text-stone-600">
-                    {formatCurrency(monthExpenses.totalCents)} total (incl. personal)
-                  </span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Food Cost Trend — 6-month rolling sparkline */}
-          {foodCostTrend.months.some(m => m.eventCount > 0) && (() => {
-            const hasData = foodCostTrend.months.filter(m => m.eventCount > 0)
-            const maxVal = Math.max(...hasData.map(m => m.avgFoodCostPercent), 1)
-            return (
+      <MobileDashboardExpander>
+        {/* ============================================ */}
+        {/* SECTION 6: SERVICE QUALITY (AAR)              */}
+        {/* ============================================ */}
+        {isWidgetEnabled('service_quality') && aarStats && aarStats.totalReviews > 0 && (
+          <section style={{ order: getWidgetOrder('service_quality') }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Card>
                 <CardHeader>
                   <div className="flex justify-between items-center">
-                    <CardTitle>Food Cost Trend</CardTitle>
-                    <Link href="/finance/reporting" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
+                    <CardTitle>Service Quality</CardTitle>
+                    <Link href="/aar" className="text-sm text-brand-600 hover:text-brand-700">
+                      All Reviews
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex gap-8">
+                    <div>
+                      <div className="text-2xl font-bold text-stone-900">
+                        {aarStats.last5AvgCalm}/5
+                      </div>
+                      <p className="text-sm text-stone-500">calm (last 5)</p>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-stone-900">
+                        {aarStats.last5AvgPrep}/5
+                      </div>
+                      <p className="text-sm text-stone-500">prep (last 5)</p>
+                    </div>
+                  </div>
+                  {aarStats.totalReviews >= 5 && (
+                    <p className="text-sm mt-3 flex items-center gap-1.5">
+                      {aarStats.trendDirection === 'improving' && (
+                        <>
+                          <TrendingUp className="h-4 w-4 text-emerald-600" />
+                          <span className="text-emerald-600">
+                            Trending up - your dinners are getting calmer
+                          </span>
+                        </>
+                      )}
+                      {aarStats.trendDirection === 'declining' && (
+                        <>
+                          <TrendingDown className="h-4 w-4 text-amber-600" />
+                          <span className="text-amber-600">
+                            Trending down - review your recent prep patterns
+                          </span>
+                        </>
+                      )}
+                      {aarStats.trendDirection === 'neutral' && (
+                        <>
+                          <Minus className="h-4 w-4 text-stone-500" />
+                          <span className="text-stone-500">
+                            Holding steady across {aarStats.totalReviews} reviews
+                          </span>
+                        </>
+                      )}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {aarStats.topForgottenItems.filter((i) => i.count >= 2).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Frequently Forgotten</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2">
+                      {aarStats.topForgottenItems
+                        .filter((i) => i.count >= 2)
+                        .slice(0, 4)
+                        .map(({ item, count }) => (
+                          <div key={item} className="flex justify-between items-center">
+                            <span className="text-sm text-stone-700 capitalize">{item}</span>
+                            <span className="text-sm font-medium text-red-600">
+                              {count}x forgotten
+                            </span>
+                          </div>
+                        ))}
+                    </div>
+                    <p className="text-xs text-stone-500 mt-3">
+                      These items have been auto-added to your pre-event checklist
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* ============================================ */}
+        {/* SECTION 7: BUSINESS SNAPSHOT                  */}
+        {/* ============================================ */}
+        {isWidgetEnabled('business_snapshot') && (
+          <section className="space-y-3" style={{ order: getWidgetOrder('business_snapshot') }}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
+                Business Snapshot
+              </h2>
+              {closureStreak.currentStreak >= 2 && (
+                <div className="flex items-center gap-2 text-sm">
+                  <span className="text-lg">🔥</span>
+                  <span className="font-semibold text-stone-800">
+                    {closureStreak.currentStreak} events closed on time in a row
+                  </span>
+                  {closureStreak.milestoneMessage && (
+                    <span className="text-xs text-emerald-600 font-medium hidden sm:inline">
+                      — {closureStreak.milestoneMessage}
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Revenue — enhanced with MoM comparison */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Revenue</CardTitle>
+                    <Link
+                      href="/financials"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    >
                       Details <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {foodCostTrend.isRising && (
-                    <div className="mb-3 flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2">
-                      <TrendingUp className="h-3.5 w-3.5 text-amber-600 shrink-0" />
-                      <p className="text-xs text-amber-800 font-medium">
-                        Food cost rising {foodCostTrend.risingMonthCount + 1} months in a row — review suppliers or portion sizes
-                      </p>
-                    </div>
-                  )}
-                  {/* Sparkline bar chart */}
-                  <div className="flex items-end gap-1 h-10 mb-2">
-                    {foodCostTrend.months.map(m => {
-                      if (m.eventCount === 0) {
-                        return (
-                          <div key={m.month} className="flex-1 flex flex-col items-center justify-end gap-0.5">
-                            <div className="w-full h-1 bg-stone-100 rounded-sm" />
-                          </div>
-                        )
-                      }
-                      const ratio = m.avgFoodCostPercent / maxVal
-                      const heightClass =
-                        ratio >= 0.9 ? 'h-10' :
-                        ratio >= 0.75 ? 'h-8' :
-                        ratio >= 0.6 ? 'h-7' :
-                        ratio >= 0.5 ? 'h-6' :
-                        ratio >= 0.4 ? 'h-5' :
-                        ratio >= 0.3 ? 'h-4' :
-                        ratio >= 0.15 ? 'h-3' : 'h-2'
-                      const barColor =
-                        m.avgFoodCostPercent >= 40 ? 'bg-red-400' :
-                        m.avgFoodCostPercent >= 30 ? 'bg-amber-400' :
-                        'bg-emerald-400'
-                      return (
-                        <div key={m.month} className="flex-1 flex flex-col items-center justify-end gap-0.5">
-                          <div className={`w-full rounded-t-sm ${heightClass} ${barColor}`} title={`${m.label}: ${m.avgFoodCostPercent}%`} />
-                        </div>
-                      )
-                    })}
+                  <div className="text-3xl font-bold text-stone-900">
+                    {formatCurrency(financials.netRevenueCents)}
                   </div>
-                  {/* Month labels */}
-                  <div className="flex gap-1">
-                    {foodCostTrend.months.map(m => (
-                      <div key={m.month} className="flex-1 text-center text-[10px] text-stone-400 leading-none">
-                        {m.label.split(' ')[0]}
+                  <p className="text-sm text-stone-500 mt-1">net revenue (all time)</p>
+                  <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                    {(monthRevenue.currentMonthRevenueCents > 0 ||
+                      monthRevenue.previousMonthRevenueCents > 0) && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-stone-600">
+                          {currentMonthName}:{' '}
+                          {formatCurrency(monthRevenue.currentMonthRevenueCents)}
+                        </span>
+                        {monthRevenue.changePercent !== 0 && (
+                          <span
+                            className={`text-xs font-medium flex items-center gap-0.5 ${monthRevenue.changePercent > 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                          >
+                            {monthRevenue.changePercent > 0 ? (
+                              <TrendingUp className="h-3 w-3" />
+                            ) : (
+                              <TrendingDown className="h-3 w-3" />
+                            )}
+                            {monthRevenue.changePercent > 0 ? '+' : ''}
+                            {monthRevenue.changePercent}%
+                          </span>
+                        )}
                       </div>
-                    ))}
+                    )}
+                    {financials.totalTipsCents > 0 && (
+                      <p className="text-sm text-stone-500">
+                        + {formatCurrency(financials.totalTipsCents)} in tips
+                      </p>
+                    )}
                   </div>
-                  {foodCostTrend.overallAvgFoodCostPercent !== null && (
-                    <p className="text-sm text-stone-500 mt-3">
-                      Avg food cost:{' '}
-                      <span className={`font-semibold ${
-                        foodCostTrend.overallAvgFoodCostPercent >= 40 ? 'text-red-600' :
-                        foodCostTrend.overallAvgFoodCostPercent >= 30 ? 'text-amber-600' :
-                        'text-emerald-600'
-                      }`}>
-                        {foodCostTrend.overallAvgFoodCostPercent}%
-                      </span>
-                      <span className="ml-2 text-xs text-stone-400">
-                        {foodCostTrend.overallAvgFoodCostPercent < 30 ? '✓ on target' :
-                         foodCostTrend.overallAvgFoodCostPercent < 40 ? '↑ watch this' :
-                         '⚠ above target'}
-                      </span>
-                    </p>
-                  )}
                 </CardContent>
               </Card>
-            )
-          })()}
 
-          {/* Booking Seasonality — peak/quiet month patterns */}
-          {seasonality.hasEnoughData && (() => {
-            const maxCount = Math.max(...seasonality.months.map(m => m.eventCount), 1)
-            return (
               <Card>
                 <CardHeader>
-                  <CardTitle>Booking Seasons</CardTitle>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Revenue Goal</CardTitle>
+                    <Link
+                      href="/financials"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    >
+                      View <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  {/* Upcoming season signal */}
-                  {seasonality.upcomingPeak && seasonality.upcomingPeak.monthsAway <= 3 && (
-                    <div className="mb-3 flex items-center gap-2 rounded-md bg-brand-50 border border-brand-200 px-3 py-2">
-                      <TrendingUp className="h-3.5 w-3.5 text-brand-600 shrink-0" />
-                      <p className="text-xs text-brand-800 font-medium">
-                        Busy season in {seasonality.upcomingPeak.monthsAway === 1 ? 'next month' : `${seasonality.upcomingPeak.monthsAway} months`} ({seasonality.upcomingPeak.monthName}) — book clients now
+                  {!revenueGoal.enabled ? (
+                    <>
+                      <div className="text-lg font-semibold text-stone-900">Program Off</div>
+                      <p className="text-sm text-stone-500 mt-1">
+                        Enable revenue goals in Settings to get booking and calendar suggestions.
                       </p>
-                    </div>
-                  )}
-                  {!seasonality.upcomingPeak && seasonality.upcomingQuiet && seasonality.upcomingQuiet.monthsAway <= 3 && (
-                    <div className="mb-3 flex items-center gap-2 rounded-md bg-stone-50 border border-stone-200 px-3 py-2">
-                      <TrendingDown className="h-3.5 w-3.5 text-stone-500 shrink-0" />
-                      <p className="text-xs text-stone-600">
-                        Quiet period coming in {seasonality.upcomingQuiet.monthsAway === 1 ? 'next month' : `${seasonality.upcomingQuiet.monthsAway} months`} ({seasonality.upcomingQuiet.monthName}) — good time to take on new clients
-                      </p>
-                    </div>
-                  )}
-                  {/* Month bar chart */}
-                  <div className="flex items-end gap-0.5 h-10 mb-1">
-                    {seasonality.months.map(m => {
-                      const ratio = m.eventCount / maxCount
-                      const heightClass =
-                        ratio >= 0.9 ? 'h-10' :
-                        ratio >= 0.7 ? 'h-8' :
-                        ratio >= 0.55 ? 'h-7' :
-                        ratio >= 0.4 ? 'h-6' :
-                        ratio >= 0.25 ? 'h-4' :
-                        ratio >= 0.1 ? 'h-3' :
-                        ratio > 0 ? 'h-2' : 'h-1'
-                      const isPeak = seasonality.peakMonths.includes(m.month)
-                      const isQuiet = seasonality.quietMonths.includes(m.month)
-                      const barColor = isPeak ? 'bg-brand-500' : isQuiet ? 'bg-stone-200' : 'bg-brand-200'
-                      const emptyColor = m.eventCount === 0 ? 'bg-stone-100' : barColor
-                      return (
-                        <div
-                          key={m.month}
-                          className="flex-1 flex flex-col items-center justify-end"
-                          title={`${m.monthName}: ${m.eventCount} event${m.eventCount !== 1 ? 's' : ''}${isPeak ? ' (peak)' : isQuiet ? ' (quiet)' : ''}`}
-                        >
-                          <div className={`w-full rounded-t-sm ${heightClass} ${m.eventCount === 0 ? emptyColor : barColor}`} />
-                        </div>
-                      )
-                    })}
-                  </div>
-                  {/* Month labels */}
-                  <div className="flex gap-0.5">
-                    {seasonality.months.map(m => (
-                      <div key={m.month} className="flex-1 text-center text-[9px] text-stone-400 leading-none">
-                        {m.shortName}
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-3xl font-bold text-stone-900">
+                        {Math.max(0, revenueGoal.monthly.progressPercent)}%
                       </div>
-                    ))}
+                      <p className="text-sm text-stone-500 mt-1">
+                        projected toward {formatCurrency(revenueGoal.monthly.targetCents)} this
+                        month
+                      </p>
+                      <div className="mt-3 pt-3 border-t border-stone-100 space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">Projected</span>
+                          <span className="text-stone-900 font-medium">
+                            {formatCurrency(revenueGoal.monthly.projectedCents)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">Gap</span>
+                          <span
+                            className={
+                              revenueGoal.monthly.gapCents > 0
+                                ? 'text-amber-600 font-medium'
+                                : 'text-emerald-600 font-medium'
+                            }
+                          >
+                            {formatCurrency(revenueGoal.monthly.gapCents)}
+                          </span>
+                        </div>
+                        {revenueGoal.monthly.gapCents > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-stone-500">Dinners Needed</span>
+                            <span className="text-stone-900 font-medium">
+                              {revenueGoal.dinnersNeededThisMonth}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Profit — this month with margin */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Profit ({currentMonthName})</CardTitle>
+                    <Link
+                      href="/financials"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    >
+                      Details <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
                   </div>
-                  {/* Legend */}
-                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
-                    {seasonality.peakMonths.length > 0 && (
-                      <span>
-                        Peak:{' '}
-                        <span className="text-brand-700 font-medium">
-                          {seasonality.peakMonths
-                            .sort((a, b) => a - b)
-                            .map(m => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1])
-                            .join(', ')}
-                        </span>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className={`text-3xl font-bold ${monthRevenue.currentMonthProfitCents >= 0 ? 'text-stone-900' : 'text-red-600'}`}
+                  >
+                    {formatCurrency(monthRevenue.currentMonthProfitCents)}
+                  </div>
+                  <p className="text-sm text-stone-500 mt-1">revenue minus expenses</p>
+                  {monthRevenue.currentMonthRevenueCents > 0 && (
+                    <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                      <span className="text-sm text-stone-600">
+                        {monthRevenue.currentMonthRevenueCents > 0
+                          ? `${Math.round((monthRevenue.currentMonthProfitCents / monthRevenue.currentMonthRevenueCents) * 100)}% margin`
+                          : 'No revenue yet'}
                       </span>
-                    )}
-                    {seasonality.quietMonths.length > 0 && (
-                      <span>
-                        Quiet:{' '}
-                        <span className="text-stone-400 font-medium">
-                          {seasonality.quietMonths
-                            .sort((a, b) => a - b)
-                            .map(m => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1])
-                            .join(', ')}
-                        </span>
-                      </span>
-                    )}
-                    <span className="text-stone-400">{seasonality.totalEventsAnalyzed} events · {seasonality.yearsOfData}yr{seasonality.yearsOfData !== 1 ? 's' : ''} data</span>
+                      {avgHourlyRate !== null && (
+                        <div className="text-sm text-stone-500">
+                          Avg {formatCurrency(avgHourlyRate)}/hr this month
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Events — this month + YTD */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Events</CardTitle>
+                    <Link
+                      href="/events"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    >
+                      <Calendar className="h-3.5 w-3.5" />
+                      All Events <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-stone-900">{eventCounts.thisMonth}</div>
+                  <p className="text-sm text-stone-500 mt-1">
+                    this month
+                    {eventCounts.totalGuestsThisMonth > 0 &&
+                      ` \u00B7 ${eventCounts.totalGuestsThisMonth} guests`}
+                  </p>
+                  <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                    <div className="flex gap-3 text-sm text-stone-600">
+                      {eventCounts.upcomingThisMonth > 0 && (
+                        <span>{eventCounts.upcomingThisMonth} upcoming</span>
+                      )}
+                      {eventCounts.completedThisMonth > 0 && (
+                        <>
+                          {eventCounts.upcomingThisMonth > 0 && (
+                            <span className="text-stone-300">&middot;</span>
+                          )}
+                          <span>{eventCounts.completedThisMonth} completed</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex gap-3 text-sm text-stone-500">
+                      <span>{eventCounts.ytd} YTD</span>
+                      {eventCounts.totalGuestsYtd > 0 && (
+                        <>
+                          <span className="text-stone-300">&middot;</span>
+                          <span>{eventCounts.totalGuestsYtd} guests served</span>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
-            )
-          })()}
 
-          {/* Top Events This Month — profitability leaders */}
-          {topEvents.length > 0 && (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Top Events ({currentMonthName})</CardTitle>
-                  <Link href="/finance/reporting/profit-by-event" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
-                    All <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {topEvents.map((event) => {
-                    const marginColor = event.profitMarginPercent >= 30
-                      ? 'text-emerald-600'
-                      : event.profitMarginPercent >= 15
-                      ? 'text-amber-600'
-                      : 'text-red-600'
-                    return (
+              {/* Inquiries — enhanced with quote pipeline */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Inquiries</CardTitle>
+                    <Link
+                      href="/inquiries"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    >
+                      Pipeline <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-stone-900">{activeInquiryCount}</div>
+                  <p className="text-sm text-stone-500 mt-1">active in pipeline</p>
+                  <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                    <div className="flex gap-3 text-sm text-stone-600">
+                      {inquiryStats.new > 0 && <span>{inquiryStats.new} new</span>}
+                      {inquiryStats.quoted > 0 && <span>{inquiryStats.quoted} quoted</span>}
+                      {inquiryStats.awaiting_client > 0 && (
+                        <span>{inquiryStats.awaiting_client} awaiting</span>
+                      )}
+                    </div>
+                    {quoteStats.total > 0 && (
+                      <div className="text-sm text-stone-500">
+                        {quoteStats.sent} {quoteStats.sent === 1 ? 'quote' : 'quotes'} pending
+                        response
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Year-over-Year */}
+              {(yoyData.revenueMetric.currentYear > 0 ||
+                yoyData.revenueMetric.previousYear > 0) && (
+                <Card>
+                  <CardContent className="pt-4">
+                    <YoYCards data={yoyData} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Pipeline Forecast */}
+              <PipelineForecastWidget forecast={pipelineForecast} />
+
+              {/* Stuck Events */}
+              <StuckEventsWidget events={stuckEvents} />
+
+              {/* Multi-Event Day Warnings */}
+              {multiEventDays.length > 0 && (
+                <Card>
+                  <CardContent className="pt-4">
+                    <MultiEventDayAlert days={multiEventDays} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Clients */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Clients</CardTitle>
+                    <Link
+                      href="/clients"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    >
+                      Manage <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-stone-900">{clients.length}</div>
+                  <p className="text-sm text-stone-500 mt-1">total clients</p>
+                  {loyaltyApproaching.length > 0 && (
+                    <div className="mt-3 pt-3 border-t border-stone-100">
                       <Link
-                        key={event.eventId}
-                        href={`/events/${event.eventId}`}
-                        className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                        href="/loyalty"
+                        className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
                       >
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium text-stone-900 truncate">
-                            {event.occasion || 'Event'} — {event.clientName}
-                          </p>
-                          <p className="text-xs text-stone-500">{event.eventDate}</p>
-                        </div>
-                        <div className="text-right shrink-0 ml-4">
-                          <p className="text-sm font-semibold text-stone-900">{formatCurrency(event.profitCents)}</p>
-                          <p className={`text-xs font-medium ${marginColor}`}>{event.profitMarginPercent}% margin</p>
-                        </div>
+                        <Gift className="h-3.5 w-3.5" />
+                        {loyaltyApproaching.length} near a reward
                       </Link>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-          </div>
+              {/* Dormant Clients — re-engagement prompt */}
+              {dormantClients.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Re-Engage Clients</CardTitle>
+                      <Link
+                        href="/clients"
+                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      >
+                        All Clients <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {dormantClients.map((c) => (
+                        <Link
+                          key={c.clientId}
+                          href={`/clients/${c.clientId}`}
+                          className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-stone-900 truncate">
+                              {c.clientName}
+                            </p>
+                            <p className="text-xs text-amber-600">
+                              {c.daysSinceLastEvent}+ days quiet
+                            </p>
+                          </div>
+                          <span className="text-xs text-brand-600 hover:underline shrink-0 ml-3">
+                            Reach out →
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                    <p className="text-xs text-stone-400 mt-3">
+                      {dormantClients.length} client{dormantClients.length !== 1 ? 's' : ''} haven't
+                      booked in 90+ days
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
-          {/* Weekly Accountability — extracted into reusable component */}
-          <AccountabilityPanel
-            weeklyStats={weeklyStats}
-            closureStreak={closureStreak}
-            overdueFollowUpCount={weeklyStats.overdueFollowUps}
-          />
+              {/* Next Best Actions per Client */}
+              <NextBestActionsWidget actions={nextBestActions} />
 
-          {/* Quote Performance Insights — full-width below the grid */}
-          {quoteInsights && (
-            <QuoteAcceptanceInsightsPanel data={quoteInsights} />
-          )}
-        </section>
-      )}
+              {/* Birthday & Anniversary Alerts — 14-day lookahead */}
+              {upcomingMilestones.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="flex items-center gap-2">
+                        <Gift className="h-4 w-4 text-pink-500" />
+                        Upcoming Occasions
+                      </CardTitle>
+                      <Link
+                        href="/clients"
+                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      >
+                        All Clients <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {upcomingMilestones.map((m, i) => (
+                        <Link
+                          key={`${m.clientId}-${i}`}
+                          href={`/clients/${m.clientId}`}
+                          className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                        >
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-stone-900 truncate">
+                              {m.clientName}
+                            </p>
+                            <p className="text-xs text-stone-500">{m.label}</p>
+                          </div>
+                          <span
+                            className={`text-xs font-medium shrink-0 ml-3 ${
+                              m.daysUntil === 0
+                                ? 'text-pink-600'
+                                : m.daysUntil <= 3
+                                  ? 'text-amber-600'
+                                  : 'text-stone-500'
+                            }`}
+                          >
+                            {m.daysUntil === 0
+                              ? 'Today!'
+                              : m.daysUntil === 1
+                                ? 'Tomorrow'
+                                : `in ${m.daysUntil}d`}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-      {/* ============================================ */}
-      {/* SECTION 7.5: CHEF JOURNAL                    */}
-      {/* ============================================ */}
-      {isWidgetEnabled('career_growth') && (
-        <section className="space-y-3" style={{ order: getWidgetOrder('career_growth') }}>
-          <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Career Growth</h2>
-          <ChefJournalWidget
-            insights={journalInsights}
-            latestJourney={recentJourneys[0] ?? null}
-          />
-        </section>
-      )}
+              {/* Expenses — this month */}
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Expenses ({currentMonthName})</CardTitle>
+                    <Link
+                      href="/expenses"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    >
+                      Details <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-3xl font-bold text-stone-900">
+                    {formatCurrency(monthExpenses.businessCents)}
+                  </div>
+                  <p className="text-sm text-stone-500 mt-1">business expenses</p>
+                  {monthExpenses.totalCents > monthExpenses.businessCents && (
+                    <div className="mt-3 pt-3 border-t border-stone-100">
+                      <span className="text-sm text-stone-600">
+                        {formatCurrency(monthExpenses.totalCents)} total (incl. personal)
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-      {/* ============================================ */}
-      {/* SECTION 8: HOURS                              */}
-      {/* ============================================ */}
-      {isWidgetEnabled('hours') && (
-        <section className="space-y-3" style={{ order: getWidgetOrder('hours') }}>
-          <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Hours</h2>
-          <HoursLogWidget
-            todayMinutes={hoursSnapshot.todayMinutes}
-            weekMinutes={hoursSnapshot.weekMinutes}
-            allTimeMinutes={hoursSnapshot.allTimeMinutes}
-            topActivity={hoursSnapshot.topActivity}
-            recentEntries={hoursSnapshot.recentEntries}
-            trackingStreak={hoursSnapshot.trackingStreak}
-            todayLogged={hoursSnapshot.todayLogged}
-            weekCategoryBreakdown={hoursSnapshot.weekCategoryBreakdown}
-          />
-        </section>
-      )}
+              {/* Food Cost Trend — 6-month rolling sparkline */}
+              {foodCostTrend.months.some((m) => m.eventCount > 0) &&
+                (() => {
+                  const hasData = foodCostTrend.months.filter((m) => m.eventCount > 0)
+                  const maxVal = Math.max(...hasData.map((m) => m.avgFoodCostPercent), 1)
+                  return (
+                    <Card>
+                      <CardHeader>
+                        <div className="flex justify-between items-center">
+                          <CardTitle>Food Cost Trend</CardTitle>
+                          <Link
+                            href="/finance/reporting"
+                            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                          >
+                            Details <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        {foodCostTrend.isRising && (
+                          <div className="mb-3 flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2">
+                            <TrendingUp className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                            <p className="text-xs text-amber-800 font-medium">
+                              Food cost rising {foodCostTrend.risingMonthCount + 1} months in a row
+                              — review suppliers or portion sizes
+                            </p>
+                          </div>
+                        )}
+                        {/* Sparkline bar chart */}
+                        <div className="flex items-end gap-1 h-10 mb-2">
+                          {foodCostTrend.months.map((m) => {
+                            if (m.eventCount === 0) {
+                              return (
+                                <div
+                                  key={m.month}
+                                  className="flex-1 flex flex-col items-center justify-end gap-0.5"
+                                >
+                                  <div className="w-full h-1 bg-stone-100 rounded-sm" />
+                                </div>
+                              )
+                            }
+                            const ratio = m.avgFoodCostPercent / maxVal
+                            const heightClass =
+                              ratio >= 0.9
+                                ? 'h-10'
+                                : ratio >= 0.75
+                                  ? 'h-8'
+                                  : ratio >= 0.6
+                                    ? 'h-7'
+                                    : ratio >= 0.5
+                                      ? 'h-6'
+                                      : ratio >= 0.4
+                                        ? 'h-5'
+                                        : ratio >= 0.3
+                                          ? 'h-4'
+                                          : ratio >= 0.15
+                                            ? 'h-3'
+                                            : 'h-2'
+                            const barColor =
+                              m.avgFoodCostPercent >= 40
+                                ? 'bg-red-400'
+                                : m.avgFoodCostPercent >= 30
+                                  ? 'bg-amber-400'
+                                  : 'bg-emerald-400'
+                            return (
+                              <div
+                                key={m.month}
+                                className="flex-1 flex flex-col items-center justify-end gap-0.5"
+                              >
+                                <div
+                                  className={`w-full rounded-t-sm ${heightClass} ${barColor}`}
+                                  title={`${m.label}: ${m.avgFoodCostPercent}%`}
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                        {/* Month labels */}
+                        <div className="flex gap-1">
+                          {foodCostTrend.months.map((m) => (
+                            <div
+                              key={m.month}
+                              className="flex-1 text-center text-[10px] text-stone-400 leading-none"
+                            >
+                              {m.label.split(' ')[0]}
+                            </div>
+                          ))}
+                        </div>
+                        {foodCostTrend.overallAvgFoodCostPercent !== null && (
+                          <p className="text-sm text-stone-500 mt-3">
+                            Avg food cost:{' '}
+                            <span
+                              className={`font-semibold ${
+                                foodCostTrend.overallAvgFoodCostPercent >= 40
+                                  ? 'text-red-600'
+                                  : foodCostTrend.overallAvgFoodCostPercent >= 30
+                                    ? 'text-amber-600'
+                                    : 'text-emerald-600'
+                              }`}
+                            >
+                              {foodCostTrend.overallAvgFoodCostPercent}%
+                            </span>
+                            <span className="ml-2 text-xs text-stone-400">
+                              {foodCostTrend.overallAvgFoodCostPercent < 30
+                                ? '✓ on target'
+                                : foodCostTrend.overallAvgFoodCostPercent < 40
+                                  ? '↑ watch this'
+                                  : '⚠ above target'}
+                            </span>
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )
+                })()}
 
-      {/* ============================================ */}
-      {/* SECTION 9: TO DO LIST                         */}
-      {/* ============================================ */}
-      {isWidgetEnabled('todo_list') && (
-        <section style={{ order: getWidgetOrder('todo_list') }}>
-          <ChefTodoWidget initialTodos={todos} />
-        </section>
-      )}
+              {/* Booking Seasonality — peak/quiet month patterns */}
+              {seasonality.hasEnoughData &&
+                (() => {
+                  const maxCount = Math.max(...seasonality.months.map((m) => m.eventCount), 1)
+                  return (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Booking Seasons</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {/* Upcoming season signal */}
+                        {seasonality.upcomingPeak && seasonality.upcomingPeak.monthsAway <= 3 && (
+                          <div className="mb-3 flex items-center gap-2 rounded-md bg-brand-50 border border-brand-200 px-3 py-2">
+                            <TrendingUp className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+                            <p className="text-xs text-brand-800 font-medium">
+                              Busy season in{' '}
+                              {seasonality.upcomingPeak.monthsAway === 1
+                                ? 'next month'
+                                : `${seasonality.upcomingPeak.monthsAway} months`}{' '}
+                              ({seasonality.upcomingPeak.monthName}) — book clients now
+                            </p>
+                          </div>
+                        )}
+                        {!seasonality.upcomingPeak &&
+                          seasonality.upcomingQuiet &&
+                          seasonality.upcomingQuiet.monthsAway <= 3 && (
+                            <div className="mb-3 flex items-center gap-2 rounded-md bg-stone-50 border border-stone-200 px-3 py-2">
+                              <TrendingDown className="h-3.5 w-3.5 text-stone-500 shrink-0" />
+                              <p className="text-xs text-stone-600">
+                                Quiet period coming in{' '}
+                                {seasonality.upcomingQuiet.monthsAway === 1
+                                  ? 'next month'
+                                  : `${seasonality.upcomingQuiet.monthsAway} months`}{' '}
+                                ({seasonality.upcomingQuiet.monthName}) — good time to take on new
+                                clients
+                              </p>
+                            </div>
+                          )}
+                        {/* Month bar chart */}
+                        <div className="flex items-end gap-0.5 h-10 mb-1">
+                          {seasonality.months.map((m) => {
+                            const ratio = m.eventCount / maxCount
+                            const heightClass =
+                              ratio >= 0.9
+                                ? 'h-10'
+                                : ratio >= 0.7
+                                  ? 'h-8'
+                                  : ratio >= 0.55
+                                    ? 'h-7'
+                                    : ratio >= 0.4
+                                      ? 'h-6'
+                                      : ratio >= 0.25
+                                        ? 'h-4'
+                                        : ratio >= 0.1
+                                          ? 'h-3'
+                                          : ratio > 0
+                                            ? 'h-2'
+                                            : 'h-1'
+                            const isPeak = seasonality.peakMonths.includes(m.month)
+                            const isQuiet = seasonality.quietMonths.includes(m.month)
+                            const barColor = isPeak
+                              ? 'bg-brand-500'
+                              : isQuiet
+                                ? 'bg-stone-200'
+                                : 'bg-brand-200'
+                            const emptyColor = m.eventCount === 0 ? 'bg-stone-100' : barColor
+                            return (
+                              <div
+                                key={m.month}
+                                className="flex-1 flex flex-col items-center justify-end"
+                                title={`${m.monthName}: ${m.eventCount} event${m.eventCount !== 1 ? 's' : ''}${isPeak ? ' (peak)' : isQuiet ? ' (quiet)' : ''}`}
+                              >
+                                <div
+                                  className={`w-full rounded-t-sm ${heightClass} ${m.eventCount === 0 ? emptyColor : barColor}`}
+                                />
+                              </div>
+                            )
+                          })}
+                        </div>
+                        {/* Month labels */}
+                        <div className="flex gap-0.5">
+                          {seasonality.months.map((m) => (
+                            <div
+                              key={m.month}
+                              className="flex-1 text-center text-[9px] text-stone-400 leading-none"
+                            >
+                              {m.shortName}
+                            </div>
+                          ))}
+                        </div>
+                        {/* Legend */}
+                        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
+                          {seasonality.peakMonths.length > 0 && (
+                            <span>
+                              Peak:{' '}
+                              <span className="text-brand-700 font-medium">
+                                {seasonality.peakMonths
+                                  .sort((a, b) => a - b)
+                                  .map(
+                                    (m) =>
+                                      [
+                                        'Jan',
+                                        'Feb',
+                                        'Mar',
+                                        'Apr',
+                                        'May',
+                                        'Jun',
+                                        'Jul',
+                                        'Aug',
+                                        'Sep',
+                                        'Oct',
+                                        'Nov',
+                                        'Dec',
+                                      ][m - 1]
+                                  )
+                                  .join(', ')}
+                              </span>
+                            </span>
+                          )}
+                          {seasonality.quietMonths.length > 0 && (
+                            <span>
+                              Quiet:{' '}
+                              <span className="text-stone-400 font-medium">
+                                {seasonality.quietMonths
+                                  .sort((a, b) => a - b)
+                                  .map(
+                                    (m) =>
+                                      [
+                                        'Jan',
+                                        'Feb',
+                                        'Mar',
+                                        'Apr',
+                                        'May',
+                                        'Jun',
+                                        'Jul',
+                                        'Aug',
+                                        'Sep',
+                                        'Oct',
+                                        'Nov',
+                                        'Dec',
+                                      ][m - 1]
+                                  )
+                                  .join(', ')}
+                              </span>
+                            </span>
+                          )}
+                          <span className="text-stone-400">
+                            {seasonality.totalEventsAnalyzed} events · {seasonality.yearsOfData}yr
+                            {seasonality.yearsOfData !== 1 ? 's' : ''} data
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })()}
 
-      {/* ============================================ */}
-      {/* SECTION 10: ACTIVITY                          */}
-      {/* ============================================ */}
-      {isWidgetEnabled('activity') && (
-        <section className="space-y-3" style={{ order: getWidgetOrder('activity') }}>
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Activity</h2>
-            <Link href="/activity" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
-              View all &rarr;
-            </Link>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border border-stone-200 rounded-lg p-4">
-              <h3 className="text-sm font-semibold text-stone-700 mb-3">My Recent Activity</h3>
-              <div className="max-h-64 overflow-y-auto">
-                <ChefActivityFeed entries={chefActivity} compact />
-              </div>
+              {/* Top Events This Month — profitability leaders */}
+              {topEvents.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <CardTitle>Top Events ({currentMonthName})</CardTitle>
+                      <Link
+                        href="/finance/reporting/profit-by-event"
+                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      >
+                        All <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {topEvents.map((event) => {
+                        const marginColor =
+                          event.profitMarginPercent >= 30
+                            ? 'text-emerald-600'
+                            : event.profitMarginPercent >= 15
+                              ? 'text-amber-600'
+                              : 'text-red-600'
+                        return (
+                          <Link
+                            key={event.eventId}
+                            href={`/events/${event.eventId}`}
+                            className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                          >
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-stone-900 truncate">
+                                {event.occasion || 'Event'} — {event.clientName}
+                              </p>
+                              <p className="text-xs text-stone-500">{event.eventDate}</p>
+                            </div>
+                            <div className="text-right shrink-0 ml-4">
+                              <p className="text-sm font-semibold text-stone-900">
+                                {formatCurrency(event.profitCents)}
+                              </p>
+                              <p className={`text-xs font-medium ${marginColor}`}>
+                                {event.profitMarginPercent}% margin
+                              </p>
+                            </div>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-            <LivePresencePanel tenantId={user.tenantId!} initialClients={activeClients} />
-            <ActivityFeed events={recentActivity} />
-          </div>
-        </section>
-      )}
 
+            {/* Weekly Accountability — extracted into reusable component */}
+            <AccountabilityPanel
+              weeklyStats={weeklyStats}
+              closureStreak={closureStreak}
+              overdueFollowUpCount={weeklyStats.overdueFollowUps}
+            />
+
+            {/* Quote Performance Insights — full-width below the grid */}
+            {quoteInsights && <QuoteAcceptanceInsightsPanel data={quoteInsights} />}
+          </section>
+        )}
+
+        {/* ============================================ */}
+        {/* SECTION 7.5: CHEF JOURNAL                    */}
+        {/* ============================================ */}
+        {isWidgetEnabled('career_growth') && (
+          <section className="space-y-3" style={{ order: getWidgetOrder('career_growth') }}>
+            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
+              Career Growth
+            </h2>
+            <ChefJournalWidget
+              insights={journalInsights}
+              latestJourney={recentJourneys[0] ?? null}
+            />
+          </section>
+        )}
+
+        {/* ============================================ */}
+        {/* SECTION 8: HOURS                              */}
+        {/* ============================================ */}
+        {isWidgetEnabled('hours') && (
+          <section className="space-y-3" style={{ order: getWidgetOrder('hours') }}>
+            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Hours</h2>
+            <HoursLogWidget
+              todayMinutes={hoursSnapshot.todayMinutes}
+              weekMinutes={hoursSnapshot.weekMinutes}
+              allTimeMinutes={hoursSnapshot.allTimeMinutes}
+              topActivity={hoursSnapshot.topActivity}
+              recentEntries={hoursSnapshot.recentEntries}
+              trackingStreak={hoursSnapshot.trackingStreak}
+              todayLogged={hoursSnapshot.todayLogged}
+              weekCategoryBreakdown={hoursSnapshot.weekCategoryBreakdown}
+            />
+          </section>
+        )}
+
+        {/* ============================================ */}
+        {/* SECTION 9: TO DO LIST                         */}
+        {/* ============================================ */}
+        {isWidgetEnabled('todo_list') && (
+          <section style={{ order: getWidgetOrder('todo_list') }}>
+            <ChefTodoWidget initialTodos={todos} />
+          </section>
+        )}
+
+        {/* ============================================ */}
+        {/* SECTION 10: ACTIVITY                          */}
+        {/* ============================================ */}
+        {isWidgetEnabled('activity') && (
+          <section className="space-y-3" style={{ order: getWidgetOrder('activity') }}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
+                Activity
+              </h2>
+              <Link
+                href="/activity"
+                className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+              >
+                View all &rarr;
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="border border-stone-200 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-stone-700 mb-3">My Recent Activity</h3>
+                <div className="max-h-64 overflow-y-auto">
+                  <ChefActivityFeed entries={chefActivity} compact />
+                </div>
+              </div>
+              <LivePresencePanel tenantId={user.tenantId!} initialClients={activeClients} />
+              <ActivityFeed events={recentActivity} />
+            </div>
+          </section>
+        )}
+      </MobileDashboardExpander>
+
+      {/* AI Business Insights — revenue patterns, profitability, seasonal trends */}
+      <BusinessInsightsPanel />
     </div>
   )
 }
