@@ -40,6 +40,45 @@ These rules exist because this is a **live production app with real client data*
 
 ---
 
+## SELF-MAINTAINING DOCUMENT (READ THIS FIRST)
+
+This document must stay current. Claude is responsible for keeping it updated — the developer should never have to ask.
+
+### When to update this file
+
+Update `CLAUDE.md` immediately whenever any of the following happen:
+
+- A pattern or rule gets established during a session (e.g. "always use X", "never do Y")
+- The developer has to ask Claude for the same thing more than once — that's a missing rule
+- A new architectural decision is made that affects how future agents should behave
+- A bug or mistake is traced back to a missing or unclear rule
+- A new file location, migration, or system component is added that agents need to know about
+
+**Do not wait to be asked.** If something belongs in this document, add it in the same session it was discovered.
+
+### How to update
+
+1. Edit `CLAUDE.md` directly with the new rule in the appropriate section
+2. Also update `memory/MEMORY.md` if the rule belongs in persistent memory
+3. Commit both files with a clear message like `docs(rules): add X rule`
+4. Push — this is part of the standard session close-out
+
+---
+
+## STANDARD SESSION CLOSE-OUT (run at the end of every session)
+
+These steps run automatically at the end of every session, whether or not the developer asks. No exceptions.
+
+1. **Stage all changes** — `git add` every file that was modified or created
+2. **Commit** — clear, descriptive commit message
+3. **Push the current branch** — `git push origin <current-branch>` → GitHub backup, costs $0, Vercel ignores it
+4. **Update this file** — if any new patterns, rules, or decisions were made this session, add them now
+5. **Report** — tell the developer what was committed and pushed
+
+**What this prevents:** Work existing only on the local machine. If the machine is wiped, stolen, or corrupted, everything on GitHub is safe. The database is already off-machine (Supabase). Code must be too.
+
+---
+
 ## DEVELOPMENT WORKFLOW
 
 ### Before Making Changes
