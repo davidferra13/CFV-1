@@ -69,12 +69,20 @@ type Event = {
   event_timezone?: string | null
 }
 
+type DepositDefaults = {
+  enabled: boolean
+  type: 'percentage' | 'fixed'
+  percentage: number
+  amountCents: number
+}
+
 type EventFormProps = {
   clients: Client[]
   mode: 'create' | 'edit'
   event?: Event
   partners?: Partner[]
   partnerLocations?: Record<string, PartnerLocation[]>
+  depositDefaults?: DepositDefaults
 }
 
 export function EventForm({
@@ -83,6 +91,7 @@ export function EventForm({
   event,
   partners = [],
   partnerLocations = {},
+  depositDefaults,
 }: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -127,8 +136,24 @@ export function EventForm({
   const [totalAmount, setTotalAmount] = useState(
     event?.quoted_price_cents ? (event.quoted_price_cents / 100).toString() : ''
   )
+
+  // Deposit auto-fill from chef defaults (create mode only)
+  const shouldAutoFill =
+    mode === 'create' && depositDefaults?.enabled && !event?.deposit_amount_cents
+  const initialDeposit = (() => {
+    if (!shouldAutoFill || !depositDefaults) return ''
+    if (depositDefaults.type === 'fixed') {
+      return (depositDefaults.amountCents / 100).toString()
+    }
+    // Percentage type: can only compute if there's already a quoted price (unlikely on create, but handle it)
+    return ''
+  })()
+
   const [depositAmount, setDepositAmount] = useState(
-    event?.deposit_amount_cents ? (event.deposit_amount_cents / 100).toString() : ''
+    event?.deposit_amount_cents ? (event.deposit_amount_cents / 100).toString() : initialDeposit
+  )
+  const [depositSource, setDepositSource] = useState<'default' | 'manual' | 'none'>(
+    event?.deposit_amount_cents ? 'manual' : shouldAutoFill && initialDeposit ? 'default' : 'none'
   )
 
   const handlePlaceSelect = (data: AddressData) => {
@@ -478,21 +503,80 @@ export function EventForm({
               min="0"
               placeholder="e.g., 2500.00"
               value={totalAmount}
-              onChange={(e) => setTotalAmount(e.target.value)}
+              onChange={(e) => {
+                const newTotal = e.target.value
+                setTotalAmount(newTotal)
+                // Auto-recalculate deposit for percentage defaults (only if still auto-filled)
+                if (
+                  depositSource === 'default' &&
+                  depositDefaults?.enabled &&
+                  depositDefaults.type === 'percentage' &&
+                  newTotal
+                ) {
+                  const price = parseFloat(newTotal)
+                  if (!isNaN(price) && price > 0) {
+                    const computed = ((price * depositDefaults.percentage) / 100).toFixed(2)
+                    setDepositAmount(computed)
+                  }
+                } else if (
+                  depositSource === 'none' &&
+                  mode === 'create' &&
+                  depositDefaults?.enabled &&
+                  depositDefaults.type === 'percentage' &&
+                  newTotal
+                ) {
+                  // First time entering a price with percentage defaults — auto-fill
+                  const price = parseFloat(newTotal)
+                  if (!isNaN(price) && price > 0) {
+                    const computed = ((price * depositDefaults.percentage) / 100).toFixed(2)
+                    setDepositAmount(computed)
+                    setDepositSource('default')
+                  }
+                }
+              }}
               helperText="Total quoted price for the event"
             />
 
-            <Input
-              label="Deposit Amount ($)"
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min="0"
-              placeholder="e.g., 500.00"
-              value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
-              helperText="Required deposit amount (optional)"
-            />
+            <div>
+              <Input
+                label="Deposit Amount ($)"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                placeholder="e.g., 500.00"
+                value={depositAmount}
+                onChange={(e) => {
+                  setDepositAmount(e.target.value)
+                  // Any manual edit switches source to manual
+                  if (depositSource !== 'manual') {
+                    setDepositSource(e.target.value ? 'manual' : 'none')
+                  }
+                }}
+                helperText={
+                  depositSource !== 'default' ? 'Required deposit amount (optional)' : undefined
+                }
+              />
+              {depositSource === 'default' && depositDefaults && (
+                <div className="mt-1.5 flex items-center gap-2">
+                  <p className="text-sm text-brand-600">
+                    {depositDefaults.type === 'percentage'
+                      ? `Auto-filled from your defaults (${depositDefaults.percentage}%)`
+                      : `Auto-filled from your defaults ($${(depositDefaults.amountCents / 100).toFixed(2)})`}
+                  </p>
+                  <button
+                    type="button"
+                    className="text-sm text-stone-400 hover:text-stone-600 underline"
+                    onClick={() => {
+                      setDepositAmount('')
+                      setDepositSource('none')
+                    }}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
 
             <Textarea
               label="Special Requests"
