@@ -150,9 +150,9 @@ The invite claim page (`/cannabis-invite/[token]`) is full-screen, completely da
    supabase db push --linked
    ```
 
-2. **Grant yourself cannabis tier** first via the admin panel at `/admin/cannabis` → "Direct Grant" tab.
+2. **Admin auto-access**: Admins (users in `ADMIN_EMAILS`) automatically have cannabis tier access — no manual grant needed. The `hasCannabisAccess()` and `clientHasCannabisAccess()` functions check `isAdmin()` first.
 
-3. The cannabis portal is fully invisible until a user is in `cannabis_tier_users` with `status = 'active'`.
+3. **For non-admin users**: The cannabis portal is fully invisible until a user is in `cannabis_tier_users` with `status = 'active'`. Grant access via the admin panel at `/admin/cannabis` → "Direct Grant" tab.
 
 ---
 
