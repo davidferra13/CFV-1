@@ -1,4 +1,4 @@
-# ChefFlow V1 — Project Rules
+I.# ChefFlow V1 — Project Rules
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
@@ -74,9 +74,74 @@ Run these in order — stop and report any failure before continuing:
 - All work committed, no important untracked files
 - `types/database.ts` current with remote schema
 
+### Agent Testing Account — Use It
+
+A persistent agent account exists for programmatic testing. **Use it proactively** — don't ask the developer to manually test things you can verify yourself.
+
+- **Credentials:** Read from `.auth/agent.json` (or `.env.local`: `AGENT_EMAIL` / `AGENT_PASSWORD`)
+- **Sign in:** `POST http://localhost:3100/api/e2e/auth` with `{ "email", "password" }` from the credentials
+- **Access:** Chef role + admin access (full app)
+- **Setup:** If `.auth/agent.json` doesn't exist, run `npm run agent:setup` first
+
+**When to use it:**
+
+- After implementing a UI change — sign in via Playwright and verify it renders correctly
+- When debugging auth, redirects, or page-load issues — sign in and inspect the behavior
+- When the user reports something is broken — sign in and reproduce it before guessing at fixes
+- During feature close-out — smoke-test the feature in a real browser, not just type-check
+
+**How:**
+
+1. Ensure dev server is running on port 3100 (ask the user to start it if needed)
+2. Launch Playwright, POST to `/api/e2e/auth` with agent credentials
+3. Navigate, interact, screenshot, and report findings
+4. Do NOT sign out (preserves the session for follow-up checks)
+
+**Rule: Verify before reporting.** If you can test something yourself with the agent account, do it. Only ask the developer to manually test when browser interaction is required that Playwright can't handle (e.g., OAuth popups, mobile-specific gestures).
+
 ### Full Workflow Reference
 
 See **`docs/AGENT-WORKFLOW.md`** for the complete step-by-step playbook covering health checks, migration safety, parallel agent rules, and merge procedure. Every agent should read it before starting significant work.
+
+---
+
+## MULTI-AGENT MODE (READ THIS — SAVES REAL MONEY)
+
+This project frequently runs **10+ agents in parallel**. When you are one of many concurrent agents, the following rules are **mandatory and override the Feature Close-Out steps above**.
+
+### How to know you're in multi-agent mode
+
+You are in multi-agent mode if:
+
+- The user's prompt mentions multiple agents, parallel work, or asks you to focus on a specific area/feature only
+- You were spawned as a sub-task by another agent
+- The prompt does not explicitly ask YOU to run the build
+
+### What to do
+
+1. **Do your assigned work fully** — implement, fix, write the code.
+2. **Create the follow-up `.md` doc** as required by project rules.
+3. **`git add` and `git commit`** your changes with a clear message.
+4. **Report what you changed and stop.**
+
+### What NOT to do — EVER in multi-agent mode
+
+- **DO NOT run `npx tsc --noEmit`** — 10 agents running this simultaneously will fight over the TypeScript compiler and produce false errors.
+- **DO NOT run `npx next build`** — concurrent agents corrupt `.next/`, compete for the same port, and every build fails. You will loop forever.
+- **DO NOT interact with localhost or the dev server** — another agent may be using it.
+- **DO NOT retry a failed build.** If something fails, report it once and stop. Do not loop.
+- **DO NOT wait for the build to pass before committing.** Commit your code changes and let the developer run a single clean build after all agents finish.
+
+### Why this rule exists
+
+When 10 agents each try to verify the build, they all fail (`.next/` corruption, port 3100 conflicts, concurrent TypeScript process crashes). Each agent then retries, burning hundreds of tokens in a loop that never resolves. The developer loses time and money. The fix is simple: **agents implement and commit, the developer verifies once at the end.**
+
+### The only time you should run a build
+
+Only run `npx tsc --noEmit --skipLibCheck` or `npx next build --no-lint` if:
+
+- The user explicitly tells YOU (this specific agent) to run the build
+- You are the only agent running (single-agent session, user confirmed)
 
 ---
 
