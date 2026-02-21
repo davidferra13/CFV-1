@@ -46,7 +46,10 @@ type NavSubItem = {
   icon?: LucideIcon
   visibility?: 'secondary' | 'advanced'
 }
-type NavCollapsibleItem = NavItem & { children?: NavSubItem[] }
+type NavCollapsibleItem = NavItem & {
+  children?: NavSubItem[]
+  visibility?: 'secondary' | 'advanced'
+}
 type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavCollapsibleItem[] }
 type PrimaryShortcutOption = NavItem & { context: string }
 
@@ -113,6 +116,12 @@ export const navGroups: NavGroup[] = [
         href: '/guest-leads',
         label: 'Guest Pipeline',
         icon: Users,
+      },
+      {
+        href: '/guest-analytics',
+        label: 'Guest Insights',
+        icon: BarChart3,
+        visibility: 'advanced' as const,
       },
       {
         href: '/calls',

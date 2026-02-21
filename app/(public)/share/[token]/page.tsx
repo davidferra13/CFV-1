@@ -8,13 +8,11 @@ import { notFound } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { RSVPForm } from '@/components/sharing/rsvp-form'
+import { ExcitementWall } from '@/components/sharing/excitement-wall'
+import { GuestPhotoGallery } from '@/components/sharing/guest-photo-gallery'
 import { cookies } from 'next/headers'
 
-export default async function SharePage({
-  params,
-}: {
-  params: { token: string }
-}) {
+export default async function SharePage({ params }: { params: { token: string } }) {
   const eventData = await getEventShareByToken(params.token)
 
   if (!eventData) {
@@ -92,9 +90,7 @@ export default async function SharePage({
               {eventData.guestCount && (
                 <div>
                   <div className="text-sm text-stone-500 mb-1">Expected Guests</div>
-                  <div className="font-medium text-stone-900">
-                    {eventData.guestCount} guests
-                  </div>
+                  <div className="font-medium text-stone-900">{eventData.guestCount} guests</div>
                 </div>
               )}
 
@@ -124,9 +120,7 @@ export default async function SharePage({
                     .join(', ')}
                 </div>
                 {eventData.location.notes && (
-                  <p className="text-sm text-stone-600 mt-1">
-                    {eventData.location.notes}
-                  </p>
+                  <p className="text-sm text-stone-600 mt-1">{eventData.location.notes}</p>
                 )}
               </div>
             )}
@@ -174,21 +168,22 @@ export default async function SharePage({
               <CardTitle>Dietary Information</CardTitle>
             </CardHeader>
             <CardContent>
-              {eventData.dietaryInfo.restrictions && eventData.dietaryInfo.restrictions.length > 0 && (
-                <div className="mb-3">
-                  <div className="text-sm text-stone-500 mb-1">Dietary Restrictions</div>
-                  <div className="flex flex-wrap gap-2">
-                    {eventData.dietaryInfo.restrictions.map((r: string) => (
-                      <span
-                        key={r}
-                        className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium"
-                      >
-                        {r}
-                      </span>
-                    ))}
+              {eventData.dietaryInfo.restrictions &&
+                eventData.dietaryInfo.restrictions.length > 0 && (
+                  <div className="mb-3">
+                    <div className="text-sm text-stone-500 mb-1">Dietary Restrictions</div>
+                    <div className="flex flex-wrap gap-2">
+                      {eventData.dietaryInfo.restrictions.map((r: string) => (
+                        <span
+                          key={r}
+                          className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium"
+                        >
+                          {r}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
               {eventData.dietaryInfo.allergies && eventData.dietaryInfo.allergies.length > 0 && (
                 <div>
                   <div className="text-sm text-stone-500 mb-1">Allergies</div>
@@ -249,19 +244,47 @@ export default async function SharePage({
         {eventData.status !== 'completed' && (
           <Card className="mb-8">
             <CardHeader>
-              <CardTitle>
-                {existingGuest ? 'Update Your RSVP' : 'RSVP'}
-              </CardTitle>
+              <CardTitle>{existingGuest ? 'Update Your RSVP' : 'RSVP'}</CardTitle>
             </CardHeader>
             <CardContent>
               <RSVPForm
                 shareToken={params.token}
                 eventId={eventData.eventId}
+                chefProfileUrl={eventData.chefProfileUrl}
+                chefName={eventData.chefName}
                 existingGuest={existingGuest}
               />
             </CardContent>
           </Card>
         )}
+
+        {/* Excitement Wall */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Guest Wall</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ExcitementWall
+              shareToken={params.token}
+              guestName={existingGuest?.full_name}
+              guestToken={existingGuest?.guest_token}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Guest Photo Gallery */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Photos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <GuestPhotoGallery
+              shareToken={params.token}
+              guestName={existingGuest?.full_name}
+              guestToken={existingGuest?.guest_token}
+            />
+          </CardContent>
+        </Card>
 
         {/* Create Account CTA */}
         <div className="text-center py-6 border-t border-stone-200">

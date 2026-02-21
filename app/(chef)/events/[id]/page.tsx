@@ -104,6 +104,9 @@ import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { GuestCodePanel } from '@/components/events/guest-code-panel'
 import { getEventGuestLeadCount } from '@/lib/guest-leads/actions'
 import { HostMessageTemplate } from '@/components/sharing/host-message-template'
+import { GuestMessagesPanel } from '@/components/events/guest-messages-panel'
+import { PostEventOutreachPanel } from '@/components/events/post-event-outreach-panel'
+import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -252,6 +255,7 @@ export default async function EventDetailPage({
     mileageEntries,
     eventTips,
     guestLeadCount,
+    guestWallMessages,
   ] = await Promise.all([
     getEventShares(params.id),
     getEventGuests(params.id),
@@ -264,6 +268,7 @@ export default async function EventDetailPage({
     getMileageLogs(params.id).catch(() => []),
     getEventTips(params.id).catch(() => []),
     getEventGuestLeadCount(params.id).catch(() => 0),
+    getEventMessagesForChef(params.id).catch(() => []),
   ])
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
 
@@ -307,7 +312,11 @@ export default async function EventDetailPage({
   // Fetch chef display name for templates
   const chefDisplayName = await (async () => {
     const sb = createServerClient()
-    const { data } = await sb.from('chefs').select('display_name, business_name').eq('id', user.entityId!).single()
+    const { data } = await sb
+      .from('chefs')
+      .select('display_name, business_name')
+      .eq('id', user.entityId!)
+      .single()
     return (data?.display_name || data?.business_name || 'your chef') as string
   })()
 
@@ -670,6 +679,14 @@ export default async function EventDetailPage({
           />
         )}
 
+        {/* Guest Excitement Wall — Chef Moderation */}
+        {event.status !== 'cancelled' && (guestWallMessages as any[]).length > 0 && (
+          <GuestMessagesPanel messages={guestWallMessages as any[]} eventId={event.id} />
+        )}
+
+        {/* Post-Event Guest Outreach (completed events only) */}
+        {event.status === 'completed' && <PostEventOutreachPanel eventId={event.id} />}
+
         {/* AI Allergen Risk Matrix */}
         {event.status !== 'draft' && event.status !== 'cancelled' && (
           <AllergenRiskPanel eventId={event.id} />
@@ -980,25 +997,27 @@ export default async function EventDetailPage({
                 {profitSummary.estimatedFoodCost.estimatedCents !== null &&
                   profitSummary.estimatedFoodCost.actualCents !== null &&
                   profitSummary.estimatedFoodCost.deltaPct !== null && (
-                  <span
-                    className={`font-medium ${
-                      Math.abs(Number(profitSummary.estimatedFoodCost.deltaPct)) <= 10
-                        ? 'text-emerald-600'
-                        : 'text-amber-600'
-                    }`}
-                  >
-                    Estimated: {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)}
-                    {' → '}Actual: {formatCurrency(profitSummary.estimatedFoodCost.actualCents)}
-                    {' '}({Number(profitSummary.estimatedFoodCost.deltaPct) > 0 ? '+' : ''}
-                    {profitSummary.estimatedFoodCost.deltaPct}%)
-                  </span>
-                )}
+                    <span
+                      className={`font-medium ${
+                        Math.abs(Number(profitSummary.estimatedFoodCost.deltaPct)) <= 10
+                          ? 'text-emerald-600'
+                          : 'text-amber-600'
+                      }`}
+                    >
+                      Estimated: {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)}
+                      {' → '}Actual: {formatCurrency(profitSummary.estimatedFoodCost.actualCents)} (
+                      {Number(profitSummary.estimatedFoodCost.deltaPct) > 0 ? '+' : ''}
+                      {profitSummary.estimatedFoodCost.deltaPct}%)
+                    </span>
+                  )}
                 {profitSummary.estimatedFoodCost.estimatedCents !== null &&
                   profitSummary.estimatedFoodCost.actualCents === null && (
-                  <span className="text-stone-500">
-                    Estimated food cost: {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)} (from grocery quote)
-                  </span>
-                )}
+                    <span className="text-stone-500">
+                      Estimated food cost:{' '}
+                      {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)} (from grocery
+                      quote)
+                    </span>
+                  )}
                 {profitSummary.profit.effectiveHourlyRateCents && (
                   <span className="font-medium text-stone-700">
                     Effective rate: {formatCurrency(profitSummary.profit.effectiveHourlyRateCents)}

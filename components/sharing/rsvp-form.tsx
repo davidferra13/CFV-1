@@ -1,4 +1,5 @@
 // RSVP Form - Guest-facing form for submitting/updating RSVPs
+// Two-mode design: Quick RSVP (status + name = done) or expand for dietary/allergy details
 // Used on the public share page. No authentication required.
 
 'use client'
@@ -11,6 +12,8 @@ type RSVPStatus = 'attending' | 'declined' | 'maybe'
 interface RSVPFormProps {
   shareToken: string
   eventId: string
+  chefProfileUrl?: string | null
+  chefName?: string | null
   existingGuest?: {
     guest_token: string
     full_name: string
@@ -24,8 +27,20 @@ interface RSVPFormProps {
   } | null
 }
 
-export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) {
+export function RSVPForm({
+  shareToken,
+  eventId,
+  chefProfileUrl,
+  chefName,
+  existingGuest,
+}: RSVPFormProps) {
   const isEditing = !!existingGuest
+  const hasExistingDetails = !!(
+    existingGuest?.dietary_restrictions?.length ||
+    existingGuest?.allergies?.length ||
+    existingGuest?.notes ||
+    existingGuest?.plus_one
+  )
 
   const [fullName, setFullName] = useState(existingGuest?.full_name || '')
   const [email, setEmail] = useState(existingGuest?.email || '')
@@ -35,15 +50,14 @@ export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) 
   const [dietaryInput, setDietaryInput] = useState(
     existingGuest?.dietary_restrictions?.join(', ') || ''
   )
-  const [allergyInput, setAllergyInput] = useState(
-    existingGuest?.allergies?.join(', ') || ''
-  )
+  const [allergyInput, setAllergyInput] = useState(existingGuest?.allergies?.join(', ') || '')
   const [notes, setNotes] = useState(existingGuest?.notes || '')
   const [plusOne, setPlusOne] = useState(existingGuest?.plus_one || false)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
   const [guestToken, setGuestToken] = useState(existingGuest?.guest_token || '')
+  const [showDetails, setShowDetails] = useState(isEditing && hasExistingDetails)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -107,7 +121,12 @@ export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) 
     return (
       <div className="text-center py-8">
         <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            className="w-8 h-8 text-emerald-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -127,23 +146,33 @@ export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) 
         >
           Update my response
         </button>
+
+        {chefProfileUrl && rsvpStatus === 'attending' && (
+          <div className="mt-8 pt-6 border-t border-stone-200">
+            <p className="text-sm text-stone-500 mb-3">
+              Love private dining? Book your own event with {chefName || 'your chef'}.
+            </p>
+            <a
+              href={chefProfileUrl}
+              className="inline-block px-5 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition"
+            >
+              Book Your Own Event
+            </a>
+          </div>
+        )}
       </div>
     )
   }
 
-  const statusOptions: { value: RSVPStatus; label: string; icon: string; color: string }[] = [
-    { value: 'attending', label: "I'll be there", icon: 'check', color: 'emerald' },
-    { value: 'maybe', label: 'Maybe', icon: 'help', color: 'amber' },
-    { value: 'declined', label: "Can't make it", icon: 'x', color: 'red' },
+  const statusOptions: { value: RSVPStatus; label: string; color: string }[] = [
+    { value: 'attending', label: "I'll be there", color: 'emerald' },
+    { value: 'maybe', label: 'Maybe', color: 'amber' },
+    { value: 'declined', label: "Can't make it", color: 'red' },
   ]
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
-        <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
+      {error && <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
       {/* RSVP Status Selection */}
       <div>
@@ -172,7 +201,7 @@ export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) 
         </div>
       </div>
 
-      {/* Name */}
+      {/* Name — always required */}
       <div>
         <label htmlFor="fullName" className="block text-sm font-medium text-stone-700 mb-1">
           Your Name <span className="text-red-500">*</span>
@@ -188,7 +217,7 @@ export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) 
         />
       </div>
 
-      {/* Email */}
+      {/* Email — always visible, optional */}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
           Email <span className="text-stone-400 text-xs">(optional)</span>
@@ -201,80 +230,125 @@ export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) 
           placeholder="your@email.com"
           className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
         />
-        <p className="text-xs text-stone-500 mt-1">
-          So we can reach you if anything changes
-        </p>
+        <p className="text-xs text-stone-500 mt-1">So we can reach you if anything changes</p>
       </div>
 
-      {/* Only show detailed fields if attending or maybe */}
+      {/* Expandable details section — dietary, allergies, plus-one, notes */}
       {rsvpStatus !== 'declined' && (
         <>
-          {/* Plus One */}
-          <div className="flex items-center gap-3">
-            <input
-              id="plusOne"
-              type="checkbox"
-              checked={plusOne}
-              onChange={(e) => setPlusOne(e.target.checked)}
-              className="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
-            />
-            <label htmlFor="plusOne" className="text-sm text-stone-700">
-              I am bringing a plus-one
-            </label>
-          </div>
+          {!showDetails ? (
+            <button
+              type="button"
+              onClick={() => setShowDetails(true)}
+              className="w-full py-3 rounded-lg border-2 border-dashed border-stone-300 text-sm font-medium text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Add allergies, dietary needs, or a note
+            </button>
+          ) : (
+            <div className="space-y-4 bg-stone-50 rounded-lg p-4 border border-stone-200">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-stone-700">Additional Details</h4>
+                <button
+                  type="button"
+                  onClick={() => setShowDetails(false)}
+                  className="text-xs text-stone-400 hover:text-stone-600"
+                >
+                  Hide
+                </button>
+              </div>
 
-          {/* Dietary Restrictions */}
-          <div>
-            <label htmlFor="dietary" className="block text-sm font-medium text-stone-700 mb-1">
-              Dietary Restrictions
-            </label>
-            <input
-              id="dietary"
-              type="text"
-              value={dietaryInput}
-              onChange={(e) => setDietaryInput(e.target.value)}
-              placeholder="e.g., vegetarian, kosher, gluten-free"
-              className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
-            />
-            <p className="text-xs text-stone-500 mt-1">
-              Separate multiple with commas
-            </p>
-          </div>
+              {/* Plus One */}
+              <div className="flex items-center gap-3">
+                <input
+                  id="plusOne"
+                  type="checkbox"
+                  checked={plusOne}
+                  onChange={(e) => setPlusOne(e.target.checked)}
+                  className="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
+                />
+                <label htmlFor="plusOne" className="text-sm text-stone-700">
+                  I am bringing a plus-one
+                </label>
+              </div>
 
-          {/* Allergies */}
-          <div>
-            <label htmlFor="allergies" className="block text-sm font-medium text-stone-700 mb-1">
-              Allergies
-            </label>
-            <input
-              id="allergies"
-              type="text"
-              value={allergyInput}
-              onChange={(e) => setAllergyInput(e.target.value)}
-              placeholder="e.g., peanuts, shellfish, dairy"
-              className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
-            />
-            <p className="text-xs text-stone-500 mt-1">
-              Separate multiple with commas
-            </p>
-          </div>
+              {/* Dietary Restrictions */}
+              <div>
+                <label htmlFor="dietary" className="block text-sm font-medium text-stone-700 mb-1">
+                  Dietary Restrictions
+                </label>
+                <input
+                  id="dietary"
+                  type="text"
+                  value={dietaryInput}
+                  onChange={(e) => setDietaryInput(e.target.value)}
+                  placeholder="e.g., vegetarian, kosher, gluten-free"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                />
+                <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
+              </div>
+
+              {/* Allergies */}
+              <div>
+                <label
+                  htmlFor="allergies"
+                  className="block text-sm font-medium text-stone-700 mb-1"
+                >
+                  Allergies
+                </label>
+                <input
+                  id="allergies"
+                  type="text"
+                  value={allergyInput}
+                  onChange={(e) => setAllergyInput(e.target.value)}
+                  placeholder="e.g., peanuts, shellfish, dairy"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                />
+                <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
+              </div>
+
+              {/* Notes */}
+              <div>
+                <label htmlFor="notes" className="block text-sm font-medium text-stone-700 mb-1">
+                  Notes or Questions
+                </label>
+                <textarea
+                  id="notes"
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Anything you'd like the host to know..."
+                  rows={2}
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none bg-white"
+                />
+              </div>
+            </div>
+          )}
         </>
       )}
 
-      {/* Notes */}
-      <div>
-        <label htmlFor="notes" className="block text-sm font-medium text-stone-700 mb-1">
-          Notes or Questions
-        </label>
-        <textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="Anything you'd like the host to know..."
-          rows={3}
-          className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none"
-        />
-      </div>
+      {/* Declined — still allow a note */}
+      {rsvpStatus === 'declined' && (
+        <div>
+          <label htmlFor="notes" className="block text-sm font-medium text-stone-700 mb-1">
+            Send a note <span className="text-stone-400 text-xs">(optional)</span>
+          </label>
+          <textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Sorry I can't make it! Have fun..."
+            rows={2}
+            className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none"
+          />
+        </div>
+      )}
 
       {/* Submit */}
       <button
@@ -282,11 +356,7 @@ export function RSVPForm({ shareToken, eventId, existingGuest }: RSVPFormProps) 
         disabled={loading || !fullName}
         className="w-full bg-brand-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-brand-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading
-          ? 'Submitting...'
-          : isEditing
-            ? 'Update RSVP'
-            : 'Submit RSVP'}
+        {loading ? 'Submitting...' : isEditing ? 'Update RSVP' : 'Submit RSVP'}
       </button>
     </form>
   )

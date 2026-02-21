@@ -212,10 +212,7 @@ export async function addGuestManually(input: z.infer<typeof AddGuestManuallySch
  * Update guest visibility settings for a share (chef-only).
  * Controls what event details guests can see.
  */
-export async function updateGuestVisibility(
-  eventShareId: string,
-  settings: VisibilitySettings
-) {
+export async function updateGuestVisibility(eventShareId: string, settings: VisibilitySettings) {
   const user = await requireChef()
   const validated = VisibilitySettingsSchema.parse(settings)
   const supabase = createServerClient()
@@ -331,17 +328,19 @@ export async function getEventRSVPSummary(eventId: string) {
     throw new Error('Failed to fetch RSVP summary')
   }
 
-  return summary || {
-    event_id: eventId,
-    total_guests: 0,
-    attending_count: 0,
-    declined_count: 0,
-    maybe_count: 0,
-    pending_count: 0,
-    plus_one_count: 0,
-    all_dietary_restrictions: [],
-    all_allergies: [],
-  }
+  return (
+    summary || {
+      event_id: eventId,
+      total_guests: 0,
+      attending_count: 0,
+      declined_count: 0,
+      maybe_count: 0,
+      pending_count: 0,
+      plus_one_count: 0,
+      all_dietary_restrictions: [],
+      all_allergies: [],
+    }
+  )
 }
 
 /**
@@ -353,10 +352,7 @@ export async function getEventShares(eventId: string) {
 
   const supabase = createServerClient()
 
-  let query = supabase
-    .from('event_shares')
-    .select('*')
-    .eq('event_id', eventId)
+  let query = supabase.from('event_shares').select('*').eq('event_id', eventId)
 
   if (user.role === 'chef') {
     query = query.eq('tenant_id', user.tenantId!)
@@ -406,13 +402,15 @@ export async function getEventShareByToken(token: string) {
   // Fetch event details
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, tenant_id, event_date, serve_time, arrival_time,
       guest_count, occasion, service_style,
       location_address, location_city, location_state, location_zip,
       location_notes, dietary_restrictions, allergies,
       special_requests, status
-    `)
+    `
+    )
     .eq('id', share.event_id)
     .single()
 
@@ -425,16 +423,21 @@ export async function getEventShareByToken(token: string) {
     return null
   }
 
-  // Fetch chef name
+  // Fetch chef name + profile slug for "book your own" CTA
   const { data: chef } = await supabase
     .from('chefs')
-    .select('business_name')
+    .select('business_name, display_name, booking_slug')
     .eq('id', share.tenant_id)
     .single()
 
   // Fetch menus if visibility allows
   const visibility = share.visibility_settings as Record<string, boolean>
-  let menus: { id: string; name: string; description: string | null; service_style: string | null }[] = []
+  let menus: {
+    id: string
+    name: string
+    description: string | null
+    service_style: string | null
+  }[] = []
 
   if (visibility.show_menu) {
     const { data: menuData } = await supabase
@@ -471,19 +474,24 @@ export async function getEventShareByToken(token: string) {
     serveTime: visibility.show_date_time ? event.serve_time : null,
     arrivalTime: visibility.show_date_time ? event.arrival_time : null,
     guestCount: event.guest_count,
-    location: visibility.show_location ? {
-      address: event.location_address,
-      city: event.location_city,
-      state: event.location_state,
-      zip: event.location_zip,
-      notes: event.location_notes,
-    } : null,
-    chefName: visibility.show_chef_name ? chef?.business_name : null,
+    location: visibility.show_location
+      ? {
+          address: event.location_address,
+          city: event.location_city,
+          state: event.location_state,
+          zip: event.location_zip,
+          notes: event.location_notes,
+        }
+      : null,
+    chefName: visibility.show_chef_name ? chef?.display_name || chef?.business_name : null,
+    chefProfileUrl: (chef as any)?.booking_slug ? `/chef/${(chef as any).booking_slug}` : null,
     menus,
-    dietaryInfo: visibility.show_dietary_info ? {
-      restrictions: event.dietary_restrictions,
-      allergies: event.allergies,
-    } : null,
+    dietaryInfo: visibility.show_dietary_info
+      ? {
+          restrictions: event.dietary_restrictions,
+          allergies: event.allergies,
+        }
+      : null,
     specialRequests: visibility.show_special_requests ? event.special_requests : null,
     guestList,
     serviceStyle: event.service_style,
@@ -581,7 +589,8 @@ export async function updateRSVP(input: UpdateRSVPInput) {
   const payload: Record<string, unknown> = {}
   if (updateData.full_name !== undefined) payload.full_name = updateData.full_name
   if (updateData.rsvp_status !== undefined) payload.rsvp_status = updateData.rsvp_status
-  if (updateData.dietary_restrictions !== undefined) payload.dietary_restrictions = updateData.dietary_restrictions
+  if (updateData.dietary_restrictions !== undefined)
+    payload.dietary_restrictions = updateData.dietary_restrictions
   if (updateData.allergies !== undefined) payload.allergies = updateData.allergies
   if (updateData.notes !== undefined) payload.notes = updateData.notes
   if (updateData.plus_one !== undefined) payload.plus_one = updateData.plus_one
