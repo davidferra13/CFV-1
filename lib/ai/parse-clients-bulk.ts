@@ -4,7 +4,8 @@
 'use server'
 
 import { z } from 'zod'
-import { parseWithAI, type ParseResult } from './parse'
+import { type ParseResult } from './parse'
+import { parseWithOllama } from './parse-ollama'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
 import { parseClientsHeuristically, toFallbackWarning } from './fallback-parsers'
 
@@ -15,7 +16,7 @@ import { parseClientsHeuristically, toFallbackWarning } from './fallback-parsers
 const BulkClientsResponseSchema = z.object({
   parsed: z.array(ParsedClientSchema.shape.parsed),
   confidence: z.enum(['high', 'medium', 'low']),
-  warnings: z.array(z.string()).default([])
+  warnings: z.array(z.string()).default([]),
 })
 
 const BULK_CLIENT_SYSTEM_PROMPT = `You are a data extraction assistant for a private chef's client management system. Your job is to parse a text dump containing information about MULTIPLE clients and return each as a separate structured record.
@@ -80,7 +81,7 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  */
 export async function parseClientsFromBulk(rawText: string): Promise<ParseResult<ParsedClient[]>> {
   try {
-    const result = await parseWithAI(
+    const result = await parseWithOllama(
       BULK_CLIENT_SYSTEM_PROMPT,
       rawText,
       BulkClientsResponseSchema

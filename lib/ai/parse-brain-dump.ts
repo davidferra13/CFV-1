@@ -5,10 +5,15 @@
 'use server'
 
 import { z } from 'zod'
-import { parseWithAI, type ParseResult } from './parse'
+import { type ParseResult } from './parse'
+import { parseWithOllama } from './parse-ollama'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
 import { ParsedRecipeSchema, type ParsedRecipe } from './parse-recipe-schema'
-import { parseClientsHeuristically, parseRecipesHeuristically, toFallbackWarning } from './fallback-parsers'
+import {
+  parseClientsHeuristically,
+  parseRecipesHeuristically,
+  toFallbackWarning,
+} from './fallback-parsers'
 
 // ============================================
 // BRAIN DUMP RESPONSE SCHEMA
@@ -17,7 +22,7 @@ import { parseClientsHeuristically, parseRecipesHeuristically, toFallbackWarning
 const NoteSchema = z.object({
   type: z.string(),
   content: z.string(),
-  suggestedAction: z.string()
+  suggestedAction: z.string(),
 })
 
 export type ParsedNote = z.infer<typeof NoteSchema>
@@ -27,10 +32,10 @@ const BrainDumpResponseSchema = z.object({
     clients: z.array(ParsedClientSchema.shape.parsed).default([]),
     recipes: z.array(ParsedRecipeSchema.shape.parsed).default([]),
     notes: z.array(NoteSchema).default([]),
-    unstructured: z.array(z.string()).default([])
+    unstructured: z.array(z.string()).default([]),
   }),
   confidence: z.enum(['high', 'medium', 'low']),
-  warnings: z.array(z.string()).default([])
+  warnings: z.array(z.string()).default([]),
 })
 
 export type BrainDumpResult = z.infer<typeof BrainDumpResponseSchema>['parsed']
@@ -78,11 +83,7 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  */
 export async function parseBrainDump(rawText: string): Promise<ParseResult<BrainDumpResult>> {
   try {
-    const result = await parseWithAI(
-      BRAIN_DUMP_SYSTEM_PROMPT,
-      rawText,
-      BrainDumpResponseSchema
-    )
+    const result = await parseWithOllama(BRAIN_DUMP_SYSTEM_PROMPT, rawText, BrainDumpResponseSchema)
     return result
   } catch (error) {
     const clientFallback = parseClientsHeuristically(rawText, toFallbackWarning(error))
@@ -94,16 +95,20 @@ export async function parseBrainDump(rawText: string): Promise<ParseResult<Brain
         clients: clientFallback.parsed,
         recipes,
         notes: hasStructuredData
-          ? [{
-              type: 'general',
-              content: 'Imported using fallback parsing. Please review all fields before saving.',
-              suggestedAction: 'Review extracted data and adjust details as needed.',
-            }]
-          : [{
-              type: 'general',
-              content: rawText.slice(0, 400),
-              suggestedAction: 'Review and classify this note manually.',
-            }],
+          ? [
+              {
+                type: 'general',
+                content: 'Imported using fallback parsing. Please review all fields before saving.',
+                suggestedAction: 'Review extracted data and adjust details as needed.',
+              },
+            ]
+          : [
+              {
+                type: 'general',
+                content: rawText.slice(0, 400),
+                suggestedAction: 'Review and classify this note manually.',
+              },
+            ],
         unstructured: hasStructuredData ? [] : [rawText],
       },
       confidence: 'low',

@@ -3,7 +3,8 @@
 
 'use server'
 
-import { parseWithAI, type Confidence, type ParseResult } from './parse'
+import { type Confidence, type ParseResult } from './parse'
+import { parseWithOllama } from './parse-ollama'
 import { parseClientsHeuristically, toFallbackWarning } from './fallback-parsers'
 import { ParsedClientSchema, type ParsedClient } from './parse-client-schema'
 
@@ -72,11 +73,7 @@ RESPOND WITH ONLY valid JSON matching this structure (no markdown, no explanatio
  */
 export async function parseClientFromText(rawText: string): Promise<ParseResult<ParsedClient>> {
   try {
-    const result = await parseWithAI(
-      CLIENT_SYSTEM_PROMPT,
-      rawText,
-      ParsedClientSchema
-    )
+    const result = await parseWithOllama(CLIENT_SYSTEM_PROMPT, rawText, ParsedClientSchema)
     return result
   } catch (error) {
     const fallback = parseClientsHeuristically(rawText, toFallbackWarning(error))

@@ -4,7 +4,8 @@
 'use server'
 
 import { z } from 'zod'
-import { parseWithAI, type ParseResult } from './parse'
+import { type ParseResult } from './parse'
+import { parseWithOllama } from './parse-ollama'
 
 // ============================================
 // PARSED INQUIRY SCHEMA
@@ -15,7 +16,10 @@ const ParsedInquirySchema = z.object({
     client_name: z.string().default(''),
     client_email: z.string().nullable().default(null),
     client_phone: z.string().nullable().default(null),
-    channel: z.enum(['text', 'email', 'instagram', 'take_a_chef', 'phone', 'website', 'other']).nullable().default(null),
+    channel: z
+      .enum(['text', 'email', 'instagram', 'take_a_chef', 'phone', 'website', 'other'])
+      .nullable()
+      .default(null),
     confirmed_date: z.string().nullable().default(null),
     confirmed_guest_count: z.number().nullable().default(null),
     confirmed_location: z.string().nullable().default(null),
@@ -29,7 +33,7 @@ const ParsedInquirySchema = z.object({
     referral_source: z.string().nullable().default(null),
   }),
   confidence: z.enum(['high', 'medium', 'low']),
-  warnings: z.array(z.string()).default([])
+  warnings: z.array(z.string()).default([]),
 })
 
 export type ParsedInquiry = z.infer<typeof ParsedInquirySchema>['parsed']
@@ -75,10 +79,6 @@ RESPOND WITH ONLY valid JSON (no markdown, no explanation):
  * Parse inquiry details from text (messages, emails, DMs, notes)
  */
 export async function parseInquiryFromText(rawText: string): Promise<ParseResult<ParsedInquiry>> {
-  const result = await parseWithAI(
-    INQUIRY_SYSTEM_PROMPT,
-    rawText,
-    ParsedInquirySchema
-  )
+  const result = await parseWithOllama(INQUIRY_SYSTEM_PROMPT, rawText, ParsedInquirySchema)
   return result
 }
