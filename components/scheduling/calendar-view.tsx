@@ -13,6 +13,7 @@ import listPlugin from '@fullcalendar/list'
 import type { EventClickArg, DatesSetArg, EventContentArg, EventDropArg } from '@fullcalendar/core'
 import type { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'
 import { getCalendarEvents, rescheduleEvent, type CalendarEvent } from '@/lib/scheduling/actions'
+import { getUSHolidaysInRange, type HolidayEvent } from '@/lib/holidays/us-holidays'
 import type { SeasonalPalette } from '@/lib/seasonal/types'
 import { getCurrentSeason } from '@/lib/seasonal/helpers'
 import { EventDetailPopover } from './event-detail-popover'
@@ -37,14 +38,14 @@ const VIEW_SHORTCUTS: Record<string, ViewType> = {
 }
 
 const STATUS_COLORS: Record<string, { bg: string; border: string; text: string }> = {
-  draft:       { bg: '#f5f3ef', border: '#d6d3d1', text: '#57534e' },
-  proposed:    { bg: '#dbeafe', border: '#93c5fd', text: '#1e40af' },
-  accepted:    { bg: '#fef3c7', border: '#fcd34d', text: '#92400e' },
-  paid:        { bg: '#d1fae5', border: '#6ee7b7', text: '#065f46' },
-  confirmed:   { bg: '#fcf0e0', border: '#f3c596', text: '#b15c26' },
+  draft: { bg: '#f5f3ef', border: '#d6d3d1', text: '#57534e' },
+  proposed: { bg: '#dbeafe', border: '#93c5fd', text: '#1e40af' },
+  accepted: { bg: '#fef3c7', border: '#fcd34d', text: '#92400e' },
+  paid: { bg: '#d1fae5', border: '#6ee7b7', text: '#065f46' },
+  confirmed: { bg: '#fcf0e0', border: '#f3c596', text: '#b15c26' },
   in_progress: { bg: '#fef9f3', border: '#e88f47', text: '#8e4a24' },
-  completed:   { bg: '#d1fae5', border: '#34d399', text: '#065f46' },
-  inquiry:     { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' },
+  completed: { bg: '#d1fae5', border: '#34d399', text: '#065f46' },
+  inquiry: { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' },
 }
 
 const PREP_STATUS_DOT: Record<string, string> = {
@@ -61,17 +62,37 @@ const SEASON_EMOJI: Record<string, string> = {
 }
 
 function formatRange(start: string, end: string): string {
-  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   const [sm, sd] = start.split('-').map(Number)
   const [em, ed] = end.split('-').map(Number)
   return `${MONTHS[sm - 1]} ${sd} \u2013 ${MONTHS[em - 1]} ${ed}`
 }
 
-export function CalendarView({ initialEvents, palettes }: { initialEvents: CalendarEvent[]; palettes?: SeasonalPalette[] }) {
+export function CalendarView({
+  initialEvents,
+  palettes,
+}: {
+  initialEvents: CalendarEvent[]
+  palettes?: SeasonalPalette[]
+}) {
   const router = useRouter()
   const calendarRef = useRef<InstanceType<typeof FullCalendar>>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [events, setEvents] = useState<CalendarEvent[]>(initialEvents)
+  const [holidayEvents, setHolidayEvents] = useState<HolidayEvent[]>([])
   const [currentView, setCurrentView] = useState<ViewType>('dayGridMonth')
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [popoverPosition, setPopoverPosition] = useState<{ x: number; y: number } | null>(null)
@@ -85,40 +106,48 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
   // DATA FETCHING
   // ============================================
 
-  const handleDatesSet = useCallback(async (arg: DatesSetArg) => {
-    setTitle(arg.view.title)
-    setIsLoading(true)
-    try {
-      const start = arg.startStr.split('T')[0]
-      const end = arg.endStr.split('T')[0]
-      const fetched = await getCalendarEvents(start, end)
-      setEvents(fetched)
-      // time-machine: compute season for the visible center date
-      if (palettes && palettes.length > 0) {
-        const startMs = new Date(arg.start).getTime()
-        const endMs = new Date(arg.end).getTime()
-        const mid = new Date(Math.floor((startMs + endMs) / 2))
-        const season = getCurrentSeason(palettes, mid)
-        setViewSeason(season)
+  const handleDatesSet = useCallback(
+    async (arg: DatesSetArg) => {
+      setTitle(arg.view.title)
+      setIsLoading(true)
+      try {
+        const start = arg.startStr.split('T')[0]
+        const end = arg.endStr.split('T')[0]
+        const fetched = await getCalendarEvents(start, end)
+        setEvents(fetched)
+        setHolidayEvents(getUSHolidaysInRange(start, end))
+        // time-machine: compute season for the visible center date
+        if (palettes && palettes.length > 0) {
+          const startMs = new Date(arg.start).getTime()
+          const endMs = new Date(arg.end).getTime()
+          const mid = new Date(Math.floor((startMs + endMs) / 2))
+          const season = getCurrentSeason(palettes, mid)
+          setViewSeason(season)
+        }
+      } catch (err) {
+        console.error('[CalendarView] Failed to fetch events:', err)
+      } finally {
+        setIsLoading(false)
       }
-    } catch (err) {
-      console.error('[CalendarView] Failed to fetch events:', err)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [palettes])
+    },
+    [palettes]
+  )
 
   // ============================================
   // EVENT CLICK → POPOVER
   // ============================================
 
-  const handleEventClick = useCallback((info: EventClickArg) => {
-    info.jsEvent.preventDefault()
-    const rect = info.el.getBoundingClientRect()
-    setPopoverPosition({ x: rect.left + rect.width / 2, y: rect.top })
-    const evt = events.find(e => e.id === info.event.id)
-    setSelectedEvent(evt ?? null)
-  }, [events])
+  const handleEventClick = useCallback(
+    (info: EventClickArg) => {
+      info.jsEvent.preventDefault()
+      if (info.event.extendedProps.dayType === 'holiday') return
+      const rect = info.el.getBoundingClientRect()
+      setPopoverPosition({ x: rect.left + rect.width / 2, y: rect.top })
+      const evt = events.find((e) => e.id === info.event.id)
+      setSelectedEvent(evt ?? null)
+    },
+    [events]
+  )
 
   const handleAgendaEventClick = useCallback((event: CalendarEvent, rect: DOMRect) => {
     setPopoverPosition({ x: rect.left + rect.width / 2, y: rect.top })
@@ -146,13 +175,16 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
   // CLICK EMPTY DATE → CREATE EVENT
   // ============================================
 
-  const handleDateClick = useCallback((info: DateClickArg) => {
-    const date = info.dateStr.split('T')[0]
-    const time = info.dateStr.includes('T') ? info.dateStr.split('T')[1]?.slice(0, 5) : undefined
-    const params = new URLSearchParams({ event_date: date })
-    if (time) params.set('serve_time', time)
-    router.push(`/events/new?${params.toString()}`)
-  }, [router])
+  const handleDateClick = useCallback(
+    (info: DateClickArg) => {
+      const date = info.dateStr.split('T')[0]
+      const time = info.dateStr.includes('T') ? info.dateStr.split('T')[1]?.slice(0, 5) : undefined
+      const params = new URLSearchParams({ event_date: date })
+      if (time) params.set('serve_time', time)
+      router.push(`/events/new?${params.toString()}`)
+    },
+    [router]
+  )
 
   // ============================================
   // DRAG-AND-DROP RESCHEDULE
@@ -186,9 +218,10 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
       return
     }
 
-    const toastMsg = result.clearedPrepBlocks && result.clearedPrepBlocks > 0
-      ? `Event rescheduled — ${result.clearedPrepBlocks} prep block${result.clearedPrepBlocks === 1 ? '' : 's'} cleared`
-      : 'Event rescheduled'
+    const toastMsg =
+      result.clearedPrepBlocks && result.clearedPrepBlocks > 0
+        ? `Event rescheduled — ${result.clearedPrepBlocks} prep block${result.clearedPrepBlocks === 1 ? '' : 's'} cleared`
+        : 'Event rescheduled'
     setRescheduleToast(toastMsg)
     setTimeout(() => setRescheduleToast(null), 3500)
 
@@ -199,6 +232,7 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
       const end = api.view.activeEnd.toISOString().split('T')[0]
       const fetched = await getCalendarEvents(start, end)
       setEvents(fetched)
+      setHolidayEvents(getUSHolidaysInRange(start, end))
     }
   }, [])
 
@@ -295,6 +329,13 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
   // ============================================
 
   const renderEventContent = (arg: EventContentArg) => {
+    if (arg.event.extendedProps.dayType === 'holiday') {
+      return (
+        <div className="flex items-center gap-1 px-1.5 py-0.5 min-w-0 overflow-hidden">
+          <span className="text-xs font-medium truncate">{arg.event.title}</span>
+        </div>
+      )
+    }
     const props = arg.event.extendedProps
     const isPrep = props.dayType === 'prep'
     const dotColor = PREP_STATUS_DOT[props.prepStatus] || '#94a3b8'
@@ -302,7 +343,10 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
     if (arg.view.type === 'listWeek') {
       return (
         <div className="flex items-center gap-3 py-1">
-          <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
+          <span
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: dotColor }}
+          />
           <div className="min-w-0">
             <span className="font-medium text-stone-900">{arg.event.title}</span>
             <span className="text-stone-500 ml-2 text-sm">{props.clientName}</span>
@@ -317,7 +361,10 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
     if (arg.view.type === 'dayGridMonth') {
       return (
         <div className="flex items-center gap-1 px-1 py-0.5 min-w-0 overflow-hidden">
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: dotColor }}
+          />
           {!isPrep && arg.timeText && (
             <span className="text-[10px] font-medium flex-shrink-0 opacity-75">{arg.timeText}</span>
           )}
@@ -330,7 +377,10 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
     return (
       <div className="px-1.5 py-1 min-w-0 overflow-hidden h-full">
         <div className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: dotColor }} />
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: dotColor }}
+          />
           <span className="text-xs font-semibold truncate">{arg.event.title}</span>
         </div>
         <div className="text-[10px] opacity-80 truncate mt-0.5">{props.clientName}</div>
@@ -361,7 +411,13 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
                 className="px-2.5 py-1.5 hover:bg-stone-100 transition-colors text-stone-600"
                 aria-label="Previous"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
@@ -370,7 +426,13 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
                 className="px-2.5 py-1.5 hover:bg-stone-100 transition-colors text-stone-600 border-l border-stone-200"
                 aria-label="Next"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
@@ -399,11 +461,14 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
               </button>
             ))}
           </div>
-          <Button
-            size="sm"
-            onClick={() => router.push('/events/new')}
-          >
-            <svg className="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <Button size="sm" onClick={() => router.push('/events/new')}>
+            <svg
+              className="w-4 h-4 mr-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
             </svg>
             Event
@@ -425,7 +490,9 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
 
           {/* Keyboard shortcuts help */}
           <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-3">
-            <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Shortcuts</h4>
+            <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
+              Shortcuts
+            </h4>
             <div className="space-y-1 text-xs text-stone-500">
               {[
                 ['T', 'Today'],
@@ -438,7 +505,9 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
               ].map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between">
                   <span>{label}</span>
-                  <kbd className="px-1.5 py-0.5 bg-stone-100 rounded text-[10px] font-mono font-medium text-stone-600">{key}</kbd>
+                  <kbd className="px-1.5 py-0.5 bg-stone-100 rounded text-[10px] font-mono font-medium text-stone-600">
+                    {key}
+                  </kbd>
                 </div>
               ))}
             </div>
@@ -454,16 +523,35 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <div className="text-sm font-semibold">{SEASON_EMOJI[viewSeason.season_name] || '🌱'} {viewSeason.season_name} <span className="text-xs text-stone-500">({formatRange(viewSeason.start_month_day, viewSeason.end_month_day)})</span></div>
+                        <div className="text-sm font-semibold">
+                          {SEASON_EMOJI[viewSeason.season_name] || '🌱'} {viewSeason.season_name}{' '}
+                          <span className="text-xs text-stone-500">
+                            ({formatRange(viewSeason.start_month_day, viewSeason.end_month_day)})
+                          </span>
+                        </div>
                       </div>
                       {viewSeason.sensory_anchor && (
-                        <div className="text-xs text-stone-600 italic mt-1">The Vibe: {viewSeason.sensory_anchor}</div>
+                        <div className="text-xs text-stone-600 italic mt-1">
+                          The Vibe: {viewSeason.sensory_anchor}
+                        </div>
                       )}
                       {viewSeason.micro_windows && viewSeason.micro_windows.length > 0 && (
-                        <div className="text-xs text-stone-600 mt-1">Peak Ingredients: {viewSeason.micro_windows.map(m => m.ingredient).slice(0,6).join(', ')}</div>
+                        <div className="text-xs text-stone-600 mt-1">
+                          Peak Ingredients:{' '}
+                          {viewSeason.micro_windows
+                            .map((m) => m.ingredient)
+                            .slice(0, 6)
+                            .join(', ')}
+                        </div>
                       )}
                       {viewSeason.proven_wins && viewSeason.proven_wins.length > 0 && (
-                        <div className="text-xs text-stone-600 mt-1">Go-To Dishes: {viewSeason.proven_wins.map(p => p.dish_name).slice(0,3).join(', ')}</div>
+                        <div className="text-xs text-stone-600 mt-1">
+                          Go-To Dishes:{' '}
+                          {viewSeason.proven_wins
+                            .map((p) => p.dish_name)
+                            .slice(0, 3)
+                            .join(', ')}
+                        </div>
                       )}
                     </div>
                     <div className="text-xs text-stone-400">Time Machine</div>
@@ -475,7 +563,7 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
                 initialView="dayGridMonth"
                 headerToolbar={false}
-                events={events}
+                events={[...events, ...holidayEvents]}
                 eventClick={handleEventClick}
                 datesSet={handleDatesSet}
                 dateClick={handleDateClick}
@@ -516,15 +604,29 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
                   ].filter(Boolean)
                 }}
                 eventDidMount={(info) => {
-                  const status = info.event.extendedProps.status
                   const dayType = info.event.extendedProps.dayType
+                  if (dayType === 'holiday') {
+                    info.el.style.backgroundColor = '#fff1f2'
+                    info.el.style.borderColor = '#f43f5e'
+                    info.el.style.borderLeftWidth = '3px'
+                    info.el.style.borderRadius = '4px'
+                    info.el.style.color = '#881337'
+                    info.el.style.cursor = 'default'
+                    info.el.style.opacity = '0.9'
+                    return
+                  }
+                  const status = info.event.extendedProps.status
                   const isPrep = dayType === 'prep'
                   const isInquiry = dayType === 'inquiry'
                   const colors = isInquiry
                     ? STATUS_COLORS.inquiry
                     : isPrep
-                    ? { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' }
-                    : STATUS_COLORS[status] || { bg: '#f5f3ef', border: '#d6d3d1', text: '#57534e' }
+                      ? { bg: '#fef3c7', border: '#f59e0b', text: '#92400e' }
+                      : STATUS_COLORS[status] || {
+                          bg: '#f5f3ef',
+                          border: '#d6d3d1',
+                          text: '#57534e',
+                        }
 
                   info.el.style.backgroundColor = colors.bg
                   info.el.style.borderColor = colors.border
@@ -548,25 +650,67 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
       {/* Legend */}
       <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-xs text-stone-500 justify-center">
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded" style={{ backgroundColor: STATUS_COLORS.draft.bg, border: `1px solid ${STATUS_COLORS.draft.border}` }} /> Draft
+          <span
+            className="w-3 h-3 rounded"
+            style={{
+              backgroundColor: STATUS_COLORS.draft.bg,
+              border: `1px solid ${STATUS_COLORS.draft.border}`,
+            }}
+          />{' '}
+          Draft
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded" style={{ backgroundColor: STATUS_COLORS.proposed.bg, border: `1px solid ${STATUS_COLORS.proposed.border}` }} /> Proposed
+          <span
+            className="w-3 h-3 rounded"
+            style={{
+              backgroundColor: STATUS_COLORS.proposed.bg,
+              border: `1px solid ${STATUS_COLORS.proposed.border}`,
+            }}
+          />{' '}
+          Proposed
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded" style={{ backgroundColor: STATUS_COLORS.confirmed.bg, border: `1px solid ${STATUS_COLORS.confirmed.border}` }} /> Confirmed
+          <span
+            className="w-3 h-3 rounded"
+            style={{
+              backgroundColor: STATUS_COLORS.confirmed.bg,
+              border: `1px solid ${STATUS_COLORS.confirmed.border}`,
+            }}
+          />{' '}
+          Confirmed
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded" style={{ backgroundColor: STATUS_COLORS.paid.bg, border: `1px solid ${STATUS_COLORS.paid.border}` }} /> Paid
+          <span
+            className="w-3 h-3 rounded"
+            style={{
+              backgroundColor: STATUS_COLORS.paid.bg,
+              border: `1px solid ${STATUS_COLORS.paid.border}`,
+            }}
+          />{' '}
+          Paid
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded" style={{ backgroundColor: STATUS_COLORS.completed.bg, border: `1px solid ${STATUS_COLORS.completed.border}` }} /> Completed
+          <span
+            className="w-3 h-3 rounded"
+            style={{
+              backgroundColor: STATUS_COLORS.completed.bg,
+              border: `1px solid ${STATUS_COLORS.completed.border}`,
+            }}
+          />{' '}
+          Completed
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-amber-100 border border-amber-400" /> Prep Day
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded border border-dashed" style={{ backgroundColor: STATUS_COLORS.inquiry.bg, borderColor: STATUS_COLORS.inquiry.border }} /> Tentative Hold
+          <span
+            className="w-3 h-3 rounded border border-dashed"
+            style={{
+              backgroundColor: STATUS_COLORS.inquiry.bg,
+              borderColor: STATUS_COLORS.inquiry.border,
+            }}
+          />{' '}
+          Tentative Hold
         </span>
         <span className="mx-2 border-l border-stone-200" />
         <span className="flex items-center gap-1.5">
@@ -577,6 +721,14 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
         </span>
         <span className="flex items-center gap-1.5">
           <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Not Started
+        </span>
+        <span className="mx-2 border-l border-stone-200" />
+        <span className="flex items-center gap-1.5">
+          <span
+            className="w-3 h-3 rounded"
+            style={{ backgroundColor: '#fff1f2', border: '1px solid #f43f5e' }}
+          />{' '}
+          Holiday
         </span>
       </div>
 
