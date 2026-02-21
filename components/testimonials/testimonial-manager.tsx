@@ -12,10 +12,13 @@ type Testimonial = {
   guest_name: string
   testimonial: string
   rating: number | null
+  food_rating: number | null
+  chef_rating: number | null
+  food_highlight: string | null
+  would_recommend: boolean | null
   is_approved: boolean
   is_featured: boolean
   created_at: string
-  event_occasion?: string | null
 }
 
 type Props = {
@@ -23,12 +26,15 @@ type Props = {
   events: { id: string; occasion: string | null; event_date: string }[]
 }
 
-function StarRating({ rating }: { rating: number | null }) {
-  if (!rating) return <span className="text-xs text-stone-400">No rating</span>
+function Stars({ rating, label }: { rating: number | null; label: string }) {
+  if (!rating) return null
   return (
-    <span className="text-amber-400 text-sm tracking-wider">
-      {'★'.repeat(rating)}
-      <span className="text-stone-300">{'★'.repeat(5 - rating)}</span>
+    <span className="inline-flex items-center gap-1 text-xs">
+      <span className="text-stone-500">{label}:</span>
+      <span className="text-amber-400">
+        {'★'.repeat(rating)}
+        <span className="text-stone-300">{'★'.repeat(5 - rating)}</span>
+      </span>
     </span>
   )
 }
@@ -86,7 +92,6 @@ export function TestimonialManager({ initialTestimonials, events }: Props) {
     })
   }
 
-  // Build a lookup for event occasions
   const eventMap = new Map(events.map((e) => [e.id, e]))
 
   const filterTabs: { key: typeof filter; label: string }[] = [
@@ -132,19 +137,36 @@ export function TestimonialManager({ initialTestimonials, events }: Props) {
               <Card key={t.id} className="p-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    {/* Header: guest name, rating, badges */}
+                    {/* Header */}
                     <div className="flex items-center gap-2 flex-wrap mb-1">
                       <span className="font-semibold text-stone-900">{t.guest_name}</span>
-                      <StarRating rating={t.rating} />
                       {t.is_approved && <Badge variant="success">Approved</Badge>}
                       {t.is_featured && <Badge variant="info">Featured</Badge>}
                       {!t.is_approved && <Badge variant="warning">Pending</Badge>}
+                      {t.would_recommend === true && (
+                        <Badge variant="default">Would recommend</Badge>
+                      )}
                     </div>
 
                     {/* Event + date */}
                     <p className="text-xs text-stone-400 mb-2">
                       {evt?.occasion || 'Event'} &middot; {formatDate(t.created_at)}
                     </p>
+
+                    {/* Dual ratings */}
+                    {(t.food_rating || t.chef_rating) && (
+                      <div className="flex gap-4 mb-2">
+                        <Stars rating={t.food_rating} label="Food" />
+                        <Stars rating={t.chef_rating} label="Chef" />
+                      </div>
+                    )}
+
+                    {/* Food highlight */}
+                    {t.food_highlight && (
+                      <p className="text-xs text-brand-600 font-medium mb-1">
+                        Favorite: {t.food_highlight}
+                      </p>
+                    )}
 
                     {/* Testimonial text */}
                     <p className="text-sm text-stone-700 leading-relaxed">

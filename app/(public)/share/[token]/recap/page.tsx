@@ -128,6 +128,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
               shareToken={params.token}
               guestName={guestTokenCookie ? undefined : undefined}
               guestToken={guestTokenCookie?.value}
+              chefName={eventData.chefName}
             />
           </CardContent>
         </Card>

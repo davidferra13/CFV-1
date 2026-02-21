@@ -13,7 +13,10 @@ const TestimonialSchema = z.object({
   guestToken: z.string().optional(),
   guestName: z.string().min(1, 'Name is required').max(100),
   testimonial: z.string().min(1, 'Please share your thoughts').max(1000),
-  rating: z.number().int().min(1).max(5).optional(),
+  foodRating: z.number().int().min(1).max(5).optional(),
+  chefRating: z.number().int().min(1).max(5).optional(),
+  foodHighlight: z.string().max(200).optional(),
+  wouldRecommend: z.boolean().optional(),
 })
 
 /**
@@ -25,7 +28,10 @@ export async function submitTestimonial(input: {
   guestToken?: string
   guestName: string
   testimonial: string
-  rating?: number
+  foodRating?: number
+  chefRating?: number
+  foodHighlight?: string
+  wouldRecommend?: boolean
 }) {
   const validated = TestimonialSchema.parse(input)
   const supabase = createServerClient({ admin: true })
@@ -54,6 +60,12 @@ export async function submitTestimonial(input: {
     if (guest) guestId = guest.id
   }
 
+  // Compute overall rating as average of food + chef if both provided
+  const overallRating =
+    validated.foodRating && validated.chefRating
+      ? Math.round((validated.foodRating + validated.chefRating) / 2)
+      : validated.foodRating || validated.chefRating || null
+
   // Deduplicate: one testimonial per guest name per event
   const { data: existing } = await (supabase as any)
     .from('guest_testimonials')
@@ -63,12 +75,15 @@ export async function submitTestimonial(input: {
     .single()
 
   if (existing) {
-    // Update existing
     await (supabase as any)
       .from('guest_testimonials')
       .update({
         testimonial: validated.testimonial.trim(),
-        rating: validated.rating || null,
+        rating: overallRating,
+        food_rating: validated.foodRating || null,
+        chef_rating: validated.chefRating || null,
+        food_highlight: validated.foodHighlight?.trim() || null,
+        would_recommend: validated.wouldRecommend ?? null,
       })
       .eq('id', existing.id)
 
@@ -81,7 +96,11 @@ export async function submitTestimonial(input: {
     guest_id: guestId,
     guest_name: validated.guestName.trim(),
     testimonial: validated.testimonial.trim(),
-    rating: validated.rating || null,
+    rating: overallRating,
+    food_rating: validated.foodRating || null,
+    chef_rating: validated.chefRating || null,
+    food_highlight: validated.foodHighlight?.trim() || null,
+    would_recommend: validated.wouldRecommend ?? null,
     is_approved: false,
     is_featured: false,
   })
@@ -121,7 +140,9 @@ export async function getTestimonials(filters?: { approved?: boolean; eventId?: 
 
   let query = (supabase as any)
     .from('guest_testimonials')
-    .select('id, event_id, guest_name, testimonial, rating, is_approved, is_featured, created_at')
+    .select(
+      'id, event_id, guest_name, testimonial, rating, food_rating, chef_rating, food_highlight, would_recommend, is_approved, is_featured, created_at'
+    )
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 

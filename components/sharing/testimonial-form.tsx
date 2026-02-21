@@ -7,12 +7,48 @@ type Props = {
   shareToken: string
   guestName?: string | null
   guestToken?: string | null
+  chefName?: string | null
 }
 
-export function TestimonialForm({ shareToken, guestName, guestToken }: Props) {
+function StarRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+}) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm text-stone-700">{label}</span>
+      <div className="flex gap-0.5">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            type="button"
+            onClick={() => onChange(star === value ? 0 : star)}
+            className="text-2xl transition-transform hover:scale-110 leading-none"
+          >
+            {star <= value ? (
+              <span className="text-amber-400">&#9733;</span>
+            ) : (
+              <span className="text-stone-300">&#9733;</span>
+            )}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function TestimonialForm({ shareToken, guestName, guestToken, chefName }: Props) {
   const [name, setName] = useState(guestName || '')
   const [text, setText] = useState('')
-  const [rating, setRating] = useState<number>(0)
+  const [foodRating, setFoodRating] = useState<number>(0)
+  const [chefRating, setChefRating] = useState<number>(0)
+  const [foodHighlight, setFoodHighlight] = useState('')
+  const [wouldRecommend, setWouldRecommend] = useState<boolean | null>(null)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -30,7 +66,10 @@ export function TestimonialForm({ shareToken, guestName, guestToken }: Props) {
         guestToken: guestToken || undefined,
         guestName: name.trim(),
         testimonial: text.trim(),
-        rating: rating > 0 ? rating : undefined,
+        foodRating: foodRating > 0 ? foodRating : undefined,
+        chefRating: chefRating > 0 ? chefRating : undefined,
+        foodHighlight: foodHighlight.trim() || undefined,
+        wouldRecommend: wouldRecommend ?? undefined,
       })
       setSubmitted(true)
     } catch (err) {
@@ -60,27 +99,48 @@ export function TestimonialForm({ shareToken, guestName, guestToken }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && <div className="bg-red-50 text-red-700 px-3 py-2 rounded-lg text-sm">{error}</div>}
 
-      {/* Star rating */}
+      {/* Dual star ratings */}
+      <div className="space-y-3 bg-stone-50 rounded-xl p-4">
+        <StarRow label="The Food" value={foodRating} onChange={setFoodRating} />
+        <div className="border-t border-stone-200" />
+        <StarRow
+          label={chefName ? `${chefName}` : 'The Chef'}
+          value={chefRating}
+          onChange={setChefRating}
+        />
+      </div>
+
+      {/* Would recommend */}
       <div>
-        <p className="text-sm font-medium text-stone-700 mb-2">How was the experience?</p>
-        <div className="flex gap-1">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              onClick={() => setRating(star === rating ? 0 : star)}
-              className="text-2xl transition-transform hover:scale-110"
-            >
-              {star <= rating ? (
-                <span className="text-amber-400">&#9733;</span>
-              ) : (
-                <span className="text-stone-300">&#9733;</span>
-              )}
-            </button>
-          ))}
+        <p className="text-sm font-medium text-stone-700 mb-2">
+          Would you recommend this experience?
+        </p>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => setWouldRecommend(wouldRecommend === true ? null : true)}
+            className={`flex-1 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+              wouldRecommend === true
+                ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                : 'border-stone-200 text-stone-500 hover:border-stone-300'
+            }`}
+          >
+            Absolutely
+          </button>
+          <button
+            type="button"
+            onClick={() => setWouldRecommend(wouldRecommend === false ? null : false)}
+            className={`flex-1 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+              wouldRecommend === false
+                ? 'border-stone-500 bg-stone-50 text-stone-700'
+                : 'border-stone-200 text-stone-500 hover:border-stone-300'
+            }`}
+          >
+            Not sure
+          </button>
         </div>
       </div>
 
@@ -105,17 +165,33 @@ export function TestimonialForm({ shareToken, guestName, guestToken }: Props) {
         </div>
       )}
 
-      {/* Testimonial text */}
+      {/* Favorite dish */}
+      <div>
+        <label htmlFor="food-highlight" className="block text-sm font-medium text-stone-700 mb-1">
+          Favorite dish? <span className="text-stone-400 font-normal">(optional)</span>
+        </label>
+        <input
+          id="food-highlight"
+          type="text"
+          value={foodHighlight}
+          onChange={(e) => setFoodHighlight(e.target.value)}
+          placeholder="e.g., The truffle risotto was unreal"
+          maxLength={200}
+          className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
+        />
+      </div>
+
+      {/* Written review */}
       <div>
         <label htmlFor="testimonial-text" className="block text-sm font-medium text-stone-700 mb-1">
-          Share your thoughts
+          Tell us about the experience
         </label>
         <textarea
           id="testimonial-text"
           required
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="The food was incredible..."
+          placeholder="What made the evening special..."
           rows={3}
           maxLength={1000}
           className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none"
@@ -126,9 +202,9 @@ export function TestimonialForm({ shareToken, guestName, guestToken }: Props) {
       <button
         type="submit"
         disabled={loading || !name.trim() || !text.trim()}
-        className="w-full bg-brand-600 text-white px-4 py-2.5 rounded-lg font-medium text-sm hover:bg-brand-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-brand-600 text-white px-4 py-3 rounded-lg font-semibold text-sm hover:bg-brand-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {loading ? 'Submitting...' : 'Leave a Review'}
+        {loading ? 'Submitting...' : 'Submit Review'}
       </button>
     </form>
   )
