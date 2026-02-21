@@ -1,7 +1,7 @@
 // Chef Search - Search for other chefs and send connection requests
 'use client'
 
-import { useState, useTransition, useEffect, useRef } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -12,6 +12,7 @@ import {
   respondToConnectionRequest,
 } from '@/lib/network/actions'
 import type { SearchableChef } from '@/lib/network/actions'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 
 export function ChefSearch() {
   const [query, setQuery] = useState('')
@@ -20,31 +21,23 @@ export function ChefSearch() {
   const [isSearching, setIsSearching] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [actionError, setActionError] = useState<string | null>(null)
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const debouncedQuery = useDebounce(query, 300)
 
-  // Load discoverable chefs by default; filter as query changes
+  // Load discoverable chefs by default; filter as debounced query changes
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current)
-
-    debounceRef.current = setTimeout(async () => {
-      setIsSearching(true)
-      const normalizedQuery = query.trim()
-      try {
-        const data = await searchChefs({ query: normalizedQuery })
+    setIsSearching(true)
+    const normalizedQuery = debouncedQuery.trim()
+    searchChefs({ query: normalizedQuery })
+      .then((data) => {
         setResults(data)
         setSearched(normalizedQuery.length > 0)
-      } catch {
+      })
+      .catch(() => {
         setResults([])
         setSearched(normalizedQuery.length > 0)
-      } finally {
-        setIsSearching(false)
-      }
-    }, query.trim().length === 0 ? 0 : 300)
-
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current)
-    }
-  }, [query])
+      })
+      .finally(() => setIsSearching(false))
+  }, [debouncedQuery])
 
   function handleConnect(chefId: string) {
     setActionError(null)
@@ -71,7 +64,11 @@ export function ChefSearch() {
         setResults((prev) =>
           prev.map((c) =>
             c.id === chefId
-              ? { ...c, connection_status: action === 'accept' ? 'accepted' as const : 'declined' as const }
+              ? {
+                  ...c,
+                  connection_status:
+                    action === 'accept' ? ('accepted' as const) : ('declined' as const),
+                }
               : c
           )
         )
@@ -144,9 +141,7 @@ export function ChefSearch() {
         </div>
       )}
 
-      {isSearching && (
-        <p className="text-sm text-stone-500 text-center py-4">Searching...</p>
-      )}
+      {isSearching && <p className="text-sm text-stone-500 text-center py-4">Searching...</p>}
 
       {!isSearching && searched && results.length === 0 && (
         <p className="text-sm text-stone-500 text-center py-4">
@@ -155,9 +150,7 @@ export function ChefSearch() {
       )}
 
       {!isSearching && !searched && results.length === 0 && (
-        <p className="text-sm text-stone-500 text-center py-4">
-          No discoverable chefs yet.
-        </p>
+        <p className="text-sm text-stone-500 text-center py-4">No discoverable chefs yet.</p>
       )}
 
       {results.length > 0 && (

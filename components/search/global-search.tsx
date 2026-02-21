@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { universalSearch, type SearchResult } from '@/lib/search/universal-search'
+import { useDebounce } from '@/lib/hooks/use-debounce'
 
 export function GlobalSearch() {
   const [query, setQuery] = useState('')
@@ -12,10 +13,10 @@ export function GlobalSearch() {
   const [open, setOpen] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState(-1)
   const inputRef = useRef<HTMLInputElement>(null)
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const router = useRouter()
   const pathname = usePathname()
   const listboxId = 'global-search-results'
+  const debouncedQuery = useDebounce(query, 300)
 
   const openAndFocus = useCallback(() => {
     setOpen(true)
@@ -43,45 +44,44 @@ export function GlobalSearch() {
   }, [pathname])
 
   useEffect(() => {
-    if (timer.current) clearTimeout(timer.current)
-    if (!query || query.length < 2) {
+    if (!debouncedQuery || debouncedQuery.length < 2) {
       setResults([])
       setGrouped({})
       setLoading(false)
       return
     }
     setLoading(true)
-    timer.current = setTimeout(async () => {
-      try {
-        const data = await universalSearch(query)
+    universalSearch(debouncedQuery)
+      .then((data) => {
         setResults(data.results)
         setGrouped(data.grouped)
-      } catch {
+      })
+      .catch(() => {
         setResults([])
         setGrouped({})
-      } finally {
-        setLoading(false)
-      }
-    }, 300)
-    return () => { if (timer.current) clearTimeout(timer.current) }
-  }, [query])
+      })
+      .finally(() => setLoading(false))
+  }, [debouncedQuery])
 
-  const selectResult = useCallback((item: SearchResult) => {
-    setOpen(false)
-    setQuery('')
-    setHighlightedIndex(-1)
-    router.push(item.url)
-  }, [router])
+  const selectResult = useCallback(
+    (item: SearchResult) => {
+      setOpen(false)
+      setQuery('')
+      setHighlightedIndex(-1)
+      router.push(item.url)
+    },
+    [router]
+  )
 
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
       const flat = Object.values(grouped).flat()
       if (e.key === 'ArrowDown') {
         e.preventDefault()
-        setHighlightedIndex(i => Math.min(i + 1, flat.length - 1))
+        setHighlightedIndex((i) => Math.min(i + 1, flat.length - 1))
       } else if (e.key === 'ArrowUp') {
         e.preventDefault()
-        setHighlightedIndex(i => Math.max(i - 1, 0))
+        setHighlightedIndex((i) => Math.max(i - 1, 0))
       } else if (e.key === 'Enter' && highlightedIndex >= 0) {
         const item = flat[highlightedIndex]
         if (item) selectResult(item)
@@ -89,7 +89,7 @@ export function GlobalSearch() {
         setOpen(false)
       }
     },
-    [highlightedIndex, grouped, selectResult],
+    [highlightedIndex, grouped, selectResult]
   )
 
   function highlightText(text: string, q: string) {
@@ -97,9 +97,13 @@ export function GlobalSearch() {
     const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const parts = text.split(new RegExp(`(${escaped})`, 'ig'))
     return parts.map((part, i) =>
-      part.toLowerCase() === q.toLowerCase()
-        ? <strong key={i} className="text-amber-600">{part}</strong>
-        : <span key={i}>{part}</span>
+      part.toLowerCase() === q.toLowerCase() ? (
+        <strong key={i} className="text-amber-600">
+          {part}
+        </strong>
+      ) : (
+        <span key={i}>{part}</span>
+      )
     )
   }
 
@@ -111,7 +115,16 @@ export function GlobalSearch() {
           className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
           aria-label="Open search"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="11" cy="11" r="8" />
             <path d="M21 21l-4.35-4.35" />
           </svg>
@@ -120,7 +133,7 @@ export function GlobalSearch() {
           <input
             ref={inputRef}
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Search everything... (Ctrl/Cmd+K)"
             className="min-w-[220px] px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
@@ -133,10 +146,14 @@ export function GlobalSearch() {
       </div>
 
       {open && query.length >= 2 && (
-        <div id={listboxId} className="absolute top-12 left-0 right-0 min-w-[320px] max-w-[600px] bg-white shadow-xl border border-stone-200 rounded-xl z-50 p-2" role="listbox">
+        <div
+          id={listboxId}
+          className="absolute top-12 left-0 right-0 min-w-[320px] max-w-[600px] bg-white shadow-xl border border-stone-200 rounded-xl z-50 p-2"
+          role="listbox"
+        >
           {loading && (
             <div className="p-2 space-y-2">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3].map((i) => (
                 <div key={i} className="flex gap-3 p-2 items-center">
                   <div className="w-10 h-10 bg-stone-100 rounded-md animate-pulse" />
                   <div className="flex-1 space-y-1">
@@ -154,45 +171,46 @@ export function GlobalSearch() {
             </div>
           )}
 
-          {!loading && Object.entries(grouped).map(([section, items]) => {
-            const flatAll = Object.values(grouped).flat()
-            return (
-              <div key={section} className="mb-1">
-                <div className="px-3 py-1.5 text-xs font-bold text-stone-500 uppercase tracking-wide">
-                  {section}
-                </div>
-                {items.map(item => {
-                  const flatIndex = flatAll.findIndex(f => f.id === item.id)
-                  return (
-                    <button
-                      key={item.id}
-                      role="option"
-                      aria-selected={highlightedIndex === flatIndex}
-                      onMouseEnter={() => setHighlightedIndex(flatIndex)}
-                      onClick={() => selectResult(item)}
-                      className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors ${
-                        highlightedIndex === flatIndex ? 'bg-amber-50' : 'hover:bg-stone-50'
-                      }`}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-semibold text-stone-800 truncate">
-                          {highlightText(item.title, query)}
-                        </div>
-                        {item.snippet && (
-                          <div className="text-xs text-stone-500 truncate">
-                            {highlightText(item.snippet, query)}
+          {!loading &&
+            Object.entries(grouped).map(([section, items]) => {
+              const flatAll = Object.values(grouped).flat()
+              return (
+                <div key={section} className="mb-1">
+                  <div className="px-3 py-1.5 text-xs font-bold text-stone-500 uppercase tracking-wide">
+                    {section}
+                  </div>
+                  {items.map((item) => {
+                    const flatIndex = flatAll.findIndex((f) => f.id === item.id)
+                    return (
+                      <button
+                        key={item.id}
+                        role="option"
+                        aria-selected={highlightedIndex === flatIndex}
+                        onMouseEnter={() => setHighlightedIndex(flatIndex)}
+                        onClick={() => selectResult(item)}
+                        className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors ${
+                          highlightedIndex === flatIndex ? 'bg-amber-50' : 'hover:bg-stone-50'
+                        }`}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-stone-800 truncate">
+                            {highlightText(item.title, query)}
                           </div>
+                          {item.snippet && (
+                            <div className="text-xs text-stone-500 truncate">
+                              {highlightText(item.snippet, query)}
+                            </div>
+                          )}
+                        </div>
+                        {item.metadata?.badge && (
+                          <span className="ml-2 text-xs text-stone-400">{item.metadata.badge}</span>
                         )}
-                      </div>
-                      {item.metadata?.badge && (
-                        <span className="ml-2 text-xs text-stone-400">{item.metadata.badge}</span>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            )
-          })}
+                      </button>
+                    )
+                  })}
+                </div>
+              )
+            })}
         </div>
       )}
 

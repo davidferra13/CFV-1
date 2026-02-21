@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { log } from '@/lib/logger'
 import type { Database } from '@/types/database'
 
 export type LedgerEntryType = Database['public']['Enums']['ledger_entry_type']
@@ -64,7 +65,7 @@ async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
       refund_reason: input.refund_reason,
       refunded_entry_id: input.refunded_entry_id,
       received_at: input.received_at,
-      created_by: input.created_by
+      created_by: input.created_by,
     })
     .select()
     .single()
@@ -72,11 +73,13 @@ async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
   if (error) {
     // Check if duplicate transaction_reference (idempotency)
     if (error.code === '23505' && input.transaction_reference) {
-      console.error('[appendLedgerEntry] Duplicate transaction (idempotent):', input.transaction_reference)
+      log.ledger.info('Duplicate transaction (idempotent)', {
+        context: { transaction_reference: input.transaction_reference },
+      })
       return { duplicate: true, entry: null }
     }
 
-    console.error('[appendLedgerEntry] Error:', error)
+    log.ledger.error('Failed to append entry', { error, context: { entry_type: input.entry_type } })
     throw new Error('Failed to append ledger entry')
   }
 
@@ -90,7 +93,9 @@ async function appendLedgerEntryInternal(input: AppendLedgerEntryInput) {
  * The function itself validates nothing about the caller — the webhook handler
  * is responsible for signature verification before calling this.
  */
-export async function appendLedgerEntryFromWebhook(input: AppendLedgerEntryInput & { created_by: null }) {
+export async function appendLedgerEntryFromWebhook(
+  input: AppendLedgerEntryInput & { created_by: null }
+) {
   return appendLedgerEntryInternal(input)
 }
 
@@ -103,7 +108,7 @@ export async function createAdjustment({
   amount_cents,
   description,
   payment_method = 'cash',
-  internal_notes
+  internal_notes,
 }: {
   event_id: string
   amount_cents: number
@@ -135,7 +140,7 @@ export async function createAdjustment({
     description,
     event_id,
     internal_notes: internal_notes || `Adjusted by ${user.email} at ${new Date().toISOString()}`,
-    created_by: user.id
+    created_by: user.id,
   })
 
   // Log chef activity (non-blocking)
@@ -149,11 +154,17 @@ export async function createAdjustment({
       entityType: 'ledger_entry',
       entityId: result.entry?.id,
       summary: `Recorded adjustment: $${(amount_cents / 100).toFixed(2)} — ${description}`,
-      context: { amount_cents, entry_type: 'adjustment', payment_method, event_id, amount_display: `$${(amount_cents / 100).toFixed(2)}` },
+      context: {
+        amount_cents,
+        entry_type: 'adjustment',
+        payment_method,
+        event_id,
+        amount_display: `$${(amount_cents / 100).toFixed(2)}`,
+      },
       clientId: event.client_id,
     })
   } catch (err) {
-    console.error('[createAdjustment] Activity log failed (non-blocking):', err)
+    log.ledger.warn('Activity log failed (non-blocking)', { error: err })
   }
 
   return result
@@ -174,7 +185,7 @@ export async function getEventLedger(eventId: string) {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('[getEventLedger] Error:', error)
+    log.ledger.error('Failed to fetch event ledger', { error, context: { eventId } })
     throw new Error('Failed to fetch ledger entries')
   }
 
@@ -190,16 +201,18 @@ export async function getTenantLedger(limit = 100) {
 
   const { data: entries, error } = await supabase
     .from('ledger_entries')
-    .select(`
+    .select(
+      `
       *,
       event:events(id, occasion, event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
     .limit(limit)
 
   if (error) {
-    console.error('[getTenantLedger] Error:', error)
+    log.ledger.error('Failed to fetch tenant ledger', { error })
     throw new Error('Failed to fetch tenant ledger')
   }
 

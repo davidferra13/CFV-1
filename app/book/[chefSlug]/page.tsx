@@ -4,6 +4,7 @@
 // Supports dual booking model: inquiry-first or instant-book.
 
 import { notFound } from 'next/navigation'
+import { unstable_cache } from 'next/cache'
 import { createServerClient } from '@/lib/supabase/server'
 import { BookingPageClient } from './booking-page-client'
 
@@ -22,28 +23,30 @@ type ChefPublicProfile = {
   booking_deposit_fixed_cents: number | null
 }
 
-async function getChefForBooking(slug: string): Promise<ChefPublicProfile | null> {
-  const supabase = createServerClient({ admin: true })
+const getChefForBooking = unstable_cache(
+  async (slug: string): Promise<ChefPublicProfile | null> => {
+    const supabase = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
-    .from('chefs')
-    .select(`
-      id, business_name, booking_slug, booking_enabled, booking_headline, booking_bio_short,
-      booking_model, booking_base_price_cents, booking_pricing_type,
-      booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents
-    `)
-    .eq('booking_slug', slug)
-    .eq('booking_enabled', true)
-    .single()
+    const { data } = await (supabase as any)
+      .from('chefs')
+      .select(
+        `
+        id, business_name, booking_slug, booking_enabled, booking_headline, booking_bio_short,
+        booking_model, booking_base_price_cents, booking_pricing_type,
+        booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents
+      `
+      )
+      .eq('booking_slug', slug)
+      .eq('booking_enabled', true)
+      .single()
 
-  return data ?? null
-}
+    return data ?? null
+  },
+  ['chef-booking-profile'],
+  { revalidate: 300, tags: ['chef-booking-profile'] }
+)
 
-export default async function BookingPage({
-  params,
-}: {
-  params: { chefSlug: string }
-}) {
+export default async function BookingPage({ params }: { params: { chefSlug: string } }) {
   const chef = await getChefForBooking(params.chefSlug)
 
   if (!chef) {

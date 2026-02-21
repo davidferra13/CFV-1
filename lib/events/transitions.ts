@@ -5,6 +5,7 @@
 
 import { requireChef, requireClient, getCurrentUser } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
 import { TransitionEventInputSchema } from '@/lib/validation/schemas'
 
@@ -27,7 +28,7 @@ const TRANSITION_RULES: Record<EventStatus, EventStatus[]> = {
   confirmed: ['in_progress', 'cancelled'],
   in_progress: ['completed', 'cancelled'],
   completed: [], // Terminal state
-  cancelled: [] // Terminal state
+  cancelled: [], // Terminal state
 }
 
 // Who can trigger each transition
@@ -43,7 +44,7 @@ const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPe
   'paid->confirmed': 'chef',
   'confirmed->in_progress': 'chef',
   'in_progress->completed': 'chef',
-  '*->cancelled': 'chef' // Chef can cancel anytime
+  '*->cancelled': 'chef', // Chef can cancel anytime
 }
 
 /**
@@ -55,7 +56,7 @@ export async function transitionEvent({
   eventId,
   toStatus,
   metadata = {},
-  systemTransition = false
+  systemTransition = false,
 }: {
   eventId: string
   toStatus: EventStatus
@@ -97,8 +98,7 @@ export async function transitionEvent({
     const transitionKey = `${fromStatus}->${toStatus}`
     const cancellationKey = '*->cancelled'
     const requiredRole =
-      TRANSITION_PERMISSIONS[transitionKey] ||
-      TRANSITION_PERMISSIONS[cancellationKey]
+      TRANSITION_PERMISSIONS[transitionKey] || TRANSITION_PERMISSIONS[cancellationKey]
 
     if (!requiredRole) {
       throw new Error('Transition permission is not configured')
@@ -148,15 +148,13 @@ export async function transitionEvent({
       }
 
       // Collect soft warnings for metadata
-      readinessWarnings = readiness.blockers
-        .filter((b) => !b.isHardBlock)
-        .map((b) => b.label)
+      readinessWarnings = readiness.blockers.filter((b) => !b.isHardBlock).map((b) => b.label)
     } catch (readinessErr: any) {
       // Re-throw hard blocks; swallow infrastructure errors (non-blocking)
       if (readinessErr.message?.startsWith('Cannot proceed:')) {
         throw readinessErr
       }
-      console.error('[transitionEvent] Readiness check failed (non-blocking):', readinessErr)
+      log.events.warn('Readiness check failed (non-blocking)', { error: readinessErr })
     }
   }
 
@@ -182,7 +180,7 @@ export async function transitionEvent({
   })
 
   if (transitionError) {
-    console.error('[transitionEvent] Atomic transition error:', transitionError)
+    log.events.error('Atomic transition failed', { error: transitionError })
     throw new Error('Failed to transition event status')
   }
 
@@ -194,7 +192,7 @@ export async function transitionEvent({
     const { postEventSystemMessage } = await import('@/lib/chat/system-messages')
     await postEventSystemMessage(eventId, fromStatus, toStatus)
   } catch (err) {
-    console.error('[transitionEvent] System message post failed (non-blocking):', err)
+    log.events.warn('System message post failed (non-blocking)', { error: err })
   }
 
   // Create chef notification for client-initiated or system transitions (non-blocking)
@@ -245,7 +243,7 @@ export async function transitionEvent({
       }
     }
   } catch (err) {
-    console.error('[transitionEvent] Notification creation failed (non-blocking):', err)
+    log.events.warn('Chef notification creation failed (non-blocking)', { error: err })
   }
 
   // Create client notification for chef-initiated transitions (non-blocking)
@@ -285,7 +283,7 @@ export async function transitionEvent({
       }
     }
   } catch (err) {
-    console.error('[transitionEvent] Client notification failed (non-blocking):', err)
+    log.events.warn('Client notification failed (non-blocking)', { error: err })
   }
 
   // Send transactional emails (non-blocking)
@@ -314,7 +312,7 @@ export async function transitionEvent({
         sendEventCancelledEmail,
         sendFrontOfHouseMenuReadyEmail,
         sendPrepSheetReadyEmail,
-        buildLocation
+        buildLocation,
       } = await import('@/lib/email/notifications')
       const chefName = chef.business_name || 'Your Chef'
       const occasion = event.occasion || 'Untitled event'
@@ -349,7 +347,8 @@ export async function transitionEvent({
         // Non-blocking to event transition if PDF generation/send fails.
         try {
           const { format } = await import('date-fns')
-          const { generateFrontOfHouseMenu } = await import('@/lib/documents/generate-front-of-house-menu')
+          const { generateFrontOfHouseMenu } =
+            await import('@/lib/documents/generate-front-of-house-menu')
           const fohPdf = await generateFrontOfHouseMenu(eventId)
           const dateSuffix = format(new Date(), 'yyyy-MM-dd')
           const recipients = Array.from(new Set([client.email, chef.email].filter(Boolean)))
@@ -366,7 +365,7 @@ export async function transitionEvent({
             })
           }
         } catch (fohErr) {
-          console.error('[transitionEvent] FOH menu auto-send failed (non-blocking):', fohErr)
+          log.events.warn('FOH menu auto-send failed (non-blocking)', { error: fohErr })
         }
 
         // Auto-send prep sheet PDF to chef only (non-blocking).
@@ -389,7 +388,7 @@ export async function transitionEvent({
             })
           }
         } catch (prepErr) {
-          console.error('[transitionEvent] Prep sheet auto-send failed (non-blocking):', prepErr)
+          log.events.warn('Prep sheet auto-send failed (non-blocking)', { error: prepErr })
         }
       }
 
@@ -416,7 +415,7 @@ export async function transitionEvent({
       }
     }
   } catch (emailErr) {
-    console.error('[transitionEvent] Email send failed (non-blocking):', emailErr)
+    log.events.warn('Email send failed (non-blocking)', { error: emailErr })
   }
 
   // Create post-event survey and email client (non-blocking)
@@ -450,7 +449,7 @@ export async function transitionEvent({
         })
       }
     } catch (surveyErr) {
-      console.error('[transitionEvent] Survey creation failed (non-blocking):', surveyErr)
+      log.events.warn('Survey creation failed (non-blocking)', { error: surveyErr })
     }
   }
 
@@ -466,11 +465,16 @@ export async function transitionEvent({
       entityType: 'event',
       entityId: eventId,
       summary: `Moved "${eventTitle}" from ${fromStatus} → ${toStatus}`,
-      context: { from_status: fromStatus, to_status: toStatus, occasion: eventTitle, client_id: event.client_id },
+      context: {
+        from_status: fromStatus,
+        to_status: toStatus,
+        occasion: eventTitle,
+        client_id: event.client_id,
+      },
       clientId: event.client_id,
     })
   } catch (err) {
-    console.error('[transitionEvent] Activity log failed (non-blocking):', err)
+    log.events.warn('Activity log failed (non-blocking)', { error: err })
   }
 
   // Auto-create draft service travel legs when confirmed (non-blocking, idempotent)
@@ -481,7 +485,7 @@ export async function transitionEvent({
       const { autoCreateServiceLegs } = await import('@/lib/travel/actions')
       await autoCreateServiceLegs(eventId)
     } catch (err) {
-      console.error('[transitionEvent] Auto-create service legs failed (non-blocking):', err)
+      log.events.warn('Auto-create service legs failed (non-blocking)', { error: err })
     }
   }
 
@@ -492,7 +496,7 @@ export async function transitionEvent({
       const { autoPlacePrepBlocks } = await import('@/lib/scheduling/prep-block-actions')
       await autoPlacePrepBlocks(eventId)
     } catch (err) {
-      console.error('[transitionEvent] Auto-place prep blocks failed (non-blocking):', err)
+      log.events.warn('Auto-place prep blocks failed (non-blocking)', { error: err })
     }
   }
 
@@ -502,7 +506,7 @@ export async function transitionEvent({
       const { syncEventToGoogleCalendar } = await import('@/lib/scheduling/calendar-sync')
       await syncEventToGoogleCalendar(eventId)
     } catch (err) {
-      console.error('[transitionEvent] Google Calendar sync failed (non-blocking):', err)
+      log.events.warn('Google Calendar sync failed (non-blocking)', { error: err })
     }
   }
   if (toStatus === 'cancelled') {
@@ -510,7 +514,7 @@ export async function transitionEvent({
       const { deleteEventFromGoogleCalendar } = await import('@/lib/scheduling/calendar-sync')
       await deleteEventFromGoogleCalendar(eventId)
     } catch (err) {
-      console.error('[transitionEvent] Google Calendar delete failed (non-blocking):', err)
+      log.events.warn('Google Calendar delete failed (non-blocking)', { error: err })
     }
   }
 
@@ -529,14 +533,14 @@ export async function transitionEvent({
       },
     })
   } catch (err) {
-    console.error('[transitionEvent] Automation evaluation failed (non-blocking):', err)
+    log.events.warn('Automation evaluation failed (non-blocking)', { error: err })
   }
 
   return {
     success: true,
     fromStatus,
     toStatus,
-    warnings: readinessWarnings,   // Soft gates that were bypassed (logged, not blocked)
+    warnings: readinessWarnings, // Soft gates that were bypassed (logged, not blocked)
   }
 }
 
@@ -549,7 +553,7 @@ export async function proposeEvent(eventId: string) {
   return transitionEvent({
     eventId,
     toStatus: 'proposed',
-    metadata: { action: 'chef_proposed', chefId: user.entityId }
+    metadata: { action: 'chef_proposed', chefId: user.entityId },
   })
 }
 
@@ -562,7 +566,7 @@ export async function acceptProposal(eventId: string) {
   return transitionEvent({
     eventId,
     toStatus: 'accepted',
-    metadata: { action: 'client_accepted', clientId: user.entityId }
+    metadata: { action: 'client_accepted', clientId: user.entityId },
   })
 }
 
@@ -575,7 +579,7 @@ export async function confirmEvent(eventId: string) {
   return transitionEvent({
     eventId,
     toStatus: 'confirmed',
-    metadata: { action: 'chef_confirmed', chefId: user.entityId }
+    metadata: { action: 'chef_confirmed', chefId: user.entityId },
   })
 }
 
@@ -588,7 +592,7 @@ export async function startEvent(eventId: string) {
   return transitionEvent({
     eventId,
     toStatus: 'in_progress',
-    metadata: { action: 'chef_started', chefId: user.entityId }
+    metadata: { action: 'chef_started', chefId: user.entityId },
   })
 }
 
@@ -602,7 +606,7 @@ export async function completeEvent(eventId: string) {
   const result = await transitionEvent({
     eventId,
     toStatus: 'completed',
-    metadata: { action: 'chef_completed', chefId: user.entityId }
+    metadata: { action: 'chef_completed', chefId: user.entityId },
   })
 
   // Auto-award loyalty points (Tier 1 autonomous — no chef approval needed)
@@ -612,7 +616,7 @@ export async function completeEvent(eventId: string) {
     return { ...result, loyalty: loyaltyResult }
   } catch (err) {
     // Loyalty award failure should not block event completion
-    console.error('[completeEvent] Loyalty award failed (non-blocking):', err)
+    log.events.warn('Loyalty award failed (non-blocking)', { error: err })
     return { ...result, loyalty: null }
   }
 }
@@ -629,7 +633,7 @@ export async function cancelEvent(eventId: string, reason: string) {
     metadata: {
       action: 'chef_cancelled',
       reason,
-      chefId: user.entityId
-    }
+      chefId: user.entityId,
+    },
   })
 }

@@ -5,6 +5,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/supabase/server'
+import { log } from '@/lib/logger'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
@@ -16,7 +17,7 @@ const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   business_name: z.string().optional(),
-  phone: z.string().optional()
+  phone: z.string().optional(),
 })
 
 const ClientSignupSchema = z.object({
@@ -30,15 +31,15 @@ const ClientSignupSchema = z.object({
 const SignInSchema = z.object({
   email: z.string().email('Valid email required'),
   password: z.string().min(1, 'Password required'),
-  rememberMe: z.boolean().optional().default(true)
+  rememberMe: z.boolean().optional().default(true),
 })
 
 const PasswordResetRequestSchema = z.object({
-  email: z.string().email('Valid email required')
+  email: z.string().email('Valid email required'),
 })
 
 const UpdatePasswordSchema = z.object({
-  password: z.string().min(8, 'Password must be at least 8 characters')
+  password: z.string().min(8, 'Password must be at least 8 characters'),
 })
 
 export type ChefSignupInput = z.infer<typeof ChefSignupSchema>
@@ -59,11 +60,11 @@ export async function signUpChef(input: ChefSignupInput) {
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: validated.email,
     password: validated.password,
-    email_confirm: true
+    email_confirm: true,
   })
 
   if (authError || !authData.user) {
-    console.error('[signUpChef] Auth error:', authError)
+    log.auth.error('Chef signup auth error', { error: authError })
     throw new Error(authError?.message || 'Failed to create account')
   }
 
@@ -76,29 +77,27 @@ export async function signUpChef(input: ChefSignupInput) {
         auth_user_id: authData.user.id,
         business_name: businessName,
         email: validated.email,
-        phone: validated.phone
+        phone: validated.phone,
       })
       .select()
       .single()
 
     if (chefError) {
-      console.error('[signUpChef] Chef creation error:', chefError)
+      log.auth.error('Chef profile creation failed', { error: chefError })
       // Rollback: delete auth user
       await supabase.auth.admin.deleteUser(authData.user.id)
       throw new Error('Failed to create chef profile')
     }
 
     // Create user role
-    const { error: roleError } = await supabase
-      .from('user_roles')
-      .insert({
-        auth_user_id: authData.user.id,
-        role: 'chef',
-        entity_id: chef.id
-      })
+    const { error: roleError } = await supabase.from('user_roles').insert({
+      auth_user_id: authData.user.id,
+      role: 'chef',
+      entity_id: chef.id,
+    })
 
     if (roleError) {
-      console.error('[signUpChef] Role creation error:', roleError)
+      log.auth.error('Chef role assignment failed', { error: roleError })
       // Rollback: delete chef and auth user
       await supabase.from('chefs').delete().eq('id', chef.id)
       await supabase.auth.admin.deleteUser(authData.user.id)
@@ -106,15 +105,13 @@ export async function signUpChef(input: ChefSignupInput) {
     }
 
     // Create default chef preferences so network visibility works immediately
-    const { error: preferencesError } = await (supabase as any)
-      .from('chef_preferences')
-      .insert({
-        chef_id: chef.id,
-        tenant_id: chef.id,
-      })
+    const { error: preferencesError } = await (supabase as any).from('chef_preferences').insert({
+      chef_id: chef.id,
+      tenant_id: chef.id,
+    })
 
     if (preferencesError) {
-      console.error('[signUpChef] Preferences creation error:', preferencesError)
+      log.auth.warn('Chef preferences init failed (non-blocking)', { error: preferencesError })
       await supabase.from('user_roles').delete().eq('auth_user_id', authData.user.id)
       await supabase.from('chefs').delete().eq('id', chef.id)
       await supabase.auth.admin.deleteUser(authData.user.id)
@@ -165,11 +162,11 @@ export async function signUpClient(input: ClientSignupInput) {
   const { data: authData, error: authError } = await supabase.auth.admin.createUser({
     email: validated.email,
     password: validated.password,
-    email_confirm: true
+    email_confirm: true,
   })
 
   if (authError || !authData.user) {
-    console.error('[signUpClient] Auth error:', authError)
+    log.auth.error('Client signup auth error', { error: authError })
     throw new Error(authError?.message || 'Failed to create account')
   }
 
@@ -182,28 +179,26 @@ export async function signUpClient(input: ClientSignupInput) {
         tenant_id: tenantId as any,
         full_name: validated.full_name,
         email: validated.email,
-        phone: validated.phone
+        phone: validated.phone,
       })
       .select()
       .single()
 
     if (clientError) {
-      console.error('[signUpClient] Client creation error:', clientError)
+      log.auth.error('Client profile creation failed', { error: clientError })
       await supabase.auth.admin.deleteUser(authData.user.id)
       throw new Error('Failed to create client profile')
     }
 
     // Create user role
-    const { error: roleError } = await supabase
-      .from('user_roles')
-      .insert({
-        auth_user_id: authData.user.id,
-        role: 'client',
-        entity_id: client.id
-      })
+    const { error: roleError } = await supabase.from('user_roles').insert({
+      auth_user_id: authData.user.id,
+      role: 'client',
+      entity_id: client.id,
+    })
 
     if (roleError) {
-      console.error('[signUpClient] Role creation error:', roleError)
+      log.auth.error('Client role assignment failed', { error: roleError })
       await supabase.from('clients').delete().eq('id', client.id)
       await supabase.auth.admin.deleteUser(authData.user.id)
       throw new Error('Failed to assign role')
@@ -222,7 +217,7 @@ export async function signUpClient(input: ClientSignupInput) {
         const { autoAwardWelcomePoints } = await import('@/lib/loyalty/auto-award')
         await autoAwardWelcomePoints(client.id, tenantId)
       } catch (welcErr) {
-        console.error('[signUpClient] Welcome points award failed (non-blocking):', welcErr)
+        log.auth.warn('Welcome points award failed (non-blocking)', { error: welcErr })
       }
     }
 
@@ -248,7 +243,7 @@ export async function signIn(input: SignInInput) {
     process.env.NODE_ENV === 'production' &&
     (supabaseUrl.includes('127.0.0.1') || supabaseUrl.includes('localhost'))
   ) {
-    console.error('[signIn] Misconfigured Supabase URL in production:', supabaseUrl)
+    log.auth.error('Misconfigured Supabase URL in production', { context: { supabaseUrl } })
     throw new Error('Sign-in is temporarily unavailable. Please contact support.')
   }
 
@@ -256,17 +251,19 @@ export async function signIn(input: SignInInput) {
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
-    password: validated.password
+    password: validated.password,
   })
 
   if (error) {
-    console.error('[signIn] Error:', error)
+    log.auth.error('Sign-in failed', { error })
     const errorCode = String((error as any)?.code || '')
     const errorMessage = String((error as any)?.message || '').toLowerCase()
     const errorStatus = Number((error as any)?.status || 0)
 
     if (errorCode === 'email_not_confirmed') {
-      throw new Error('Your email is not confirmed. Please use Forgot password or create a new account.')
+      throw new Error(
+        'Your email is not confirmed. Please use Forgot password or create a new account.'
+      )
     }
 
     const invalidCredentials =
@@ -325,11 +322,11 @@ export async function requestPasswordReset(email: string) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
   const { error } = await supabase.auth.resetPasswordForEmail(validated.email, {
-    redirectTo: `${siteUrl}/auth/callback?next=/auth/reset-password`
+    redirectTo: `${siteUrl}/auth/callback?next=/auth/reset-password`,
   })
 
   if (error) {
-    console.error('[requestPasswordReset] Error:', error)
+    log.auth.warn('Password reset email failed', { error })
     // Don't reveal whether the email exists — always return success
   }
 
@@ -346,18 +343,21 @@ export async function updatePassword(newPassword: string) {
   const supabase = createServerClient()
 
   // Verify user is authenticated (session from recovery token exchange)
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser()
 
   if (userError || !user) {
     throw new Error('Not authenticated. Please request a new password reset link.')
   }
 
   const { error } = await supabase.auth.updateUser({
-    password: validated.password
+    password: validated.password,
   })
 
   if (error) {
-    console.error('[updatePassword] Error:', error)
+    log.auth.error('Password update failed', { error })
     throw new Error(error.message || 'Failed to update password')
   }
 
@@ -373,7 +373,7 @@ export async function signOut() {
   const { error } = await supabase.auth.signOut()
 
   if (error) {
-    console.error('[signOut] Error:', error)
+    log.auth.error('Sign-out failed', { error })
     throw new Error('Failed to sign out')
   }
 
@@ -386,7 +386,9 @@ export async function signOut() {
  */
 export async function changePassword(currentPassword: string, newPassword: string) {
   const supabase = createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user?.email) throw new Error('Not authenticated')
 
   // Verify old password by attempting sign in
@@ -409,7 +411,9 @@ export async function changePassword(currentPassword: string, newPassword: strin
  */
 export async function deleteAccount(password: string) {
   const supabase = createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
   if (!user?.email) throw new Error('Not authenticated')
 
   // Verify password

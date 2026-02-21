@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
+import { log } from '@/lib/logger'
 
 /**
  * Get event financial summary (computed via the event_financial_summary view)
@@ -21,7 +22,7 @@ export async function getEventFinancialSummary(eventId: string) {
     .single()
 
   if (error) {
-    console.error('[getEventFinancialSummary] Error:', error)
+    log.ledger.error('getEventFinancialSummary failed', { error })
     return null
   }
 
@@ -37,7 +38,7 @@ export async function getEventFinancialSummary(eventId: string) {
     profitCents: data.profit_cents ?? 0,
     profitMargin: data.profit_margin ?? 0,
     foodCostPercentage: data.food_cost_percentage ?? 0,
-    paymentStatus: data.payment_status
+    paymentStatus: data.payment_status,
   }
 }
 
@@ -54,7 +55,7 @@ export async function getTenantFinancialSummary() {
     .eq('tenant_id', user.tenantId!)
 
   if (error) {
-    console.error('[getTenantFinancialSummary] Error:', error)
+    log.ledger.error('getTenantFinancialSummary failed', { error })
     throw new Error('Failed to compute tenant financials')
   }
 
@@ -79,7 +80,7 @@ export async function getTenantFinancialSummary() {
     totalRefundsCents: totalRefunds,
     totalTipsCents: totalTips,
     netRevenueCents: totalRevenue - totalRefunds,
-    totalWithTipsCents: totalRevenue + totalTips - totalRefunds
+    totalWithTipsCents: totalRevenue + totalTips - totalRefunds,
   }
 }
 
@@ -102,7 +103,7 @@ export async function getYtdCarryForwardSavings() {
     .gt('leftover_value_received_cents', 0)
 
   if (error) {
-    console.error('[getYtdCarryForwardSavings] Error:', error)
+    log.ledger.error('getYtdCarryForwardSavings failed', { error })
     return 0
   }
 
@@ -164,9 +165,8 @@ export async function computeProfitAndLoss(year: number) {
 
   const totalExpensesCents = allExpenses.reduce((s, e) => s + e.amount_cents, 0)
   const netProfitCents = netRevenueCents - totalExpensesCents
-  const profitMarginPercent = netRevenueCents > 0
-    ? Math.round((netProfitCents / netRevenueCents) * 1000) / 10
-    : 0
+  const profitMarginPercent =
+    netRevenueCents > 0 ? Math.round((netProfitCents / netRevenueCents) * 1000) / 10 : 0
 
   // Monthly revenue breakdown
   const monthlyRevenue = new Map<string, number>()

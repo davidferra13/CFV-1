@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { Send, Paperclip, X } from 'lucide-react'
+import { useDebouncedCallback } from '@/lib/hooks/use-debounce'
 
 interface ChatInputBarProps {
   onSendText: (text: string) => Promise<void>
@@ -23,8 +24,12 @@ export function ChatInputBar({
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isTypingRef = useRef(false)
+
+  const stopTyping = useDebouncedCallback(() => {
+    isTypingRef.current = false
+    onTyping(false)
+  }, 2000)
 
   // Auto-resize textarea
   useEffect(() => {
@@ -39,16 +44,8 @@ export function ChatInputBar({
       isTypingRef.current = true
       onTyping(true)
     }
-
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current)
-    }
-
-    typingTimeoutRef.current = setTimeout(() => {
-      isTypingRef.current = false
-      onTyping(false)
-    }, 2000)
-  }, [onTyping])
+    stopTyping()
+  }, [onTyping, stopTyping])
 
   const handleSend = async () => {
     const trimmed = text.trim()
@@ -56,8 +53,7 @@ export function ChatInputBar({
 
     setSending(true)
 
-    // Clear typing indicator
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current)
+    // Clear typing indicator immediately on send
     if (isTypingRef.current) {
       isTypingRef.current = false
       onTyping(false)

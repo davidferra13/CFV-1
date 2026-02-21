@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+.next/
+out/
+
+# Generated files — never format these
+types/database.ts
+
+# Supabase local
+supabase/.branches/
+supabase/.temp/
+
+# Env files
+.env*
+
+# Package lock
+package-lock.json
