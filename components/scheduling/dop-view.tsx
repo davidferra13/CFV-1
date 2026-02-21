@@ -1,8 +1,10 @@
 // DOP View Component — shows Default Operating Procedure status
-// Server component.
+// Server component. Passes eventId + manual completion keys to client
+// DOPTaskCheckbox for tasks that can't be auto-detected.
 
 import type { DOPSchedule, DOPPhase, DOPTask } from '@/lib/scheduling/types'
 import { getDOPProgress } from '@/lib/scheduling/dop'
+import { DOPTaskCheckbox } from '@/components/scheduling/dop-task-checkbox'
 
 const PHASE_LABELS: Record<string, string> = {
   atBooking: 'At Booking',
@@ -20,21 +22,40 @@ const STATUS_COLORS: Record<string, string> = {
   not_applicable: 'bg-stone-100 text-stone-500',
 }
 
-function TaskRow({ task }: { task: DOPTask }) {
+type TaskRowProps = {
+  task: DOPTask
+  eventId?: string
+  manualCompletionKeys?: Set<string>
+}
+
+function TaskRow({ task, eventId, manualCompletionKeys }: TaskRowProps) {
+  // A task is "manually completable" if: it's not already auto-complete and we have an eventId
+  const isManuallyComplete = manualCompletionKeys?.has(task.id) ?? false
+  const isComplete = task.isComplete || isManuallyComplete
+  const canToggle = !task.isComplete && !!eventId
+
   return (
-    <div className={`flex items-start gap-3 py-2 ${task.isOverdue ? 'bg-red-50 -mx-2 px-2 rounded' : ''}`}>
-      <span className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded flex items-center justify-center text-xs ${
-        task.isComplete
-          ? 'bg-green-100 text-emerald-600'
-          : task.isOverdue
-            ? 'bg-red-100 text-red-600'
-            : 'bg-stone-100 text-stone-400'
-      }`}>
-        {task.isComplete ? '\u2713' : task.isOverdue ? '!' : '\u00B7'}
-      </span>
+    <div className={`flex items-start gap-3 py-2 ${task.isOverdue && !isComplete ? 'bg-red-50 -mx-2 px-2 rounded' : ''}`}>
+      {canToggle ? (
+        <DOPTaskCheckbox
+          eventId={eventId!}
+          taskKey={task.id}
+          initialChecked={isManuallyComplete}
+        />
+      ) : (
+        <span className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded flex items-center justify-center text-xs ${
+          isComplete
+            ? 'bg-green-100 text-emerald-600'
+            : task.isOverdue
+              ? 'bg-red-100 text-red-600'
+              : 'bg-stone-100 text-stone-400'
+        }`}>
+          {isComplete ? '\u2713' : task.isOverdue ? '!' : '\u00B7'}
+        </span>
+      )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className={`text-sm ${task.isComplete ? 'text-stone-500 line-through' : 'text-stone-900'}`}>
+          <span className={`text-sm ${isComplete ? 'text-stone-500 line-through' : 'text-stone-900'}`}>
             {task.label}
           </span>
           <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
@@ -54,7 +75,14 @@ function TaskRow({ task }: { task: DOPTask }) {
   )
 }
 
-function PhaseSection({ name, phase }: { name: string; phase: DOPPhase }) {
+type PhaseSectionProps = {
+  name: string
+  phase: DOPPhase
+  eventId?: string
+  manualCompletionKeys?: Set<string>
+}
+
+function PhaseSection({ name, phase, eventId, manualCompletionKeys }: PhaseSectionProps) {
   if (phase.status === 'not_applicable') return null
 
   return (
@@ -72,15 +100,37 @@ function PhaseSection({ name, phase }: { name: string; phase: DOPPhase }) {
       </div>
       <div className="space-y-1">
         {phase.tasks.map(task => (
-          <TaskRow key={task.id} task={task} />
+          <TaskRow key={task.id} task={task} eventId={eventId} manualCompletionKeys={manualCompletionKeys} />
         ))}
       </div>
     </div>
   )
 }
 
-export function DOPView({ schedule }: { schedule: DOPSchedule }) {
+type DOPViewProps = {
+  schedule: DOPSchedule
+  eventId?: string
+  manualCompletionKeys?: Set<string>
+}
+
+export function DOPView({ schedule, eventId, manualCompletionKeys }: DOPViewProps) {
   const progress = getDOPProgress(schedule)
+  const manualCount = manualCompletionKeys?.size ?? 0
+  const totalCompleted = progress.completed + manualCount
+
+  // Tailwind progress width mapping (0, 10, 20 … 100)
+  const pct = progress.total > 0 ? Math.round((totalCompleted / progress.total) * 100) : 0
+  const progressWidthClass =
+    pct >= 100 ? 'w-full' :
+    pct >= 90 ? 'w-11/12' :
+    pct >= 80 ? 'w-4/5' :
+    pct >= 70 ? 'w-3/4' :
+    pct >= 60 ? 'w-3/5' :
+    pct >= 50 ? 'w-1/2' :
+    pct >= 40 ? 'w-2/5' :
+    pct >= 30 ? 'w-1/3' :
+    pct >= 20 ? 'w-1/5' :
+    pct >= 10 ? 'w-1/12' : 'w-0'
 
   return (
     <div className="space-y-4">
@@ -109,22 +159,22 @@ export function DOPView({ schedule }: { schedule: DOPSchedule }) {
       <div className="bg-stone-50 rounded-lg p-3">
         <div className="flex justify-between items-center mb-2">
           <span className="text-sm font-medium text-stone-700">DOP Progress</span>
-          <span className="text-sm text-stone-500">{progress.completed} / {progress.total} tasks</span>
+          <span className="text-sm text-stone-500">{totalCompleted} / {progress.total} tasks</span>
         </div>
         <div className="w-full bg-stone-200 rounded-full h-2">
-          <div
-            className="bg-brand-600 h-2 rounded-full transition-all"
-            style={{ width: `${progress.total > 0 ? (progress.completed / progress.total) * 100 : 0}%` }}
-          />
+          <div className={`bg-brand-600 h-2 rounded-full transition-all ${progressWidthClass}`} />
         </div>
+        {manualCount > 0 && (
+          <p className="text-xs text-stone-400 mt-1">{manualCount} manually confirmed</p>
+        )}
       </div>
 
       {/* Phases */}
-      <PhaseSection name="atBooking" phase={schedule.schedule.atBooking} />
-      <PhaseSection name="dayBefore" phase={schedule.schedule.dayBefore} />
-      <PhaseSection name="morningOf" phase={schedule.schedule.morningOf} />
-      <PhaseSection name="preDeparture" phase={schedule.schedule.preDeparture} />
-      <PhaseSection name="postService" phase={schedule.schedule.postService} />
+      <PhaseSection name="atBooking" phase={schedule.schedule.atBooking} eventId={eventId} manualCompletionKeys={manualCompletionKeys} />
+      <PhaseSection name="dayBefore" phase={schedule.schedule.dayBefore} eventId={eventId} manualCompletionKeys={manualCompletionKeys} />
+      <PhaseSection name="morningOf" phase={schedule.schedule.morningOf} eventId={eventId} manualCompletionKeys={manualCompletionKeys} />
+      <PhaseSection name="preDeparture" phase={schedule.schedule.preDeparture} eventId={eventId} manualCompletionKeys={manualCompletionKeys} />
+      <PhaseSection name="postService" phase={schedule.schedule.postService} eventId={eventId} manualCompletionKeys={manualCompletionKeys} />
     </div>
   )
 }

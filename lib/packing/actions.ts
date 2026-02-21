@@ -89,3 +89,53 @@ export async function getPackingStatus(eventId: string): Promise<PackingStatus> 
     packingListReady: event?.packing_list_ready ?? false,
   }
 }
+
+// ─── Per-item packing confirmations ───────────────────────────────────────────
+
+/**
+ * Toggle a single packing item confirmation.
+ * Upsert on confirm, delete on un-confirm.
+ * Fire-and-forget: the packing-list-client calls this in background while
+ * localStorage provides instant feedback.
+ */
+export async function togglePackingConfirmation(
+  eventId: string,
+  itemKey: string,
+  confirmed: boolean
+): Promise<void> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  if (confirmed) {
+    await (supabase as any)
+      .from('packing_confirmations')
+      .upsert(
+        { event_id: eventId, tenant_id: user.tenantId!, item_key: itemKey },
+        { onConflict: 'event_id,item_key' }
+      )
+  } else {
+    await (supabase as any)
+      .from('packing_confirmations')
+      .delete()
+      .eq('event_id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .eq('item_key', itemKey)
+  }
+}
+
+/**
+ * Get the count of confirmed items for an event.
+ * Used for progress reporting on the event detail page.
+ */
+export async function getPackingConfirmationCount(eventId: string): Promise<number> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { count } = await (supabase as any)
+    .from('packing_confirmations')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  return count ?? 0
+}

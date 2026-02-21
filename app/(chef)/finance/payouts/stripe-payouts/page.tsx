@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getLedgerEntries } from '@/lib/ledger/actions'
+import { getChefPayoutSummary, getChefTransfers } from '@/lib/stripe/payout-actions'
 import { Card } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
@@ -12,54 +13,71 @@ export const metadata: Metadata = { title: 'Stripe Payouts - ChefFlow' }
 export default async function StripePayoutsPage() {
   await requireChef()
 
-  // All inbound payment entries represent Stripe-processed revenue
-  const [payments, deposits, finalPayments] = await Promise.all([
-    getLedgerEntries({ entryType: 'payment' }),
-    getLedgerEntries({ entryType: 'deposit' }),
-    getLedgerEntries({ entryType: 'final_payment' }),
+  const [summary, transfers] = await Promise.all([
+    getChefPayoutSummary(),
+    getChefTransfers({ limit: 50 }),
   ])
-
-  const allEntries = [...payments, ...deposits, ...finalPayments].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )
-
-  const totalProcessed = allEntries.reduce((s, e) => s + e.amount_cents, 0)
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/payouts" className="text-sm text-stone-500 hover:text-stone-700">← Payouts</Link>
+        <Link href="/finance/payouts" className="text-sm text-stone-500 hover:text-stone-700">&larr; Payouts</Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-900">Stripe Payouts</h1>
-          <span className="bg-violet-100 text-violet-700 text-sm px-2 py-0.5 rounded-full">{allEntries.length}</span>
+          <span className="bg-violet-100 text-violet-700 text-sm px-2 py-0.5 rounded-full">{summary.transferCount}</span>
         </div>
-        <p className="text-stone-500 mt-1">Payment entries recorded in the ledger via Stripe or manual recording</p>
+        <p className="text-stone-500 mt-1">Transfers from client payments to your Stripe Connect account</p>
       </div>
 
-      <Card className="p-4 bg-violet-50 border-violet-200">
-        <p className="text-sm text-violet-800 font-medium">Stripe Connect payout schedule</p>
-        <p className="text-sm text-violet-700 mt-1">
-          Stripe typically transfers funds to your bank account on a rolling basis (usually T+2 business days
-          after each charge). For the exact payout schedule and detailed transfer history, visit your{' '}
-          <strong>Stripe Dashboard → Payouts</strong>. The entries below reflect payments recorded in ChefFlow.
-        </p>
-      </Card>
+      {!summary.onboardingComplete && (
+        <Card className="p-4 bg-amber-50 border-amber-200">
+          <p className="text-sm text-amber-800 font-medium">Stripe Connect not set up</p>
+          <p className="text-sm text-amber-700 mt-1">
+            Complete your Stripe Connect onboarding in{' '}
+            <Link href="/settings" className="underline font-medium">Settings</Link>{' '}
+            to start receiving direct transfers from client payments.
+          </p>
+        </Card>
+      )}
 
-      <div className="grid grid-cols-2 gap-4">
+      {summary.onboardingComplete && (
+        <Card className="p-4 bg-violet-50 border-violet-200">
+          <p className="text-sm text-violet-800 font-medium">Stripe Connect active</p>
+          <p className="text-sm text-violet-700 mt-1">
+            Client payments are automatically transferred to your connected Stripe account.
+            Stripe then pays out to your bank on a rolling basis (usually T+2 business days).
+            For exact payout details, visit your <strong>Stripe Dashboard</strong>.
+          </p>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(totalProcessed)}</p>
-          <p className="text-sm text-stone-500 mt-1">Total payment entries</p>
+          <p className="text-2xl font-bold text-green-700">{formatCurrency(summary.totalNetReceivedCents)}</p>
+          <p className="text-sm text-stone-500 mt-1">Net received</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{allEntries.length}</p>
-          <p className="text-sm text-stone-500 mt-1">Payment records</p>
+          <p className="text-2xl font-bold text-stone-900">{formatCurrency(summary.totalTransferredCents)}</p>
+          <p className="text-sm text-stone-500 mt-1">Gross volume</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-2xl font-bold text-stone-500">{formatCurrency(summary.totalPlatformFeesCents)}</p>
+          <p className="text-sm text-stone-500 mt-1">Platform fees</p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-2xl font-bold text-stone-900">{summary.transferCount}</p>
+          <p className="text-sm text-stone-500 mt-1">Transfers</p>
         </Card>
       </div>
 
-      {allEntries.length === 0 ? (
+      {transfers.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No payment entries recorded</p>
-          <p className="text-stone-400 text-sm mt-1">Payments appear here once clients pay their event invoices</p>
+          <p className="text-stone-600 font-medium">No transfers yet</p>
+          <p className="text-stone-400 text-sm mt-1">
+            {summary.onboardingComplete
+              ? 'Transfers appear here once clients pay their event invoices'
+              : 'Set up Stripe Connect to start receiving transfers'}
+          </p>
         </Card>
       ) : (
         <Card>
@@ -67,30 +85,46 @@ export default async function StripePayoutsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Date</TableHead>
-                <TableHead>Type</TableHead>
                 <TableHead>Event</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>Gross</TableHead>
+                <TableHead>Fee</TableHead>
+                <TableHead>Net</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {allEntries.map(entry => (
-                <TableRow key={entry.id}>
-                  <TableCell className="text-stone-500 text-sm">{format(new Date(entry.created_at), 'MMM d, yyyy')}</TableCell>
-                  <TableCell>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 capitalize">
-                      {entry.entry_type.replace(/_/g, ' ')}
-                    </span>
+              {transfers.map(transfer => (
+                <TableRow key={transfer.id}>
+                  <TableCell className="text-stone-500 text-sm">
+                    {format(new Date(transfer.createdAt), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell className="text-stone-600 text-sm">
-                    {entry.event ? (
-                      <Link href={`/events/${entry.event.id}`} className="text-brand-600 hover:underline capitalize">
-                        {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
+                    {transfer.eventId ? (
+                      <Link href={`/events/${transfer.eventId}`} className="text-brand-600 hover:underline capitalize">
+                        {transfer.eventOccasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      <span className="text-stone-400">
+                        {transfer.isDeferred ? 'Deferred' : '—'}
+                      </span>
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-green-700 font-semibold text-sm">+{formatCurrency(entry.amount_cents)}</TableCell>
+                  <TableCell className="text-stone-700 text-sm">{formatCurrency(transfer.grossAmountCents)}</TableCell>
+                  <TableCell className="text-stone-500 text-sm">
+                    {transfer.platformFeeCents > 0 ? `-${formatCurrency(transfer.platformFeeCents)}` : '—'}
+                  </TableCell>
+                  <TableCell className="text-green-700 font-semibold text-sm">
+                    {formatCurrency(transfer.netTransferCents)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={
+                      transfer.status === 'paid' ? 'success' :
+                      transfer.status === 'reversed' ? 'error' :
+                      'default'
+                    }>
+                      {transfer.status}
+                    </Badge>
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

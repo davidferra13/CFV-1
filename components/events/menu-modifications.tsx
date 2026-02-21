@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+// MenuModifications — Log and manage differences between proposed and served menu.
+// Extended with optional photo proof upload per modification record.
+
+import { useRef, useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
-import { logMenuModification, deleteMenuModification } from '@/lib/menus/modifications'
+import { logMenuModification, deleteMenuModification, uploadModificationPhoto } from '@/lib/menus/modifications'
 
 const MODIFICATION_TYPES = [
   { value: 'substitution', label: 'Substituted' },
@@ -30,6 +32,7 @@ type Modification = {
   original_description: string | null
   actual_description: string | null
   reason: string | null
+  photo_url: string | null
   created_at: string
 }
 
@@ -40,13 +43,20 @@ export function MenuModifications({
   eventId: string
   initialModifications: Modification[]
 }) {
-  const [mods, setMods] = useState(initialModifications)
+  const [mods, setMods] = useState<Modification[]>(initialModifications)
   const [isAdding, setIsAdding] = useState(false)
   const [saving, setSaving] = useState(false)
   const [modType, setModType] = useState<string>('substitution')
   const [original, setOriginal] = useState('')
   const [actual, setActual] = useState('')
   const [reason, setReason] = useState('')
+
+  // Track signed URLs for photos uploaded this session
+  const [sessionPhotoUrls, setSessionPhotoUrls] = useState<Record<string, string>>({})
+  const [uploadingPhotoFor, setUploadingPhotoFor] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const uploadTargetRef = useRef<string | null>(null)
+  const [, startTransition] = useTransition()
 
   async function handleAdd() {
     if (!original && !actual) return
@@ -60,7 +70,7 @@ export function MenuModifications({
         reason: reason || null,
       })
       if (result.modification) {
-        setMods([...mods, result.modification])
+        setMods([...mods, result.modification as unknown as Modification])
       }
       setIsAdding(false)
       setOriginal('')
@@ -86,6 +96,28 @@ export function MenuModifications({
     }
   }
 
+  function handleAddPhotoClick(modId: string) {
+    uploadTargetRef.current = modId
+    fileInputRef.current?.click()
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    const targetModId = uploadTargetRef.current
+    if (!file || !targetModId) return
+    e.target.value = '' // reset so same file can re-trigger onChange
+    setUploadingPhotoFor(targetModId)
+    const formData = new FormData()
+    formData.set('photo', file)
+    startTransition(async () => {
+      const result = await uploadModificationPhoto(targetModId, eventId, formData)
+      if (result.success) {
+        setSessionPhotoUrls(prev => ({ ...prev, [targetModId]: result.signedUrl }))
+      }
+      setUploadingPhotoFor(null)
+    })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -99,36 +131,82 @@ export function MenuModifications({
         </div>
       </CardHeader>
       <CardContent>
+        {/* Shared hidden file input for all modification rows */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+          onChange={handleFileChange}
+          className="sr-only"
+          aria-label="Upload modification photo"
+        />
+
         {mods.length === 0 && !isAdding && (
           <p className="text-sm text-stone-500">No menu changes recorded. Log any differences between what was proposed and what was served.</p>
         )}
 
         {mods.length > 0 && (
           <div className="space-y-3 mb-4">
-            {mods.map((m) => (
-              <div key={m.id} className="flex items-start justify-between py-2 border-b border-stone-100 last:border-0">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-700 capitalize">
-                      {m.modification_type.replace('_', ' ')}
-                    </span>
+            {mods.map((m) => {
+              const sessionUrl = sessionPhotoUrls[m.id] ?? null
+              const hasPhoto = !!sessionUrl || !!m.photo_url
+              return (
+                <div key={m.id} className="py-2 border-b border-stone-100 last:border-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-700 capitalize">
+                          {m.modification_type.replace('_', ' ')}
+                        </span>
+                        {hasPhoto && (
+                          <span className="text-xs text-emerald-600 font-medium">photo attached</span>
+                        )}
+                      </div>
+                      {m.original_description && m.actual_description && (
+                        <p className="text-sm text-stone-900 mt-1">{m.original_description} &rarr; {m.actual_description}</p>
+                      )}
+                      {m.original_description && !m.actual_description && (
+                        <p className="text-sm text-stone-900 mt-1">{m.original_description} (not served)</p>
+                      )}
+                      {!m.original_description && m.actual_description && (
+                        <p className="text-sm text-stone-900 mt-1">Added: {m.actual_description}</p>
+                      )}
+                      {m.reason && <p className="text-xs text-stone-500 mt-0.5">Reason: {m.reason}</p>}
+                      {sessionUrl && (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={sessionUrl}
+                          alt="Modification proof"
+                          className="mt-2 max-h-32 rounded-md border border-stone-200 object-contain bg-stone-50"
+                        />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {!hasPhoto && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleAddPhotoClick(m.id)}
+                          disabled={uploadingPhotoFor === m.id}
+                          className="text-stone-500 hover:text-stone-700 text-xs"
+                        >
+                          {uploadingPhotoFor === m.id ? 'Uploading...' : 'Add Photo'}
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemove(m.id)}
+                        disabled={saving}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </Button>
+                    </div>
                   </div>
-                  {m.original_description && m.actual_description && (
-                    <p className="text-sm text-stone-900 mt-1">{m.original_description} &rarr; {m.actual_description}</p>
-                  )}
-                  {m.original_description && !m.actual_description && (
-                    <p className="text-sm text-stone-900 mt-1">{m.original_description} (not served)</p>
-                  )}
-                  {!m.original_description && m.actual_description && (
-                    <p className="text-sm text-stone-900 mt-1">Added: {m.actual_description}</p>
-                  )}
-                  {m.reason && <p className="text-xs text-stone-500 mt-0.5">Reason: {m.reason}</p>}
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => handleRemove(m.id)} disabled={saving} className="text-red-600 hover:text-red-700">
-                  Remove
-                </Button>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
 

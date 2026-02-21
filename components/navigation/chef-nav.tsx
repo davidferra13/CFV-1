@@ -10,6 +10,7 @@ import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } fro
 import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
+import { LiveIndicator } from '@/components/realtime/live-indicator'
 import { AppLogo } from '@/components/branding/app-logo'
 import {
   LogOut,
@@ -482,6 +483,7 @@ export function ChefSidebar({ primaryNavHrefs }: { primaryNavHrefs?: string[] })
         </Link>
         {!collapsed ? (
           <div className="flex items-center gap-1">
+            <LiveIndicator />
             <GlobalSearch />
             <NotificationBell />
             <button
@@ -514,6 +516,7 @@ export function ChefSidebar({ primaryNavHrefs }: { primaryNavHrefs?: string[] })
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch />
+            <LiveIndicator />
 
             {/* Dashboard */}
             {primaryItems.map((item) => {
@@ -870,6 +873,7 @@ export function ChefMobileNav({ primaryNavHrefs }: { primaryNavHrefs?: string[] 
             <span className="font-semibold text-stone-900">ChefFlow</span>
           </Link>
           <div className="flex items-center gap-1">
+            <LiveIndicator />
             <GlobalSearch />
             <NotificationBell />
             <button

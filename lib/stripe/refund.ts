@@ -49,10 +49,18 @@ export async function createStripeRefund(
     throw new Error(`PaymentIntent ${paymentIntentId} has already been fully refunded`)
   }
 
+  // For destination charges (transferred payments), reverse the transfer
+  // and refund the application fee so the connected account is properly debited.
+  const hasTransfer = !!(charge as any).transfer
+
   const refund = await stripe.refunds.create({
     charge: charge.id,
     amount: amountCents,
     reason: (reason as Stripe.RefundCreateParams.Reason) || 'requested_by_customer',
+    ...(hasTransfer ? {
+      reverse_transfer: true,
+      refund_application_fee: true,
+    } : {}),
   })
 
   return {

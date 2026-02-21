@@ -33,6 +33,7 @@ export type ReadinessGate =
   | 'allergies_verified'
   | 'menu_client_approved'
   | 'documents_generated'
+  | 'deposit_collected'
   | 'packing_reviewed'
   | 'equipment_confirmed'
   | 'receipts_uploaded'
@@ -96,6 +97,10 @@ const GATE_CATALOG: Record<ReadinessGate, { label: string; description: string }
     label: 'Day-Of Protocol Complete',
     description: 'All day-of-protocol checklist items are green',
   },
+  deposit_collected: {
+    label: 'Deposit Collected',
+    description: 'The required deposit has been recorded in the ledger before confirming',
+  },
   financial_reconciled: {
     label: 'Financials Reconciled',
     description: 'All expenses logged and outstanding balance noted',
@@ -104,7 +109,7 @@ const GATE_CATALOG: Record<ReadinessGate, { label: string; description: string }
 
 // Which gates apply to which transition
 const TRANSITION_GATES: Record<string, ReadinessGate[]> = {
-  'paid->confirmed': ['allergies_verified', 'documents_generated'],
+  'paid->confirmed': ['allergies_verified', 'documents_generated', 'deposit_collected'],
   'confirmed->in_progress': ['packing_reviewed'],
   'in_progress->completed': ['receipts_uploaded', 'kitchen_clean', 'financial_reconciled'],
 }
@@ -240,6 +245,9 @@ async function evaluateGate(
     case 'menu_client_approved':
       return checkMenuApprovalGate(gate, eventId, catalog, supabase)
 
+    case 'deposit_collected':
+      return checkDepositGate(gate, eventId, catalog, supabase)
+
     case 'packing_reviewed':
     case 'equipment_confirmed':
     case 'receipts_uploaded':
@@ -264,6 +272,54 @@ async function evaluateGate(
         description: catalog.description,
         isHardBlock: false,
       }
+  }
+}
+
+// ─── Gate: Deposit Collected ─────────────────────────────────────────────────
+
+async function checkDepositGate(
+  gate: ReadinessGate,
+  eventId: string,
+  catalog: { label: string; description: string },
+  supabase: any
+): Promise<GateResult> {
+  // Fetch event's deposit requirement
+  const { data: event } = await supabase
+    .from('events')
+    .select('deposit_amount_cents')
+    .eq('id', eventId)
+    .single()
+
+  const depositRequired = (event?.deposit_amount_cents ?? 0) as number
+
+  // No deposit required — gate passes automatically
+  if (!depositRequired || depositRequired <= 0) {
+    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+  }
+
+  // Check how much has been paid via ledger
+  const { data: summary } = await supabase
+    .from('event_financial_summary')
+    .select('total_paid_cents')
+    .eq('event_id', eventId)
+    .single()
+
+  const totalPaid = (summary?.total_paid_cents ?? 0) as number
+
+  if (totalPaid >= depositRequired) {
+    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+  }
+
+  const formatCents = (c: number) => `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+  const shortfall = depositRequired - totalPaid
+
+  return {
+    gate,
+    status: 'pending',
+    label: catalog.label,
+    description: catalog.description,
+    isHardBlock: false,   // Soft block: chef can override if deposit was collected off-platform
+    details: `Deposit required: ${formatCents(depositRequired)} — collected: ${formatCents(totalPaid)} — shortfall: ${formatCents(shortfall)}. Record the payment to proceed, or override if collected off-platform.`,
   }
 }
 

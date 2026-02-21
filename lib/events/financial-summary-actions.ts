@@ -270,6 +270,14 @@ export async function markFinancialClosed(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
+  // Fetch the event date for streak calculation before closing
+  const { data: eventRow } = await supabase
+    .from('events')
+    .select('event_date')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
   const { error } = await supabase
     .from('events')
     .update({
@@ -284,8 +292,19 @@ export async function markFinancialClosed(eventId: string) {
     throw new Error('Failed to close event financially')
   }
 
+  // Update closure streak — non-blocking, don't fail the close if streak update fails
+  if (eventRow?.event_date) {
+    try {
+      const { recordClosureForStreak } = await import('@/lib/chefs/streaks')
+      await recordClosureForStreak(eventRow.event_date)
+    } catch (streakErr) {
+      console.error('[markFinancialClosed] Streak update failed (non-critical):', streakErr)
+    }
+  }
+
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/events/${eventId}/financial`)
+  revalidatePath('/dashboard')
 
   return { success: true }
 }

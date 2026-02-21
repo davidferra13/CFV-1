@@ -16,11 +16,17 @@ export default async function NewEventPage() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center gap-6">
         <p className="text-sm text-stone-500">
           Prefer a step-by-step guide?{' '}
           <a href="/events/new/wizard" className="text-brand-600 hover:text-brand-700 font-medium">
             Try the event wizard &rarr;
+          </a>
+        </p>
+        <p className="text-sm text-stone-500">
+          Or{' '}
+          <a href="/events/new/from-text" className="text-brand-600 hover:text-brand-700 font-medium">
+            just describe it &rarr;
           </a>
         </p>
       </div>

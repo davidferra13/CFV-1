@@ -24,6 +24,12 @@ const UpdateSettingsSchema = z.object({
   quote_auto_expiry_enabled: z.boolean().optional(),
   client_event_reminders_enabled: z.boolean().optional(),
   time_tracking_reminders_enabled: z.boolean().optional(),
+  receipt_upload_reminders_enabled: z.boolean().optional(),
+  closure_deadline_alerts_enabled: z.boolean().optional(),
+  closure_deadline_days: z.number().int().min(1).max(30).optional(),
+  weekly_summary_enabled: z.boolean().optional(),
+  inquiry_auto_response_template: z.string().max(2000).nullable().optional(),
+  auto_response_template_enabled: z.boolean().optional(),
 })
 
 export type UpdateAutomationSettingsInput = z.infer<typeof UpdateSettingsSchema>

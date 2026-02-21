@@ -598,3 +598,148 @@ export async function createQuoteFromPricingInput(
     internal_notes: pricingInput.internalNotes ?? '',
   })
 }
+
+// ============================================
+// 10. REVISE QUOTE (Version Bump)
+// ============================================
+
+export type QuoteVersionSummary = {
+  id: string
+  version: number
+  total_quoted_cents: number
+  status: string
+  created_at: string
+  is_superseded: boolean
+}
+
+/**
+ * Creates a revised (version n+1) copy of an existing quote.
+ * Marks the original as superseded. The new draft quote can then be edited
+ * and re-sent to the client.
+ */
+export async function reviseQuote(quoteId: string): Promise<{ success: true; newQuoteId: string }> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: original } = await supabase
+    .from('quotes')
+    .select('*')
+    .eq('id', quoteId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!original) throw new Error('Quote not found')
+  if ((original as any).is_superseded) throw new Error('This quote has already been superseded by a newer version')
+
+  const currentVersion: number = (original as any).version ?? 1
+
+  // Create the new version as draft
+  const { data: newQuote, error } = await supabase
+    .from('quotes')
+    .insert({
+      tenant_id: user.tenantId!,
+      client_id: original.client_id,
+      inquiry_id: original.inquiry_id,
+      event_id: original.event_id,
+      quote_name: original.quote_name,
+      pricing_model: original.pricing_model,
+      total_quoted_cents: original.total_quoted_cents,
+      price_per_person_cents: original.price_per_person_cents,
+      guest_count_estimated: original.guest_count_estimated,
+      deposit_required: original.deposit_required,
+      deposit_amount_cents: original.deposit_amount_cents,
+      deposit_percentage: original.deposit_percentage,
+      pricing_notes: original.pricing_notes,
+      internal_notes: original.internal_notes,
+      status: 'draft' as QuoteStatus,
+      created_by: user.id,
+      // Versioning fields
+      ...(({ version: currentVersion + 1, previous_version_id: quoteId }) as any),
+    } as any)
+    .select('id')
+    .single()
+
+  if (error || !newQuote) {
+    console.error('[reviseQuote] Create failed:', error)
+    throw new Error('Failed to create revised quote')
+  }
+
+  // Mark original as superseded
+  await supabase
+    .from('quotes')
+    .update({ is_superseded: true } as any)
+    .eq('id', quoteId)
+    .eq('tenant_id', user.tenantId!)
+
+  revalidatePath('/quotes')
+  if (original.event_id) revalidatePath(`/events/${original.event_id}`)
+
+  return { success: true, newQuoteId: newQuote.id }
+}
+
+/**
+ * Fetch the version history for a quote (all versions sharing the same lineage).
+ */
+export async function getQuoteVersionHistory(quoteId: string): Promise<QuoteVersionSummary[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Walk back through the version chain to find the root
+  let rootId = quoteId
+  const seen = new Set<string>()
+
+  while (rootId && !seen.has(rootId)) {
+    seen.add(rootId)
+    const { data } = await supabase
+      .from('quotes')
+      .select('previous_version_id')
+      .eq('id', rootId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+    const prev = (data as any)?.previous_version_id
+    if (prev) rootId = prev
+    else break
+  }
+
+  // Now fetch all quotes with this root in their chain using previous_version_id chain
+  // Simplified: fetch all quotes for the same event/inquiry and return them sorted by version
+  const { data: allQuotes } = await supabase
+    .from('quotes')
+    .select('id, total_quoted_cents, status, created_at, previous_version_id')
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: true })
+
+  // Filter to only those in the same lineage (connected by previous_version_id)
+  const inChain = new Set<string>()
+  const versionMap = new Map<string, any>()
+  for (const q of (allQuotes ?? []) as any[]) {
+    versionMap.set(q.id, q)
+  }
+
+  // Walk forward from root
+  const queue = [rootId]
+  while (queue.length > 0) {
+    const id = queue.shift()!
+    inChain.add(id)
+    // Find quotes that point to this as previous
+    for (const [qid, q] of versionMap.entries()) {
+      if (q.previous_version_id === id && !inChain.has(qid)) {
+        queue.push(qid)
+      }
+    }
+  }
+
+  return Array.from(inChain)
+    .map((id, i) => {
+      const q = versionMap.get(id)
+      return q ? {
+        id: q.id,
+        version: i + 1,
+        total_quoted_cents: q.total_quoted_cents,
+        status: q.status,
+        created_at: q.created_at,
+        is_superseded: q.id !== quoteId && inChain.has(q.id),
+      } : null
+    })
+    .filter(Boolean) as QuoteVersionSummary[]
+}

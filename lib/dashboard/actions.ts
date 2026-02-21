@@ -695,6 +695,116 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
   }
 }
 
+// ============================================
+// 8. Top Events by Profit — this month's best performers
+// ============================================
+
+export type TopProfitEvent = {
+  eventId: string
+  occasion: string | null
+  eventDate: string
+  clientName: string
+  profitCents: number
+  profitMarginPercent: number
+  revenueCents: number
+}
+
+export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const now = new Date()
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+
+  const { data: events } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, client:clients(full_name)')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'completed')
+    .gte('event_date', monthStart)
+    .order('event_date', { ascending: false })
+
+  if (!events || events.length === 0) return []
+
+  const eventIds = events.map(e => e.id)
+
+  const { data: summaries } = await (supabase as any)
+    .from('event_financial_summary')
+    .select('event_id, profit_cents, profit_margin, total_paid_cents')
+    .eq('tenant_id', user.tenantId!)
+    .in('event_id', eventIds)
+
+  return events
+    .map(event => {
+      const fin = (summaries || []).find((s: any) => s.event_id === event.id)
+      const profitMarginRaw = fin?.profit_margin ?? 0
+      return {
+        eventId: event.id,
+        occasion: event.occasion,
+        eventDate: event.event_date,
+        clientName: (event.client as any)?.full_name ?? 'Unknown',
+        profitCents: fin?.profit_cents ?? 0,
+        profitMarginPercent: Math.round(parseFloat(String(profitMarginRaw)) * 1000) / 10,
+        revenueCents: fin?.total_paid_cents ?? 0,
+      }
+    })
+    .sort((a, b) => b.profitCents - a.profitCents)
+    .slice(0, limit)
+}
+
+// ============================================
+// 9. Monthly Average Hourly Rate
+// ============================================
+
+export async function getMonthlyAvgHourlyRate(): Promise<number | null> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const now = new Date()
+  const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
+
+  const { data: events } = await (supabase as any)
+    .from('events')
+    .select('id, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'completed')
+    .gte('event_date', monthStart)
+
+  if (!events || events.length === 0) return null
+
+  const eventIds = events.map((e: any) => e.id)
+
+  const { data: summaries } = await (supabase as any)
+    .from('event_financial_summary')
+    .select('event_id, profit_cents, tip_amount_cents')
+    .eq('tenant_id', user.tenantId!)
+    .in('event_id', eventIds)
+
+  let totalRateCents = 0
+  let count = 0
+
+  for (const event of events) {
+    const totalMinutes =
+      (event.time_shopping_minutes ?? 0) +
+      (event.time_prep_minutes ?? 0) +
+      (event.time_travel_minutes ?? 0) +
+      (event.time_service_minutes ?? 0) +
+      (event.time_reset_minutes ?? 0)
+
+    if (totalMinutes <= 0) continue
+
+    const fin = (summaries || []).find((s: any) => s.event_id === event.id)
+    const netProfitCents = (fin?.profit_cents ?? 0) + (fin?.tip_amount_cents ?? 0)
+
+    if (netProfitCents <= 0) continue
+
+    totalRateCents += Math.round((netProfitCents / totalMinutes) * 60)
+    count++
+  }
+
+  return count > 0 ? Math.round(totalRateCents / count) : null
+}
+
 export async function logDashboardHours(input: LogDashboardHoursInput) {
   const user = await requireChef()
   const validated = LogDashboardHoursSchema.parse(input)

@@ -84,6 +84,32 @@ export async function getTenantFinancialSummary() {
 }
 
 /**
+ * Compute YTD carry-forward inventory savings
+ * (sum of leftover_value_received_cents across all events this year)
+ */
+export async function getYtdCarryForwardSavings() {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const yearStart = `${new Date().getFullYear()}-01-01`
+
+  const { data, error } = await supabase
+    .from('events')
+    .select('leftover_value_received_cents')
+    .eq('tenant_id', user.tenantId!)
+    .gte('event_date', yearStart)
+    .not('leftover_value_received_cents', 'is', null)
+    .gt('leftover_value_received_cents', 0)
+
+  if (error) {
+    console.error('[getYtdCarryForwardSavings] Error:', error)
+    return 0
+  }
+
+  return (data || []).reduce((sum, e) => sum + (e.leftover_value_received_cents ?? 0), 0)
+}
+
+/**
  * Compute full Profit & Loss for a given calendar year
  */
 export async function computeProfitAndLoss(year: number) {

@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { transitionInquiry, convertInquiryToEvent, deleteInquiry } from '@/lib/inquiries/actions'
 import { releaseToMarketplace } from '@/lib/contact/claim'
+import { DeclineWithReasonModal } from '@/components/inquiries/decline-with-reason-modal'
 
 type InquiryStatus =
   | 'new'
@@ -31,6 +32,7 @@ export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; 
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDeclineModal, setShowDeclineModal] = useState(false)
 
   const handleTransition = async (newStatus: InquiryStatus) => {
     setLoading(true)
@@ -139,6 +141,7 @@ export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; 
   }
 
   return (
+    <>
     <Card className="p-6">
       <h2 className="text-xl font-semibold mb-4">Actions</h2>
 
@@ -171,7 +174,7 @@ export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; 
               )}
               <Button
                 variant="danger"
-                onClick={() => handleTransition('declined')}
+                onClick={() => setShowDeclineModal(true)}
                 disabled={loading}
               >
                 Decline
@@ -205,7 +208,7 @@ export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; 
               </Button>
               <Button
                 variant="danger"
-                onClick={() => handleTransition('declined')}
+                onClick={() => setShowDeclineModal(true)}
                 disabled={loading}
               >
                 Decline
@@ -224,7 +227,7 @@ export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; 
               </Button>
               <Button
                 variant="danger"
-                onClick={() => handleTransition('declined')}
+                onClick={() => setShowDeclineModal(true)}
                 disabled={loading}
               >
                 Decline
@@ -250,7 +253,7 @@ export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; 
               </Button>
               <Button
                 variant="danger"
-                onClick={() => handleTransition('declined')}
+                onClick={() => setShowDeclineModal(true)}
                 disabled={loading}
               >
                 Decline
@@ -306,5 +309,14 @@ export function InquiryTransitions({ inquiry, canRelease }: { inquiry: Inquiry; 
         </div>
       </div>
     </Card>
+
+    {/* Decline with Reason Modal */}
+    {showDeclineModal && (
+      <DeclineWithReasonModal
+        inquiryId={inquiry.id}
+        onCancel={() => setShowDeclineModal(false)}
+      />
+    )}
+    </>
   )
 }

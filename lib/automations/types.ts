@@ -162,6 +162,12 @@ export type ChefAutomationSettings = {
   quote_auto_expiry_enabled: boolean
   client_event_reminders_enabled: boolean
   time_tracking_reminders_enabled: boolean
+  receipt_upload_reminders_enabled: boolean
+  closure_deadline_alerts_enabled: boolean
+  closure_deadline_days: number
+  weekly_summary_enabled: boolean
+  inquiry_auto_response_template: string | null
+  auto_response_template_enabled: boolean
   created_at: string
   updated_at: string
 }
@@ -179,4 +185,10 @@ export const DEFAULT_AUTOMATION_SETTINGS: Omit<ChefAutomationSettings, 'id' | 't
   quote_auto_expiry_enabled: true,
   client_event_reminders_enabled: true,
   time_tracking_reminders_enabled: true,
+  receipt_upload_reminders_enabled: true,
+  closure_deadline_alerts_enabled: true,
+  closure_deadline_days: 3,
+  weekly_summary_enabled: false,
+  inquiry_auto_response_template: null,
+  auto_response_template_enabled: false,
 }

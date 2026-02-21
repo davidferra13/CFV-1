@@ -35,6 +35,7 @@ import { GiftCardPurchasedChefEmail } from './templates/gift-card-purchased-chef
 import { CollaborationInviteEmail } from './templates/collaboration-invite'
 import { RecipeShareEmail } from './templates/recipe-share'
 import { PostEventSurveyEmail } from './templates/post-event-survey'
+import { InstantBookingChefEmail } from './templates/instant-booking-chef'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -849,6 +850,39 @@ export async function sendPostEventSurveyEmail(params: {
       chefName: params.chefName,
       occasion: params.occasion,
       surveyUrl: params.surveyUrl,
+    }),
+  })
+}
+
+/**
+ * Send instant-booking notification to chef.
+ * Fired when a client books instantly via the public booking page and pays the deposit.
+ */
+export async function sendInstantBookingChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  clientName: string
+  clientEmail: string
+  occasion: string
+  eventDate: string | null
+  guestCount: number
+  depositCents: number
+  totalCents: number
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.chefEmail,
+    subject: `New instant booking: ${params.clientName} — ${params.occasion}`,
+    react: createElement(InstantBookingChefEmail, {
+      chefName: params.chefName,
+      clientName: params.clientName,
+      clientEmail: params.clientEmail,
+      occasion: params.occasion,
+      eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
+      guestCount: params.guestCount,
+      depositFormatted: formatCents(params.depositCents),
+      totalFormatted: formatCents(params.totalCents),
+      eventUrl: `${APP_URL}/events/${params.eventId}`,
     }),
   })
 }

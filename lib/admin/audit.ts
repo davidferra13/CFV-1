@@ -38,16 +38,14 @@ export async function logAdminAction({
   ipAddress?: string
 }) {
   try {
-    // admin_audit_log not in generated types yet — cast to bypass TS strict table check
-    // eslint-disable-next-line
-    const supabase: any = createAdminClient()
+    const supabase = createAdminClient()
     await supabase.from('admin_audit_log').insert({
       actor_email: actorEmail,
       actor_user_id: actorUserId,
       action_type: actionType,
       target_id: targetId ?? null,
       target_type: targetType ?? null,
-      details: details ?? null,
+      details: (details ?? null) as any,
       ip_address: ipAddress ?? null,
     })
   } catch (err) {

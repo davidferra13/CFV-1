@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
+import { exportRevenueByClientCSV } from '@/lib/finance/export-actions'
+import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { Card } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -52,8 +54,13 @@ export default async function RevenueByClientPage() {
     <div className="space-y-6">
       <div>
         <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-700">← Reporting</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Revenue by Client</h1>
-        <p className="text-stone-500 mt-1">Lifetime value and booking frequency per client</p>
+        <div className="flex items-start justify-between mt-1">
+          <div>
+            <h1 className="text-3xl font-bold text-stone-900">Revenue by Client</h1>
+            <p className="text-stone-500 mt-1">Lifetime value and booking frequency per client</p>
+          </div>
+          <CSVDownloadButton action={exportRevenueByClientCSV} label="Export CSV" />
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">

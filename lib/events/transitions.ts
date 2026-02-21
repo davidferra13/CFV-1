@@ -19,7 +19,7 @@ export type EventStatus =
 
 // Valid state transitions (from -> to[])
 const TRANSITION_RULES: Record<EventStatus, EventStatus[]> = {
-  draft: ['proposed', 'cancelled'],
+  draft: ['proposed', 'paid', 'cancelled'],
   proposed: ['accepted', 'cancelled'],
   accepted: ['paid', 'cancelled'],
   paid: ['confirmed', 'cancelled'],
@@ -38,6 +38,7 @@ const TRANSITION_PERMISSIONS: Record<string, TransitionPermission | TransitionPe
   'proposed->cancelled': ['chef', 'client'],
   'accepted->cancelled': ['chef', 'client'],
   'accepted->paid': 'system', // Stripe webhook only
+  'draft->paid': 'system', // Instant-book: Stripe webhook transitions draft directly to paid
   'paid->confirmed': 'chef',
   'confirmed->in_progress': 'chef',
   'in_progress->completed': 'chef',
@@ -505,6 +506,35 @@ export async function transitionEvent({
       await autoCreateServiceLegs(eventId)
     } catch (err) {
       console.error('[transitionEvent] Auto-create service legs failed (non-blocking):', err)
+    }
+  }
+
+  // Auto-place prep blocks when confirmed (non-blocking, idempotent).
+  // Uses deterministic rule-based engine — not AI output. Skips if blocks exist.
+  if (toStatus === 'confirmed') {
+    try {
+      const { autoPlacePrepBlocks } = await import('@/lib/scheduling/prep-block-actions')
+      await autoPlacePrepBlocks(eventId)
+    } catch (err) {
+      console.error('[transitionEvent] Auto-place prep blocks failed (non-blocking):', err)
+    }
+  }
+
+  // Sync to Google Calendar when confirmed; delete when cancelled (non-blocking).
+  if (toStatus === 'confirmed') {
+    try {
+      const { syncEventToGoogleCalendar } = await import('@/lib/scheduling/calendar-sync')
+      await syncEventToGoogleCalendar(eventId)
+    } catch (err) {
+      console.error('[transitionEvent] Google Calendar sync failed (non-blocking):', err)
+    }
+  }
+  if (toStatus === 'cancelled') {
+    try {
+      const { deleteEventFromGoogleCalendar } = await import('@/lib/scheduling/calendar-sync')
+      await deleteEventFromGoogleCalendar(eventId)
+    } catch (err) {
+      console.error('[transitionEvent] Google Calendar delete failed (non-blocking):', err)
     }
   }
 

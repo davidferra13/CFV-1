@@ -3,8 +3,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getQuoteById } from '@/lib/quotes/actions'
+import { getQuoteById, getQuoteVersionHistory } from '@/lib/quotes/actions'
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
+import { QuoteVersionHistory } from '@/components/quotes/quote-version-history'
 import { QuoteTransitions } from '@/components/quotes/quote-transitions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -19,7 +20,10 @@ export default async function QuoteDetailPage({
 }) {
   await requireChef()
 
-  const quote = await getQuoteById(params.id)
+  const [quote, versionHistory] = await Promise.all([
+    getQuoteById(params.id),
+    getQuoteVersionHistory(params.id),
+  ])
 
   if (!quote) {
     notFound()
@@ -54,6 +58,13 @@ export default async function QuoteDetailPage({
           </p>
         </div>
       )}
+
+      {/* Version History */}
+      <QuoteVersionHistory
+        currentQuoteId={params.id}
+        versions={versionHistory}
+        isSuperseded={(quote as any).is_superseded ?? false}
+      />
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

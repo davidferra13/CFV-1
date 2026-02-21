@@ -1,0 +1,379 @@
+'use client'
+
+// GroceryQuotePanel — interactive price comparison table + Instacart CTA.
+// Shows Spoonacular (US average) vs Kroger (real shelf price) vs average.
+// Allows chef to save discovered prices back to the Recipe Bible.
+
+import { useState, useTransition } from 'react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { runGroceryPriceQuote, type GroceryQuoteResult } from '@/lib/grocery/pricing-actions'
+import { bulkUpdateIngredientPrices } from '@/lib/recipes/bulk-price-actions'
+import { formatCurrency } from '@/lib/utils/currency'
+import { format } from 'date-fns'
+
+// ─── Props ────────────────────────────────────────────────────────────────────
+
+type Props = {
+  eventId: string
+  initialQuote: GroceryQuoteResult | null
+  quotedPriceCents: number | null
+}
+
+// ─── Helper ───────────────────────────────────────────────────────────────────
+
+function formatQty(qty: number, unit: string): string {
+  const rounded = Number.isInteger(qty) ? qty : parseFloat(qty.toFixed(2))
+  return `${rounded} ${unit}`
+}
+
+function PriceCell({ cents }: { cents: number | null }) {
+  if (cents === null) return <span className="text-stone-300">—</span>
+  return <span>{formatCurrency(cents)}</span>
+}
+
+function BudgetBar({
+  averageCents,
+  ceilingCents,
+  quotedCents,
+}: {
+  averageCents: number
+  ceilingCents: number | null
+  quotedCents: number | null
+}) {
+  if (!ceilingCents || !quotedCents) return null
+
+  const pct = Math.round((averageCents / ceilingCents) * 100)
+  const overBudget = averageCents > ceilingCents
+  const barColor = overBudget ? 'bg-red-500' : pct > 85 ? 'bg-amber-400' : 'bg-emerald-500'
+
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-sm">
+        <span className="text-stone-600">
+          Estimated vs budget ({formatCurrency(ceilingCents)} food cost ceiling)
+        </span>
+        <span className={`font-semibold ${overBudget ? 'text-red-600' : 'text-emerald-700'}`}>
+          {pct}% of budget
+          {overBudget && ' — over by ' + formatCurrency(averageCents - ceilingCents)}
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-stone-200 overflow-hidden">
+        <div
+          className={`h-full rounded-full ${barColor} transition-all`}
+          style={{ width: `${Math.min(pct, 100)}%` }}
+        />
+      </div>
+      <p className="text-xs text-stone-400">
+        Quoted: {formatCurrency(quotedCents)} total revenue
+      </p>
+    </div>
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: Props) {
+  const [quote, setQuote] = useState<GroceryQuoteResult | null>(initialQuote)
+  const [isPending, startTransition] = useTransition()
+  const [saved, setSaved] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  function handleRunQuote() {
+    setError(null)
+    setSaved(false)
+    startTransition(async () => {
+      try {
+        const result = await runGroceryPriceQuote(eventId)
+        if (!result) {
+          setError(
+            'No ingredients found. Make sure this event has a menu with recipes linked.'
+          )
+          return
+        }
+        setQuote(result)
+      } catch {
+        setError('Something went wrong fetching prices. Please try again.')
+      }
+    })
+  }
+
+  function handleSaveToRecipeBible() {
+    if (!quote) return
+    setSaved(false)
+    startTransition(async () => {
+      const updates = quote.items
+        .filter((item) => item.averageCents !== null && item.quantity > 0)
+        .map((item) => ({
+          ingredientId: item.ingredientId,
+          // Store price per unit (average ÷ quantity) so it's quantity-independent
+          pricePerUnitCents: Math.round((item.averageCents ?? 0) / item.quantity),
+        }))
+
+      if (updates.length === 0) return
+
+      await bulkUpdateIngredientPrices(updates)
+      setSaved(true)
+    })
+  }
+
+  const hasQuote = !!quote
+  const mealMeConfigured = quote?.mealMeConfigured ?? false
+
+  return (
+    <div className="space-y-6">
+      {/* Run / Refresh button */}
+      <Card className="p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h2 className="text-lg font-semibold text-stone-900">
+              {hasQuote ? 'Price Quote Results' : 'Ready to Price This Event'}
+            </h2>
+            {quote?.createdAt && (
+              <p className="text-xs text-stone-400 mt-0.5">
+                {quote.isFromCache ? 'Cached' : 'Generated'}{' '}
+                {format(new Date(quote.createdAt), "MMM d 'at' h:mm a")}
+                {' '}· {quote.ingredientCount} ingredients
+              </p>
+            )}
+            {!hasQuote && (
+              <p className="text-sm text-stone-500 mt-1">
+                Queries Spoonacular, Kroger
+                {mealMeConfigured ? ', and MealMe (your local stores)' : ', and MealMe when configured'} for real grocery prices.
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {hasQuote && (
+              <Button
+                variant="ghost"
+                onClick={handleRunQuote}
+                disabled={isPending}
+              >
+                {isPending ? 'Refreshing...' : 'Refresh Prices'}
+              </Button>
+            )}
+            {!hasQuote && (
+              <Button onClick={handleRunQuote} disabled={isPending}>
+                {isPending ? 'Fetching prices...' : 'Get Grocery Quote'}
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {error && (
+          <div className="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {isPending && (
+          <div className="mt-6 space-y-2">
+            <div className="h-4 bg-stone-100 rounded animate-pulse" />
+            <div className="h-4 bg-stone-100 rounded animate-pulse w-4/5" />
+            <div className="h-4 bg-stone-100 rounded animate-pulse w-3/5" />
+            <p className="text-xs text-stone-400 mt-3">
+              Checking Spoonacular + Kroger for each ingredient — this may take 10–30s...
+            </p>
+          </div>
+        )}
+      </Card>
+
+      {/* Price comparison table */}
+      {quote && !isPending && (
+        <>
+          {/* MealMe setup callout — shown until MEALME_API_KEY is configured */}
+          {!mealMeConfigured && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+              <p className="text-sm font-medium text-emerald-900">
+                Add MealMe to see prices from your actual stores
+              </p>
+              <p className="text-sm text-emerald-700 mt-1">
+                MealMe covers Market Basket, Hannaford, Shaw&apos;s, Stop &amp; Shop, Whole Foods,
+                Walmart, and 1M+ more stores — all with real-time shelf prices.
+                Contact{' '}
+                <a
+                  href="https://www.mealme.ai"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline font-medium"
+                >
+                  mealme.ai
+                </a>{' '}
+                to get an API key, then add <code className="font-mono text-xs bg-emerald-100 px-1 rounded">MEALME_API_KEY</code> to your environment.
+              </p>
+            </div>
+          )}
+
+          <Card className="p-6">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-stone-200">
+                    <th className="text-left py-2 pr-4 font-medium text-stone-600">
+                      Ingredient
+                    </th>
+                    <th className="text-left py-2 pr-4 font-medium text-stone-600 whitespace-nowrap">
+                      Qty
+                    </th>
+                    <th className="text-right py-2 pr-4 font-medium text-stone-500 whitespace-nowrap">
+                      Spoonacular
+                    </th>
+                    <th className="text-right py-2 pr-4 font-medium text-stone-500 whitespace-nowrap">
+                      Kroger
+                    </th>
+                    <th className={`text-right py-2 pr-4 font-medium whitespace-nowrap ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-300'}`}>
+                      Local Stores
+                      {!mealMeConfigured && <span className="block text-xs font-normal">(MealMe)</span>}
+                    </th>
+                    <th className="text-right py-2 font-medium text-stone-900 whitespace-nowrap">
+                      Avg Estimate
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {quote.items.map((item, i) => (
+                    <tr
+                      key={`${item.ingredientId}-${i}`}
+                      className="border-b border-stone-100 last:border-0"
+                    >
+                      <td className="py-2 pr-4 text-stone-900">
+                        {item.ingredientName}
+                        {item.isOptional && (
+                          <span className="ml-1.5 text-xs text-stone-400">(optional)</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-4 text-stone-500 whitespace-nowrap">
+                        {formatQty(item.quantity, item.unit)}
+                      </td>
+                      <td className="py-2 pr-4 text-right text-stone-500">
+                        <PriceCell cents={item.spoonacularCents} />
+                      </td>
+                      <td className="py-2 pr-4 text-right text-stone-500">
+                        <PriceCell cents={item.krogerCents} />
+                      </td>
+                      <td className={`py-2 pr-4 text-right ${mealMeConfigured ? 'text-emerald-700 font-medium' : 'text-stone-300'}`}>
+                        {mealMeConfigured
+                          ? <PriceCell cents={item.mealMeCents} />
+                          : <span className="text-xs">—</span>}
+                      </td>
+                      <td className="py-2 text-right font-medium text-stone-900">
+                        <PriceCell cents={item.averageCents} />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-stone-300">
+                    <td colSpan={2} className="py-3 font-semibold text-stone-900">
+                      Total Estimate
+                    </td>
+                    <td className="py-3 text-right text-stone-500">
+                      <PriceCell cents={quote.spoonacularTotalCents} />
+                    </td>
+                    <td className="py-3 text-right text-stone-500">
+                      <PriceCell cents={quote.krogerTotalCents} />
+                    </td>
+                    <td className={`py-3 text-right ${mealMeConfigured ? 'font-semibold text-emerald-700' : 'text-stone-300'}`}>
+                      {mealMeConfigured
+                        ? <PriceCell cents={quote.mealMeTotalCents} />
+                        : <span className="text-xs">—</span>}
+                    </td>
+                    <td className="py-3 text-right font-bold text-lg text-stone-900">
+                      {formatCurrency(quote.averageTotalCents)}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            {/* Source legend */}
+            <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-400 border-t border-stone-100 pt-4">
+              <span>
+                <span className="font-medium text-stone-600">Spoonacular</span> — US average
+                supermarket price for quantity requested
+              </span>
+              <span>
+                <span className="font-medium text-stone-600">Kroger</span> — real shelf price of
+                closest matching product
+              </span>
+              <span>
+                <span className={`font-medium ${mealMeConfigured ? 'text-emerald-700' : 'text-stone-400'}`}>
+                  Local Stores (MealMe)
+                </span>{' '}
+                {mealMeConfigured
+                  ? '— real-time prices from your nearest stores (Market Basket, Hannaford, Shaw\'s, Stop & Shop, Whole Foods, Walmart, +1M more)'
+                  : '— not configured. Add MEALME_API_KEY to see prices from your actual NE stores.'}
+              </span>
+              <span>
+                <span className="font-medium text-stone-600">Avg Estimate</span> — average of
+                available sources (falls back to Recipe Bible if no API data)
+              </span>
+            </div>
+          </Card>
+
+          {/* Budget check */}
+          {(quote.budgetCeilingCents || quote.quotedPriceCents) && (
+            <Card className="p-6">
+              <h3 className="text-sm font-semibold text-stone-700 mb-3">Budget Check</h3>
+              <BudgetBar
+                averageCents={quote.averageTotalCents}
+                ceilingCents={quote.budgetCeilingCents}
+                quotedCents={quote.quotedPriceCents}
+              />
+            </Card>
+          )}
+
+          {/* Actions */}
+          <Card className="p-6">
+            <h3 className="text-sm font-semibold text-stone-700 mb-4">Actions</h3>
+            <div className="flex flex-wrap gap-3">
+              {/* Instacart */}
+              {quote.instacartLink ? (
+                <a
+                  href={quote.instacartLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button>
+                    Open in Instacart →
+                  </Button>
+                </a>
+              ) : (
+                <div className="rounded-md border border-stone-200 px-4 py-2.5 text-sm text-stone-500 bg-stone-50">
+                  Instacart link unavailable — add INSTACART_API_KEY to enable
+                </div>
+              )}
+
+              {/* Save to Recipe Bible */}
+              <Button
+                variant="secondary"
+                onClick={handleSaveToRecipeBible}
+                disabled={isPending || saved}
+              >
+                {saved
+                  ? 'Saved to Recipe Bible'
+                  : isPending
+                  ? 'Saving...'
+                  : 'Save Prices to Recipe Bible'}
+              </Button>
+            </div>
+
+            {saved && (
+              <p className="mt-3 text-sm text-emerald-700">
+                Average prices saved. Future grocery list projections will use these updated
+                prices.
+              </p>
+            )}
+
+            <p className="mt-4 text-xs text-stone-400">
+              "Save to Recipe Bible" updates the <em>last_price_cents</em> field on each
+              ingredient, improving future food cost projections. The chef should verify the
+              price is reasonable before saving.
+            </p>
+          </Card>
+        </>
+      )}
+    </div>
+  )
+}

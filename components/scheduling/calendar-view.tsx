@@ -186,8 +186,11 @@ export function CalendarView({ initialEvents, palettes }: { initialEvents: Calen
       return
     }
 
-    setRescheduleToast('Event rescheduled')
-    setTimeout(() => setRescheduleToast(null), 2000)
+    const toastMsg = result.clearedPrepBlocks && result.clearedPrepBlocks > 0
+      ? `Event rescheduled — ${result.clearedPrepBlocks} prep block${result.clearedPrepBlocks === 1 ? '' : 's'} cleared`
+      : 'Event rescheduled'
+    setRescheduleToast(toastMsg)
+    setTimeout(() => setRescheduleToast(null), 3500)
 
     // Refresh events
     const api = calendarRef.current?.getApi()

@@ -18,6 +18,8 @@ const LogUnusedSchema = z.object({
   reason: UnusedReasonEnum,
   estimated_cost_cents: z.number().int().nullable().optional(),
   notes: z.string().nullable().optional(),
+  storage_location: z.string().nullable().optional(),
+  use_by_date: z.string().nullable().optional(), // ISO date string YYYY-MM-DD
 })
 
 export type LogUnusedInput = z.infer<typeof LogUnusedSchema>
@@ -130,4 +132,26 @@ export async function transferUnusedToEvent(unusedId: string, targetEventId: str
   revalidatePath(`/events/${data.event_id}`)
   revalidatePath(`/events/${targetEventId}`)
   return { success: true, item: data }
+}
+
+/**
+ * Mark a carry-forward ingredient as expired / no longer usable
+ */
+export async function markIngredientExpired(id: string, eventId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await (supabase as any)
+    .from('unused_ingredients')
+    .update({ expired: true })
+    .eq('id', id)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[markIngredientExpired] Error:', error)
+    throw new Error('Failed to mark ingredient as expired')
+  }
+
+  revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }

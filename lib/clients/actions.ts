@@ -505,6 +505,57 @@ export async function updateClientHousehold(formData: FormData) {
 }
 
 /**
+ * Get dormancy status for a client (days since last event, isDormant flag).
+ */
+export async function getClientDormancyInfo(clientId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await supabase
+    .from('client_financial_summary')
+    .select('last_event_date, days_since_last_event, is_dormant')
+    .eq('client_id', clientId)
+    .single()
+
+  if (!data) return null
+
+  return {
+    lastEventDate: data.last_event_date as string | null,
+    daysSinceLastEvent: data.days_since_last_event as number | null,
+    isDormant: data.is_dormant as boolean | null,
+  }
+}
+
+/**
+ * Update a client's lifecycle status.
+ * Valid statuses: active, dormant, repeat_ready, vip
+ */
+export async function updateClientStatus(clientId: string, status: string) {
+  const user = await requireChef()
+
+  const validStatuses = ['active', 'dormant', 'repeat_ready', 'vip']
+  if (!validStatuses.includes(status)) {
+    throw new Error(`Invalid status: ${status}`)
+  }
+
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('clients')
+    .update({ status } as any)
+    .eq('id', clientId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[updateClientStatus] Error:', error)
+    throw new Error('Failed to update client status')
+  }
+
+  revalidatePath(`/clients/${clientId}`)
+  return { success: true }
+}
+
+/**
  * Get comprehensive financial detail for a single client.
  * Returns per-event breakdown (quoted, paid, outstanding, payment status),
  * all ledger entries for the client, and summary totals.

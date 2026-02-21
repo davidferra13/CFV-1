@@ -7,7 +7,7 @@ try {
     dest: 'public',
     register: true,
     skipWaiting: true,
-    disable: true, // Temporarily disabled — PWA plugin interferes with App Router RSC manifest on Windows
+    disable: process.env.NODE_ENV === 'development',
   })
 } catch {
   // @ducanh2912/next-pwa not installed — PWA disabled for this build.
@@ -79,6 +79,7 @@ const nextConfig = {
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com",
+              "worker-src 'self'",
               "frame-src https://js.stripe.com",
               "frame-ancestors 'none'",
               "object-src 'none'",

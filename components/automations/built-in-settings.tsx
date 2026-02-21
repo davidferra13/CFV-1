@@ -32,6 +32,12 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
   const [quoteExpiryEnabled, setQuoteExpiryEnabled] = useState(settings.quote_auto_expiry_enabled)
   const [clientRemindersEnabled, setClientRemindersEnabled] = useState(settings.client_event_reminders_enabled)
   const [timeTrackingEnabled, setTimeTrackingEnabled] = useState(settings.time_tracking_reminders_enabled)
+  const [receiptUploadEnabled, setReceiptUploadEnabled] = useState(settings.receipt_upload_reminders_enabled ?? true)
+  const [closureDeadlineEnabled, setClosureDeadlineEnabled] = useState(settings.closure_deadline_alerts_enabled ?? true)
+  const [closureDeadlineDays, setClosureDeadlineDays] = useState(settings.closure_deadline_days ?? 3)
+  const [weeklySummaryEnabled, setWeeklySummaryEnabled] = useState(settings.weekly_summary_enabled ?? false)
+  const [autoResponseEnabled, setAutoResponseEnabled] = useState(settings.auto_response_template_enabled ?? false)
+  const [autoResponseTemplate, setAutoResponseTemplate] = useState(settings.inquiry_auto_response_template ?? '')
 
   const handleSave = () => {
     setError(null)
@@ -50,6 +56,12 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
           quote_auto_expiry_enabled: quoteExpiryEnabled,
           client_event_reminders_enabled: clientRemindersEnabled,
           time_tracking_reminders_enabled: timeTrackingEnabled,
+          receipt_upload_reminders_enabled: receiptUploadEnabled,
+          closure_deadline_alerts_enabled: closureDeadlineEnabled,
+          closure_deadline_days: closureDeadlineDays,
+          weekly_summary_enabled: weeklySummaryEnabled,
+          auto_response_template_enabled: autoResponseEnabled,
+          inquiry_auto_response_template: autoResponseTemplate || null,
         })
         setSaved(true)
         router.refresh()
@@ -188,6 +200,67 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
           title="Time-Tracking Reminders"
           description="Nudges you to log hours when a timer has been running a long time or an event is done."
         />
+
+        {/* Receipt Upload Reminders */}
+        <SettingRow
+          enabled={receiptUploadEnabled}
+          onToggle={setReceiptUploadEnabled}
+          title="Receipt Upload Reminders"
+          description="Alerts you when a completed or in-progress event has no receipts uploaded within 24 hours."
+        />
+
+        {/* Closure Deadline Alerts */}
+        <SettingRow
+          enabled={closureDeadlineEnabled}
+          onToggle={setClosureDeadlineEnabled}
+          title="Closure Deadline Alerts"
+          description="Reminds you to close out an event when it hasn't been filed within your chosen window."
+        >
+          {closureDeadlineEnabled && (
+            <InlineParam label="Alert after">
+              <NumberInput
+                value={closureDeadlineDays}
+                onChange={setClosureDeadlineDays}
+                min={1}
+                max={30}
+                suffix="days after completion"
+              />
+            </InlineParam>
+          )}
+        </SettingRow>
+
+        {/* Weekly Summary */}
+        <SettingRow
+          enabled={weeklySummaryEnabled}
+          onToggle={setWeeklySummaryEnabled}
+          title="Weekly Summary"
+          description="Sends a digest every Monday with upcoming events, pending follow-ups, and key financial stats."
+        />
+
+        {/* Inquiry Auto-Responder Template */}
+        <SettingRow
+          enabled={autoResponseEnabled}
+          onToggle={setAutoResponseEnabled}
+          title="Inquiry Auto-Responder"
+          description="Pre-fills your first reply when you open a new inquiry. You always review before sending."
+        >
+          {autoResponseEnabled && (
+            <div className="mt-2">
+              <label className="text-[11px] text-stone-500 mb-1 block">
+                Template message (use [Name], [Date], [Occasion] as placeholders)
+              </label>
+              <textarea
+                value={autoResponseTemplate}
+                onChange={e => setAutoResponseTemplate(e.target.value)}
+                rows={4}
+                placeholder={`Hi [Name],\n\nThanks for reaching out! I'd love to learn more about your [Occasion]...`}
+                className="w-full text-xs border border-stone-300 rounded-md px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+                maxLength={2000}
+              />
+              <p className="text-[10px] text-stone-400 mt-1">{autoResponseTemplate.length}/2000 chars</p>
+            </div>
+          )}
+        </SettingRow>
 
       </CardContent>
     </Card>

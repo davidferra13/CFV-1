@@ -61,15 +61,21 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   ].filter(Boolean)
   const sourceMessage = sourceParts.join('\n')
 
-  // 1. Resolve chef slug → tenant_id
-  const { data: chef, error: chefError } = await (supabase as any)
+  // 1. Resolve chef slug → tenant_id (prefer slug; fallback to hardcoded email)
+  let chefQuery = (supabase as any)
     .from('chefs')
     .select('id, business_name')
-    .ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
-    .single()
+
+  if (validated.chef_slug) {
+    chefQuery = chefQuery.eq('booking_slug', validated.chef_slug)
+  } else {
+    chefQuery = chefQuery.ilike('email', DEFAULT_BOOKING_CHEF_EMAIL)
+  }
+
+  const { data: chef, error: chefError } = await chefQuery.single()
 
   if (chefError || !chef) {
-    throw new Error('Default chef account not found')
+    throw new Error('Chef not found')
   }
 
   const tenantId = chef.id as string

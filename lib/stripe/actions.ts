@@ -79,20 +79,44 @@ export async function createPaymentIntent(eventId: string) {
 
   const stripe = getStripe()
 
-  // Create PaymentIntent with metadata for webhook processing
-  const paymentIntent = await stripe.paymentIntents.create({
+  // Fetch chef's Stripe Connect config for transfer routing
+  const { getChefStripeConfig, computeApplicationFee } = await import('@/lib/stripe/transfer-routing')
+  const chefConfig = await getChefStripeConfig(event.tenant_id)
+
+  // Build PaymentIntent params
+  const createParams: Stripe.PaymentIntentCreateParams = {
     amount: amountCents,
     currency: 'usd',
     metadata: {
       event_id: eventId,
       tenant_id: event.tenant_id,
       client_id: user.entityId!,
-      payment_type: paymentType
+      payment_type: paymentType,
+      transfer_routed: chefConfig.canReceiveTransfers ? 'true' : 'false',
     },
     automatic_payment_methods: {
       enabled: true
     }
-  })
+  }
+
+  // Route to chef's connected Stripe account if ready
+  if (chefConfig.canReceiveTransfers && chefConfig.stripeAccountId) {
+    createParams.transfer_data = {
+      destination: chefConfig.stripeAccountId,
+    }
+
+    const applicationFee = computeApplicationFee(
+      amountCents,
+      chefConfig.platformFeePercent,
+      chefConfig.platformFeeFixedCents
+    )
+    if (applicationFee > 0) {
+      createParams.application_fee_amount = applicationFee
+    }
+  }
+
+  // Create PaymentIntent with metadata for webhook processing
+  const paymentIntent = await stripe.paymentIntents.create(createParams)
 
   return {
     clientSecret: paymentIntent.client_secret,

@@ -76,14 +76,29 @@ export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
 })
 
 /**
- * Require chef role - throws if not chef
- * Use in chef portal pages and server actions
+ * Require chef role - throws if not chef or if account is suspended.
+ * Use in chef portal pages and server actions.
  */
 export async function requireChef(): Promise<AuthUser> {
   const user = await getCurrentUser()
 
   if (!user || user.role !== 'chef') {
     throw new Error('Unauthorized: Chef access required')
+  }
+
+  // Check suspension status — additive column added by migration 20260307000004
+  // account_status defaults to 'active'; only present after that migration is applied.
+  if (user.entityId) {
+    const supabase = createServerClient()
+    const { data: chef } = await supabase
+      .from('chefs')
+      .select('account_status')
+      .eq('id', user.entityId)
+      .single()
+
+    if ((chef as any)?.account_status === 'suspended') {
+      throw new Error('Account suspended: Contact support.')
+    }
   }
 
   return user

@@ -24,8 +24,8 @@ const adminPaths = ['/admin']
  */
 function redirectWithCookies(url: URL, sourceResponse: NextResponse): NextResponse {
   const redirectResponse = NextResponse.redirect(url)
-  sourceResponse.cookies.getAll().forEach((cookie) => {
-    redirectResponse.cookies.set(cookie.name, cookie.value)
+  sourceResponse.cookies.getAll().forEach(({ name, value, ...options }) => {
+    redirectResponse.cookies.set(name, value, options)
   })
   return redirectResponse
 }

@@ -95,6 +95,77 @@ export async function deleteMenuModification(id: string, eventId: string) {
   return { success: true }
 }
 
+// ─── Photo proof upload ───────────────────────────────────────────────────────
+
+const MOD_PHOTO_BUCKET = 'event-photos'
+const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
+const MIME_TO_EXT: Record<string, string> = {
+  'image/jpeg': 'jpg', 'image/png': 'png',
+  'image/heic': 'heic', 'image/heif': 'heif', 'image/webp': 'webp',
+}
+const MAX_PHOTO_SIZE = 10 * 1024 * 1024
+
+export type ModificationPhotoResult =
+  | { success: true; signedUrl: string }
+  | { success: false; error: string }
+
+/**
+ * Upload a proof photo for a menu modification record.
+ * Stores in event-photos bucket under a mods/ prefix.
+ * formData key: 'photo' (File)
+ */
+export async function uploadModificationPhoto(
+  modId: string,
+  eventId: string,
+  formData: FormData
+): Promise<ModificationPhotoResult> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Verify modification belongs to this chef
+  const { data: mod } = await (supabase as any)
+    .from('menu_modifications')
+    .select('id')
+    .eq('id', modId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!mod) return { success: false, error: 'Modification not found' }
+
+  const file = formData.get('photo') as File | null
+  if (!file || file.size === 0) return { success: false, error: 'No file provided' }
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) return { success: false, error: 'Invalid file type.' }
+  if (file.size > MAX_PHOTO_SIZE) return { success: false, error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max 10 MB.` }
+
+  const ext = MIME_TO_EXT[file.type] ?? 'jpg'
+  const storagePath = `${user.tenantId}/${eventId}/mods/${modId}.${ext}`
+
+  const { error: uploadError } = await supabase.storage
+    .from(MOD_PHOTO_BUCKET)
+    .upload(storagePath, file, { contentType: file.type, upsert: true })
+
+  if (uploadError) {
+    return { success: false, error: `Upload failed: ${uploadError.message}` }
+  }
+
+  // Get a 1-hour signed URL to return immediately for display
+  const { data: signedData } = await supabase.storage
+    .from(MOD_PHOTO_BUCKET)
+    .createSignedUrl(storagePath, 3600)
+
+  const signedUrl = signedData?.signedUrl ?? ''
+
+  // Store the storage path (not the signed URL) so it can be re-signed later
+  await (supabase as any)
+    .from('menu_modifications')
+    .update({ photo_url: storagePath })
+    .eq('id', modId)
+    .eq('tenant_id', user.tenantId!)
+
+  revalidatePath(`/events/${eventId}`)
+  return { success: true, signedUrl }
+}
+
 /**
  * Get modification stats across all events
  * Reveals patterns: most common reasons, most substituted items

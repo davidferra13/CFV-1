@@ -2,8 +2,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { format } from 'date-fns'
-import { Calendar, Users, Tag } from 'lucide-react'
+import { differenceInDays, format } from 'date-fns'
+import { Calendar, Users, Tag, Clock, DollarSign } from 'lucide-react'
 
 export interface KanbanCardInquiry {
   id: string
@@ -12,6 +12,8 @@ export interface KanbanCardInquiry {
   occasion?: string
   event_date?: string
   guest_count?: number
+  budget_cents?: number
+  updated_at?: string
   created_at: string
 }
 
@@ -43,16 +45,45 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
     ? format(new Date(inquiry.event_date), 'MMM d, yyyy')
     : null
 
+  // Stuck indicator: days since last update
+  const daysSinceUpdate = inquiry.updated_at
+    ? differenceInDays(new Date(), new Date(inquiry.updated_at))
+    : null
+  const isStuck = daysSinceUpdate !== null && daysSinceUpdate >= 7
+  const isSlowing = daysSinceUpdate !== null && daysSinceUpdate >= 4 && daysSinceUpdate < 7
+
+  const stuckClass = isStuck
+    ? 'bg-red-50'
+    : isSlowing
+    ? 'bg-amber-50'
+    : 'bg-white'
+
+  const budgetFormatted = inquiry.budget_cents
+    ? `$${(inquiry.budget_cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+    : null
+
   return (
     <button
       type="button"
       onClick={() => router.push(`/inquiries/${inquiry.id}`)}
-      className={`w-full text-left bg-white rounded-lg border border-stone-200 border-l-4 ${borderClass} shadow-sm hover:shadow-md hover:border-stone-300 transition-all duration-150 p-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
+      className={`w-full text-left ${stuckClass} rounded-lg border border-stone-200 border-l-4 ${borderClass} shadow-sm hover:shadow-md hover:border-stone-300 transition-all duration-150 p-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
     >
-      {/* Client name */}
-      <p className="font-semibold text-stone-900 text-sm leading-snug truncate">
-        {inquiry.client_name || 'Unknown Lead'}
-      </p>
+      {/* Client name + stuck badge */}
+      <div className="flex items-start justify-between gap-1">
+        <p className="font-semibold text-stone-900 text-sm leading-snug truncate flex-1">
+          {inquiry.client_name || 'Unknown Lead'}
+        </p>
+        {isStuck && (
+          <span className="shrink-0 text-[10px] font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded">
+            {daysSinceUpdate}d
+          </span>
+        )}
+        {isSlowing && !isStuck && (
+          <span className="shrink-0 text-[10px] font-medium text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+            {daysSinceUpdate}d
+          </span>
+        )}
+      </div>
 
       {/* Occasion */}
       {inquiry.occasion && (
@@ -70,11 +101,27 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
         </div>
       )}
 
-      {/* Guest count */}
-      {inquiry.guest_count != null && (
-        <div className="flex items-center gap-1 mt-1 text-xs text-stone-500">
-          <Users className="h-3 w-3 shrink-0" />
-          <span>{inquiry.guest_count} guests</span>
+      {/* Bottom row: guest count + budget */}
+      <div className="flex items-center justify-between mt-1 gap-2">
+        {inquiry.guest_count != null ? (
+          <div className="flex items-center gap-1 text-xs text-stone-500">
+            <Users className="h-3 w-3 shrink-0" />
+            <span>{inquiry.guest_count} guests</span>
+          </div>
+        ) : <span />}
+        {budgetFormatted && (
+          <div className="flex items-center gap-0.5 text-xs font-medium text-emerald-700">
+            <DollarSign className="h-3 w-3 shrink-0" />
+            <span>{budgetFormatted.replace('$', '')}</span>
+          </div>
+        )}
+      </div>
+
+      {/* Stuck label for severely overdue */}
+      {isStuck && daysSinceUpdate !== null && daysSinceUpdate >= 14 && (
+        <div className="flex items-center gap-1 mt-1.5 text-xs text-red-600">
+          <Clock className="h-3 w-3 shrink-0" />
+          <span>Stuck — no movement in {daysSinceUpdate} days</span>
         </div>
       )}
     </button>

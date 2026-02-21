@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { markCarPacked, resetPackingStatus } from '@/lib/packing/actions'
+import { markCarPacked, resetPackingStatus, togglePackingConfirmation } from '@/lib/packing/actions'
 import type { PackingListData } from '@/lib/documents/generate-packing-list'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -222,15 +222,18 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
 
   const toggle = useCallback((id: string) => {
     setChecked(prev => {
-      const next = { ...prev, [id]: !prev[id] }
+      const newValue = !prev[id]
+      const next = { ...prev, [id]: newValue }
       try {
         localStorage.setItem(storageKey, JSON.stringify(next))
       } catch {
         // ignore
       }
+      // Sync to DB in background — fire-and-forget, localStorage is source of truth
+      togglePackingConfirmation(eventId, id, newValue).catch(() => {})
       return next
     })
-  }, [storageKey])
+  }, [storageKey, eventId])
 
   const handleMarkPacked = async () => {
     setIsSubmitting(true)

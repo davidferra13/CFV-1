@@ -387,11 +387,8 @@ export async function getSystemHealthStats(): Promise<SystemHealthStats> {
   }
 }
 
-// New tables not yet in generated types — use any to bypass strict table check
-type AnyClient = any
-
 export async function getPlatformAuditLog(limit = 100): Promise<Record<string, unknown>[]> {
-  const supabase: AnyClient = createAdminClient()
+  const supabase = createAdminClient()
 
   const { data } = await supabase
     .from('admin_audit_log')
@@ -403,7 +400,7 @@ export async function getPlatformAuditLog(limit = 100): Promise<Record<string, u
 }
 
 export async function getChefFeatureFlags(chefId: string): Promise<Record<string, boolean>> {
-  const supabase: AnyClient = createAdminClient()
+  const supabase = createAdminClient()
 
   const { data } = await supabase
     .from('chef_feature_flags')
@@ -411,7 +408,7 @@ export async function getChefFeatureFlags(chefId: string): Promise<Record<string
     .eq('chef_id', chefId)
 
   return Object.fromEntries(
-    ((data ?? []) as { flag_name: string; enabled: boolean }[]).map((f) => [f.flag_name, f.enabled])
+    (data ?? []).map((f) => [f.flag_name, f.enabled])
   )
 }
 
@@ -420,15 +417,14 @@ export async function getAllChefFlags(): Promise<{
   flagsByChef: Record<string, Record<string, boolean>>
 }> {
   const supabase = createAdminClient()
-  const supabaseAny: AnyClient = supabase
 
   const [chefsResult, flagsResult] = await Promise.all([
     supabase.from('chefs').select('id, business_name').order('business_name'),
-    supabaseAny.from('chef_feature_flags').select('chef_id, flag_name, enabled'),
+    supabase.from('chef_feature_flags').select('chef_id, flag_name, enabled'),
   ])
 
   const flagsByChef: Record<string, Record<string, boolean>> = {}
-  const flags = (flagsResult.data ?? []) as { chef_id: string; flag_name: string; enabled: boolean }[]
+  const flags = flagsResult.data ?? []
   flags.forEach((f) => {
     if (!flagsByChef[f.chef_id]) flagsByChef[f.chef_id] = {}
     flagsByChef[f.chef_id][f.flag_name] = f.enabled

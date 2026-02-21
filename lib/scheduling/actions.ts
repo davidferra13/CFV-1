@@ -323,7 +323,7 @@ export async function rescheduleEvent(
   eventId: string,
   newDate: string,
   newServeTime?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; clearedPrepBlocks?: number }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -360,10 +360,31 @@ export async function rescheduleEvent(
     return { success: false, error: 'Failed to reschedule event' }
   }
 
+  // Clear orphaned system-generated prep blocks from the old date
+  let clearedPrepBlocks = 0
+  try {
+    const { data: oldBlocks } = await (supabase as any)
+      .from('event_prep_blocks')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('chef_id', user.tenantId!)
+      .eq('is_system_generated', true)
+
+    if (oldBlocks && oldBlocks.length > 0) {
+      await (supabase as any)
+        .from('event_prep_blocks')
+        .delete()
+        .in('id', oldBlocks.map((b: any) => b.id))
+      clearedPrepBlocks = oldBlocks.length
+    }
+  } catch (prepErr) {
+    console.error('[rescheduleEvent] Prep block cleanup failed (non-blocking):', prepErr)
+  }
+
   revalidatePath('/schedule')
   revalidatePath('/events')
   revalidatePath(`/events/${eventId}`)
-  return { success: true }
+  return { success: true, clearedPrepBlocks }
 }
 
 // ============================================

@@ -8,6 +8,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getInquiries } from '@/lib/inquiries/actions'
 import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
+import { scoreInquiry, type LeadScore } from '@/lib/leads/scoring'
+import { LeadScoreBadge } from '@/components/inquiries/lead-score-badge'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
 import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
@@ -48,10 +50,27 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
     inquiries = inquiries.filter(i => i.status === filter)
   }
 
-  // Build score lookup map
+  // Build booking score lookup map
   const scoreMap = new Map<string, BookingScore>()
   for (const score of bookingScores) {
     scoreMap.set(score.inquiryId, score)
+  }
+
+  // Compute lead scores for open inquiries (pure computation, no DB call)
+  const leadScoreMap = new Map<string, LeadScore>()
+  for (const inquiry of allInquiries) {
+    if (OPEN_STATUSES.has(inquiry.status)) {
+      const ls = await scoreInquiry({
+        id: inquiry.id,
+        confirmed_budget_cents: inquiry.confirmed_budget_cents,
+        confirmed_guest_count: inquiry.confirmed_guest_count,
+        confirmed_date: inquiry.confirmed_date,
+        channel: inquiry.channel,
+        client_id: inquiry.client_id,
+        created_at: inquiry.created_at,
+      })
+      leadScoreMap.set(inquiry.id, ls)
+    }
   }
 
   if (inquiries.length === 0) {
@@ -80,6 +99,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
         const name = getDisplayName(inquiry)
         const isNew = inquiry.status === 'new'
         const score = OPEN_STATUSES.has(inquiry.status) ? scoreMap.get(inquiry.id) : undefined
+        const leadScore = OPEN_STATUSES.has(inquiry.status) ? leadScoreMap.get(inquiry.id) : undefined
 
         return (
           <Link
@@ -98,6 +118,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
                   {score && <BookingScoreBadge score={score} />}
+                  {leadScore && <LeadScoreBadge score={leadScore} />}
                 </div>
                 {inquiry.confirmed_occasion && (
                   <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
@@ -157,6 +178,8 @@ export default async function InquiriesPage({
     occasion: inquiry.confirmed_occasion ?? undefined,
     event_date: inquiry.confirmed_date ?? undefined,
     guest_count: inquiry.confirmed_guest_count ?? undefined,
+    budget_cents: inquiry.confirmed_budget_cents ?? undefined,
+    updated_at: inquiry.updated_at,
     created_at: inquiry.created_at,
   }))
 

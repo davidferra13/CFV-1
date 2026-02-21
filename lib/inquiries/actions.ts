@@ -631,3 +631,94 @@ export async function deleteInquiry(id: string) {
   revalidatePath('/inquiries')
   return { success: true }
 }
+
+// ============================================
+// 9. DECLINE WITH REASON
+// ============================================
+
+// COMMON_DECLINE_REASONS moved to lib/inquiries/constants.ts
+// to avoid exporting a non-async value from a 'use server' file.
+
+/**
+ * Decline an inquiry and record the reason.
+ * Combines the status transition + reason capture in one action.
+ */
+export async function declineInquiry(id: string, reason?: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: inquiry } = await supabase
+    .from('inquiries')
+    .select('status')
+    .eq('id', id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!inquiry) throw new Error('Inquiry not found')
+
+  const currentStatus = inquiry.status as InquiryStatus
+  const allowed = VALID_TRANSITIONS[currentStatus]
+  if (!allowed || !allowed.includes('declined')) {
+    throw new Error(`Cannot decline from status "${currentStatus}"`)
+  }
+
+  const { error } = await supabase
+    .from('inquiries')
+    .update({
+      status: 'declined',
+      decline_reason: reason ?? null,
+    })
+    .eq('id', id)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[declineInquiry] Error:', error)
+    throw new Error('Failed to decline inquiry')
+  }
+
+  revalidatePath('/inquiries')
+  revalidatePath(`/inquiries/${id}`)
+
+  // Fire automations (non-blocking)
+  try {
+    const { evaluateAutomations } = await import('@/lib/automations/engine')
+    await evaluateAutomations(user.tenantId!, 'inquiry_status_changed', {
+      entityId: id,
+      entityType: 'inquiry',
+      fields: { status: 'declined', from_status: currentStatus, to_status: 'declined', decline_reason: reason },
+    })
+  } catch { /* non-blocking */ }
+
+  return { success: true }
+}
+
+// ============================================
+// 10. LOST REASON ANALYTICS
+// ============================================
+
+export type LostReasonStat = { reason: string; count: number }
+
+/**
+ * Returns a breakdown of decline reasons, sorted by frequency.
+ */
+export async function getLostReasonStats(): Promise<LostReasonStat[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await supabase
+    .from('inquiries')
+    .select('decline_reason')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'declined')
+    .not('decline_reason', 'is', null)
+
+  const counts = new Map<string, number>()
+  for (const row of data ?? []) {
+    const r = row.decline_reason ?? 'Unknown'
+    counts.set(r, (counts.get(r) ?? 0) + 1)
+  }
+
+  return Array.from(counts.entries())
+    .map(([reason, count]) => ({ reason, count }))
+    .sort((a, b) => b.count - a.count)
+}

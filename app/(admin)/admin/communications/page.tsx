@@ -1,6 +1,10 @@
 // Admin Communications — Platform announcements and direct email
 
 import { requireAdmin } from '@/lib/auth/admin'
+import { getAnnouncement, type AnnouncementType } from '@/lib/admin/platform-actions'
+import { AnnouncementForm } from '@/components/admin/announcement-form'
+import { DirectEmailForm } from '@/components/admin/direct-email-form'
+import { BroadcastEmailForm } from '@/components/admin/broadcast-email-form'
 import { redirect } from 'next/navigation'
 import { Megaphone, Mail, Send } from 'lucide-react'
 
@@ -9,6 +13,19 @@ export default async function AdminCommunicationsPage() {
     await requireAdmin()
   } catch {
     redirect('/unauthorized')
+  }
+
+  // Load current announcement (if any)
+  let currentText = ''
+  let currentType: AnnouncementType = 'info'
+  let announcementError: string | null = null
+
+  try {
+    const ann = await getAnnouncement()
+    currentText = ann?.text ?? ''
+    currentType = ann?.type ?? 'info'
+  } catch {
+    announcementError = 'platform_settings table not yet applied. Run the latest migrations to enable this feature.'
   }
 
   return (
@@ -25,36 +42,25 @@ export default async function AdminCommunicationsPage() {
 
       {/* Announcement Banner */}
       <div className="bg-white rounded-xl border border-slate-200 p-5">
-        <div className="flex items-center gap-2 mb-4">
+        <div className="flex items-center gap-2 mb-1">
           <Megaphone size={16} className="text-amber-500" />
           <h2 className="text-sm font-semibold text-slate-700">Platform Announcement Banner</h2>
+          {currentText && (
+            <span className="ml-auto text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+              Active
+            </span>
+          )}
         </div>
         <p className="text-sm text-slate-500 mb-4">
-          Set a message that appears at the top of every logged-in user&apos;s portal. Leave blank to clear.
+          Set a message that appears at the top of every logged-in chef&apos;s portal. Leave blank to clear.
         </p>
-        <div className="space-y-3">
-          <textarea
-            placeholder="Enter announcement text... (e.g. 'ChefFlow will be down for maintenance on Sunday 2am–4am ET')"
-            className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200 resize-none"
-            rows={3}
-            disabled
-          />
-          <div className="flex items-center gap-3">
-            <button
-              disabled
-              className="px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg opacity-50 cursor-not-allowed"
-            >
-              Set Announcement
-            </button>
-            <button
-              disabled
-              className="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg opacity-50 cursor-not-allowed"
-            >
-              Clear
-            </button>
-            <span className="text-xs text-slate-400">Coming soon — requires platform_settings table</span>
+        {announcementError ? (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-800">
+            {announcementError}
           </div>
-        </div>
+        ) : (
+          <AnnouncementForm currentText={currentText} currentType={currentType} />
+        )}
       </div>
 
       {/* Direct Email */}
@@ -66,35 +72,7 @@ export default async function AdminCommunicationsPage() {
         <p className="text-sm text-slate-500 mb-4">
           Send an email directly to any user (chef or client) on the platform.
         </p>
-        <div className="space-y-3">
-          <input
-            type="email"
-            placeholder="recipient@email.com"
-            className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
-            disabled
-          />
-          <input
-            type="text"
-            placeholder="Subject"
-            className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
-            disabled
-          />
-          <textarea
-            placeholder="Message body..."
-            className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none"
-            rows={5}
-            disabled
-          />
-          <div className="flex items-center gap-3">
-            <button
-              disabled
-              className="px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg opacity-50 cursor-not-allowed"
-            >
-              Send Email
-            </button>
-            <span className="text-xs text-slate-400">Coming soon — requires email infrastructure integration</span>
-          </div>
-        </div>
+        <DirectEmailForm />
       </div>
 
       {/* Broadcast */}
@@ -104,23 +82,9 @@ export default async function AdminCommunicationsPage() {
           <h2 className="text-sm font-semibold text-slate-700">Broadcast Email</h2>
         </div>
         <p className="text-sm text-slate-500 mb-4">
-          Send a message to all chefs, or all inactive chefs (no login in 60+ days).
+          Send a message to all chefs, or all inactive chefs (no activity in 60+ days). Emails are sent via BCC so recipients cannot see each other.
         </p>
-        <div className="flex flex-wrap gap-3">
-          <button
-            disabled
-            className="px-4 py-2 bg-purple-100 text-purple-700 text-sm font-medium rounded-lg opacity-50 cursor-not-allowed"
-          >
-            Email All Chefs
-          </button>
-          <button
-            disabled
-            className="px-4 py-2 bg-slate-100 text-slate-600 text-sm font-medium rounded-lg opacity-50 cursor-not-allowed"
-          >
-            Email Inactive Chefs (60+ days)
-          </button>
-          <span className="text-xs text-slate-400 self-center">Coming soon</span>
-        </div>
+        <BroadcastEmailForm />
       </div>
     </div>
   )

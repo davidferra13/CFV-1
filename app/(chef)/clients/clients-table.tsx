@@ -7,6 +7,8 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { Tables } from '@/types/database'
+import { ClientHealthBadge } from '@/components/clients/health-score-badge'
+import type { ClientHealthScore } from '@/lib/clients/health-score'
 
 type ClientWithStats = Tables<'clients'> & {
   totalEvents: number
@@ -15,9 +17,10 @@ type ClientWithStats = Tables<'clients'> & {
 
 interface ClientsTableProps {
   clients: ClientWithStats[]
+  healthMap?: Map<string, ClientHealthScore>
 }
 
-export function ClientsTable({ clients }: ClientsTableProps) {
+export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'created' | 'spent'>('created')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -99,6 +102,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                 <SortIcon field="name" />
               </button>
             </TableHead>
+            <TableHead>Health</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Phone</TableHead>
             <TableHead className="text-right">Total Events</TableHead>
@@ -125,7 +129,7 @@ export function ClientsTable({ clients }: ClientsTableProps) {
         <TableBody>
           {filteredAndSortedClients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={6} className="text-center text-stone-500 py-8">
+              <TableCell colSpan={7} className="text-center text-stone-500 py-8">
                 No clients found matching your search
               </TableCell>
             </TableRow>
@@ -137,6 +141,12 @@ export function ClientsTable({ clients }: ClientsTableProps) {
                 onClick={() => window.location.href = `/clients/${client.id}`}
               >
                 <TableCell className="font-medium">{client.full_name}</TableCell>
+                <TableCell>
+                  {(() => {
+                    const h = healthMap?.get(client.id)
+                    return h ? <ClientHealthBadge score={h.score} tier={h.tier} /> : null
+                  })()}
+                </TableCell>
                 <TableCell className="text-stone-600">{client.email}</TableCell>
                 <TableCell className="text-stone-600">{client.phone || '-'}</TableCell>
                 <TableCell className="text-right">{client.totalEvents}</TableCell>

@@ -159,6 +159,88 @@ export async function isDateAvailable(date: string): Promise<boolean> {
   return !data
 }
 
+export type DateConflictResult = {
+  hasManualBlock: boolean
+  existingEvents: { id: string; title: string; status: string }[]
+  isHardBlocked: boolean   // full-day manual block — strongest signal
+  warnings: string[]
+}
+
+/**
+ * Check if a proposed event date conflicts with existing blocks or events.
+ * Returns warnings (soft) or hard block signal — does NOT prevent creation.
+ * Pass excludeEventId when checking in edit mode to skip the event being edited.
+ */
+export async function checkDateConflicts(
+  date: string,
+  excludeEventId?: string
+): Promise<DateConflictResult> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Parallel: availability blocks + existing events on same date
+  const [blocksResult, eventsResult] = await Promise.all([
+    (supabase as any)
+      .from('chef_availability_blocks')
+      .select('id, block_type, reason, is_event_auto')
+      .eq('chef_id', user.tenantId!)
+      .eq('block_date', date),
+    supabase
+      .from('events')
+      .select('id, occasion, status')
+      .eq('tenant_id', user.tenantId!)
+      .eq('event_date', date)
+      .neq('status', 'cancelled'),
+  ])
+
+  const blocks: any[] = blocksResult.data ?? []
+  let events: any[] = eventsResult.data ?? []
+
+  if (excludeEventId) {
+    events = events.filter((e: any) => e.id !== excludeEventId)
+  }
+
+  const manualBlocks = blocks.filter((b: any) => !b.is_event_auto)
+  const autoBlocks   = blocks.filter((b: any) => b.is_event_auto)
+  const hasManualBlock = manualBlocks.length > 0
+  const isHardBlocked  = manualBlocks.some((b: any) => b.block_type === 'full_day')
+
+  const existingEvents = events.map((e: any) => ({
+    id:     e.id,
+    title:  e.occasion || 'Untitled event',
+    status: e.status,
+  }))
+
+  const warnings: string[] = []
+  if (hasManualBlock) {
+    const reason = manualBlocks[0]?.reason
+    warnings.push(reason ? `This date is manually blocked: "${reason}".` : 'This date has been manually blocked.')
+  }
+  if (autoBlocks.length > 0) {
+    warnings.push('A confirmed event already blocks this date.')
+  }
+  if (existingEvents.length > 0) {
+    const names = existingEvents.map(e => `"${e.title}" (${e.status})`).join(', ')
+    warnings.push(`Existing event(s) on this date: ${names}.`)
+  }
+
+  // Merge in scheduling rules validation (non-blocking if rules table doesn't exist yet)
+  try {
+    const { validateDateAgainstRules } = await import('@/lib/availability/rules-actions')
+    const rulesResult = await validateDateAgainstRules(date, excludeEventId)
+    if (rulesResult.blockers.length > 0) {
+      warnings.push(...rulesResult.blockers.map(b => `[Rule] ${b}`))
+    }
+    if (rulesResult.warnings.length > 0) {
+      warnings.push(...rulesResult.warnings.map(w => `[Rule] ${w}`))
+    }
+  } catch {
+    // Rules table may not exist yet — silently skip
+  }
+
+  return { hasManualBlock, existingEvents, isHardBlocked, warnings }
+}
+
 // ============================================
 // WAITLIST ACTIONS
 // ============================================

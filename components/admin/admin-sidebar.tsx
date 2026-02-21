@@ -17,6 +17,8 @@ import {
   Activity,
   Megaphone,
   ToggleLeft,
+  Handshake,
+  MessageSquare,
   Shield,
   LogOut,
 } from 'lucide-react'
@@ -34,6 +36,8 @@ const navItems = [
   { href: '/admin/system', label: 'System Health', icon: Activity },
   { href: '/admin/communications', label: 'Communications', icon: Megaphone },
   { href: '/admin/flags', label: 'Feature Flags', icon: ToggleLeft },
+  { href: '/admin/referral-partners', label: 'Referral Partners', icon: Handshake },
+  { href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
 ]
 
 function NavLink({ href, label, icon: Icon, exact }: { href: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }) {

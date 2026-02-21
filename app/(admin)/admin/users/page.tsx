@@ -5,6 +5,7 @@ import { getPlatformChefList, type PlatformChefRow } from '@/lib/admin/platform-
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Users, TrendingUp, AlertCircle } from 'lucide-react'
+import { ChefHealthBadge } from '@/components/admin/chef-health-badge'
 
 function formatCents(cents: number): string {
   if (cents === 0) return '$0'
@@ -84,6 +85,7 @@ export default async function AdminChefListPage() {
                   <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">GMV</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Joined</th>
                   <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Health</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -104,6 +106,18 @@ export default async function AdminChefListPage() {
                     </td>
                     <td className="px-4 py-3">
                       <ChefBadge chef={chef} />
+                    </td>
+                    <td className="px-4 py-3">
+                      <ChefHealthBadge
+                        eventCount={chef.eventCount}
+                        clientCount={chef.clientCount}
+                        gmvCents={chef.gmvCents}
+                        daysSinceSignup={Math.floor(
+                          (Date.now() - new Date(chef.created_at).getTime()) / 86400000
+                        )}
+                        hasBusinessName={!!chef.business_name}
+                        showScore
+                      />
                     </td>
                     <td className="px-4 py-3">
                       <Link

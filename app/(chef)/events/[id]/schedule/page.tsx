@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getEventTimeline, getEventDOPSchedule } from '@/lib/scheduling/actions'
+import { getDOPManualCompletions } from '@/lib/scheduling/dop-completions'
 import { TimelineView } from '@/components/scheduling/timeline-view'
 import { DOPView } from '@/components/scheduling/dop-view'
 import { Button } from '@/components/ui/button'
@@ -19,10 +20,11 @@ export default async function EventSchedulePage({
 }) {
   await requireChef()
 
-  const [event, timeline, dop] = await Promise.all([
+  const [event, timeline, dop, manualCompletions] = await Promise.all([
     getEventById(params.id),
     getEventTimeline(params.id),
     getEventDOPSchedule(params.id),
+    getDOPManualCompletions(params.id).catch(() => new Set<string>()),
   ])
 
   if (!event) notFound()
@@ -81,7 +83,7 @@ export default async function EventSchedulePage({
             <CardTitle>Default Operating Procedures</CardTitle>
           </CardHeader>
           <CardContent>
-            <DOPView schedule={dop} />
+            <DOPView schedule={dop} eventId={params.id} manualCompletionKeys={manualCompletions} />
           </CardContent>
         </Card>
       )}

@@ -43,6 +43,19 @@ type PrepDish = {
   dietary_tags: string[]
 }
 
+export type RegularGuest = {
+  name: string
+  relationship: string
+  notes: string
+}
+
+export type ClientPreferences = {
+  allergies: string[]
+  dietaryRestrictions: string[]
+  dislikes: string[]
+  regularGuests: RegularGuest[]
+}
+
 export type PrepSheetData = {
   event: {
     occasion: string | null
@@ -57,6 +70,7 @@ export type PrepSheetData = {
     location_zip: string
   }
   clientName: string
+  clientPreferences: ClientPreferences | null
   dishes: PrepDish[]
   components: PrepComponent[]
 }
@@ -118,13 +132,13 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // Fetch event with client
+  // Fetch event with client (including dietary preferences for guest notes section)
   const { data: event } = await supabase
     .from('events')
     .select(`
       occasion, event_date, serve_time, arrival_time, departure_time,
       guest_count, location_address, location_city, location_state, location_zip,
-      client:clients(full_name)
+      client:clients(full_name, allergies, dietary_restrictions, dislikes, regular_guests)
     `)
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
@@ -175,7 +189,13 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     .eq('tenant_id', user.tenantId!)
     .order('sort_order', { ascending: true })
 
-  const clientData = event.client as unknown as { full_name: string } | null
+  const clientData = event.client as unknown as {
+    full_name: string
+    allergies: string[] | null
+    dietary_restrictions: string[] | null
+    dislikes: string[] | null
+    regular_guests: RegularGuest[] | null
+  } | null
 
   // Normalize Supabase's single-row join (recipe is object|null, not array)
   const components: PrepComponent[] = (rawComponents || []).map(c => ({
@@ -189,6 +209,27 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     dish_id: c.dish_id,
     recipe: Array.isArray(c.recipe) ? (c.recipe[0] ?? null) : (c.recipe ?? null),
   }))
+
+  // Build client preferences for the guest notes section on the prep sheet
+  const clientPreferences: ClientPreferences | null = clientData
+    ? {
+        allergies: (clientData.allergies as string[]) || [],
+        dietaryRestrictions: (clientData.dietary_restrictions as string[]) || [],
+        dislikes: (clientData.dislikes as string[]) || [],
+        regularGuests: Array.isArray(clientData.regular_guests)
+          ? (clientData.regular_guests as RegularGuest[])
+          : [],
+      }
+    : null
+
+  // Only include preferences if there's something meaningful to show
+  const hasPreferenceData = clientPreferences
+    && (
+      clientPreferences.allergies.length > 0
+      || clientPreferences.dietaryRestrictions.length > 0
+      || clientPreferences.regularGuests.some(g => g.notes)
+      || clientPreferences.regularGuests.length > 0
+    )
 
   return {
     event: {
@@ -204,6 +245,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
       location_zip: event.location_zip,
     },
     clientName: clientData?.full_name ?? 'Unknown',
+    clientPreferences: hasPreferenceData ? clientPreferences : null,
     dishes: dishes.map(d => ({
       id: d.id,
       course_name: d.course_name,
@@ -261,6 +303,38 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
   if (location) {
     pdf.text(`Location: ${location}`, 8, 'normal', 0)
   }
+
+  // ─── Guest Preference Notes ────────────────────────────────────────────────
+  // Surfaces client allergies, dietary restrictions, and regular guest notes
+  // so the chef has a quick reference without flipping to the client profile
+
+  if (data.clientPreferences) {
+    const prefs = data.clientPreferences
+    pdf.space(1)
+
+    // Allergy + dietary line — highest priority (safety)
+    const allergyLine = prefs.allergies.length > 0
+      ? `ALLERGIES: ${prefs.allergies.join(', ')}`
+      : null
+    const dietLine = prefs.dietaryRestrictions.length > 0
+      ? `DIET: ${prefs.dietaryRestrictions.join(', ')}`
+      : null
+
+    if (allergyLine || dietLine) {
+      const line = [allergyLine, dietLine].filter(Boolean).join('   ')
+      pdf.text(line, 8, 'bold', 0)
+    }
+
+    // Regular guests with dietary notes
+    if (prefs.regularGuests.length > 0) {
+      const guestParts = prefs.regularGuests.map(g => {
+        const note = g.notes ? ` (${g.notes})` : ''
+        return `${g.name}${note}`
+      })
+      pdf.text(`Guests: ${guestParts.join('  ·  ')}`, 8, 'normal', 0)
+    }
+  }
+
   pdf.space(1)
 
   // ─── AT HOME Section ───────────────────────────────────────────────────────

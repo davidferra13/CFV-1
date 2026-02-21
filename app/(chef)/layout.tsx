@@ -12,6 +12,14 @@ import { PushPermissionPrompt } from '@/components/notifications/push-permission
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getOnboardingStatus } from '@/lib/chef/profile-actions'
+import { getAnnouncement } from '@/lib/admin/platform-actions'
+import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
+import { CopilotDrawer } from '@/components/ai/copilot-drawer'
+import { OfflineBanner } from '@/components/ui/offline-banner'
+import { QuickCapture } from '@/components/mobile/quick-capture'
+import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
+import { ThemeProvider } from '@/components/ui/theme-provider'
+import { differenceInDays } from 'date-fns'
 
 export default async function ChefLayout({
   children,
@@ -39,10 +47,17 @@ export default async function ChefLayout({
   // Cached for 60s — slug and nav prefs change rarely, and the cache is keyed
   // per chef so one tenant's update never bleeds into another.
   const layoutData = await getChefLayoutData(user.entityId)
+  // Platform announcement (non-fatal — fail open so a bad settings table never breaks the chef portal)
+  const announcement = await getAnnouncement().catch(() => null)
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
+  const daysSinceCreation = layoutData.created_at
+    ? differenceInDays(new Date(), new Date(layoutData.created_at))
+    : 0
+  const showFeedbackNudge = daysSinceCreation >= 7
 
   return (
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
     <SidebarProvider>
       <NotificationProvider userId={user.id}>
         <ToastProvider />
@@ -59,6 +74,10 @@ export default async function ChefLayout({
               backgroundRepeat: 'no-repeat',
             }}
           >
+            {/* Platform announcement banner — shown when admin sets one */}
+            {announcement && (
+              <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
+            )}
             {/* Desktop sidebar */}
             <ChefSidebar primaryNavHrefs={primaryNavHrefs} />
             {/* Mobile nav (top bar + bottom tabs) */}
@@ -71,9 +90,22 @@ export default async function ChefLayout({
 
             {/* Push notification permission prompt — appears after 5s if not subscribed */}
             <PushPermissionPrompt />
+
+            {/* Feedback nudge — shown once, 7 days after account creation */}
+            {showFeedbackNudge && <FeedbackNudgeModal />}
+
+            {/* Offline connectivity banner — renders nothing when online */}
+            <OfflineBanner />
+
+            {/* AI Co-Pilot floating drawer — available on all chef pages */}
+            <CopilotDrawer />
+
+            {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
+            <QuickCapture />
           </div>
         </KeyboardShortcutsWrapper>
       </NotificationProvider>
     </SidebarProvider>
+    </ThemeProvider>
   )
 }

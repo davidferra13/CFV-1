@@ -531,17 +531,40 @@ export function QuoteForm({
               </div>
             )}
 
-            <Input
-              label="Total Quoted Amount ($)"
-              type="number"
-              step="0.01"
-              min="0"
-              required
-              placeholder="e.g., 2500.00"
-              value={totalAmount}
-              onChange={(e) => setTotalAmount(e.target.value)}
-              helperText={pricingModel === 'per_person' ? 'Auto-calculated from per-person x guests' : undefined}
-            />
+            <div>
+              <Input
+                label="Total Quoted Amount ($)"
+                type="number"
+                step="0.01"
+                min="0"
+                required
+                placeholder="e.g., 2500.00"
+                value={totalAmount}
+                onChange={(e) => setTotalAmount(e.target.value)}
+                helperText={pricingModel === 'per_person' ? 'Auto-calculated from per-person x guests' : undefined}
+              />
+              {pricingSuggestion?.status === 'ok' && totalAmount && parseFloat(totalAmount) > 0 && (() => {
+                const enteredCents = Math.round(parseFloat(totalAmount) * 100)
+                const { minCents, medianCents, maxCents } = pricingSuggestion
+                const isAboveMedian = enteredCents >= medianCents
+                const isAboveMin = enteredCents >= minCents
+                const label = isAboveMedian
+                  ? 'Above median — strong pricing'
+                  : isAboveMin
+                  ? 'Below median — consider increasing'
+                  : 'Below typical minimum — check pricing'
+                const colorClass = isAboveMedian
+                  ? 'text-emerald-600'
+                  : isAboveMin
+                  ? 'text-amber-600'
+                  : 'text-red-600'
+                return (
+                  <p className={`text-xs mt-1 font-medium ${colorClass}`}>
+                    {label} · range: {formatCurrency(minCents)}–{formatCurrency(maxCents)}
+                  </p>
+                )
+              })()}
+            </div>
           </div>
 
           {/* Deposit */}

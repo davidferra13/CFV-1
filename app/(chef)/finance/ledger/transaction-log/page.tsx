@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getLedgerEntries } from '@/lib/ledger/actions'
+import { exportLedgerEntriesCSV } from '@/lib/finance/export-actions'
+import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { Card } from '@/components/ui/card'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -31,11 +33,16 @@ export default async function TransactionLogPage() {
     <div className="space-y-6">
       <div>
         <Link href="/finance/ledger" className="text-sm text-stone-500 hover:text-stone-700">← Ledger</Link>
-        <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Transaction Log</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">{entries.length}</span>
+        <div className="flex items-start justify-between mt-1">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-stone-900">Transaction Log</h1>
+              <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">{entries.length}</span>
+            </div>
+            <p className="text-stone-500 mt-1">Complete chronological record of all financial transactions</p>
+          </div>
+          <CSVDownloadButton action={exportLedgerEntriesCSV} label="Export CSV" />
         </div>
-        <p className="text-stone-500 mt-1">Complete chronological record of all financial transactions</p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">

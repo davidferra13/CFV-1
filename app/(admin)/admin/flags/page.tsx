@@ -2,6 +2,7 @@
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { getAllChefFlags } from '@/lib/admin/platform-stats'
+import { FlagTogglePanel } from '@/components/admin/flag-toggle-panel'
 import { redirect } from 'next/navigation'
 import { ToggleLeft } from 'lucide-react'
 
@@ -53,7 +54,7 @@ export default async function AdminFlagsPage() {
 
       {/* Flag Legend */}
       <div className="bg-white rounded-xl border border-slate-200 p-4">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Known Flags</h2>
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Flag Reference</h2>
         <div className="space-y-2">
           {KNOWN_FLAGS.map((flag) => (
             <div key={flag.key} className="flex items-start gap-3">
@@ -69,56 +70,12 @@ export default async function AdminFlagsPage() {
         </div>
       </div>
 
-      {/* Per-Chef Flag Table */}
-      {chefs.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
-            <h2 className="text-sm font-semibold text-slate-700">Per-Chef Flag State</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Toggle controls coming soon — use direct DB edits for now</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Chef</th>
-                  {KNOWN_FLAGS.map((flag) => (
-                    <th key={flag.key} className="text-center px-3 py-2.5 text-xs font-medium text-slate-500 max-w-[80px]">
-                      <span className="font-mono">{flag.key.replace(/_/g, '_\u200B')}</span>
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {chefs.map((chef) => {
-                  const flags = flagsByChef[chef.id] ?? {}
-                  return (
-                    <tr key={chef.id} className="hover:bg-slate-50">
-                      <td className="px-4 py-2.5 font-medium text-slate-900">
-                        {chef.business_name ?? 'Unnamed'}
-                      </td>
-                      {KNOWN_FLAGS.map((flag) => (
-                        <td key={flag.key} className="px-3 py-2.5 text-center">
-                          <span
-                            className={`inline-block w-2.5 h-2.5 rounded-full ${
-                              flags[flag.key] ? 'bg-green-500' : 'bg-slate-200'
-                            }`}
-                            title={flags[flag.key] ? 'Enabled' : 'Disabled'}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {chefs.length === 0 && !note && (
-        <div className="bg-white rounded-xl border border-slate-200 py-12 text-center text-sm text-slate-400">
-          No chefs found.
-        </div>
+      {!note && (
+        <FlagTogglePanel
+          chefs={chefs}
+          flagsByChef={flagsByChef}
+          knownFlags={KNOWN_FLAGS}
+        />
       )}
     </div>
   )

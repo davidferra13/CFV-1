@@ -24,10 +24,39 @@ import {
   getCurrentMonthExpenseSummary,
   getNextUpcomingEvent,
   getDashboardHoursSnapshot,
+  getTopEventsByProfit,
+  getMonthlyAvgHourlyRate,
   type DashboardHoursCategoryEntry,
+  type TopProfitEvent,
 } from '@/lib/dashboard/actions'
 import { getQuoteAcceptanceInsights } from '@/lib/analytics/quote-insights'
+import { getFoodCostTrend, type FoodCostTrend } from '@/lib/analytics/cost-trends'
+import { getBookingSeasonality, type BookingSeasonality } from '@/lib/analytics/seasonality'
+import { getDormantClients, type DormantClientEntry } from '@/lib/clients/dormancy'
+import { getClosureStreak, type ClosureStreakData } from '@/lib/chefs/streaks'
+import {
+  getOverdueFollowUps,
+  getWeeklyAccountabilityStats,
+  type OverdueFollowUpEvent,
+  type WeeklyAccountabilityStats,
+} from '@/lib/dashboard/accountability'
 import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-acceptance-insights'
+import { getDOPTaskDigest, type DOPTaskDigest } from '@/lib/scheduling/task-digest'
+import { DOPTaskPanel } from '@/components/dashboard/dop-task-panel'
+import { AccountabilityPanel } from '@/components/dashboard/accountability-panel'
+import { getPipelineRevenueForecast, type PipelineRevenueForecast } from '@/lib/pipeline/forecast'
+import { getUpcomingMilestones, type UpcomingMilestone } from '@/lib/clients/birthday-alerts'
+import { PipelineRevenueForecast as PipelineForecastWidget } from '@/components/pipeline/revenue-forecast'
+import { getStuckEvents, type StuckEvent } from '@/lib/pipeline/stuck-events'
+import { StuckEventsWidget } from '@/components/pipeline/stuck-events-widget'
+import { getYoYData, type YoYData } from '@/lib/analytics/year-over-year'
+import { YoYCards } from '@/components/analytics/yoy-cards'
+import { getMultiEventDays, type MultiEventDay } from '@/lib/scheduling/multi-event-days'
+import { MultiEventDayAlert } from '@/components/scheduling/multi-event-day-alert'
+import { getOnboardingProgress, type OnboardingProgress } from '@/lib/onboarding/progress-actions'
+import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-checklist-widget'
+import { getNextBestActions, type NextBestAction } from '@/lib/clients/next-best-action'
+import { NextBestActionsWidget } from '@/components/clients/next-best-actions-widget'
 import { getRevenueGoalSnapshot } from '@/lib/revenue-goals/actions'
 import { getActiveClients, getRecentClientActivity } from '@/lib/activity/actions'
 import { getChefActivitySummary } from '@/lib/activity/chef-actions'
@@ -105,6 +134,78 @@ const emptyEventCounts = { thisMonth: 0, ytd: 0, completedThisMonth: 0, complete
 const emptyMonthRevenue = { currentMonthRevenueCents: 0, previousMonthRevenueCents: 0, currentMonthProfitCents: 0, changePercent: 0 }
 const emptyExpenses = { totalCents: 0, businessCents: 0 }
 const emptyRecipeDebt = { last7Days: 0, last30Days: 0, older: 0, total: 0, totalRecipes: 0 }
+const emptyTopEvents: TopProfitEvent[] = []
+const emptyFoodCostTrend: FoodCostTrend = {
+  months: [],
+  isRising: false,
+  risingMonthCount: 0,
+  overallAvgFoodCostPercent: null,
+}
+const emptySeasonality: BookingSeasonality = {
+  months: Array.from({ length: 12 }, (_, i) => ({
+    month: i + 1,
+    monthName: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][i],
+    shortName: ['J','F','M','A','M','J','J','A','S','O','N','D'][i],
+    eventCount: 0,
+    avgRevenueCents: null,
+  })),
+  peakMonths: [],
+  quietMonths: [],
+  upcomingPeak: null,
+  upcomingQuiet: null,
+  totalEventsAnalyzed: 0,
+  yearsOfData: 0,
+  hasEnoughData: false,
+}
+const emptyDormantClients: DormantClientEntry[] = []
+const emptyOverdueFollowUps: OverdueFollowUpEvent[] = []
+const emptyWeeklyStats: WeeklyAccountabilityStats = {
+  eventsCompletedThisWeek: 0,
+  followUpsSentThisWeek: 0,
+  receiptsUploadedThisWeek: 0,
+  overdueFollowUps: 0,
+  closedOnTimeCount: 0,
+}
+const emptyClosureStreak: ClosureStreakData = {
+  currentStreak: 0,
+  longestStreak: 0,
+  lastClosureDate: null,
+  milestoneMessage: null,
+}
+const emptyDOPDigest: DOPTaskDigest = {
+  tasks: [],
+  overdueCount: 0,
+  dueTodayCount: 0,
+  upcomingCount: 0,
+  totalIncomplete: 0,
+}
+const emptyPipelineForecast: PipelineRevenueForecast = {
+  expectedCents: 0,
+  bestCaseCents: 0,
+  stages: [],
+  computedAt: new Date().toISOString(),
+}
+const emptyUpcomingMilestones: UpcomingMilestone[] = []
+const emptyStuckEvents: StuckEvent[] = []
+const emptyMultiEventDays: MultiEventDay[] = []
+const emptyNextBestActions: NextBestAction[] = []
+
+const emptyOnboardingProgress: OnboardingProgress = {
+  profile: false,
+  clients: { done: false, count: 0 },
+  loyalty: { done: false },
+  recipes: { done: false, count: 0 },
+  staff: { done: false, count: 0 },
+  completedPhases: 0,
+  totalPhases: 5,
+}
+const emptyYoY: YoYData = {
+  revenueMetric: { label: 'Total Revenue', currentYear: 0, previousYear: 0, changePercent: null, changeDirection: 'flat' },
+  eventCountMetric: { label: 'Events', currentYear: 0, previousYear: 0, changePercent: null, changeDirection: 'flat' },
+  avgEventValueMetric: { label: 'Avg Event Value', currentYear: 0, previousYear: 0, changePercent: null, changeDirection: 'flat' },
+  currentYearLabel: String(new Date().getFullYear()),
+  previousYearLabel: String(new Date().getFullYear() - 1),
+}
 
 const emptyHoursSnapshot = {
   todayMinutes: 0,
@@ -194,6 +295,20 @@ export default async function ChefDashboard() {
     pendingCollabInvitations,
     pendingRecipeShares,
     quoteInsights,
+    topEvents,
+    avgHourlyRate,
+    foodCostTrend,
+    dormantClients,
+    closureStreak,
+    overdueFollowUps,
+    weeklyStats,
+    dopTaskDigest,
+    seasonality,
+    pipelineForecast,
+    upcomingMilestones,
+    stuckEvents,
+    yoyData,
+    multiEventDays,
   ] = await Promise.all([
     safe('preferences', getChefPreferences, {
       id: '',
@@ -229,7 +344,25 @@ export default async function ChefDashboard() {
     safe('pendingCollabInvitations', getPendingCollaborationInvitations, []),
     safe('pendingRecipeShares', getPendingRecipeShares, []),
     safe('quoteInsights', getQuoteAcceptanceInsights, null),
+    safe('topEvents', getTopEventsByProfit, emptyTopEvents),
+    safe('avgHourlyRate', getMonthlyAvgHourlyRate, null),
+    safe('foodCostTrend', () => getFoodCostTrend(6), emptyFoodCostTrend),
+    safe('dormantClients', () => getDormantClients(5), emptyDormantClients),
+    safe('closureStreak', getClosureStreak, emptyClosureStreak),
+    safe('overdueFollowUps', () => getOverdueFollowUps(5), emptyOverdueFollowUps),
+    safe('weeklyStats', getWeeklyAccountabilityStats, emptyWeeklyStats),
+    safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
+    safe('seasonality', getBookingSeasonality, emptySeasonality),
+    safe('pipelineForecast', getPipelineRevenueForecast, emptyPipelineForecast),
+    safe('upcomingMilestones', () => getUpcomingMilestones(14), emptyUpcomingMilestones),
+    safe('stuckEvents', () => getStuckEvents(5), emptyStuckEvents),
+    safe('yoyData', getYoYData, emptyYoY),
+    safe('multiEventDays', () => getMultiEventDays(90), emptyMultiEventDays),
   ])
+
+  // Fetched separately — TypeScript's Promise.all tuple inference caps at 44 elements
+  const onboardingProgress = await safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress)
+  const nextBestActions = await safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions)
 
   const activeInquiryCount = inquiryStats.new + inquiryStats.awaiting_client + inquiryStats.awaiting_chef + inquiryStats.quoted
   const totalInquiryCount = Object.values(inquiryStats).reduce((sum, value) => sum + value, 0)
@@ -337,6 +470,13 @@ export default async function ChefDashboard() {
               <span className="text-xs font-medium underline">Plan Week →</span>
             </Link>
           </div>
+        </section>
+      )}
+
+      {/* Onboarding Checklist — shown until all 5 setup phases are complete */}
+      {onboardingProgress.completedPhases < onboardingProgress.totalPhases && (
+        <section>
+          <OnboardingChecklistWidget progress={onboardingProgress} />
         </section>
       )}
 
@@ -539,6 +679,51 @@ export default async function ChefDashboard() {
       )}
 
       {/* ============================================ */}
+      {/* SECTION 4.5: FOLLOW-UP & ACCOUNTABILITY        */}
+      {/* ============================================ */}
+      {overdueFollowUps.length > 0 && (
+        <section>
+          <Card className="border-amber-200">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-amber-900">Follow-Ups Overdue ({overdueFollowUps.length})</CardTitle>
+                <Link href="/events?status=completed" className="text-sm text-amber-700 hover:text-amber-900 font-medium">
+                  All Events
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {overdueFollowUps.map(e => (
+                <div key={e.eventId} className="flex items-center justify-between">
+                  <div className="min-w-0">
+                    <Link href={`/events/${e.eventId}`} className="text-sm font-medium text-stone-900 hover:text-brand-600 truncate block">
+                      {e.occasion || 'Event'} — {e.clientName}
+                    </Link>
+                    <p className="text-xs text-amber-600">{e.hoursOverdue}h overdue</p>
+                  </div>
+                  <Link
+                    href={`/clients/${e.clientId}#messages`}
+                    className="text-xs text-brand-600 hover:underline shrink-0 ml-3"
+                  >
+                    Send message →
+                  </Link>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* ============================================ */}
+      {/* SECTION 4.6: DOP TASK DIGEST                  */}
+      {/* ============================================ */}
+      {(dopTaskDigest.totalIncomplete > 0 || dopTaskDigest.overdueCount > 0) && (
+        <section>
+          <DOPTaskPanel digest={dopTaskDigest} />
+        </section>
+      )}
+
+      {/* ============================================ */}
       {/* SECTION 5: PREP PROMPTS                       */}
       {/* ============================================ */}
       {isWidgetEnabled('prep_prompts') && prepPrompts.length > 0 && (
@@ -637,7 +822,18 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {isWidgetEnabled('business_snapshot') && (
         <section className="space-y-3" style={{ order: getWidgetOrder('business_snapshot') }}>
-          <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Business Snapshot</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">Business Snapshot</h2>
+            {closureStreak.currentStreak >= 2 && (
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-lg">🔥</span>
+                <span className="font-semibold text-stone-800">{closureStreak.currentStreak} events closed on time in a row</span>
+                {closureStreak.milestoneMessage && (
+                  <span className="text-xs text-emerald-600 font-medium hidden sm:inline">— {closureStreak.milestoneMessage}</span>
+                )}
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
           {/* Revenue — enhanced with MoM comparison */}
@@ -746,12 +942,17 @@ export default async function ChefDashboard() {
               </div>
               <p className="text-sm text-stone-500 mt-1">revenue minus expenses</p>
               {monthRevenue.currentMonthRevenueCents > 0 && (
-                <div className="mt-3 pt-3 border-t border-stone-100">
+                <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
                   <span className="text-sm text-stone-600">
                     {monthRevenue.currentMonthRevenueCents > 0
                       ? `${Math.round((monthRevenue.currentMonthProfitCents / monthRevenue.currentMonthRevenueCents) * 100)}% margin`
                       : 'No revenue yet'}
                   </span>
+                  {avgHourlyRate !== null && (
+                    <div className="text-sm text-stone-500">
+                      Avg {formatCurrency(avgHourlyRate)}/hr this month
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -827,6 +1028,30 @@ export default async function ChefDashboard() {
             </CardContent>
           </Card>
 
+          {/* Year-over-Year */}
+          {(yoyData.revenueMetric.currentYear > 0 || yoyData.revenueMetric.previousYear > 0) && (
+            <Card>
+              <CardContent className="pt-4">
+                <YoYCards data={yoyData} />
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Pipeline Forecast */}
+          <PipelineForecastWidget forecast={pipelineForecast} />
+
+          {/* Stuck Events */}
+          <StuckEventsWidget events={stuckEvents} />
+
+          {/* Multi-Event Day Warnings */}
+          {multiEventDays.length > 0 && (
+            <Card>
+              <CardContent className="pt-4">
+                <MultiEventDayAlert days={multiEventDays} />
+              </CardContent>
+            </Card>
+          )}
+
           {/* Clients */}
           <Card>
             <CardHeader>
@@ -850,6 +1075,87 @@ export default async function ChefDashboard() {
               )}
             </CardContent>
           </Card>
+
+          {/* Dormant Clients — re-engagement prompt */}
+          {dormantClients.length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Re-Engage Clients</CardTitle>
+                  <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
+                    All Clients <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {dormantClients.map(c => (
+                    <Link
+                      key={c.clientId}
+                      href={`/clients/${c.clientId}`}
+                      className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-stone-900 truncate">{c.clientName}</p>
+                        <p className="text-xs text-amber-600">
+                          {c.daysSinceLastEvent}+ days quiet
+                        </p>
+                      </div>
+                      <span className="text-xs text-brand-600 hover:underline shrink-0 ml-3">Reach out →</span>
+                    </Link>
+                  ))}
+                </div>
+                <p className="text-xs text-stone-400 mt-3">
+                  {dormantClients.length} client{dormantClients.length !== 1 ? 's' : ''} haven't booked in 90+ days
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Next Best Actions per Client */}
+          <NextBestActionsWidget actions={nextBestActions} />
+
+          {/* Birthday & Anniversary Alerts — 14-day lookahead */}
+          {upcomingMilestones.length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle className="flex items-center gap-2">
+                    <Gift className="h-4 w-4 text-pink-500" />
+                    Upcoming Occasions
+                  </CardTitle>
+                  <Link href="/clients" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
+                    All Clients <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {upcomingMilestones.map((m, i) => (
+                    <Link
+                      key={`${m.clientId}-${i}`}
+                      href={`/clients/${m.clientId}`}
+                      className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-stone-900 truncate">{m.clientName}</p>
+                        <p className="text-xs text-stone-500">{m.label}</p>
+                      </div>
+                      <span className={`text-xs font-medium shrink-0 ml-3 ${
+                        m.daysUntil === 0
+                          ? 'text-pink-600'
+                          : m.daysUntil <= 3
+                          ? 'text-amber-600'
+                          : 'text-stone-500'
+                      }`}>
+                        {m.daysUntil === 0 ? 'Today!' : m.daysUntil === 1 ? 'Tomorrow' : `in ${m.daysUntil}d`}
+                      </span>
+                    </Link>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Expenses — this month */}
           <Card>
@@ -876,7 +1182,232 @@ export default async function ChefDashboard() {
             </CardContent>
           </Card>
 
+          {/* Food Cost Trend — 6-month rolling sparkline */}
+          {foodCostTrend.months.some(m => m.eventCount > 0) && (() => {
+            const hasData = foodCostTrend.months.filter(m => m.eventCount > 0)
+            const maxVal = Math.max(...hasData.map(m => m.avgFoodCostPercent), 1)
+            return (
+              <Card>
+                <CardHeader>
+                  <div className="flex justify-between items-center">
+                    <CardTitle>Food Cost Trend</CardTitle>
+                    <Link href="/finance/reporting" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
+                      Details <ArrowRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {foodCostTrend.isRising && (
+                    <div className="mb-3 flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2">
+                      <TrendingUp className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                      <p className="text-xs text-amber-800 font-medium">
+                        Food cost rising {foodCostTrend.risingMonthCount + 1} months in a row — review suppliers or portion sizes
+                      </p>
+                    </div>
+                  )}
+                  {/* Sparkline bar chart */}
+                  <div className="flex items-end gap-1 h-10 mb-2">
+                    {foodCostTrend.months.map(m => {
+                      if (m.eventCount === 0) {
+                        return (
+                          <div key={m.month} className="flex-1 flex flex-col items-center justify-end gap-0.5">
+                            <div className="w-full h-1 bg-stone-100 rounded-sm" />
+                          </div>
+                        )
+                      }
+                      const ratio = m.avgFoodCostPercent / maxVal
+                      const heightClass =
+                        ratio >= 0.9 ? 'h-10' :
+                        ratio >= 0.75 ? 'h-8' :
+                        ratio >= 0.6 ? 'h-7' :
+                        ratio >= 0.5 ? 'h-6' :
+                        ratio >= 0.4 ? 'h-5' :
+                        ratio >= 0.3 ? 'h-4' :
+                        ratio >= 0.15 ? 'h-3' : 'h-2'
+                      const barColor =
+                        m.avgFoodCostPercent >= 40 ? 'bg-red-400' :
+                        m.avgFoodCostPercent >= 30 ? 'bg-amber-400' :
+                        'bg-emerald-400'
+                      return (
+                        <div key={m.month} className="flex-1 flex flex-col items-center justify-end gap-0.5">
+                          <div className={`w-full rounded-t-sm ${heightClass} ${barColor}`} title={`${m.label}: ${m.avgFoodCostPercent}%`} />
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {/* Month labels */}
+                  <div className="flex gap-1">
+                    {foodCostTrend.months.map(m => (
+                      <div key={m.month} className="flex-1 text-center text-[10px] text-stone-400 leading-none">
+                        {m.label.split(' ')[0]}
+                      </div>
+                    ))}
+                  </div>
+                  {foodCostTrend.overallAvgFoodCostPercent !== null && (
+                    <p className="text-sm text-stone-500 mt-3">
+                      Avg food cost:{' '}
+                      <span className={`font-semibold ${
+                        foodCostTrend.overallAvgFoodCostPercent >= 40 ? 'text-red-600' :
+                        foodCostTrend.overallAvgFoodCostPercent >= 30 ? 'text-amber-600' :
+                        'text-emerald-600'
+                      }`}>
+                        {foodCostTrend.overallAvgFoodCostPercent}%
+                      </span>
+                      <span className="ml-2 text-xs text-stone-400">
+                        {foodCostTrend.overallAvgFoodCostPercent < 30 ? '✓ on target' :
+                         foodCostTrend.overallAvgFoodCostPercent < 40 ? '↑ watch this' :
+                         '⚠ above target'}
+                      </span>
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )
+          })()}
+
+          {/* Booking Seasonality — peak/quiet month patterns */}
+          {seasonality.hasEnoughData && (() => {
+            const maxCount = Math.max(...seasonality.months.map(m => m.eventCount), 1)
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Booking Seasons</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {/* Upcoming season signal */}
+                  {seasonality.upcomingPeak && seasonality.upcomingPeak.monthsAway <= 3 && (
+                    <div className="mb-3 flex items-center gap-2 rounded-md bg-brand-50 border border-brand-200 px-3 py-2">
+                      <TrendingUp className="h-3.5 w-3.5 text-brand-600 shrink-0" />
+                      <p className="text-xs text-brand-800 font-medium">
+                        Busy season in {seasonality.upcomingPeak.monthsAway === 1 ? 'next month' : `${seasonality.upcomingPeak.monthsAway} months`} ({seasonality.upcomingPeak.monthName}) — book clients now
+                      </p>
+                    </div>
+                  )}
+                  {!seasonality.upcomingPeak && seasonality.upcomingQuiet && seasonality.upcomingQuiet.monthsAway <= 3 && (
+                    <div className="mb-3 flex items-center gap-2 rounded-md bg-stone-50 border border-stone-200 px-3 py-2">
+                      <TrendingDown className="h-3.5 w-3.5 text-stone-500 shrink-0" />
+                      <p className="text-xs text-stone-600">
+                        Quiet period coming in {seasonality.upcomingQuiet.monthsAway === 1 ? 'next month' : `${seasonality.upcomingQuiet.monthsAway} months`} ({seasonality.upcomingQuiet.monthName}) — good time to take on new clients
+                      </p>
+                    </div>
+                  )}
+                  {/* Month bar chart */}
+                  <div className="flex items-end gap-0.5 h-10 mb-1">
+                    {seasonality.months.map(m => {
+                      const ratio = m.eventCount / maxCount
+                      const heightClass =
+                        ratio >= 0.9 ? 'h-10' :
+                        ratio >= 0.7 ? 'h-8' :
+                        ratio >= 0.55 ? 'h-7' :
+                        ratio >= 0.4 ? 'h-6' :
+                        ratio >= 0.25 ? 'h-4' :
+                        ratio >= 0.1 ? 'h-3' :
+                        ratio > 0 ? 'h-2' : 'h-1'
+                      const isPeak = seasonality.peakMonths.includes(m.month)
+                      const isQuiet = seasonality.quietMonths.includes(m.month)
+                      const barColor = isPeak ? 'bg-brand-500' : isQuiet ? 'bg-stone-200' : 'bg-brand-200'
+                      const emptyColor = m.eventCount === 0 ? 'bg-stone-100' : barColor
+                      return (
+                        <div
+                          key={m.month}
+                          className="flex-1 flex flex-col items-center justify-end"
+                          title={`${m.monthName}: ${m.eventCount} event${m.eventCount !== 1 ? 's' : ''}${isPeak ? ' (peak)' : isQuiet ? ' (quiet)' : ''}`}
+                        >
+                          <div className={`w-full rounded-t-sm ${heightClass} ${m.eventCount === 0 ? emptyColor : barColor}`} />
+                        </div>
+                      )
+                    })}
+                  </div>
+                  {/* Month labels */}
+                  <div className="flex gap-0.5">
+                    {seasonality.months.map(m => (
+                      <div key={m.month} className="flex-1 text-center text-[9px] text-stone-400 leading-none">
+                        {m.shortName}
+                      </div>
+                    ))}
+                  </div>
+                  {/* Legend */}
+                  <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
+                    {seasonality.peakMonths.length > 0 && (
+                      <span>
+                        Peak:{' '}
+                        <span className="text-brand-700 font-medium">
+                          {seasonality.peakMonths
+                            .sort((a, b) => a - b)
+                            .map(m => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1])
+                            .join(', ')}
+                        </span>
+                      </span>
+                    )}
+                    {seasonality.quietMonths.length > 0 && (
+                      <span>
+                        Quiet:{' '}
+                        <span className="text-stone-400 font-medium">
+                          {seasonality.quietMonths
+                            .sort((a, b) => a - b)
+                            .map(m => ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m - 1])
+                            .join(', ')}
+                        </span>
+                      </span>
+                    )}
+                    <span className="text-stone-400">{seasonality.totalEventsAnalyzed} events · {seasonality.yearsOfData}yr{seasonality.yearsOfData !== 1 ? 's' : ''} data</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })()}
+
+          {/* Top Events This Month — profitability leaders */}
+          {topEvents.length > 0 && (
+            <Card>
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Top Events ({currentMonthName})</CardTitle>
+                  <Link href="/finance/reporting/profit-by-event" className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700">
+                    All <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {topEvents.map((event) => {
+                    const marginColor = event.profitMarginPercent >= 30
+                      ? 'text-emerald-600'
+                      : event.profitMarginPercent >= 15
+                      ? 'text-amber-600'
+                      : 'text-red-600'
+                    return (
+                      <Link
+                        key={event.eventId}
+                        href={`/events/${event.eventId}`}
+                        className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                      >
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-stone-900 truncate">
+                            {event.occasion || 'Event'} — {event.clientName}
+                          </p>
+                          <p className="text-xs text-stone-500">{event.eventDate}</p>
+                        </div>
+                        <div className="text-right shrink-0 ml-4">
+                          <p className="text-sm font-semibold text-stone-900">{formatCurrency(event.profitCents)}</p>
+                          <p className={`text-xs font-medium ${marginColor}`}>{event.profitMarginPercent}% margin</p>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           </div>
+
+          {/* Weekly Accountability — extracted into reusable component */}
+          <AccountabilityPanel
+            weeklyStats={weeklyStats}
+            closureStreak={closureStreak}
+            overdueFollowUpCount={weeklyStats.overdueFollowUps}
+          />
 
           {/* Quote Performance Insights — full-width below the grid */}
           {quoteInsights && (

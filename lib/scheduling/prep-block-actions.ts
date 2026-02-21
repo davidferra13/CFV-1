@@ -455,6 +455,68 @@ export async function uncompletePrepBlock(
 }
 
 // ============================================
+// AUTO-PLACEMENT ACTION
+// ============================================
+
+/**
+ * Auto-place prep blocks for an event.
+ * Uses the deterministic rule-based engine (NOT AI output).
+ * Skips if blocks already exist for this event (idempotent).
+ * Called non-blocking after the paid→confirmed transition.
+ */
+export async function autoPlacePrepBlocks(eventId: string): Promise<{
+  success: boolean
+  placed: number
+  skipped: boolean
+  error?: string
+}> {
+  try {
+    const user = await requireChef()
+    const supabase = createServerClient()
+    const tenantId = user.tenantId!
+
+    // Check if blocks already exist
+    const existingBlocks = await fetchPrepBlocks(supabase, tenantId, { eventId })
+    if (existingBlocks.length > 0) {
+      return { success: true, placed: 0, skipped: true }
+    }
+
+    // Generate suggestions via rule-based engine
+    const { suggestions } = await autoSuggestEventBlocks(eventId)
+    if (suggestions.length === 0) {
+      return { success: true, placed: 0, skipped: false }
+    }
+
+    // Map suggestions to CreatePrepBlockInput and persist
+    const inputs: CreatePrepBlockInput[] = suggestions.map((s) => ({
+      event_id: eventId,
+      block_date: s.block_date,
+      start_time: s.start_time ?? undefined,
+      end_time: s.end_time ?? undefined,
+      block_type: s.block_type,
+      title: s.title,
+      notes: s.notes ?? undefined,
+      estimated_duration_minutes: s.estimated_duration_minutes ?? undefined,
+      is_system_generated: true,
+    }))
+
+    const result = await bulkCreatePrepBlocks(inputs)
+    if (!result.success) {
+      return { success: false, placed: 0, skipped: false, error: result.error }
+    }
+
+    return { success: true, placed: result.count ?? 0, skipped: false }
+  } catch (err) {
+    return {
+      success: false,
+      placed: 0,
+      skipped: false,
+      error: err instanceof Error ? err.message : 'Unknown error',
+    }
+  }
+}
+
+// ============================================
 // SUGGESTION ACTION (AI POLICY COMPLIANT)
 // ============================================
 

@@ -4,7 +4,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
@@ -37,8 +37,13 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
       </div>
       <div className="w-full bg-stone-100 rounded-full h-2">
         <div
-          className="bg-stone-800 h-2 rounded-full transition-all duration-300"
-          style={{ width: `${((current + 1) / total) * 100}%` }}
+          className={`bg-stone-800 h-2 rounded-full transition-all duration-300 ${
+            current === 0 ? 'w-1/5' :
+            current === 1 ? 'w-2/5' :
+            current === 2 ? 'w-3/5' :
+            current === 3 ? 'w-4/5' :
+            'w-full'
+          }`}
         />
       </div>
     </div>
@@ -505,6 +510,119 @@ function AARStep({
   )
 }
 
+// ─── Celebration Screen ────────────────────────────────────────────────────────
+// Shown after financial close is confirmed. CSS-only confetti, auto-advances to
+// dashboard after 3 seconds or chef clicks Done.
+
+type CelebrationProps = {
+  event: CloseOutData['event']
+  financial: CloseOutData['financial']
+  followUpSent: boolean
+  followUpLoading: boolean
+  onFollowUp: () => void
+  router: ReturnType<typeof useRouter>
+}
+
+function CelebrationAndFollowUp({
+  event,
+  financial,
+  followUpSent,
+  followUpLoading,
+  onFollowUp,
+  router,
+}: CelebrationProps) {
+  const [celebrating, setCelebrating] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setCelebrating(false), 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  const marginColor =
+    financial.grossMarginPercent >= 60 ? 'text-emerald-700' :
+    financial.grossMarginPercent >= 40 ? 'text-amber-700' :
+    'text-red-700'
+
+  return (
+    <div className="py-4">
+      {/* Celebration hero */}
+      <div className="relative text-center mb-8 overflow-hidden">
+        {celebrating && (
+          <>
+            <span className="absolute top-0 left-4 w-2 h-2 bg-yellow-400 rounded-full animate-bounce" />
+            <span className="absolute top-2 left-12 w-1.5 h-1.5 bg-red-400 rounded-full animate-ping" />
+            <span className="absolute top-0 left-1/4 w-2 h-2 bg-blue-400 rounded-full animate-bounce" />
+            <span className="absolute top-1 left-1/3 w-1.5 h-1.5 bg-purple-400 rounded-full animate-ping" />
+            <span className="absolute top-0 right-4 w-2 h-2 bg-emerald-400 rounded-full animate-bounce" />
+            <span className="absolute top-2 right-12 w-1.5 h-1.5 bg-pink-400 rounded-full animate-ping" />
+            <span className="absolute top-0 right-1/4 w-2 h-2 bg-orange-400 rounded-full animate-bounce" />
+            <span className="absolute top-1 right-1/3 w-1.5 h-1.5 bg-teal-400 rounded-full animate-ping" />
+          </>
+        )}
+        <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-stone-900 mb-2">
+          {event.occasion || 'Tonight'} is done! 🎉
+        </h2>
+        <p className={`text-3xl font-bold ${marginColor} mb-1`}>
+          {formatCurrency(financial.netProfitWithTipCents)}
+        </p>
+        <p className="text-sm text-stone-500">
+          {financial.grossMarginPercent}% margin
+          {financial.effectiveHourlyRateCents
+            ? ` · ${formatCurrency(financial.effectiveHourlyRateCents)}/hr`
+            : ''}
+        </p>
+      </div>
+
+      {/* Follow-up prompt */}
+      <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 mb-6">
+        <p className="text-sm font-semibold text-stone-800 mb-1">
+          One last thing — send {event.clientFirstName} a thank you
+        </p>
+        <p className="text-sm text-stone-500 mb-4">
+          A short message goes a long way. Marks your follow-up as done in the dashboard.
+        </p>
+        {followUpSent ? (
+          <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            Follow-up marked as sent
+          </div>
+        ) : (
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={onFollowUp}
+              loading={followUpLoading}
+              disabled={followUpLoading}
+            >
+              Mark Follow-Up Sent
+            </Button>
+            <Link href={`/events/${event.id}`}>
+              <Button variant="ghost" size="sm">Write a message first</Button>
+            </Link>
+          </div>
+        )}
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button onClick={() => router.push('/dashboard')}>
+          Go to Dashboard
+        </Button>
+        <Link href={`/events/${event.id}`}>
+          <Button variant="secondary">View Event</Button>
+        </Link>
+      </div>
+    </div>
+  )
+}
+
 // ─── Step 4: Financial Close ──────────────────────────────────────────────────
 
 function CloseStep({
@@ -547,68 +665,7 @@ function CloseStep({
   }
 
   if (closed) {
-    return (
-      <div className="py-4">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-bold text-stone-900 mb-2">Financially closed!</h2>
-          <p className="text-stone-500 mb-1">
-            {event.occasion || 'Tonight'} is wrapped up.
-          </p>
-          <p className="text-2xl font-bold text-emerald-700">
-            {formatCurrency(financial.netProfitWithTipCents)} net profit
-          </p>
-        </div>
-
-        {/* Follow-up prompt */}
-        <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 mb-6">
-          <p className="text-sm font-semibold text-stone-800 mb-1">
-            One last thing — send {event.clientFirstName} a thank you
-          </p>
-          <p className="text-sm text-stone-500 mb-4">
-            A short message goes a long way. Marks your follow-up as done in the dashboard.
-          </p>
-          {followUpSent ? (
-            <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Follow-up marked as sent
-            </div>
-          ) : (
-            <div className="flex gap-3">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleFollowUp}
-                loading={followUpLoading}
-                disabled={followUpLoading}
-              >
-                Mark Follow-Up Sent
-              </Button>
-              <Link href={`/events/${event.id}`}>
-                <Button variant="ghost" size="sm">
-                  Write a message first
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button onClick={() => router.push('/dashboard')}>
-            Go to Dashboard
-          </Button>
-          <Link href={`/events/${event.id}`}>
-            <Button variant="secondary">View Event</Button>
-          </Link>
-        </div>
-      </div>
-    )
+    return <CelebrationAndFollowUp event={event} financial={financial} followUpSent={followUpSent} followUpLoading={followUpLoading} onFollowUp={handleFollowUp} router={router} />
   }
 
   const marginColor =

@@ -9,9 +9,12 @@ import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/action
 export const metadata: Metadata = { title: 'Clients - ChefFlow' }
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { EmptyState } from '@/components/ui/empty-state'
+import { SkeletonTable } from '@/components/ui/skeleton'
 import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
 import { PendingInvitationsTable } from './pending-invitations-table'
+import { getClientHealthScores } from '@/lib/clients/health-score'
 
 export default async function ClientsPage() {
   await requireChef()
@@ -23,7 +26,15 @@ export default async function ClientsPage() {
           <h1 className="text-3xl font-bold text-stone-900">Clients</h1>
           <p className="text-stone-600 mt-1">Manage your client relationships and invitations</p>
         </div>
-        <Button href="#invite">+ Add Client</Button>
+        <div className="flex gap-2">
+          <a
+            href="/clients/export"
+            className="inline-flex items-center justify-center px-3 py-2 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors font-medium text-sm"
+          >
+            Export CSV
+          </a>
+          <Button href="#invite">+ Add Client</Button>
+        </div>
       </div>
 
       {/* Invitation Section */}
@@ -51,7 +62,7 @@ export default async function ClientsPage() {
           <CardTitle>Your Clients</CardTitle>
         </CardHeader>
         <CardContent>
-          <Suspense fallback={<div className="text-sm text-stone-500">Loading clients...</div>}>
+          <Suspense fallback={<SkeletonTable rows={5} />}>
             <ClientsListContent />
           </Suspense>
         </CardContent>
@@ -71,16 +82,22 @@ async function PendingInvitationsContent() {
 }
 
 async function ClientsListContent() {
-  const clients = await getClientsWithStats()
+  const [clients, healthSummary] = await Promise.all([
+    getClientsWithStats(),
+    getClientHealthScores().catch(() => ({ scores: [], medianLtv: 0, avgEventsPerYear: 0 })),
+  ])
+
+  const healthMap = new Map(healthSummary.scores.map(s => [s.clientId, s]))
 
   if (clients.length === 0) {
     return (
-      <div className="text-center py-12 text-stone-500">
-        <p className="text-lg mb-2">No clients yet</p>
-        <p className="text-sm">Invite your first client using the form above!</p>
-      </div>
+      <EmptyState
+        title="No clients yet"
+        description="Invite your first client to start tracking their preferences, events, and loyalty rewards."
+        action={{ label: 'Send Invitation', href: '#invite' }}
+      />
     )
   }
 
-  return <ClientsTable clients={clients} />
+  return <ClientsTable clients={clients} healthMap={healthMap} />
 }

@@ -17,7 +17,11 @@ import { getGoogleReviewUrl } from '@/lib/reviews/actions'
 import { getChefSlug } from '@/lib/profile/actions'
 import { getBusinessMode } from '@/lib/chef/actions'
 import { getAvailabilitySignalSetting } from '@/lib/calendar/signal-settings-actions'
+import { getSchedulingRules } from '@/lib/availability/rules-actions'
+import { getBookingSettings, type BookingSettings } from '@/lib/booking/booking-settings-actions'
 import { PreferencesForm } from '@/components/settings/preferences-form'
+import { SchedulingRulesForm } from '@/components/settings/scheduling-rules-form'
+import { BookingPageSettings } from '@/components/settings/booking-page-settings'
 import { BusinessModeToggle } from '@/components/settings/business-mode-toggle'
 import { ConnectedAccounts } from '@/components/settings/connected-accounts'
 import { WixConnection } from '@/components/wix/wix-connection'
@@ -25,6 +29,9 @@ import { DiscoverabilityToggle } from '@/components/network/discoverability-togg
 import { GoogleReviewUrlForm } from '@/components/settings/google-review-url-form'
 import { ChefBackgroundSettings } from '@/components/settings/chef-background-settings'
 import { AvailabilitySignalToggle } from '@/components/calendar/availability-signal-toggle'
+import { DemoDataManager } from '@/components/onboarding/demo-data-manager'
+import { hasDemoData } from '@/lib/onboarding/demo-data'
+import { FeedbackForm } from '@/components/feedback/feedback-form'
 import Link from 'next/link'
 
 function SettingsCategory({
@@ -51,7 +58,7 @@ function SettingsCategory({
 
 export default async function SettingsPage() {
   await requireChef()
-  const [preferences, gmailConnection, recentSyncs, historicalScanStatus, wixConnection, wixSubmissions, networkDiscoverable, googleReviewUrl, profile, businessMode, availabilitySignalEnabled] = await Promise.all([
+  const [preferences, gmailConnection, recentSyncs, historicalScanStatus, wixConnection, wixSubmissions, networkDiscoverable, googleReviewUrl, profile, businessMode, availabilitySignalEnabled, schedulingRules, bookingSettings, demoDataExists] = await Promise.all([
     getChefPreferences(),
     getGoogleConnection(),
     getGmailSyncHistory(10),
@@ -63,6 +70,9 @@ export default async function SettingsPage() {
     getChefSlug(),
     getBusinessMode(),
     getAvailabilitySignalSetting(),
+    getSchedulingRules().catch(() => null),
+    getBookingSettings().catch(() => null),
+    hasDemoData().catch(() => false),
   ])
 
   return (
@@ -198,6 +208,32 @@ export default async function SettingsPage() {
       </SettingsCategory>
 
       <SettingsCategory
+        title="Availability Rules"
+        description="Set hard blocks, event limits, and buffer time so ChefFlow warns you before double-booking."
+      >
+        <SchedulingRulesForm initialRules={schedulingRules} />
+      </SettingsCategory>
+
+      <SettingsCategory
+        title="Booking Page"
+        description="Share a link clients can use to check your availability and submit a booking request."
+      >
+        <BookingPageSettings initialSettings={bookingSettings ?? ({
+          booking_enabled: false,
+          booking_slug: null,
+          booking_headline: null,
+          booking_bio_short: null,
+          booking_min_notice_days: 7,
+          booking_model: 'inquiry_first',
+          booking_base_price_cents: null,
+          booking_pricing_type: 'flat_rate',
+          booking_deposit_type: 'percent',
+          booking_deposit_percent: null,
+          booking_deposit_fixed_cents: null,
+        } as BookingSettings)} />
+      </SettingsCategory>
+
+      <SettingsCategory
         title="Communication & Workflow"
         description="Manage messaging templates, automations, and your creative planning systems."
       >
@@ -293,10 +329,33 @@ export default async function SettingsPage() {
       </SettingsCategory>
 
       <SettingsCategory
+        title="Sample Data"
+        description="Load or remove sample clients, events, and inquiries to explore ChefFlow."
+      >
+        <DemoDataManager hasDemoData={demoDataExists} />
+      </SettingsCategory>
+
+      <SettingsCategory
+        title="Share Feedback"
+        description="Tell us what you love, what frustrates you, or anything in between. We read every submission."
+      >
+        <FeedbackForm />
+      </SettingsCategory>
+
+      <SettingsCategory
         title="Account & Security"
-        description="Password and account-level management."
+        description="Password, account-level management, and system status."
       >
         <div className="space-y-3">
+          <Link
+            href="/settings/health"
+            className="block border border-emerald-200 rounded-lg p-4 hover:bg-emerald-50/50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">System Health</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Check Stripe, Gmail, and DOP task status at a glance.
+            </p>
+          </Link>
           <Link
             href="/settings/change-password"
             className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"

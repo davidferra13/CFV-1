@@ -315,10 +315,10 @@ export async function getEventProfitSummary(eventId: string) {
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)
 
-  // Get event time tracking data
+  // Get event time tracking and guest count data
   const { data: eventData } = await supabase
     .from('events')
-    .select('time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes')
+    .select('time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -372,6 +372,27 @@ export async function getEventProfitSummary(eventId: string) {
     ? Math.round((grossProfitCents / totalMinutes) * 60)
     : null
 
+  // Fetch chef's average food cost % across other completed events (for comparison)
+  let chefAvgFoodCostPercent: number | null = null
+  const { data: historicalRows } = await supabase
+    .from('event_financial_summary')
+    .select('food_cost_percentage')
+    .eq('tenant_id', user.tenantId!)
+    .neq('event_id', eventId)
+    .not('food_cost_percentage', 'is', null)
+    .limit(20)
+
+  if (historicalRows && historicalRows.length >= 3) {
+    const values = historicalRows
+      .map(r => parseFloat(String(r.food_cost_percentage)))
+      .filter(v => !isNaN(v) && v > 0)
+    if (values.length >= 3) {
+      chefAvgFoodCostPercent = parseFloat(
+        ((values.reduce((s, v) => s + v, 0) / values.length) * 100).toFixed(1)
+      )
+    }
+  }
+
   return {
     revenue: {
       quotedPriceCents,
@@ -396,7 +417,18 @@ export async function getEventProfitSummary(eventId: string) {
         ? parseFloat(((foodIngredientsCents / totalRevenue) * 100).toFixed(1))
         : 0,
       effectiveHourlyRateCents,
+      chefAvgFoodCostPercent,
     },
+    perGuest: (() => {
+      const guestCount = eventData?.guest_count ?? 0
+      if (guestCount <= 0) return null
+      return {
+        guestCount,
+        revenuePerGuestCents: Math.round(totalRevenue / guestCount),
+        costPerGuestCents: Math.round(totalBusinessCents / guestCount),
+        profitPerGuestCents: Math.round(grossProfitCents / guestCount),
+      }
+    })(),
     timeInvested: hasTimeData ? {
       shoppingMinutes: eventData?.time_shopping_minutes ?? 0,
       prepMinutes: eventData?.time_prep_minutes ?? 0,
@@ -514,10 +546,10 @@ export async function getBudgetGuardrail(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // Get quoted price for this event
+  // Get quoted price and any manually-set budget for this event
   const { data: event } = await supabase
     .from('events')
-    .select('quoted_price_cents')
+    .select('quoted_price_cents, food_cost_budget_cents')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -527,7 +559,12 @@ export async function getBudgetGuardrail(eventId: string) {
   // Read target margin from chef preferences (defaults to 60%)
   const prefs = await getChefPreferences()
   const targetMarginPercent = prefs.target_margin_percent ?? 60
-  const maxGrocerySpendCents = Math.round(quotedPriceCents * (1 - targetMarginPercent / 100))
+
+  // Use chef's manually-set budget if present; otherwise derive from formula
+  const budgetSource: 'manual' | 'formula' = event?.food_cost_budget_cents != null ? 'manual' : 'formula'
+  const maxGrocerySpendCents = budgetSource === 'manual'
+    ? (event!.food_cost_budget_cents as number)
+    : Math.round(quotedPriceCents * (1 - targetMarginPercent / 100))
 
   // Get current expenses already logged for this event (business only)
   const { data: existingExpenses } = await supabase
@@ -586,5 +623,6 @@ export async function getBudgetGuardrail(eventId: string) {
     historicalAvgSpendCents,
     status,
     message,
+    budgetSource,
   }
 }

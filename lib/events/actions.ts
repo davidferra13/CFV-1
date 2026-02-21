@@ -45,6 +45,7 @@ const CreateEventSchema = z.object({
   location_lng: z.number().optional(),
   referral_partner_id: z.string().uuid().nullable().optional(),
   partner_location_id: z.string().uuid().nullable().optional(),
+  event_timezone: z.string().optional(),
 })
 
 const UpdateEventSchema = z.object({
@@ -76,6 +77,7 @@ const UpdateEventSchema = z.object({
   location_lng: z.number().optional(),
   referral_partner_id: z.string().uuid().nullable().optional(),
   partner_location_id: z.string().uuid().nullable().optional(),
+  event_timezone: z.string().optional(),
 })
 
 export type CreateEventInput = z.infer<typeof CreateEventSchema>
@@ -142,6 +144,7 @@ export async function createEvent(input: CreateEventInput) {
     location_lng: validated.location_lng,
     referral_partner_id: validated.referral_partner_id ?? null,
     partner_location_id: validated.partner_location_id ?? null,
+    event_timezone: validated.event_timezone ?? null,
     created_by: user.id,
     updated_by: user.id,
   }
@@ -768,4 +771,32 @@ export async function logCharityHours(input: LogCharityHoursInput) {
     minutes: validated.minutes,
     loggedFor,
   }
+}
+
+/**
+ * Set (or clear) an explicit food cost budget for an event.
+ * Pass null to revert to the formula-derived guardrail.
+ */
+export async function setEventFoodCostBudget(eventId: string, budgetCents: number | null) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Validate the budget amount when provided
+  if (budgetCents !== null && (budgetCents < 0 || !Number.isInteger(budgetCents))) {
+    return { success: false, error: 'Budget must be a non-negative integer (cents)' }
+  }
+
+  const { error } = await supabase
+    .from('events')
+    .update({ food_cost_budget_cents: budgetCents })
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[setEventFoodCostBudget]', error)
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath(`/events/${eventId}`)
+  return { success: true }
 }

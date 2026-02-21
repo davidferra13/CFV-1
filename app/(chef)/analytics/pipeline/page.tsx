@@ -1,0 +1,54 @@
+// Pipeline Forecast — Revenue pipeline analysis
+// Projects future revenue based on active inquiries, quotes, and confirmed events
+
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { requireChef } from '@/lib/auth/get-user'
+import { getPipelineRevenueForecast } from '@/lib/analytics/pipeline-forecast-actions'
+import { PipelineForecast } from '@/components/analytics/pipeline-forecast'
+
+export const metadata: Metadata = { title: 'Pipeline Forecast - ChefFlow' }
+
+export default async function PipelineForecastPage() {
+  const user = await requireChef()
+
+  let pipelineData: Awaited<ReturnType<typeof getPipelineRevenueForecast>> | null = null
+  try {
+    pipelineData = await getPipelineRevenueForecast()
+  } catch {
+    pipelineData = null
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-700">
+            &larr; Analytics
+          </Link>
+          <h1 className="text-3xl font-bold text-stone-900 mt-1">Pipeline Forecast</h1>
+          <p className="text-stone-600 mt-1">
+            Projected revenue from your active inquiries, pending quotes, and confirmed bookings.
+          </p>
+        </div>
+      </div>
+
+      {pipelineData ? (
+        <PipelineForecast
+          pipeline={pipelineData.stages.map((s) => ({
+            status: s.status,
+            count: s.eventCount,
+            totalCents: s.totalValueCents,
+            weightedCents: s.weightedValueCents,
+          }))}
+        />
+      ) : (
+        <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
+          <p className="text-stone-500 text-sm">
+            No pipeline data available. As inquiries and quotes come in, your forecast will appear here.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getTenantFinancialSummary } from '@/lib/ledger/compute'
+import { getTenantFinancialSummary, getYtdCarryForwardSavings } from '@/lib/ledger/compute'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 
@@ -13,6 +13,12 @@ const SECTIONS = [
     label: 'Overview',
     description: 'Revenue summary, outstanding payments, and cash flow',
     icon: '📊',
+  },
+  {
+    href: '/finance/cash-flow',
+    label: 'Cash Flow Calendar',
+    description: 'Monthly view of income, expenses, and upcoming payment plan installments',
+    icon: '📅',
   },
   {
     href: '/finance/invoices',
@@ -62,11 +68,44 @@ const SECTIONS = [
     description: 'Annual target, YTD progress, and gap-closing strategies',
     icon: '🎯',
   },
+  {
+    href: '/finance/bank-feed',
+    label: 'Bank Feed',
+    description: 'Connect bank accounts, reconcile transactions automatically',
+    icon: '🏦',
+  },
+  {
+    href: '/finance/cash-flow',
+    label: 'Cash Flow Forecast',
+    description: '30/60/90 day projected income and expenses',
+    icon: '📈',
+  },
+  {
+    href: '/finance/recurring',
+    label: 'Recurring Invoices',
+    description: 'Automated billing for repeat clients and retainers',
+    icon: '🔄',
+  },
+  {
+    href: '/finance/disputes',
+    label: 'Payment Disputes',
+    description: 'Track and manage Stripe payment disputes with evidence',
+    icon: '🛡️',
+  },
+  {
+    href: '/finance/contractors',
+    label: '1099 Contractors',
+    description: 'Staff payments, YTD tracking, and 1099 filing alerts',
+    icon: '👷',
+  },
 ]
 
 export default async function FinancePage() {
   await requireChef()
-  const summary = await getTenantFinancialSummary()
+  const [summary, carryForwardSavings] = await Promise.all([
+    getTenantFinancialSummary(),
+    getYtdCarryForwardSavings().catch(() => 0),
+  ])
 
   return (
     <div className="space-y-6">
@@ -75,7 +114,7 @@ export default async function FinancePage() {
         <p className="text-stone-500 mt-1">Complete financial management — invoices, expenses, ledger, and reporting</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-900">{formatCurrency(summary.totalRevenueCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
@@ -88,6 +127,12 @@ export default async function FinancePage() {
           <p className="text-2xl font-bold text-red-600">{formatCurrency(summary.totalRefundsCents)}</p>
           <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
         </Card>
+        {carryForwardSavings > 0 && (
+          <Card className="p-4 border-emerald-200 bg-emerald-50">
+            <p className="text-2xl font-bold text-emerald-700">{formatCurrency(carryForwardSavings)}</p>
+            <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
+          </Card>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">

@@ -1,5 +1,6 @@
 // Chef Events List Page
-// Displays all events in a filterable, sortable table
+// Displays all events in a filterable table or kanban board.
+// Toggle between views with ?view=list (default) and ?view=kanban.
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
@@ -9,6 +10,7 @@ import { requireChef } from '@/lib/auth/get-user'
 export const metadata: Metadata = { title: 'Events - ChefFlow' }
 import { getEvents } from '@/lib/events/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
+import { EventsKanban } from '@/components/events/events-kanban'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
@@ -17,18 +19,17 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
 type EventStatus = 'all' | 'draft' | 'proposed' | 'accepted' | 'paid' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
+type ViewMode = 'list' | 'kanban'
 
 async function EventsList({ status }: { status: EventStatus }) {
   await requireChef()
 
   let events = await getEvents()
 
-  // Filter by status if not 'all'
   if (status !== 'all') {
     events = events.filter(event => event.status === status)
   }
 
-  // Sort by date (newest first by default)
   events = events.sort((a, b) =>
     new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
@@ -109,14 +110,21 @@ async function EventsList({ status }: { status: EventStatus }) {
   )
 }
 
+async function EventsKanbanView() {
+  await requireChef()
+  const events = await getEvents()
+  return <EventsKanban events={events} />
+}
+
 export default async function EventsPage({
   searchParams
 }: {
-  searchParams: { status?: EventStatus }
+  searchParams: { status?: EventStatus; view?: ViewMode }
 }) {
   await requireChef()
 
   const status = (searchParams.status || 'all') as EventStatus
+  const view = (searchParams.view || 'list') as ViewMode
 
   return (
     <div className="space-y-6">
@@ -126,97 +134,71 @@ export default async function EventsPage({
           <h1 className="text-3xl font-bold text-stone-900">Events</h1>
           <p className="text-stone-600 mt-1">Manage your events and proposals</p>
         </div>
-        <Link href="/events/new">
-          <Button>+ New Event</Button>
-        </Link>
-      </div>
-
-      {/* Status Filter */}
-      <Card className="p-4">
-        <div className="flex gap-2 flex-wrap">
-          <Link href="/events?status=all">
-            <Button
-              size="sm"
-              variant={status === 'all' ? 'primary' : 'secondary'}
+        <div className="flex items-center gap-2">
+          {/* View toggle */}
+          <div className="flex border border-stone-200 rounded-lg overflow-hidden">
+            <Link
+              href={`/events?status=${status}&view=list`}
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                view === 'list'
+                  ? 'bg-stone-900 text-white'
+                  : 'bg-white text-stone-600 hover:bg-stone-50'
+              }`}
             >
-              All
-            </Button>
-          </Link>
-          <Link href="/events?status=draft">
-            <Button
-              size="sm"
-              variant={status === 'draft' ? 'primary' : 'secondary'}
+              List
+            </Link>
+            <Link
+              href="/events?view=kanban"
+              className={`px-3 py-1.5 text-sm font-medium transition-colors ${
+                view === 'kanban'
+                  ? 'bg-stone-900 text-white'
+                  : 'bg-white text-stone-600 hover:bg-stone-50'
+              }`}
             >
-              Draft
-            </Button>
-          </Link>
-          <Link href="/events?status=proposed">
-            <Button
-              size="sm"
-              variant={status === 'proposed' ? 'primary' : 'secondary'}
-            >
-              Proposed
-            </Button>
-          </Link>
-          <Link href="/events?status=accepted">
-            <Button
-              size="sm"
-              variant={status === 'accepted' ? 'primary' : 'secondary'}
-            >
-              Accepted
-            </Button>
-          </Link>
-          <Link href="/events?status=paid">
-            <Button
-              size="sm"
-              variant={status === 'paid' ? 'primary' : 'secondary'}
-            >
-              Paid
-            </Button>
-          </Link>
-          <Link href="/events?status=confirmed">
-            <Button
-              size="sm"
-              variant={status === 'confirmed' ? 'primary' : 'secondary'}
-            >
-              Confirmed
-            </Button>
-          </Link>
-          <Link href="/events?status=in_progress">
-            <Button
-              size="sm"
-              variant={status === 'in_progress' ? 'primary' : 'secondary'}
-            >
-              In Progress
-            </Button>
-          </Link>
-          <Link href="/events?status=completed">
-            <Button
-              size="sm"
-              variant={status === 'completed' ? 'primary' : 'secondary'}
-            >
-              Completed
-            </Button>
-          </Link>
-          <Link href="/events?status=cancelled">
-            <Button
-              size="sm"
-              variant={status === 'cancelled' ? 'primary' : 'secondary'}
-            >
-              Cancelled
-            </Button>
+              Board
+            </Link>
+          </div>
+          <Link href="/events/new">
+            <Button>+ New Event</Button>
           </Link>
         </div>
-      </Card>
+      </div>
 
-      {/* Events Table */}
-      <Suspense fallback={
-        <Card className="p-8 text-center">
-          <p className="text-stone-500">Loading events...</p>
-        </Card>
-      }>
-        <EventsList status={status} />
-      </Suspense>
+      {view === 'kanban' ? (
+        /* Kanban Board */
+        <Suspense fallback={
+          <div className="py-12 text-center text-stone-500 text-sm">Loading board...</div>
+        }>
+          <EventsKanbanView />
+        </Suspense>
+      ) : (
+        <>
+          {/* Status Filter — list view only */}
+          <Card className="p-4">
+            <div className="flex gap-2 flex-wrap">
+              {(['all', 'draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'cancelled'] as const).map(s => (
+                <Link key={s} href={`/events?status=${s}&view=list`}>
+                  <Button
+                    size="sm"
+                    variant={status === s ? 'primary' : 'secondary'}
+                  >
+                    {s === 'all' ? 'All' : s === 'in_progress' ? 'In Progress' : s.charAt(0).toUpperCase() + s.slice(1)}
+                  </Button>
+                </Link>
+              ))}
+            </div>
+          </Card>
+
+          {/* Events Table */}
+          <Suspense fallback={
+            <Card className="p-8 text-center">
+              <p className="text-stone-500">Loading events...</p>
+            </Card>
+          }>
+            <EventsList status={status} />
+          </Suspense>
+        </>
+      )}
     </div>
   )
 }

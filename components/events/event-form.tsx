@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { AddressAutocomplete, type AddressData } from '@/components/ui/address-autocomplete'
 import { PartnerSelect } from '@/components/partners/partner-select'
 import { createEvent, updateEvent, type CreateEventInput } from '@/lib/events/actions'
+import { checkDateConflicts } from '@/lib/availability/actions'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 
 type Client = {
@@ -34,6 +35,21 @@ type PartnerLocation = {
   state: string | null
 }
 
+// Common IANA timezone options for the picker
+const TIMEZONE_OPTIONS = [
+  { value: 'America/New_York', label: 'Eastern Time (ET)' },
+  { value: 'America/Chicago', label: 'Central Time (CT)' },
+  { value: 'America/Denver', label: 'Mountain Time (MT)' },
+  { value: 'America/Phoenix', label: 'Arizona Time (no DST)' },
+  { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+  { value: 'America/Anchorage', label: 'Alaska Time (AKT)' },
+  { value: 'Pacific/Honolulu', label: 'Hawaii Time (HT)' },
+  { value: 'Europe/London', label: 'London (GMT/BST)' },
+  { value: 'Europe/Paris', label: 'Paris (CET/CEST)' },
+  { value: 'Asia/Tokyo', label: 'Tokyo (JST)' },
+  { value: 'Australia/Sydney', label: 'Sydney (AEST/AEDT)' },
+]
+
 type Event = {
   id: string
   client_id: string
@@ -50,6 +66,7 @@ type Event = {
   deposit_amount_cents: number | null
   referral_partner_id?: string | null
   partner_location_id?: string | null
+  event_timezone?: string | null
 }
 
 type EventFormProps = {
@@ -68,11 +85,19 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
   // Two-step state — edit mode starts on step 1 (both steps accessible via Back)
   const [step, setStep] = useState<1 | 2>(1)
 
+  // Conflict warning state
+  const [conflictWarnings, setConflictWarnings] = useState<string[] | null>(null)
+  const [conflictOverride, setConflictOverride] = useState(false)
+  const [conflictChecking, setConflictChecking] = useState(false)
+
   // Form state
   const [clientId, setClientId] = useState(event?.client_id || '')
   const [occasion, setOccasion] = useState(event?.occasion || '')
   const [referralPartnerId, setReferralPartnerId] = useState<string | null>(event?.referral_partner_id ?? null)
   const [partnerLocationId, setPartnerLocationId] = useState<string | null>(event?.partner_location_id ?? null)
+  const [eventTimezone, setEventTimezone] = useState(
+    event?.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'
+  )
   const [eventDate, setEventDate] = useState(
     event?.event_date ? event.event_date.substring(0, 16) : ''
   )
@@ -101,8 +126,8 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
     setLocationLng(data.lng)
   }
 
-  // Step 1 validation before advancing
-  const handleContinue = () => {
+  // Step 1 validation before advancing (async — checks availability conflicts)
+  const handleContinue = async () => {
     setError(null)
     if (!clientId) { setError('Please select a client'); return }
     if (!eventDate) { setError('Event date & time is required'); return }
@@ -111,6 +136,32 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
     if (!locationAddress) { setError('Address is required'); return }
     if (!locationCity) { setError('City is required'); return }
     if (!locationZip) { setError('ZIP code is required'); return }
+
+    // If user already acknowledged conflicts, advance
+    if (conflictWarnings !== null && conflictOverride) {
+      setStep(2)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
+    // Check for scheduling conflicts
+    const dateOnly = eventDate.slice(0, 10) // YYYY-MM-DD
+    setConflictChecking(true)
+    try {
+      const result = await checkDateConflicts(dateOnly, mode === 'edit' ? event?.id : undefined)
+      setConflictChecking(false)
+
+      if (result.warnings.length > 0) {
+        setConflictWarnings(result.warnings)
+        setConflictOverride(false)
+        return // Stay on step 1 until user acknowledges
+      }
+    } catch {
+      setConflictChecking(false)
+      // Non-blocking: if conflict check fails, still allow advance
+    }
+
+    setConflictWarnings(null)
     setStep(2)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -152,6 +203,7 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
           location_lng: locationLng ?? undefined,
           referral_partner_id: referralPartnerId,
           partner_location_id: partnerLocationId,
+          event_timezone: eventTimezone || undefined,
         }
 
         const result = await createEvent(input)
@@ -178,6 +230,7 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
           location_lng: locationLng ?? undefined,
           referral_partner_id: referralPartnerId,
           partner_location_id: partnerLocationId,
+          event_timezone: eventTimezone || undefined,
         })
 
         if (result.success) {
@@ -255,7 +308,11 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
               type="datetime-local"
               required
               value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
+              onChange={(e) => {
+                setEventDate(e.target.value)
+                setConflictWarnings(null)
+                setConflictOverride(false)
+              }}
               helperText="Select the date and time of your event"
             />
 
@@ -266,6 +323,14 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
               value={serveTime}
               onChange={(e) => setServeTime(e.target.value)}
               helperText="When food should be served"
+            />
+
+            <Select
+              label="Timezone"
+              options={TIMEZONE_OPTIONS}
+              value={eventTimezone}
+              onChange={(e) => setEventTimezone(e.target.value)}
+              helperText="All times for this event are in this timezone"
             />
 
             <Input
@@ -310,9 +375,41 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
               />
             </div>
 
+            {/* Conflict warning banner */}
+            {conflictWarnings && conflictWarnings.length > 0 && (
+              <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 space-y-3">
+                <p className="text-sm font-semibold text-amber-800">Scheduling conflict detected</p>
+                <ul className="space-y-1">
+                  {conflictWarnings.map((w, i) => (
+                    <li key={i} className="text-sm text-amber-700 flex gap-2">
+                      <span className="mt-0.5 shrink-0">⚠</span>
+                      <span>{w}</span>
+                    </li>
+                  ))}
+                </ul>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={conflictOverride}
+                    onChange={(e) => setConflictOverride(e.target.checked)}
+                    className="rounded border-amber-400 text-amber-600 focus:ring-amber-500"
+                  />
+                  <span className="text-sm text-amber-800 font-medium">
+                    I understand — create the event anyway
+                  </span>
+                </label>
+              </div>
+            )}
+
             <div className="flex gap-3 pt-2">
-              <Button type="button" onClick={handleContinue} variant="primary">
-                Continue →
+              <Button
+                type="button"
+                onClick={handleContinue}
+                variant="primary"
+                loading={conflictChecking}
+                disabled={conflictChecking || (conflictWarnings !== null && conflictWarnings.length > 0 && !conflictOverride)}
+              >
+                {conflictChecking ? 'Checking...' : 'Continue →'}
               </Button>
               <Button type="button" variant="secondary" onClick={() => router.back()}>
                 Cancel

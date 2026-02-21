@@ -56,6 +56,7 @@ import { TempLogPanel } from '@/components/events/temp-log-panel'
 import { EventStaffPanel } from '@/components/events/event-staff-panel'
 import { MenuApprovalStatus } from '@/components/events/menu-approval-status'
 import { EventPrepSchedule } from '@/components/events/event-prep-schedule'
+import { PrepBlockNudgeBanner } from '@/components/events/prep-block-nudge'
 import { getEventPrepBlocks } from '@/lib/scheduling/prep-block-actions'
 import { ReadinessGatePanel } from '@/components/events/readiness-gate-panel'
 import { getEventReadiness } from '@/lib/events/readiness'
@@ -65,6 +66,18 @@ import { EventCollaboratorsPanel } from '@/components/events/event-collaborators
 import { getEventCollaborators } from '@/lib/collaboration/actions'
 import { sendClientSurvey } from '@/lib/surveys/actions'
 import { ContractSection } from '@/components/contracts/contract-section'
+import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
+import { AvailableLeftovers } from '@/components/events/available-leftovers'
+import { getAvailableCarryForwardItems } from '@/lib/events/carry-forward'
+import { getPackingConfirmationCount } from '@/lib/packing/actions'
+import { getPaymentPlan } from '@/lib/finance/payment-plan-actions'
+import { PaymentPlanPanel } from '@/components/finance/payment-plan-panel'
+import { getMileageLogs } from '@/lib/finance/mileage-actions'
+import { MileageLogPanel } from '@/components/finance/mileage-log-panel'
+import { getEventTips } from '@/lib/finance/tip-actions'
+import { TipLogPanel } from '@/components/finance/tip-log-panel'
+import { QuickDebriefPrompt } from '@/components/events/quick-debrief-prompt'
+import { BudgetTracker } from '@/components/events/budget-tracker'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -173,17 +186,21 @@ export default async function EventDetailPage({
     ? await getTakeAChefConversionData(params.id).catch(() => null)
     : null
 
-  // Fetch guest RSVP data and event photos
-  const [guestShares, guestList, rsvpSummary, eventPhotos] = await Promise.all([
+  // Fetch guest RSVP data, event photos, and carry-forward inventory
+  const [guestShares, guestList, rsvpSummary, eventPhotos, carryForwardItems, paymentPlanInstallments, mileageEntries, eventTips] = await Promise.all([
     getEventShares(params.id),
     getEventGuests(params.id),
     getEventRSVPSummary(params.id),
     isCompletedOrBeyond ? getEventPhotosForChef(params.id) : Promise.resolve([]),
+    event.status !== 'cancelled' ? getAvailableCarryForwardItems(params.id).catch(() => []) : Promise.resolve([]),
+    getPaymentPlan(params.id).catch(() => []),
+    getMileageLogs(params.id).catch(() => []),
+    getEventTips(params.id).catch(() => []),
   ])
   const activeShare = (guestShares as any[]).find((s) => s.is_active) || null
 
   // Fetch operational panel data — wrapped in catch so the page works before migrations are applied
-  const [contingencyNotes, emergencyContacts, tempLogs, staffMembers, staffAssignments, menuApprovalData, prepBlocks, eventCollaborators] = await Promise.all([
+  const [contingencyNotes, emergencyContacts, tempLogs, staffMembers, staffAssignments, menuApprovalData, prepBlocks, eventCollaborators, packingConfirmedCount] = await Promise.all([
     event.status !== 'cancelled' ? getEventContingencyNotes(params.id).catch(() => []) : Promise.resolve([]),
     event.status !== 'cancelled' ? listEmergencyContacts().catch(() => []) : Promise.resolve([]),
     ['in_progress', 'completed'].includes(event.status) ? getEventTempLog(params.id).catch(() => []) : Promise.resolve([]),
@@ -192,6 +209,7 @@ export default async function EventDetailPage({
     eventMenus && event.status !== 'cancelled' ? getMenuApprovalStatus(params.id).catch(() => null) : Promise.resolve(null),
     event.status !== 'cancelled' ? getEventPrepBlocks(params.id).catch(() => []) : Promise.resolve([]),
     getEventCollaborators(params.id).catch(() => []),
+    ['confirmed', 'in_progress'].includes(event.status) ? getPackingConfirmationCount(params.id).catch(() => 0) : Promise.resolve(0),
   ])
 
   // For collaborating chefs (non-owners): find their row to show role context in the banner
@@ -210,6 +228,11 @@ export default async function EventDetailPage({
           </div>
           <p className="text-stone-600 mt-1">
             {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy \'at\' h:mm a')}
+            {(event as any).event_timezone && (
+              <span className="ml-2 text-xs text-stone-400 font-normal">
+                {(event as any).event_timezone.replace('America/', '').replace('_', ' ')}
+              </span>
+            )}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -224,6 +247,11 @@ export default async function EventDetailPage({
           {!['draft', 'cancelled'].includes(event.status) && (
             <Link href={`/events/${event.id}/pack`}>
               <Button variant="secondary">Packing List</Button>
+            </Link>
+          )}
+          {eventMenus && !['cancelled'].includes(event.status) && (
+            <Link href={`/events/${event.id}/grocery-quote`}>
+              <Button variant="secondary">Grocery Quote</Button>
             </Link>
           )}
           <Link href={`/events/${event.id}/travel`}>
@@ -252,12 +280,36 @@ export default async function EventDetailPage({
         </div>
       )}
 
+      {/* Deposit Shortfall Banner — accepted/paid events with uncollected deposit */}
+      {(['accepted', 'paid'].includes(event.status)) &&
+        (event as any).deposit_amount_cents > 0 &&
+        totalPaid < (event as any).deposit_amount_cents && (
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+          <p className="text-sm font-medium text-amber-900">
+            Awaiting {formatCurrency((event as any).deposit_amount_cents - totalPaid)} deposit
+          </p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            {formatCurrency((event as any).deposit_amount_cents)} required •{' '}
+            {formatCurrency(totalPaid)} collected — record payment below to proceed to confirmation.
+          </p>
+        </div>
+      )}
+
       {/* Take a Chef → Direct Conversion Banner */}
       {tacConversion?.isTakeAChef && tacConversion.directBookingUrl && (
         <TakeAChefConvertBanner
           clientName={tacConversion.clientName}
           directBookingUrl={tacConversion.directBookingUrl}
           eventId={params.id}
+        />
+      )}
+
+      {/* Quick Debrief — surfaces within 48h of completion when no AAR exists */}
+      {event.status === 'completed' && (
+        <QuickDebriefPrompt
+          eventId={params.id}
+          hasAAR={!!aar}
+          completedAt={(event as any).service_completed_at ?? event.updated_at}
         />
       )}
 
@@ -276,6 +328,39 @@ export default async function EventDetailPage({
             </div>
           </div>
         </Card>
+      )}
+
+      {/* Packing Progress — for confirmed/in_progress events */}
+      {['confirmed', 'in_progress'].includes(event.status) && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-sm font-semibold text-stone-700">Packing</h3>
+                <Link href={`/events/${event.id}/pack`} className="text-xs text-brand-600 hover:text-brand-700">
+                  Open checklist &rarr;
+                </Link>
+              </div>
+              {(event as any).car_packed ? (
+                <p className="text-sm text-emerald-700 font-medium">Car packed</p>
+              ) : packingConfirmedCount > 0 ? (
+                <p className="text-sm text-stone-600">{packingConfirmedCount} item{packingConfirmedCount !== 1 ? 's' : ''} confirmed packed</p>
+              ) : (
+                <p className="text-sm text-stone-400">Not started — open checklist to begin</p>
+              )}
+            </div>
+            {(event as any).car_packed && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                Packed
+              </span>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Prep Block Nudge — confirmed events with no prep blocks scheduled */}
+      {event.status === 'confirmed' && (prepBlocks as any[]).length === 0 && (
+        <PrepBlockNudgeBanner eventId={event.id} />
       )}
 
       {/* Prep Schedule */}
@@ -483,6 +568,34 @@ export default async function EventDetailPage({
         />
       )}
 
+      {/* Payment Plan — installment schedule */}
+      {event.status !== 'cancelled' && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Payment Plan</h2>
+          <PaymentPlanPanel
+            eventId={event.id}
+            initialInstallments={paymentPlanInstallments}
+            quotedPriceCents={event.quoted_price_cents}
+          />
+        </Card>
+      )}
+
+      {/* Mileage Log */}
+      {event.status !== 'cancelled' && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Mileage Log</h2>
+          <MileageLogPanel eventId={event.id} initialEntries={mileageEntries} />
+        </Card>
+      )}
+
+      {/* Tip Log */}
+      {(event.status === 'in_progress' || event.status === 'completed') && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Tips Received</h2>
+          <TipLogPanel eventId={event.id} initialTips={eventTips} />
+        </Card>
+      )}
+
       {/* Process Refund — for cancelled events with prior payments */}
       {event.status === 'cancelled' && totalPaid > 0 && refundRecommendationData && (
         <ProcessRefundPanel
@@ -494,51 +607,14 @@ export default async function EventDetailPage({
         />
       )}
 
-      {/* Budget Guardrail — shown when event has pricing but few expenses */}
-      {budgetGuardrail.quotedPriceCents > 0 && eventExpenseData.expenses.length === 0 && (
-        <Card className="p-6 border-brand-200 bg-brand-50">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h2 className="font-semibold text-brand-900">Shopping Budget</h2>
-              <p className="text-sm text-brand-700 mt-1">{budgetGuardrail.message}</p>
-              {budgetGuardrail.historicalAvgSpendCents && (
-                <p className="text-xs text-brand-600 mt-1">
-                  Your average grocery spend: {formatCurrency(budgetGuardrail.historicalAvgSpendCents)}
-                </p>
-              )}
-            </div>
-            <Link href={`/expenses/new?event_id=${event.id}`}>
-              <Button size="sm">Log Expense</Button>
-            </Link>
-          </div>
-        </Card>
+      {/* Budget Tracker — shows budget vs. actual spend, lets chef set a custom budget */}
+      {budgetGuardrail.quotedPriceCents > 0 && (
+        <BudgetTracker eventId={event.id} guardrail={budgetGuardrail} />
       )}
 
-      {/* Budget Guardrail — updated version when expenses exist */}
-      {budgetGuardrail.quotedPriceCents > 0 && eventExpenseData.expenses.length > 0 && (
-        <Card className={`p-6 ${
-          budgetGuardrail.status === 'over' ? 'border-red-200 bg-red-50' :
-          budgetGuardrail.status === 'near' ? 'border-yellow-200 bg-yellow-50' :
-          'border-green-200 bg-green-50'
-        }`}>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <div>
-              <h2 className={`font-semibold ${
-                budgetGuardrail.status === 'over' ? 'text-red-900' :
-                budgetGuardrail.status === 'near' ? 'text-yellow-900' :
-                'text-green-900'
-              }`}>Budget Status</h2>
-              <p className={`text-sm mt-1 ${
-                budgetGuardrail.status === 'over' ? 'text-red-700' :
-                budgetGuardrail.status === 'near' ? 'text-yellow-700' :
-                'text-green-700'
-              }`}>{budgetGuardrail.message}</p>
-            </div>
-            <Link href={`/expenses/new?event_id=${event.id}`}>
-              <Button size="sm" variant="secondary">Add Expense</Button>
-            </Link>
-          </div>
-        </Card>
+      {/* Quick Receipt Capture — shown for active/confirmed events */}
+      {['confirmed', 'in_progress'].includes(event.status) && (
+        <QuickReceiptCapture eventId={event.id} />
       )}
 
       {/* Expenses Section */}
@@ -645,11 +721,27 @@ export default async function EventDetailPage({
           </dl>
           <div className="flex flex-wrap gap-4 mt-3 text-sm text-stone-500">
             {profitSummary.profit.foodCostPercent > 0 && (
-              <span>Food cost: {profitSummary.profit.foodCostPercent}% of revenue</span>
+              <span>
+                Food cost: {profitSummary.profit.foodCostPercent}% of revenue
+                {profitSummary.profit.chefAvgFoodCostPercent !== null && (
+                  <span className={`ml-1.5 font-medium ${
+                    profitSummary.profit.foodCostPercent > profitSummary.profit.chefAvgFoodCostPercent
+                      ? 'text-amber-600'
+                      : 'text-emerald-600'
+                  }`}>
+                    ({profitSummary.profit.foodCostPercent > profitSummary.profit.chefAvgFoodCostPercent ? '↑' : '↓'} avg {profitSummary.profit.chefAvgFoodCostPercent}%)
+                  </span>
+                )}
+              </span>
             )}
             {profitSummary.profit.effectiveHourlyRateCents && (
               <span className="font-medium text-stone-700">
                 Effective rate: {formatCurrency(profitSummary.profit.effectiveHourlyRateCents)}/hr
+              </span>
+            )}
+            {(event as any).leftover_value_received_cents > 0 && (
+              <span className="text-emerald-600">
+                Leftover credit applied: −{formatCurrency((event as any).leftover_value_received_cents)}
               </span>
             )}
             {profitSummary.cashback && (
@@ -658,6 +750,16 @@ export default async function EventDetailPage({
               </span>
             )}
           </div>
+          {profitSummary.perGuest && (
+            <div className="mt-3 pt-3 border-t border-stone-100 flex flex-wrap gap-4 text-sm text-stone-500">
+              <span className="font-medium text-stone-600">Per guest ({profitSummary.perGuest.guestCount} guests):</span>
+              <span>{formatCurrency(profitSummary.perGuest.revenuePerGuestCents)} revenue</span>
+              <span className="text-red-600">{formatCurrency(profitSummary.perGuest.costPerGuestCents)} cost</span>
+              <span className={profitSummary.perGuest.profitPerGuestCents >= 0 ? 'text-emerald-600 font-medium' : 'text-red-600 font-medium'}>
+                {formatCurrency(profitSummary.perGuest.profitPerGuestCents)} profit
+              </span>
+            </div>
+          )}
         </Card>
       )}
 
@@ -751,7 +853,15 @@ export default async function EventDetailPage({
       {isCompletedOrBeyond && (
         <MenuModifications
           eventId={event.id}
-          initialModifications={menuMods}
+          initialModifications={menuMods as any}
+        />
+      )}
+
+      {/* Carry-Forward Inventory — leftovers from other events available for use here */}
+      {event.status !== 'cancelled' && (
+        <AvailableLeftovers
+          eventId={event.id}
+          items={carryForwardItems}
         />
       )}
 
@@ -759,7 +869,7 @@ export default async function EventDetailPage({
       {isCompletedOrBeyond && (
         <UnusedIngredients
           eventId={event.id}
-          initialItems={unusedItems}
+          initialItems={unusedItems as any}
         />
       )}
 
