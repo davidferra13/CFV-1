@@ -4,14 +4,16 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { getPartnersWithLocations } from '@/lib/partners/actions'
+import { getDepositDefaults } from '@/lib/automations/settings-actions'
 import { EventForm } from '@/components/events/event-form'
 
 export default async function NewEventPage() {
   await requireChef()
 
-  const [clients, { partners, partnerLocations }] = await Promise.all([
+  const [clients, { partners, partnerLocations }, depositDefaults] = await Promise.all([
     getClients(),
     getPartnersWithLocations(),
+    getDepositDefaults(),
   ])
 
   return (
@@ -25,7 +27,10 @@ export default async function NewEventPage() {
         </p>
         <p className="text-sm text-stone-500">
           Or{' '}
-          <a href="/events/new/from-text" className="text-brand-600 hover:text-brand-700 font-medium">
+          <a
+            href="/events/new/from-text"
+            className="text-brand-600 hover:text-brand-700 font-medium"
+          >
             just describe it &rarr;
           </a>
         </p>
@@ -36,7 +41,13 @@ export default async function NewEventPage() {
         <p className="text-stone-600 mt-1">Fill in the details for your new event</p>
       </div>
 
-      <EventForm clients={clients} mode="create" partners={partners} partnerLocations={partnerLocations} />
+      <EventForm
+        clients={clients}
+        mode="create"
+        partners={partners}
+        partnerLocations={partnerLocations}
+        depositDefaults={depositDefaults}
+      />
     </div>
   )
 }

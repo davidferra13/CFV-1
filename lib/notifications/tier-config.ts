@@ -72,6 +72,9 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   quote_expiring_soon: 'alert',
   photos_ready: 'info',
 
+  // ── Leads ── Alert
+  new_guest_lead: 'alert',
+
   // ── Loyalty ── Alert (chef must deliver the reward)
   reward_redeemed_by_client: 'alert',
 
@@ -83,6 +86,20 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   goal_nudge: 'info',
   goal_milestone: 'alert',
   goal_weekly_digest: 'info',
+
+  // ── Protection & Wellbeing ──
+  insurance_expiring_30d: 'info',
+  insurance_expiring_7d: 'alert',
+  cert_expiring_90d: 'info',
+  cert_expiring_30d: 'info',
+  cert_expiring_7d: 'alert',
+  new_negative_mention: 'alert',
+  recall_alert_matched: 'critical',
+  capacity_limit_approaching: 'alert',
+  relationship_cooling: 'info',
+  burnout_risk_high: 'alert',
+  no_education_logged_90d: 'info',
+  quarterly_checkin_due: 'info',
 }
 
 // ─── Default Channels per Tier ───────────────────────────────────────────────

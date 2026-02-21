@@ -30,6 +30,17 @@ const UpdateSettingsSchema = z.object({
   weekly_summary_enabled: z.boolean().optional(),
   inquiry_auto_response_template: z.string().max(2000).nullable().optional(),
   auto_response_template_enabled: z.boolean().optional(),
+  // Deposit default preferences
+  default_deposit_enabled: z.boolean().optional(),
+  default_deposit_type: z.enum(['percentage', 'fixed']).optional(),
+  default_deposit_percentage: z.number().int().min(0).max(100).optional(),
+  default_deposit_amount_cents: z.number().int().min(0).optional(),
+  // Pre-event reminder interval toggles
+  event_reminder_30d_enabled: z.boolean().optional(),
+  event_reminder_14d_enabled: z.boolean().optional(),
+  event_reminder_7d_enabled: z.boolean().optional(),
+  event_reminder_2d_enabled: z.boolean().optional(),
+  event_reminder_1d_enabled: z.boolean().optional(),
 })
 
 export type UpdateAutomationSettingsInput = z.infer<typeof UpdateSettingsSchema>
@@ -74,16 +85,14 @@ export async function updateAutomationSettings(input: UpdateAutomationSettingsIn
   const validated = UpdateSettingsSchema.parse(input)
   const supabase = createServerClient()
 
-  const { error } = await supabase
-    .from('chef_automation_settings' as any)
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        ...validated,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'tenant_id' }
-    )
+  const { error } = await supabase.from('chef_automation_settings' as any).upsert(
+    {
+      tenant_id: user.tenantId!,
+      ...validated,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id' }
+  )
 
   if (error) {
     console.error('[updateAutomationSettings] Upsert failed:', error)
@@ -92,6 +101,38 @@ export async function updateAutomationSettings(input: UpdateAutomationSettingsIn
 
   revalidatePath('/settings/automations')
   return { success: true }
+}
+
+// ─── Get Deposit Defaults ─────────────────────────────────────────────────
+// Returns the chef's deposit default preferences for auto-filling event forms.
+
+export async function getDepositDefaults(): Promise<{
+  enabled: boolean
+  type: 'percentage' | 'fixed'
+  percentage: number
+  amountCents: number
+}> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await supabase
+    .from('chef_automation_settings' as any)
+    .select(
+      'default_deposit_enabled, default_deposit_type, default_deposit_percentage, default_deposit_amount_cents'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle()
+
+  if (!data || !(data as any).default_deposit_enabled) {
+    return { enabled: false, type: 'percentage', percentage: 0, amountCents: 0 }
+  }
+
+  return {
+    enabled: (data as any).default_deposit_enabled,
+    type: (data as any).default_deposit_type ?? 'percentage',
+    percentage: (data as any).default_deposit_percentage ?? 0,
+    amountCents: (data as any).default_deposit_amount_cents ?? 0,
+  }
 }
 
 // ─── Admin helper: fetch settings for a tenant (no auth check) ───────────

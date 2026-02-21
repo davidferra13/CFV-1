@@ -193,6 +193,17 @@ export type ChefAutomationSettings = {
   payment_reminder_days_before: number
   payment_overdue_alert_enabled: boolean
   payment_overdue_alert_days_after: number
+  // Deposit default preferences
+  default_deposit_enabled: boolean
+  default_deposit_type: 'percentage' | 'fixed'
+  default_deposit_percentage: number
+  default_deposit_amount_cents: number
+  // Pre-event reminder interval toggles
+  event_reminder_30d_enabled: boolean
+  event_reminder_14d_enabled: boolean
+  event_reminder_7d_enabled: boolean
+  event_reminder_2d_enabled: boolean
+  event_reminder_1d_enabled: boolean
   created_at: string
   updated_at: string
 }
@@ -224,4 +235,15 @@ export const DEFAULT_AUTOMATION_SETTINGS: Omit<
   payment_reminder_days_before: 2,
   payment_overdue_alert_enabled: true,
   payment_overdue_alert_days_after: 1,
+  // Deposit default preferences
+  default_deposit_enabled: false,
+  default_deposit_type: 'percentage' as const,
+  default_deposit_percentage: 0,
+  default_deposit_amount_cents: 0,
+  // Pre-event reminder interval toggles
+  event_reminder_30d_enabled: true,
+  event_reminder_14d_enabled: true,
+  event_reminder_7d_enabled: true,
+  event_reminder_2d_enabled: true,
+  event_reminder_1d_enabled: true,
 }

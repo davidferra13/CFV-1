@@ -121,7 +121,9 @@ export async function submitGuestLead(input: {
     const { createNotification } = await import('@/lib/notifications/actions')
     await createNotification({
       tenantId: event.tenant_id,
+      recipientId: event.tenant_id,
       category: 'lead',
+      action: 'new_guest_lead',
       title: 'New guest lead',
       body: `${validated.name.trim()} expressed interest after attending your event.`,
       actionUrl: '/guest-leads',

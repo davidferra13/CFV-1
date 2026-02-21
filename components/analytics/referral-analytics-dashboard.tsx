@@ -209,7 +209,10 @@ export function ReferralAnalyticsDashboard({ data }: { data: ReferralAnalyticsDa
                     />
                     <Tooltip
                       contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-                      formatter={(value: number) => [formatCurrency(value), 'Revenue']}
+                      formatter={(value: number | undefined) => [
+                        formatCurrency(value ?? 0),
+                        'Revenue',
+                      ]}
                     />
                     <Bar dataKey="revenue" fill="#10b981" radius={[0, 4, 4, 0]} />
                   </BarChart>

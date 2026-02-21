@@ -14,9 +14,7 @@ import { getChefPreferences } from '@/lib/chef/actions'
 
 const ExpenseCategoryEnum = z.enum(EXPENSE_CATEGORY_VALUES)
 
-const PaymentMethodEnum = z.enum([
-  'cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other'
-])
+const PaymentMethodEnum = z.enum(['cash', 'venmo', 'paypal', 'zelle', 'card', 'check', 'other'])
 
 const CreateExpenseSchema = z.object({
   event_id: z.string().uuid().nullable().optional(),
@@ -111,7 +109,12 @@ export async function createExpense(input: CreateExpenseInput) {
       entityType: 'expense',
       entityId: data.id,
       summary: `Added expense: $${(validated.amount_cents / 100).toFixed(2)} — ${validated.description || validated.category}`,
-      context: { amount_cents: validated.amount_cents, category: validated.category, event_id: validated.event_id, amount_display: `$${(validated.amount_cents / 100).toFixed(2)}` },
+      context: {
+        amount_cents: validated.amount_cents,
+        category: validated.category,
+        event_id: validated.event_id,
+        amount_display: `$${(validated.amount_cents / 100).toFixed(2)}`,
+      },
     })
   } catch (err) {
     console.error('[createExpense] Activity log failed (non-blocking):', err)
@@ -129,10 +132,12 @@ export async function getExpenses(filters: ExpenseFilters = {}) {
 
   let query = supabase
     .from('expenses')
-    .select(`
+    .select(
+      `
       *,
       event:events(id, occasion, event_date, client:clients(full_name))
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
 
   if (filters.event_id) {
@@ -170,10 +175,12 @@ export async function getExpenseById(id: string) {
 
   const { data, error } = await supabase
     .from('expenses')
-    .select(`
+    .select(
+      `
       *,
       event:events(id, occasion, event_date, client:clients(full_name))
-    `)
+    `
+    )
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -316,9 +323,11 @@ export async function getEventProfitSummary(eventId: string) {
     .eq('tenant_id', user.tenantId!)
 
   // Get event time tracking, guest count, and estimated food cost data
-  const { data: eventData } = await supabase
+  const { data: eventData } = await (supabase as any)
     .from('events')
-    .select('time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count, estimated_food_cost_cents')
+    .select(
+      'time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count, estimated_food_cost_cents'
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -333,15 +342,25 @@ export async function getEventProfitSummary(eventId: string) {
   let totalPersonalCents = 0
   let estimatedCashbackCents = 0
 
-  for (const exp of (expenses || [])) {
+  for (const exp of expenses || []) {
     if (exp.is_business) {
       totalBusinessCents += exp.amount_cents
       switch (exp.category) {
-        case 'groceries': groceriesCents += exp.amount_cents; break
-        case 'alcohol': alcoholCents += exp.amount_cents; break
-        case 'specialty_items': specialtyCents += exp.amount_cents; break
-        case 'gas_mileage': gasMileageCents += exp.amount_cents; break
-        default: otherCents += exp.amount_cents; break
+        case 'groceries':
+          groceriesCents += exp.amount_cents
+          break
+        case 'alcohol':
+          alcoholCents += exp.amount_cents
+          break
+        case 'specialty_items':
+          specialtyCents += exp.amount_cents
+          break
+        case 'gas_mileage':
+          gasMileageCents += exp.amount_cents
+          break
+        default:
+          otherCents += exp.amount_cents
+          break
       }
     } else {
       totalPersonalCents += exp.amount_cents
@@ -349,7 +368,7 @@ export async function getEventProfitSummary(eventId: string) {
 
     // Accumulate cashback estimates
     if (exp.card_cashback_percent && exp.card_cashback_percent > 0) {
-      estimatedCashbackCents += Math.round(exp.amount_cents * exp.card_cashback_percent / 100)
+      estimatedCashbackCents += Math.round((exp.amount_cents * exp.card_cashback_percent) / 100)
     }
   }
 
@@ -361,11 +380,12 @@ export async function getEventProfitSummary(eventId: string) {
   const foodIngredientsCents = groceriesCents + alcoholCents + specialtyCents
 
   // Compute total time invested and effective hourly rate
-  const totalMinutes = (eventData?.time_shopping_minutes ?? 0)
-    + (eventData?.time_prep_minutes ?? 0)
-    + (eventData?.time_travel_minutes ?? 0)
-    + (eventData?.time_service_minutes ?? 0)
-    + (eventData?.time_reset_minutes ?? 0)
+  const totalMinutes =
+    (eventData?.time_shopping_minutes ?? 0) +
+    (eventData?.time_prep_minutes ?? 0) +
+    (eventData?.time_travel_minutes ?? 0) +
+    (eventData?.time_service_minutes ?? 0) +
+    (eventData?.time_reset_minutes ?? 0)
 
   const hasTimeData = totalMinutes > 0
   const effectiveHourlyRateCents = hasTimeData
@@ -384,8 +404,8 @@ export async function getEventProfitSummary(eventId: string) {
 
   if (historicalRows && historicalRows.length >= 3) {
     const values = historicalRows
-      .map(r => parseFloat(String(r.food_cost_percentage)))
-      .filter(v => !isNaN(v) && v > 0)
+      .map((r) => parseFloat(String(r.food_cost_percentage)))
+      .filter((v) => !isNaN(v) && v > 0)
     if (values.length >= 3) {
       chefAvgFoodCostPercent = parseFloat(
         ((values.reduce((s, v) => s + v, 0) / values.length) * 100).toFixed(1)
@@ -410,12 +430,10 @@ export async function getEventProfitSummary(eventId: string) {
     },
     profit: {
       grossProfitCents,
-      profitMarginPercent: totalRevenue > 0
-        ? parseFloat(((grossProfitCents / totalRevenue) * 100).toFixed(1))
-        : 0,
-      foodCostPercent: totalRevenue > 0
-        ? parseFloat(((foodIngredientsCents / totalRevenue) * 100).toFixed(1))
-        : 0,
+      profitMarginPercent:
+        totalRevenue > 0 ? parseFloat(((grossProfitCents / totalRevenue) * 100).toFixed(1)) : 0,
+      foodCostPercent:
+        totalRevenue > 0 ? parseFloat(((foodIngredientsCents / totalRevenue) * 100).toFixed(1)) : 0,
       effectiveHourlyRateCents,
       chefAvgFoodCostPercent,
     },
@@ -429,17 +447,22 @@ export async function getEventProfitSummary(eventId: string) {
         profitPerGuestCents: Math.round(grossProfitCents / guestCount),
       }
     })(),
-    timeInvested: hasTimeData ? {
-      shoppingMinutes: eventData?.time_shopping_minutes ?? 0,
-      prepMinutes: eventData?.time_prep_minutes ?? 0,
-      travelMinutes: eventData?.time_travel_minutes ?? 0,
-      serviceMinutes: eventData?.time_service_minutes ?? 0,
-      resetMinutes: eventData?.time_reset_minutes ?? 0,
-      totalMinutes,
-    } : null,
-    cashback: estimatedCashbackCents > 0 ? {
-      estimatedCents: estimatedCashbackCents,
-    } : null,
+    timeInvested: hasTimeData
+      ? {
+          shoppingMinutes: eventData?.time_shopping_minutes ?? 0,
+          prepMinutes: eventData?.time_prep_minutes ?? 0,
+          travelMinutes: eventData?.time_travel_minutes ?? 0,
+          serviceMinutes: eventData?.time_service_minutes ?? 0,
+          resetMinutes: eventData?.time_reset_minutes ?? 0,
+          totalMinutes,
+        }
+      : null,
+    cashback:
+      estimatedCashbackCents > 0
+        ? {
+            estimatedCents: estimatedCashbackCents,
+          }
+        : null,
     estimatedFoodCost: (() => {
       const estimatedCents = (eventData as any)?.estimated_food_cost_cents ?? null
       const actualCents = foodIngredientsCents > 0 ? foodIngredientsCents : null
@@ -449,7 +472,7 @@ export async function getEventProfitSummary(eventId: string) {
         actualCents,
         deltaCents: bothExist ? actualCents - estimatedCents : null,
         deltaPct: bothExist
-          ? ((actualCents - estimatedCents) / estimatedCents * 100).toFixed(1)
+          ? (((actualCents - estimatedCents) / estimatedCents) * 100).toFixed(1)
           : null,
       }
     })(),
@@ -472,7 +495,8 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
   // Get events in this month with financial summaries
   const { data: eventSummaries } = await supabase
     .from('event_financial_summary')
-    .select(`
+    .select(
+      `
       event_id,
       quoted_price_cents,
       total_paid_cents,
@@ -481,7 +505,8 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
       profit_cents,
       profit_margin,
       food_cost_percentage
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
 
   // Get events in this month to filter summaries
@@ -493,10 +518,12 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
     .lt('event_date', endDate)
     .order('event_date', { ascending: true })
 
-  const monthEventIds = new Set((monthEvents || []).map(e => e.id))
+  const monthEventIds = new Set((monthEvents || []).map((e) => e.id))
 
   // Filter financial summaries to this month's events
-  const monthFinancials = (eventSummaries || []).filter(s => s.event_id && monthEventIds.has(s.event_id))
+  const monthFinancials = (eventSummaries || []).filter(
+    (s) => s.event_id && monthEventIds.has(s.event_id)
+  )
 
   let totalRevenueCents = 0
   let totalExpensesCents = 0
@@ -508,11 +535,11 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
   for (const s of monthFinancials) {
     const revCents = s.total_paid_cents ?? 0
     totalRevenueCents += revCents
-    totalExpensesCents += (s.total_expenses_cents ?? 0)
-    totalProfitCents += (s.profit_cents ?? 0)
-    totalTipsCents += (s.tip_amount_cents ?? 0)
+    totalExpensesCents += s.total_expenses_cents ?? 0
+    totalProfitCents += s.profit_cents ?? 0
+    totalTipsCents += s.tip_amount_cents ?? 0
     if (s.food_cost_percentage !== null && s.food_cost_percentage > 0 && revCents > 0) {
-      totalFoodCostCents += Math.round(revCents * s.food_cost_percentage / 100)
+      totalFoodCostCents += Math.round((revCents * s.food_cost_percentage) / 100)
       totalFoodCostRevenueCents += revCents
     }
   }
@@ -522,8 +549,8 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
   const TARGET_MONTHLY_REVENUE_CENTS = prefs.target_monthly_revenue_cents ?? 1000000
 
   // Build per-event breakdown
-  const eventBreakdown = (monthEvents || []).map(event => {
-    const fin = monthFinancials.find(f => f.event_id === event.id)
+  const eventBreakdown = (monthEvents || []).map((event) => {
+    const fin = monthFinancials.find((f) => f.event_id === event.id)
     return {
       eventId: event.id,
       occasion: event.occasion,
@@ -544,7 +571,10 @@ export async function getMonthlyFinancialSummary(year: number, month: number) {
     totalExpensesCents,
     totalProfitCents,
     totalTipsCents,
-    averageFoodCostPercent: totalFoodCostRevenueCents > 0 ? Math.round((totalFoodCostCents / totalFoodCostRevenueCents) * 100) : 0,
+    averageFoodCostPercent:
+      totalFoodCostRevenueCents > 0
+        ? Math.round((totalFoodCostCents / totalFoodCostRevenueCents) * 100)
+        : 0,
     eventCount: monthEvents?.length ?? 0,
     targetRevenueCents: TARGET_MONTHLY_REVENUE_CENTS,
     revenueProgressPercent: Math.round((totalRevenueCents / TARGET_MONTHLY_REVENUE_CENTS) * 100),
@@ -574,10 +604,12 @@ export async function getBudgetGuardrail(eventId: string) {
   const targetMarginPercent = prefs.target_margin_percent ?? 60
 
   // Use chef's manually-set budget if present; otherwise derive from formula
-  const budgetSource: 'manual' | 'formula' = event?.food_cost_budget_cents != null ? 'manual' : 'formula'
-  const maxGrocerySpendCents = budgetSource === 'manual'
-    ? (event!.food_cost_budget_cents as number)
-    : Math.round(quotedPriceCents * (1 - targetMarginPercent / 100))
+  const budgetSource: 'manual' | 'formula' =
+    event?.food_cost_budget_cents != null ? 'manual' : 'formula'
+  const maxGrocerySpendCents =
+    budgetSource === 'manual'
+      ? (event!.food_cost_budget_cents as number)
+      : Math.round(quotedPriceCents * (1 - targetMarginPercent / 100))
 
   // Get current expenses already logged for this event (business only)
   const { data: existingExpenses } = await supabase
@@ -600,15 +632,16 @@ export async function getBudgetGuardrail(eventId: string) {
 
   // Group by event and average
   const eventTotals: Record<string, number> = {}
-  for (const exp of (historicalExpenses || [])) {
+  for (const exp of historicalExpenses || []) {
     if (exp.event_id) {
       eventTotals[exp.event_id] = (eventTotals[exp.event_id] || 0) + exp.amount_cents
     }
   }
   const eventTotalValues = Object.values(eventTotals)
-  const historicalAvgSpendCents = eventTotalValues.length > 0
-    ? Math.round(eventTotalValues.reduce((a, b) => a + b, 0) / eventTotalValues.length)
-    : null
+  const historicalAvgSpendCents =
+    eventTotalValues.length > 0
+      ? Math.round(eventTotalValues.reduce((a, b) => a + b, 0) / eventTotalValues.length)
+      : null
 
   // Determine status
   const remainingBudgetCents = maxGrocerySpendCents - currentSpendCents

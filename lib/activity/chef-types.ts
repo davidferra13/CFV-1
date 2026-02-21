@@ -66,6 +66,12 @@ export type ChefActivityAction =
   | 'hours_logged'
   | 'charity_hours_logged'
   | 'debrief_completed'
+  // Retainers
+  | 'retainer_activated'
+  | 'retainer_paused'
+  | 'retainer_resumed'
+  | 'retainer_cancelled'
+  | 'retainer_completed'
 
 export type ChefActivityEntry = {
   id: string
@@ -110,7 +116,10 @@ export type ResumeItem = {
 }
 
 // Domain visual config for UI
-export const DOMAIN_CONFIG: Record<ChefActivityDomain, { label: string; color: string; bgColor: string }> = {
+export const DOMAIN_CONFIG: Record<
+  ChefActivityDomain,
+  { label: string; color: string; bgColor: string }
+> = {
   event: { label: 'Event', color: 'text-emerald-700', bgColor: 'bg-emerald-100' },
   inquiry: { label: 'Inquiry', color: 'text-amber-700', bgColor: 'bg-amber-100' },
   quote: { label: 'Quote', color: 'text-purple-700', bgColor: 'bg-purple-100' },

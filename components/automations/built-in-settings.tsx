@@ -25,19 +25,58 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
   const [followUpHours, setFollowUpHours] = useState(settings.follow_up_reminder_interval_hours)
   const [noResponseEnabled, setNoResponseEnabled] = useState(settings.no_response_alerts_enabled)
   const [noResponseDays, setNoResponseDays] = useState(settings.no_response_threshold_days)
-  const [eventApproachingEnabled, setEventApproachingEnabled] = useState(settings.event_approaching_alerts_enabled)
-  const [eventApproachingHours, setEventApproachingHours] = useState(settings.event_approaching_hours)
-  const [inquiryExpiryEnabled, setInquiryExpiryEnabled] = useState(settings.inquiry_auto_expiry_enabled)
+  const [eventApproachingEnabled, setEventApproachingEnabled] = useState(
+    settings.event_approaching_alerts_enabled
+  )
+  const [eventApproachingHours, setEventApproachingHours] = useState(
+    settings.event_approaching_hours
+  )
+  const [inquiryExpiryEnabled, setInquiryExpiryEnabled] = useState(
+    settings.inquiry_auto_expiry_enabled
+  )
   const [inquiryExpiryDays, setInquiryExpiryDays] = useState(settings.inquiry_expiry_days)
   const [quoteExpiryEnabled, setQuoteExpiryEnabled] = useState(settings.quote_auto_expiry_enabled)
-  const [clientRemindersEnabled, setClientRemindersEnabled] = useState(settings.client_event_reminders_enabled)
-  const [timeTrackingEnabled, setTimeTrackingEnabled] = useState(settings.time_tracking_reminders_enabled)
-  const [receiptUploadEnabled, setReceiptUploadEnabled] = useState(settings.receipt_upload_reminders_enabled ?? true)
-  const [closureDeadlineEnabled, setClosureDeadlineEnabled] = useState(settings.closure_deadline_alerts_enabled ?? true)
-  const [closureDeadlineDays, setClosureDeadlineDays] = useState(settings.closure_deadline_days ?? 3)
-  const [weeklySummaryEnabled, setWeeklySummaryEnabled] = useState(settings.weekly_summary_enabled ?? false)
-  const [autoResponseEnabled, setAutoResponseEnabled] = useState(settings.auto_response_template_enabled ?? false)
-  const [autoResponseTemplate, setAutoResponseTemplate] = useState(settings.inquiry_auto_response_template ?? '')
+  const [clientRemindersEnabled, setClientRemindersEnabled] = useState(
+    settings.client_event_reminders_enabled
+  )
+  const [timeTrackingEnabled, setTimeTrackingEnabled] = useState(
+    settings.time_tracking_reminders_enabled
+  )
+  const [receiptUploadEnabled, setReceiptUploadEnabled] = useState(
+    settings.receipt_upload_reminders_enabled ?? true
+  )
+  const [closureDeadlineEnabled, setClosureDeadlineEnabled] = useState(
+    settings.closure_deadline_alerts_enabled ?? true
+  )
+  const [closureDeadlineDays, setClosureDeadlineDays] = useState(
+    settings.closure_deadline_days ?? 3
+  )
+  const [weeklySummaryEnabled, setWeeklySummaryEnabled] = useState(
+    settings.weekly_summary_enabled ?? false
+  )
+  const [autoResponseEnabled, setAutoResponseEnabled] = useState(
+    settings.auto_response_template_enabled ?? false
+  )
+  const [autoResponseTemplate, setAutoResponseTemplate] = useState(
+    settings.inquiry_auto_response_template ?? ''
+  )
+  // Deposit default preferences
+  const [depositEnabled, setDepositEnabled] = useState(settings.default_deposit_enabled ?? false)
+  const [depositType, setDepositType] = useState<'percentage' | 'fixed'>(
+    settings.default_deposit_type ?? 'percentage'
+  )
+  const [depositPercentage, setDepositPercentage] = useState(
+    settings.default_deposit_percentage ?? 0
+  )
+  const [depositFixedDollars, setDepositFixedDollars] = useState(
+    (settings.default_deposit_amount_cents ?? 0) / 100
+  )
+  // Pre-event reminder interval toggles
+  const [reminder30d, setReminder30d] = useState(settings.event_reminder_30d_enabled ?? true)
+  const [reminder14d, setReminder14d] = useState(settings.event_reminder_14d_enabled ?? true)
+  const [reminder7d, setReminder7d] = useState(settings.event_reminder_7d_enabled ?? true)
+  const [reminder2d, setReminder2d] = useState(settings.event_reminder_2d_enabled ?? true)
+  const [reminder1d, setReminder1d] = useState(settings.event_reminder_1d_enabled ?? true)
 
   const handleSave = () => {
     setError(null)
@@ -62,6 +101,17 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
           weekly_summary_enabled: weeklySummaryEnabled,
           auto_response_template_enabled: autoResponseEnabled,
           inquiry_auto_response_template: autoResponseTemplate || null,
+          // Deposit defaults
+          default_deposit_enabled: depositEnabled,
+          default_deposit_type: depositType,
+          default_deposit_percentage: depositPercentage,
+          default_deposit_amount_cents: Math.round(depositFixedDollars * 100),
+          // Reminder intervals
+          event_reminder_30d_enabled: reminder30d,
+          event_reminder_14d_enabled: reminder14d,
+          event_reminder_7d_enabled: reminder7d,
+          event_reminder_2d_enabled: reminder2d,
+          event_reminder_1d_enabled: reminder1d,
         })
         setSaved(true)
         router.refresh()
@@ -82,21 +132,13 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
               These run automatically in the background. Toggle any you don&apos;t need.
             </p>
           </div>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSave}
-            loading={isPending}
-          >
+          <Button variant="primary" size="sm" onClick={handleSave} loading={isPending}>
             {saved ? 'Saved' : 'Save'}
           </Button>
         </div>
-        {error && (
-          <p className="text-sm text-red-600 mt-1">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
       </CardHeader>
       <CardContent className="space-y-4">
-
         {/* Follow-up Reminders */}
         <SettingRow
           enabled={followUpEnabled}
@@ -185,13 +227,100 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
           description="Automatically marks sent quotes as expired once their expiry date passes."
         />
 
-        {/* Client Day-Before Emails */}
+        {/* Client Pre-Event Reminders */}
         <SettingRow
           enabled={clientRemindersEnabled}
           onToggle={setClientRemindersEnabled}
-          title="Day-Before Client Emails"
-          description="Sends your clients an email the day before their event with timing and location details."
-        />
+          title="Client Pre-Event Reminders"
+          description="Sends your clients automated reminder emails before their event. Choose which intervals to use."
+        >
+          {clientRemindersEnabled && (
+            <div className="mt-2 space-y-1.5">
+              <p className="text-[11px] text-stone-400 mb-2">
+                Each reminder fires once per event. Uncheck any you don&apos;t want.
+              </p>
+              {[
+                { label: '30 days before', state: reminder30d, setter: setReminder30d },
+                { label: '14 days before', state: reminder14d, setter: setReminder14d },
+                { label: '7 days before (prep email)', state: reminder7d, setter: setReminder7d },
+                { label: '2 days before', state: reminder2d, setter: setReminder2d },
+                { label: '1 day before', state: reminder1d, setter: setReminder1d },
+              ].map(({ label, state, setter }) => (
+                <label
+                  key={label}
+                  className="flex items-center gap-2 text-xs text-stone-600 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={state}
+                    onChange={(e) => setter(e.target.checked)}
+                    aria-label={label}
+                    className="rounded border-stone-300 text-brand-600 focus:ring-brand-500 h-3.5 w-3.5"
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
+          )}
+        </SettingRow>
+
+        {/* Default Deposit on New Events */}
+        <SettingRow
+          enabled={depositEnabled}
+          onToggle={setDepositEnabled}
+          title="Default Deposit on New Events"
+          description="Auto-fills the deposit amount when you create a new event. You can always change or remove it."
+        >
+          {depositEnabled && (
+            <div className="mt-2 space-y-2">
+              <div className="flex items-center gap-3">
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <input
+                    type="radio"
+                    name="deposit-type"
+                    checked={depositType === 'percentage'}
+                    onChange={() => setDepositType('percentage')}
+                    className="text-brand-600 focus:ring-brand-500"
+                  />
+                  Percentage of quote
+                </label>
+                <label className="flex items-center gap-1.5 text-xs cursor-pointer">
+                  <input
+                    type="radio"
+                    name="deposit-type"
+                    checked={depositType === 'fixed'}
+                    onChange={() => setDepositType('fixed')}
+                    className="text-brand-600 focus:ring-brand-500"
+                  />
+                  Fixed amount
+                </label>
+              </div>
+              {depositType === 'percentage' ? (
+                <InlineParam label="Deposit">
+                  <NumberInput
+                    value={depositPercentage}
+                    onChange={setDepositPercentage}
+                    min={1}
+                    max={100}
+                    suffix="% of quoted price"
+                  />
+                </InlineParam>
+              ) : (
+                <InlineParam label="Deposit">
+                  <span className="text-xs">$</span>
+                  <input
+                    type="number"
+                    value={depositFixedDollars}
+                    min={1}
+                    step={1}
+                    onChange={(e) => setDepositFixedDollars(parseFloat(e.target.value) || 0)}
+                    className="w-20 border border-stone-300 rounded px-2 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  />
+                </InlineParam>
+              )}
+            </div>
+          )}
+        </SettingRow>
 
         {/* Time Tracking Reminders */}
         <SettingRow
@@ -251,17 +380,18 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
               </label>
               <textarea
                 value={autoResponseTemplate}
-                onChange={e => setAutoResponseTemplate(e.target.value)}
+                onChange={(e) => setAutoResponseTemplate(e.target.value)}
                 rows={4}
                 placeholder={`Hi [Name],\n\nThanks for reaching out! I'd love to learn more about your [Occasion]...`}
                 className="w-full text-xs border border-stone-300 rounded-md px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
                 maxLength={2000}
               />
-              <p className="text-[10px] text-stone-400 mt-1">{autoResponseTemplate.length}/2000 chars</p>
+              <p className="text-[10px] text-stone-400 mt-1">
+                {autoResponseTemplate.length}/2000 chars
+              </p>
             </div>
           )}
         </SettingRow>
-
       </CardContent>
     </Card>
   )
@@ -283,7 +413,9 @@ function SettingRow({
   children?: React.ReactNode
 }) {
   return (
-    <div className={`rounded-lg border p-3 transition-colors ${enabled ? 'border-stone-200 bg-white' : 'border-stone-100 bg-stone-50'}`}>
+    <div
+      className={`rounded-lg border p-3 transition-colors ${enabled ? 'border-stone-200 bg-white' : 'border-stone-100 bg-stone-50'}`}
+    >
       <div className="flex items-start gap-3">
         {/* Toggle */}
         <button

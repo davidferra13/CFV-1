@@ -128,7 +128,10 @@ export async function draftPostEventEmail(eventId: string) {
     subject,
     body,
     recipientCount: guests.length,
-    recipients: guests.map((g) => ({ name: g.name, email: g.email })),
+    recipients: guests.map((g: { name: string; email: string }) => ({
+      name: g.name,
+      email: g.email,
+    })),
     chefName,
   }
 }
@@ -187,7 +190,10 @@ export async function draftTestimonialRequest(eventId: string) {
     subject,
     body,
     recipientCount: guests.length,
-    recipients: guests.map((g) => ({ name: g.name, email: g.email })),
+    recipients: guests.map((g: { name: string; email: string }) => ({
+      name: g.name,
+      email: g.email,
+    })),
     chefName,
   }
 }

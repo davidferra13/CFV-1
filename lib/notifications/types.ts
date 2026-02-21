@@ -10,6 +10,9 @@ export type NotificationCategory =
   | 'client'
   | 'loyalty'
   | 'goals'
+  | 'lead'
+  | 'protection'
+  | 'wellbeing'
   | 'system'
 
 export type NotificationAction =
@@ -40,6 +43,7 @@ export type NotificationAction =
   // Clients
   | 'client_signup'
   | 'review_submitted'
+  | 'new_guest_lead'
   // Wix
   | 'wix_submission'
   // Client behavior / intent signals
@@ -64,6 +68,22 @@ export type NotificationAction =
   | 'goal_nudge'
   | 'goal_milestone'
   | 'goal_weekly_digest'
+  // Protection — insurance & certifications
+  | 'insurance_expiring_30d'
+  | 'insurance_expiring_7d'
+  | 'cert_expiring_90d'
+  | 'cert_expiring_30d'
+  | 'cert_expiring_7d'
+  // Reputation
+  | 'new_negative_mention'
+  | 'recall_alert_matched'
+  // Wellbeing & capacity
+  | 'capacity_limit_approaching'
+  | 'relationship_cooling'
+  | 'burnout_risk_high'
+  // Professional momentum
+  | 'no_education_logged_90d'
+  | 'quarterly_checkin_due'
 
 export type Notification = {
   id: string
@@ -121,6 +141,7 @@ export const NOTIFICATION_CONFIG: Record<
   // Clients
   client_signup: { category: 'client', icon: 'UserPlus', toastByDefault: true },
   review_submitted: { category: 'client', icon: 'Star', toastByDefault: true },
+  new_guest_lead: { category: 'lead', icon: 'UserPlus', toastByDefault: true },
 
   // Wix - toast new submissions (time-sensitive leads)
   wix_submission: { category: 'inquiry', icon: 'Globe', toastByDefault: true },
@@ -151,6 +172,28 @@ export const NOTIFICATION_CONFIG: Record<
   goal_nudge: { category: 'goals', icon: 'Target', toastByDefault: false },
   goal_milestone: { category: 'goals', icon: 'Trophy', toastByDefault: true },
   goal_weekly_digest: { category: 'goals', icon: 'BarChart2', toastByDefault: false },
+
+  // Protection — insurance expiry
+  insurance_expiring_30d: { category: 'protection', icon: 'ShieldAlert', toastByDefault: false },
+  insurance_expiring_7d: { category: 'protection', icon: 'ShieldAlert', toastByDefault: true },
+
+  // Protection — certification expiry
+  cert_expiring_90d: { category: 'protection', icon: 'Award', toastByDefault: false },
+  cert_expiring_30d: { category: 'protection', icon: 'Award', toastByDefault: false },
+  cert_expiring_7d: { category: 'protection', icon: 'Award', toastByDefault: true },
+
+  // Reputation
+  new_negative_mention: { category: 'protection', icon: 'AlertTriangle', toastByDefault: true },
+  recall_alert_matched: { category: 'protection', icon: 'ShieldAlert', toastByDefault: true },
+
+  // Wellbeing & capacity
+  capacity_limit_approaching: { category: 'wellbeing', icon: 'Battery', toastByDefault: true },
+  relationship_cooling: { category: 'client', icon: 'UserMinus', toastByDefault: false },
+  burnout_risk_high: { category: 'wellbeing', icon: 'Flame', toastByDefault: true },
+
+  // Professional momentum
+  no_education_logged_90d: { category: 'wellbeing', icon: 'BookOpen', toastByDefault: false },
+  quarterly_checkin_due: { category: 'wellbeing', icon: 'ClipboardCheck', toastByDefault: false },
 }
 
 // Category display names for preferences UI
@@ -163,5 +206,8 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   client: 'Clients',
   loyalty: 'Loyalty & Rewards',
   goals: 'Goals & Growth',
+  lead: 'Leads',
+  protection: 'Business Protection',
+  wellbeing: 'Wellbeing & Momentum',
   system: 'System',
 }

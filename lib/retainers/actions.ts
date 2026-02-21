@@ -506,12 +506,12 @@ export async function recordRetainerPayment(
   // Append to ledger using admin client (same pattern as offline-payment-actions)
   const supabaseAdmin = createServerClient({ admin: true })
 
-  const { data: ledgerEntry, error: ledgerError } = await supabaseAdmin
+  const { data: ledgerEntry, error: ledgerError } = await (supabaseAdmin as any)
     .from('ledger_entries')
     .insert({
       tenant_id: retainer.tenant_id,
       client_id: retainer.client_id,
-      entry_type: 'retainer' as any, // new enum value not yet in generated types
+      entry_type: 'retainer',
       amount_cents: period.amount_cents,
       payment_method: paymentMethod,
       description: `Retainer: ${retainer.name} (${period.period_start} \u2013 ${period.period_end})`,

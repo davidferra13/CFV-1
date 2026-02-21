@@ -1,0 +1,25 @@
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
+import { RemovalRequestList } from '@/components/protection/removal-request-list'
+
+export default async function PortfolioRemovalPage() {
+  const chef = await requireChef()
+  const supabase = createServerClient()
+  const { data } = await (supabase as any)
+    .from('chef_portfolio_removal_requests')
+    .select('*, clients(display_name)')
+    .eq('tenant_id', chef.tenantId!)
+    .order('request_date', { ascending: false })
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-stone-900">Portfolio Removal Requests</h1>
+        <p className="text-sm text-stone-500 mt-1">
+          Track and manage requests to remove content from your portfolio.
+        </p>
+      </div>
+      <RemovalRequestList requests={data ?? []} />
+    </div>
+  )
+}
