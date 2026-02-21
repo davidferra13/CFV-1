@@ -14,18 +14,16 @@ import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-short
 import { getOnboardingStatus } from '@/lib/chef/profile-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
+import { TrialBanner } from '@/components/billing/trial-banner'
 import { CopilotDrawer } from '@/components/ai/copilot-drawer'
 import { OfflineBanner } from '@/components/ui/offline-banner'
+import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
 import { QuickCapture } from '@/components/mobile/quick-capture'
 import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { differenceInDays } from 'date-fns'
 
-export default async function ChefLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
   let user
   try {
@@ -58,54 +56,57 @@ export default async function ChefLayout({
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-    <SidebarProvider>
-      <NotificationProvider userId={user.id}>
-        <ToastProvider />
-        <KeyboardShortcutsWrapper>
-          <div
-            className="min-h-screen"
-            style={{
-              backgroundColor: profile.portal_background_color || '#f5f5f4',
-              backgroundImage: profile.portal_background_image_url
-                ? `url(${profile.portal_background_image_url})`
-                : undefined,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center center',
-              backgroundRepeat: 'no-repeat',
-            }}
-          >
-            {/* Platform announcement banner — shown when admin sets one */}
-            {announcement && (
-              <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
-            )}
-            {/* Desktop sidebar */}
-            <ChefSidebar primaryNavHrefs={primaryNavHrefs} />
-            {/* Mobile nav (top bar + bottom tabs) */}
-            <ChefMobileNav primaryNavHrefs={primaryNavHrefs} />
+      <SidebarProvider>
+        <NotificationProvider userId={user.id}>
+          <ToastProvider />
+          <KeyboardShortcutsWrapper>
+            <div
+              className="min-h-screen"
+              style={{
+                backgroundColor: profile.portal_background_color || '#f5f5f4',
+                backgroundImage: profile.portal_background_image_url
+                  ? `url(${profile.portal_background_image_url})`
+                  : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center center',
+                backgroundRepeat: 'no-repeat',
+              }}
+            >
+              {/* Platform announcement banner — shown when admin sets one */}
+              {announcement && (
+                <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
+              )}
+              {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
+              <TrialBanner chefId={user.entityId} />
+              {/* Desktop sidebar */}
+              <ChefSidebar primaryNavHrefs={primaryNavHrefs} />
+              {/* Mobile nav (top bar + bottom tabs) */}
+              <ChefMobileNav primaryNavHrefs={primaryNavHrefs} />
 
-            {/* Main content — offset adjusts dynamically based on sidebar state */}
-            <ChefMainContent>
-              {children}
-            </ChefMainContent>
+              {/* Main content — offset adjusts dynamically based on sidebar state */}
+              <ChefMainContent>{children}</ChefMainContent>
 
-            {/* Push notification permission prompt — appears after 5s if not subscribed */}
-            <PushPermissionPrompt />
+              {/* Push notification permission prompt — appears after 5s if not subscribed */}
+              <PushPermissionPrompt />
 
-            {/* Feedback nudge — shown once, 7 days after account creation */}
-            {showFeedbackNudge && <FeedbackNudgeModal />}
+              {/* Feedback nudge — shown once, 7 days after account creation */}
+              {showFeedbackNudge && <FeedbackNudgeModal />}
 
-            {/* Offline connectivity banner — renders nothing when online */}
-            <OfflineBanner />
+              {/* Offline connectivity banner — renders nothing when online */}
+              <OfflineBanner />
 
-            {/* AI Co-Pilot floating drawer — available on all chef pages */}
-            <CopilotDrawer />
+              {/* AI Co-Pilot floating drawer — available on all chef pages */}
+              <CopilotDrawer />
 
-            {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
-            <QuickCapture />
-          </div>
-        </KeyboardShortcutsWrapper>
-      </NotificationProvider>
-    </SidebarProvider>
+              {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
+              <QuickCapture />
+
+              {/* Business milestone celebrations — fires once per threshold, replayable */}
+              <MilestoneOverlay />
+            </div>
+          </KeyboardShortcutsWrapper>
+        </NotificationProvider>
+      </SidebarProvider>
     </ThemeProvider>
   )
 }

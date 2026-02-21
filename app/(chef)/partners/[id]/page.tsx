@@ -2,7 +2,11 @@
 // Shows comprehensive view of a single referral partner
 
 import { requireChef } from '@/lib/auth/get-user'
-import { getPartnerById, getPartnerEvents, getEventsNotAssignedToPartner } from '@/lib/partners/actions'
+import {
+  getPartnerById,
+  getPartnerEvents,
+  getEventsNotAssignedToPartner,
+} from '@/lib/partners/actions'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -13,6 +17,7 @@ import { StatCard } from '@/components/ui/stat-card'
 import { PartnerDetailClient } from '@/components/partners/partner-detail-client'
 import { BulkAssignEvents } from '@/components/partners/bulk-assign-events'
 import { SharePartnerReportButton } from '@/components/partners/share-partner-report-button'
+import { PartnerInviteButton } from '@/components/partners/partner-invite-button'
 import { Inbox, CalendarCheck, DollarSign, Users, TrendingUp, MapPin } from 'lucide-react'
 
 const TYPE_LABELS: Record<string, string> = {
@@ -28,23 +33,23 @@ function formatCents(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
 }
 
-export default async function PartnerDetailPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function PartnerDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const [partner, partnerEvents, unassignedEvents] = await Promise.all([
     getPartnerById(params.id),
     getPartnerEvents(params.id).catch(() => [] as Awaited<ReturnType<typeof getPartnerEvents>>),
-    getEventsNotAssignedToPartner(params.id).catch(() => [] as Awaited<ReturnType<typeof getEventsNotAssignedToPartner>>),
+    getEventsNotAssignedToPartner(params.id).catch(
+      () => [] as Awaited<ReturnType<typeof getEventsNotAssignedToPartner>>
+    ),
   ])
 
   if (!partner) notFound()
 
   // Group events by location for the service history section
-  const activeLocations = (partner.partner_locations || []).filter((l: any) => l.is_active !== false)
+  const activeLocations = (partner.partner_locations || []).filter(
+    (l: any) => l.is_active !== false
+  )
   const eventsByLocation: Record<string, typeof partnerEvents> = {}
   const unspecifiedEvents: typeof partnerEvents = []
 
@@ -65,7 +70,9 @@ export default async function PartnerDetailPage({
         <div>
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-3xl font-bold text-stone-900">{partner.name}</h1>
-            <Badge variant="info">{TYPE_LABELS[partner.partner_type] || partner.partner_type}</Badge>
+            <Badge variant="info">
+              {TYPE_LABELS[partner.partner_type] || partner.partner_type}
+            </Badge>
             {partner.is_showcase_visible && <Badge variant="success">Public Showcase</Badge>}
             {partner.status === 'inactive' && <Badge variant="error">Inactive</Badge>}
           </div>
@@ -76,29 +83,29 @@ export default async function PartnerDetailPage({
             <p className="text-stone-500 mt-2 max-w-2xl">{partner.description}</p>
           )}
         </div>
-        <div className="flex gap-2 flex-wrap">
-          <SharePartnerReportButton partnerId={partner.id} />
-          <Link href={`/partners/${partner.id}/report`}>
-            <Button variant="secondary">Print Report</Button>
-          </Link>
-          <Link href={`/partners/${partner.id}/edit`}>
-            <Button>Edit Partner</Button>
-          </Link>
+        <div className="flex flex-col gap-3 flex-wrap items-end">
+          <div className="flex gap-2 flex-wrap">
+            <SharePartnerReportButton partnerId={partner.id} />
+            <Link href={`/partners/${partner.id}/report`}>
+              <Button variant="secondary">Print Report</Button>
+            </Link>
+            <Link href={`/partners/${partner.id}/edit`}>
+              <Button>Edit Partner</Button>
+            </Link>
+          </div>
+          {/* Partner portal invite — shown when partner hasn't claimed their account yet */}
+          <PartnerInviteButton
+            partnerId={partner.id}
+            isClaimed={!!(partner as any).claimed_at}
+            partnerName={partner.name}
+          />
         </div>
       </div>
 
       {/* Stats Row */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard
-          label="Referrals"
-          value={partner.stats.inquiry_count}
-          icon={Inbox}
-        />
-        <StatCard
-          label="Events"
-          value={partner.stats.event_count}
-          icon={CalendarCheck}
-        />
+        <StatCard label="Referrals" value={partner.stats.inquiry_count} icon={Inbox} />
+        <StatCard label="Events" value={partner.stats.event_count} icon={CalendarCheck} />
         <StatCard
           label="Completed"
           value={partner.stats.completed_event_count}
@@ -109,11 +116,7 @@ export default async function PartnerDetailPage({
           value={formatCents(partner.stats.total_revenue_cents)}
           icon={DollarSign}
         />
-        <StatCard
-          label="Total Guests"
-          value={partner.stats.total_guests}
-          icon={Users}
-        />
+        <StatCard label="Total Guests" value={partner.stats.total_guests} icon={Users} />
         <StatCard
           label="Conversion"
           value={`${partner.stats.conversion_rate}%`}
@@ -127,16 +130,43 @@ export default async function PartnerDetailPage({
           <h2 className="text-lg font-semibold text-stone-900 mb-4">Contact Info</h2>
           <div className="space-y-2 text-sm">
             {partner.email && (
-              <p><span className="text-stone-500">Email:</span> <a href={`mailto:${partner.email}`} className="text-brand-600 hover:underline">{partner.email}</a></p>
+              <p>
+                <span className="text-stone-500">Email:</span>{' '}
+                <a href={`mailto:${partner.email}`} className="text-brand-600 hover:underline">
+                  {partner.email}
+                </a>
+              </p>
             )}
             {partner.phone && (
-              <p><span className="text-stone-500">Phone:</span> {partner.phone}</p>
+              <p>
+                <span className="text-stone-500">Phone:</span> {partner.phone}
+              </p>
             )}
             {partner.website && (
-              <p><span className="text-stone-500">Website:</span> <a href={partner.website} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">{partner.website}</a></p>
+              <p>
+                <span className="text-stone-500">Website:</span>{' '}
+                <a
+                  href={partner.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-600 hover:underline"
+                >
+                  {partner.website}
+                </a>
+              </p>
             )}
             {partner.booking_url && (
-              <p><span className="text-stone-500">Booking:</span> <a href={partner.booking_url} target="_blank" rel="noopener noreferrer" className="text-brand-600 hover:underline">View Listing</a></p>
+              <p>
+                <span className="text-stone-500">Booking:</span>{' '}
+                <a
+                  href={partner.booking_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-600 hover:underline"
+                >
+                  View Listing
+                </a>
+              </p>
             )}
             {!partner.email && !partner.phone && !partner.website && (
               <p className="text-stone-400 italic">No contact info added</p>
@@ -154,13 +184,44 @@ export default async function PartnerDetailPage({
             )}
             {partner.commission_notes && (
               <div className="pt-3 border-t border-stone-100">
-                <p className="text-xs font-medium text-stone-500 mb-1">Commission / Referral Arrangement</p>
+                <p className="text-xs font-medium text-stone-500 mb-1">
+                  Commission / Referral Arrangement
+                </p>
                 <p className="text-stone-700">{partner.commission_notes}</p>
               </div>
             )}
           </div>
         </Card>
       </div>
+
+      {/* Acquisition origin — captures the client→event→partner story */}
+      {((partner as any).origin_client_id || (partner as any).acquisition_source) && (
+        <Card className="p-6">
+          <h2 className="text-base font-semibold text-stone-900 mb-3">Partnership Origin</h2>
+          <div className="space-y-2 text-sm text-stone-600">
+            {(partner as any).acquisition_source && (
+              <p>
+                <span className="font-medium text-stone-500">Source:</span>{' '}
+                {(partner as any).acquisition_source === 'client_event_referral'
+                  ? 'Client event referral'
+                  : (partner as any).acquisition_source === 'direct_outreach'
+                    ? 'Direct outreach'
+                    : (partner as any).acquisition_source}
+              </p>
+            )}
+            {(partner as any).claimed_at && (
+              <p>
+                <span className="font-medium text-stone-500">Portal claimed:</span>{' '}
+                {new Date((partner as any).claimed_at).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </p>
+            )}
+          </div>
+        </Card>
+      )}
 
       {/* Locations */}
       <Card className="p-6">
@@ -193,7 +254,12 @@ export default async function PartnerDetailPage({
         </div>
         <BulkAssignEvents
           partnerId={partner.id}
-          locations={activeLocations.map((l: any) => ({ id: l.id, name: l.name, city: l.city, state: l.state }))}
+          locations={activeLocations.map((l: any) => ({
+            id: l.id,
+            name: l.name,
+            city: l.city,
+            state: l.state,
+          }))}
           events={unassignedEvents}
         />
       </Card>
@@ -210,7 +276,9 @@ export default async function PartnerDetailPage({
             const evts = eventsByLocation[loc.id] || []
             if (evts.length === 0) return null
             const totalGuests = evts.reduce((s: number, e) => s + e.guest_count, 0)
-            const revenue = evts.filter(e => e.status === 'completed').reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
+            const revenue = evts
+              .filter((e) => e.status === 'completed')
+              .reduce((s, e) => s + (e.quoted_price_cents || 0), 0)
             return (
               <div key={loc.id} className="mb-6 last:mb-0">
                 <div className="flex items-center justify-between mb-2">
@@ -239,7 +307,7 @@ export default async function PartnerDetailPage({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-stone-100">
-                    {evts.map(evt => (
+                    {evts.map((evt) => (
                       <tr key={evt.id} className="hover:bg-stone-50">
                         <td className="px-3 py-2 text-stone-700">
                           {format(new Date(evt.event_date), 'MMM d, yyyy')}
@@ -252,7 +320,10 @@ export default async function PartnerDetailPage({
                           </Badge>
                         </td>
                         <td className="px-3 py-2 text-right">
-                          <Link href={`/events/${evt.id}`} className="text-xs text-brand-600 hover:underline">
+                          <Link
+                            href={`/events/${evt.id}`}
+                            className="text-xs text-brand-600 hover:underline"
+                          >
                             View →
                           </Link>
                         </td>
@@ -266,13 +337,20 @@ export default async function PartnerDetailPage({
 
           {/* Events with no specific location */}
           {unspecifiedEvents.length > 0 && (
-            <div className={activeLocations.some((l: any) => (eventsByLocation[l.id] || []).length > 0) ? 'mt-6 pt-6 border-t border-stone-200' : ''}>
+            <div
+              className={
+                activeLocations.some((l: any) => (eventsByLocation[l.id] || []).length > 0)
+                  ? 'mt-6 pt-6 border-t border-stone-200'
+                  : ''
+              }
+            >
               <div className="flex items-center justify-between mb-2">
                 <span className="font-medium text-stone-700 text-sm">
                   {activeLocations.length > 0 ? 'No specific location' : 'All events'}
                 </span>
                 <span className="text-sm text-stone-500">
-                  {unspecifiedEvents.length} event{unspecifiedEvents.length === 1 ? '' : 's'} · {unspecifiedEvents.reduce((s, e) => s + e.guest_count, 0)} guests
+                  {unspecifiedEvents.length} event{unspecifiedEvents.length === 1 ? '' : 's'} ·{' '}
+                  {unspecifiedEvents.reduce((s, e) => s + e.guest_count, 0)} guests
                 </span>
               </div>
               <table className="w-full text-sm border border-stone-200 rounded-lg overflow-hidden">
@@ -286,7 +364,7 @@ export default async function PartnerDetailPage({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-stone-100">
-                  {unspecifiedEvents.map(evt => (
+                  {unspecifiedEvents.map((evt) => (
                     <tr key={evt.id} className="hover:bg-stone-50">
                       <td className="px-3 py-2 text-stone-700">
                         {format(new Date(evt.event_date), 'MMM d, yyyy')}
@@ -299,7 +377,10 @@ export default async function PartnerDetailPage({
                         </Badge>
                       </td>
                       <td className="px-3 py-2 text-right">
-                        <Link href={`/events/${evt.id}`} className="text-xs text-brand-600 hover:underline">
+                        <Link
+                          href={`/events/${evt.id}`}
+                          className="text-xs text-brand-600 hover:underline"
+                        >
                           View →
                         </Link>
                       </td>

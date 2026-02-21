@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
   BarChart3,
+  Bot,
   CalendarDays,
   ClipboardCheck,
   Clock,
@@ -50,6 +51,7 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // Primary always-visible shortcuts
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/commands', label: 'Command Center', icon: Bot },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/inquiries', label: 'Inquiries', icon: Inbox },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
@@ -610,6 +612,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   },
   { href: '/settings/portfolio', label: 'Portfolio', icon: Image, context: 'Settings' },
   { href: '/settings/highlights', label: 'Profile Highlights', icon: Image, context: 'Settings' },
+  {
+    href: '/settings/billing',
+    label: 'Subscription & Billing',
+    icon: Settings,
+    context: 'Settings',
+  },
 ]
 
 function pushPrimaryShortcut(

@@ -1,0 +1,41 @@
+// Partner Portal Layout — server-side auth guard + sidebar wrapper.
+// requirePartner() throws if the user is not an authenticated partner,
+// causing a redirect to the sign-in page.
+
+import { requirePartner } from '@/lib/auth/get-user'
+import { redirect } from 'next/navigation'
+import { createServerClient } from '@/lib/supabase/server'
+import { PartnerSidebar, PartnerMobileNav } from '@/components/navigation/partner-nav'
+import { ToastProvider } from '@/components/notifications/toast-provider'
+
+export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
+  let user
+  try {
+    user = await requirePartner()
+  } catch {
+    redirect('/auth/signin?portal=partner')
+  }
+
+  // Fetch partner name for sidebar display
+  const supabase = createServerClient({ admin: true })
+  const { data: partner } = await supabase
+    .from('referral_partners')
+    .select('name')
+    .eq('id', user.partnerId)
+    .single()
+
+  const partnerName = partner?.name ?? 'Partner'
+
+  return (
+    <div className="min-h-screen bg-stone-50 flex">
+      <ToastProvider />
+      <PartnerSidebar partnerName={partnerName} />
+
+      <main className="flex-1 pb-16 lg:pb-0">
+        <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
+      </main>
+
+      <PartnerMobileNav />
+    </div>
+  )
+}

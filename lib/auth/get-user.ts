@@ -13,6 +13,14 @@ export type AuthUser = {
   tenantId: string | null // chef.id if chef, client's tenant_id if client
 }
 
+export type PartnerAuthUser = {
+  id: string // auth.users.id
+  email: string
+  role: 'partner'
+  partnerId: string // referral_partners.id
+  tenantId: string // the chef's ID (referral_partners.tenant_id)
+}
+
 /**
  * Get current authenticated user with authoritative role
  * Cached per request - single DB query
@@ -129,6 +137,57 @@ export async function requireAuth(): Promise<AuthUser> {
   }
 
   return user
+}
+
+/**
+ * Require partner role — used in partner portal pages and server actions.
+ * Partners are referral sources (Airbnb hosts, venue owners) who have claimed
+ * their invite and logged in. They are NOT chefs or clients.
+ */
+export async function requirePartner(): Promise<PartnerAuthUser> {
+  const supabase = createServerClient()
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    throw new Error('Unauthorized: Authentication required')
+  }
+
+  // Check user_roles for the partner role (users can read their own role row)
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role, entity_id')
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!roleData || (roleData.role as string) !== 'partner') {
+    throw new Error('Unauthorized: Partner access required')
+  }
+
+  // Look up tenant_id from the partner record.
+  // Uses admin client because existing chef-only RLS blocks the partner session
+  // from reading referral_partners directly (until migration applies the partner policy).
+  const adminClient = createServerClient({ admin: true })
+  const { data: partner } = await adminClient
+    .from('referral_partners')
+    .select('tenant_id')
+    .eq('id', roleData.entity_id)
+    .single()
+
+  if (!partner) {
+    throw new Error('Partner record not found')
+  }
+
+  return {
+    id: user.id,
+    email: user.email!,
+    role: 'partner',
+    partnerId: roleData.entity_id,
+    tenantId: partner.tenant_id,
+  }
 }
 
 /**
