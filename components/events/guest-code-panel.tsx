@@ -1,0 +1,85 @@
+'use client'
+
+import { useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+
+type Props = {
+  eventId: string
+  guestCode: string
+  guestLeadCount: number
+}
+
+export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
+  const [copied, setCopied] = useState(false)
+
+  const baseUrl =
+    typeof window !== 'undefined'
+      ? window.location.origin
+      : process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
+  const landingUrl = `${baseUrl}/g/${guestCode}`
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(landingUrl)}`
+
+  function handleCopy() {
+    navigator.clipboard.writeText(landingUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <Card className="p-5">
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <h3 className="font-semibold text-stone-900">Guest Pipeline</h3>
+          <p className="text-sm text-stone-500 mt-0.5">
+            Display this QR code at your event to capture guest interest
+          </p>
+        </div>
+        {guestLeadCount > 0 && (
+          <a
+            href="/guest-leads"
+            className="text-sm font-medium text-blue-600 hover:text-blue-700 whitespace-nowrap"
+          >
+            {guestLeadCount} lead{guestLeadCount !== 1 ? 's' : ''}
+          </a>
+        )}
+      </div>
+
+      <div className="flex items-center gap-5">
+        {/* QR Code */}
+        <div className="flex-shrink-0">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrUrl}
+            alt="Guest QR Code"
+            width={120}
+            height={120}
+            className="rounded-lg border border-stone-200"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex-1 space-y-2">
+          <Button variant="secondary" className="w-full text-sm" onClick={handleCopy}>
+            {copied ? 'Copied!' : 'Copy Link'}
+          </Button>
+
+          <a href={`/events/${eventId}/guest-card`} target="_blank" rel="noreferrer">
+            <Button variant="ghost" className="w-full text-sm">
+              Print Table Card
+            </Button>
+          </a>
+
+          <a
+            href={landingUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="block text-xs text-stone-400 hover:text-stone-600 truncate text-center"
+          >
+            {landingUrl}
+          </a>
+        </div>
+      </div>
+    </Card>
+  )
+}
