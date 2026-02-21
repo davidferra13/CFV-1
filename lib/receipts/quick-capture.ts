@@ -3,7 +3,7 @@
 // Quick Receipt Capture — Server Action
 // Used by the QuickReceiptCapture widget on the event detail page.
 // Handles: storage upload → signed URL → receipt_photos record → background OCR trigger.
-// Only allowed for events in 'confirmed' or 'in_progress' state.
+// Allowed for any event state — restriction removed so chefs can capture receipts at any time.
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
@@ -24,8 +24,6 @@ const MIME_TO_EXT: Record<string, string> = {
 // 24-hour signed URL — long enough for OCR to process after upload
 const SIGNED_URL_EXPIRY_SECONDS = 86400
 
-const ALLOWED_EVENT_STATUSES = ['confirmed', 'in_progress']
-
 export type QuickCaptureResult =
   | { success: true; receiptPhotoId: string }
   | { success: false; error: string }
@@ -42,19 +40,16 @@ export async function quickCaptureReceipt(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  // Verify the event belongs to this chef and is in an active state
+  // Verify the event belongs to this chef
   const { data: event } = await supabase
     .from('events')
-    .select('id, status')
+    .select('id')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) {
     return { success: false, error: 'Event not found' }
-  }
-  if (!ALLOWED_EVENT_STATUSES.includes(event.status)) {
-    return { success: false, error: 'Receipts can only be captured for confirmed or active events' }
   }
 
   const file = formData.get('receipt') as File | null
@@ -96,13 +91,14 @@ export async function quickCaptureReceipt(
     return { success: false, error: 'Failed to generate access URL — please try again' }
   }
 
-  // Register the receipt photo record
+  // Register the receipt photo record (storage_path stored for future URL regeneration)
   const { data: photoRecord, error: dbError } = await (supabase as any)
     .from('receipt_photos')
     .insert({
       event_id: eventId,
       tenant_id: user.tenantId!,
       photo_url: signedData.signedUrl,
+      storage_path: storagePath,
       upload_status: 'pending',
     })
     .select('id')

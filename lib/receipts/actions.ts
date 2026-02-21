@@ -20,7 +20,7 @@ import { parseReceiptImage } from '@/lib/ai/parse-receipt'
 
 export type ReceiptPhoto = {
   id: string
-  eventId: string
+  eventId: string | null
   photoUrl: string
   ocrRaw: string | null
   uploadStatus: 'pending' | 'processing' | 'extracted' | 'approved'
@@ -113,7 +113,8 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     .single()
 
   if (!photo) throw new Error('Receipt photo not found')
-  if (photo.upload_status === 'approved') throw new Error('Receipt already approved — cannot re-process')
+  if (photo.upload_status === 'approved')
+    throw new Error('Receipt already approved — cannot re-process')
 
   // Mark as processing
   await (supabase as any)
@@ -179,14 +180,17 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     .single()
 
   if (extractionError || !extractionRecord) {
-    await (supabase as any).from('receipt_photos').update({ upload_status: 'pending' }).eq('id', receiptPhotoId)
+    await (supabase as any)
+      .from('receipt_photos')
+      .update({ upload_status: 'pending' })
+      .eq('id', receiptPhotoId)
     throw new Error('Failed to store extraction results')
   }
 
-  // Insert line items
-  const lineItemRows = extraction.lineItems.map(item => ({
+  // Insert line items (event_id may be null for standalone receipts)
+  const lineItemRows = extraction.lineItems.map((item) => ({
     receipt_extraction_id: extractionRecord.id,
-    event_id: photo.event_id,
+    event_id: photo.event_id ?? null,
     tenant_id: user.tenantId!,
     description: item.description,
     price_cents: item.totalPriceCents,
@@ -211,7 +215,9 @@ export async function processReceiptOCR(receiptPhotoId: string) {
     .update({ upload_status: 'extracted' })
     .eq('id', receiptPhotoId)
 
-  revalidatePath(`/events/${photo.event_id}/receipts`)
+  // Always revalidate the library; per-event page only if event is set
+  revalidatePath('/receipts')
+  if (photo.event_id) revalidatePath(`/events/${photo.event_id}/receipts`)
   return { success: true, lineItemCount: lineItemRows.length }
 }
 
@@ -233,7 +239,8 @@ export async function updateLineItem(input: z.infer<typeof UpdateLineItemSchema>
 
   const updates: Record<string, unknown> = {}
   if (fields.expenseTag !== undefined) updates.expense_tag = fields.expenseTag
-  if (fields.ingredientCategory !== undefined) updates.ingredient_category = fields.ingredientCategory
+  if (fields.ingredientCategory !== undefined)
+    updates.ingredient_category = fields.ingredientCategory
   if (fields.description !== undefined) updates.description = fields.description
   if (fields.priceCents !== undefined) updates.price_cents = fields.priceCents
 
@@ -263,12 +270,14 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
   // Fetch photo + extraction + line items
   const { data: photo } = await (supabase as any)
     .from('receipt_photos')
-    .select(`
+    .select(
+      `
       id, event_id, photo_url, upload_status,
       receipt_extractions(id, store_name, purchase_date, payment_method, total_cents,
         receipt_line_items(id, description, price_cents, expense_tag, ingredient_category)
       )
-    `)
+    `
+    )
     .eq('id', receiptPhotoId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -277,10 +286,12 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
   if (photo.upload_status === 'approved') return { success: true, expensesCreated: 0 }
 
   const extraction = (photo.receipt_extractions as any)?.[0] ?? null
-  const lineItems: ReceiptLineItemRecord[] = (extraction?.receipt_line_items ?? [])
+  const lineItems: ReceiptLineItemRecord[] = extraction?.receipt_line_items ?? []
 
   // Only copy business items
-  const businessItems = lineItems.filter(li => li.expenseTag === 'business' && li.priceCents && li.priceCents > 0)
+  const businessItems = lineItems.filter(
+    (li) => li.expenseTag === 'business' && li.priceCents && li.priceCents > 0
+  )
 
   let expensesCreated = 0
 
@@ -302,23 +313,21 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
 
     for (const item of businessItems) {
       const category = categoryMap[item.ingredientCategory ?? 'unknown'] ?? 'groceries'
-      const { error } = await (supabase as any)
-        .from('expenses')
-        .insert({
-          event_id: photo.event_id,
-          tenant_id: user.tenantId!,
-          amount_cents: item.priceCents!,
-          category,
-          payment_method: 'card',
-          description: item.description,
-          expense_date: expenseDate,
-          vendor_name: vendorName,
-          is_business: true,
-          receipt_photo_url: photo.photo_url,
-          receipt_uploaded: true,
-          notes: `From receipt ${receiptPhotoId} — line item ${item.id}`,
-          created_by: user.id,
-        })
+      const { error } = await (supabase as any).from('expenses').insert({
+        event_id: photo.event_id ?? null, // null for standalone receipts — expenses.event_id allows NULL
+        tenant_id: user.tenantId!,
+        amount_cents: item.priceCents!,
+        category,
+        payment_method: 'card',
+        description: item.description,
+        expense_date: expenseDate,
+        vendor_name: vendorName,
+        is_business: true,
+        receipt_photo_url: photo.photo_url,
+        receipt_uploaded: true,
+        notes: `From receipt ${receiptPhotoId} — line item ${item.id}`,
+        created_by: user.id,
+      })
 
       if (!error) expensesCreated++
       else console.error('[approveReceiptSummary] Expense insert error:', error)
@@ -331,9 +340,12 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
     .update({ upload_status: 'approved', approved_at: new Date().toISOString() })
     .eq('id', receiptPhotoId)
 
-  revalidatePath(`/events/${photo.event_id}/receipts`)
-  revalidatePath(`/events/${photo.event_id}`)
+  revalidatePath('/receipts')
   revalidatePath('/financials')
+  if (photo.event_id) {
+    revalidatePath(`/events/${photo.event_id}/receipts`)
+    revalidatePath(`/events/${photo.event_id}`)
+  }
 
   return { success: true, expensesCreated }
 }
@@ -347,14 +359,16 @@ export async function getReceiptSummaryForEvent(eventId: string): Promise<Receip
 
   const { data, error } = await (supabase as any)
     .from('receipt_photos')
-    .select(`
+    .select(
+      `
       id, event_id, photo_url, ocr_raw, upload_status, approved_at, created_at,
       receipt_extractions(
         id, store_name, store_location, purchase_date, payment_method,
         subtotal_cents, tax_cents, total_cents, extraction_confidence,
         receipt_line_items(id, description, price_cents, expense_tag, ingredient_category)
       )
-    `)
+    `
+    )
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: true })
@@ -368,7 +382,7 @@ export async function getReceiptSummaryForEvent(eventId: string): Promise<Receip
     const ext = (row.receipt_extractions as any)?.[0] ?? null
     return {
       id: row.id,
-      eventId: row.event_id,
+      eventId: row.event_id ?? null,
       photoUrl: row.photo_url,
       ocrRaw: row.ocr_raw,
       uploadStatus: row.upload_status as ReceiptPhoto['uploadStatus'],
