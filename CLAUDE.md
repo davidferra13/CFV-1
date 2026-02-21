@@ -106,14 +106,16 @@ Run these in order — stop and report any failure before continuing:
 1. `npx tsc --noEmit --skipLibCheck` → must exit 0
 2. `npx next build --no-lint` → must exit 0
 3. `git add` relevant files + `git commit` with a clear message
-4. Confirm branch is clean and ready — do NOT push or deploy
+4. `git push origin <current-branch>` — push the feature branch to GitHub (backup, $0 cost, Vercel ignores it)
+5. Confirm branch is clean and ready — do **NOT** merge to `main` or deploy to Vercel
 
 ### Health Checks (run before merging to main)
 
 - `npx tsc --noEmit --skipLibCheck` → must exit 0, zero errors
 - `npx next build --no-lint` → must exit 0
-- All work committed, no important untracked files
+- All work committed and pushed to the feature branch on GitHub
 - `types/database.ts` current with remote schema
+- Only after all of the above: merge to `main` with explicit user approval
 
 ### Agent Testing Account — Use It
 
