@@ -104,3 +104,8 @@ types/gen-stderr.txt
 # Playwright auth state (session tokens — never commit)
 # Regenerated automatically on every globalSetup run
 /.auth/
+
+# Tauri — Rust build output (can be gigabytes, fully reproducible)
+/src-tauri/target/
+# Tauri generated schemas (build artifacts)
+/src-tauri/gen/

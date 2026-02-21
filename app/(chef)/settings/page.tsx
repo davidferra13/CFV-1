@@ -8,8 +8,9 @@ import { requireChef } from '@/lib/auth/get-user'
 
 export const metadata: Metadata = { title: 'Settings - ChefFlow' }
 import { getChefPreferences } from '@/lib/chef/actions'
-import { getGoogleConnection } from '@/lib/gmail/google-auth'
+import { getGoogleConnection } from '@/lib/google/auth'
 import { getGmailSyncHistory } from '@/lib/gmail/actions'
+import { getCalendarConnection } from '@/lib/scheduling/calendar-sync-actions'
 import { getHistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 import { getWixConnection, getWixSubmissions } from '@/lib/wix/actions'
 import { getNetworkDiscoverable } from '@/lib/network/actions'
@@ -23,7 +24,7 @@ import { PreferencesForm } from '@/components/settings/preferences-form'
 import { SchedulingRulesForm } from '@/components/settings/scheduling-rules-form'
 import { BookingPageSettings } from '@/components/settings/booking-page-settings'
 import { BusinessModeToggle } from '@/components/settings/business-mode-toggle'
-import { ConnectedAccounts } from '@/components/settings/connected-accounts'
+import { GoogleIntegrations } from '@/components/settings/google-integrations'
 import { WixConnection } from '@/components/wix/wix-connection'
 import { DiscoverabilityToggle } from '@/components/network/discoverability-toggle'
 import { GoogleReviewUrlForm } from '@/components/settings/google-review-url-form'
@@ -32,6 +33,7 @@ import { AvailabilitySignalToggle } from '@/components/calendar/availability-sig
 import { DemoDataManager } from '@/components/onboarding/demo-data-manager'
 import { hasDemoData } from '@/lib/onboarding/demo-data'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
+import { DesktopAppSettings } from '@/components/settings/desktop-app-settings'
 import Link from 'next/link'
 
 function SettingsCategory({
@@ -58,7 +60,22 @@ function SettingsCategory({
 
 export default async function SettingsPage() {
   await requireChef()
-  const [preferences, gmailConnection, recentSyncs, historicalScanStatus, wixConnection, wixSubmissions, networkDiscoverable, googleReviewUrl, profile, businessMode, availabilitySignalEnabled, schedulingRules, bookingSettings, demoDataExists] = await Promise.all([
+  const [
+    preferences,
+    googleConnection,
+    recentSyncs,
+    historicalScanStatus,
+    wixConnection,
+    wixSubmissions,
+    networkDiscoverable,
+    googleReviewUrl,
+    profile,
+    businessMode,
+    availabilitySignalEnabled,
+    schedulingRules,
+    bookingSettings,
+    demoDataExists,
+  ] = await Promise.all([
     getChefPreferences(),
     getGoogleConnection(),
     getGmailSyncHistory(10),
@@ -119,7 +136,8 @@ export default async function SettingsPage() {
           >
             <p className="font-medium text-stone-900">Goals</p>
             <p className="text-sm text-stone-500 mt-1">
-              Set revenue, booking, and margin targets. Track monthly progress and get client outreach recommendations.
+              Set revenue, booking, and margin targets. Track monthly progress and get client
+              outreach recommendations.
             </p>
           </Link>
           <PreferencesForm preferences={preferences} />
@@ -155,7 +173,8 @@ export default async function SettingsPage() {
             >
               <p className="font-medium text-stone-900">Profile & Partner Showcase</p>
               <p className="text-sm text-stone-500 mt-1">
-                See what clients can view on your profile and control your tagline and partner showcase.
+                See what clients can view on your profile and control your tagline and partner
+                showcase.
               </p>
             </Link>
             <Link
@@ -164,7 +183,8 @@ export default async function SettingsPage() {
             >
               <p className="font-semibold text-brand-900">Client Preview</p>
               <p className="text-sm text-brand-700 mt-1">
-                See your public profile and client portal exactly as your clients do — with real data.
+                See your public profile and client portal exactly as your clients do — with real
+                data.
               </p>
             </Link>
             {profile.slug && (
@@ -188,7 +208,11 @@ export default async function SettingsPage() {
           <div>
             <h3 className="text-sm font-semibold text-stone-700 mb-3">Connected Accounts</h3>
             <div className="space-y-4">
-              <ConnectedAccounts connection={gmailConnection} recentSyncs={recentSyncs} historicalScanStatus={historicalScanStatus} />
+              <GoogleIntegrations
+                connection={googleConnection}
+                recentSyncs={recentSyncs}
+                historicalScanStatus={historicalScanStatus}
+              />
               <WixConnection connection={wixConnection} recentSubmissions={wixSubmissions} />
             </div>
           </div>
@@ -218,19 +242,24 @@ export default async function SettingsPage() {
         title="Booking Page"
         description="Share a link clients can use to check your availability and submit a booking request."
       >
-        <BookingPageSettings initialSettings={bookingSettings ?? ({
-          booking_enabled: false,
-          booking_slug: null,
-          booking_headline: null,
-          booking_bio_short: null,
-          booking_min_notice_days: 7,
-          booking_model: 'inquiry_first',
-          booking_base_price_cents: null,
-          booking_pricing_type: 'flat_rate',
-          booking_deposit_type: 'percent',
-          booking_deposit_percent: null,
-          booking_deposit_fixed_cents: null,
-        } as BookingSettings)} />
+        <BookingPageSettings
+          initialSettings={
+            bookingSettings ??
+            ({
+              booking_enabled: false,
+              booking_slug: null,
+              booking_headline: null,
+              booking_bio_short: null,
+              booking_min_notice_days: 7,
+              booking_model: 'inquiry_first',
+              booking_base_price_cents: null,
+              booking_pricing_type: 'flat_rate',
+              booking_deposit_type: 'percent',
+              booking_deposit_percent: null,
+              booking_deposit_fixed_cents: null,
+            } as BookingSettings)
+          }
+        />
       </SettingsCategory>
 
       <SettingsCategory
@@ -253,7 +282,8 @@ export default async function SettingsPage() {
           >
             <p className="font-medium text-stone-900">Automations</p>
             <p className="text-sm text-stone-500 mt-1">
-              Set up rules to auto-create follow-ups, notifications, and draft messages when events happen.
+              Set up rules to auto-create follow-ups, notifications, and draft messages when events
+              happen.
             </p>
           </Link>
           <Link
@@ -262,7 +292,8 @@ export default async function SettingsPage() {
           >
             <p className="font-medium text-stone-900">Seasonal Palettes</p>
             <p className="text-sm text-stone-500 mt-1">
-              Define your creative thesis, micro-windows, context profiles, and proven wins for each season.
+              Define your creative thesis, micro-windows, context profiles, and proven wins for each
+              season.
             </p>
           </Link>
           <Link
@@ -271,7 +302,8 @@ export default async function SettingsPage() {
           >
             <p className="font-medium text-stone-900">Chef Journal</p>
             <p className="text-sm text-stone-500 mt-1">
-              Track travel inspiration, favorite meals, lessons learned, and ideas to bring back into your kitchen.
+              Track travel inspiration, favorite meals, lessons learned, and ideas to bring back
+              into your kitchen.
             </p>
           </Link>
         </div>
@@ -314,6 +346,13 @@ export default async function SettingsPage() {
       </SettingsCategory>
 
       <SettingsCategory
+        title="Desktop App"
+        description="System tray, auto-start, and native desktop notifications for the ChefFlow desktop app."
+      >
+        <DesktopAppSettings />
+      </SettingsCategory>
+
+      <SettingsCategory
         title="Notifications & Alerts"
         description="Control email, browser push, and SMS alerts by category."
       >
@@ -323,7 +362,8 @@ export default async function SettingsPage() {
         >
           <p className="font-semibold text-brand-900">Notification Channels</p>
           <p className="text-sm text-brand-700 mt-1">
-            Manage email, browser push, and SMS preferences per category. Set up your SMS number here.
+            Manage email, browser push, and SMS preferences per category. Set up your SMS number
+            here.
           </p>
         </Link>
       </SettingsCategory>
@@ -361,9 +401,7 @@ export default async function SettingsPage() {
             className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
           >
             <p className="font-medium text-stone-900">Change Password</p>
-            <p className="text-sm text-stone-500 mt-1">
-              Update your account password.
-            </p>
+            <p className="text-sm text-stone-500 mt-1">Update your account password.</p>
           </Link>
           <Link
             href="/settings/delete-account"
