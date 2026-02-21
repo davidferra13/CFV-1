@@ -130,3 +130,23 @@ export async function requireAuth(): Promise<AuthUser> {
 
   return user
 }
+
+/**
+ * Require platform admin — email must be in ADMIN_EMAILS env var.
+ * Used for dev tools, simulation lab, and internal dashboards.
+ * Builds on requireChef() so the caller must also be a valid chef account.
+ */
+export async function requireAdmin(): Promise<AuthUser> {
+  const user = await requireChef()
+
+  const adminEmails = (process.env.ADMIN_EMAILS ?? '')
+    .split(',')
+    .map((e) => e.trim().toLowerCase())
+    .filter(Boolean)
+
+  if (!adminEmails.includes(user.email.toLowerCase())) {
+    throw new Error('Unauthorized: Admin access required')
+  }
+
+  return user
+}

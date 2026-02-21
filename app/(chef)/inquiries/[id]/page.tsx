@@ -42,6 +42,7 @@ import { InquirySummary, type InquirySummaryData } from '@/components/inquiries/
 import { InquiryAddClientButton } from '@/components/inquiries/inquiry-add-client-button'
 import { getBookingScoreForInquiry } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
+import { LeadScoreBadge } from '@/components/ai/lead-score-badge'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -176,6 +177,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
             )}
             {bookingScore && <BookingScoreBadge score={bookingScore} />}
+            <LeadScoreBadge inquiryId={params.id} />
           </div>
           {inquiry.confirmed_occasion && (
             <p className="text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>

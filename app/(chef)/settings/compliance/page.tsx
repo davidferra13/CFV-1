@@ -3,6 +3,7 @@
 // with expiry tracking and color-coded urgency indicators.
 
 import type { Metadata } from 'next'
+import { PermitChecklistPanel } from '@/components/ai/permit-checklist-panel'
 import { requireChef } from '@/lib/auth/get-user'
 import {
   listCertifications,
@@ -166,6 +167,9 @@ export default async function CompliancePage() {
           <CertForm />
         </CardContent>
       </Card>
+
+      {/* AI Permit Renewal Checklist */}
+      <PermitChecklistPanel />
     </div>
   )
 }

@@ -13,6 +13,7 @@ import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { createExpense, type CreateExpenseInput } from '@/lib/expenses/actions'
+import { ExpenseCategorizeSuggest } from '@/components/ai/expense-categorize-suggest'
 import { EXPENSE_CATEGORY_GROUPS } from '@/lib/constants/expense-categories'
 import { parseCurrencyToCents } from '@/lib/utils/currency'
 import { format } from 'date-fns'
@@ -345,14 +346,23 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
               />
             </div>
 
-            <Input
-              label="Description"
-              type="text"
-              placeholder="What was this expense for?"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
+            <div>
+              <Input
+                label="Description"
+                type="text"
+                placeholder="What was this expense for?"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+              <div className="mt-1">
+                <ExpenseCategorizeSuggest
+                  description={description}
+                  amountCents={parseCurrencyToCents(amount) || 0}
+                  onAccept={(cat) => setCategory(cat)}
+                />
+              </div>
+            </div>
 
             <Input
               label="Store/Vendor"

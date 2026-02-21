@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { TaxDeductionPanel } from '@/components/ai/tax-deduction-panel'
 import { getYearlyMileageSummary, computeQuarterlyEstimate } from '@/lib/tax/actions'
 import { TaxCenterClient, TaxYearSelect } from './tax-center-client'
 
@@ -42,6 +43,9 @@ export default async function TaxCenterPage({
         mileage={mileage}
         quarterlyEstimates={[q1, q2, q3, q4]}
       />
+
+      {/* AI Tax Deduction Identifier */}
+      <TaxDeductionPanel />
     </div>
   )
 }

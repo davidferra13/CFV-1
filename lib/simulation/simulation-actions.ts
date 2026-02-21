@@ -4,7 +4,7 @@
 // Orchestrates the full sim-to-real loop: generate → run → evaluate → store.
 // All operations tenant-scoped. Never touches real client data.
 
-import { requireChef } from '@/lib/auth/get-user'
+import { requireAdmin } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { generateScenarios } from './scenario-generator'
 import { runScenario } from './pipeline-runner'
@@ -18,7 +18,7 @@ export async function startSimulationRun(config: SimRunConfig): Promise<{
   runId: string | null
   error: string | null
 }> {
-  const user = await requireChef()
+  const user = await requireAdmin()
   const supabase = createServerClient()
   const tenantId = user.tenantId!
 
@@ -171,7 +171,7 @@ export async function startSimulationRun(config: SimRunConfig): Promise<{
 // ── Read runs ─────────────────────────────────────────────────────────────────
 
 export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
-  const user = await requireChef()
+  const user = await requireAdmin()
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -198,7 +198,7 @@ export async function getSimulationRuns(limit = 10): Promise<SimRun[]> {
 // ── Read results for a specific run ──────────────────────────────────────────
 
 export async function getSimulationResults(runId: string): Promise<SimResult[]> {
-  const user = await requireChef()
+  const user = await requireAdmin()
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -228,7 +228,7 @@ export async function getFailureExamples(
   module: SimModule,
   limit = 5
 ): Promise<Array<{ scenarioPayload: string; score: number; failures: string[] }>> {
-  const user = await requireChef()
+  const user = await requireAdmin()
   const supabase = createServerClient()
 
   const { data, error } = await supabase
@@ -252,7 +252,7 @@ export async function getFailureExamples(
 // ── Overall summary ───────────────────────────────────────────────────────────
 
 export async function getSimulationSummary(): Promise<SimSummary> {
-  const user = await requireChef()
+  const user = await requireAdmin()
   const supabase = createServerClient()
   const tenantId = user.tenantId!
 

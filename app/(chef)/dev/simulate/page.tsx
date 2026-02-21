@@ -4,7 +4,7 @@
 // Route: /dev/simulate — chef-only, protected by layout
 
 import type { Metadata } from 'next'
-import { requireChef } from '@/lib/auth/get-user'
+import { requireAdmin } from '@/lib/auth/get-user'
 import {
   getSimulationRuns,
   getSimulationResults,
@@ -12,10 +12,10 @@ import {
 } from '@/lib/simulation/simulation-actions'
 import { SimulateClient } from './simulate-client'
 
-export const metadata: Metadata = { title: 'AI Simulation — ChefFlow Dev' }
+export const metadata: Metadata = { title: 'Simulation Lab — ChefFlow Dev' }
 
 export default async function SimulatePage() {
-  await requireChef()
+  await requireAdmin()
 
   const [summary, recentRuns] = await Promise.all([getSimulationSummary(), getSimulationRuns(5)])
 

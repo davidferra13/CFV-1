@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { CampaignBuilderClient } from './campaign-builder-client'
+import { TestimonialPanel } from '@/components/ai/testimonial-panel'
 
 export const metadata: Metadata = { title: 'Marketing — ChefFlow' }
 
@@ -126,6 +127,9 @@ export default async function MarketingPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Testimonial Request */}
+      <TestimonialPanel />
     </div>
   )
 }

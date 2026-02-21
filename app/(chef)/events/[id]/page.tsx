@@ -79,6 +79,25 @@ import { getEventTips } from '@/lib/finance/tip-actions'
 import { TipLogPanel } from '@/components/finance/tip-log-panel'
 import { QuickDebriefPrompt } from '@/components/events/quick-debrief-prompt'
 import { BudgetTracker } from '@/components/events/budget-tracker'
+import { WeatherPanel } from '@/components/events/weather-panel'
+import { GeocodeAddressButton } from '@/components/events/geocode-address-button'
+import { ClientPortalQR } from '@/components/events/client-portal-qr'
+import { EventDetailMobileNav, EventDetailSection } from '@/components/events/event-detail-mobile-nav'
+import { AllergenRiskPanel } from '@/components/ai/allergen-risk-panel'
+import { ServiceTimelinePanel } from '@/components/ai/service-timeline-panel'
+import { PrepTimelinePanel } from '@/components/ai/prep-timeline-panel'
+import { StaffBriefingAIPanel } from '@/components/ai/staff-briefing-ai-panel'
+import { ContingencyAIPanel } from '@/components/ai/contingency-ai-panel'
+import { CarryForwardMatchPanel } from '@/components/ai/carry-forward-match-panel'
+import { GroceryConsolidationPanel } from '@/components/ai/grocery-consolidation-panel'
+import { MenuNutritionalPanel } from '@/components/ai/menu-nutritional-panel'
+import { TempLogAnomalyPanel } from '@/components/ai/temp-log-anomaly-panel'
+import { PricingIntelligencePanel } from '@/components/ai/pricing-intelligence-panel'
+import { ContractGeneratorPanel } from '@/components/ai/contract-generator-panel'
+import { AARGeneratorPanel } from '@/components/ai/aar-generator-panel'
+import { ReviewRequestPanel } from '@/components/ai/review-request-panel'
+import { GratuityPanel } from '@/components/ai/gratuity-panel'
+import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -123,10 +142,13 @@ async function getEventMenusForCheck(eventId: string): Promise<string | false> {
 }
 
 export default async function EventDetailPage({
-  params
+  params,
+  searchParams,
 }: {
   params: { id: string }
+  searchParams?: { tab?: string }
 }) {
+  const activeTab = (searchParams?.tab ?? 'overview') as 'overview' | 'money' | 'ops' | 'wrap'
   const user = await requireChef()
 
   const event = await getEventById(params.id)
@@ -371,6 +393,16 @@ export default async function EventDetailPage({
         <EventPrepSchedule eventId={event.id} initialBlocks={prepBlocks as any} />
       )}
 
+      {/* ============================================ */}
+      {/* MOBILE TAB NAV — hidden on md+               */}
+      {/* ============================================ */}
+      <EventDetailMobileNav />
+
+      {/* ============================================ */}
+      {/* TAB: OVERVIEW — Event details, client, comms */}
+      {/* ============================================ */}
+      <EventDetailSection tab="overview" activeTab={activeTab}>
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Event Details */}
@@ -384,15 +416,23 @@ export default async function EventDetailPage({
                   .filter(Boolean)
                   .join(', ') || 'Not set'}
               </dd>
-              {(event as any).location_lat && (event as any).location_lng && (
-                <div className="mt-2">
+              {(event as any).location_lat && (event as any).location_lng ? (
+                <div className="mt-2 space-y-2">
                   <LocationMap
                     lat={(event as any).location_lat}
                     lng={(event as any).location_lng}
                     className="h-48"
                   />
+                  {/* Open-Meteo weather forecast for the event date */}
+                  <WeatherPanel
+                    lat={(event as any).location_lat}
+                    lng={(event as any).location_lng}
+                    eventDate={event.event_date}
+                  />
                 </div>
-              )}
+              ) : event.location_address ? (
+                <GeocodeAddressButton eventId={event.id} />
+              ) : null}
             </div>
             {(event as any).referral_partner && (
               <div>
@@ -466,8 +506,24 @@ export default async function EventDetailPage({
         </Card>
       </div>
 
+      {/* Client Portal QR Code */}
+      {event.status !== 'cancelled' && event.status !== 'draft' && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Client Portal Access</h2>
+          <p className="text-sm text-stone-500 mb-4">
+            Share this QR code or link so your client can view their event portal.
+          </p>
+          <ClientPortalQR eventId={event.id} />
+        </Card>
+      )}
+
       {/* Service Contract */}
       <ContractSection eventId={event.id} eventStatus={event.status} />
+
+      {/* AI Contract Generator */}
+      {!['cancelled'].includes(event.status) && (
+        <ContractGeneratorPanel eventId={event.id} />
+      )}
 
       {/* Guests & RSVPs */}
       {event.status !== 'draft' && event.status !== 'cancelled' && (
@@ -481,6 +537,16 @@ export default async function EventDetailPage({
             visibility={activeShare?.visibility_settings as any || null}
           />
         </Card>
+      )}
+
+      {/* AI Allergen Risk Matrix */}
+      {event.status !== 'draft' && event.status !== 'cancelled' && (
+        <AllergenRiskPanel eventId={event.id} />
+      )}
+
+      {/* AI Menu Nutritional Summary */}
+      {eventMenus && event.status !== 'cancelled' && (
+        <MenuNutritionalPanel eventId={event.id} />
       )}
 
       {/* Communication Log */}
@@ -500,6 +566,13 @@ export default async function EventDetailPage({
           />
         </div>
       </Card>
+
+      </EventDetailSection>
+
+      {/* ============================================ */}
+      {/* TAB: MONEY — Financials, payments, expenses  */}
+      {/* ============================================ */}
+      <EventDetailSection tab="money" activeTab={activeTab}>
 
       {/* Menu Approval */}
       {eventMenus && event.status !== 'cancelled' && menuApprovalData && (
@@ -560,6 +633,11 @@ export default async function EventDetailPage({
           </div>
         </div>
       </Card>
+
+      {/* AI Pricing Intelligence */}
+      {['proposed', 'accepted'].includes(event.status) && (
+        <PricingIntelligencePanel eventId={event.id} />
+      )}
 
       {/* Record Payment — for accepted events with outstanding balance */}
       {['accepted', 'paid'].includes(event.status) && outstandingBalance > 0 && (
@@ -785,6 +863,13 @@ export default async function EventDetailPage({
         </Card>
       )}
 
+      </EventDetailSection>
+
+      {/* ============================================ */}
+      {/* TAB: OPS — Staff, temps, docs, transitions   */}
+      {/* ============================================ */}
+      <EventDetailSection tab="ops" activeTab={activeTab}>
+
       {/* Time Tracking */}
       {canTrackTime && (
         <TimeTracking
@@ -824,6 +909,21 @@ export default async function EventDetailPage({
         </Card>
       )}
 
+      {/* AI Staff Briefing */}
+      {!['draft', 'cancelled'].includes(event.status) && (
+        <StaffBriefingAIPanel eventId={event.id} />
+      )}
+
+      {/* AI Prep Timeline */}
+      {['confirmed', 'in_progress'].includes(event.status) && (
+        <PrepTimelinePanel eventId={event.id} />
+      )}
+
+      {/* AI Service Timeline */}
+      {['confirmed', 'in_progress'].includes(event.status) && (
+        <ServiceTimelinePanel eventId={event.id} />
+      )}
+
       {/* Chef Collaboration — shown to event owner on any non-cancelled event */}
       {event.status !== 'cancelled' && (
         <EventCollaboratorsPanel
@@ -842,6 +942,11 @@ export default async function EventDetailPage({
             initialLogs={tempLogs as any}
           />
         </Card>
+      )}
+
+      {/* AI Temperature Log Anomaly Detection */}
+      {['in_progress', 'completed'].includes(event.status) && (
+        <TempLogAnomalyPanel eventId={event.id} />
       )}
 
       {/* Shopping Substitutions — available for any non-draft event */}
@@ -868,6 +973,16 @@ export default async function EventDetailPage({
         />
       )}
 
+      {/* AI Carry-Forward Ingredient Matching */}
+      {event.status !== 'cancelled' && (
+        <CarryForwardMatchPanel eventId={event.id} />
+      )}
+
+      {/* AI Grocery List Consolidation */}
+      {eventMenus && event.status !== 'cancelled' && (
+        <GroceryConsolidationPanel eventId={event.id} />
+      )}
+
       {/* Unused Ingredients — for completed events */}
       {isCompletedOrBeyond && (
         <UnusedIngredients
@@ -885,6 +1000,11 @@ export default async function EventDetailPage({
             emergencyContacts={emergencyContacts as any}
           />
         </Card>
+      )}
+
+      {/* AI Contingency Suggestions */}
+      {event.status !== 'cancelled' && (
+        <ContingencyAIPanel eventId={event.id} />
       )}
 
       {/* Printed Documents (8 Sheets) + Business Documents */}
@@ -1044,6 +1164,13 @@ export default async function EventDetailPage({
         />
       )}
 
+      </EventDetailSection>
+
+      {/* ============================================ */}
+      {/* TAB: WRAP-UP — Debrief, survey, history      */}
+      {/* ============================================ */}
+      <EventDetailSection tab="wrap" activeTab={activeTab}>
+
       {/* File AAR button — prominent, for completed events without AAR */}
       {event.status === 'completed' && !aar && !closureStatus && (
         <Card className="p-6 border-brand-200 bg-brand-50">
@@ -1113,6 +1240,26 @@ export default async function EventDetailPage({
         </Card>
       )}
 
+      {/* AI AAR Generator — for completed events without a filed review */}
+      {event.status === 'completed' && !aar && (
+        <AARGeneratorPanel eventId={event.id} />
+      )}
+
+      {/* AI Review Request Drafter */}
+      {event.status === 'completed' && (
+        <ReviewRequestPanel eventId={event.id} />
+      )}
+
+      {/* AI Gratuity Framing */}
+      {event.status === 'completed' && (
+        <GratuityPanel eventId={event.id} />
+      )}
+
+      {/* AI Social Media Captions */}
+      {event.status === 'completed' && (
+        <SocialCaptionsPanel eventId={event.id} />
+      )}
+
       {/* Transition History */}
       {transitions.length > 0 && (
         <Card className="p-6">
@@ -1149,6 +1296,8 @@ export default async function EventDetailPage({
           </div>
         </Card>
       )}
+
+      </EventDetailSection>
     </div>
   )
 }

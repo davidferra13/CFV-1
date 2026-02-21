@@ -55,6 +55,8 @@ import { NextBestActionCard } from '@/components/clients/next-best-action-card'
 import { RelationshipStrengthBadge } from '@/components/clients/relationship-strength-badge'
 import { getClientPortalToken } from '@/lib/client-portal/actions'
 import { PortalLinkManager } from '@/components/clients/portal-link-manager'
+import { ClientPreferencePanel } from '@/components/ai/client-preference-panel'
+import { SentimentBadge } from '@/components/ai/sentiment-badge'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-100 text-amber-800',
@@ -555,6 +557,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <CardTitle>Communication History</CardTitle>
         </CardHeader>
         <CardContent>
+          <SentimentBadge clientId={params.id} />
           <MessageThread messages={messages} showEntityLinks />
           <div className="mt-4 pt-4 border-t border-stone-200">
             <MessageLogForm
@@ -564,6 +567,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </CardContent>
       </Card>
+
+      {/* AI Client Preference Panel */}
+      <ClientPreferencePanel clientId={params.id} />
 
       {/* Unified Client Timeline */}
       <Card>

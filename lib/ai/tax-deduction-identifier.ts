@@ -1,0 +1,106 @@
+'use server'
+
+// Tax Deduction Identifier
+// Scans the expense ledger and flags potentially missed or miscategorized deductions.
+// Routed to Ollama (financial PII).
+// Output is INSIGHT ONLY — never modifies ledger entries.
+
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
+import { parseWithOllama } from './parse-ollama'
+import { z } from 'zod'
+
+// ── Zod schema ──────────────────────────────────────────────────────────────
+
+const DeductionFlagSchema = z.object({
+  category: z.string(),           // e.g. "Mileage", "Home Office", "Equipment"
+  description: z.string(),        // what was missed or misclassified
+  estimatedAnnualValueCents: z.number().nullable(),
+  affectedEntries: z.array(z.string()), // descriptions of the affected expenses
+  action: z.string(),             // what the chef should do
+  priority: z.enum(['high', 'medium', 'low']),
+})
+
+const TaxDeductionResultSchema = z.object({
+  flags: z.array(DeductionFlagSchema),
+  totalEstimatedMissedCents: z.number(),
+  summary: z.string(),
+  disclaimer: z.string(),
+  confidence: z.enum(['high', 'medium', 'low']),
+})
+
+export type TaxDeductionResult = z.infer<typeof TaxDeductionResultSchema>
+
+// ── Server Action ─────────────────────────────────────────────────────────
+
+export async function identifyMissedDeductions(
+  taxYearStart?: string,
+  taxYearEnd?: string
+): Promise<TaxDeductionResult> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const start = taxYearStart ?? `${new Date().getFullYear()}-01-01`
+  const end = taxYearEnd ?? `${new Date().getFullYear()}-12-31`
+
+  const { data: expenses } = await supabase
+    .from('expenses')
+    .select('description, amount_cents, category, date, notes')
+    .eq('tenant_id', user.tenantId!)
+    .gte('date', start)
+    .lte('date', end)
+    .order('date', { ascending: true })
+    .limit(200)
+
+  const expenseList = expenses ?? []
+
+  // Also check mileage logs
+  const { data: mileageLogs } = await (supabase as any)
+    .from('mileage_logs')
+    .select('miles, purpose, date')
+    .eq('tenant_id', user.tenantId!)
+    .gte('date', start)
+    .lte('date', end)
+    .limit(50)
+
+  const systemPrompt = `You are a tax advisor specializing in self-employed private chef businesses.
+Review this chef's expense list for the tax year and identify:
+1. Potentially missed deductions (expenses that should be tracked but aren't showing)
+2. Miscategorized expenses (e.g. "knife" under "supplies" instead of "equipment" for depreciation)
+3. Patterns suggesting uncaptured deductions (mileage, home office, professional development)
+
+Common missed deductions for private chefs:
+- Vehicle mileage to grocery stores, events, and supply runs
+- Home office deduction (if they do planning/admin at home)
+- Professional development (cooking classes, books, subscriptions)
+- Equipment depreciation (items >$500 should typically be depreciated)
+- Business meals with clients
+- Marketing and photography costs
+- Health insurance premiums
+
+Return valid JSON only. Always include the disclaimer about consulting a CPA.`
+
+  const userContent = `
+Tax year: ${start} to ${end}
+
+Expenses logged (${expenseList.length} entries):
+${expenseList.slice(0, 80).map(e => `- ${e.date}: ${e.description} | $${((e.amount_cents ?? 0) / 100).toFixed(2)} | category: ${e.category ?? 'uncategorized'}${e.notes ? ' | ' + e.notes : ''}`).join('\n') || '- No expenses found for this period'}
+
+Mileage logged: ${mileageLogs?.length ?? 0} entries
+${(mileageLogs ?? []).slice(0, 10).map((m: any) => `- ${m.date}: ${m.miles ?? 0} miles, ${m.purpose ?? 'purpose unknown'}`).join('\n')}
+
+Return JSON: {
+  "flags": [{ "category": "...", "description": "...", "estimatedAnnualValueCents": number|null, "affectedEntries": ["..."], "action": "...", "priority": "high|medium|low" }],
+  "totalEstimatedMissedCents": number,
+  "summary": "2-3 sentence overall summary",
+  "disclaimer": "Always ends with recommendation to consult a CPA",
+  "confidence": "high|medium|low"
+}`
+
+  try {
+    return await parseWithOllama(systemPrompt, userContent, TaxDeductionResultSchema)
+  } catch (err) {
+    console.error('[tax-deduction-identifier] Failed:', err)
+    throw new Error('Could not analyze deductions. Please try again.')
+  }
+}

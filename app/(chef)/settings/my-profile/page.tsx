@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { ChefBioPanel } from '@/components/ai/chef-bio-panel'
 import { ArrowLeft } from 'lucide-react'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefFullProfile } from '@/lib/chef/profile-actions'
@@ -28,6 +29,9 @@ export default async function ChefMyProfilePage() {
       </div>
 
       <ChefProfileForm profile={profile} />
+
+      {/* AI Chef Bio & Tagline Generator */}
+      <ChefBioPanel />
     </div>
   )
 }

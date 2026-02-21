@@ -1,14 +1,14 @@
-// Ollama-backed AI Parser
-// Privacy-first drop-in replacement for parseWithAI (Gemini)
-// Routes sensitive operations (client PII, inquiries, notes) to local Ollama
-// Falls back to Gemini if Ollama is unreachable or returns invalid output
+// Ollama-backed AI Parser — PRIVATE DATA ONLY
+// Hard rule: private data (client PII, financials, allergies, messages) stays local.
+// No Gemini fallback. If Ollama is offline, OllamaOfflineError is thrown.
+// The UI layer catches OllamaOfflineError and shows a clear "start Ollama" message.
 
 'use server'
 
 import { Ollama } from 'ollama'
 import { z } from 'zod'
 import { isOllamaEnabled, getOllamaConfig } from './providers'
-import { parseWithAI } from './parse'
+import { OllamaOfflineError } from './ollama-errors'
 
 function extractJsonPayload(rawText: string): string {
   const jsonMatch = rawText.match(/```(?:json)?\s*([\s\S]*?)```/)
@@ -21,13 +21,13 @@ function formatZodIssues(error: z.ZodError): string {
 
 /**
  * Privacy-first parsing using local Ollama model.
- * Mirrors parseWithAI signature exactly — drop-in for sensitive operations.
+ * Mirrors parseWithAI signature — drop-in for sensitive operations.
  *
  * Routing:
- *   OLLAMA_BASE_URL set + reachable → Ollama (data stays local)
- *   OLLAMA_BASE_URL not set         → Gemini (no change from previous behavior)
- *   Ollama unreachable at runtime   → Gemini fallback + console.warn
- *   Ollama returns invalid JSON     → Gemini fallback + console.warn
+ *   OLLAMA_BASE_URL set + reachable → Ollama (data stays local) ✓
+ *   OLLAMA_BASE_URL not set         → OllamaOfflineError (never Gemini)
+ *   Ollama unreachable at runtime   → OllamaOfflineError (never Gemini)
+ *   Ollama returns invalid output   → OllamaOfflineError (never Gemini)
  */
 export async function parseWithOllama<T>(
   systemPrompt: string,
@@ -35,7 +35,7 @@ export async function parseWithOllama<T>(
   schema: z.ZodType<T>
 ): Promise<T> {
   if (!isOllamaEnabled()) {
-    return parseWithAI(systemPrompt, userContent, schema)
+    throw new OllamaOfflineError('OLLAMA_BASE_URL is not set in environment')
   }
 
   const config = getOllamaConfig()
@@ -53,16 +53,13 @@ export async function parseWithOllama<T>(
     })
     rawText = response.message.content
   } catch (err) {
-    console.warn(
-      '[ollama] Ollama unreachable, falling back to Gemini:',
-      err instanceof Error ? err.message : String(err)
+    throw new OllamaOfflineError(
+      `Ollama unreachable at ${config.baseUrl}: ${err instanceof Error ? err.message : String(err)}`
     )
-    return parseWithAI(systemPrompt, userContent, schema)
   }
 
   if (!rawText) {
-    console.warn('[ollama] Empty response from Ollama, falling back to Gemini')
-    return parseWithAI(systemPrompt, userContent, schema)
+    throw new OllamaOfflineError('Ollama returned an empty response')
   }
 
   let jsonStr = extractJsonPayload(rawText)
@@ -70,11 +67,9 @@ export async function parseWithOllama<T>(
   try {
     parsed = JSON.parse(jsonStr)
   } catch {
-    console.warn(
-      '[ollama] Response was not valid JSON, falling back to Gemini. Raw:',
-      rawText.slice(0, 200)
+    throw new OllamaOfflineError(
+      `Ollama response was not valid JSON. Raw: ${rawText.slice(0, 200)}`
     )
-    return parseWithAI(systemPrompt, userContent, schema)
   }
 
   let zodResult = schema.safeParse(parsed)
@@ -82,7 +77,7 @@ export async function parseWithOllama<T>(
     const firstPassIssues = formatZodIssues(zodResult.error)
     console.warn('[ollama] Zod validation failed, attempting repair pass. Issues:', firstPassIssues)
 
-    // Single repair pass via Ollama
+    // Single repair pass via Ollama (still local — no privacy risk)
     try {
       const repairResponse = await ollama.chat({
         model: config.model,
@@ -112,12 +107,17 @@ export async function parseWithOllama<T>(
         console.log(`[ollama] Repair pass succeeded with ${config.model}`)
         return repairedResult.data
       }
-    } catch {
-      // Repair pass itself failed — fall through to Gemini fallback
-    }
 
-    console.warn('[ollama] Repair pass failed, falling back to Gemini')
-    return parseWithAI(systemPrompt, userContent, schema)
+      const repairIssues = formatZodIssues(repairedResult.error)
+      throw new OllamaOfflineError(
+        `Ollama repair pass failed schema validation: ${repairIssues}`
+      )
+    } catch (err) {
+      if (err instanceof OllamaOfflineError) throw err
+      throw new OllamaOfflineError(
+        `Ollama repair pass error: ${err instanceof Error ? err.message : String(err)}`
+      )
+    }
   }
 
   console.log(`[ollama] Parsed successfully with ${config.model}`)
