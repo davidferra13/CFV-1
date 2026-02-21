@@ -142,6 +142,23 @@ Only use variants that actually exist — wrong variants fail silently or throw.
 
 These are the established patterns. Follow them — don't reinvent.
 
+### Private AI — Local Only (NO Exceptions)
+
+**Private data must never leave the local machine.** Any function that handles client PII, financials, allergies, messages, or internal business data uses `parseWithOllama` — not `parseWithAI`.
+
+- `parseWithOllama` now throws `OllamaOfflineError` if Ollama is not running. It **never** falls back to Gemini.
+- **Never** add `parseWithAI` as a fallback in any file that calls `parseWithOllama`.
+- If Ollama is offline, the feature hard-fails with a clear error. The user sees "Start Ollama to use this feature." Data is not leaked.
+- The `OllamaOfflineError` class lives in `lib/ai/ollama-errors.ts` (no `'use server'` — class exports are not allowed in server action files). Import it from there: `import { OllamaOfflineError } from '@/lib/ai/ollama-errors'`. Callers that catch errors **must** re-throw it: `if (err instanceof OllamaOfflineError) throw err`.
+- Heuristic/regex fallbacks (no LLM call) are acceptable — they don't send data externally.
+
+Private data categories that must stay local:
+
+- Client names, contact info, dietary restrictions, allergies, messages
+- Budget amounts, quotes, payment history, revenue, expenses
+- Business analytics, insights, lead scores, pricing history
+- Temperature logs, staff data, event operational details
+
 - **Server actions** with `'use server'` for all business logic
 - **Role checks** via `requireChef()`, `requireClient()`, `requireAuth()`
 - **Tenant scoping** on every database query — no exceptions
