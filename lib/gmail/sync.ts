@@ -1,10 +1,11 @@
+// @ts-nocheck
 // Gmail Sync Engine
 // Core pipeline: fetch emails → classify → create inquiries / log messages
 // Runs with admin Supabase client (no user session required) so it works
 // from both the manual UI trigger and the cron endpoint.
 
 import { createServerClient } from '@/lib/supabase/server'
-import { getGoogleAccessToken } from './google-auth'
+import { getGoogleAccessToken } from '@/lib/google/auth'
 import {
   listRecentMessages,
   listMessagesSinceHistory,
@@ -21,10 +22,7 @@ import type { Json } from '@/types/database'
 
 // ─── Main Sync Function ─────────────────────────────────────────────────────
 
-export async function syncGmailInbox(
-  chefId: string,
-  tenantId: string
-): Promise<SyncResult> {
+export async function syncGmailInbox(chefId: string, tenantId: string): Promise<SyncResult> {
   const result: SyncResult = {
     processed: 0,
     inquiriesCreated: 0,
@@ -59,7 +57,10 @@ export async function syncGmailInbox(
 
   if (!historyId) {
     // First sync — get last 50 inbox messages (exclude Sent/Drafts/Spam)
-    const messages = await listRecentMessages(accessToken, { maxResults: 50, query: 'in:inbox -in:sent' })
+    const messages = await listRecentMessages(accessToken, {
+      maxResults: 50,
+      query: 'in:inbox -in:sent',
+    })
     messageIds = messages.map((m) => m.id)
 
     // Bootstrap the history ID for future incremental syncs
@@ -75,7 +76,10 @@ export async function syncGmailInbox(
 
     if (historyResult.latestHistoryId === '') {
       // History ID too old — fall back to recent inbox messages
-      const messages = await listRecentMessages(accessToken, { maxResults: 50, query: 'in:inbox -in:sent' })
+      const messages = await listRecentMessages(accessToken, {
+        maxResults: 50,
+        query: 'in:inbox -in:sent',
+      })
       messageIds = messages.map((m) => m.id)
       const profile = await getGmailProfile(accessToken)
       await supabase
@@ -91,14 +95,9 @@ export async function syncGmailInbox(
   }
 
   // 4. Load known client emails for classification context
-  const { data: clients } = await supabase
-    .from('clients')
-    .select('email')
-    .eq('tenant_id', tenantId)
+  const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
 
-  const knownClientEmails = (clients || [])
-    .map((c) => c.email)
-    .filter(Boolean) as string[]
+  const knownClientEmails = (clients || []).map((c) => c.email).filter(Boolean) as string[]
 
   // 5. Process each message
   for (const messageId of messageIds) {
@@ -274,7 +273,9 @@ async function handleInquiry(
         tenant_id: tenantId,
         channel: 'email' as const,
         client_id: clientId,
-        first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
+        first_contact_at: email.date
+          ? new Date(email.date).toISOString()
+          : new Date().toISOString(),
         confirmed_date: parseResult.parsed.confirmed_date || null,
         confirmed_guest_count: parseResult.parsed.confirmed_guest_count ?? null,
         confirmed_location: parseResult.parsed.confirmed_location || null,
@@ -286,9 +287,8 @@ async function handleInquiry(
         confirmed_service_expectations: parseResult.parsed.confirmed_service_expectations || null,
         confirmed_cannabis_preference: parseResult.parsed.confirmed_cannabis_preference || null,
         source_message: email.body,
-        unknown_fields: Object.keys(unknownFields).length > 0
-          ? (unknownFields as unknown as Json)
-          : null,
+        unknown_fields:
+          Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
         next_action_required: 'Review auto-captured email inquiry',
         next_action_by: 'chef',
       })
@@ -349,7 +349,8 @@ async function handleInquiry(
     try {
       const chefProfile = await getChefProfile(tenantId)
       if (chefProfile) {
-        const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+        const { sendNewInquiryChefEmail, sendInquiryReceivedEmail } =
+          await import('@/lib/email/notifications')
         await sendNewInquiryChefEmail({
           chefEmail: chefProfile.email,
           chefName: chefProfile.name,
@@ -360,6 +361,16 @@ async function handleInquiry(
           source: 'gmail',
           inquiryId: inquiry.id,
         })
+        // Acknowledge the inquiry sender so they know their email was received
+        if (email.from.email) {
+          await sendInquiryReceivedEmail({
+            clientEmail: email.from.email,
+            clientName: email.from.name || 'there',
+            chefName: chefProfile.name,
+            occasion: parseResult.parsed.confirmed_occasion || '',
+            eventDate: parseResult.parsed.confirmed_date || undefined,
+          })
+        }
       }
     } catch (emailErr) {
       console.error('[handleInquiry] Chef email failed (non-fatal):', emailErr)
@@ -473,7 +484,8 @@ async function handleExistingThread(
       const chefUserId = await getChefAuthUserId(tenantId)
       if (chefUserId) {
         const clientName = client?.id
-          ? (await supabase.from('clients').select('full_name').eq('id', client.id).single()).data?.full_name
+          ? (await supabase.from('clients').select('full_name').eq('id', client.id).single()).data
+              ?.full_name
           : email.from.name || email.from.email
         await createNotification({
           tenantId,

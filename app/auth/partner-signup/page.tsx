@@ -9,13 +9,13 @@
 //   3. Server action creates auth user + links to referral_partners record
 //   4. Client signs in with credentials → redirects to /partner/dashboard
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 import { claimPartnerInvite } from '@/lib/partners/invite-actions'
 import Link from 'next/link'
 
-export default function PartnerSignupPage() {
+function PartnerSignupForm() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const token = searchParams?.get('token') ?? ''
@@ -153,5 +153,19 @@ export default function PartnerSignupPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function PartnerSignupPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-stone-50">
+          <div className="text-sm text-stone-400">Loading…</div>
+        </div>
+      }
+    >
+      <PartnerSignupForm />
+    </Suspense>
   )
 }

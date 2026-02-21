@@ -40,7 +40,7 @@ export async function submitClientReview(input: SubmitReviewInput) {
   // Verify the event belongs to this client and is completed
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select('id, tenant_id, status')
+    .select('id, tenant_id, status, occasion')
     .eq('id', validated.event_id)
     .eq('client_id', user.entityId)
     .single()
@@ -64,8 +64,8 @@ export async function submitClientReview(input: SubmitReviewInput) {
     throw new Error('A review has already been submitted for this event')
   }
 
-  // Insert the review
-  const { error: insertError } = await supabase
+  // Insert the review and get back the ID
+  const { data: newReview, error: insertError } = await supabase
     .from('client_reviews')
     .insert({
       event_id: validated.event_id,
@@ -77,6 +77,8 @@ export async function submitClientReview(input: SubmitReviewInput) {
       what_could_improve: validated.what_could_improve || null,
       display_consent: validated.display_consent,
     })
+    .select('id')
+    .single()
 
   if (insertError) {
     console.error('[submitClientReview] Insert error:', insertError)
@@ -84,7 +86,76 @@ export async function submitClientReview(input: SubmitReviewInput) {
   }
 
   revalidatePath(`/my-events/${validated.event_id}`)
+
+  // Notify chef of new review (non-blocking)
+  notifyChefOfReview(
+    event.tenant_id,
+    user.entityId,
+    event.occasion || 'your event',
+    validated.rating,
+    validated.feedback_text || null,
+    newReview?.id ?? null
+  ).catch((err) => console.error('[submitClientReview] Chef notification failed:', err))
+
   return { success: true }
+}
+
+// ─── Internal: notify chef when a review is submitted ────────────────────────
+
+async function notifyChefOfReview(
+  tenantId: string,
+  clientId: string,
+  occasion: string,
+  rating: number,
+  reviewExcerpt: string | null,
+  reviewId: string | null
+): Promise<void> {
+  const { createNotification, getChefAuthUserId, getChefProfile } =
+    await import('@/lib/notifications/actions')
+
+  const [chefUserId, chefProfile] = await Promise.all([
+    getChefAuthUserId(tenantId),
+    getChefProfile(tenantId),
+  ])
+
+  if (!chefUserId) return
+
+  // Load client name
+  const { createServerClient } = await import('@/lib/supabase/server')
+  const supabase = createServerClient({ admin: true })
+  const { data: client } = await supabase
+    .from('clients')
+    .select('full_name')
+    .eq('id', clientId)
+    .single()
+  const clientName = client?.full_name ?? 'A client'
+
+  // In-app notification
+  await createNotification({
+    tenantId,
+    recipientId: chefUserId,
+    category: 'client',
+    action: 'review_submitted',
+    title: 'New review received',
+    body: `${clientName} left a ${rating}-star review for ${occasion}`,
+    actionUrl: '/reviews',
+    clientId,
+    metadata: { rating, review_id: reviewId },
+  })
+
+  // Email the chef
+  if (chefProfile) {
+    const { sendReviewSubmittedChefEmail } = await import('@/lib/email/notifications')
+    await sendReviewSubmittedChefEmail({
+      chefEmail: chefProfile.email,
+      chefName: chefProfile.name,
+      clientName,
+      occasion,
+      rating,
+      reviewExcerpt,
+      reviewId: reviewId ?? 'unknown',
+    })
+  }
 }
 
 /**
@@ -124,10 +195,7 @@ export async function recordGoogleReviewClick(eventId: string) {
   }
 
   // Mark review_link_sent on the event
-  await supabase
-    .from('events')
-    .update({ review_link_sent: true })
-    .eq('id', eventId)
+  await supabase.from('events').update({ review_link_sent: true }).eq('id', eventId)
 
   revalidatePath(`/my-events/${eventId}`)
   return { success: true }
@@ -146,11 +214,13 @@ export async function getChefReviews() {
 
   const { data, error } = await supabase
     .from('client_reviews')
-    .select(`
+    .select(
+      `
       *,
       client:clients!inner(id, full_name, email),
       event:events!inner(id, occasion, event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
@@ -180,11 +250,9 @@ export async function getChefReviewStats() {
   }
 
   const total = data.length
-  const averageRating = total > 0
-    ? data.reduce((sum, r) => sum + r.rating, 0) / total
-    : 0
-  const consentCount = data.filter(r => r.display_consent).length
-  const googleClickCount = data.filter(r => r.google_review_clicked).length
+  const averageRating = total > 0 ? data.reduce((sum, r) => sum + r.rating, 0) / total : 0
+  const consentCount = data.filter((r) => r.display_consent).length
+  const googleClickCount = data.filter((r) => r.google_review_clicked).length
 
   return { total, averageRating, consentCount, googleClickCount }
 }
@@ -321,7 +389,8 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
   const [clientReviewsResult, chefFeedbackResult, externalReviewsResult] = await Promise.all([
     supabase
       .from('client_reviews')
-      .select(`
+      .select(
+        `
         id,
         rating,
         feedback_text,
@@ -332,12 +401,14 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
         created_at,
         client:clients(id, full_name),
         event:events(id, occasion, event_date)
-      `)
+      `
+      )
       .eq('tenant_id', user.tenantId)
       .order('created_at', { ascending: false }),
     supabase
       .from('chef_feedback')
-      .select(`
+      .select(
+        `
         id,
         source,
         rating,
@@ -347,12 +418,14 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
         created_at,
         client:clients(id, full_name),
         event:events(id, occasion, event_date)
-      `)
+      `
+      )
       .eq('tenant_id', user.tenantId)
       .order('created_at', { ascending: false }),
     supabase
       .from('external_reviews')
-      .select(`
+      .select(
+        `
         id,
         source_id,
         provider,
@@ -362,7 +435,8 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
         review_text,
         review_date,
         created_at
-      `)
+      `
+      )
       .eq('tenant_id', user.tenantId)
       .order('review_date', { ascending: false })
       .order('created_at', { ascending: false }),
@@ -382,7 +456,10 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
 
   if (externalReviewsResult.error) {
     if (!isMissingRelationError(externalReviewsResult.error)) {
-      console.error('[getUnifiedChefReviewFeed] external_reviews error:', externalReviewsResult.error)
+      console.error(
+        '[getUnifiedChefReviewFeed] external_reviews error:',
+        externalReviewsResult.error
+      )
       throw new Error('Failed to load external reviews')
     }
   }
@@ -391,8 +468,10 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
     new Set(
       ((externalReviewsResult.data || []) as any[])
         .map((review) => review.source_id)
-        .filter((sourceId): sourceId is string => typeof sourceId === 'string' && sourceId.length > 0),
-    ),
+        .filter(
+          (sourceId): sourceId is string => typeof sourceId === 'string' && sourceId.length > 0
+        )
+    )
   )
 
   let externalSourceLabelMap: Record<string, string> = {}
@@ -409,80 +488,92 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
         throw new Error('Failed to load external source metadata')
       }
     } else {
-      externalSourceLabelMap = ((sourceRows || []) as any[]).reduce((acc, row) => {
-        if (typeof row.id === 'string' && typeof row.label === 'string') {
-          acc[row.id] = row.label
-        }
-        return acc
-      }, {} as Record<string, string>)
+      externalSourceLabelMap = ((sourceRows || []) as any[]).reduce(
+        (acc, row) => {
+          if (typeof row.id === 'string' && typeof row.label === 'string') {
+            acc[row.id] = row.label
+          }
+          return acc
+        },
+        {} as Record<string, string>
+      )
     }
   }
 
-  const clientItems: UnifiedChefReviewItem[] = ((clientReviewsResult.data || []) as any[]).map((review) => {
-    const fragments = [
-      typeof review.feedback_text === 'string' ? review.feedback_text.trim() : '',
-      typeof review.what_they_loved === 'string' && review.what_they_loved.trim()
-        ? `Loved: ${review.what_they_loved.trim()}`
-        : '',
-      typeof review.what_could_improve === 'string' && review.what_could_improve.trim()
-        ? `Could improve: ${review.what_could_improve.trim()}`
-        : '',
-    ].filter(Boolean)
+  const clientItems: UnifiedChefReviewItem[] = ((clientReviewsResult.data || []) as any[]).map(
+    (review) => {
+      const fragments = [
+        typeof review.feedback_text === 'string' ? review.feedback_text.trim() : '',
+        typeof review.what_they_loved === 'string' && review.what_they_loved.trim()
+          ? `Loved: ${review.what_they_loved.trim()}`
+          : '',
+        typeof review.what_could_improve === 'string' && review.what_could_improve.trim()
+          ? `Could improve: ${review.what_could_improve.trim()}`
+          : '',
+      ].filter(Boolean)
 
-    const reviewText = fragments.join(' ')
+      const reviewText = fragments.join(' ')
 
-    return {
-      id: `client_${review.id}`,
-      kind: 'client_review',
-      sourceKey: 'chef_flow',
-      sourceLabel: 'ChefFlow',
-      sourceUrl: null,
-      reviewerName: review.client?.full_name || 'Client',
-      rating: safeRating(review.rating),
-      reviewText: reviewText || 'No written notes provided.',
-      contextLine: formatEventContext(review.event || null),
-      reviewDate: review.created_at,
-      createdAt: review.created_at,
-      tags: [
-        review.display_consent ? 'Public OK' : '',
-        review.google_review_clicked ? 'Clicked Google Link' : '',
-      ].filter(Boolean),
+      return {
+        id: `client_${review.id}`,
+        kind: 'client_review',
+        sourceKey: 'chef_flow',
+        sourceLabel: 'ChefFlow',
+        sourceUrl: null,
+        reviewerName: review.client?.full_name || 'Client',
+        rating: safeRating(review.rating),
+        reviewText: reviewText || 'No written notes provided.',
+        contextLine: formatEventContext(review.event || null),
+        reviewDate: review.created_at,
+        createdAt: review.created_at,
+        tags: [
+          review.display_consent ? 'Public OK' : '',
+          review.google_review_clicked ? 'Clicked Google Link' : '',
+        ].filter(Boolean),
+      }
     }
-  })
+  )
 
-  const feedbackItems: UnifiedChefReviewItem[] = ((chefFeedbackResult.data || []) as any[]).map((feedback) => ({
-    id: `feedback_${feedback.id}`,
-    kind: 'logged_feedback',
-    sourceKey: feedback.source,
-    sourceLabel: FEEDBACK_SOURCE_LABELS[feedback.source] || feedback.source,
-    sourceUrl: feedback.source_url || null,
-    reviewerName: (feedback as any).reviewer_name || feedback.client?.full_name || 'External Reviewer',
-    rating: safeRating(feedback.rating),
-    reviewText: typeof feedback.feedback_text === 'string' && feedback.feedback_text.trim()
-      ? feedback.feedback_text.trim()
-      : 'No feedback text provided.',
-    contextLine: formatEventContext(feedback.event || null),
-    reviewDate: feedback.feedback_date || feedback.created_at,
-    createdAt: feedback.created_at,
-    tags: ['Manual Entry'],
-  }))
+  const feedbackItems: UnifiedChefReviewItem[] = ((chefFeedbackResult.data || []) as any[]).map(
+    (feedback) => ({
+      id: `feedback_${feedback.id}`,
+      kind: 'logged_feedback',
+      sourceKey: feedback.source,
+      sourceLabel: FEEDBACK_SOURCE_LABELS[feedback.source] || feedback.source,
+      sourceUrl: feedback.source_url || null,
+      reviewerName:
+        (feedback as any).reviewer_name || feedback.client?.full_name || 'External Reviewer',
+      rating: safeRating(feedback.rating),
+      reviewText:
+        typeof feedback.feedback_text === 'string' && feedback.feedback_text.trim()
+          ? feedback.feedback_text.trim()
+          : 'No feedback text provided.',
+      contextLine: formatEventContext(feedback.event || null),
+      reviewDate: feedback.feedback_date || feedback.created_at,
+      createdAt: feedback.created_at,
+      tags: ['Manual Entry'],
+    })
+  )
 
-  const externalItems: UnifiedChefReviewItem[] = ((externalReviewsResult.data || []) as any[]).map((review) => ({
-    id: `external_${review.id}`,
-    kind: 'external_review',
-    sourceKey: review.provider,
-    sourceLabel: externalSourceLabelMap[review.source_id] || providerLabel(review.provider),
-    sourceUrl: review.source_url || null,
-    reviewerName: review.author_name || 'External Reviewer',
-    rating: safeRating(review.rating),
-    reviewText: typeof review.review_text === 'string' && review.review_text.trim()
-      ? review.review_text.trim()
-      : 'No review text available.',
-    contextLine: providerLabel(review.provider),
-    reviewDate: review.review_date || review.created_at,
-    createdAt: review.created_at,
-    tags: ['External Sync'],
-  }))
+  const externalItems: UnifiedChefReviewItem[] = ((externalReviewsResult.data || []) as any[]).map(
+    (review) => ({
+      id: `external_${review.id}`,
+      kind: 'external_review',
+      sourceKey: review.provider,
+      sourceLabel: externalSourceLabelMap[review.source_id] || providerLabel(review.provider),
+      sourceUrl: review.source_url || null,
+      reviewerName: review.author_name || 'External Reviewer',
+      rating: safeRating(review.rating),
+      reviewText:
+        typeof review.review_text === 'string' && review.review_text.trim()
+          ? review.review_text.trim()
+          : 'No review text available.',
+      contextLine: providerLabel(review.provider),
+      reviewDate: review.review_date || review.created_at,
+      createdAt: review.created_at,
+      tags: ['External Sync'],
+    })
+  )
 
   return [...clientItems, ...feedbackItems, ...externalItems].sort((a, b) => {
     const first = Date.parse(a.reviewDate)

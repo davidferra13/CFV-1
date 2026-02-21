@@ -18,10 +18,12 @@ export async function getClientQuotes() {
 
   const { data: quotes, error } = await supabase
     .from('quotes')
-    .select(`
+    .select(
+      `
       *,
       inquiry:inquiries(id, confirmed_occasion)
-    `)
+    `
+    )
     .eq('client_id', user.entityId)
     .in('status', ['sent', 'accepted', 'rejected'])
     .order('created_at', { ascending: false })
@@ -44,10 +46,12 @@ export async function getClientQuoteById(quoteId: string) {
 
   const { data: quote, error } = await supabase
     .from('quotes')
-    .select(`
+    .select(
+      `
       *,
       inquiry:inquiries(id, confirmed_occasion, confirmed_date, confirmed_guest_count)
-    `)
+    `
+    )
     .eq('id', quoteId)
     .eq('client_id', user.entityId)
     .single()
@@ -157,12 +161,9 @@ export async function acceptQuote(quoteId: string) {
   // Notify chef that quote was accepted (non-blocking)
   const quoteTenantId = quote.tenant_id as string | undefined
   if (quoteTenantId) {
-    notifyChefOfQuoteAccepted(
-      quoteTenantId,
-      quoteId,
-      quote,
-      user.entityId,
-    ).catch((err) => console.error('[acceptQuote] Chef notification failed:', err))
+    notifyChefOfQuoteAccepted(quoteTenantId, quoteId, quote, user.entityId).catch((err) =>
+      console.error('[acceptQuote] Chef notification failed:', err)
+    )
   }
 
   return { success: true }
@@ -178,7 +179,7 @@ export async function rejectQuote(quoteId: string, reason?: string) {
 
   const { data: quote, error: fetchError } = await supabase
     .from('quotes')
-    .select('status')
+    .select('status, tenant_id, quote_name, inquiry_id')
     .eq('id', quoteId)
     .eq('client_id', user.entityId)
     .single()
@@ -208,6 +209,18 @@ export async function rejectQuote(quoteId: string, reason?: string) {
 
   revalidatePath('/my-quotes')
   revalidatePath(`/my-quotes/${quoteId}`)
+
+  // Notify chef that quote was rejected (non-blocking)
+  if (quote.tenant_id) {
+    notifyChefOfQuoteRejected(
+      quote.tenant_id,
+      quoteId,
+      { quote_name: quote.quote_name, inquiry_id: quote.inquiry_id },
+      user.entityId,
+      reason || null
+    ).catch((err) => console.error('[rejectQuote] Chef notification failed:', err))
+  }
+
   return { success: true }
 }
 
@@ -224,11 +237,10 @@ async function notifyChefOfQuoteAccepted(
     deposit_amount_cents?: number | null
     inquiry_id?: string | null
   },
-  clientId: string,
+  clientId: string
 ): Promise<void> {
-  const { createNotification, getChefAuthUserId, getChefProfile } = await import(
-    '@/lib/notifications/actions'
-  )
+  const { createNotification, getChefAuthUserId, getChefProfile } =
+    await import('@/lib/notifications/actions')
 
   const [chefUserId, chefProfile] = await Promise.all([
     getChefAuthUserId(tenantId),
@@ -277,6 +289,69 @@ async function notifyChefOfQuoteAccepted(
       depositRequired: quote.deposit_required ?? false,
       depositCents: quote.deposit_amount_cents ?? null,
       inquiryId: inquiryId ?? quoteId,
+    })
+  }
+}
+
+// ─── Internal: notify chef when a quote is rejected ──────────────────────────
+
+async function notifyChefOfQuoteRejected(
+  tenantId: string,
+  quoteId: string,
+  quote: {
+    quote_name?: string | null
+    inquiry_id?: string | null
+  },
+  clientId: string,
+  rejectionReason: string | null
+): Promise<void> {
+  const { createNotification, getChefAuthUserId, getChefProfile } =
+    await import('@/lib/notifications/actions')
+
+  const [chefUserId, chefProfile] = await Promise.all([
+    getChefAuthUserId(tenantId),
+    getChefProfile(tenantId),
+  ])
+
+  if (!chefUserId) return
+
+  // Load client name
+  const { createServerClient } = await import('@/lib/supabase/server')
+  const supabase = createServerClient({ admin: true })
+  const { data: client } = await supabase
+    .from('clients')
+    .select('full_name')
+    .eq('id', clientId)
+    .single()
+  const clientName = client?.full_name ?? 'A client'
+
+  const quoteName = quote.quote_name || 'Quote'
+  const inquiryId = quote.inquiry_id
+
+  // In-app notification
+  await createNotification({
+    tenantId,
+    recipientId: chefUserId,
+    category: 'quote',
+    action: 'quote_rejected',
+    title: 'Quote declined',
+    body: `${clientName} declined ${quoteName}`,
+    actionUrl: inquiryId ? `/inquiries/${inquiryId}` : '/inquiries',
+    clientId,
+    inquiryId: inquiryId ?? undefined,
+    metadata: { quote_id: quoteId, rejection_reason: rejectionReason },
+  })
+
+  // Email the chef
+  if (chefProfile) {
+    const { sendQuoteRejectedChefEmail } = await import('@/lib/email/notifications')
+    await sendQuoteRejectedChefEmail({
+      chefEmail: chefProfile.email,
+      chefName: chefProfile.name,
+      clientName,
+      quoteName,
+      rejectionReason,
+      inquiryId: inquiryId ?? null,
     })
   }
 }

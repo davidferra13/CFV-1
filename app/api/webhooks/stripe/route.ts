@@ -612,12 +612,26 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
           .single()
 
         if (chefData?.email && eventData && clientData) {
-          const { sendInstantBookingChefEmail } = await import('@/lib/email/notifications')
+          const { sendInstantBookingChefEmail, sendInstantBookingClientEmail } =
+            await import('@/lib/email/notifications')
+          const chefName = chefData.business_name || chefData.display_name || 'Chef'
           await sendInstantBookingChefEmail({
             chefEmail: chefData.email,
-            chefName: chefData.business_name || chefData.display_name || 'Chef',
+            chefName,
             clientName: clientData.full_name,
             clientEmail: clientData.email,
+            occasion: eventData.occasion || 'Private Event',
+            eventDate: eventData.event_date,
+            guestCount: eventData.guest_count,
+            depositCents: paymentIntent.amount,
+            totalCents: eventData.quoted_price_cents ?? paymentIntent.amount,
+            eventId: event_id,
+          })
+          // Also confirm the booking directly to the client
+          await sendInstantBookingClientEmail({
+            clientEmail: clientData.email,
+            clientName: clientData.full_name,
+            chefName,
             occasion: eventData.occasion || 'Private Event',
             eventDate: eventData.event_date,
             guestCount: eventData.guest_count,

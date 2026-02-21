@@ -36,6 +36,12 @@ import { CollaborationInviteEmail } from './templates/collaboration-invite'
 import { RecipeShareEmail } from './templates/recipe-share'
 import { PostEventSurveyEmail } from './templates/post-event-survey'
 import { InstantBookingChefEmail } from './templates/instant-booking-chef'
+import { QuoteRejectedChefEmail } from './templates/quote-rejected-chef'
+import { QuoteExpiredChefEmail } from './templates/quote-expired-chef'
+import { QuoteExpiredClientEmail } from './templates/quote-expired-client'
+import { EventStartingEmail } from './templates/event-starting'
+import { InstantBookingClientEmail } from './templates/instant-booking-client'
+import { ReviewSubmittedChefEmail } from './templates/review-submitted-chef'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -52,7 +58,11 @@ function formatDate(date: string): string {
   })
 }
 
-function buildLocation(event: { location_address?: string | null; location_city?: string | null; location_state?: string | null }): string | null {
+function buildLocation(event: {
+  location_address?: string | null
+  location_city?: string | null
+  location_state?: string | null
+}): string | null {
   const parts = [event.location_address, event.location_city, event.location_state].filter(Boolean)
   return parts.length > 0 ? parts.join(', ') : null
 }
@@ -175,9 +185,10 @@ export async function sendPaymentConfirmationEmail(params: {
       paymentType: params.paymentType,
       occasion: params.occasion,
       eventDate: params.eventDate ? formatDate(params.eventDate) : null,
-      remainingBalanceFormatted: params.remainingBalanceCents && params.remainingBalanceCents > 0
-        ? formatCents(params.remainingBalanceCents)
-        : null,
+      remainingBalanceFormatted:
+        params.remainingBalanceCents && params.remainingBalanceCents > 0
+          ? formatCents(params.remainingBalanceCents)
+          : null,
     }),
   })
 }
@@ -214,6 +225,7 @@ export async function sendEventConfirmedEmail(params: {
   serveTime: string | null
   location: string | null
   guestCount: number | null
+  eventId: string
 }) {
   await sendEmail({
     to: params.clientEmail,
@@ -226,6 +238,7 @@ export async function sendEventConfirmedEmail(params: {
       serveTime: params.serveTime,
       location: params.location,
       guestCount: params.guestCount,
+      calendarUrl: `${APP_URL}/api/calendar/event/${params.eventId}`,
     }),
   })
 }
@@ -445,9 +458,10 @@ export async function sendOfflinePaymentReceiptEmail(params: {
       entryType: params.entryType,
       occasion: params.occasion,
       eventDate: params.eventDate ? formatDate(params.eventDate) : params.paidAt,
-      remainingBalanceFormatted: params.remainingBalanceCents && params.remainingBalanceCents > 0
-        ? formatCents(params.remainingBalanceCents)
-        : null,
+      remainingBalanceFormatted:
+        params.remainingBalanceCents && params.remainingBalanceCents > 0
+          ? formatCents(params.remainingBalanceCents)
+          : null,
     }),
   })
 }
@@ -502,9 +516,10 @@ export async function sendPaymentReminderEmail(params: {
       eventDate: formatDate(params.eventDate),
       daysUntilEvent: params.daysUntilEvent,
       amountDueFormatted: formatCents(params.amountDueCents),
-      depositAmountFormatted: params.depositAmountCents && params.depositAmountCents > 0
-        ? formatCents(params.depositAmountCents)
-        : null,
+      depositAmountFormatted:
+        params.depositAmountCents && params.depositAmountCents > 0
+          ? formatCents(params.depositAmountCents)
+          : null,
       paymentUrl: `${APP_URL}/my-events/${params.eventId}/pay`,
     }),
   })
@@ -534,9 +549,10 @@ export async function sendPaymentReceivedChefEmail(params: {
       occasion: params.occasion,
       eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
       eventUrl: `${APP_URL}/events/${params.eventId}`,
-      remainingBalanceFormatted: params.remainingBalanceCents && params.remainingBalanceCents > 0
-        ? formatCents(params.remainingBalanceCents)
-        : null,
+      remainingBalanceFormatted:
+        params.remainingBalanceCents && params.remainingBalanceCents > 0
+          ? formatCents(params.remainingBalanceCents)
+          : null,
     }),
   })
 }
@@ -614,7 +630,7 @@ export async function sendQuoteExpiringEmail(params: {
   clientName: string
   chefName: string
   occasion: string | null
-  validUntil: string  // ISO date string
+  validUntil: string // ISO date string
   totalCents: number
   quoteId: string
 }) {
@@ -786,12 +802,12 @@ export async function sendGiftCardPurchasedChefEmail(params: {
 // ─── Collaboration Invite — Chef-to-Chef ─────────────────────────────────────
 
 export async function sendCollaborationInviteEmail(params: {
-  chefEmail: string     // Recipient (invited chef)
+  chefEmail: string // Recipient (invited chef)
   chefName: string
   inviterName: string
   occasion: string
-  eventDate: string | null  // ISO date string or null
-  role: string              // CollaboratorRole
+  eventDate: string | null // ISO date string or null
+  role: string // CollaboratorRole
   note: string | null
 }) {
   await sendEmail({
@@ -812,7 +828,7 @@ export async function sendCollaborationInviteEmail(params: {
 // ─── Recipe Share — Chef-to-Chef ─────────────────────────────────────────────
 
 export async function sendRecipeShareEmail(params: {
-  chefEmail: string    // Recipient (chef receiving the share)
+  chefEmail: string // Recipient (chef receiving the share)
   chefName: string
   sharerName: string
   recipeName: string
@@ -883,6 +899,156 @@ export async function sendInstantBookingChefEmail(params: {
       depositFormatted: formatCents(params.depositCents),
       totalFormatted: formatCents(params.totalCents),
       eventUrl: `${APP_URL}/events/${params.eventId}`,
+    }),
+  })
+}
+
+// ─── Quote Rejected — Chef Notification ─────────────────────────────────────
+
+export async function sendQuoteRejectedChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  clientName: string
+  quoteName: string
+  rejectionReason: string | null
+  inquiryId: string | null
+}) {
+  await sendEmail({
+    to: params.chefEmail,
+    subject: `${params.clientName} declined your quote`,
+    react: createElement(QuoteRejectedChefEmail, {
+      chefName: params.chefName,
+      clientName: params.clientName,
+      quoteName: params.quoteName,
+      rejectionReason: params.rejectionReason,
+      inquiryUrl: params.inquiryId
+        ? `${APP_URL}/inquiries/${params.inquiryId}`
+        : `${APP_URL}/inquiries`,
+    }),
+  })
+}
+
+// ─── Quote Expired — Chef Notification ──────────────────────────────────────
+
+export async function sendQuoteExpiredChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  clientName: string
+  quoteName: string
+  inquiryId: string | null
+}) {
+  await sendEmail({
+    to: params.chefEmail,
+    subject: `Quote for ${params.clientName} expired`,
+    react: createElement(QuoteExpiredChefEmail, {
+      chefName: params.chefName,
+      clientName: params.clientName,
+      quoteName: params.quoteName,
+      inquiryUrl: params.inquiryId
+        ? `${APP_URL}/inquiries/${params.inquiryId}`
+        : `${APP_URL}/inquiries`,
+    }),
+  })
+}
+
+// ─── Quote Expired — Client Notification ────────────────────────────────────
+
+export async function sendQuoteExpiredClientEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  quoteName: string
+  chefEmail: string | null
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Your quote from ${params.chefName} has expired`,
+    react: createElement(QuoteExpiredClientEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      quoteName: params.quoteName,
+      chefEmail: params.chefEmail,
+    }),
+  })
+}
+
+// ─── Event Starting — Client Notification ───────────────────────────────────
+
+export async function sendEventStartingEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  arrivalTime: string | null
+  serveTime: string | null
+  location: string | null
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `${params.chefName} is on the way — ${params.occasion}`,
+    react: createElement(EventStartingEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+      arrivalTime: params.arrivalTime,
+      serveTime: params.serveTime,
+      location: params.location,
+    }),
+  })
+}
+
+// ─── Instant Booking — Client Confirmation ──────────────────────────────────
+
+export async function sendInstantBookingClientEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string | null
+  guestCount: number
+  depositCents: number
+  totalCents: number
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Booking confirmed — ${params.occasion} with ${params.chefName}`,
+    react: createElement(InstantBookingClientEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: params.eventDate ? formatDate(params.eventDate) : 'TBD',
+      guestCount: params.guestCount,
+      depositFormatted: formatCents(params.depositCents),
+      totalFormatted: formatCents(params.totalCents),
+      eventUrl: `${APP_URL}/my-events/${params.eventId}`,
+    }),
+  })
+}
+
+// ─── Review Submitted — Chef Notification ───────────────────────────────────
+
+export async function sendReviewSubmittedChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  clientName: string
+  occasion: string
+  rating: number
+  reviewExcerpt: string | null
+  reviewId: string
+}) {
+  await sendEmail({
+    to: params.chefEmail,
+    subject: `${params.clientName} left you a review`,
+    react: createElement(ReviewSubmittedChefEmail, {
+      chefName: params.chefName,
+      clientName: params.clientName,
+      occasion: params.occasion,
+      rating: params.rating,
+      reviewExcerpt: params.reviewExcerpt,
+      reviewUrl: `${APP_URL}/reviews/${params.reviewId}`,
     }),
   })
 }

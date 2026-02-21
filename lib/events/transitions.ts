@@ -310,6 +310,7 @@ export async function transitionEvent({
         sendEventConfirmedEmail,
         sendEventCompletedEmail,
         sendEventCancelledEmail,
+        sendEventStartingEmail,
         sendFrontOfHouseMenuReadyEmail,
         sendPrepSheetReadyEmail,
         buildLocation,
@@ -341,6 +342,7 @@ export async function transitionEvent({
           serveTime: event.serve_time,
           location,
           guestCount: event.guest_count,
+          eventId,
         })
 
         // Auto-send printable FOH menu PDF to both client and chef.
@@ -390,6 +392,19 @@ export async function transitionEvent({
         } catch (prepErr) {
           log.events.warn('Prep sheet auto-send failed (non-blocking)', { error: prepErr })
         }
+      }
+
+      if (toStatus === 'in_progress' && fromStatus === 'confirmed') {
+        await sendEventStartingEmail({
+          clientEmail: client.email,
+          clientName: client.full_name,
+          chefName,
+          occasion,
+          eventDate: event.event_date,
+          arrivalTime: event.arrival_time ?? null,
+          serveTime: event.serve_time ?? null,
+          location,
+        })
       }
 
       if (toStatus === 'completed' && fromStatus === 'in_progress') {
