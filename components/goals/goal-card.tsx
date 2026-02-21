@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { ChevronDown, ChevronUp, Archive } from 'lucide-react'
+import { ChevronDown, ChevronUp, Archive, Plus } from 'lucide-react'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import type { GoalView } from '@/lib/goals/types'
 import { formatGoalValue, formatGapLabel, formatPeriod, isRevenueGoal } from '@/lib/goals/engine'
@@ -14,18 +14,25 @@ import { ClientSuggestionsList } from './client-suggestions-list'
 
 interface GoalCardProps {
   view: GoalView
+  /** Called when the chef taps "Log Progress" on a manual_count goal */
+  onCheckIn?: (goal: GoalView['goal'], currentValue: number) => void
 }
 
 function dollars(cents: number): string {
   return `$${Math.round(cents / 100).toLocaleString('en-US')}`
 }
 
-export function GoalCard({ view }: GoalCardProps) {
-  const { goal, progress, enrichment, pricingScenarios, clientSuggestions } = view
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+export function GoalCard({ view, onCheckIn }: GoalCardProps) {
+  const { goal, progress, enrichment, pricingScenarios, clientSuggestions, recentCheckIns } = view
   const [expanded, setExpanded] = useState(true)
   const [archivePending, startArchive] = useTransition()
 
   const revenue = isRevenueGoal(goal.goalType)
+  const manual = goal.trackingMethod === 'manual_count'
   const onTrack = progress.progressPercent >= 100
 
   function handleArchive() {
@@ -42,11 +49,29 @@ export function GoalCard({ view }: GoalCardProps) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <GoalTypeBadge goalType={goal.goalType} />
-              <span className="text-xs text-stone-400">{formatPeriod(goal.periodStart, goal.periodEnd)}</span>
+              <span className="text-xs text-stone-400">
+                {formatPeriod(goal.periodStart, goal.periodEnd)}
+              </span>
+              {manual && (
+                <span className="text-[10px] text-stone-400 border border-stone-200 rounded px-1.5 py-0.5">
+                  manual
+                </span>
+              )}
             </div>
             <h3 className="text-base font-semibold text-stone-900 mt-1 truncate">{goal.label}</h3>
           </div>
           <div className="flex items-center gap-1 shrink-0">
+            {manual && onCheckIn && (
+              <button
+                type="button"
+                onClick={() => onCheckIn(goal, progress.currentValue)}
+                className="inline-flex items-center gap-1 rounded-md bg-brand-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
+                title="Log progress"
+              >
+                <Plus className="h-3 w-3" />
+                Log
+              </button>
+            )}
             <button
               onClick={() => setExpanded((v) => !v)}
               className="rounded p-1 text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
@@ -69,7 +94,7 @@ export function GoalCard({ view }: GoalCardProps) {
 
       <CardContent className="space-y-4">
         {/* Progress summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div>
             <p className="text-xs text-stone-500">Target</p>
             <p className="text-sm font-semibold text-stone-900">
@@ -84,16 +109,16 @@ export function GoalCard({ view }: GoalCardProps) {
           </div>
           <div>
             <p className="text-xs text-stone-500">Gap</p>
-            <p className={`text-sm font-semibold ${onTrack ? 'text-emerald-600' : 'text-amber-600'}`}>
+            <p
+              className={`text-sm font-semibold ${onTrack ? 'text-emerald-600' : 'text-amber-600'}`}
+            >
               {onTrack ? 'On track ✓' : formatGapLabel(progress.gapValue, goal.goalType)}
             </p>
           </div>
           {revenue && enrichment && (
-            <div>
+            <div className="sm:col-span-3">
               <p className="text-xs text-stone-500">Events needed</p>
-              <p className="text-sm font-semibold text-stone-900">
-                {enrichment.eventsNeeded}
-              </p>
+              <p className="text-sm font-semibold text-stone-900">{enrichment.eventsNeeded}</p>
             </div>
           )}
         </div>
@@ -104,6 +129,31 @@ export function GoalCard({ view }: GoalCardProps) {
           <p className="text-xs text-stone-500">{progress.progressPercent}% toward target</p>
         </div>
 
+        {/* Manual goal — recent check-ins */}
+        {expanded && manual && recentCheckIns && recentCheckIns.length > 0 && (
+          <div className="space-y-1 pt-2 border-t border-stone-100">
+            <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+              Recent entries
+            </p>
+            <div className="space-y-1">
+              {recentCheckIns.map((ci) => (
+                <div
+                  key={ci.id}
+                  className="flex items-center justify-between text-xs text-stone-600"
+                >
+                  <span className="truncate max-w-[200px]">
+                    +{ci.loggedValue}
+                    {ci.notes ? ` — ${ci.notes}` : ''}
+                  </span>
+                  <span className="text-stone-400 flex-shrink-0 ml-2">
+                    {formatDate(ci.loggedAt)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Revenue enrichment details */}
         {expanded && revenue && enrichment && (
           <div className="space-y-4 pt-2 border-t border-stone-100">
@@ -111,18 +161,27 @@ export function GoalCard({ view }: GoalCardProps) {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <p className="text-xs text-stone-500">Realized</p>
-                <p className="text-sm font-medium text-stone-900">{dollars(enrichment.realizedCents)}</p>
+                <p className="text-sm font-medium text-stone-900">
+                  {dollars(enrichment.realizedCents)}
+                </p>
               </div>
               <div>
                 <p className="text-xs text-stone-500">Projected (incl. pipeline)</p>
-                <p className="text-sm font-medium text-stone-900">{dollars(enrichment.projectedCents)}</p>
+                <p className="text-sm font-medium text-stone-900">
+                  {dollars(enrichment.projectedCents)}
+                </p>
               </div>
             </div>
 
             {/* Events needed narrative */}
             {!onTrack && enrichment.eventsNeeded > 0 && (
               <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 text-sm text-amber-800">
-                You need <strong>{enrichment.eventsNeeded} more event{enrichment.eventsNeeded === 1 ? '' : 's'}</strong> at your {dollars(enrichment.avgBookingValueCents)} average to close the {dollars(progress.gapValue)} gap.
+                You need{' '}
+                <strong>
+                  {enrichment.eventsNeeded} more event{enrichment.eventsNeeded === 1 ? '' : 's'}
+                </strong>{' '}
+                at your {dollars(enrichment.avgBookingValueCents)} average to close the{' '}
+                {dollars(progress.gapValue)} gap.
               </div>
             )}
 
@@ -150,21 +209,30 @@ export function GoalCard({ view }: GoalCardProps) {
                 </p>
                 <p className="text-xs text-stone-600">
                   {enrichment.openDatesThisMonth.slice(0, 6).join(', ')}
-                  {enrichment.openDatesThisMonth.length > 6 && ` +${enrichment.openDatesThisMonth.length - 6} more`}
+                  {enrichment.openDatesThisMonth.length > 6 &&
+                    ` +${enrichment.openDatesThisMonth.length - 6} more`}
                 </p>
               </div>
             )}
           </div>
         )}
 
-        {/* History link */}
-        <div className="pt-1">
+        {/* History link + Build Your Path */}
+        <div className="pt-1 flex items-center justify-between gap-3">
           <Link
             href={`/goals/${goal.id}/history`}
             className="text-xs text-brand-600 hover:text-brand-700 font-medium"
           >
             View history →
           </Link>
+          {revenue && !onTrack && progress.gapValue > 0 && (
+            <Link
+              href="/goals/revenue-path"
+              className="inline-flex items-center gap-1 rounded-md bg-brand-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-700 transition-colors"
+            >
+              Build Your Path →
+            </Link>
+          )}
         </div>
       </CardContent>
     </Card>
