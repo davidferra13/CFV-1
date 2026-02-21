@@ -8,18 +8,14 @@ import { InboxCalendarPeek } from '@/components/communication/inbox-calendar-pee
 import { getCommunicationInbox, getCommunicationInboxStats } from '@/lib/communication/actions'
 import type { CommunicationTab } from '@/lib/communication/types'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
-import { getGoogleConnection } from '@/lib/gmail/google-auth'
+import { getGoogleConnection } from '@/lib/google/auth'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Inbox - ChefFlow' }
 
 const VALID_TABS: CommunicationTab[] = ['unlinked', 'needs_attention', 'snoozed', 'resolved']
 
-export default async function InboxPage({
-  searchParams,
-}: {
-  searchParams?: { tab?: string }
-}) {
+export default async function InboxPage({ searchParams }: { searchParams?: { tab?: string } }) {
   await requireChef()
 
   const triageEnabled = isCommTriageEnabled()
@@ -51,10 +47,10 @@ export default async function InboxPage({
           <InboxCalendarPeek events={calendarEvents} />
         </div>
 
-        {!gmailConnection.connected && (
+        {!gmailConnection.gmail.connected && (
           <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            <span className="font-medium">Gmail is disconnected.</span>{' '}
-            New emails won&apos;t be synced into your inbox.{' '}
+            <span className="font-medium">Gmail is disconnected.</span> New emails won&apos;t be
+            synced into your inbox.{' '}
             <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">
               Reconnect in Settings →
             </Link>
@@ -81,10 +77,10 @@ export default async function InboxPage({
         </p>
       </div>
 
-      {!gmailConnection.connected && (
+      {!gmailConnection.gmail.connected && (
         <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-          <span className="font-medium">Gmail is disconnected.</span>{' '}
-          New emails won&apos;t be synced into your inbox.{' '}
+          <span className="font-medium">Gmail is disconnected.</span> New emails won&apos;t be
+          synced into your inbox.{' '}
           <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">
             Reconnect in Settings →
           </Link>

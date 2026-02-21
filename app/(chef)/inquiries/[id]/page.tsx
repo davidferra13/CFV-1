@@ -5,10 +5,17 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getInquiryById } from '@/lib/inquiries/actions'
-import { getInquiryNotes, getLinkedRecipes, getRecipesForLinker } from '@/lib/inquiries/note-actions'
+import {
+  getInquiryNotes,
+  getLinkedRecipes,
+  getRecipesForLinker,
+} from '@/lib/inquiries/note-actions'
 import { getQuotesForInquiry } from '@/lib/quotes/actions'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
-import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
+import {
+  InquiryStatusBadge,
+  InquiryChannelBadge,
+} from '@/components/inquiries/inquiry-status-badge'
 import { InquiryTransitions } from '@/components/inquiries/inquiry-transitions'
 import { InquiryDeadlineForm } from '@/components/inquiries/inquiry-deadline-form'
 import { InquiryResponseComposer } from '@/components/inquiries/inquiry-response-composer'
@@ -17,7 +24,7 @@ import { InquiryRecipeLinker } from '@/components/inquiries/inquiry-recipe-linke
 import { QuoteStatusBadge, PricingModelBadge } from '@/components/quotes/quote-status-badge'
 import { MessageThread } from '@/components/messages/message-thread'
 import { MessageLogForm } from '@/components/messages/message-log-form'
-import { getGoogleConnection } from '@/lib/gmail/google-auth'
+import { getGoogleConnection } from '@/lib/google/auth'
 import { getLinkedContactSubmission } from '@/lib/contact/claim'
 import { getEventPhotosForChef } from '@/lib/events/photo-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
@@ -68,14 +75,21 @@ function getReferralSource(inquiry: { unknown_fields: unknown }): string | null 
   return (unknown?.referral_source as string) || null
 }
 
-export default async function InquiryDetailPage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default async function InquiryDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const [inquiry, quotes, messages, templates, gmailStatus, linkedSubmission, inquiryNotes, recipeLinks, availableRecipes, bookingScore] = await Promise.all([
+  const [
+    inquiry,
+    quotes,
+    messages,
+    templates,
+    gmailStatus,
+    linkedSubmission,
+    inquiryNotes,
+    recipeLinks,
+    availableRecipes,
+    bookingScore,
+  ] = await Promise.all([
     getInquiryById(params.id),
     getQuotesForInquiry(params.id),
     getMessageThread('inquiry', params.id),
@@ -167,7 +181,8 @@ export default async function InquiryDetailPage({
             <p className="text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
           )}
           <p className="text-sm text-stone-400 mt-1">
-            First contact {formatDistanceToNow(new Date(inquiry.first_contact_at), { addSuffix: true })}
+            First contact{' '}
+            {formatDistanceToNow(new Date(inquiry.first_contact_at), { addSuffix: true })}
           </p>
         </div>
         <Link href="/inquiries">
@@ -180,8 +195,10 @@ export default async function InquiryDetailPage({
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
           <p className="text-sm font-medium text-amber-800">Missing confirmed facts:</p>
           <div className="flex gap-2 mt-2 flex-wrap">
-            {missingFacts.map(fact => (
-              <Badge key={fact} variant="warning">{fact}</Badge>
+            {missingFacts.map((fact) => (
+              <Badge key={fact} variant="warning">
+                {fact}
+              </Badge>
             ))}
           </div>
           <p className="text-xs text-amber-600 mt-2">
@@ -207,7 +224,9 @@ export default async function InquiryDetailPage({
               <div>
                 <dt className="text-sm font-medium text-stone-500">Email</dt>
                 <dd className="text-sm text-stone-900 mt-1">
-                  <a href={`mailto:${email}`} className="text-brand-600 hover:underline">{email}</a>
+                  <a href={`mailto:${email}`} className="text-brand-600 hover:underline">
+                    {email}
+                  </a>
                 </dd>
               </div>
             )}
@@ -215,7 +234,9 @@ export default async function InquiryDetailPage({
               <div>
                 <dt className="text-sm font-medium text-stone-500">Phone</dt>
                 <dd className="text-sm text-stone-900 mt-1">
-                  <a href={`tel:${phone}`} className="text-brand-600 hover:underline">{phone}</a>
+                  <a href={`tel:${phone}`} className="text-brand-600 hover:underline">
+                    {phone}
+                  </a>
                 </dd>
               </div>
             )}
@@ -223,7 +244,10 @@ export default async function InquiryDetailPage({
               <dt className="text-sm font-medium text-stone-500">Linked Client</dt>
               <dd className="text-sm mt-1">
                 {inquiry.client ? (
-                  <Link href={`/clients/${inquiry.client.id}`} className="text-brand-600 hover:underline">
+                  <Link
+                    href={`/clients/${inquiry.client.id}`}
+                    className="text-brand-600 hover:underline"
+                  >
                     {inquiry.client.full_name}
                   </Link>
                 ) : (
@@ -255,53 +279,70 @@ export default async function InquiryDetailPage({
             <div>
               <dt className="text-sm font-medium text-stone-500">Event Date</dt>
               <dd className="text-sm mt-1">
-                {inquiry.confirmed_date
-                  ? <span className="text-stone-900">{format(new Date(inquiry.confirmed_date), 'EEEE, MMMM d, yyyy')}</span>
-                  : <span className="text-stone-400 italic">Not confirmed</span>}
+                {inquiry.confirmed_date ? (
+                  <span className="text-stone-900">
+                    {format(new Date(inquiry.confirmed_date), 'EEEE, MMMM d, yyyy')}
+                  </span>
+                ) : (
+                  <span className="text-stone-400 italic">Not confirmed</span>
+                )}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Guest Count</dt>
               <dd className="text-sm mt-1">
-                {inquiry.confirmed_guest_count
-                  ? <span className="text-stone-900">{inquiry.confirmed_guest_count} guests</span>
-                  : <span className="text-stone-400 italic">Not confirmed</span>}
+                {inquiry.confirmed_guest_count ? (
+                  <span className="text-stone-900">{inquiry.confirmed_guest_count} guests</span>
+                ) : (
+                  <span className="text-stone-400 italic">Not confirmed</span>
+                )}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Location</dt>
               <dd className="text-sm mt-1">
-                {inquiry.confirmed_location
-                  ? <span className="text-stone-900">{inquiry.confirmed_location}</span>
-                  : <span className="text-stone-400 italic">Not confirmed</span>}
+                {inquiry.confirmed_location ? (
+                  <span className="text-stone-900">{inquiry.confirmed_location}</span>
+                ) : (
+                  <span className="text-stone-400 italic">Not confirmed</span>
+                )}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Budget</dt>
               <dd className="text-sm mt-1">
-                {inquiry.confirmed_budget_cents
-                  ? <span className="text-stone-900">{formatCurrency(inquiry.confirmed_budget_cents)}</span>
-                  : <span className="text-stone-400 italic">Not confirmed</span>}
+                {inquiry.confirmed_budget_cents ? (
+                  <span className="text-stone-900">
+                    {formatCurrency(inquiry.confirmed_budget_cents)}
+                  </span>
+                ) : (
+                  <span className="text-stone-400 italic">Not confirmed</span>
+                )}
               </dd>
             </div>
-            {inquiry.confirmed_dietary_restrictions && inquiry.confirmed_dietary_restrictions.length > 0 && (
-              <div>
-                <dt className="text-sm font-medium text-stone-500">Dietary Restrictions</dt>
-                <dd className="text-sm text-stone-900 mt-1">
-                  {inquiry.confirmed_dietary_restrictions.join(', ')}
-                </dd>
-              </div>
-            )}
+            {inquiry.confirmed_dietary_restrictions &&
+              inquiry.confirmed_dietary_restrictions.length > 0 && (
+                <div>
+                  <dt className="text-sm font-medium text-stone-500">Dietary Restrictions</dt>
+                  <dd className="text-sm text-stone-900 mt-1">
+                    {inquiry.confirmed_dietary_restrictions.join(', ')}
+                  </dd>
+                </div>
+              )}
             {inquiry.confirmed_service_expectations && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Service Expectations</dt>
-                <dd className="text-sm text-stone-900 mt-1">{inquiry.confirmed_service_expectations}</dd>
+                <dd className="text-sm text-stone-900 mt-1">
+                  {inquiry.confirmed_service_expectations}
+                </dd>
               </div>
             )}
             {inquiry.confirmed_cannabis_preference && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Cannabis Preference</dt>
-                <dd className="text-sm text-stone-900 mt-1">{inquiry.confirmed_cannabis_preference}</dd>
+                <dd className="text-sm text-stone-900 mt-1">
+                  {inquiry.confirmed_cannabis_preference}
+                </dd>
               </div>
             )}
           </dl>
@@ -311,7 +352,7 @@ export default async function InquiryDetailPage({
       {/* Pipeline Management */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Pipeline</h2>
-        {(inquiry.next_action_required || inquiry.follow_up_due_at) ? (
+        {inquiry.next_action_required || inquiry.follow_up_due_at ? (
           <dl className="space-y-3">
             {inquiry.next_action_required && (
               <div>
@@ -329,8 +370,7 @@ export default async function InquiryDetailPage({
               <div>
                 <dt className="text-sm font-medium text-stone-500">Follow-up Due</dt>
                 <dd className="text-sm text-stone-900 mt-1">
-                  {format(new Date(inquiry.follow_up_due_at), 'MMM d, yyyy')}
-                  {' '}
+                  {format(new Date(inquiry.follow_up_due_at), 'MMM d, yyyy')}{' '}
                   <span className="text-stone-400">
                     ({formatDistanceToNow(new Date(inquiry.follow_up_due_at), { addSuffix: true })})
                   </span>
@@ -353,7 +393,9 @@ export default async function InquiryDetailPage({
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Quotes</h2>
-          <Link href={`/quotes/new?inquiry_id=${inquiry.id}${inquiry.client_id ? `&client_id=${inquiry.client_id}` : ''}`}>
+          <Link
+            href={`/quotes/new?inquiry_id=${inquiry.id}${inquiry.client_id ? `&client_id=${inquiry.client_id}` : ''}`}
+          >
             <Button size="sm">+ Create Quote</Button>
           </Link>
         </div>
@@ -403,7 +445,7 @@ export default async function InquiryDetailPage({
           inquiryId={inquiry.id}
           clientId={inquiry.client_id}
           clientEmail={email}
-          gmailConnected={gmailStatus.connected}
+          gmailConnected={gmailStatus.gmail.connected}
         />
       )}
 
@@ -450,19 +492,13 @@ export default async function InquiryDetailPage({
               </span>
             )}
           </div>
-          <EventPhotoGallery
-            eventId={convertedEventId}
-            initialPhotos={eventPhotos}
-          />
+          <EventPhotoGallery eventId={convertedEventId} initialPhotos={eventPhotos} />
         </div>
       )}
 
       {/* Documents — shown when this inquiry was converted to an event */}
       {convertedEventId && docReadiness ? (
-        <DocumentSection
-          eventId={convertedEventId}
-          readiness={docReadiness}
-        />
+        <DocumentSection eventId={convertedEventId} readiness={docReadiness} />
       ) : convertedEventId ? (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-3">Printed Documents</h2>
