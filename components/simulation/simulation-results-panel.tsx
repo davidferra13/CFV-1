@@ -132,7 +132,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
                           </div>
                           <div className="text-xs text-stone-600 font-medium">Scenario:</div>
                           <pre className="text-xs text-stone-700 bg-white rounded border border-stone-200 p-2 overflow-x-auto whitespace-pre-wrap max-h-24">
-                            {r.scenarioPayload ?? 'No scenario text'}
+                            {r.scenarioId ?? 'No scenario text'}
                           </pre>
                           {r.failures.length > 0 && (
                             <div>

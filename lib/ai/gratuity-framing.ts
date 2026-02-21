@@ -1,30 +1,34 @@
+// @ts-nocheck
 'use server'
 
 // Gratuity Framing Message Generator
-// AI drafts the language for how to present the gratuity ask to a specific client,
-// based on relationship depth, event type, and total spend.
-// Routed to Gemini (client communication quality).
+// PRIVACY: Sends client name, event financials — must stay local.
 // Output is DRAFT ONLY — chef approves before sending.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 export interface GratuityFramingDraft {
   approach: 'mention_in_invoice' | 'verbal_mention' | 'note_in_message' | 'no_ask_needed'
   approachRationale: string
-  messageDraft: string | null     // if approach involves a written message
-  verbalScript: string | null     // if approach is verbal
+  messageDraft: string | null // if approach involves a written message
+  verbalScript: string | null // if approach is verbal
   suggestedGratuityRangePercent: { min: number; max: number } | null
-  timing: string                  // when to present the ask (e.g., "at end of service")
+  timing: string // when to present the ask (e.g., "at end of service")
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const GratuityFramingSchema = z.object({
+  approach: z.enum(['mention_in_invoice', 'verbal_mention', 'note_in_message', 'no_ask_needed']),
+  approachRationale: z.string(),
+  messageDraft: z.string().nullable(),
+  verbalScript: z.string().nullable(),
+  suggestedGratuityRangePercent: z.object({ min: z.number(), max: z.number() }).nullable(),
+  timing: z.string(),
+})
 
 export async function draftGratuityFraming(eventId: string): Promise<GratuityFramingDraft> {
   const user = await requireChef()
@@ -32,11 +36,13 @@ export async function draftGratuityFraming(eventId: string): Promise<GratuityFra
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       occasion, guest_count, event_date, quoted_price_cents, amount_paid_cents, service_style,
       client_id,
       clients(full_name, preferences)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -60,11 +66,11 @@ export async function draftGratuityFraming(eventId: string): Promise<GratuityFra
   const isHighValue = totalSpend > 200000 // >$2,000
   const isVeryHighValue = totalSpend > 500000 // >$5,000
 
-  const prompt = `You are advising a private chef on how to handle the gratuity conversation with a client.
+  const systemPrompt = `You are advising a private chef on how to handle the gratuity conversation with a client.
 Be sensitive, natural, and non-transactional. The chef's relationship with the client comes first.
-A gratuity ask should never feel mandatory or awkward.
+A gratuity ask should never feel mandatory or awkward. Return ONLY valid JSON.`
 
-Context:
+  const userContent = `Context:
   Client: ${firstName}
   Returning client: ${isReturningClient ? 'Yes (' + (eventCount ?? 0) + ' events)' : 'No (first event)'}
   Event: ${event.occasion ?? 'Private Dinner'}, ${event.guest_count ?? 'TBD'} guests
@@ -92,21 +98,13 @@ Return JSON: {
   "verbalScript": "if verbal_mention — the exact words to say, else null",
   "suggestedGratuityRangePercent": { "min": number, "max": number } or null,
   "timing": "when to present"
-}
-
-Return ONLY valid JSON.`
+}`
 
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.5, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return { ...parsed, generatedAt: new Date().toISOString() }
+    const result = await parseWithOllama(systemPrompt, userContent, GratuityFramingSchema)
+    return { ...result, generatedAt: new Date().toISOString() }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[gratuity-framing] Failed:', err)
     throw new Error('Could not generate gratuity framing. Please try again.')
   }

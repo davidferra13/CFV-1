@@ -64,13 +64,9 @@ export async function recordContractorPayment(
   if (error) throw new Error(`Failed to record payment: ${error.message}`)
 
   // Update YTD on staff_members
-  await (supabase as any)
-    .from('staff_members')
-    .update({
-      ytd_payments_cents: (supabase as any).rpc
-        ? undefined
-        : undefined, // handled via SQL below
-    })
+  await (supabase as any).from('staff_members').update({
+    ytd_payments_cents: (supabase as any).rpc ? undefined : undefined, // handled via SQL below
+  })
 
   // Recalculate YTD
   const { data: ytdData } = await (supabase as any)
@@ -172,7 +168,10 @@ export async function get1099Summary(taxYear: number): Promise<Contractor1099Sum
       paymentCount: paymentsByStaff[s.id]?.count || 0,
       contractorType: s.contractor_type,
     }))
-    .sort((a: Contractor1099Summary, b: Contractor1099Summary) => b.ytdPaymentsCents - a.ytdPaymentsCents)
+    .sort(
+      (a: Contractor1099Summary, b: Contractor1099Summary) =>
+        b.ytdPaymentsCents - a.ytdPaymentsCents
+    )
 }
 
 export async function export1099Data(taxYear: number): Promise<{
@@ -189,4 +188,56 @@ export async function export1099Data(taxYear: number): Promise<{
     totalPaidCents: contractors.reduce((s, c) => s + c.ytdPaymentsCents, 0),
     requiresFilingCount: contractors.filter((c) => c.threshold1099).length,
   }
+}
+
+// ─── Save W-9 Data ────────────────────────────────────────────────
+
+const SaveW9Schema = z.object({
+  staffMemberId: z.string().uuid(),
+  contractorType: z.string().nullable().optional(),
+  tin: z.string().nullable().optional(),
+  tinType: z.enum(['ssn', 'ein']).nullable().optional(),
+  businessName: z.string().nullable().optional(),
+  addressStreet: z.string().nullable().optional(),
+  addressCity: z.string().nullable().optional(),
+  addressState: z.string().nullable().optional(),
+  addressZip: z.string().nullable().optional(),
+  w9SignedDate: z.string().nullable().optional(),
+  w9DocumentUrl: z.string().nullable().optional(),
+  w9Collected: z.boolean().optional(),
+})
+
+export async function saveW9Data(
+  input: z.infer<typeof SaveW9Schema>
+): Promise<{ success: boolean }> {
+  const user = await requireChef()
+  const parsed = SaveW9Schema.parse(input)
+  const supabase = createServerClient()
+
+  const { error } = await (supabase as any)
+    .from('staff_members')
+    .update({
+      contractor_type: parsed.contractorType ?? null,
+      tin: parsed.tin ?? null,
+      tin_type: parsed.tinType ?? null,
+      business_name: parsed.businessName ?? null,
+      address_street: parsed.addressStreet ?? null,
+      address_city: parsed.addressCity ?? null,
+      address_state: parsed.addressState ?? null,
+      address_zip: parsed.addressZip ?? null,
+      w9_signed_date: parsed.w9SignedDate ?? null,
+      w9_document_url: parsed.w9DocumentUrl ?? null,
+      w9_collected: parsed.w9Collected ?? false,
+    })
+    .eq('id', parsed.staffMemberId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (error) {
+    console.error('[saveW9Data] Error:', error)
+    throw new Error('Failed to save W-9 data')
+  }
+
+  revalidatePath('/finance/staff')
+  revalidatePath('/finance/tax')
+  return { success: true }
 }

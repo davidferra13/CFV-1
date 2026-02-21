@@ -83,7 +83,9 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
     .gte('valid_until', new Date().toISOString())
 
   // Resolve expiring quotes to client IDs via events
-  const quoteEventIds = (expiringQuotes ?? []).map(q => q.event_id).filter((id): id is string => id != null)
+  const quoteEventIds = (expiringQuotes ?? [])
+    .map((q) => q.event_id)
+    .filter((id): id is string => id != null)
   const expiringClientIds = new Set<string>()
   if (quoteEventIds.length > 0) {
     const { data: quoteEvents } = await supabase
@@ -108,12 +110,23 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
   twoWeeks.setDate(twoWeeks.getDate() + 14)
 
   for (const c of milestonesData ?? []) {
-    const text = (c.personal_milestones ?? '').toLowerCase()
+    // personal_milestones may be a string or array (text[] column)
+    const raw = c.personal_milestones
+    const text = (Array.isArray(raw) ? raw.join(' ') : String(raw ?? '')).toLowerCase()
     // Simple year-agnostic check: look for month/day patterns
     const months = [
-      ['january', 1], ['february', 2], ['march', 3], ['april', 4],
-      ['may', 5], ['june', 6], ['july', 7], ['august', 8],
-      ['september', 9], ['october', 10], ['november', 11], ['december', 12],
+      ['january', 1],
+      ['february', 2],
+      ['march', 3],
+      ['april', 4],
+      ['may', 5],
+      ['june', 6],
+      ['july', 7],
+      ['august', 8],
+      ['september', 9],
+      ['october', 10],
+      ['november', 11],
+      ['december', 12],
     ] as [string, number][]
 
     for (const [monthName, monthNum] of months) {
@@ -157,7 +170,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
 
     let action: NextBestAction
 
-    const awaitingChef = inqs.find(i => i.status === 'awaiting_chef')
+    const awaitingChef = inqs.find((i) => i.status === 'awaiting_chef')
     if (awaitingChef) {
       action = {
         clientId,
@@ -224,7 +237,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
         clientName,
         actionType: 're_engage',
         label: 'Re-engage dormant client',
-        description: "This client has not booked in over a year.",
+        description: 'This client has not booked in over a year.',
         href: `/clients/${clientId}`,
         urgency: 'normal',
         tier: score.tier,
@@ -264,5 +277,5 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
  */
 export async function getClientNextBestAction(clientId: string): Promise<NextBestAction | null> {
   const all = await getNextBestActions(50)
-  return all.find(a => a.clientId === clientId) ?? null
+  return all.find((a) => a.clientId === clientId) ?? null
 }

@@ -12,6 +12,7 @@ import { PushPermissionPrompt } from '@/components/notifications/push-permission
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getOnboardingStatus } from '@/lib/chef/profile-actions'
+import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
@@ -53,6 +54,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
+  // Cannabis tier check — non-fatal, fails closed (no access shown if DB unavailable)
+  const hasCannabisTier = await hasCannabisAccess(user.id).catch(() => false)
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -79,9 +82,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
               <TrialBanner chefId={user.entityId} />
               {/* Desktop sidebar */}
-              <ChefSidebar primaryNavHrefs={primaryNavHrefs} />
+              <ChefSidebar primaryNavHrefs={primaryNavHrefs} hasCannabisTier={hasCannabisTier} />
               {/* Mobile nav (top bar + bottom tabs) */}
-              <ChefMobileNav primaryNavHrefs={primaryNavHrefs} />
+              <ChefMobileNav primaryNavHrefs={primaryNavHrefs} hasCannabisTier={hasCannabisTier} />
 
               {/* Main content — offset adjusts dynamically based on sidebar state */}
               <ChefMainContent>{children}</ChefMainContent>

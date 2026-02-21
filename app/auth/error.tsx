@@ -57,7 +57,7 @@ export default function AuthError({
           <Button variant="primary" onClick={reset} className="w-full">
             Try Again
           </Button>
-          <Link href="/auth/login" className="block">
+          <Link href="/auth/signin" className="block">
             <Button variant="secondary" className="w-full">
               Back to Sign In
             </Button>

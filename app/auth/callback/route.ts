@@ -4,10 +4,22 @@
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 
+/** Validate redirect path to prevent open redirect attacks */
+function safeRedirectPath(raw: string | null): string {
+  if (!raw) return '/'
+  try {
+    const url = new URL(raw, 'http://localhost')
+    if (url.origin !== 'http://localhost') return '/'
+    return url.pathname + url.search
+  } catch {
+    return '/'
+  }
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
-  const next = searchParams.get('next') ?? '/'
+  const next = safeRedirectPath(searchParams.get('next'))
 
   if (code) {
     const supabase = createServerClient()

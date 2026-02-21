@@ -9,6 +9,7 @@ export type NotificationCategory =
   | 'chat'
   | 'client'
   | 'loyalty'
+  | 'goals'
   | 'system'
 
 export type NotificationAction =
@@ -32,6 +33,8 @@ export type NotificationAction =
   | 'refund_processed'
   | 'dispute_created'
   | 'gift_card_purchased'
+  | 'payment_due_approaching'
+  | 'payment_overdue'
   // Chat
   | 'new_message'
   // Clients
@@ -57,6 +60,10 @@ export type NotificationAction =
   | 'photos_ready'
   // Loyalty
   | 'reward_redeemed_by_client'
+  // Goals
+  | 'goal_nudge'
+  | 'goal_milestone'
+  | 'goal_weekly_digest'
 
 export type Notification = {
   id: string
@@ -105,6 +112,8 @@ export const NOTIFICATION_CONFIG: Record<
   refund_processed: { category: 'payment', icon: 'RotateCcw', toastByDefault: true },
   dispute_created: { category: 'payment', icon: 'ShieldAlert', toastByDefault: true },
   gift_card_purchased: { category: 'payment', icon: 'Gift', toastByDefault: true },
+  payment_due_approaching: { category: 'payment', icon: 'Bell', toastByDefault: false },
+  payment_overdue: { category: 'payment', icon: 'AlertCircle', toastByDefault: true },
 
   // Chat - silent by default (has its own unread system)
   new_message: { category: 'chat', icon: 'MessageCircle', toastByDefault: false },
@@ -137,6 +146,11 @@ export const NOTIFICATION_CONFIG: Record<
 
   // Loyalty
   reward_redeemed_by_client: { category: 'loyalty', icon: 'Gift', toastByDefault: true },
+
+  // Goals
+  goal_nudge: { category: 'goals', icon: 'Target', toastByDefault: false },
+  goal_milestone: { category: 'goals', icon: 'Trophy', toastByDefault: true },
+  goal_weekly_digest: { category: 'goals', icon: 'BarChart2', toastByDefault: false },
 }
 
 // Category display names for preferences UI
@@ -148,5 +162,6 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   chat: 'Chat Messages',
   client: 'Clients',
   loyalty: 'Loyalty & Rewards',
+  goals: 'Goals & Growth',
   system: 'System',
 }

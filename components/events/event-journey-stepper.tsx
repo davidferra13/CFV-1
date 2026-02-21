@@ -1,19 +1,54 @@
 'use client'
 
 // Event Journey Stepper
-// Visual timeline showing the client's full journey from inquiry to post-event.
-// Responsive: horizontal on desktop (md+), vertical on mobile.
+// Visual 12-stage timeline showing the client's full journey.
+// Responsive: horizontal scrollable on desktop, vertical on mobile.
+// Supports action CTAs on active steps and social sharing on milestone steps.
 
-import { Check } from 'lucide-react'
+import { Check, Share2 } from 'lucide-react'
 import { format, parseISO } from 'date-fns'
+import Link from 'next/link'
 import type { JourneyStep } from '@/lib/events/journey-steps'
+
+function ShareButton({ shareText, label }: { shareText: string; label: string }) {
+  const handleShare = async () => {
+    const shareData = { text: shareText }
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      try {
+        await navigator.share(shareData)
+      } catch {
+        // User cancelled share — no-op
+      }
+    } else {
+      // Fallback: copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareText)
+        alert('Copied to clipboard!')
+      } catch {
+        // Ignore clipboard errors
+      }
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleShare}
+      title={`Share: ${label}`}
+      className="inline-flex items-center gap-1 text-[10px] font-medium text-stone-400 hover:text-brand-600 transition-colors mt-1"
+    >
+      <Share2 className="w-3 h-3" />
+      Share
+    </button>
+  )
+}
 
 export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
   if (steps.length === 0) return null
 
   return (
     <>
-      {/* ── Desktop: horizontal stepper ─────────────────────────────────── */}
+      {/* ── Desktop: horizontal scrollable stepper ───────────────────────── */}
       <div className="hidden md:block overflow-x-auto pb-2">
         <div className="flex items-start min-w-max gap-0">
           {steps.map((step, i) => (
@@ -26,8 +61,8 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                     step.completedAt && !step.isFuture
                       ? 'bg-emerald-500 border-emerald-500 text-white'
                       : step.isCurrent
-                      ? 'bg-brand-600 border-brand-600 text-white animate-pulse'
-                      : 'bg-white border-stone-300 text-stone-300'
+                        ? 'bg-brand-600 border-brand-600 text-white animate-pulse'
+                        : 'bg-white border-stone-300 text-stone-300'
                   }`}
                 >
                   {step.completedAt && !step.isFuture ? (
@@ -40,7 +75,11 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                 {/* Label */}
                 <p
                   className={`mt-2 text-xs font-medium text-center leading-tight ${
-                    step.isFuture ? 'text-stone-400' : 'text-stone-700'
+                    step.isFuture
+                      ? 'text-stone-400'
+                      : step.isCurrent
+                        ? 'text-brand-700'
+                        : 'text-stone-700'
                   }`}
                 >
                   {step.label}
@@ -52,6 +91,21 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                     {format(parseISO(step.completedAt), 'MMM d')}
                   </p>
                 )}
+
+                {/* CTA action for current step */}
+                {step.isCurrent && step.actionHref && step.actionLabel && (
+                  <Link
+                    href={step.actionHref}
+                    className="mt-1.5 inline-block text-[10px] font-semibold text-white bg-brand-600 hover:bg-brand-700 px-2 py-0.5 rounded-full transition-colors text-center whitespace-nowrap"
+                  >
+                    {step.actionLabel}
+                  </Link>
+                )}
+
+                {/* Share button for milestone steps that are completed */}
+                {step.isMilestone && step.completedAt && step.shareText && (
+                  <ShareButton shareText={step.shareText} label={step.label} />
+                )}
               </div>
 
               {/* Connector line between steps */}
@@ -61,8 +115,8 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                     steps[i + 1].completedAt && !steps[i + 1].isFuture
                       ? 'bg-emerald-400'
                       : steps[i + 1].isCurrent
-                      ? 'bg-brand-400'
-                      : 'bg-stone-200'
+                        ? 'bg-brand-400'
+                        : 'bg-stone-200'
                   }`}
                 />
               )}
@@ -82,8 +136,8 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                   step.completedAt && !step.isFuture
                     ? 'bg-emerald-500 border-emerald-500 text-white'
                     : step.isCurrent
-                    ? 'bg-brand-600 border-brand-600 text-white'
-                    : 'bg-white border-stone-300 text-stone-300'
+                      ? 'bg-brand-600 border-brand-600 text-white animate-pulse'
+                      : 'bg-white border-stone-300 text-stone-300'
                 }`}
               >
                 {step.completedAt && !step.isFuture ? (
@@ -97,7 +151,9 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                   className={`w-0.5 flex-1 min-h-[24px] mt-1 mb-0 ${
                     steps[i + 1].completedAt && !steps[i + 1].isFuture
                       ? 'bg-emerald-300'
-                      : 'bg-stone-200'
+                      : steps[i + 1].isCurrent
+                        ? 'bg-brand-400'
+                        : 'bg-stone-200'
                   }`}
                 />
               )}
@@ -107,7 +163,11 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
             <div className={`pb-4 flex-1 min-w-0 ${i === steps.length - 1 ? 'pb-0' : ''}`}>
               <p
                 className={`text-sm font-medium ${
-                  step.isFuture ? 'text-stone-400' : 'text-stone-800'
+                  step.isFuture
+                    ? 'text-stone-400'
+                    : step.isCurrent
+                      ? 'text-brand-700'
+                      : 'text-stone-800'
                 }`}
               >
                 {step.label}
@@ -119,6 +179,23 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                 <p className="text-[11px] text-stone-400 mt-0.5">
                   {format(parseISO(step.completedAt), 'MMMM d, yyyy')}
                 </p>
+              )}
+
+              {/* CTA for current step */}
+              {step.isCurrent && step.actionHref && step.actionLabel && (
+                <Link
+                  href={step.actionHref}
+                  className="inline-flex items-center mt-2 text-xs font-semibold text-white bg-brand-600 hover:bg-brand-700 px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  {step.actionLabel} →
+                </Link>
+              )}
+
+              {/* Share button for completed milestones */}
+              {step.isMilestone && step.completedAt && step.shareText && (
+                <div className="mt-1">
+                  <ShareButton shareText={step.shareText} label={step.label} />
+                </div>
               )}
             </div>
           </div>

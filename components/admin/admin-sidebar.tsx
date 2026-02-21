@@ -19,8 +19,10 @@ import {
   ToggleLeft,
   Handshake,
   MessageSquare,
+  Sparkles,
   Shield,
   LogOut,
+  Leaf,
 } from 'lucide-react'
 import { signOut } from '@/lib/auth/actions'
 
@@ -38,19 +40,31 @@ const navItems = [
   { href: '/admin/flags', label: 'Feature Flags', icon: ToggleLeft },
   { href: '/admin/referral-partners', label: 'Referral Partners', icon: Handshake },
   { href: '/admin/feedback', label: 'Feedback', icon: MessageSquare },
+  { href: '/admin/animations', label: 'Animations', icon: Sparkles },
+  { href: '/admin/cannabis', label: 'Cannabis Tier', icon: Leaf },
 ]
 
-function NavLink({ href, label, icon: Icon, exact }: { href: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }) {
+function NavLink({
+  href,
+  label,
+  icon: Icon,
+  exact,
+}: {
+  href: string
+  label: string
+  icon: typeof LayoutDashboard
+  exact?: boolean
+}) {
   const pathname = usePathname()
-  const isActive = exact ? pathname === href : pathname === href || (pathname?.startsWith(href + '/') ?? false)
+  const isActive = exact
+    ? pathname === href
+    : pathname === href || (pathname?.startsWith(href + '/') ?? false)
 
   return (
     <Link
       href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-        isActive
-          ? 'bg-white/15 text-white'
-          : 'text-slate-300 hover:bg-white/10 hover:text-white'
+        isActive ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
       }`}
     >
       <Icon size={16} className="shrink-0" />
@@ -80,15 +94,21 @@ export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
 
       {/* Footer */}
       <div className="px-3 py-3 border-t border-slate-700">
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
-          >
-            <LogOut size={16} className="shrink-0" />
-            <span>Sign Out</span>
-          </button>
-        </form>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await signOut()
+            } catch (e) {
+              console.error('[sign-out]', e)
+            }
+            window.location.href = '/'
+          }}
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+        >
+          <LogOut size={16} className="shrink-0" />
+          <span>Sign Out</span>
+        </button>
       </div>
     </div>
   )

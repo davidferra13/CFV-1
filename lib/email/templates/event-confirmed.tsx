@@ -1,7 +1,7 @@
 // Event Confirmed Email
 // Sent to client when chef confirms the event (paid → confirmed)
 
-import { Text } from '@react-email/components'
+import { Button, Text } from '@react-email/components'
 import * as React from 'react'
 import { BaseLayout } from './base-layout'
 
@@ -13,6 +13,7 @@ type EventConfirmedProps = {
   serveTime: string | null
   location: string | null
   guestCount: number | null
+  calendarUrl: string
 }
 
 export function EventConfirmedEmail({
@@ -23,16 +24,15 @@ export function EventConfirmedEmail({
   serveTime,
   location,
   guestCount,
+  calendarUrl,
 }: EventConfirmedProps) {
   return (
     <BaseLayout preview={`Your ${occasion} event is confirmed!`}>
       <Text style={heading}>Event confirmed!</Text>
+      <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Hi {clientName},
-      </Text>
-      <Text style={paragraph}>
-        Great news — <strong>{chefName}</strong> has confirmed your event. Everything is set
-        and your chef is preparing for a wonderful experience.
+        Great news — <strong>{chefName}</strong> has confirmed your event. Everything is set and
+        your chef is preparing for a wonderful experience.
       </Text>
       <table style={detailsTable}>
         <tbody>
@@ -64,9 +64,12 @@ export function EventConfirmedEmail({
           )}
         </tbody>
       </table>
+      <Button style={button} href={calendarUrl}>
+        Add to Calendar
+      </Button>
       <Text style={muted}>
-        If any details change, your chef will reach out. You can also message them
-        directly through CheFlow at any time.
+        If any details change, your chef will reach out. You can also message them directly through
+        CheFlow at any time.
       </Text>
     </BaseLayout>
   )
@@ -106,6 +109,18 @@ const detailValue = {
   color: '#18181b',
   padding: '8px 0',
   borderBottom: '1px solid #f3f4f6',
+}
+
+const button = {
+  backgroundColor: '#18181b',
+  color: '#ffffff',
+  padding: '12px 24px',
+  borderRadius: '6px',
+  fontSize: '15px',
+  fontWeight: '600' as const,
+  textDecoration: 'none',
+  display: 'inline-block' as const,
+  marginBottom: '24px',
 }
 
 const muted = {

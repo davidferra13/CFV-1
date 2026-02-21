@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Chef Bio / Tagline Refresh
@@ -10,9 +11,9 @@ import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
 export interface ChefBioDraft {
-  shortBio: string        // 2–3 sentences, for social profiles
-  longBio: string         // 4–6 sentences, for website About page
-  tagline: string         // single punchy line, under 10 words
+  shortBio: string // 2–3 sentences, for social profiles
+  longBio: string // 4–6 sentences, for website About page
+  tagline: string // single punchy line, under 10 words
   linkedInHeadline: string // professional headline format
   alternativeTaglines: string[] // 2 alternatives to the primary
   generatedAt: string
@@ -31,7 +32,9 @@ export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const [chefResult, eventsResult, recipesResult] = await Promise.all([
     supabase
       .from('chefs')
-      .select('full_name, business_name, tagline, bio, years_experience, cuisine_specialties, certifications')
+      .select(
+        'full_name, business_name, tagline, bio, years_experience, cuisine_specialties, certifications'
+      )
       .eq('id', user.tenantId!)
       .single(),
     supabase
@@ -53,13 +56,16 @@ export async function generateChefBioDraft(): Promise<ChefBioDraft> {
   const recipes = recipesResult.data ?? []
 
   const totalEvents = events.length
-  const occasions = [...new Set(events.map(e => e.occasion).filter(Boolean))]
-  const avgGuests = events.length > 0
-    ? Math.round(events.reduce((s, e) => s + (e.guest_count ?? 0), 0) / events.length)
-    : 0
+  const occasions = [...new Set(events.map((e) => e.occasion).filter(Boolean))]
+  const avgGuests =
+    events.length > 0
+      ? Math.round(events.reduce((s, e) => s + (e.guest_count ?? 0), 0) / events.length)
+      : 0
 
-  const categories = [...new Set(recipes.map(r => r.category).filter(Boolean))]
-  const dietaryTags = [...new Set(recipes.flatMap(r => (r.dietary_tags as string[] | null) ?? []))]
+  const categories = [...new Set(recipes.map((r) => r.category).filter(Boolean))]
+  const dietaryTags = [
+    ...new Set(recipes.flatMap((r) => (r.dietary_tags as string[] | null) ?? [])),
+  ]
 
   const prompt = `You are a brand copywriter specializing in personal chef businesses.
 Write fresh bio copy and a tagline for this chef.

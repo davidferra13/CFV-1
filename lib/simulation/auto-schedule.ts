@@ -4,6 +4,9 @@
 // by POSTing to /api/scheduled/simulation — so the full request context is
 // available (cookies, headers, etc.) and the auth check remains meaningful.
 //
+// Also warms up Ollama on startup by sending a tiny test prompt to force
+// the model into memory before a real user request hits it.
+//
 // No 'use server' — plain Node.js module, runs in the instrumentation context.
 
 const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000 // every 6 hours
@@ -13,11 +16,53 @@ const WARMUP_DELAY_MS = 45_000 // wait 45s after startup before first check
 export function scheduleSimulation(): void {
   // Delay the first check so the server is fully up before we try to fetch
   setTimeout(() => {
+    void warmupOllama()
     void runCheck()
     setInterval(() => void runCheck(), CHECK_INTERVAL_MS)
   }, WARMUP_DELAY_MS)
 
   console.log('[sim-auto] Simulation auto-scheduler registered. First check in 45s.')
+}
+
+/**
+ * Send a tiny test prompt to Ollama to force the model into memory.
+ * The first real user request will be much faster after this warmup.
+ * Non-blocking — failures are logged but never propagated.
+ */
+async function warmupOllama(): Promise<void> {
+  const ollamaUrl = process.env.OLLAMA_BASE_URL
+  if (!ollamaUrl) return
+
+  const model = process.env.OLLAMA_MODEL || 'qwen3-coder:30b'
+
+  try {
+    console.log(`[ollama-warmup] Warming up ${model}...`)
+    const res = await fetch(`${ollamaUrl}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: 'Respond with JSON.' },
+          { role: 'user', content: 'Return: {"status":"ok"}' },
+        ],
+        format: 'json',
+        stream: false,
+      }),
+      signal: AbortSignal.timeout(120_000), // 2 min — model loading can be slow
+    })
+
+    if (res.ok) {
+      console.log(`[ollama-warmup] Model ${model} is warm and ready.`)
+    } else {
+      console.warn(`[ollama-warmup] Warmup returned HTTP ${res.status}`)
+    }
+  } catch (err) {
+    console.warn(
+      '[ollama-warmup] Warmup failed (non-blocking):',
+      err instanceof Error ? err.message : err
+    )
+  }
 }
 
 async function runCheck(): Promise<void> {

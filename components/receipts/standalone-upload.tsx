@@ -82,7 +82,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
     return (
       <div className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-2">
         <p className="text-sm font-medium text-green-800">
-          Receipt uploaded and queued for AI extraction.
+          Receipt uploaded and queued for extraction.
         </p>
         <p className="text-xs text-green-600">
           Check back in a moment to review the extracted line items.

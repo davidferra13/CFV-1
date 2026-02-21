@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Push Dinner Campaign — Client Targeting

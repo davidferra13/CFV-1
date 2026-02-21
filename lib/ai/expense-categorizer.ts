@@ -34,7 +34,7 @@ export async function categorizeExpense(
 
   const systemPrompt = `You are an accounting assistant for a private chef business.
 Classify the expense into exactly one category from this list:
-${EXPENSE_CATEGORIES.map(c => `  ${c}: ${EXPENSE_CATEGORY_LABELS[c]}`).join('\n')}
+${EXPENSE_CATEGORIES.map((c) => `  ${c}: ${EXPENSE_CATEGORY_LABELS[c]}`).join('\n')}
 
 Rules:
 - food_cost: any grocery, produce, protein, dairy, pantry ingredient
@@ -58,7 +58,10 @@ Amount: $${(amountCents / 100).toFixed(2)}
 Return JSON: { "category": "...", "confidence": "high|medium|low", "reasoning": "one sentence", "alternativeCategory": "...or null" }`
 
   try {
-    return await parseWithOllama(systemPrompt, userContent, CategorizationResultSchema)
+    return await parseWithOllama(systemPrompt, userContent, CategorizationResultSchema, {
+      modelTier: 'fast',
+      cache: true,
+    })
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
     console.error('[expense-categorizer] Failed:', err)

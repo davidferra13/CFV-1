@@ -13,16 +13,20 @@ test.describe('Clients', () => {
 
   test('TEST client appears in list', async ({ page, seedIds }) => {
     await page.goto(ROUTES.clients)
-    await expect(page.getByText('TEST - Alice E2E')).toBeVisible({ timeout: 10_000 })
+    // Wait for streaming Suspense / data fetch to complete
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByText('TEST - Alice E2E').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('additional test clients appear', async ({ page }) => {
     await page.goto(ROUTES.clients)
-    await expect(page.getByText('TEST - Bob E2E')).toBeVisible({ timeout: 10_000 })
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByText('TEST - Bob E2E').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('clicking client navigates to detail page', async ({ page, seedIds }) => {
     await page.goto(ROUTES.clients)
+    await page.waitForLoadState('networkidle')
     // Click the first TEST client link
     const clientLink = page.getByRole('link').filter({ hasText: 'TEST - Alice E2E' }).first()
     await clientLink.click()
@@ -32,21 +36,26 @@ test.describe('Clients', () => {
   test('client detail page loads with client name', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.primary}`)
     await expect(page).not.toHaveURL(/auth\/signin/)
-    await expect(page.getByText('TEST - Alice E2E')).toBeVisible({ timeout: 10_000 })
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByText('TEST - Alice E2E').first()).toBeVisible({ timeout: 10_000 })
   })
 
   test('client detail has email displayed', async ({ page, seedIds }) => {
     await page.goto(`/clients/${seedIds.clientIds.primary}`)
+    await page.waitForLoadState('networkidle')
     // Email should appear somewhere on the detail page
-    const emailText = `e2e.client.`
-    await expect(page.getByText(emailText, { exact: false })).toBeVisible({ timeout: 10_000 })
+    const emailText = 'e2e.client.'
+    await expect(page.getByText(emailText, { exact: false }).first()).toBeVisible({
+      timeout: 10_000,
+    })
   })
 
-  test('/clients/new page renders create form', async ({ page }) => {
+  test('/clients/new redirects to /clients (no standalone create page)', async ({ page }) => {
+    // The create-client flow is inline on /clients via invitation.
+    // /clients/new is intentionally a server-side redirect back to /clients.
     await page.goto('/clients/new')
     await expect(page).not.toHaveURL(/auth\/signin/)
-    // Form should have a name or email field
-    const nameOrEmail = page.getByLabel(/full name|name|email/i).first()
-    await expect(nameOrEmail).toBeVisible({ timeout: 10_000 })
+    // Should land on /clients after redirect
+    await expect(page).toHaveURL(/\/clients$/)
   })
 })

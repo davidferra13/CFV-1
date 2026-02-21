@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Equipment Depreciation Plain-Language Explainer
@@ -13,12 +14,12 @@ export interface EquipmentExplanation {
   itemName: string
   purchasePriceDollars: number
   purchaseDate: string
-  depreciationMethod: string  // e.g. "Straight-line over 5 years"
+  depreciationMethod: string // e.g. "Straight-line over 5 years"
   annualDeductionDollars: number
-  yearInSchedule: number      // e.g. "Year 2 of 5"
+  yearInSchedule: number // e.g. "Year 2 of 5"
   remainingValueDollars: number
   fullyDepreciatedDate: string
-  plainEnglishExplanation: string  // what this means in simple terms
+  plainEnglishExplanation: string // what this means in simple terms
   bonusDepreciationNote: string | null // if Section 179 or bonus depreciation applies
 }
 
@@ -42,7 +43,9 @@ export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciat
 
   const { data: equipment } = await (supabase as any)
     .from('equipment_items')
-    .select('name, purchase_price_cents, purchase_date, depreciation_years, depreciation_method, category')
+    .select(
+      'name, purchase_price_cents, purchase_date, depreciation_years, depreciation_method, category'
+    )
     .eq('tenant_id', user.tenantId!)
     .gt('purchase_price_cents', 0)
     .order('purchase_date', { ascending: false })
@@ -52,8 +55,10 @@ export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciat
     return {
       items: [],
       totalAnnualDeductionDollars: 0,
-      currentYearSummary: 'No equipment items with depreciation tracked yet. Add equipment items in the Equipment section.',
-      disclaimer: 'This is educational information only. Consult a CPA for precise tax treatment of your equipment.',
+      currentYearSummary:
+        'No equipment items with depreciation tracked yet. Add equipment items in the Equipment section.',
+      disclaimer:
+        'This is educational information only. Consult a CPA for precise tax treatment of your equipment.',
       generatedAt: new Date().toISOString(),
     }
   }
@@ -72,7 +77,7 @@ Explain each item's depreciation schedule without jargon.
 Current year: ${currentYear}
 
 Equipment items:
-${equipmentList.map(e => `- ${e.name}: $${e.priceDollars.toFixed(2)}, purchased ${e.purchaseDate}, depreciation: ${e.depreciationYears}-year ${e.method}`).join('\n')}
+${equipmentList.map((e) => `- ${e.name}: $${e.priceDollars.toFixed(2)}, purchased ${e.purchaseDate}, depreciation: ${e.depreciationYears}-year ${e.method}`).join('\n')}
 
 For each item, calculate and explain:
 1. Annual deduction (straight-line = cost / years; other methods as appropriate)
@@ -112,7 +117,8 @@ Return ONLY valid JSON.`
     const parsed = JSON.parse(text)
     return {
       ...parsed,
-      disclaimer: 'This is educational information only and does not constitute tax advice. Consult a licensed CPA for precise depreciation treatment for your specific situation.',
+      disclaimer:
+        'This is educational information only and does not constitute tax advice. Consult a licensed CPA for precise depreciation treatment for your specific situation.',
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

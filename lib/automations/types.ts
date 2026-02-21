@@ -9,6 +9,8 @@ export type TriggerEvent =
   | 'no_response_timeout'
   | 'quote_expiring'
   | 'event_approaching'
+  | 'payment_due_approaching'
+  | 'payment_overdue'
 
 export type ActionType =
   | 'create_notification'
@@ -74,6 +76,8 @@ export const TRIGGER_LABELS: Record<TriggerEvent, string> = {
   no_response_timeout: 'No response timeout',
   quote_expiring: 'Quote expiring soon',
   event_approaching: 'Event approaching',
+  payment_due_approaching: 'Payment due soon',
+  payment_overdue: 'Payment overdue',
 }
 
 export const ACTION_LABELS: Record<ActionType, string> = {
@@ -114,7 +118,11 @@ export const TRIGGER_CONTEXT_FIELDS: Record<TriggerEvent, TriggerContextField[]>
     { field: 'guest_count', label: 'Guest count' },
   ],
   event_status_changed: [
-    { field: 'status', label: 'New status', hint: 'confirmed, paid, in_progress, completed, cancelled' },
+    {
+      field: 'status',
+      label: 'New status',
+      hint: 'confirmed, paid, in_progress, completed, cancelled',
+    },
     { field: 'previous_status', label: 'Previous status' },
     { field: 'occasion', label: 'Occasion' },
     { field: 'client_name', label: 'Client name' },
@@ -143,6 +151,18 @@ export const TRIGGER_CONTEXT_FIELDS: Record<TriggerEvent, TriggerContextField[]>
     { field: 'client_name', label: 'Client name' },
     { field: 'status', label: 'Event status', hint: 'confirmed, paid' },
   ],
+  payment_due_approaching: [
+    { field: 'days_until_event', label: 'Days until event' },
+    { field: 'outstanding_balance_cents', label: 'Outstanding balance (cents)' },
+    { field: 'occasion', label: 'Occasion' },
+    { field: 'client_name', label: 'Client name' },
+  ],
+  payment_overdue: [
+    { field: 'days_overdue', label: 'Days overdue' },
+    { field: 'outstanding_balance_cents', label: 'Outstanding balance (cents)' },
+    { field: 'occasion', label: 'Occasion' },
+    { field: 'client_name', label: 'Client name' },
+  ],
 }
 
 // ─── Chef Automation Settings ─────────────────────────────────────────────
@@ -168,12 +188,20 @@ export type ChefAutomationSettings = {
   weekly_summary_enabled: boolean
   inquiry_auto_response_template: string | null
   auto_response_template_enabled: boolean
+  // Payment reminder fields (Migration C)
+  payment_reminder_enabled: boolean
+  payment_reminder_days_before: number
+  payment_overdue_alert_enabled: boolean
+  payment_overdue_alert_days_after: number
   created_at: string
   updated_at: string
 }
 
 // Defaults used when no row exists for a chef yet
-export const DEFAULT_AUTOMATION_SETTINGS: Omit<ChefAutomationSettings, 'id' | 'tenant_id' | 'created_at' | 'updated_at'> = {
+export const DEFAULT_AUTOMATION_SETTINGS: Omit<
+  ChefAutomationSettings,
+  'id' | 'tenant_id' | 'created_at' | 'updated_at'
+> = {
   follow_up_reminders_enabled: true,
   follow_up_reminder_interval_hours: 48,
   no_response_alerts_enabled: true,
@@ -191,4 +219,9 @@ export const DEFAULT_AUTOMATION_SETTINGS: Omit<ChefAutomationSettings, 'id' | 't
   weekly_summary_enabled: false,
   inquiry_auto_response_template: null,
   auto_response_template_enabled: false,
+  // Payment reminder fields (Migration C)
+  payment_reminder_enabled: true,
+  payment_reminder_days_before: 2,
+  payment_overdue_alert_enabled: true,
+  payment_overdue_alert_days_after: 1,
 }

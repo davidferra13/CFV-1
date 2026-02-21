@@ -31,7 +31,15 @@ function formatCents(cents: number | null): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-function DraftField({ label, value, uncertain }: { label: string; value: string | null; uncertain?: boolean }) {
+function DraftField({
+  label,
+  value,
+  uncertain,
+}: {
+  label: string
+  value: string | null
+  uncertain?: boolean
+}) {
   if (value === null) return null
   return (
     <div className="flex flex-col gap-0.5">
@@ -94,7 +102,7 @@ export function EventNLForm({ clients }: Props) {
     // Try to auto-match client by name
     if (d.client_name) {
       const lower = d.client_name.toLowerCase()
-      const match = clients.find(c => c.full_name.toLowerCase().includes(lower))
+      const match = clients.find((c) => c.full_name.toLowerCase().includes(lower))
       if (match) setClientId(match.id)
     }
   }
@@ -104,10 +112,22 @@ export function EventNLForm({ clients }: Props) {
   async function handleCreate() {
     setCreateError(null)
 
-    if (!clientId) { setCreateError('Please select a client'); return }
-    if (!eventDate) { setCreateError('Event date is required'); return }
-    if (!serveTime) { setCreateError('Serve time is required'); return }
-    if (!guestCount || parseInt(guestCount) <= 0) { setCreateError('Guest count is required'); return }
+    if (!clientId) {
+      setCreateError('Please select a client')
+      return
+    }
+    if (!eventDate) {
+      setCreateError('Event date is required')
+      return
+    }
+    if (!serveTime) {
+      setCreateError('Serve time is required')
+      return
+    }
+    if (!guestCount || parseInt(guestCount) <= 0) {
+      setCreateError('Guest count is required')
+      return
+    }
 
     setCreating(true)
     try {
@@ -147,7 +167,7 @@ export function EventNLForm({ clients }: Props) {
           label="Describe the event"
           placeholder={`e.g. "Private dinner for the Hendersons — 8 guests, Saturday March 28th at 7pm, their home in Pacific Heights. Quoting $2,800 with a $500 deposit."`}
           value={rawText}
-          onChange={e => setRawText(e.target.value)}
+          onChange={(e) => setRawText(e.target.value)}
           rows={5}
           helperText="Write naturally — include the client name, date, time, guests, location, and pricing."
         />
@@ -212,13 +232,17 @@ export function EventNLForm({ clients }: Props) {
             <Select
               label="Client"
               required
-              options={clients.map(c => ({
+              options={clients.map((c) => ({
                 value: c.id,
                 label: `${c.full_name} (${c.email})`,
               }))}
               value={clientId}
-              onChange={e => setClientId(e.target.value)}
-              helperText={draft.client_name ? `AI detected: "${draft.client_name}"` : 'Select the client for this event'}
+              onChange={(e) => setClientId(e.target.value)}
+              helperText={
+                draft.client_name
+                  ? `Detected: "${draft.client_name}"`
+                  : 'Select the client for this event'
+              }
             />
 
             <div className="grid grid-cols-2 gap-3">
@@ -230,7 +254,7 @@ export function EventNLForm({ clients }: Props) {
                   type="date"
                   className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={eventDate}
-                  onChange={e => setEventDate(e.target.value)}
+                  onChange={(e) => setEventDate(e.target.value)}
                 />
               </div>
               <div>
@@ -241,7 +265,7 @@ export function EventNLForm({ clients }: Props) {
                   type="time"
                   className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={serveTime}
-                  onChange={e => setServeTime(e.target.value)}
+                  onChange={(e) => setServeTime(e.target.value)}
                 />
               </div>
             </div>
@@ -256,7 +280,7 @@ export function EventNLForm({ clients }: Props) {
                   min="1"
                   className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={guestCount}
-                  onChange={e => setGuestCount(e.target.value)}
+                  onChange={(e) => setGuestCount(e.target.value)}
                 />
               </div>
               <div>
@@ -265,29 +289,33 @@ export function EventNLForm({ clients }: Props) {
                   type="text"
                   className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={occasion}
-                  onChange={e => setOccasion(e.target.value)}
+                  onChange={(e) => setOccasion(e.target.value)}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Location / Address</label>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                Location / Address
+              </label>
               <input
                 type="text"
                 className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 value={locationDescription}
-                onChange={e => setLocationDescription(e.target.value)}
+                onChange={(e) => setLocationDescription(e.target.value)}
                 placeholder="Full address (you can update this on the event page)"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Notes / Dietary</label>
+              <label className="block text-sm font-medium text-stone-700 mb-1">
+                Notes / Dietary
+              </label>
               <textarea
                 rows={3}
                 className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 value={notes}
-                onChange={e => setNotes(e.target.value)}
+                onChange={(e) => setNotes(e.target.value)}
               />
             </div>
           </div>
@@ -315,7 +343,10 @@ export function EventNLForm({ clients }: Props) {
             <Button
               type="button"
               variant="secondary"
-              onClick={() => { setDraft(null); setRawText('') }}
+              onClick={() => {
+                setDraft(null)
+                setRawText('')
+              }}
             >
               Start over
             </Button>

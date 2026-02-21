@@ -12,7 +12,7 @@ import crypto from 'crypto'
 
 const InviteClientSchema = z.object({
   email: z.string().email('Valid email required'),
-  full_name: z.string().min(1, 'Name required')
+  full_name: z.string().min(1, 'Name required'),
 })
 
 const UpdateClientSchema = z.object({
@@ -37,7 +37,15 @@ const UpdateClientSchema = z.object({
   equipment_must_bring: z.array(z.string()).optional(),
   vibe_notes: z.string().optional(),
   what_they_care_about: z.string().optional(),
-  status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional()
+  status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional(),
+  // Kitchen profile structured fields (Migration D)
+  kitchen_oven_notes: z.string().optional(),
+  kitchen_burner_notes: z.string().optional(),
+  kitchen_counter_notes: z.string().optional(),
+  kitchen_refrigeration_notes: z.string().optional(),
+  kitchen_plating_notes: z.string().optional(),
+  kitchen_sink_notes: z.string().optional(),
+  kitchen_profile_updated_at: z.string().optional(),
 })
 
 export type InviteClientInput = z.infer<typeof InviteClientSchema>
@@ -94,7 +102,7 @@ export async function inviteClient(input: InviteClientInput) {
       full_name: validated.full_name,
       token,
       expires_at: expiresAt.toISOString(),
-      created_by: user.id
+      created_by: user.id,
     })
     .select()
     .single()
@@ -234,7 +242,15 @@ export async function createClientFromLead(
       dietary_restrictions: lead.dietary_restrictions || [],
       allergies: lead.allergies || [],
       status: 'active',
-      referral_source: (lead.source as 'email' | 'phone' | 'instagram' | 'take_a_chef' | 'referral' | 'website' | 'other') || 'email',
+      referral_source:
+        (lead.source as
+          | 'email'
+          | 'phone'
+          | 'instagram'
+          | 'take_a_chef'
+          | 'referral'
+          | 'website'
+          | 'other') || 'email',
     })
     .select('id')
     .single()
@@ -256,7 +272,7 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
 
   const supabase = createServerClient()
 
-  const { data: client, error } = await supabase
+  const { data: client, error } = await (supabase as any)
     .from('clients')
     .update(validated)
     .eq('id', clientId)
@@ -366,11 +382,14 @@ export async function getClientsWithStats() {
     .eq('tenant_id', user.tenantId!)
 
   // Build stats map from the view
-  const statsMap = new Map<string, {
-    totalEvents: number
-    totalSpentCents: number
-    lastEventDate: string | null
-  }>()
+  const statsMap = new Map<
+    string,
+    {
+      totalEvents: number
+      totalSpentCents: number
+      lastEventDate: string | null
+    }
+  >()
 
   if (financialSummaries) {
     for (const summary of financialSummaries) {
@@ -378,18 +397,18 @@ export async function getClientsWithStats() {
         statsMap.set(summary.client_id, {
           totalEvents: summary.total_events_count ?? 0,
           totalSpentCents: summary.lifetime_value_cents ?? 0,
-          lastEventDate: summary.last_event_date
+          lastEventDate: summary.last_event_date,
         })
       }
     }
   }
 
   // Merge clients with stats
-  return clients.map(client => ({
+  return clients.map((client) => ({
     ...client,
     totalEvents: statsMap.get(client.id)?.totalEvents ?? 0,
     totalSpentCents: statsMap.get(client.id)?.totalSpentCents ?? 0,
-    lastEventDate: statsMap.get(client.id)?.lastEventDate ?? null
+    lastEventDate: statsMap.get(client.id)?.lastEventDate ?? null,
   }))
 }
 
@@ -463,7 +482,7 @@ export async function getClientWithStats(clientId: string) {
     totalSpentCents: financialSummary?.lifetime_value_cents ?? 0,
     averageEventValueCents: financialSummary?.average_spend_per_event ?? 0,
     lastEventDate: financialSummary?.last_event_date ?? null,
-    outstandingBalanceCents: financialSummary?.outstanding_balance_cents ?? 0
+    outstandingBalanceCents: financialSummary?.outstanding_balance_cents ?? 0,
   }
 }
 
@@ -477,9 +496,7 @@ export async function updateClientHousehold(formData: FormData) {
   const user = await requireChef()
 
   const clientId = String(formData.get('clientId') ?? '')
-  const tag = formData.get('household_tag')
-    ? String(formData.get('household_tag'))
-    : null
+  const tag = formData.get('household_tag') ? String(formData.get('household_tag')) : null
 
   if (!clientId) throw new Error('Missing clientId')
 
@@ -578,49 +595,60 @@ export async function getClientFinancialDetail(clientId: string) {
   const [eventsResult, ledgerResult] = await Promise.all([
     supabase
       .from('events')
-      .select('id, occasion, event_date, status, quoted_price_cents, payment_status, deposit_amount_cents, guest_count')
+      .select(
+        'id, occasion, event_date, status, quoted_price_cents, payment_status, deposit_amount_cents, guest_count'
+      )
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)
       .order('event_date', { ascending: false }),
     supabase
       .from('ledger_entries')
-      .select('id, entry_type, amount_cents, is_refund, description, payment_method, created_at, received_at, event_id, events(id, occasion, event_date)')
+      .select(
+        'id, entry_type, amount_cents, is_refund, description, payment_method, created_at, received_at, event_id, events(id, occasion, event_date)'
+      )
       .eq('client_id', clientId)
       .eq('tenant_id', user.tenantId!)
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: false }),
   ])
 
   const events = eventsResult.data ?? []
   const ledgerEntries = ledgerResult.data ?? []
 
   // Fetch financial summary for each event from the view
-  const eventIds = events.map(e => e.id)
-  const { data: summaries } = eventIds.length > 0
-    ? await supabase
-        .from('event_financial_summary')
-        .select('event_id, total_paid_cents, total_refunded_cents, outstanding_balance_cents, tip_amount_cents, net_revenue_cents')
-        .in('event_id', eventIds)
-    : { data: [] }
+  const eventIds = events.map((e) => e.id)
+  const { data: summaries } =
+    eventIds.length > 0
+      ? await supabase
+          .from('event_financial_summary')
+          .select(
+            'event_id, total_paid_cents, total_refunded_cents, outstanding_balance_cents, tip_amount_cents, net_revenue_cents'
+          )
+          .in('event_id', eventIds)
+      : { data: [] }
 
-  const summaryMap = new Map<string, {
-    total_paid_cents: number
-    total_refunded_cents: number
-    outstanding_balance_cents: number
-    tip_amount_cents: number
-    net_revenue_cents: number
-  }>()
+  const summaryMap = new Map<
+    string,
+    {
+      total_paid_cents: number
+      total_refunded_cents: number
+      outstanding_balance_cents: number
+      tip_amount_cents: number
+      net_revenue_cents: number
+    }
+  >()
   for (const s of summaries ?? []) {
-    if (s.event_id) summaryMap.set(s.event_id, {
-      total_paid_cents: s.total_paid_cents ?? 0,
-      total_refunded_cents: s.total_refunded_cents ?? 0,
-      outstanding_balance_cents: s.outstanding_balance_cents ?? 0,
-      tip_amount_cents: s.tip_amount_cents ?? 0,
-      net_revenue_cents: s.net_revenue_cents ?? 0,
-    })
+    if (s.event_id)
+      summaryMap.set(s.event_id, {
+        total_paid_cents: s.total_paid_cents ?? 0,
+        total_refunded_cents: s.total_refunded_cents ?? 0,
+        outstanding_balance_cents: s.outstanding_balance_cents ?? 0,
+        tip_amount_cents: s.tip_amount_cents ?? 0,
+        net_revenue_cents: s.net_revenue_cents ?? 0,
+      })
   }
 
   // Build per-event breakdown
-  const eventBreakdown = events.map(event => {
+  const eventBreakdown = events.map((event) => {
     const fin = summaryMap.get(event.id) ?? {
       total_paid_cents: 0,
       total_refunded_cents: 0,
@@ -645,7 +673,7 @@ export async function getClientFinancialDetail(clientId: string) {
   })
 
   // Compute summary totals (exclude cancelled events from outstanding)
-  const activeEvents = eventBreakdown.filter(e => e.status !== 'cancelled')
+  const activeEvents = eventBreakdown.filter((e) => e.status !== 'cancelled')
   const totalQuotedCents = activeEvents.reduce((sum, e) => sum + e.quotedPriceCents, 0)
   const totalPaidCents = activeEvents.reduce((sum, e) => sum + e.totalPaidCents, 0)
   const totalOutstandingCents = activeEvents.reduce((sum, e) => sum + e.outstandingBalanceCents, 0)
@@ -666,10 +694,9 @@ export async function getClientFinancialDetail(clientId: string) {
       totalOutstandingCents,
       totalRefundedCents,
       totalTipsCents,
-      collectionRatePercent: totalQuotedCents > 0
-        ? Math.round((totalPaidCents / totalQuotedCents) * 100)
-        : 100,
-    }
+      collectionRatePercent:
+        totalQuotedCents > 0 ? Math.round((totalPaidCents / totalQuotedCents) * 100) : 100,
+    },
   }
 }
 
@@ -846,4 +873,32 @@ export async function createClientDirect(input: {
     console.error('[createClientDirect] Error:', err)
     return { success: false, error: 'An unexpected error occurred' }
   }
+}
+
+/**
+ * Search clients by name (case-insensitive partial match).
+ * Used by the Command Center orchestrator for client lookup tasks.
+ */
+export async function searchClientsByName(
+  query: string
+): Promise<
+  Array<{ id: string; full_name: string | null; email: string | null; status: string | null }>
+> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('clients')
+    .select('id, full_name, email, status')
+    .eq('tenant_id', user.tenantId!)
+    .ilike('full_name', `%${query}%`)
+    .order('full_name', { ascending: true })
+    .limit(5)
+
+  if (error) {
+    console.error('[searchClientsByName] Error:', error)
+    return []
+  }
+
+  return data ?? []
 }

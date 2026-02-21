@@ -20,8 +20,12 @@ test.describe('Chef Dashboard', () => {
 
   test('New Event navigation is present', async ({ page }) => {
     await page.goto(ROUTES.chefDashboard)
-    // Look for a "New Event" link or button
-    const newEventEl = page.getByRole('link', { name: /new event/i }).first()
+    // Wait for streaming Suspense content to resolve before asserting element presence
+    await page.waitForLoadState('networkidle')
+    // Look for a 'New Event' link or button
+    const newEventEl = page
+      .getByRole('link', { name: /new event/i })
+      .first()
       .or(page.getByRole('button', { name: /new event/i }).first())
     await expect(newEventEl).toBeVisible({ timeout: 10_000 })
   })

@@ -33,7 +33,10 @@ type EventStatus = Database['public']['Enums']['event_status']
 
 // Status badge mapping
 function getStatusBadge(status: EventStatus) {
-  const variants: Record<EventStatus, { variant: 'default' | 'success' | 'warning' | 'error' | 'info', label: string }> = {
+  const variants: Record<
+    EventStatus,
+    { variant: 'default' | 'success' | 'warning' | 'error' | 'info'; label: string }
+  > = {
     draft: { variant: 'default', label: 'Draft' },
     proposed: { variant: 'warning', label: 'Pending Review' },
     accepted: { variant: 'warning', label: 'Payment Due' },
@@ -41,18 +44,14 @@ function getStatusBadge(status: EventStatus) {
     confirmed: { variant: 'success', label: 'Confirmed' },
     in_progress: { variant: 'info', label: 'In Progress' },
     completed: { variant: 'default', label: 'Completed' },
-    cancelled: { variant: 'error', label: 'Cancelled' }
+    cancelled: { variant: 'error', label: 'Cancelled' },
   }
 
   const config = variants[status]
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
 
-export default async function EventDetailPage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default async function EventDetailPage({ params }: { params: { id: string } }) {
   await requireClient()
 
   const event = await getClientEventById(params.id)
@@ -63,7 +62,7 @@ export default async function EventDetailPage({
 
   const financial = event.financial
   const totalPaidCents = financial?.totalPaidCents ?? 0
-  const quotedPriceCents = financial?.quotedPriceCents ?? (event.quoted_price_cents ?? 0)
+  const quotedPriceCents = financial?.quotedPriceCents ?? event.quoted_price_cents ?? 0
   const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
 
   // Fetch sharing and RSVP data
@@ -95,7 +94,12 @@ export default async function EventDetailPage({
           className="text-brand-600 hover:text-brand-700 flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Back to My Events
         </Link>
@@ -110,11 +114,7 @@ export default async function EventDetailPage({
             </h1>
             {getStatusBadge(event.status)}
           </div>
-          <MessageChefButton
-            context_type="event"
-            event_id={event.id}
-            label="Message Chef"
-          />
+          <MessageChefButton context_type="event" event_id={event.id} label="Message Chef" />
         </div>
       </div>
 
@@ -133,7 +133,12 @@ export default async function EventDetailPage({
               className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 bg-white border border-brand-200 px-3 py-1.5 rounded-lg shadow-sm transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
               </svg>
               View Full Proposal
             </Link>
@@ -150,9 +155,19 @@ export default async function EventDetailPage({
           <CardContent>
             <EventJourneyStepper
               steps={buildJourneySteps({
+                eventId: event.id,
+                occasion: event.occasion ?? null,
                 eventStatus: event.status,
                 eventTransitions: event.transitions,
                 hasPhotos: event.hasPhotos,
+                menuApprovalStatus: (event as any).menu_approval_status ?? null,
+                menuApprovalUpdatedAt: (event as any).menu_approval_updated_at ?? null,
+                hasContract: event.hasContract,
+                contractSignedAt: event.contractSignedAt ?? null,
+                preEventChecklistConfirmedAt:
+                  (event as any).pre_event_checklist_confirmed_at ?? null,
+                hasOutstandingBalance: outstandingBalanceCents > 0,
+                hasReview: event.hasReview,
               })}
             />
           </CardContent>
@@ -175,15 +190,18 @@ export default async function EventDetailPage({
 
             <div>
               <div className="text-sm text-stone-600 mb-1">Guest Count</div>
-              <div className="font-medium text-stone-900">
-                {event.guest_count} guests
-              </div>
+              <div className="font-medium text-stone-900">{event.guest_count} guests</div>
             </div>
 
             <div className="sm:col-span-2">
               <div className="text-sm text-stone-600 mb-1">Location</div>
               <div className="font-medium text-stone-900">
-                {[event.location_address, event.location_city, event.location_state, event.location_zip]
+                {[
+                  event.location_address,
+                  event.location_city,
+                  event.location_state,
+                  event.location_zip,
+                ]
                   .filter(Boolean)
                   .join(', ') || 'Not set'}
               </div>
@@ -192,9 +210,7 @@ export default async function EventDetailPage({
             {event.special_requests && (
               <div className="sm:col-span-2">
                 <div className="text-sm text-stone-600 mb-1">Special Requests</div>
-                <div className="text-stone-900">
-                  {event.special_requests}
-                </div>
+                <div className="text-stone-900">{event.special_requests}</div>
               </div>
             )}
           </div>
@@ -207,9 +223,11 @@ export default async function EventDetailPage({
                 occasion={event.occasion || 'Private Chef Dinner'}
                 eventDate={event.event_date}
                 startTime={event.serve_time ?? undefined}
-                location={[event.location_address, event.location_city, event.location_state]
-                  .filter(Boolean)
-                  .join(', ') || undefined}
+                location={
+                  [event.location_address, event.location_city, event.location_state]
+                    .filter(Boolean)
+                    .join(', ') || undefined
+                }
               />
             </div>
           )}
@@ -240,14 +258,19 @@ export default async function EventDetailPage({
             <div className="pt-3 border-t">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold text-stone-900">Balance Due</span>
-                <span className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-900'}`}>
+                <span
+                  className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-900'}`}
+                >
                   {formatCurrency(outstandingBalanceCents)}
                 </span>
               </div>
               {outstandingBalanceCents > 0 && event.status === 'completed' && (
                 <div className="mt-3">
                   <Link href={`/my-events/${event.id}/pay`}>
-                    <button type="button" className="w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm">
+                    <button
+                      type="button"
+                      className="w-full bg-red-600 text-white px-4 py-2.5 rounded-lg font-semibold hover:bg-red-700 transition text-sm"
+                    >
                       Pay Remaining Balance
                     </button>
                   </Link>
@@ -288,11 +311,12 @@ export default async function EventDetailPage({
           <CardContent>
             <div className="space-y-3">
               {event.ledgerEntries.map((entry: any) => (
-                <div key={entry.id} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                <div
+                  key={entry.id}
+                  className="flex justify-between items-center py-2 border-b last:border-b-0"
+                >
                   <div>
-                    <div className="font-medium text-stone-900">
-                      {entry.description}
-                    </div>
+                    <div className="font-medium text-stone-900">{entry.description}</div>
                     <div className="text-sm text-stone-600">
                       {format(new Date(entry.created_at), 'PPP')}
                     </div>
@@ -320,13 +344,9 @@ export default async function EventDetailPage({
             <div className="space-y-6">
               {event.menus.map((menu: any) => (
                 <div key={menu.id}>
-                  <h4 className="font-semibold text-stone-900 mb-2">
-                    {menu.name}
-                  </h4>
+                  <h4 className="font-semibold text-stone-900 mb-2">{menu.name}</h4>
                   {menu.description && (
-                    <p className="text-stone-600 text-sm mb-2">
-                      {menu.description}
-                    </p>
+                    <p className="text-stone-600 text-sm mb-2">{menu.description}</p>
                   )}
                 </div>
               ))}
@@ -336,30 +356,37 @@ export default async function EventDetailPage({
       )}
 
       {/* Printable Front-of-House Menu — available once event is confirmed */}
-      {event.menus && event.menus.length > 0 &&
+      {event.menus &&
+        event.menus.length > 0 &&
         ['confirmed', 'in_progress', 'completed'].includes(event.status) && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Printable Menu</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-stone-600 text-sm mb-4">
-              Your printable front-of-house menu is ready. Download and print it to place on the dining table.
-            </p>
-            <TrackedDownloadLink
-              href={`/api/documents/foh-menu/${event.id}`}
-              documentType="foh_menu"
-              entityId={event.id}
-              className="inline-flex items-center gap-2 bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-stone-800 transition"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Download Menu PDF
-            </TrackedDownloadLink>
-          </CardContent>
-        </Card>
-      )}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Printable Menu</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-stone-600 text-sm mb-4">
+                Your printable front-of-house menu is ready. Download and print it to place on the
+                dining table.
+              </p>
+              <TrackedDownloadLink
+                href={`/api/documents/foh-menu/${event.id}`}
+                documentType="foh_menu"
+                entityId={event.id}
+                className="inline-flex items-center gap-2 bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-stone-800 transition"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Download Menu PDF
+              </TrackedDownloadLink>
+            </CardContent>
+          </Card>
+        )}
 
       {/* Cancellation policy — shown on paid/confirmed events so clients understand terms */}
       {['accepted', 'paid', 'confirmed', 'in_progress'].includes(event.status) && (
@@ -370,9 +397,7 @@ export default async function EventDetailPage({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 mb-8">
-        {event.status === 'proposed' && (
-          <AcceptProposalButton eventId={event.id} />
-        )}
+        {event.status === 'proposed' && <AcceptProposalButton eventId={event.id} />}
 
         {event.status === 'accepted' && outstandingBalanceCents > 0 && (
           <Link href={`/my-events/${event.id}/pay`} className="flex-1">
@@ -405,10 +430,7 @@ export default async function EventDetailPage({
             <CardTitle>Share with Guests</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ShareEventButton
-              eventId={event.id}
-              existingShare={activeShare}
-            />
+            <ShareEventButton eventId={event.id} existingShare={activeShare} />
             {guests.length > 0 && (
               <div className="pt-4 border-t border-stone-100">
                 <h4 className="text-sm font-medium text-stone-700 mb-3">RSVP Responses</h4>
@@ -440,10 +462,7 @@ export default async function EventDetailPage({
               googleReviewUrl={googleReviewUrl}
             />
           ) : (
-            <ClientFeedbackForm
-              eventId={event.id}
-              googleReviewUrl={googleReviewUrl}
-            />
+            <ClientFeedbackForm eventId={event.id} googleReviewUrl={googleReviewUrl} />
           )}
         </div>
       )}

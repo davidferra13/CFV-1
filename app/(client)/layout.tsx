@@ -1,6 +1,7 @@
 // Client Portal Layout - Layer 2 of Defense in Depth
 
 import { requireClient } from '@/lib/auth/get-user'
+import { clientHasCannabisAccess } from '@/lib/clients/cannabis-client-actions'
 import { redirect } from 'next/navigation'
 import {
   ClientSidebarProvider,
@@ -12,11 +13,7 @@ import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 
-export default async function ClientLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   let user
   try {
     user = await requireClient()
@@ -24,13 +21,15 @@ export default async function ClientLayout({
     redirect('/auth/signin?portal=client')
   }
 
+  const hasCannabisTier = await clientHasCannabisAccess(user.id).catch(() => false)
+
   return (
     <ClientSidebarProvider>
       <NotificationProvider userId={user.id}>
         <ToastProvider />
         <div className="min-h-screen bg-surface-muted">
-          <ClientSidebar userEmail={user.email} />
-          <ClientMobileNav userEmail={user.email} />
+          <ClientSidebar userEmail={user.email} hasCannabisTier={hasCannabisTier} />
+          <ClientMobileNav userEmail={user.email} hasCannabisTier={hasCannabisTier} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>{children}</ClientMainContent>
         </div>

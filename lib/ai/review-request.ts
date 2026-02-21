@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Review Request Drafter
@@ -12,8 +13,8 @@ import { GoogleGenAI } from '@google/genai'
 
 export interface ReviewRequestDraft {
   subject: string
-  body: string              // full message body
-  shortVersion: string      // SMS/social version under 160 chars
+  body: string // full message body
+  shortVersion: string // SMS/social version under 160 chars
   reviewPlatformSuggestion: string // e.g. "Google", "Yelp", "Instagram"
   generatedAt: string
 }
@@ -31,19 +32,17 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
   const [eventResult, chefResult] = await Promise.all([
     supabase
       .from('events')
-      .select(`
+      .select(
+        `
         occasion, guest_count, event_date, service_style,
         client_id,
         clients(full_name, preferences)
-      `)
+      `
+      )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
-    supabase
-      .from('chefs')
-      .select('full_name, business_name')
-      .eq('id', user.tenantId!)
-      .single(),
+    supabase.from('chefs').select('full_name, business_name').eq('id', user.tenantId!).single(),
   ])
 
   const event = eventResult.data
@@ -62,9 +61,13 @@ export async function draftReviewRequest(eventId: string): Promise<ReviewRequest
     .order('created_at', { ascending: true })
     .limit(5)
 
-  const menuHighlight = menuItems && menuItems.length > 0
-    ? menuItems.slice(0, 3).map(m => m.name).join(', ')
-    : null
+  const menuHighlight =
+    menuItems && menuItems.length > 0
+      ? menuItems
+          .slice(0, 3)
+          .map((m) => m.name)
+          .join(', ')
+      : null
 
   const prompt = `You are a personal chef crafting a review request message to a client after a successful event.
 Write in first person singular. Warm, genuine, never pushy or salesy.

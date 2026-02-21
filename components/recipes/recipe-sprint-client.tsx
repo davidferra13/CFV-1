@@ -82,8 +82,8 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
       await linkRecipeToComponent(recipeResult.recipe.id, current.componentId)
 
       setLastSaved(recipeName)
-      setDoneCount(prev => prev + 1)
-      setQueue(prev => prev.slice(1))
+      setDoneCount((prev) => prev + 1)
+      setQueue((prev) => prev.slice(1))
       setRawText('')
       router.refresh()
     } catch (err: any) {
@@ -96,7 +96,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
   const handleSkip = () => {
     if (!current) return
     // Move current to end of queue
-    setQueue(prev => [...prev.slice(1), prev[0]])
+    setQueue((prev) => [...prev.slice(1), prev[0]])
     setRawText('')
     setError('')
   }
@@ -132,7 +132,6 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex justify-between items-center text-sm">
@@ -170,7 +169,8 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                 </div>
                 <div className="text-sm text-stone-500 flex items-center gap-1.5">
                   <span>
-                    {current.eventOccasion || 'Event'} · {format(new Date(current.eventDate + 'T12:00:00'), 'MMM d, yyyy')}
+                    {current.eventOccasion || 'Event'} ·{' '}
+                    {format(new Date(current.eventDate + 'T12:00:00'), 'MMM d, yyyy')}
                     {current.clientName && ` · ${current.clientName}`}
                   </span>
                   <ChevronRight className="h-3.5 w-3.5" />
@@ -195,7 +195,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
               <label className="block text-sm font-medium text-stone-700 mb-1">
                 {aiConfigured
                   ? 'Describe how you make it — ingredients, method, anything you remember'
-                  : 'Describe the method (AI not configured — will save as-is)'}
+                  : 'Describe the method (will save as-is)'}
               </label>
               <Textarea
                 value={rawText}
@@ -207,7 +207,8 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
               />
               {aiConfigured && (
                 <p className="text-xs text-stone-400 mt-1">
-                  AI will parse your description into a structured recipe — review it on the recipe page after saving.
+                  Your description will be parsed into a structured recipe — review it on the recipe
+                  page after saving.
                 </p>
               )}
             </div>
@@ -223,16 +224,14 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
               </button>
 
               <div className="flex gap-2">
-                <Link href={`/recipes/new?component=${current.componentId}&componentName=${encodeURIComponent(current.componentName)}&componentCategory=${encodeURIComponent(current.componentCategory)}`}>
+                <Link
+                  href={`/recipes/new?component=${current.componentId}&componentName=${encodeURIComponent(current.componentName)}&componentCategory=${encodeURIComponent(current.componentCategory)}`}
+                >
                   <Button variant="secondary" size="sm" disabled={loading}>
                     Full Editor
                   </Button>
                 </Link>
-                <Button
-                  onClick={handleSave}
-                  disabled={loading || !rawText.trim()}
-                  size="sm"
-                >
+                <Button onClick={handleSave} disabled={loading || !rawText.trim()} size="sm">
                   {loading ? 'Saving...' : aiConfigured ? 'Parse & Save →' : 'Save →'}
                 </Button>
               </div>
@@ -258,9 +257,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
             </div>
           ))}
           {queue.length > 4 && (
-            <p className="text-xs text-stone-400 px-3">
-              + {queue.length - 4} more
-            </p>
+            <p className="text-xs text-stone-400 px-3">+ {queue.length - 4} more</p>
           )}
         </div>
       )}

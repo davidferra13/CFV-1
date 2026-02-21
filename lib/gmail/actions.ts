@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { syncGmailInbox } from './sync'
-import { getGoogleAccessToken } from './google-auth'
+import { getGoogleAccessToken } from '@/lib/google/auth'
 import { sendEmail, getMessageHeaders } from './client'
 import { isCommTriageEnabled } from '@/lib/features'
 import type { SyncResult, GmailSyncLogEntry, SendMessageResult } from './types'
@@ -43,15 +43,15 @@ export async function triggerGmailSync(): Promise<SyncResult> {
 
 // ─── Get Gmail Sync History ─────────────────────────────────────────────────
 
-export async function getGmailSyncHistory(
-  limit = 20
-): Promise<GmailSyncLogEntry[]> {
+export async function getGmailSyncHistory(limit = 20): Promise<GmailSyncLogEntry[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   const { data, error } = await supabase
     .from('gmail_sync_log')
-    .select('id, gmail_message_id, from_address, subject, classification, confidence, action_taken, error, synced_at')
+    .select(
+      'id, gmail_message_id, from_address, subject, classification, confidence, action_taken, error, synced_at'
+    )
     .eq('tenant_id', user.tenantId!)
     .order('synced_at', { ascending: false })
     .limit(limit)
@@ -119,9 +119,7 @@ export async function createDraftMessage(input: {
 // Takes a draft message, approves it, and sends it through Gmail API.
 // This is the chef's "approve and send" action.
 
-export async function approveAndSendMessage(
-  messageId: string
-): Promise<SendMessageResult> {
+export async function approveAndSendMessage(messageId: string): Promise<SendMessageResult> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -193,28 +191,17 @@ export async function approveAndSendMessage(
 
       if (inq?.converted_to_event_id) {
         try {
-          const { createPaymentCheckoutUrl } = await import(
-            '@/lib/stripe/checkout'
-          )
-          paymentUrl = await createPaymentCheckoutUrl(
-            inq.converted_to_event_id,
-            user.tenantId!,
-          )
+          const { createPaymentCheckoutUrl } = await import('@/lib/stripe/checkout')
+          paymentUrl = await createPaymentCheckoutUrl(inq.converted_to_event_id, user.tenantId!)
         } catch (err) {
-          console.warn(
-            '[approveAndSendMessage] Payment link generation failed:',
-            err,
-          )
+          console.warn('[approveAndSendMessage] Payment link generation failed:', err)
         }
       }
     }
 
     emailBody = paymentUrl
       ? emailBody.replace('[PAYMENT_LINK]', paymentUrl)
-      : emailBody.replace(
-          '[PAYMENT_LINK]',
-          '(payment link will be sent separately)',
-        )
+      : emailBody.replace('[PAYMENT_LINK]', '(payment link will be sent separately)')
 
     // Persist the resolved body so the message record has the actual link
     await supabase
@@ -284,7 +271,10 @@ export async function approveAndSendMessage(
         actorId: user.id,
       })
     } catch (intakeErr) {
-      console.error('[approveAndSendMessage] Outbound communication intake failed (non-fatal):', intakeErr)
+      console.error(
+        '[approveAndSendMessage] Outbound communication intake failed (non-fatal):',
+        intakeErr
+      )
     }
   }
 
@@ -300,17 +290,12 @@ export async function approveAndSendMessage(
     const updatePayload: Record<string, unknown> = {
       next_action_required: 'Awaiting client reply',
       next_action_by: 'client',
-      follow_up_due_at: new Date(
-        Date.now() + 48 * 60 * 60 * 1000,
-      ).toISOString(),
+      follow_up_due_at: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
     }
 
     // Auto-advance: new → awaiting_client, awaiting_chef → awaiting_client
     // DB trigger auto-logs to inquiry_state_transitions
-    if (
-      currentInquiry?.status === 'new' ||
-      currentInquiry?.status === 'awaiting_chef'
-    ) {
+    if (currentInquiry?.status === 'new' || currentInquiry?.status === 'awaiting_chef') {
       updatePayload.status = 'awaiting_client'
     }
 

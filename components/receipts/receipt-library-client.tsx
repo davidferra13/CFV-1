@@ -276,7 +276,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
             <div className="flex gap-2">
               {receipt.uploadStatus === 'pending' && (
                 <Button size="sm" variant="secondary" onClick={handleRunOCR} disabled={processing}>
-                  {processing ? 'Extracting…' : 'Extract with AI'}
+                  {processing ? 'Extracting…' : 'Auto-Extract'}
                 </Button>
               )}
               {receipt.uploadStatus === 'extracted' && lineItems.length > 0 && (

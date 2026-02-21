@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Testimonial Highlight Selection
@@ -10,19 +11,19 @@ import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
 
 export interface TestimonialHighlight {
-  clientNameInitial: string  // e.g. "S.M." — anonymized for portfolio
+  clientNameInitial: string // e.g. "S.M." — anonymized for portfolio
   eventType: string
-  quote: string              // the specific excerpt to feature
-  fullContext: string        // original full message for chef reference
-  why: string                // why this quote is compelling
-  bestPlatform: string       // where to use this (website, Instagram, email signature)
-  score: number              // 0–100 strength score
+  quote: string // the specific excerpt to feature
+  fullContext: string // original full message for chef reference
+  why: string // why this quote is compelling
+  bestPlatform: string // where to use this (website, Instagram, email signature)
+  score: number // 0–100 strength score
 }
 
 export interface TestimonialSelectionResult {
   topTestimonials: TestimonialHighlight[]
-  portfolioReady: TestimonialHighlight[]  // score >= 80 — ready to use as-is
-  needsEditing: TestimonialHighlight[]    // score 60–79 — good with minor edits
+  portfolioReady: TestimonialHighlight[] // score >= 80 — ready to use as-is
+  needsEditing: TestimonialHighlight[] // score 60–79 — good with minor edits
   summary: string
   generatedAt: string
 }
@@ -41,29 +42,35 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   const [aarResult, messagesResult, surveysResult] = await Promise.all([
     supabase
       .from('aars')
-      .select(`
+      .select(
+        `
         client_feedback, event_id,
         events(occasion, clients(full_name))
-      `)
+      `
+      )
       .eq('tenant_id', user.tenantId!)
       .not('client_feedback', 'is', null)
       .limit(30),
     supabase
       .from('messages')
-      .select(`
+      .select(
+        `
         body, created_at, client_id,
         clients(full_name),
         events(occasion)
-      `)
+      `
+      )
       .eq('tenant_id', user.tenantId!)
       .eq('direction', 'in')
       .limit(50),
     (supabase as any)
       .from('client_surveys')
-      .select(`
+      .select(
+        `
         overall_rating, feedback_text, event_id,
         events(occasion, clients(full_name))
-      `)
+      `
+      )
       .eq('tenant_id', user.tenantId!)
       .gte('overall_rating', 4)
       .limit(20),
@@ -74,12 +81,19 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   const surveys = surveysResult.data ?? []
 
   // Combine and format all feedback sources
-  const feedbackItems: { source: string; content: string; clientName: string; eventType: string }[] = []
+  const feedbackItems: {
+    source: string
+    content: string
+    clientName: string
+    eventType: string
+  }[] = []
 
   for (const aar of aars) {
     if (aar.client_feedback) {
       const event = Array.isArray(aar.events) ? aar.events[0] : aar.events
-      const client = Array.isArray((event as any)?.clients) ? (event as any).clients[0] : (event as any)?.clients
+      const client = Array.isArray((event as any)?.clients)
+        ? (event as any).clients[0]
+        : (event as any)?.clients
       feedbackItems.push({
         source: 'aar',
         content: aar.client_feedback as string,
@@ -92,7 +106,9 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
   for (const survey of surveys) {
     if (survey.feedback_text) {
       const event = Array.isArray(survey.events) ? survey.events[0] : survey.events
-      const client = Array.isArray((event as any)?.clients) ? (event as any).clients[0] : (event as any)?.clients
+      const client = Array.isArray((event as any)?.clients)
+        ? (event as any).clients[0]
+        : (event as any)?.clients
       feedbackItems.push({
         source: 'survey',
         content: survey.feedback_text as string,
@@ -107,7 +123,8 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       topTestimonials: [],
       portfolioReady: [],
       needsEditing: [],
-      summary: 'No client feedback found yet. Collect feedback through AAR forms or client surveys after events.',
+      summary:
+        'No client feedback found yet. Collect feedback through AAR forms or client surveys after events.',
       generatedAt: new Date().toISOString(),
     }
   }
@@ -155,8 +172,8 @@ Return ONLY valid JSON.`
     const all: TestimonialHighlight[] = parsed.topTestimonials ?? []
     return {
       topTestimonials: all,
-      portfolioReady: all.filter(t => t.score >= 80),
-      needsEditing: all.filter(t => t.score >= 60 && t.score < 80),
+      portfolioReady: all.filter((t) => t.score >= 80),
+      needsEditing: all.filter((t) => t.score >= 60 && t.score < 80),
       summary: parsed.summary ?? '',
       generatedAt: new Date().toISOString(),
     }

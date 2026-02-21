@@ -1,11 +1,13 @@
 // Natural Language Event Parser
-// Uses Google Gemini to extract structured event data from free-form text.
+// Uses local Ollama to extract structured event data from free-form text.
+// PRIVACY: Contains client_name and financial data — must stay local.
 // AI policy compliant: output is a draft — never auto-saved. Chef must confirm.
 
 'use server'
 
 import { z } from 'zod'
-import { parseWithAI } from '@/lib/ai/parse'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 // ── Schema ───────────────────────────────────────────────────────────────────
 
@@ -18,12 +20,23 @@ const ParsedEventDraftSchema = z.object({
   occasion: z.string().nullable().describe('e.g. "Birthday Dinner", "Corporate Event"'),
 
   // Location — free-form description, chef fills details later
-  location_description: z.string().nullable().describe('Address or venue description from the text'),
+  location_description: z
+    .string()
+    .nullable()
+    .describe('Address or venue description from the text'),
 
   // Financials — parse dollar amounts to cents (integer)
-  quoted_price_cents: z.number().int().nonnegative().nullable()
+  quoted_price_cents: z
+    .number()
+    .int()
+    .nonnegative()
+    .nullable()
     .describe('Quoted total price in cents. "$2,800" → 280000'),
-  deposit_amount_cents: z.number().int().nonnegative().nullable()
+  deposit_amount_cents: z
+    .number()
+    .int()
+    .nonnegative()
+    .nullable()
     .describe('Deposit amount in cents if mentioned'),
 
   // Extra context
@@ -31,9 +44,9 @@ const ParsedEventDraftSchema = z.object({
   notes: z.string().nullable().describe('Any other details not captured above'),
 
   // AI confidence feedback
-  confidence_notes: z.string()
-    .describe('Brief note about uncertain fields or assumptions made'),
-  uncertain_fields: z.array(z.string())
+  confidence_notes: z.string().describe('Brief note about uncertain fields or assumptions made'),
+  uncertain_fields: z
+    .array(z.string())
     .describe('List of field names the AI is not confident about'),
 })
 
@@ -69,9 +82,10 @@ export async function parseEventFromText(
   }
 
   try {
-    const draft = await parseWithAI(SYSTEM_PROMPT, rawText, ParsedEventDraftSchema)
+    const draft = await parseWithOllama(SYSTEM_PROMPT, rawText, ParsedEventDraftSchema)
     return { draft }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[parseEventFromText] Error:', err)
     return {
       draft: null,

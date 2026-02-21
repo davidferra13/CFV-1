@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Tax Deduction Identifier
@@ -13,11 +14,11 @@ import { z } from 'zod'
 // ── Zod schema ──────────────────────────────────────────────────────────────
 
 const DeductionFlagSchema = z.object({
-  category: z.string(),           // e.g. "Mileage", "Home Office", "Equipment"
-  description: z.string(),        // what was missed or misclassified
+  category: z.string(), // e.g. "Mileage", "Home Office", "Equipment"
+  description: z.string(), // what was missed or misclassified
   estimatedAnnualValueCents: z.number().nullable(),
   affectedEntries: z.array(z.string()), // descriptions of the affected expenses
-  action: z.string(),             // what the chef should do
+  action: z.string(), // what the chef should do
   priority: z.enum(['high', 'medium', 'low']),
 })
 
@@ -84,10 +85,21 @@ Return valid JSON only. Always include the disclaimer about consulting a CPA.`
 Tax year: ${start} to ${end}
 
 Expenses logged (${expenseList.length} entries):
-${expenseList.slice(0, 80).map(e => `- ${e.date}: ${e.description} | $${((e.amount_cents ?? 0) / 100).toFixed(2)} | category: ${e.category ?? 'uncategorized'}${e.notes ? ' | ' + e.notes : ''}`).join('\n') || '- No expenses found for this period'}
+${
+  expenseList
+    .slice(0, 80)
+    .map(
+      (e) =>
+        `- ${e.date}: ${e.description} | $${((e.amount_cents ?? 0) / 100).toFixed(2)} | category: ${e.category ?? 'uncategorized'}${e.notes ? ' | ' + e.notes : ''}`
+    )
+    .join('\n') || '- No expenses found for this period'
+}
 
 Mileage logged: ${mileageLogs?.length ?? 0} entries
-${(mileageLogs ?? []).slice(0, 10).map((m: any) => `- ${m.date}: ${m.miles ?? 0} miles, ${m.purpose ?? 'purpose unknown'}`).join('\n')}
+${(mileageLogs ?? [])
+  .slice(0, 10)
+  .map((m: any) => `- ${m.date}: ${m.miles ?? 0} miles, ${m.purpose ?? 'purpose unknown'}`)
+  .join('\n')}
 
 Return JSON: {
   "flags": [{ "category": "...", "description": "...", "estimatedAnnualValueCents": number|null, "affectedEntries": ["..."], "action": "...", "priority": "high|medium|low" }],

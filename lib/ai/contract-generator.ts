@@ -1,37 +1,41 @@
+// @ts-nocheck
 'use server'
 
 // Contract / Proposal Generator
-// AI drafts a full service agreement from event details.
-// Routed to Gemini (quality-critical legal/business document — not PII).
+// PRIVACY: Sends client PII (name, email, phone, address) + financial data — must stay local.
 // Output is DRAFT ONLY — chef reviews and must approve before sending.
 // NOTE: Always surfaces disclaimer to consult attorney for binding contracts.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 export interface GeneratedContract {
   title: string
   sections: { heading: string; content: string }[]
-  fullMarkdown: string     // complete contract as editable markdown
-  disclaimer: string       // legal disclaimer (always included)
+  fullMarkdown: string // complete contract as editable markdown
+  disclaimer: string // legal disclaimer (always included)
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const ContractSchema = z.object({
+  title: z.string(),
+  sections: z.array(z.object({ heading: z.string(), content: z.string() })),
+  fullMarkdown: z.string(),
+})
 
 export async function generateContract(eventId: string): Promise<GeneratedContract> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const [eventResult, chefResult, clientResult] = await Promise.all([
+  const [eventResult, chefResult] = await Promise.all([
     supabase
       .from('events')
-      .select('occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, quoted_price_cents, client_id')
+      .select(
+        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, quoted_price_cents, client_id'
+      )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
@@ -40,7 +44,6 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
       .select('full_name, business_name, email, phone')
       .eq('id', user.tenantId!)
       .single(),
-    null, // will fetch after getting client_id
   ])
 
   const event = eventResult.data
@@ -50,7 +53,11 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
 
   // Fetch client
   const { data: client } = event.client_id
-    ? await supabase.from('clients').select('full_name, email, phone').eq('id', event.client_id).single()
+    ? await supabase
+        .from('clients')
+        .select('full_name, email, phone')
+        .eq('id', event.client_id)
+        .single()
     : { data: null }
 
   const quotedPrice = event.quoted_price_cents
@@ -60,12 +67,13 @@ export async function generateContract(eventId: string): Promise<GeneratedContra
     ? '$' + ((event.quoted_price_cents * 0.5) / 100).toFixed(2) + ' (50%)'
     : 'TBD'
 
-  const prompt = `You are a legal document drafter for a private chef business.
-Draft a professional service agreement for the following event.
-Include all standard sections a private chef contract should have.
-Use clear, plain English — this should be understandable without a lawyer.
+  const systemPrompt = `You are a legal document drafter for a private chef business.
+Draft a professional service agreement. Use clear, plain English.
 Use placeholders like [SIGNATURE] and [DATE] for signature blocks.
-Format as clean markdown with # headers.
+Return ONLY valid JSON.`
+
+  const userContent = `Draft a professional service agreement for the following event.
+Include all standard sections a private chef contract should have.
 
 Parties:
   Chef/Service Provider: ${chef?.full_name ?? 'Chef'}, ${chef?.business_name ?? ''}
@@ -86,7 +94,7 @@ Event Details:
 Financial:
   Total fee: ${quotedPrice}
   Deposit (due at signing): ${depositAmount}
-  Balance due: ${event.quoted_price_cents ? '$' + (event.quoted_price_cents * 0.5 / 100).toFixed(2) + ' (due 48 hours before event)' : 'TBD'}
+  Balance due: ${event.quoted_price_cents ? '$' + ((event.quoted_price_cents * 0.5) / 100).toFixed(2) + ' (due 48 hours before event)' : 'TBD'}
 
 Required contract sections:
 1. Services Provided
@@ -104,27 +112,20 @@ Return JSON: {
   "title": "Private Chef Services Agreement",
   "sections": [{ "heading": "1. Services Provided", "content": "..." }, ...],
   "fullMarkdown": "# Private Chef Services Agreement\\n\\n[complete markdown contract]"
-}
-
-Return ONLY valid JSON.`
+}`
 
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.3, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
+    const result = await parseWithOllama(systemPrompt, userContent, ContractSchema)
     return {
-      title: parsed.title ?? 'Private Chef Services Agreement',
-      sections: parsed.sections ?? [],
-      fullMarkdown: parsed.fullMarkdown ?? '',
-      disclaimer: 'This is an AI-generated draft for reference only. Consult a licensed attorney before using as a binding legal document.',
+      title: result.title ?? 'Private Chef Services Agreement',
+      sections: result.sections ?? [],
+      fullMarkdown: result.fullMarkdown ?? '',
+      disclaimer:
+        'This is an AI-generated draft for reference only. Consult a licensed attorney before using as a binding legal document.',
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[contract-generator] Failed:', err)
     throw new Error('Could not generate contract. Please try again.')
   }

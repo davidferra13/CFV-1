@@ -92,7 +92,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
 
       await linkRecipeToComponent(recipeResult.recipe.id, comp.id)
 
-      setComponents(prev => prev.filter(c => c.id !== comp.id))
+      setComponents((prev) => prev.filter((c) => c.id !== comp.id))
       setQuickCaptureId(null)
       setRawText('')
       setSuccess(`"${recipeName}" saved and linked`)
@@ -115,7 +115,8 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
         <div className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
           <span className="font-semibold text-amber-900">
-            {components.length} dish{components.length !== 1 ? 'es' : ''} from this event {components.length !== 1 ? 'have' : 'has'} no recipe recorded
+            {components.length} dish{components.length !== 1 ? 'es' : ''} from this event{' '}
+            {components.length !== 1 ? 'have' : 'has'} no recipe recorded
           </span>
           <Badge variant="warning">{components.length}</Badge>
         </div>
@@ -142,7 +143,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
           {success && <Alert variant="success">{success}</Alert>}
 
           <p className="text-xs text-stone-500">
-            Record while the dinner is fresh. Paste a quick description — AI will structure it.
+            Record while the dinner is fresh. Paste a quick description — we'll structure it.
           </p>
 
           {components.map((comp) => (
@@ -150,9 +151,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="font-medium text-stone-900 truncate">{comp.name}</span>
-                  {comp.category && (
-                    <Badge variant="default">{comp.category}</Badge>
-                  )}
+                  {comp.category && <Badge variant="default">{comp.category}</Badge>}
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <Button

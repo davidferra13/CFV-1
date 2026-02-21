@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import { CookieConsent } from '@/components/ui/cookie-consent'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { SwRegister } from '@/components/pwa/sw-register'
+import { HolidayOverlay } from '@/components/ui/holiday-overlay'
 import './globals.css'
 
 const inter = Inter({
@@ -50,6 +51,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <CookieConsent />
         <PresenceBeacon />
         <SwRegister />
+        <HolidayOverlay />
       </body>
     </html>
   )

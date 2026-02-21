@@ -85,8 +85,8 @@ export function HistoricalFindingsList({
           {activeTab === 'pending'
             ? 'No pending findings yet. The scan will surface potential inquiries as it progresses.'
             : activeTab === 'imported'
-            ? 'No imported findings yet.'
-            : 'No dismissed findings.'}
+              ? 'No imported findings yet.'
+              : 'No dismissed findings.'}
         </div>
       ) : (
         <div className="space-y-3">
@@ -116,7 +116,10 @@ function FindingCard({
   onActionDone: () => void
 }) {
   const [isPending, startTransition] = useTransition()
-  const [result, setResult] = useState<{ type: 'imported' | 'dismissed'; inquiryId?: string } | null>(null)
+  const [result, setResult] = useState<{
+    type: 'imported' | 'dismissed'
+    inquiryId?: string
+  } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   function handleImport() {
@@ -185,12 +188,8 @@ function FindingCard({
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-stone-900 truncate">
-              {senderDisplay}
-            </span>
-            {dateDisplay && (
-              <span className="text-xs text-stone-400 shrink-0">{dateDisplay}</span>
-            )}
+            <span className="text-sm font-medium text-stone-900 truncate">{senderDisplay}</span>
+            {dateDisplay && <span className="text-xs text-stone-400 shrink-0">{dateDisplay}</span>}
           </div>
           {finding.subject && (
             <p className="text-sm text-stone-600 mt-0.5 truncate">{finding.subject}</p>
@@ -211,9 +210,7 @@ function FindingCard({
 
       {/* AI reasoning (collapsed) */}
       {finding.aiReasoning && (
-        <p className="text-xs text-stone-400 italic mb-3">
-          AI: {finding.aiReasoning}
-        </p>
+        <p className="text-xs text-stone-400 italic mb-3">{finding.aiReasoning}</p>
       )}
 
       {error && <p className="text-xs text-red-600 mb-2">{error}</p>}

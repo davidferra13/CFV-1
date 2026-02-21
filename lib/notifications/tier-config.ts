@@ -27,61 +27,70 @@ export type ChannelSet = {
 
 export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
   // ── Critical ── SMS + Push + Email
-  new_inquiry:              'critical',
-  wix_submission:           'critical',
-  payment_received:         'critical',
-  payment_failed:           'critical',
-  dispute_created:          'critical',
-  system_alert:             'critical',
+  new_inquiry: 'critical',
+  wix_submission: 'critical',
+  payment_received: 'critical',
+  payment_failed: 'critical',
+  dispute_created: 'critical',
+  system_alert: 'critical',
 
   // ── Alert ── Push + Email
-  quote_accepted:           'alert',
-  quote_rejected:           'alert',
-  proposal_accepted:        'alert',
-  event_paid:               'alert',
-  event_cancelled:          'alert',
-  new_message:              'alert',
-  inquiry_reply:            'alert',
+  quote_accepted: 'alert',
+  quote_rejected: 'alert',
+  proposal_accepted: 'alert',
+  event_paid: 'alert',
+  event_cancelled: 'alert',
+  new_message: 'alert',
+  inquiry_reply: 'alert',
 
   // ── Info ── Email only
-  follow_up_due:            'info',
-  client_signup:            'info',
-  review_submitted:         'info',
-  quote_expiring:           'info',
-  inquiry_expired:          'info',
-  event_completed:          'info',
-  refund_processed:         'info',
+  follow_up_due: 'info',
+  client_signup: 'info',
+  review_submitted: 'info',
+  quote_expiring: 'info',
+  inquiry_expired: 'info',
+  event_completed: 'info',
+  refund_processed: 'info',
 
   // ── Intent signals ── Alert tier, but email is suppressed (see EMAIL_SUPPRESSED_ACTIONS)
   // These are time-sensitive in-app nudges; email would be noise.
-  client_on_payment_page:   'alert',
-  client_viewed_quote:      'alert',
+  client_on_payment_page: 'alert',
+  client_viewed_quote: 'alert',
   quote_viewed_after_delay: 'alert',
-  client_viewed_proposal:   'alert',
+  client_viewed_proposal: 'alert',
 
   // ── Payments ── Critical
-  gift_card_purchased:      'critical',
+  gift_card_purchased: 'critical',
 
   // ── Client-facing notifications ── Alert for actionable, Info for reminders
-  quote_sent_to_client:        'alert',
-  event_proposed_to_client:    'alert',
-  event_confirmed_to_client:   'alert',
-  event_reminder_7d:           'info',
-  event_reminder_2d:           'info',
-  event_reminder_1d:           'alert',
-  quote_expiring_soon:         'alert',
-  photos_ready:                'info',
+  quote_sent_to_client: 'alert',
+  event_proposed_to_client: 'alert',
+  event_confirmed_to_client: 'alert',
+  event_reminder_7d: 'info',
+  event_reminder_2d: 'info',
+  event_reminder_1d: 'alert',
+  quote_expiring_soon: 'alert',
+  photos_ready: 'info',
 
   // ── Loyalty ── Alert (chef must deliver the reward)
-  reward_redeemed_by_client:   'alert',
+  reward_redeemed_by_client: 'alert',
+
+  // ── Payment reminders ── Alert (balance due / overdue)
+  payment_due_approaching: 'alert',
+  payment_overdue: 'alert',
+
+  // ── Goals ── Info (nudges & digests, not urgent)
+  goal_nudge: 'info',
+  goal_milestone: 'alert',
+  goal_weekly_digest: 'info',
 }
 
 // ─── Default Channels per Tier ───────────────────────────────────────────────
 
 export const TIER_CHANNEL_DEFAULTS: Record<NotificationTier, ChannelSet> = {
-  critical: { email: true,  push: true,  sms: true  },
-  alert:    { email: true,  push: true,  sms: false },
-  info:     { email: true,  push: false, sms: false },
+  critical: { email: true, push: true, sms: true },
+  alert: { email: true, push: true, sms: false },
+  info: { email: true, push: false, sms: false },
 }
 
 // ─── Email Suppression List ───────────────────────────────────────────────────
@@ -99,14 +108,14 @@ export const EMAIL_SUPPRESSED_ACTIONS = new Set<NotificationAction>([
 
 export const TIER_LABELS: Record<NotificationTier, string> = {
   critical: 'Critical',
-  alert:    'Alert',
-  info:     'Info',
+  alert: 'Alert',
+  info: 'Info',
 }
 
 export const TIER_DESCRIPTIONS: Record<NotificationTier, string> = {
   critical: 'SMS + Push + Email — new inquiries, payments, disputes',
-  alert:    'Push + Email — quote responses, event changes, new messages',
-  info:     'Email only — follow-ups, reviews, routine updates',
+  alert: 'Push + Email — quote responses, event changes, new messages',
+  info: 'Email only — follow-ups, reviews, routine updates',
 }
 
 // ─── Helper ───────────────────────────────────────────────────────────────────

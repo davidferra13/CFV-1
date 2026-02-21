@@ -12,7 +12,10 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { importTakeAChefBooking, type TakeAChefImportResult } from '@/lib/ai/import-take-a-chef-action'
+import {
+  importTakeAChefBooking,
+  type TakeAChefImportResult,
+} from '@/lib/ai/import-take-a-chef-action'
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -21,7 +24,11 @@ type Phase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
 // ─── Helpers ──────────────────────────────────────────────────────────────
 
 function formatCents(cents: number): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(cents / 100)
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(cents / 100)
 }
 
 function ConfidenceBadge({ confidence }: { confidence: string }) {
@@ -31,8 +38,10 @@ function ConfidenceBadge({ confidence }: { confidence: string }) {
     low: 'bg-red-100 text-red-800',
   }
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[confidence] ?? colors.medium}`}>
-      AI Confidence: {confidence}
+    <span
+      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[confidence] ?? colors.medium}`}
+    >
+      Confidence: {confidence}
     </span>
   )
 }
@@ -108,8 +117,8 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
             <div>
               <p className="font-semibold text-green-900 text-lg">Take a Chef Booking Captured</p>
               <p className="text-green-700 text-sm mt-1">
-                {result.clientCreated ? 'New client created' : 'Existing client matched'} ·
-                Inquiry and draft event created · Tagged as Take a Chef source
+                {result.clientCreated ? 'New client created' : 'Existing client matched'} · Inquiry
+                and draft event created · Tagged as Take a Chef source
               </p>
               {result.commissionExpenseId && (
                 <p className="text-emerald-600 text-sm mt-0.5">
@@ -117,9 +126,7 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
                 </p>
               )}
               {result.warnings && result.warnings.length > 0 && (
-                <p className="text-amber-600 text-sm mt-1">
-                  AI note: {result.warnings.join('; ')}
-                </p>
+                <p className="text-amber-600 text-sm mt-1">Note: {result.warnings.join('; ')}</p>
               )}
             </div>
           </div>
@@ -149,7 +156,8 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
     <div className="space-y-5">
       {!aiConfigured && (
         <Alert variant="warning" title="Parsing Not Configured">
-          Smart parsing requires a Gemini API key. You can still use the manual capture form at the bottom.
+          Auto parsing requires configuration. You can still use the manual capture form at the
+          bottom.
         </Alert>
       )}
 
@@ -158,7 +166,9 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
           Paste your Take a Chef booking notification
         </label>
         <p className="text-xs text-stone-500">
-          Copy the booking confirmation email or message you received from Take a Chef and paste it below. The AI will extract the client name, date, guest count, location, occasion, and dietary notes.
+          Copy the booking confirmation email or message you received from Take a Chef and paste it
+          below. This will extract the client name, date, guest count, location, occasion, and
+          dietary notes.
         </p>
         <Textarea
           value={rawText}
@@ -183,7 +193,9 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
                 max={50}
                 step={1}
                 value={commissionPercent}
-                onChange={(e) => setCommissionPercent(Math.max(0, Math.min(50, Number(e.target.value))))}
+                onChange={(e) =>
+                  setCommissionPercent(Math.max(0, Math.min(50, Number(e.target.value))))
+                }
                 className="w-20 px-3 py-1.5 border border-stone-200 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-500"
                 disabled={phase === 'saving'}
               />
@@ -202,7 +214,8 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
           </label>
         </div>
         <p className="text-xs text-stone-400 mt-2">
-          If a price is detected in the notification, we&apos;ll automatically log the commission as a professional services expense tied to this event.
+          If a price is detected in the notification, we&apos;ll automatically log the commission as
+          a professional services expense tied to this event.
         </p>
       </Card>
 
@@ -217,19 +230,18 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
           onClick={phase === 'review' ? handleSave : handleParse}
           disabled={!rawText.trim() || phase === 'parsing' || phase === 'saving' || !aiConfigured}
         >
-          {phase === 'parsing' ? 'Parsing...' :
-           phase === 'review' ? 'Confirm & Save' :
-           phase === 'saving' ? 'Saving...' :
-           'Parse & Review'}
+          {phase === 'parsing'
+            ? 'Parsing...'
+            : phase === 'review'
+              ? 'Confirm & Save'
+              : phase === 'saving'
+                ? 'Saving...'
+                : 'Parse & Review'}
         </Button>
 
         {/* If AI isn't configured or user wants to skip review, just save directly */}
         {rawText.trim() && phase === 'input' && aiConfigured && (
-          <Button
-            variant="secondary"
-            onClick={handleSave}
-            disabled={phase === 'saving'}
-          >
+          <Button variant="secondary" onClick={handleSave} disabled={phase === 'saving'}>
             Save Directly (No Review)
           </Button>
         )}

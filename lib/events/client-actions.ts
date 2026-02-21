@@ -22,10 +22,12 @@ export async function getClientEvents(options?: { pastLimit?: number }) {
 
   const { data: events, error } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       *,
       client:clients!inner(id, full_name, email)
-    `)
+    `
+    )
     .eq('client_id', user.entityId)
     .not('status', 'eq', 'draft')
     .order('event_date', { ascending: false })
@@ -36,11 +38,11 @@ export async function getClientEvents(options?: { pastLimit?: number }) {
   }
 
   const all = events ?? []
-  const upcoming = all.filter(e =>
-    ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(e.status)
-  ).sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
-  const completed = all.filter(e => e.status === 'completed')
-  const cancelled = all.filter(e => e.status === 'cancelled')
+  const upcoming = all
+    .filter((e) => ['proposed', 'accepted', 'paid', 'confirmed', 'in_progress'].includes(e.status))
+    .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
+  const completed = all.filter((e) => e.status === 'completed')
+  const cancelled = all.filter((e) => e.status === 'cancelled')
 
   const pastTotalCount = completed.length
   const pastSlice = Number.isFinite(pastLimit) ? completed.slice(0, pastLimit) : completed
@@ -65,14 +67,18 @@ export async function getClientEventById(eventId: string) {
   // Fetch event with client data
   const { data: event, error } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       *,
       client:clients!inner(id, full_name, email, phone)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('client_id', user.entityId)
     .not('status', 'eq', 'draft')
     .single()
+  // Note: pre_event_checklist_confirmed_at, client_journey_note, and menu_approval_status
+  // are included via the '*' select above (added by migration 20260322000001)
 
   if (error) {
     console.error('[getClientEventById] Error:', error)
@@ -106,25 +112,44 @@ export async function getClientEventById(eventId: string) {
     .eq('event_id', eventId)
     .order('transitioned_at', { ascending: true })
 
-  // Check if any photos exist (for journey stepper "Photos Ready" step)
+  // Check if any photos exist (for journey stepper)
   const { count: photoCount } = await supabase
     .from('event_photos')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)
     .is('deleted_at', null)
 
+  // Check if a signed contract exists for this event
+  const { data: contract } = await supabase
+    .from('event_contracts')
+    .select('id, status, signed_at')
+    .eq('event_id', eventId)
+    .not('status', 'eq', 'voided')
+    .maybeSingle()
+
+  // Check if a review was submitted for this event
+  const { count: reviewCount } = await supabase
+    .from('client_reviews')
+    .select('id', { count: 'exact', head: true })
+    .eq('event_id', eventId)
+
   return {
     ...event,
     menus: menus || [],
     ledgerEntries: ledgerEntries || [],
-    financial: financial ? {
-      totalPaidCents: financial.total_paid_cents ?? 0,
-      outstandingBalanceCents: financial.outstanding_balance_cents ?? 0,
-      quotedPriceCents: financial.quoted_price_cents ?? 0,
-      paymentStatus: financial.payment_status
-    } : null,
+    financial: financial
+      ? {
+          totalPaidCents: financial.total_paid_cents ?? 0,
+          outstandingBalanceCents: financial.outstanding_balance_cents ?? 0,
+          quotedPriceCents: financial.quoted_price_cents ?? 0,
+          paymentStatus: financial.payment_status,
+        }
+      : null,
     transitions: (transitions || []) as Array<{ to_status: string; transitioned_at: string }>,
     hasPhotos: (photoCount ?? 0) > 0,
+    hasContract: !!contract,
+    contractSignedAt: contract?.signed_at ?? null,
+    hasReview: (reviewCount ?? 0) > 0,
   }
 }
 

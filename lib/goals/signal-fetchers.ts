@@ -119,8 +119,10 @@ export async function fetchTrailingExpenseRatioBp(
       .gte('event_date', cutoffStr),
   ])
 
-  const totalExpenses = ((expenses || []) as Array<{ amount_cents: number | null }>)
-    .reduce((sum, e) => sum + (e.amount_cents ?? 0), 0)
+  const totalExpenses = ((expenses || []) as Array<{ amount_cents: number | null }>).reduce(
+    (sum, e) => sum + (e.amount_cents ?? 0),
+    0
+  )
 
   const eventIds = ((events || []) as Array<{ id: string }>).map((e) => e.id)
   if (eventIds.length === 0 || totalExpenses === 0) return 0
@@ -131,9 +133,100 @@ export async function fetchTrailingExpenseRatioBp(
     .eq('tenant_id', tenantId)
     .in('event_id', eventIds)
 
-  const totalRevenue = ((summaries || []) as Array<{ net_revenue_cents: number | null }>)
-    .reduce((sum, s) => sum + (s.net_revenue_cents ?? 0), 0)
+  const totalRevenue = ((summaries || []) as Array<{ net_revenue_cents: number | null }>).reduce(
+    (sum, s) => sum + (s.net_revenue_cents ?? 0),
+    0
+  )
 
   if (totalRevenue <= 0) return 0
   return Math.round((totalExpenses / totalRevenue) * 10000)
+}
+
+// ── Repeat booking rate ───────────────────────────────────────────────────────
+// Returns the % of clients who have completed 2+ events with this chef,
+// expressed as basis points (e.g. 4000 = 40.00%).
+
+export async function fetchRepeatBookingRateBp(
+  supabase: SupabaseClient,
+  tenantId: string
+): Promise<number> {
+  // Get all clients and count how many have 2+ completed events
+  const { data: clientEvents } = await (supabase as any)
+    .from('events')
+    .select('client_id')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'completed')
+    .not('client_id', 'is', null)
+
+  if (!clientEvents || clientEvents.length === 0) return 0
+
+  const rows = clientEvents as Array<{ client_id: string }>
+  const countByClient: Record<string, number> = {}
+  for (const row of rows) {
+    countByClient[row.client_id] = (countByClient[row.client_id] ?? 0) + 1
+  }
+
+  const total = Object.keys(countByClient).length
+  if (total === 0) return 0
+  const repeaters = Object.values(countByClient).filter((c) => c >= 2).length
+  return Math.round((repeaters / total) * 10000)
+}
+
+// ── Total reviews ─────────────────────────────────────────────────────────────
+// Returns total external reviews synced for this tenant.
+
+export async function fetchTotalReviews(
+  supabase: SupabaseClient,
+  tenantId: string
+): Promise<number> {
+  const { count } = await (supabase as any)
+    .from('external_reviews')
+    .select('id', { count: 'exact', head: true })
+    .eq('tenant_id', tenantId)
+
+  return count ?? 0
+}
+
+// ── Review average ────────────────────────────────────────────────────────────
+// Returns average rating from external_reviews, expressed in basis points
+// (e.g. 450 = 4.50 stars). Returns 0 if no reviews.
+
+export async function fetchReviewAverageBp(
+  supabase: SupabaseClient,
+  tenantId: string
+): Promise<number> {
+  const { data } = await (supabase as any)
+    .from('external_reviews')
+    .select('rating')
+    .eq('tenant_id', tenantId)
+    .not('rating', 'is', null)
+
+  const rows = (data || []) as Array<{ rating: number | null }>
+  const ratings = rows.map((r) => r.rating ?? 0).filter((r) => r > 0)
+  if (ratings.length === 0) return 0
+  const avg = ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+  return Math.round(avg * 100) // e.g. 4.5 → 450
+}
+
+// ── Workshops attended ────────────────────────────────────────────────────────
+// Returns the count of professional_achievements with achieve_type IN
+// ('course', 'certification') — these map to "workshop attended".
+// NOTE: professional_achievements uses chef_id, NOT tenant_id.
+// We resolve chef_id from user_roles using the admin client.
+
+export async function fetchWorkshopsAttended(
+  supabase: SupabaseClient,
+  tenantId: string,
+  start: string,
+  end: string
+): Promise<number> {
+  const { count } = await (supabase as any)
+    .from('professional_achievements')
+    .select('id', { count: 'exact', head: true })
+    .eq('chef_id', tenantId)
+    .in('achieve_type', ['course', 'certification'])
+    .gte('achieve_date', start)
+    .lte('achieve_date', end)
+
+  return count ?? 0
 }

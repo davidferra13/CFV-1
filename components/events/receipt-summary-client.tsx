@@ -20,15 +20,19 @@ function formatCents(cents: number | null | undefined): string {
 
 function ConfidenceBadge({ score }: { score: number | null }) {
   if (!score) return null
-  const label = score >= 0.8 ? 'High confidence' : score >= 0.5 ? 'Medium confidence' : 'Low confidence — review carefully'
-  const cls = score >= 0.8
-    ? 'bg-green-100 text-green-700'
-    : score >= 0.5
-    ? 'bg-amber-100 text-amber-700'
-    : 'bg-red-100 text-red-700'
-  return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cls}`}>{label}</span>
-  )
+  const label =
+    score >= 0.8
+      ? 'High confidence'
+      : score >= 0.5
+        ? 'Medium confidence'
+        : 'Low confidence — review carefully'
+  const cls =
+    score >= 0.8
+      ? 'bg-green-100 text-green-700'
+      : score >= 0.5
+        ? 'bg-amber-100 text-amber-700'
+        : 'bg-red-100 text-red-700'
+  return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cls}`}>{label}</span>
 }
 
 function LineItemRow({
@@ -49,7 +53,9 @@ function LineItemRow({
   }
 
   return (
-    <tr className={`border-b border-stone-100 last:border-0 ${item.expenseTag === 'personal' ? 'opacity-50' : ''}`}>
+    <tr
+      className={`border-b border-stone-100 last:border-0 ${item.expenseTag === 'personal' ? 'opacity-50' : ''}`}
+    >
       <td className="py-1.5 pr-3 text-sm text-stone-800">
         {editingDesc ? (
           <input
@@ -97,8 +103,8 @@ function LineItemRow({
             item.expenseTag === 'personal'
               ? 'border-stone-200 text-stone-400'
               : item.expenseTag === 'business'
-              ? 'border-green-200 text-green-700'
-              : 'border-amber-200 text-amber-700'
+                ? 'border-green-200 text-green-700'
+                : 'border-amber-200 text-amber-700'
           }`}
         >
           <option value="business">Business</option>
@@ -119,16 +125,27 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
   const [, startTransition] = useTransition()
 
   const businessTotal = lineItems
-    .filter(li => li.expenseTag === 'business')
+    .filter((li) => li.expenseTag === 'business')
     .reduce((sum, li) => sum + (li.priceCents ?? 0), 0)
   const personalTotal = lineItems
-    .filter(li => li.expenseTag === 'personal')
+    .filter((li) => li.expenseTag === 'personal')
     .reduce((sum, li) => sum + (li.priceCents ?? 0), 0)
 
   const handleLineItemUpdate = (id: string, field: string, value: string | number | null) => {
     // Optimistic update
-    setLineItems(prev =>
-      prev.map(li => li.id === id ? { ...li, [field === 'expenseTag' ? 'expenseTag' : field === 'ingredientCategory' ? 'ingredientCategory' : field]: value } : li)
+    setLineItems((prev) =>
+      prev.map((li) =>
+        li.id === id
+          ? {
+              ...li,
+              [field === 'expenseTag'
+                ? 'expenseTag'
+                : field === 'ingredientCategory'
+                  ? 'ingredientCategory'
+                  : field]: value,
+            }
+          : li
+      )
     )
     startTransition(async () => {
       await updateLineItem({
@@ -194,7 +211,9 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
                   {extraction?.storeName ?? 'Unknown Store'}
                 </h3>
                 {approved && (
-                  <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">Approved</span>
+                  <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                    Approved
+                  </span>
                 )}
                 {!approved && receipt.uploadStatus === 'extracted' && (
                   <ConfidenceBadge score={extraction?.extractionConfidence ?? null} />
@@ -202,12 +221,15 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
               </div>
               <p className="text-xs text-stone-500">
                 {extraction?.storeLocation && <span>{extraction.storeLocation} · </span>}
-                {extraction?.purchaseDate && format(new Date(extraction.purchaseDate), 'MMM d, yyyy')}
+                {extraction?.purchaseDate &&
+                  format(new Date(extraction.purchaseDate), 'MMM d, yyyy')}
                 {extraction?.paymentMethod && <span> · {extraction.paymentMethod}</span>}
               </p>
             </div>
             <div className="text-right shrink-0 ml-4">
-              <div className="text-sm font-bold text-stone-900">{formatCents(extraction?.totalCents ?? null)}</div>
+              <div className="text-sm font-bold text-stone-900">
+                {formatCents(extraction?.totalCents ?? null)}
+              </div>
               {extraction?.subtotalCents !== null && extraction?.subtotalCents !== undefined && (
                 <div className="text-xs text-stone-400">
                   subtotal {formatCents(extraction.subtotalCents)}
@@ -233,13 +255,15 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
                 <thead>
                   <tr className="border-b border-stone-200">
                     <th className="text-xs font-medium text-stone-400 pb-1 pr-3">Item</th>
-                    <th className="text-xs font-medium text-stone-400 pb-1 pr-3 text-right">Price</th>
+                    <th className="text-xs font-medium text-stone-400 pb-1 pr-3 text-right">
+                      Price
+                    </th>
                     <th className="text-xs font-medium text-stone-400 pb-1 pr-3">Category</th>
                     <th className="text-xs font-medium text-stone-400 pb-1">Tag</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {lineItems.map(item => (
+                  {lineItems.map((item) => (
                     <LineItemRow key={item.id} item={item} onUpdate={handleLineItemUpdate} />
                   ))}
                 </tbody>
@@ -250,9 +274,15 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
           {/* Totals bar */}
           {lineItems.length > 0 && (
             <div className="flex gap-4 text-xs text-stone-500 mb-3">
-              <span>Business: <span className="font-semibold text-stone-700">{formatCents(businessTotal)}</span></span>
+              <span>
+                Business:{' '}
+                <span className="font-semibold text-stone-700">{formatCents(businessTotal)}</span>
+              </span>
               {personalTotal > 0 && (
-                <span>Personal: <span className="font-semibold text-stone-500">{formatCents(personalTotal)}</span></span>
+                <span>
+                  Personal:{' '}
+                  <span className="font-semibold text-stone-500">{formatCents(personalTotal)}</span>
+                </span>
               )}
             </div>
           )}
@@ -268,7 +298,7 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
                   loading={processing}
                   disabled={processing}
                 >
-                  {processing ? 'Extracting…' : 'Extract with AI'}
+                  {processing ? 'Extracting…' : 'Auto-Extract'}
                 </Button>
               )}
               {receipt.uploadStatus === 'extracted' && lineItems.length > 0 && (
@@ -307,13 +337,13 @@ type Props = {
 
 export function ReceiptSummaryClient({ receipts, eventId }: Props) {
   const totalBusinessCents = receipts
-    .filter(r => r.uploadStatus === 'approved')
-    .flatMap(r => r.lineItems)
-    .filter(li => li.expenseTag === 'business')
+    .filter((r) => r.uploadStatus === 'approved')
+    .flatMap((r) => r.lineItems)
+    .filter((li) => li.expenseTag === 'business')
     .reduce((sum, li) => sum + (li.priceCents ?? 0), 0)
 
-  const approvedCount = receipts.filter(r => r.uploadStatus === 'approved').length
-  const pendingCount = receipts.filter(r => r.uploadStatus !== 'approved').length
+  const approvedCount = receipts.filter((r) => r.uploadStatus === 'approved').length
+  const pendingCount = receipts.filter((r) => r.uploadStatus !== 'approved').length
 
   if (receipts.length === 0) {
     return (
@@ -328,9 +358,19 @@ export function ReceiptSummaryClient({ receipts, eventId }: Props) {
       {/* Summary bar */}
       {receipts.length > 1 && (
         <div className="flex gap-6 text-sm text-stone-600 bg-stone-50 rounded-lg px-4 py-3">
-          <span><strong>{receipts.length}</strong> receipts total</span>
-          {approvedCount > 0 && <span><strong>{approvedCount}</strong> approved</span>}
-          {pendingCount > 0 && <span><strong>{pendingCount}</strong> pending review</span>}
+          <span>
+            <strong>{receipts.length}</strong> receipts total
+          </span>
+          {approvedCount > 0 && (
+            <span>
+              <strong>{approvedCount}</strong> approved
+            </span>
+          )}
+          {pendingCount > 0 && (
+            <span>
+              <strong>{pendingCount}</strong> pending review
+            </span>
+          )}
           {totalBusinessCents > 0 && (
             <span className="ml-auto">
               Total business spend: <strong>${(totalBusinessCents / 100).toFixed(2)}</strong>
@@ -340,7 +380,7 @@ export function ReceiptSummaryClient({ receipts, eventId }: Props) {
       )}
 
       {/* Receipt blocks */}
-      {receipts.map(receipt => (
+      {receipts.map((receipt) => (
         <ReceiptBlock key={receipt.id} receipt={receipt} />
       ))}
     </div>

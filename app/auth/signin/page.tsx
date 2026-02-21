@@ -5,6 +5,8 @@ import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signIn, type SignInInput } from '@/lib/auth/actions'
+import { signInWithGoogle } from '@/lib/supabase/client'
+import { Chrome } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
@@ -29,13 +31,14 @@ function SignInForm() {
   const rawSearchParams = useSearchParams()
   const searchParams = useMemo(() => rawSearchParams ?? new URLSearchParams(), [rawSearchParams])
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
 
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [formData, setFormData] = useState<SignInInput>({
     email: '',
     password: '',
-    rememberMe: true
+    rememberMe: true,
   })
   const redirectPath = safeRedirectPath(searchParams.get('redirect'))
   useEffect(() => {
@@ -63,6 +66,20 @@ function SignInForm() {
     }
   }
 
+  const handleGoogleSignIn = async () => {
+    setError(null)
+    setMessage(null)
+    setGoogleLoading(true)
+    try {
+      await signInWithGoogle()
+      // signInWithGoogle redirects, so no navigation or state change is needed here on success
+    } catch (err) {
+      const error = err as Error
+      setError(error.message)
+      setGoogleLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
@@ -78,13 +95,9 @@ function SignInForm() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {message && (
-                <Alert variant="success">{message}</Alert>
-              )}
+              {message && <Alert variant="success">{message}</Alert>}
 
-              {error && (
-                <Alert variant="error">{error}</Alert>
-              )}
+              {error && <Alert variant="error">{error}</Alert>}
 
               <Input
                 type="email"
@@ -115,29 +128,53 @@ function SignInForm() {
                   <span className="text-sm text-stone-600">Stay signed in</span>
                 </label>
 
-                <Link href="/auth/forgot-password" className="text-sm text-brand-600 hover:text-brand-700 font-medium">
+                <Link
+                  href="/auth/forgot-password"
+                  className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+                >
                   Forgot password?
                 </Link>
               </div>
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                loading={loading}
-              >
+              <Button type="submit" variant="primary" className="w-full" loading={loading}>
                 Sign In
+              </Button>
+
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-stone-500">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={handleGoogleSignIn}
+                loading={googleLoading}
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                Sign in with Google
               </Button>
 
               <div className="text-sm text-center text-stone-600">
                 Don&apos;t have an account?{' '}
-                <Link href="/auth/signup" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link
+                  href="/auth/signup"
+                  className="text-brand-600 hover:text-brand-700 font-medium"
+                >
                   Chef sign up
-                </Link>
-                {' '}or{' '}
-                <Link href="/auth/client-signup" className="text-brand-600 hover:text-brand-700 font-medium">
+                </Link>{' '}
+                or{' '}
+                <Link
+                  href="/auth/client-signup"
+                  className="text-brand-600 hover:text-brand-700 font-medium"
+                >
                   Client sign up
                 </Link>
               </div>
@@ -151,11 +188,13 @@ function SignInForm() {
 
 export default function SignInPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-surface-muted flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-surface-muted flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
+        </div>
+      }
+    >
       <SignInForm />
     </Suspense>
   )

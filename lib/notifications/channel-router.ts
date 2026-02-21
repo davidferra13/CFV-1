@@ -6,7 +6,7 @@
 // Never throws — all errors are caught and logged internally.
 //
 // Channel build status:
-//   email  ✓ Phase 2 (dispatched at call sites alongside createNotification)
+//   email  ✓ Phase 2 (Resend — generic notification template via lib/email/route-email.ts)
 //   push   ✓ Phase 3 (sends to all active push_subscriptions for the recipient)
 //   sms    ✓ Phase 5 (Twilio REST, rate-limited by sms_send_log)
 //
@@ -24,11 +24,12 @@ import {
 } from '@/lib/push/subscriptions'
 import { sendSms, formatSmsBody } from '@/lib/sms/send'
 import { isSmsAllowed, recordSmsSent } from '@/lib/sms/rate-limit'
+import { routeEmailByAction } from '@/lib/email/route-email'
 
 export type RouteInput = {
   notificationId: string
   tenantId: string
-  recipientId: string   // auth_user_id of the recipient
+  recipientId: string // auth_user_id of the recipient
   action: NotificationAction
   title: string
   body?: string
@@ -55,9 +56,7 @@ export async function routeNotification(input: RouteInput): Promise<void> {
         })
       )
     } else {
-      sends.push(
-        logDelivery(notificationId, tenantId, 'email', 'skipped').catch(() => {})
-      )
+      sends.push(logDelivery(notificationId, tenantId, 'email', 'skipped').catch(() => {}))
     }
 
     if (channels.push) {
@@ -67,9 +66,7 @@ export async function routeNotification(input: RouteInput): Promise<void> {
         })
       )
     } else {
-      sends.push(
-        logDelivery(notificationId, tenantId, 'push', 'skipped').catch(() => {})
-      )
+      sends.push(logDelivery(notificationId, tenantId, 'push', 'skipped').catch(() => {}))
     }
 
     if (channels.sms && channels.smsPhone) {
@@ -79,9 +76,7 @@ export async function routeNotification(input: RouteInput): Promise<void> {
         })
       )
     } else {
-      sends.push(
-        logDelivery(notificationId, tenantId, 'sms', 'skipped').catch(() => {})
-      )
+      sends.push(logDelivery(notificationId, tenantId, 'sms', 'skipped').catch(() => {}))
     }
 
     await Promise.allSettled(sends)
@@ -95,17 +90,10 @@ export async function routeNotification(input: RouteInput): Promise<void> {
 async function deliverEmail(
   input: RouteInput,
   notificationId: string,
-  tenantId: string,
+  tenantId: string
 ): Promise<void> {
-  // Phase 2: Wire to lib/email/notifications.ts dispatchers.
-  // Each action type maps to a specific sendXxxEmail() function.
-  // For now, log as 'skipped' with a note that email routing is not yet connected.
-  //
-  // When Phase 2 is complete this function will be replaced with:
-  //   const sent = await routeEmailByAction(input)
-  //   await logDelivery(notificationId, tenantId, 'email', sent ? 'sent' : 'failed')
-
-  await logDelivery(notificationId, tenantId, 'email', 'skipped', 'Phase 2 email routing not yet connected')
+  const sent = await routeEmailByAction(input)
+  await logDelivery(notificationId, tenantId, 'email', sent ? 'sent' : 'failed')
 }
 
 // ─── Browser Push Delivery ───────────────────────────────────────────────────
@@ -114,7 +102,7 @@ async function deliverPush(
   input: RouteInput,
   notificationId: string,
   tenantId: string,
-  authUserId: string,
+  authUserId: string
 ): Promise<void> {
   const subscriptions = await getActiveSubscriptions(authUserId)
 
@@ -172,7 +160,7 @@ async function deliverSms(
   input: RouteInput,
   notificationId: string,
   tenantId: string,
-  phone: string,
+  phone: string
 ): Promise<void> {
   // Rate-limit check: prevent SMS flooding for the same (tenant, action)
   const allowed = await isSmsAllowed(tenantId, input.action)
@@ -201,7 +189,7 @@ async function logDelivery(
   tenantId: string,
   channel: 'email' | 'push' | 'sms',
   status: 'sent' | 'failed' | 'skipped',
-  errorMessage?: string,
+  errorMessage?: string
 ): Promise<void> {
   try {
     const supabase = createServerClient({ admin: true })

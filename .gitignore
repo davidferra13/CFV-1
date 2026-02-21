@@ -112,3 +112,22 @@ types/gen-stderr.txt
 
 # Multi-agent build lock (local toggle — never commit)
 .multi-agent-lock
+
+# Database backups (never commit — can contain real data)
+backup-*.sql
+
+# Log files
+*.log
+chefflow-watchdog.log
+
+# Playwright ad-hoc run output
+playwright-run-output.txt
+
+# Temp flag files
+fix-tests.flag
+
+# Stray null file (Windows artifact)
+null
+
+# Claude Code personal settings (machine-specific)
+.claude/settings.json

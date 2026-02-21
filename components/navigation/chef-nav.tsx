@@ -13,7 +13,7 @@ import { GlobalSearch } from '@/components/search/global-search'
 import { LiveIndicator } from '@/components/realtime/live-indicator'
 import { AppLogo } from '@/components/branding/app-logo'
 
-import { LogOut, Menu, X, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react'
+import { LogOut, Menu, X, ChevronLeft, ChevronRight, ChevronDown, Leaf } from 'lucide-react'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
 // ─── Sidebar Context ────────────────────────────────
@@ -423,7 +423,13 @@ function NavGroupSection({
 }
 
 // ─── Desktop Sidebar ────────────────────────────────
-export function ChefSidebar({ primaryNavHrefs }: { primaryNavHrefs?: string[] }) {
+export function ChefSidebar({
+  primaryNavHrefs,
+  hasCannabisTier,
+}: {
+  primaryNavHrefs?: string[]
+  hasCannabisTier?: boolean
+}) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useSidebar()
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
@@ -619,6 +625,45 @@ export function ChefSidebar({ primaryNavHrefs }: { primaryNavHrefs?: string[] })
 
             <div className="border-t border-stone-100 my-2" />
 
+            {/* Cannabis Tier — hidden unless chef has cannabis access */}
+            {hasCannabisTier && (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1">
+                  <div className="flex-1 border-t border-green-800/30" />
+                  <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
+                    Cannabis
+                  </span>
+                  <div className="flex-1 border-t border-green-800/30" />
+                </div>
+                {[
+                  { href: '/cannabis', label: 'Cannabis Hub' },
+                  { href: '/cannabis/events', label: 'Cannabis Events' },
+                  { href: '/cannabis/ledger', label: 'Cannabis Ledger' },
+                  { href: '/cannabis/invite', label: 'Invite' },
+                  { href: '/cannabis/compliance', label: 'Compliance ⚠️' },
+                ].map((item) => {
+                  const active = isItemActive(pathname, item.href)
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                        active ? 'text-emerald-700' : 'text-stone-500 hover:text-stone-700'
+                      }`}
+                      style={active ? { background: 'rgba(74, 124, 78, 0.08)' } : undefined}
+                    >
+                      <Leaf
+                        className="w-[18px] h-[18px] flex-shrink-0"
+                        style={{ color: active ? '#4a7c4e' : 'rgba(74, 124, 78, 0.5)' }}
+                      />
+                      {item.label}
+                    </Link>
+                  )
+                })}
+                <div className="border-t border-stone-100 my-2" />
+              </>
+            )}
+
             {/* Settings */}
             {standaloneBottom.map((item) => {
               const Icon = item.icon
@@ -648,7 +693,14 @@ export function ChefSidebar({ primaryNavHrefs }: { primaryNavHrefs?: string[] })
       <div className={`border-t border-stone-100 ${collapsed ? 'p-1.5' : 'p-3'}`}>
         <button
           type="button"
-          onClick={() => signOut()}
+          onClick={async () => {
+            try {
+              await signOut()
+            } catch (e) {
+              console.error('[sign-out]', e)
+            }
+            window.location.href = '/'
+          }}
           title={collapsed ? 'Sign Out' : undefined}
           className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors ${
             collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
@@ -825,7 +877,13 @@ function MobileGroupSection({
 }
 
 // ─── Mobile Navigation ──────────────────────────────
-export function ChefMobileNav({ primaryNavHrefs }: { primaryNavHrefs?: string[] }) {
+export function ChefMobileNav({
+  primaryNavHrefs,
+  hasCannabisTier,
+}: {
+  primaryNavHrefs?: string[]
+  hasCannabisTier?: boolean
+}) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
@@ -966,6 +1024,46 @@ export function ChefMobileNav({ primaryNavHrefs }: { primaryNavHrefs?: string[] 
 
               <div className="border-t border-stone-100 my-2" />
 
+              {/* Cannabis Tier — mobile */}
+              {hasCannabisTier && (
+                <>
+                  <div className="flex items-center gap-2 px-3 py-1">
+                    <div className="flex-1 border-t border-green-800/30" />
+                    <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
+                      Cannabis
+                    </span>
+                    <div className="flex-1 border-t border-green-800/30" />
+                  </div>
+                  {[
+                    { href: '/cannabis', label: 'Cannabis Hub' },
+                    { href: '/cannabis/events', label: 'Events' },
+                    { href: '/cannabis/ledger', label: 'Ledger' },
+                    { href: '/cannabis/invite', label: 'Invite' },
+                    { href: '/cannabis/compliance', label: 'Compliance ⚠️' },
+                  ].map((item) => {
+                    const active = isItemActive(pathname, item.href)
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={closeMenu}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                          active
+                            ? 'text-green-700 bg-green-50/50'
+                            : 'text-stone-500 hover:bg-stone-50'
+                        }`}
+                      >
+                        <Leaf
+                          className={`w-[18px] h-[18px] ${active ? 'text-green-600' : 'text-green-700/40'}`}
+                        />
+                        {item.label}
+                      </Link>
+                    )
+                  })}
+                  <div className="border-t border-stone-100 my-2" />
+                </>
+              )}
+
               {/* Settings */}
               {standaloneBottom.map((item) => {
                 const Icon = item.icon
@@ -991,7 +1089,14 @@ export function ChefMobileNav({ primaryNavHrefs }: { primaryNavHrefs?: string[] 
               <div className="pt-4 mt-4 border-t border-stone-100">
                 <button
                   type="button"
-                  onClick={() => signOut()}
+                  onClick={async () => {
+                    try {
+                      await signOut()
+                    } catch (e) {
+                      console.error('[sign-out]', e)
+                    }
+                    window.location.href = '/'
+                  }}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50"
                 >
                   <LogOut className="w-[18px] h-[18px]" />

@@ -1,12 +1,13 @@
 // Chat Insights AI Module
 // Analyzes client messages for actionable business intelligence.
-// Uses the same parseWithAI() pattern as other AI modules.
+// PRIVACY: Processes client messages, allergies, and budget data — must stay local.
 // All output is non-canonical -- requires chef confirmation.
 
 'use server'
 
 import { z } from 'zod'
-import { parseWithAI } from './parse'
+import { parseWithOllama } from './parse-ollama'
+import { OllamaOfflineError } from './ollama-errors'
 
 // ============================================
 // SCHEMA
@@ -105,13 +106,14 @@ export async function analyzeMessageForInsights(
   }
 
   try {
-    const result = await parseWithAI(
+    const result = await parseWithOllama(
       SYSTEM_PROMPT,
       userContent.join('\n'),
       ChatInsightsResponseSchema
     )
     return result.insights
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[analyzeMessageForInsights] AI error:', err)
     return []
   }

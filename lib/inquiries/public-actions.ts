@@ -10,6 +10,14 @@ import { z } from 'zod'
 
 const DEFAULT_BOOKING_CHEF_EMAIL = 'davidferra13@gmail.com'
 
+const BUDGET_RANGE_MIDPOINTS: Record<string, number> = {
+  under_500: 25000,
+  '500_1500': 100000,
+  '1500_3000': 225000,
+  '3000_5000': 400000,
+  over_5000: 600000,
+}
+
 const PublicInquirySchema = z.object({
   chef_slug: z.string().optional(),
   // Required
@@ -23,6 +31,8 @@ const PublicInquirySchema = z.object({
   // Optional
   phone: z.string().optional().or(z.literal('')),
   budget_cents: z.number().int().nonnegative().nullable().optional(),
+  budget_range: z.enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000']).optional(),
+  allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
   favorite_ingredients_dislikes: z.string().optional().or(z.literal('')),
   allergies_food_restrictions: z.string().optional().or(z.literal('')),
   additional_notes: z.string().optional().or(z.literal('')),
@@ -42,9 +52,9 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const supabase = createServerClient({ admin: true })
   const allergiesList = validated.allergies_food_restrictions
     ? validated.allergies_food_restrictions
-      .split(/[\n,]/)
-      .map((item) => item.trim())
-      .filter(Boolean)
+        .split(/[\n,]/)
+        .map((item) => item.trim())
+        .filter(Boolean)
     : null
 
   const sourceParts = [
@@ -62,9 +72,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const sourceMessage = sourceParts.join('\n')
 
   // 1. Resolve chef slug → tenant_id (prefer slug; fallback to hardcoded email)
-  let chefQuery = (supabase as any)
-    .from('chefs')
-    .select('id, business_name')
+  let chefQuery = (supabase as any).from('chefs').select('id, business_name')
 
   if (validated.chef_slug) {
     chefQuery = chefQuery.eq('booking_slug', validated.chef_slug)
@@ -89,6 +97,12 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     source: 'website',
   })
 
+  // Derive budget in cents: explicit value > range midpoint > null
+  const budgetCents =
+    validated.budget_cents ??
+    (validated.budget_range ? (BUDGET_RANGE_MIDPOINTS[validated.budget_range] ?? null) : null) ??
+    null
+
   // 3. Create inquiry record linked to client
   const { data: inquiry, error: inquiryError } = await (supabase as any)
     .from('inquiries')
@@ -101,13 +115,15 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       confirmed_guest_count: validated.guest_count,
       confirmed_location: validated.address.trim(),
       confirmed_occasion: validated.occasion.trim(),
-      confirmed_budget_cents: validated.budget_cents ?? null,
+      confirmed_budget_cents: budgetCents,
       confirmed_service_expectations: `Serve time ${validated.serve_time.trim()}. Chef will arrive 2hr prior.`,
       confirmed_dietary_restrictions: allergiesList,
       source_message: sourceMessage || null,
       unknown_fields: {
         address: validated.address.trim(),
         serve_time: validated.serve_time.trim(),
+        allergy_flag: validated.allergy_flag ?? null,
+        budget_range: validated.budget_range ?? null,
         favorite_ingredients_dislikes: validated.favorite_ingredients_dislikes?.trim() || null,
         allergies_food_restrictions: validated.allergies_food_restrictions?.trim() || null,
         additional_notes: validated.additional_notes?.trim() || null,

@@ -1,10 +1,11 @@
-// Email Classification with Gemini
-// Uses parseWithAI() to classify incoming Gmail messages.
+// Email Classification with Local Ollama
+// PRIVACY: Processes known client email list + email body — must stay local.
 
 'use server'
 
 import { z } from 'zod'
-import { parseWithAI } from '@/lib/ai/parse'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import type { EmailClassification } from './types'
 
 const EmailClassificationSchema = z.object({
@@ -54,9 +55,10 @@ export async function classifyEmail(
   fromAddress: string,
   knownClientEmails: string[]
 ): Promise<EmailClassification> {
-  const clientContext = knownClientEmails.length > 0
-    ? `\nKNOWN CLIENT EMAILS: ${knownClientEmails.join(', ')}`
-    : '\nNo known clients yet.'
+  const clientContext =
+    knownClientEmails.length > 0
+      ? `\nKNOWN CLIENT EMAILS: ${knownClientEmails.join(', ')}`
+      : '\nNo known clients yet.'
 
   const emailContent = `${clientContext}
 
@@ -67,13 +69,15 @@ BODY:
 ${body.slice(0, 3000)}`
 
   try {
-    const result = await parseWithAI(
+    const result = await parseWithOllama(
       CLASSIFICATION_SYSTEM_PROMPT,
       emailContent,
-      EmailClassificationSchema
+      EmailClassificationSchema,
+      { modelTier: 'fast', cache: true }
     )
     return result.classification
   } catch (error) {
+    if (error instanceof OllamaOfflineError) throw error
     console.error('[Gmail Classify] AI classification failed:', error)
     // Safe fallback: classify as personal with low confidence
     return {

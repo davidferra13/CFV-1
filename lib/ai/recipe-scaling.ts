@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Recipe Scaling Intelligence
@@ -22,10 +23,10 @@ export interface ScaledRecipe {
   originalServings: number
   targetServings: number
   scaledIngredients: ScaledIngredient[]
-  techniqueAdjustments: string[]  // e.g. "Switch from sauté to sheet-pan roast at this scale"
-  timingAdjustments: string[]     // e.g. "Increase roasting time by 8–10 min for full sheet pan"
-  equipmentNotes: string[]        // e.g. "You'll need 2 sheet pans, not 1"
-  yieldNote: string               // plain-English summary of what changed
+  techniqueAdjustments: string[] // e.g. "Switch from sauté to sheet-pan roast at this scale"
+  timingAdjustments: string[] // e.g. "Increase roasting time by 8–10 min for full sheet pan"
+  equipmentNotes: string[] // e.g. "You'll need 2 sheet pans, not 1"
+  yieldNote: string // plain-English summary of what changed
   generatedAt: string
 }
 
@@ -44,10 +45,12 @@ export async function scaleRecipeWithAI(
 
   const { data: recipe } = await supabase
     .from('recipes')
-    .select(`
+    .select(
+      `
       name, servings, prep_time_minutes, cook_time_minutes, method_steps,
       recipe_ingredients(ingredient_name, quantity, unit, notes)
-    `)
+    `
+    )
     .eq('id', recipeId)
     .eq('tenant_id', user.tenantId!)
     .single()

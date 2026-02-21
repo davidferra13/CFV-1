@@ -118,6 +118,15 @@ export async function signUpChef(input: ChefSignupInput) {
       throw new Error('Failed to initialize chef preferences')
     }
 
+    // Start 14-day trial and create Stripe customer — non-blocking
+    try {
+      const { createStripeCustomer, startTrial } = await import('@/lib/stripe/subscription')
+      await createStripeCustomer(chef.id, validated.email, businessName)
+      await startTrial(chef.id)
+    } catch (err) {
+      log.auth.warn('Stripe customer/trial init failed (non-blocking)', { error: err })
+    }
+
     return { success: true, userId: authData.user.id }
   } catch (error) {
     // Ensure cleanup
@@ -292,6 +301,9 @@ export async function signIn(input: SignInInput) {
 
   const cookieStore = cookies()
 
+  // Clear stale role cache so middleware regenerates it with the correct maxAge
+  cookieStore.delete('chefflow-role-cache')
+
   if (!validated.rememberMe) {
     // Session-only cookie (no maxAge) — cleared when browser closes.
     // Middleware uses this to strip maxAge from Supabase auth cookies too.
@@ -366,6 +378,9 @@ export async function updatePassword(newPassword: string) {
 
 /**
  * Sign out
+ * Returns success instead of calling redirect() so callers can handle
+ * navigation client-side. Using redirect() inside a server action called
+ * from onClick (not a form action) causes an unhandled NEXT_REDIRECT throw.
  */
 export async function signOut() {
   const supabase = createServerClient()
@@ -377,8 +392,13 @@ export async function signOut() {
     throw new Error('Failed to sign out')
   }
 
+  // Clear auth-related cookies so middleware doesn't use stale data on next login
+  const cookieStore = cookies()
+  cookieStore.delete('chefflow-role-cache')
+  cookieStore.delete('chefflow-session-only')
+
   revalidatePath('/', 'layout')
-  redirect('/')
+  return { success: true }
 }
 
 /**
@@ -431,4 +451,103 @@ export async function deleteAccount(password: string) {
   // Sign out and redirect
   await supabase.auth.signOut()
   redirect('/')
+}
+
+/**
+ * Assigns a role to a newly authenticated user (e.g., after OAuth signup).
+ * Creates the corresponding chef or client profile.
+ */
+export async function assignRole(role: 'chef' | 'client') {
+  const supabase = createServerClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error('Not authenticated. Please sign in again.')
+  }
+
+  // Use admin client for the rest of the operations
+  const adminSupabase = createServerClient({ admin: true })
+
+  // 1. Check if user already has a role
+  const { data: existingRole, error: existingRoleError } = await adminSupabase
+    .from('user_roles')
+    .select('role')
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (existingRoleError && existingRoleError.code !== 'PGRST116') {
+    // Ignore 'no rows found'
+    log.auth.error('Error checking for existing user role', { error: existingRoleError })
+    throw new Error('Could not process role selection. Please try again.')
+  }
+
+  if (existingRole) {
+    // User already has a role, just redirect them
+    const destination = existingRole.role === 'chef' ? '/dashboard' : '/my-events'
+    return redirect(destination)
+  }
+
+  // 2. Create profile and assign role
+  try {
+    if (role === 'chef') {
+      const businessName = user.user_metadata?.full_name || user.email!.split('@')[0]
+      const { data: chef, error: chefError } = await adminSupabase
+        .from('chefs')
+        .insert({
+          auth_user_id: user.id,
+          business_name: businessName,
+          email: user.email!,
+        })
+        .select('id')
+        .single()
+      if (chefError) throw chefError
+
+      const { error: roleError } = await adminSupabase.from('user_roles').insert({
+        auth_user_id: user.id,
+        role: 'chef',
+        entity_id: chef.id,
+      })
+      if (roleError) throw roleError
+
+      const { error: prefError } = await adminSupabase.from('chef_preferences').insert({
+        chef_id: chef.id,
+        tenant_id: chef.id,
+      })
+      if (prefError) throw prefError
+    } else if (role === 'client') {
+      const fullName = user.user_metadata?.full_name || 'New Client'
+      const { data: client, error: clientError } = await adminSupabase
+        .from('clients')
+        .insert({
+          auth_user_id: user.id,
+          full_name: fullName,
+          email: user.email!,
+        })
+        .select('id')
+        .single()
+      if (clientError) throw clientError
+
+      const { error: roleError } = await adminSupabase.from('user_roles').insert({
+        auth_user_id: user.id,
+        role: 'client',
+        entity_id: client.id,
+      })
+      if (roleError) throw roleError
+    }
+  } catch (error) {
+    log.auth.error('Failed to assign role and create profile', { error, userId: user.id })
+    // In case of failure, we don't want the user stuck in a loop.
+    // Send them to an error page or back to the sign-in page with an error.
+    return redirect('/auth/signin?error=role_assignment_failed')
+  }
+
+  // 3. Clear the role cache and redirect
+  const cookieStore = cookies()
+  cookieStore.delete('chefflow-role-cache')
+  revalidatePath('/', 'layout')
+
+  const destination = role === 'chef' ? '/dashboard' : '/my-events'
+  redirect(destination)
 }

@@ -14,7 +14,7 @@
 //   explicit chef review.
 
 import { createServerClient } from '@/lib/supabase/server'
-import { getGoogleAccessToken } from './google-auth'
+import { getGoogleAccessToken } from '@/lib/google/auth'
 import { listMessagesPage, getFullMessage } from './client'
 import { classifyEmail } from './classify'
 
@@ -113,10 +113,7 @@ export async function runHistoricalScanBatch(
   }
 
   // ── Load known client emails for richer classification context ─────────────
-  const { data: clients } = await supabase
-    .from('clients')
-    .select('email')
-    .eq('tenant_id', tenantId)
+  const { data: clients } = await supabase.from('clients').select('email').eq('tenant_id', tenantId)
 
   const knownClientEmails = (clients ?? [])
     .map((c: { email: string | null }) => c.email)
@@ -164,10 +161,7 @@ export async function runHistoricalScanBatch(
     }
   }
 
-  await (supabase as any)
-    .from('google_connections')
-    .update(progressUpdate)
-    .eq('chef_id', chefId)
+  await (supabase as any).from('google_connections').update(progressUpdate).eq('chef_id', chefId)
 
   return result
 }
@@ -228,10 +222,7 @@ async function processHistoricalMessage(
   )
 
   // Only surface inquiry and existing_thread as review candidates
-  if (
-    classification.category !== 'inquiry' &&
-    classification.category !== 'existing_thread'
-  ) {
+  if (classification.category !== 'inquiry' && classification.category !== 'existing_thread') {
     result.skipped++
     return
   }
@@ -253,25 +244,23 @@ async function processHistoricalMessage(
   }
 
   // Upsert into gmail_historical_findings
-  await (supabase as any)
-    .from('gmail_historical_findings')
-    .upsert(
-      {
-        tenant_id: tenantId,
-        chef_id: chefId,
-        gmail_message_id: messageId,
-        gmail_thread_id: email.threadId || null,
-        from_address: `${email.from.name ? email.from.name + ' ' : ''}<${email.from.email}>`.trim(),
-        subject: email.subject || null,
-        body_preview: email.body ? email.body.slice(0, 500) : null,
-        received_at: receivedAt,
-        classification: classification.category,
-        confidence: classification.confidence,
-        ai_reasoning: classification.reasoning,
-        status: 'pending',
-      },
-      { onConflict: 'tenant_id,gmail_message_id' }
-    )
+  await (supabase as any).from('gmail_historical_findings').upsert(
+    {
+      tenant_id: tenantId,
+      chef_id: chefId,
+      gmail_message_id: messageId,
+      gmail_thread_id: email.threadId || null,
+      from_address: `${email.from.name ? email.from.name + ' ' : ''}<${email.from.email}>`.trim(),
+      subject: email.subject || null,
+      body_preview: email.body ? email.body.slice(0, 500) : null,
+      received_at: receivedAt,
+      classification: classification.category,
+      confidence: classification.confidence,
+      ai_reasoning: classification.reasoning,
+      status: 'pending',
+    },
+    { onConflict: 'tenant_id,gmail_message_id' }
+  )
 
   result.findingsAdded++
 }

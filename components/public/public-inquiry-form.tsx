@@ -25,6 +25,8 @@ interface FormData {
   phone: string
   guest_count: string
   occasion: string
+  budget_range: string
+  allergy_flag: string
   favorite_ingredients_dislikes: string
   allergies_food_restrictions: string
   additional_notes: string
@@ -41,6 +43,9 @@ interface FormErrors {
   phone?: string
   guest_count?: string
   occasion?: string
+  budget_range?: string
+  allergy_flag?: string
+  allergies_food_restrictions?: string
 }
 
 const MONTH_OPTIONS = [
@@ -56,6 +61,20 @@ const MONTH_OPTIONS = [
   { value: '10', label: 'October' },
   { value: '11', label: 'November' },
   { value: '12', label: 'December' },
+]
+
+const BUDGET_RANGE_OPTIONS = [
+  { value: 'under_500', label: 'Under $500' },
+  { value: '500_1500', label: '$500 – $1,500' },
+  { value: '1500_3000', label: '$1,500 – $3,000' },
+  { value: '3000_5000', label: '$3,000 – $5,000' },
+  { value: 'over_5000', label: '$5,000+' },
+]
+
+const ALLERGY_FLAG_OPTIONS = [
+  { value: 'none', label: 'No known allergies or restrictions' },
+  { value: 'yes', label: "Yes — I'll describe below" },
+  { value: 'unknown', label: 'Not sure yet' },
 ]
 
 const GUEST_COUNT_OPTIONS = [
@@ -86,6 +105,8 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     phone: '',
     guest_count: '',
     occasion: '',
+    budget_range: '',
+    allergy_flag: '',
     favorite_ingredients_dislikes: '',
     allergies_food_restrictions: '',
     additional_notes: '',
@@ -167,6 +188,18 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       newErrors.occasion = 'Event Theme/Occasion is required'
     }
 
+    if (!formData.budget_range) {
+      newErrors.budget_range = 'Budget range is required'
+    }
+
+    if (!formData.allergy_flag) {
+      newErrors.allergy_flag = 'Please indicate allergy status'
+    }
+
+    if (formData.allergy_flag === 'yes' && !formData.allergies_food_restrictions.trim()) {
+      newErrors.allergies_food_restrictions = 'Please describe your allergies or restrictions'
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -196,6 +229,16 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         phone: formData.phone.trim(),
         guest_count: guestCount,
         occasion: formData.occasion.trim(),
+        budget_range:
+          (formData.budget_range as
+            | 'under_500'
+            | '500_1500'
+            | '1500_3000'
+            | '3000_5000'
+            | 'over_5000'
+            | undefined) || undefined,
+        allergy_flag:
+          (formData.allergy_flag as 'none' | 'yes' | 'unknown' | undefined) || undefined,
         favorite_ingredients_dislikes: formData.favorite_ingredients_dislikes.trim(),
         allergies_food_restrictions: formData.allergies_food_restrictions.trim(),
         additional_notes: formData.additional_notes.trim(),
@@ -213,14 +256,14 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
         phone: '',
         guest_count: '',
         occasion: '',
+        budget_range: '',
+        allergy_flag: '',
         favorite_ingredients_dislikes: '',
         allergies_food_restrictions: '',
         additional_notes: '',
       })
     } catch (err) {
-      setSubmitError(
-        err instanceof Error ? err.message : 'Something went wrong. Please try again.'
-      )
+      setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please try again.')
     } finally {
       setIsSubmitting(false)
     }
@@ -230,10 +273,10 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
 
     if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }))
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
   }
 
@@ -242,13 +285,24 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
       <Card className="bg-white/90">
         <CardContent className="py-12 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-8 h-8 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
           <h2 className="text-2xl font-bold text-stone-900 mb-2">Inquiry Submitted!</h2>
           <p className="text-stone-600 mb-6">
-            Thank you for your interest. {chefName} will review your inquiry and get back to you within 24 hours.
+            Thank you for your interest. {chefName} will review your inquiry and get back to you
+            within 24 hours.
           </p>
           <button
             type="button"
@@ -274,7 +328,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center">
-            <h2 className="text-4xl font-semibold text-stone-900 underline underline-offset-4">Book Now</h2>
+            <h2 className="text-4xl font-semibold text-stone-900 underline underline-offset-4">
+              Book Now
+            </h2>
             <p className="text-3xl font-semibold text-stone-800 underline underline-offset-4 mt-6">
               Please fill out the following
             </p>
@@ -386,6 +442,15 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             placeholder="Event Theme/Occasion"
           />
 
+          <Select
+            label="Approximate Budget *"
+            name="budget_range"
+            value={formData.budget_range}
+            onChange={handleChange}
+            error={errors.budget_range}
+            options={BUDGET_RANGE_OPTIONS}
+          />
+
           <Textarea
             label="Any favorite ingredients or strong dislikes?"
             name="favorite_ingredients_dislikes"
@@ -394,13 +459,25 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
             rows={4}
           />
 
-          <Textarea
-            label="Allergies/Food Restrictions"
-            name="allergies_food_restrictions"
-            value={formData.allergies_food_restrictions}
+          <Select
+            label="Allergies or Dietary Restrictions? *"
+            name="allergy_flag"
+            value={formData.allergy_flag}
             onChange={handleChange}
-            rows={4}
+            error={errors.allergy_flag}
+            options={ALLERGY_FLAG_OPTIONS}
           />
+
+          {formData.allergy_flag === 'yes' && (
+            <Textarea
+              label="Please describe your allergies or restrictions"
+              name="allergies_food_restrictions"
+              value={formData.allergies_food_restrictions}
+              onChange={handleChange}
+              error={errors.allergies_food_restrictions}
+              rows={4}
+            />
+          )}
 
           <Input
             label="Additional Notes"

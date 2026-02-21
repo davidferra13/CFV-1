@@ -5,12 +5,28 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth/actions'
 import { useState, useEffect, useCallback, createContext, useContext } from 'react'
-import { Calendar, CalendarPlus, ClipboardList, FileText, Gift, LogOut, Menu, MessageCircle, User, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import {
+  Calendar,
+  CalendarPlus,
+  ClipboardList,
+  DollarSign,
+  FileText,
+  Gift,
+  Leaf,
+  LogOut,
+  Menu,
+  MessageCircle,
+  User,
+  X,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
 import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 
 interface ClientNavProps {
   userEmail: string
+  hasCannabisTier?: boolean
 }
 
 const BOOK_NOW_HREF = '/book-now'
@@ -21,6 +37,7 @@ const navItems = [
   { href: '/my-quotes', label: 'My Quotes', icon: FileText },
   { href: '/my-chat', label: 'Messages', icon: MessageCircle },
   { href: '/my-rewards', label: 'Rewards', icon: Gift },
+  { href: '/my-spending', label: 'Spending', icon: DollarSign },
   { href: '/my-profile', label: 'Profile', icon: User },
 ]
 
@@ -72,7 +89,7 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
   )
 }
 
-export function ClientSidebar({ userEmail }: ClientNavProps) {
+export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
 
@@ -82,7 +99,9 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
-      <div className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}>
+      <div
+        className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}
+      >
         <Link href="/my-events" className="flex items-center gap-2">
           <AppLogo />
           {!collapsed && <span className="text-lg font-semibold text-stone-900">ChefFlow</span>}
@@ -167,11 +186,39 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
                       : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
                   }`}
                 >
-                  <Icon className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`} />
+                  <Icon
+                    className={`w-[18px] h-[18px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                  />
                   {item.label}
                 </Link>
               )
             })}
+
+            {/* Cannabis Tier — hidden unless client has cannabis access */}
+            {hasCannabisTier && (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1 mt-1">
+                  <div className="flex-1 border-t border-green-800/30" />
+                  <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
+                    Cannabis
+                  </span>
+                  <div className="flex-1 border-t border-green-800/30" />
+                </div>
+                <Link
+                  href="/my-cannabis"
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    isItemActive(pathname, '/my-cannabis')
+                      ? 'text-green-700 bg-green-50/60'
+                      : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'
+                  }`}
+                >
+                  <Leaf
+                    className={`w-[18px] h-[18px] flex-shrink-0 ${isItemActive(pathname, '/my-cannabis') ? 'text-green-600' : 'text-green-700/40'}`}
+                  />
+                  Cannabis Dining
+                </Link>
+              </>
+            )}
           </div>
         )}
       </nav>
@@ -181,15 +228,22 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
         <div className={`mb-1 ${collapsed ? 'flex justify-center' : 'px-2 py-1'}`}>
           <NotificationBell collapsed={collapsed} />
         </div>
-        {!collapsed ? <p className="px-3 pb-1 text-xs text-stone-400 truncate">{userEmail}</p> : null}
+        {!collapsed ? (
+          <p className="px-3 pb-1 text-xs text-stone-400 truncate">{userEmail}</p>
+        ) : null}
         <button
           type="button"
-          onClick={() => signOut()}
+          onClick={async () => {
+            try {
+              await signOut()
+            } catch (e) {
+              console.error('[sign-out]', e)
+            }
+            window.location.href = '/'
+          }}
           title={collapsed ? 'Sign Out' : undefined}
           className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors ${
-            collapsed
-              ? 'justify-center w-10 h-10 mx-auto'
-              : 'gap-3 w-full px-3 py-2'
+            collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
           }`}
         >
           <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
@@ -200,7 +254,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
   )
 }
 
-export function ClientMobileNav({ userEmail }: ClientNavProps) {
+export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
 
@@ -271,21 +325,52 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                     href={item.href}
                     onClick={closeMenu}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active
-                        ? 'bg-brand-50 text-brand-700'
-                        : 'text-stone-600 hover:bg-stone-50'
+                      active ? 'bg-brand-50 text-brand-700' : 'text-stone-600 hover:bg-stone-50'
                     }`}
                   >
-                    <Icon className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`} />
+                    <Icon
+                      className={`w-[18px] h-[18px] ${active ? 'text-brand-600' : 'text-stone-400'}`}
+                    />
                     {item.label}
                   </Link>
                 )
               })}
+              {/* Cannabis Tier — mobile */}
+              {hasCannabisTier && (
+                <>
+                  <div className="border-t border-green-800/30 my-2" />
+                  <div className="flex items-center gap-2 px-3 py-1">
+                    <span className="text-[9px] font-semibold uppercase tracking-widest text-green-700">
+                      Cannabis
+                    </span>
+                  </div>
+                  <Link
+                    href="/my-cannabis"
+                    onClick={closeMenu}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      isItemActive(pathname, '/my-cannabis')
+                        ? 'text-green-700 bg-green-50/60'
+                        : 'text-stone-500 hover:bg-stone-50'
+                    }`}
+                  >
+                    <Leaf className="w-[18px] h-[18px] text-green-700/50" />
+                    Cannabis Dining
+                  </Link>
+                </>
+              )}
+
               <div className="pt-4 mt-4 border-t border-stone-100">
                 <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>
                 <button
                   type="button"
-                  onClick={() => signOut()}
+                  onClick={async () => {
+                    try {
+                      await signOut()
+                    } catch (e) {
+                      console.error('[sign-out]', e)
+                    }
+                    window.location.href = '/'
+                  }}
                   className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50"
                 >
                   <LogOut className="w-[18px] h-[18px]" />
@@ -330,9 +415,7 @@ export function ClientMainContent({ children }: { children: React.ReactNode }) {
         collapsed ? 'lg:pl-16' : 'lg:pl-60'
       }`}
     >
-      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-        {children}
-      </div>
+      <div className="max-w-content mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">{children}</div>
     </main>
   )
 }

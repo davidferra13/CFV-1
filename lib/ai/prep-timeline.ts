@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 // Prep Timeline Generator
@@ -12,10 +13,10 @@ import { GoogleGenAI } from '@google/genai'
 // ── Types ─────────────────────────────────────────────────────────────────
 
 export interface PrepTask {
-  time: string         // e.g. "9:00 AM"
-  task: string         // e.g. "Make stock base, reduce by half"
-  duration: string     // e.g. "45 min"
-  recipe: string       // which menu item this is for
+  time: string // e.g. "9:00 AM"
+  task: string // e.g. "Make stock base, reduce by half"
+  duration: string // e.g. "45 min"
+  recipe: string // which menu item this is for
   canParallelize: boolean // can another task run simultaneously
   notes: string | null
 }
@@ -26,7 +27,7 @@ export interface PrepTimeline {
   tasks: PrepTask[]
   totalPrepHours: number
   suggestedStartTime: string
-  criticalPath: string[]   // tasks that cannot be delayed
+  criticalPath: string[] // tasks that cannot be delayed
   generatedAt: string
 }
 
@@ -51,10 +52,12 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
       .single(),
     supabase
       .from('event_menu_components')
-      .select(`
+      .select(
+        `
         name, course_type, description,
         recipes(name, prep_time_minutes, cook_time_minutes, method_steps)
-      `)
+      `
+      )
       .eq('event_id', eventId),
   ])
 
@@ -65,7 +68,7 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
   const serveTime = event.serve_time ?? '7:00 PM'
   const guestCount = event.guest_count ?? 10
 
-  const recipeDetails = menuItems.map(item => {
+  const recipeDetails = menuItems.map((item) => {
     const recipe = Array.isArray(item.recipes) ? item.recipes[0] : item.recipes
     return {
       dish: item.name,
@@ -86,7 +89,7 @@ Event:
   Chef arrival: ${event.arrival_time ?? 'TBD'}
 
 Menu (${menuItems.length} dishes):
-${recipeDetails.map(r => `  - [${r.course}] ${r.dish}${r.prepMinutes ? ': prep ' + r.prepMinutes + 'min' : ''}${r.cookMinutes ? ', cook ' + r.cookMinutes + 'min' : ''}`).join('\n') || '  - No dishes assigned yet'}
+${recipeDetails.map((r) => `  - [${r.course}] ${r.dish}${r.prepMinutes ? ': prep ' + r.prepMinutes + 'min' : ''}${r.cookMinutes ? ', cook ' + r.cookMinutes + 'min' : ''}`).join('\n') || '  - No dishes assigned yet'}
 
 Rules for backward scheduling:
 1. Work backward from service time

@@ -16,8 +16,8 @@ import { z } from 'zod'
 const TriageResultSchema = z.object({
   urgency: z.enum(['urgent', 'normal', 'low']),
   category: z.enum(['logistics', 'inquiry', 'complaint', 'payment', 'compliment', 'other']),
-  summary: z.string(),         // one-line summary of what the client needs
-  draftResponse: z.string(),   // holding response draft for the chef to approve/edit
+  summary: z.string(), // one-line summary of what the client needs
+  draftResponse: z.string(), // holding response draft for the chef to approve/edit
   suggestedFollowUpAt: z.string(), // ISO time suggestion for when to respond, e.g. "within 2 hours"
   confidence: z.enum(['high', 'medium', 'low']),
 })
@@ -26,18 +26,18 @@ export type TriageResult = z.infer<typeof TriageResultSchema>
 
 // ── Server Action ─────────────────────────────────────────────────────────
 
-export async function triageIncomingMessage(
-  messageId: string
-): Promise<TriageResult> {
+export async function triageIncomingMessage(messageId: string): Promise<TriageResult> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   const { data: message } = await supabase
     .from('messages')
-    .select(`
+    .select(
+      `
       body, created_at, client_id,
       clients(full_name, preferences)
-    `)
+    `
+    )
     .eq('id', messageId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -79,7 +79,9 @@ Return JSON: {
 }`
 
   try {
-    return await parseWithOllama(systemPrompt, userContent, TriageResultSchema)
+    return await parseWithOllama(systemPrompt, userContent, TriageResultSchema, {
+      modelTier: 'fast',
+    })
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
     console.error('[client-portal-triage] Failed:', err)

@@ -8,11 +8,31 @@ import { ToggleLeft } from 'lucide-react'
 
 // All known feature flags — add new flags here as features are built
 const KNOWN_FLAGS = [
-  { key: 'ai_pricing_suggestions', label: 'AI Pricing Suggestions', description: 'Show the AI pricing panel on event/quote pages' },
-  { key: 'ai_menu_recommendations', label: 'AI Menu Recommendations', description: 'Show AI menu hint cards during event creation' },
-  { key: 'social_platform', label: 'Social Platform', description: 'Enable social features (network, feed, connected accounts)' },
-  { key: 'advanced_analytics', label: 'Advanced Analytics', description: 'Show the full 9-tab Analytics Hub' },
-  { key: 'beta_features', label: 'Beta Features', description: 'Catch-all flag for unreleased or experimental features' },
+  {
+    key: 'ai_pricing_suggestions',
+    label: 'Pricing Suggestions',
+    description: 'Show the pricing panel on event/quote pages',
+  },
+  {
+    key: 'ai_menu_recommendations',
+    label: 'Menu Recommendations',
+    description: 'Show menu hint cards during event creation',
+  },
+  {
+    key: 'social_platform',
+    label: 'Social Platform',
+    description: 'Enable social features (network, feed, connected accounts)',
+  },
+  {
+    key: 'advanced_analytics',
+    label: 'Advanced Analytics',
+    description: 'Show the full 9-tab Analytics Hub',
+  },
+  {
+    key: 'beta_features',
+    label: 'Beta Features',
+    description: 'Catch-all flag for unreleased or experimental features',
+  },
 ] as const
 
 export default async function AdminFlagsPage() {
@@ -31,7 +51,8 @@ export default async function AdminFlagsPage() {
     chefs = result.chefs
     flagsByChef = result.flagsByChef
   } catch {
-    note = 'chef_feature_flags table not yet created. Apply the admin migrations to enable this feature.'
+    note =
+      'chef_feature_flags table not yet created. Apply the admin migrations to enable this feature.'
   }
 
   return (
@@ -54,7 +75,9 @@ export default async function AdminFlagsPage() {
 
       {/* Flag Legend */}
       <div className="bg-white rounded-xl border border-slate-200 p-4">
-        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Flag Reference</h2>
+        <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
+          Flag Reference
+        </h2>
         <div className="space-y-2">
           {KNOWN_FLAGS.map((flag) => (
             <div key={flag.key} className="flex items-start gap-3">
@@ -71,11 +94,7 @@ export default async function AdminFlagsPage() {
       </div>
 
       {!note && (
-        <FlagTogglePanel
-          chefs={chefs}
-          flagsByChef={flagsByChef}
-          knownFlags={KNOWN_FLAGS}
-        />
+        <FlagTogglePanel chefs={chefs} flagsByChef={flagsByChef} knownFlags={KNOWN_FLAGS} />
       )}
     </div>
   )

@@ -52,12 +52,12 @@ function Section({
         className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-50 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-xl" aria-hidden="true">{icon}</span>
+          <span className="text-xl" aria-hidden="true">
+            {icon}
+          </span>
           <div>
             <span className="font-semibold text-stone-900">{title}</span>
-            {subtitle && (
-              <p className="text-xs text-stone-500 mt-0.5">{subtitle}</p>
-            )}
+            {subtitle && <p className="text-xs text-stone-500 mt-0.5">{subtitle}</p>}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -70,24 +70,14 @@ function Section({
         </div>
       </button>
 
-      {open && (
-        <div className="px-5 pb-5 border-t border-stone-100">
-          {children}
-        </div>
-      )}
+      {open && <div className="px-5 pb-5 border-t border-stone-100">{children}</div>}
     </Card>
   )
 }
 
 // ─── Star rating input ────────────────────────────────────────────────────────
 
-function StarRating({
-  value,
-  onChange,
-}: {
-  value: number | null
-  onChange: (v: number) => void
-}) {
+function StarRating({ value, onChange }: { value: number | null; onChange: (v: number) => void }) {
   const [hover, setHover] = useState<number | null>(null)
   const display = hover ?? value ?? 0
 
@@ -205,41 +195,62 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
   // ── Section: Photos ───────────────────────────────────────────────────────
 
   // ── Section: Recipes ──────────────────────────────────────────────────────
-  const [recipeSaveStates, setRecipeSaveStates] = useState<Record<string, 'idle' | 'saving' | 'saved' | 'error'>>({})
-  const [recipeDrafts, setRecipeDrafts] = useState<Record<string, {
-    notes: string
-    method_detailed: string
-    prep_time_minutes: string
-    cook_time_minutes: string
-  }>>(() => {
-    const init: Record<string, { notes: string; method_detailed: string; prep_time_minutes: string; cook_time_minutes: string }> = {}
+  const [recipeSaveStates, setRecipeSaveStates] = useState<
+    Record<string, 'idle' | 'saving' | 'saved' | 'error'>
+  >({})
+  const [recipeDrafts, setRecipeDrafts] = useState<
+    Record<
+      string,
+      {
+        notes: string
+        method_detailed: string
+        prep_time_minutes: string
+        cook_time_minutes: string
+      }
+    >
+  >(() => {
+    const init: Record<
+      string,
+      {
+        notes: string
+        method_detailed: string
+        prep_time_minutes: string
+        cook_time_minutes: string
+      }
+    > = {}
     for (const r of blanks.recipes) {
       init[r.id] = { notes: '', method_detailed: '', prep_time_minutes: '', cook_time_minutes: '' }
     }
     return init
   })
 
-  const saveRecipe = useCallback(async (recipeId: string) => {
-    setRecipeSaveStates((s) => ({ ...s, [recipeId]: 'saving' }))
-    const draft = recipeDrafts[recipeId]
-    const result = await saveRecipeDebrief(eventId, recipeId, {
-      notes: draft.notes || undefined,
-      method_detailed: draft.method_detailed || undefined,
-      prep_time_minutes: draft.prep_time_minutes !== '' ? parseInt(draft.prep_time_minutes, 10) : undefined,
-      cook_time_minutes: draft.cook_time_minutes !== '' ? parseInt(draft.cook_time_minutes, 10) : undefined,
-    })
-    setRecipeSaveStates((s) => ({ ...s, [recipeId]: result.success ? 'saved' : 'error' }))
-    if (result.success) {
-      setTimeout(
-        () => setRecipeSaveStates((s) => ({ ...s, [recipeId]: 'idle' })),
-        2000
-      )
-    }
-  }, [eventId, recipeDrafts])
+  const saveRecipe = useCallback(
+    async (recipeId: string) => {
+      setRecipeSaveStates((s) => ({ ...s, [recipeId]: 'saving' }))
+      const draft = recipeDrafts[recipeId]
+      const result = await saveRecipeDebrief(eventId, recipeId, {
+        notes: draft.notes || undefined,
+        method_detailed: draft.method_detailed || undefined,
+        prep_time_minutes:
+          draft.prep_time_minutes !== '' ? parseInt(draft.prep_time_minutes, 10) : undefined,
+        cook_time_minutes:
+          draft.cook_time_minutes !== '' ? parseInt(draft.cook_time_minutes, 10) : undefined,
+      })
+      setRecipeSaveStates((s) => ({ ...s, [recipeId]: result.success ? 'saved' : 'error' }))
+      if (result.success) {
+        setTimeout(() => setRecipeSaveStates((s) => ({ ...s, [recipeId]: 'idle' })), 2000)
+      }
+    },
+    [eventId, recipeDrafts]
+  )
 
   // ── Section: Client insights ──────────────────────────────────────────────
-  const [clientSaveState, setClientSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
-  const [milestones, setMilestones] = useState<{ type: string; date: string; description: string }[]>([])
+  const [clientSaveState, setClientSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>(
+    'idle'
+  )
+  const [milestones, setMilestones] = useState<
+    { type: string; date: string; description: string }[]
+  >([])
   const [newMilestone, setNewMilestone] = useState({ type: 'birthday', date: '', description: '' })
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([])
   const [allergies, setAllergies] = useState<string[]>([])
@@ -255,7 +266,10 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
     if (blanks.client.missingMilestones && milestones.length > 0) {
       data.personal_milestones = milestones
     }
-    if (blanks.client.missingDietaryInfo && (dietaryRestrictions.length > 0 || allergies.length > 0)) {
+    if (
+      blanks.client.missingDietaryInfo &&
+      (dietaryRestrictions.length > 0 || allergies.length > 0)
+    ) {
       data.dietary_restrictions = dietaryRestrictions
       data.allergies = allergies
     }
@@ -265,9 +279,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
     if (blanks.client.missingVibeNotes && vibeNotes.trim()) {
       data.vibe_notes = vibeNotes.trim()
     }
-    const filledQA = Object.fromEntries(
-      Object.entries(qaAnswers).filter(([, v]) => v.trim())
-    )
+    const filledQA = Object.fromEntries(Object.entries(qaAnswers).filter(([, v]) => v.trim()))
     if (Object.keys(filledQA).length > 0) {
       data.fun_qa_answers = filledQA
     }
@@ -277,7 +289,9 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
   }
 
   // ── Section: Reflection ───────────────────────────────────────────────────
-  const [reflectionSaveState, setReflectionSaveState] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [reflectionSaveState, setReflectionSaveState] = useState<
+    'idle' | 'saving' | 'saved' | 'error'
+  >('idle')
   const [rating, setRating] = useState<number | null>(blanks.event.chefOutcomeRating ?? null)
   const [outcomeNotes, setOutcomeNotes] = useState(blanks.event.chefOutcomeNotes ?? '')
   const [draftState, setDraftState] = useState<'idle' | 'loading' | 'error'>('idle')
@@ -295,7 +309,10 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
     }
   }
 
-  const saveReflection = async (patch: { chef_outcome_notes?: string; chef_outcome_rating?: number }) => {
+  const saveReflection = async (patch: {
+    chef_outcome_notes?: string
+    chef_outcome_rating?: number
+  }) => {
     setReflectionSaveState('saving')
     const result = await saveDebriefReflection(eventId, patch)
     setReflectionSaveState(result.success ? 'saved' : 'error')
@@ -322,7 +339,6 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
 
   return (
     <div className="space-y-4">
-
       {/* ── Section 1: Dish Gallery ─────────────────────────────────────────── */}
       <Section
         icon="📸"
@@ -344,7 +360,12 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
         >
           <div className="mt-4 space-y-6">
             {blanks.recipes.map((recipe) => {
-              const draft = recipeDrafts[recipe.id] ?? { notes: '', method_detailed: '', prep_time_minutes: '', cook_time_minutes: '' }
+              const draft = recipeDrafts[recipe.id] ?? {
+                notes: '',
+                method_detailed: '',
+                prep_time_minutes: '',
+                cook_time_minutes: '',
+              }
               const saveState = recipeSaveStates[recipe.id] ?? 'idle'
 
               return (
@@ -369,7 +390,9 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
 
                   {recipe.missingNotes && (
                     <div>
-                      <label className="text-xs font-medium text-stone-500">Notes from tonight</label>
+                      <label className="text-xs font-medium text-stone-500">
+                        Notes from tonight
+                      </label>
                       <textarea
                         rows={3}
                         value={draft.notes}
@@ -406,7 +429,9 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   {recipe.missingTimes && (
                     <div className="flex gap-4">
                       <div className="flex-1">
-                        <label className="text-xs font-medium text-stone-500">Prep time (min)</label>
+                        <label className="text-xs font-medium text-stone-500">
+                          Prep time (min)
+                        </label>
                         <input
                           type="number"
                           min={0}
@@ -421,7 +446,9 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                         />
                       </div>
                       <div className="flex-1">
-                        <label className="text-xs font-medium text-stone-500">Cook time (min)</label>
+                        <label className="text-xs font-medium text-stone-500">
+                          Cook time (min)
+                        </label>
                         <input
                           type="number"
                           min={0}
@@ -453,7 +480,6 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
           saved={clientSaveState === 'saved'}
         >
           <div className="mt-4 space-y-5">
-
             {blanks.client.missingMilestones && (
               <div>
                 <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">
@@ -466,11 +492,16 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                 {milestones.length > 0 && (
                   <div className="space-y-1 mb-3">
                     {milestones.map((m, i) => (
-                      <div key={i} className="flex items-center justify-between text-sm bg-stone-50 rounded-md px-3 py-2">
+                      <div
+                        key={i}
+                        className="flex items-center justify-between text-sm bg-stone-50 rounded-md px-3 py-2"
+                      >
                         <span>
                           <span className="font-medium capitalize">{m.type}</span>
                           {m.date && <span className="text-stone-500"> &middot; {m.date}</span>}
-                          {m.description && <span className="text-stone-500"> &middot; {m.description}</span>}
+                          {m.description && (
+                            <span className="text-stone-500"> &middot; {m.description}</span>
+                          )}
                         </span>
                         <button
                           type="button"
@@ -504,7 +535,9 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   <input
                     type="text"
                     value={newMilestone.description}
-                    onChange={(e) => setNewMilestone((m) => ({ ...m, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewMilestone((m) => ({ ...m, description: e.target.value }))
+                    }
                     placeholder="Note (optional)"
                     className="text-sm border border-stone-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
@@ -544,9 +577,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">
                     Allergies
                   </label>
-                  <p className="text-xs text-stone-400 mt-0.5 mb-2">
-                    Any allergies that came up?
-                  </p>
+                  <p className="text-xs text-stone-400 mt-0.5 mb-2">Any allergies that came up?</p>
                   <TagInput
                     value={allergies}
                     onChange={setAllergies}
@@ -561,9 +592,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                 <label className="text-xs font-medium text-stone-500 uppercase tracking-wide">
                   Preferred Name / Nickname
                 </label>
-                <p className="text-xs text-stone-400 mt-0.5 mb-2">
-                  What do they go by?
-                </p>
+                <p className="text-xs text-stone-400 mt-0.5 mb-2">What do they go by?</p>
                 <input
                   type="text"
                   value={preferredName}
@@ -665,7 +694,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   ) : draftState === 'error' ? (
                     <span className="text-red-500">Try again</span>
                   ) : (
-                    <>✨ Draft with AI</>
+                    <>✨ Auto Draft</>
                   )}
                 </button>
               )}
@@ -695,20 +724,14 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
 
       {/* ── Complete debrief ─────────────────────────────────────────────────── */}
       <div className="flex flex-col items-center gap-2 pt-2">
-        {completeError && (
-          <p className="text-sm text-red-600">{completeError}</p>
-        )}
+        {completeError && <p className="text-sm text-red-600">{completeError}</p>}
 
         {blanks.event.debriefCompletedAt ? (
           <p className="text-sm text-green-700 font-medium">
             &#10003; Debrief marked complete. You can still edit any section above.
           </p>
         ) : (
-          <Button
-            onClick={handleComplete}
-            disabled={isPending}
-            className="w-full sm:w-auto"
-          >
+          <Button onClick={handleComplete} disabled={isPending} className="w-full sm:w-auto">
             {isPending ? 'Saving...' : 'Complete Debrief'}
           </Button>
         )}

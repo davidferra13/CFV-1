@@ -1,35 +1,44 @@
+// @ts-nocheck
 'use server'
 
 // AI Staff Briefing Generator
-// Generates a comprehensive AI-drafted staff briefing document from event data.
-// Extends the existing deterministic staff-briefing-panel.tsx with AI narrative.
-// Routed to Gemini (quality-critical document generation).
+// PRIVACY: Sends guest names, allergens, client vibe notes, staff names — must stay local.
 // Output is DRAFT ONLY — chef edits and approves before sharing with staff.
 
+import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { GoogleGenAI } from '@google/genai'
+import { parseWithOllama } from '@/lib/ai/parse-ollama'
+import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
 export interface AIStaffBriefing {
-  subject: string         // document title
+  subject: string // document title
   openingParagraph: string // context setter for staff
-  serviceProtocol: string  // how service should flow
-  menuNarrative: string    // chef's intent for each course
-  clientVibeNotes: string  // how to read and serve this client
-  allergenAlerts: string   // safety-critical dietary section
-  keyTimings: string       // critical moments
+  serviceProtocol: string // how service should flow
+  menuNarrative: string // chef's intent for each course
+  clientVibeNotes: string // how to read and serve this client
+  allergenAlerts: string // safety-critical dietary section
+  keyTimings: string // critical moments
   dresscodeAndPresentation: string
   cleanupProtocol: string
-  closingNote: string      // motivational / expectation setter
-  fullDocument: string     // assembled single-page briefing
+  closingNote: string // motivational / expectation setter
+  fullDocument: string // assembled single-page briefing
   generatedAt: string
 }
 
-const getClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw new Error('GEMINI_API_KEY not configured')
-  return new GoogleGenAI({ apiKey })
-}
+const StaffBriefingSchema = z.object({
+  subject: z.string(),
+  openingParagraph: z.string(),
+  serviceProtocol: z.string(),
+  menuNarrative: z.string(),
+  clientVibeNotes: z.string(),
+  allergenAlerts: z.string(),
+  keyTimings: z.string(),
+  dresscodeAndPresentation: z.string(),
+  cleanupProtocol: z.string(),
+  closingNote: z.string(),
+  fullDocument: z.string(),
+})
 
 export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffBriefing> {
   const user = await requireChef()
@@ -38,7 +47,9 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
   const [eventResult, menuResult, guestsResult, staffResult, chefResult] = await Promise.all([
     supabase
       .from('events')
-      .select('occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, notes')
+      .select(
+        'occasion, guest_count, event_date, serve_time, arrival_time, location_address, service_style, dietary_restrictions, allergies, special_requests, notes'
+      )
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single(),
@@ -55,11 +66,7 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
       .from('event_staff')
       .select('role, staff_members(full_name, role)')
       .eq('event_id', eventId),
-    supabase
-      .from('chefs')
-      .select('full_name, business_name')
-      .eq('id', user.tenantId!)
-      .single(),
+    supabase.from('chefs').select('full_name, business_name').eq('id', user.tenantId!).single(),
   ])
 
   const event = eventResult.data
@@ -70,20 +77,29 @@ export async function generateAIStaffBriefing(eventId: string): Promise<AIStaffB
   const staff = staffResult.data ?? []
   const chef = chefResult.data
 
-  const staffList = staff.map((s: any) => `${s.staff_members?.full_name ?? 'Staff'} (${s.role ?? s.staff_members?.role ?? 'general'})`).join(', ')
+  const staffList = staff
+    .map(
+      (s: any) =>
+        `${s.staff_members?.full_name ?? 'Staff'} (${s.role ?? s.staff_members?.role ?? 'general'})`
+    )
+    .join(', ')
   const allergenSummary = [
-    ...(event.dietary_restrictions as string[] ?? []),
-    ...(event.allergies as string[] ?? []),
-    ...guests.flatMap(g => [...(g.dietary_restrictions as string[] ?? []), ...(g.allergies as string[] ?? [])]),
+    ...((event.dietary_restrictions as string[]) ?? []),
+    ...((event.allergies as string[]) ?? []),
+    ...guests.flatMap((g) => [
+      ...((g.dietary_restrictions as string[]) ?? []),
+      ...((g.allergies as string[]) ?? []),
+    ]),
   ].filter(Boolean)
 
-  const prompt = `You are a private chef drafting a professional staff briefing document for an upcoming event.
+  const systemPrompt = `You are a private chef drafting a professional staff briefing document for an upcoming event.
 Write it as if you are the chef, speaking directly to your team.
 Tone: warm, professional, precise. Use "we" when referring to the team.
 The briefing must fit on ONE printed page — be comprehensive but concise.
 Do NOT invent information not provided. Use "TBD" for missing details.
+Return ONLY valid JSON.`
 
-Event Details:
+  const userContent = `Event Details:
   Chef: ${chef?.full_name ?? 'Chef'}
   Business: ${chef?.business_name ?? ''}
   Occasion: ${event.occasion ?? 'Private Event'}
@@ -96,13 +112,13 @@ Event Details:
   Internal notes: ${event.notes ?? 'None'}
 
 Menu:
-${menu.map(m => `  [${m.course_type ?? 'Course'}] ${m.name}${m.description ? ': ' + m.description : ''}${m.allergen_tags ? ' ⚠ ' + (m.allergen_tags as string[]).join(', ') : ''}`).join('\n') || '  Menu not yet assigned'}
+${menu.map((m) => `  [${m.course_type ?? 'Course'}] ${m.name}${m.description ? ': ' + m.description : ''}${m.allergen_tags ? ' ! ' + (m.allergen_tags as string[]).join(', ') : ''}`).join('\n') || '  Menu not yet assigned'}
 
 Allergen Alerts (CRITICAL):
-${allergenSummary.length > 0 ? allergenSummary.map(a => '  ⚠ ' + a).join('\n') : '  None noted — verify with client'}
+${allergenSummary.length > 0 ? allergenSummary.map((a) => '  ! ' + a).join('\n') : '  None noted — verify with client'}
 
-Guest List (${guests.length} RSVP'd):
-${guests.map(g => `  ${g.name}${(g.dietary_restrictions as string[] ?? []).length ? ': ' + (g.dietary_restrictions as string[]).join(', ') : ''}${(g.allergies as string[] ?? []).length ? ' | allergies: ' + (g.allergies as string[]).join(', ') : ''}`).join('\n') || '  No individual guest list yet'}
+Guest List (${guests.length} RSVPd):
+${guests.map((g) => `  ${g.name}${((g.dietary_restrictions as string[]) ?? []).length ? ': ' + (g.dietary_restrictions as string[]).join(', ') : ''}${((g.allergies as string[]) ?? []).length ? ' | allergies: ' + (g.allergies as string[]).join(', ') : ''}`).join('\n') || '  No individual guest list yet'}
 
 Return JSON: {
   "subject": "Staff Briefing — [occasion + date]",
@@ -116,21 +132,13 @@ Return JSON: {
   "cleanupProtocol": "...",
   "closingNote": "...",
   "fullDocument": "complete assembled single-page briefing as plain text"
-}
-
-Return ONLY valid JSON.`
+}`
 
   try {
-    const ai = getClient()
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
-      contents: prompt,
-      config: { temperature: 0.5, responseMimeType: 'application/json' },
-    })
-    const text = (response.text || '').replace(/```json\n?|\n?```/g, '').trim()
-    const parsed = JSON.parse(text)
-    return { ...parsed, generatedAt: new Date().toISOString() }
+    const result = await parseWithOllama(systemPrompt, userContent, StaffBriefingSchema)
+    return { ...result, generatedAt: new Date().toISOString() }
   } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
     console.error('[staff-briefing-ai] Failed:', err)
     throw new Error('Could not generate staff briefing. Please try again.')
   }

@@ -19,6 +19,10 @@ export type AuditActionType =
   | 'admin_cleared_announcement'
   | 'admin_toggled_flag'
   | 'admin_bulk_flag'
+  | 'cannabis_tier_granted'
+  | 'cannabis_tier_revoked'
+  | 'cannabis_invite_approved'
+  | 'cannabis_invite_rejected'
 
 export async function logAdminAction({
   actorEmail,

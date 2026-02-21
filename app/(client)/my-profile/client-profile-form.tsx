@@ -3,7 +3,10 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { updateMyProfile, type UpdateClientProfileInput } from '@/lib/clients/client-profile-actions'
+import {
+  updateMyProfile,
+  type UpdateClientProfileInput,
+} from '@/lib/clients/client-profile-actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -21,6 +24,7 @@ interface ClientProfileFormProps {
     phone: string | null
     address: string | null
     dietary_restrictions: string[] | null
+    dietary_protocols: string[] | null
     allergies: string[] | null
     dislikes: string[] | null
     spice_tolerance: string | null
@@ -39,19 +43,97 @@ interface ClientProfileFormProps {
 }
 
 const CUISINE_SUGGESTIONS = [
-  'Italian', 'French', 'Japanese', 'Mexican', 'Thai', 'Indian', 'Chinese',
-  'Mediterranean', 'Korean', 'Vietnamese', 'Spanish', 'Greek', 'Moroccan',
-  'Southern', 'Cajun', 'BBQ', 'Seafood', 'Farm-to-Table', 'Fusion',
+  'Italian',
+  'French',
+  'Japanese',
+  'Mexican',
+  'Thai',
+  'Indian',
+  'Chinese',
+  'Mediterranean',
+  'Korean',
+  'Vietnamese',
+  'Spanish',
+  'Greek',
+  'Moroccan',
+  'Southern',
+  'Cajun',
+  'BBQ',
+  'Seafood',
+  'Farm-to-Table',
+  'Fusion',
 ]
 
 const DIETARY_SUGGESTIONS = [
-  'Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo',
-  'Pescatarian', 'Kosher', 'Halal', 'Low-Sodium', 'Nut-Free',
+  'Vegetarian',
+  'Vegan',
+  'Gluten-Free',
+  'Dairy-Free',
+  'Keto',
+  'Paleo',
+  'Pescatarian',
+  'Kosher',
+  'Halal',
+  'Low-Sodium',
+  'Nut-Free',
+]
+
+const DIETARY_PROTOCOLS = [
+  {
+    value: 'glp1',
+    label: 'GLP-1 / Ozempic Support',
+    description: 'Smaller portions, protein-forward, light prep',
+  },
+  {
+    value: 'longevity',
+    label: 'Longevity Protocol',
+    description: 'Bryan Johnson / anti-aging science-based eating',
+  },
+  {
+    value: 'low_fodmap',
+    label: 'Low-FODMAP',
+    description: 'Irritable bowel / digestive sensitivity protocol',
+  },
+  {
+    value: 'aip',
+    label: 'AIP (Autoimmune Protocol)',
+    description: 'Eliminates grains, legumes, nightshades, dairy',
+  },
+  {
+    value: 'carnivore',
+    label: 'Carnivore',
+    description: 'Animal products only — meat, eggs, some dairy',
+  },
+  {
+    value: 'intermittent_fasting',
+    label: 'Intermittent Fasting',
+    description: 'Time-restricted eating; meal timing matters',
+  },
+  {
+    value: 'dash',
+    label: 'DASH Diet',
+    description: 'Low sodium, heart-healthy, blood pressure focused',
+  },
+  {
+    value: 'mediterranean',
+    label: 'Mediterranean',
+    description: 'Olive oil, whole grains, fish, fresh vegetables',
+  },
 ]
 
 const ALLERGY_SUGGESTIONS = [
-  'Peanuts', 'Tree Nuts', 'Shellfish', 'Fish', 'Eggs', 'Milk', 'Soy',
-  'Wheat', 'Sesame', 'Sulfites', 'Mustard', 'Celery',
+  'Peanuts',
+  'Tree Nuts',
+  'Shellfish',
+  'Fish',
+  'Eggs',
+  'Milk',
+  'Soy',
+  'Wheat',
+  'Sesame',
+  'Sulfites',
+  'Mustard',
+  'Celery',
 ]
 
 export function ClientProfileForm({ profile }: ClientProfileFormProps) {
@@ -66,20 +148,31 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
   const [phone, setPhone] = useState(profile.phone || '')
   const [address, setAddress] = useState(profile.address || '')
 
-  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(profile.dietary_restrictions || [])
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>(
+    profile.dietary_restrictions || []
+  )
+  const [dietaryProtocols, setDietaryProtocols] = useState<string[]>(
+    profile.dietary_protocols || []
+  )
   const [allergies, setAllergies] = useState<string[]>(profile.allergies || [])
   const [dislikes, setDislikes] = useState<string[]>(profile.dislikes || [])
   const [spiceTolerance, setSpiceTolerance] = useState(profile.spice_tolerance || '')
-  const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>(profile.favorite_cuisines || [])
+  const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>(
+    profile.favorite_cuisines || []
+  )
   const [favoriteDishes, setFavoriteDishes] = useState<string[]>(profile.favorite_dishes || [])
-  const [wineBeveragePreferences, setWineBeveragePreferences] = useState(profile.wine_beverage_preferences || '')
+  const [wineBeveragePreferences, setWineBeveragePreferences] = useState(
+    profile.wine_beverage_preferences || ''
+  )
 
   const [parkingInstructions, setParkingInstructions] = useState(profile.parking_instructions || '')
   const [accessInstructions, setAccessInstructions] = useState(profile.access_instructions || '')
   const [kitchenSize, setKitchenSize] = useState(profile.kitchen_size || '')
   const [kitchenConstraints, setKitchenConstraints] = useState(profile.kitchen_constraints || '')
   const [houseRules, setHouseRules] = useState(profile.house_rules || '')
-  const [equipmentAvailable, setEquipmentAvailable] = useState<string[]>(profile.equipment_available || [])
+  const [equipmentAvailable, setEquipmentAvailable] = useState<string[]>(
+    profile.equipment_available || []
+  )
 
   const [children, setChildren] = useState<string[]>(profile.children || [])
   const [familyNotes, setFamilyNotes] = useState(profile.family_notes || '')
@@ -95,6 +188,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
       phone: phone || null,
       address: address || null,
       dietary_restrictions: dietaryRestrictions,
+      dietary_protocols: dietaryProtocols,
       allergies,
       dislikes,
       spice_tolerance: (spiceTolerance || null) as UpdateClientProfileInput['spice_tolerance'],
@@ -124,12 +218,8 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
 
   return (
     <div className="space-y-6">
-      {success && (
-        <Alert variant="success">Profile saved successfully.</Alert>
-      )}
-      {error && (
-        <Alert variant="error">{error}</Alert>
-      )}
+      {success && <Alert variant="success">Profile saved successfully.</Alert>}
+      {error && <Alert variant="error">{error}</Alert>}
 
       {/* Personal Info */}
       <Card>
@@ -195,6 +285,43 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
             suggestions={DIETARY_SUGGESTIONS}
           />
 
+          {/* Dietary Protocols — fixed set, toggled as pills */}
+          <div>
+            <label className="block text-sm font-medium text-stone-700 mb-2">
+              Dietary Protocols
+            </label>
+            <p className="text-xs text-stone-500 mb-3">
+              Select any specialized eating protocols you follow. Your chef will adapt meals
+              accordingly.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {DIETARY_PROTOCOLS.map((protocol) => {
+                const selected = dietaryProtocols.includes(protocol.value)
+                return (
+                  <button
+                    key={protocol.value}
+                    type="button"
+                    onClick={() =>
+                      setDietaryProtocols(
+                        selected
+                          ? dietaryProtocols.filter((p) => p !== protocol.value)
+                          : [...dietaryProtocols, protocol.value]
+                      )
+                    }
+                    title={protocol.description}
+                    className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                      selected
+                        ? 'bg-brand-600 text-white border-brand-600'
+                        : 'bg-white text-stone-700 border-stone-300 hover:border-brand-400 hover:text-brand-700'
+                    }`}
+                  >
+                    {protocol.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <TagInput
             label="Allergies"
             value={allergies}
@@ -245,7 +372,6 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
             rows={2}
             helperText="Preferred wines, cocktails, non-alcoholic beverages, etc."
           />
-
         </CardContent>
       </Card>
 

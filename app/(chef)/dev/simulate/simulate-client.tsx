@@ -65,10 +65,10 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
     <div className="flex flex-col gap-8 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">AI Simulation Lab</h1>
+        <h1 className="text-2xl font-bold text-stone-900">Simulation Lab</h1>
         <p className="text-stone-600 mt-1">
-          Ollama generates synthetic chef scenarios → runs through the AI pipeline → grades outputs.
-          Failures surface here so you can improve prompts before they hit real users.
+          Generates synthetic chef scenarios → runs through the pipeline → grades outputs. Failures
+          surface here so you can improve prompts before they hit real users.
         </p>
       </div>
 

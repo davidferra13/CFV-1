@@ -1,0 +1,140 @@
+'use client'
+
+import { useState, useTransition } from 'react'
+import { X } from 'lucide-react'
+import type { ChefGoal } from '@/lib/goals/types'
+import { formatGoalValue, formatGoalUnit } from '@/lib/goals/engine'
+import { logGoalCheckIn } from '@/lib/goals/check-in-actions'
+
+interface GoalCheckInModalProps {
+  goal: ChefGoal
+  currentValue: number
+  onClose: () => void
+}
+
+export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInModalProps) {
+  const [value, setValue] = useState('')
+  const [notes, setNotes] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  const unit = formatGoalUnit(goal.goalType)
+  const parsedValue = parseInt(value || '0', 10)
+  const canSave = parsedValue >= 1 && !isPending
+
+  function handleSave() {
+    if (!canSave) return
+    setError(null)
+    startTransition(async () => {
+      try {
+        await logGoalCheckIn({
+          goalId: goal.id,
+          loggedValue: parsedValue,
+          notes: notes.trim() || null,
+        })
+        onClose()
+      } catch (err) {
+        setError((err as Error).message)
+      }
+    })
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+
+      {/* Modal */}
+      <div className="relative w-full sm:max-w-md mx-auto bg-white rounded-t-2xl sm:rounded-2xl shadow-xl p-6 space-y-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-stone-900">Log Progress</h2>
+            <p className="text-sm text-stone-500 mt-0.5 truncate max-w-[260px]">{goal.label}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-full p-1.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Current progress context */}
+        <div className="rounded-lg bg-stone-50 px-4 py-3 text-sm">
+          <div className="flex justify-between">
+            <span className="text-stone-500">Current total</span>
+            <span className="font-medium text-stone-900">
+              {formatGoalValue(currentValue, goal.goalType)}
+            </span>
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-stone-500">Target</span>
+            <span className="font-medium text-stone-900">
+              {formatGoalValue(goal.targetValue, goal.goalType)}
+            </span>
+          </div>
+        </div>
+
+        {/* Value input */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">
+            How many {unit}
+            {parsedValue === 1 ? '' : 's'} to add?
+          </label>
+          <input
+            type="number"
+            min={1}
+            step={1}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="1"
+            autoFocus
+            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          />
+          <p className="text-xs text-stone-400 mt-1">
+            This adds to your running total for this period.
+          </p>
+        </div>
+
+        {/* Optional notes */}
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">
+            Notes <span className="text-stone-400 font-normal">(optional)</span>
+          </label>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            maxLength={500}
+            placeholder="e.g. Cooked Thai for the first time"
+            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          />
+        </div>
+
+        {error && (
+          <p className="text-sm text-red-600 rounded-md bg-red-50 border border-red-200 px-3 py-2">
+            {error}
+          </p>
+        )}
+
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={!canSave}
+            className="flex-1 rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            {isPending
+              ? 'Saving…'
+              : `Log +${parsedValue || 0} ${unit}${parsedValue === 1 ? '' : 's'}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
