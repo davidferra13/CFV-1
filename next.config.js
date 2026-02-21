@@ -70,24 +70,24 @@ const nextConfig = {
           },
           {
             key: 'Permissions-Policy',
-            value: 'geolocation=(), microphone=(), camera=(), payment=(self "https://js.stripe.com")',
+            value:
+              'geolocation=(), microphone=(), camera=(), payment=(self "https://js.stripe.com")',
           },
           {
             key: 'Content-Security-Policy',
             value: [
               "default-src 'self'",
               // 'unsafe-inline' is required by Next.js App Router (inline hydration scripts).
-              // 'strict-dynamic' overrides 'unsafe-inline' in CSP3-compliant browsers, so
-              // modern browsers fall back to the more secure dynamic trust model while older
-              // browsers still load correctly. This is the recommended pattern until
-              // Next.js nonce support is production-ready.
-              "script-src 'self' 'unsafe-inline' 'strict-dynamic' https://js.stripe.com",
+              // NOTE: Do NOT add 'strict-dynamic' — it overrides 'self' and 'unsafe-inline'
+              // in CSP3 browsers, requiring nonce-based script loading which Next.js 14
+              // does not support. Adding it blocks ALL JS and kills hydration.
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
               "font-src 'self'",
               "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://hooks.stripe.com https://accounts.google.com",
               "worker-src 'self'",
-              "frame-src https://js.stripe.com",
+              'frame-src https://js.stripe.com',
               "frame-ancestors 'none'",
               "object-src 'none'",
               "base-uri 'self'",
@@ -114,7 +114,9 @@ const sentryConfig = {
   hideSourceMaps: true,
   // Don't fail the build if Sentry upload fails (graceful degradation)
   dryRun: !process.env.SENTRY_AUTH_TOKEN,
-  disableLogger: true,
+  // Disable webpack plugins to prevent dual-pass build-manifest corruption on Windows
+  disableServerWebpackPlugin: true,
+  disableClientWebpackPlugin: true,
 }
 
 module.exports = withSentryConfig(withPWA(nextConfig), sentryConfig)

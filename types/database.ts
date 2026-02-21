@@ -1237,6 +1237,10 @@ export type Database = {
           inquiry_expiry_days: number
           no_response_alerts_enabled: boolean
           no_response_threshold_days: number
+          payment_overdue_alert_days_after: number
+          payment_overdue_alert_enabled: boolean
+          payment_reminder_days_before: number
+          payment_reminder_enabled: boolean
           quote_auto_expiry_enabled: boolean
           receipt_upload_reminders_enabled: boolean
           tenant_id: string
@@ -1260,6 +1264,10 @@ export type Database = {
           inquiry_expiry_days?: number
           no_response_alerts_enabled?: boolean
           no_response_threshold_days?: number
+          payment_overdue_alert_days_after?: number
+          payment_overdue_alert_enabled?: boolean
+          payment_reminder_days_before?: number
+          payment_reminder_enabled?: boolean
           quote_auto_expiry_enabled?: boolean
           receipt_upload_reminders_enabled?: boolean
           tenant_id: string
@@ -1283,6 +1291,10 @@ export type Database = {
           inquiry_expiry_days?: number
           no_response_alerts_enabled?: boolean
           no_response_threshold_days?: number
+          payment_overdue_alert_days_after?: number
+          payment_overdue_alert_enabled?: boolean
+          payment_reminder_days_before?: number
+          payment_reminder_enabled?: boolean
           quote_auto_expiry_enabled?: boolean
           receipt_upload_reminders_enabled?: boolean
           tenant_id?: string
@@ -3478,6 +3490,9 @@ export type Database = {
           display_name: string | null
           email: string
           google_review_url: string | null
+          gratuity_display_label: string | null
+          gratuity_mode: string
+          gratuity_service_fee_pct: number | null
           id: string
           last_closure_date: string | null
           logo_url: string | null
@@ -3526,6 +3541,9 @@ export type Database = {
           display_name?: string | null
           email: string
           google_review_url?: string | null
+          gratuity_display_label?: string | null
+          gratuity_mode?: string
+          gratuity_service_fee_pct?: number | null
           id?: string
           last_closure_date?: string | null
           logo_url?: string | null
@@ -3574,6 +3592,9 @@ export type Database = {
           display_name?: string | null
           email?: string
           google_review_url?: string | null
+          gratuity_display_label?: string | null
+          gratuity_mode?: string
+          gratuity_service_fee_pct?: number | null
           id?: string
           last_closure_date?: string | null
           logo_url?: string | null
@@ -4363,7 +4384,14 @@ export type Database = {
           house_rules: string | null
           id: string
           is_demo: boolean
+          kitchen_burner_notes: string | null
           kitchen_constraints: string | null
+          kitchen_counter_notes: string | null
+          kitchen_oven_notes: string | null
+          kitchen_plating_notes: string | null
+          kitchen_profile_updated_at: string | null
+          kitchen_refrigeration_notes: string | null
+          kitchen_sink_notes: string | null
           kitchen_size: string | null
           last_event_date: string | null
           lifetime_value_cents: number | null
@@ -4426,7 +4454,14 @@ export type Database = {
           house_rules?: string | null
           id?: string
           is_demo?: boolean
+          kitchen_burner_notes?: string | null
           kitchen_constraints?: string | null
+          kitchen_counter_notes?: string | null
+          kitchen_oven_notes?: string | null
+          kitchen_plating_notes?: string | null
+          kitchen_profile_updated_at?: string | null
+          kitchen_refrigeration_notes?: string | null
+          kitchen_sink_notes?: string | null
           kitchen_size?: string | null
           last_event_date?: string | null
           lifetime_value_cents?: number | null
@@ -4493,7 +4528,14 @@ export type Database = {
           house_rules?: string | null
           id?: string
           is_demo?: boolean
+          kitchen_burner_notes?: string | null
           kitchen_constraints?: string | null
+          kitchen_counter_notes?: string | null
+          kitchen_oven_notes?: string | null
+          kitchen_plating_notes?: string | null
+          kitchen_profile_updated_at?: string | null
+          kitchen_refrigeration_notes?: string | null
+          kitchen_sink_notes?: string | null
           kitchen_size?: string | null
           last_event_date?: string | null
           lifetime_value_cents?: number | null
@@ -6132,12 +6174,166 @@ export type Database = {
           },
         ]
       }
+      employees: {
+        Row: {
+          additional_withholding_cents: number
+          address_city: string | null
+          address_state: string | null
+          address_street: string | null
+          address_zip: string | null
+          allowances: number
+          annual_salary_cents: number | null
+          chef_id: string
+          created_at: string
+          email: string | null
+          filing_status: string
+          hire_date: string
+          hourly_rate_cents: number | null
+          id: string
+          name: string
+          pay_type: string
+          phone: string | null
+          ssn_last4: string | null
+          staff_member_id: string | null
+          status: string
+          termination_date: string | null
+          updated_at: string
+        }
+        Insert: {
+          additional_withholding_cents?: number
+          address_city?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
+          allowances?: number
+          annual_salary_cents?: number | null
+          chef_id: string
+          created_at?: string
+          email?: string | null
+          filing_status?: string
+          hire_date: string
+          hourly_rate_cents?: number | null
+          id?: string
+          name: string
+          pay_type?: string
+          phone?: string | null
+          ssn_last4?: string | null
+          staff_member_id?: string | null
+          status?: string
+          termination_date?: string | null
+          updated_at?: string
+        }
+        Update: {
+          additional_withholding_cents?: number
+          address_city?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
+          allowances?: number
+          annual_salary_cents?: number | null
+          chef_id?: string
+          created_at?: string
+          email?: string | null
+          filing_status?: string
+          hire_date?: string
+          hourly_rate_cents?: number | null
+          id?: string
+          name?: string
+          pay_type?: string
+          phone?: string | null
+          ssn_last4?: string | null
+          staff_member_id?: string | null
+          status?: string
+          termination_date?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "employees_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_depreciation_schedules: {
+        Row: {
+          annual_depreciation_cents: number
+          chef_id: string
+          claimed: boolean
+          claimed_at: string | null
+          created_at: string
+          cumulative_depreciation_cents: number
+          depreciable_basis_cents: number
+          depreciation_method: string
+          equipment_item_id: string
+          id: string
+          notes: string | null
+          tax_year: number
+          updated_at: string
+        }
+        Insert: {
+          annual_depreciation_cents: number
+          chef_id: string
+          claimed?: boolean
+          claimed_at?: string | null
+          created_at?: string
+          cumulative_depreciation_cents?: number
+          depreciable_basis_cents: number
+          depreciation_method: string
+          equipment_item_id: string
+          id?: string
+          notes?: string | null
+          tax_year: number
+          updated_at?: string
+        }
+        Update: {
+          annual_depreciation_cents?: number
+          chef_id?: string
+          claimed?: boolean
+          claimed_at?: string | null
+          created_at?: string
+          cumulative_depreciation_cents?: number
+          depreciable_basis_cents?: number
+          depreciation_method?: string
+          equipment_item_id?: string
+          id?: string
+          notes?: string | null
+          tax_year?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_depreciation_schedules_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_depreciation_schedules_equipment_item_id_fkey"
+            columns: ["equipment_item_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       equipment_items: {
         Row: {
           category: Database["public"]["Enums"]["equipment_category"]
           chef_id: string
           created_at: string
           current_value_cents: number | null
+          depreciation_method: string | null
           id: string
           last_maintained_at: string | null
           maintenance_interval_days: number | null
@@ -6145,15 +6341,19 @@ export type Database = {
           notes: string | null
           purchase_date: string | null
           purchase_price_cents: number | null
+          salvage_value_cents: number | null
           serial_number: string | null
           status: string
+          tax_year_placed_in_service: number | null
           updated_at: string
+          useful_life_years: number | null
         }
         Insert: {
           category?: Database["public"]["Enums"]["equipment_category"]
           chef_id: string
           created_at?: string
           current_value_cents?: number | null
+          depreciation_method?: string | null
           id?: string
           last_maintained_at?: string | null
           maintenance_interval_days?: number | null
@@ -6161,15 +6361,19 @@ export type Database = {
           notes?: string | null
           purchase_date?: string | null
           purchase_price_cents?: number | null
+          salvage_value_cents?: number | null
           serial_number?: string | null
           status?: string
+          tax_year_placed_in_service?: number | null
           updated_at?: string
+          useful_life_years?: number | null
         }
         Update: {
           category?: Database["public"]["Enums"]["equipment_category"]
           chef_id?: string
           created_at?: string
           current_value_cents?: number | null
+          depreciation_method?: string | null
           id?: string
           last_maintained_at?: string | null
           maintenance_interval_days?: number | null
@@ -6177,9 +6381,12 @@ export type Database = {
           notes?: string | null
           purchase_date?: string | null
           purchase_price_cents?: number | null
+          salvage_value_cents?: number | null
           serial_number?: string | null
           status?: string
+          tax_year_placed_in_service?: number | null
           updated_at?: string
+          useful_life_years?: number | null
         }
         Relationships: [
           {
@@ -6673,6 +6880,83 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_sales_tax: {
+        Row: {
+          chef_id: string
+          created_at: string
+          event_id: string
+          exemption_reason: string | null
+          id: string
+          is_exempt: boolean
+          remittance_period: string | null
+          remitted: boolean
+          remitted_at: string | null
+          tax_collected_cents: number
+          tax_rate_bps: number
+          taxable_amount_cents: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          event_id: string
+          exemption_reason?: string | null
+          id?: string
+          is_exempt?: boolean
+          remittance_period?: string | null
+          remitted?: boolean
+          remitted_at?: string | null
+          tax_collected_cents?: number
+          tax_rate_bps?: number
+          taxable_amount_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          event_id?: string
+          exemption_reason?: string | null
+          id?: string
+          is_exempt?: boolean
+          remittance_period?: string | null
+          remitted?: boolean
+          remitted_at?: string | null
+          tax_collected_cents?: number
+          tax_rate_bps?: number
+          taxable_amount_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_sales_tax_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_sales_tax_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_sales_tax_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "event_sales_tax_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -7894,6 +8178,47 @@ export type Database = {
           },
         ]
       }
+      fine_tuning_examples: {
+        Row: {
+          created_at: string
+          id: string
+          input_text: string
+          module: string
+          output_json: Json
+          quality_score: number
+          source: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          input_text: string
+          module: string
+          output_json: Json
+          quality_score: number
+          source: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          input_text?: string
+          module?: string
+          output_json?: Json
+          quality_score?: number
+          source?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fine_tuning_examples_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follow_up_timers: {
         Row: {
           completed_at: string | null
@@ -8480,10 +8805,13 @@ export type Database = {
           id: string
           ingredient_id: string | null
           ingredient_name: string
+          is_manual_override: boolean
           kroger_price_cents: number | null
+          manual_price_cents: number | null
           mealme_price_cents: number | null
           quantity: number | null
           quote_id: string
+          source_label: string | null
           spoonacular_price_cents: number | null
           unit: string | null
         }
@@ -8492,10 +8820,13 @@ export type Database = {
           id?: string
           ingredient_id?: string | null
           ingredient_name: string
+          is_manual_override?: boolean
           kroger_price_cents?: number | null
+          manual_price_cents?: number | null
           mealme_price_cents?: number | null
           quantity?: number | null
           quote_id: string
+          source_label?: string | null
           spoonacular_price_cents?: number | null
           unit?: string | null
         }
@@ -8504,10 +8835,13 @@ export type Database = {
           id?: string
           ingredient_id?: string | null
           ingredient_name?: string
+          is_manual_override?: boolean
           kroger_price_cents?: number | null
+          manual_price_cents?: number | null
           mealme_price_cents?: number | null
           quantity?: number | null
           quote_id?: string
+          source_label?: string | null
           spoonacular_price_cents?: number | null
           unit?: string | null
         }
@@ -8609,6 +8943,47 @@ export type Database = {
           {
             foreignKeyName: "grocery_price_quotes_tenant_id_fkey"
             columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_insurance_premiums: {
+        Row: {
+          annual_premium_cents: number
+          chef_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          premium_type: string
+          tax_year: number
+          updated_at: string
+        }
+        Insert: {
+          annual_premium_cents: number
+          chef_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          premium_type?: string
+          tax_year: number
+          updated_at?: string
+        }
+        Update: {
+          annual_premium_cents?: number
+          chef_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          premium_type?: string
+          tax_year?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_insurance_premiums_chef_id_fkey"
+            columns: ["chef_id"]
             isOneToOne: false
             referencedRelation: "chefs"
             referencedColumns: ["id"]
@@ -9031,6 +9406,7 @@ export type Database = {
       }
       inquiries: {
         Row: {
+          budget_range: string | null
           channel: Database["public"]["Enums"]["inquiry_channel"]
           client_id: string | null
           confirmed_budget_cents: number | null
@@ -9054,6 +9430,8 @@ export type Database = {
           next_action_required: string | null
           partner_location_id: string | null
           referral_partner_id: string | null
+          referral_source: string | null
+          service_style_pref: string | null
           source_message: string | null
           status: Database["public"]["Enums"]["inquiry_status"]
           tenant_id: string
@@ -9061,6 +9439,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          budget_range?: string | null
           channel: Database["public"]["Enums"]["inquiry_channel"]
           client_id?: string | null
           confirmed_budget_cents?: number | null
@@ -9084,6 +9463,8 @@ export type Database = {
           next_action_required?: string | null
           partner_location_id?: string | null
           referral_partner_id?: string | null
+          referral_source?: string | null
+          service_style_pref?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
           tenant_id: string
@@ -9091,6 +9472,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          budget_range?: string | null
           channel?: Database["public"]["Enums"]["inquiry_channel"]
           client_id?: string | null
           confirmed_budget_cents?: number | null
@@ -9114,6 +9496,8 @@ export type Database = {
           next_action_required?: string | null
           partner_location_id?: string | null
           referral_partner_id?: string | null
+          referral_source?: string | null
+          service_style_pref?: string | null
           source_message?: string | null
           status?: Database["public"]["Enums"]["inquiry_status"]
           tenant_id?: string
@@ -11489,6 +11873,227 @@ export type Database = {
           },
         ]
       }
+      payroll_941_summaries: {
+        Row: {
+          chef_id: string
+          confirmation_number: string | null
+          created_at: string
+          employee_medicare_tax_cents: number
+          employee_ss_tax_cents: number
+          employer_medicare_tax_cents: number
+          employer_ss_tax_cents: number
+          federal_income_tax_withheld_cents: number
+          filed: boolean
+          filed_at: string | null
+          id: string
+          notes: string | null
+          quarter: number
+          tax_year: number
+          total_taxes_cents: number
+          total_wages_cents: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          confirmation_number?: string | null
+          created_at?: string
+          employee_medicare_tax_cents?: number
+          employee_ss_tax_cents?: number
+          employer_medicare_tax_cents?: number
+          employer_ss_tax_cents?: number
+          federal_income_tax_withheld_cents?: number
+          filed?: boolean
+          filed_at?: string | null
+          id?: string
+          notes?: string | null
+          quarter: number
+          tax_year: number
+          total_taxes_cents?: number
+          total_wages_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          confirmation_number?: string | null
+          created_at?: string
+          employee_medicare_tax_cents?: number
+          employee_ss_tax_cents?: number
+          employer_medicare_tax_cents?: number
+          employer_ss_tax_cents?: number
+          federal_income_tax_withheld_cents?: number
+          filed?: boolean
+          filed_at?: string | null
+          id?: string
+          notes?: string | null
+          quarter?: number
+          tax_year?: number
+          total_taxes_cents?: number
+          total_wages_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_941_summaries_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_records: {
+        Row: {
+          chef_id: string
+          created_at: string
+          employee_id: string
+          employee_medicare_tax_cents: number
+          employee_ss_tax_cents: number
+          employer_futa_cents: number
+          employer_medicare_tax_cents: number
+          employer_ss_tax_cents: number
+          federal_income_tax_cents: number
+          gross_pay_cents: number
+          id: string
+          net_pay_cents: number
+          notes: string | null
+          overtime_hours: number
+          overtime_pay_cents: number
+          pay_date: string
+          pay_period_end: string
+          pay_period_start: string
+          regular_hours: number
+          regular_pay_cents: number
+          state_income_tax_cents: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          employee_id: string
+          employee_medicare_tax_cents?: number
+          employee_ss_tax_cents?: number
+          employer_futa_cents?: number
+          employer_medicare_tax_cents?: number
+          employer_ss_tax_cents?: number
+          federal_income_tax_cents?: number
+          gross_pay_cents?: number
+          id?: string
+          net_pay_cents?: number
+          notes?: string | null
+          overtime_hours?: number
+          overtime_pay_cents?: number
+          pay_date: string
+          pay_period_end: string
+          pay_period_start: string
+          regular_hours?: number
+          regular_pay_cents?: number
+          state_income_tax_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          employee_id?: string
+          employee_medicare_tax_cents?: number
+          employee_ss_tax_cents?: number
+          employer_futa_cents?: number
+          employer_medicare_tax_cents?: number
+          employer_ss_tax_cents?: number
+          federal_income_tax_cents?: number
+          gross_pay_cents?: number
+          id?: string
+          net_pay_cents?: number
+          notes?: string | null
+          overtime_hours?: number
+          overtime_pay_cents?: number
+          pay_date?: string
+          pay_period_end?: string
+          pay_period_start?: string
+          regular_hours?: number
+          regular_pay_cents?: number
+          state_income_tax_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_records_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_records_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_w2_summaries: {
+        Row: {
+          box1_wages_cents: number
+          box17_state_tax_cents: number
+          box2_federal_withheld_cents: number
+          box3_ss_wages_cents: number
+          box4_ss_withheld_cents: number
+          box5_medicare_wages_cents: number
+          box6_medicare_withheld_cents: number
+          chef_id: string
+          created_at: string
+          employee_id: string
+          generated_at: string
+          id: string
+          tax_year: number
+        }
+        Insert: {
+          box1_wages_cents?: number
+          box17_state_tax_cents?: number
+          box2_federal_withheld_cents?: number
+          box3_ss_wages_cents?: number
+          box4_ss_withheld_cents?: number
+          box5_medicare_wages_cents?: number
+          box6_medicare_withheld_cents?: number
+          chef_id: string
+          created_at?: string
+          employee_id: string
+          generated_at?: string
+          id?: string
+          tax_year: number
+        }
+        Update: {
+          box1_wages_cents?: number
+          box17_state_tax_cents?: number
+          box2_federal_withheld_cents?: number
+          box3_ss_wages_cents?: number
+          box4_ss_withheld_cents?: number
+          box5_medicare_wages_cents?: number
+          box6_medicare_withheld_cents?: number
+          chef_id?: string
+          created_at?: string
+          employee_id?: string
+          generated_at?: string
+          id?: string
+          tax_year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_w2_summaries_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_w2_summaries_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_fee_ledger: {
         Row: {
           amount_cents: number
@@ -12272,35 +12877,58 @@ export type Database = {
       receipt_photos: {
         Row: {
           approved_at: string | null
+          client_id: string | null
           created_at: string
-          event_id: string
+          event_id: string | null
           id: string
+          notes: string | null
           ocr_raw: string | null
           photo_url: string
+          storage_path: string | null
           tenant_id: string
           upload_status: string
         }
         Insert: {
           approved_at?: string | null
+          client_id?: string | null
           created_at?: string
-          event_id: string
+          event_id?: string | null
           id?: string
+          notes?: string | null
           ocr_raw?: string | null
           photo_url: string
+          storage_path?: string | null
           tenant_id: string
           upload_status?: string
         }
         Update: {
           approved_at?: string | null
+          client_id?: string | null
           created_at?: string
-          event_id?: string
+          event_id?: string | null
           id?: string
+          notes?: string | null
           ocr_raw?: string | null
           photo_url?: string
+          storage_path?: string | null
           tenant_id?: string
           upload_status?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "receipt_photos_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "receipt_photos_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "receipt_photos_event_id_fkey"
             columns: ["event_id"]
@@ -12829,6 +13457,147 @@ export type Database = {
             foreignKeyName: "response_templates_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      retirement_contributions: {
+        Row: {
+          account_type: string
+          chef_id: string
+          contributed_at: string | null
+          contribution_cents: number
+          created_at: string
+          id: string
+          notes: string | null
+          tax_year: number
+          updated_at: string
+        }
+        Insert: {
+          account_type: string
+          chef_id: string
+          contributed_at?: string | null
+          contribution_cents: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          tax_year: number
+          updated_at?: string
+        }
+        Update: {
+          account_type?: string
+          chef_id?: string
+          contributed_at?: string | null
+          contribution_cents?: number
+          created_at?: string
+          id?: string
+          notes?: string | null
+          tax_year?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "retirement_contributions_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_tax_remittances: {
+        Row: {
+          amount_remitted_cents: number
+          chef_id: string
+          confirmation_number: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          period: string
+          period_end: string
+          period_start: string
+          remitted_at: string
+        }
+        Insert: {
+          amount_remitted_cents: number
+          chef_id: string
+          confirmation_number?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period: string
+          period_end: string
+          period_start: string
+          remitted_at: string
+        }
+        Update: {
+          amount_remitted_cents?: number
+          chef_id?: string
+          confirmation_number?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          period?: string
+          period_end?: string
+          period_start?: string
+          remitted_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_tax_remittances_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales_tax_settings: {
+        Row: {
+          chef_id: string
+          created_at: string
+          enabled: boolean
+          filing_frequency: string
+          id: string
+          local_rate_bps: number
+          notes: string | null
+          registration_number: string | null
+          state: string | null
+          state_rate_bps: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          enabled?: boolean
+          filing_frequency?: string
+          id?: string
+          local_rate_bps?: number
+          notes?: string | null
+          registration_number?: string | null
+          state?: string | null
+          state_rate_bps?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          enabled?: boolean
+          filing_frequency?: string
+          id?: string
+          local_rate_bps?: number
+          notes?: string | null
+          registration_number?: string | null
+          state?: string | null
+          state_rate_bps?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_tax_settings_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: true
             referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
@@ -13373,6 +14142,110 @@ export type Database = {
           },
           {
             foreignKeyName: "shopping_substitutions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulation_results: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          failures: Json
+          id: string
+          module: string
+          passed: boolean
+          raw_output: Json | null
+          run_id: string
+          scenario_payload: string
+          score: number
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          failures?: Json
+          id?: string
+          module: string
+          passed?: boolean
+          raw_output?: Json | null
+          run_id: string
+          scenario_payload: string
+          score?: number
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          failures?: Json
+          id?: string
+          module?: string
+          passed?: boolean
+          raw_output?: Json | null
+          run_id?: string
+          scenario_payload?: string
+          score?: number
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulation_results_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "simulation_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "simulation_results_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulation_runs: {
+        Row: {
+          completed_at: string | null
+          config: Json
+          id: string
+          module_breakdown: Json
+          pass_rate: number | null
+          passed_count: number
+          scenario_count: number
+          started_at: string
+          status: string
+          tenant_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          config?: Json
+          id?: string
+          module_breakdown?: Json
+          pass_rate?: number | null
+          passed_count?: number
+          scenario_count?: number
+          started_at?: string
+          status?: string
+          tenant_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          config?: Json
+          id?: string
+          module_breakdown?: Json
+          pass_rate?: number | null
+          passed_count?: number
+          scenario_count?: number
+          started_at?: string
+          status?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulation_runs_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
@@ -14220,6 +15093,11 @@ export type Database = {
       }
       staff_members: {
         Row: {
+          address_city: string | null
+          address_state: string | null
+          address_street: string | null
+          address_zip: string | null
+          business_name: string | null
           chef_id: string
           contractor_type: string | null
           created_at: string
@@ -14231,10 +15109,20 @@ export type Database = {
           phone: string | null
           role: Database["public"]["Enums"]["staff_role"]
           status: string
+          tin: string | null
+          tin_type: string | null
           updated_at: string
+          w9_collected: boolean
+          w9_document_url: string | null
+          w9_signed_date: string | null
           ytd_payments_cents: number | null
         }
         Insert: {
+          address_city?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
+          business_name?: string | null
           chef_id: string
           contractor_type?: string | null
           created_at?: string
@@ -14246,10 +15134,20 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["staff_role"]
           status?: string
+          tin?: string | null
+          tin_type?: string | null
           updated_at?: string
+          w9_collected?: boolean
+          w9_document_url?: string | null
+          w9_signed_date?: string | null
           ytd_payments_cents?: number | null
         }
         Update: {
+          address_city?: string | null
+          address_state?: string | null
+          address_street?: string | null
+          address_zip?: string | null
+          business_name?: string | null
           chef_id?: string
           contractor_type?: string | null
           created_at?: string
@@ -14261,7 +15159,12 @@ export type Database = {
           phone?: string | null
           role?: Database["public"]["Enums"]["staff_role"]
           status?: string
+          tin?: string | null
+          tin_type?: string | null
           updated_at?: string
+          w9_collected?: boolean
+          w9_document_url?: string | null
+          w9_signed_date?: string | null
           ytd_payments_cents?: number | null
         }
         Relationships: [
@@ -14533,9 +15436,15 @@ export type Database = {
       }
       tax_settings: {
         Row: {
+          annual_insurance_home_cents: number | null
+          annual_rent_mortgage_cents: number | null
+          annual_repairs_cents: number | null
+          annual_utilities_cents: number | null
           chef_id: string
           created_at: string
           filing_status: string
+          home_deduction_method: string
+          home_office_notes: string | null
           home_office_sqft: number | null
           home_total_sqft: number | null
           id: string
@@ -14544,9 +15453,15 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          annual_insurance_home_cents?: number | null
+          annual_rent_mortgage_cents?: number | null
+          annual_repairs_cents?: number | null
+          annual_utilities_cents?: number | null
           chef_id: string
           created_at?: string
           filing_status?: string
+          home_deduction_method?: string
+          home_office_notes?: string | null
           home_office_sqft?: number | null
           home_total_sqft?: number | null
           id?: string
@@ -14555,9 +15470,15 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          annual_insurance_home_cents?: number | null
+          annual_rent_mortgage_cents?: number | null
+          annual_repairs_cents?: number | null
+          annual_utilities_cents?: number | null
           chef_id?: string
           created_at?: string
           filing_status?: string
+          home_deduction_method?: string
+          home_office_notes?: string | null
           home_office_sqft?: number | null
           home_total_sqft?: number | null
           id?: string
