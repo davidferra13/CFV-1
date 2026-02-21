@@ -13,14 +13,49 @@ function generateRequestId(): string {
 
 // Routes that require chef role (route groups don't create URL segments)
 const chefPaths = [
-  '/dashboard', '/queue', '/leads', '/clients', '/events', '/financials', '/menus',
-  '/inquiries', '/quotes', '/expenses', '/schedule', '/settings',
-  '/aar', '/recipes', '/loyalty', '/import', '/chat', '/network', '/onboarding',
+  '/dashboard',
+  '/queue',
+  '/leads',
+  '/clients',
+  '/events',
+  '/financials',
+  '/menus',
+  '/inquiries',
+  '/quotes',
+  '/expenses',
+  '/schedule',
+  '/settings',
+  '/aar',
+  '/recipes',
+  '/loyalty',
+  '/import',
+  '/chat',
+  '/network',
+  '/onboarding',
 ]
 // Routes that require client role
-const clientPaths = ['/my-events', '/my-quotes', '/my-chat', '/my-profile', '/my-rewards', '/book-now']
+const clientPaths = [
+  '/my-events',
+  '/my-quotes',
+  '/my-chat',
+  '/my-profile',
+  '/my-rewards',
+  '/book-now',
+]
 // Paths that skip all auth processing
-const skipAuthPaths = ['/pricing', '/contact', '/privacy', '/terms', '/unauthorized', '/share', '/chef', '/partner-signup', '/chefs', '/survey']
+const skipAuthPaths = [
+  '/pricing',
+  '/contact',
+  '/privacy',
+  '/terms',
+  '/unauthorized',
+  '/share',
+  '/chef',
+  '/partner-signup',
+  '/chefs',
+  '/survey',
+  '/book',
+]
 // Admin paths — require authentication but not a specific role (email check is in layout)
 const adminPaths = ['/admin']
 
@@ -89,18 +124,14 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
-          )
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           response = NextResponse.next({
             request: {
               headers: requestHeaders,
             },
           })
           cookiesToSet.forEach(({ name, value, options }) => {
-            const cookieOptions = sessionOnly
-              ? { ...options, maxAge: undefined }
-              : options
+            const cookieOptions = sessionOnly ? { ...options, maxAge: undefined } : options
             response.cookies.set(name, value, cookieOptions)
           })
         },
@@ -174,19 +205,27 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!roleData) {
-    // No role found - send to unauthorized (which is in skipAuthPaths to avoid loops)
-    return redirectWithCookies(new URL('/unauthorized', request.url), response)
+    // No role found for an authenticated user.
+    // Redirect them to the role selection page, unless they are already there.
+    if (pathname !== '/auth/role-selection') {
+      return redirectWithCookies(new URL('/auth/role-selection', request.url), response)
+    }
+    return response
   }
 
   // Admin paths — any authenticated user can reach /admin; the layout enforces the email check
-  const isAdminRoute = adminPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+  const isAdminRoute = adminPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
   if (isAdminRoute) {
     return response
   }
 
   // Enforce role-based routing using actual URL paths
   const isChefRoute = chefPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
-  const isClientRoute = clientPaths.some((path) => pathname === path || pathname.startsWith(path + '/'))
+  const isClientRoute = clientPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
 
   if (isChefRoute && roleData.role !== 'chef') {
     return redirectWithCookies(new URL('/my-events', request.url), response)

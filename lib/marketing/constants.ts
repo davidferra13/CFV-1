@@ -4,22 +4,23 @@
 
 export const CAMPAIGN_TYPE_LABELS: Record<string, string> = {
   re_engagement: 'Re-Engagement',
-  seasonal:      'Seasonal',
-  announcement:  'Announcement',
-  thank_you:     'Thank You',
-  promotion:     'Promotion',
-  other:         'Other',
+  seasonal: 'Seasonal',
+  announcement: 'Announcement',
+  thank_you: 'Thank You',
+  promotion: 'Promotion',
+  push_dinner: 'Push Dinner',
+  other: 'Other',
 }
 
 export const SEGMENT_OPTIONS = [
-  { value: 'all_clients',      label: 'All subscribed clients' },
-  { value: 'dormant_90_days',  label: 'Clients with no bookings in 90+ days' },
-  { value: 'vip',              label: 'VIP clients' },
+  { value: 'all_clients', label: 'All subscribed clients' },
+  { value: 'dormant_90_days', label: 'Clients with no bookings in 90+ days' },
+  { value: 'vip', label: 'VIP clients' },
   { value: 'birthday_next_30', label: 'Clients with a birthday in the next 30 days' },
   { value: 'post_event_30_60', label: 'Clients whose last event was 30–60 days ago' },
-  { value: 'high_value',       label: 'High-value clients (lifetime spend ≥ $1,500)' },
-  { value: 'never_booked',     label: 'Clients who have never booked an event' },
-  { value: 'client_ids',       label: 'Specific clients (hand-picked)' },
+  { value: 'high_value', label: 'High-value clients (lifetime spend ≥ $1,500)' },
+  { value: 'never_booked', label: 'Clients who have never booked an event' },
+  { value: 'client_ids', label: 'Specific clients (hand-picked)' },
 ]
 
 export const SYSTEM_TEMPLATES = [

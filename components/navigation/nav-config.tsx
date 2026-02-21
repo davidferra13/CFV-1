@@ -486,6 +486,11 @@ export const navGroups: NavGroup[] = [
         href: '/marketing',
         label: 'Email Campaigns',
         icon: Mail,
+        children: [
+          { href: '/marketing/push-dinners', label: 'Push Dinners' },
+          { href: '/marketing/sequences', label: 'Sequences', visibility: 'advanced' },
+          { href: '/marketing/templates', label: 'Templates', visibility: 'advanced' },
+        ],
       },
       {
         href: '/inbox/history-scan',
