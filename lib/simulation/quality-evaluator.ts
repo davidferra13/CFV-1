@@ -3,8 +3,8 @@
 // Returns a score (0–100) and a list of specific failure reasons.
 // Score >= 70 = passed. Failures are human-readable for developer review.
 
-import { Ollama } from 'ollama'
 import { getOllamaConfig } from '@/lib/ai/providers'
+import { makeOllamaClient } from './ollama-client'
 import type { SimScenario } from './types'
 
 interface EvaluationResult {
@@ -183,7 +183,7 @@ export async function evaluateOutput(
   }
 
   const config = getOllamaConfig()
-  const ollama = new Ollama({ host: config.baseUrl })
+  const ollama = makeOllamaClient()
   const prompt = buildEvaluatorPrompt(scenario, rawOutput)
 
   try {

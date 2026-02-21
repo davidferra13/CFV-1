@@ -3,8 +3,8 @@
 // Calls Ollama directly using the same system prompts as the production modules.
 // No auth context required — operates on synthetic data only.
 
-import { Ollama } from 'ollama'
 import { getOllamaConfig } from '@/lib/ai/providers'
+import { makeOllamaClient } from './ollama-client'
 import type { SimScenario } from './types'
 
 interface PipelineOutput {
@@ -189,7 +189,7 @@ Return JSON: {
  */
 export async function runScenario(scenario: SimScenario): Promise<PipelineOutput> {
   const config = getOllamaConfig()
-  const ollama = new Ollama({ host: config.baseUrl })
+  const ollama = makeOllamaClient()
   const start = Date.now()
 
   const prompts = getModulePrompts(scenario)

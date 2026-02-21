@@ -1,14 +1,13 @@
 'use server'
 
 // Simulation Server Actions
-// Orchestrates the full sim-to-real loop: generate → run → evaluate → store.
-// All operations tenant-scoped. Never touches real client data.
+// Auth-gated wrappers around the internal simulation runner.
+// Core logic lives in simulation-runner.ts (no 'use server') so it can also
+// be called from the auto-scheduler and manual API route without a user session.
 
 import { requireAdmin } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import { generateScenarios } from './scenario-generator'
-import { runScenario } from './pipeline-runner'
-import { evaluateOutput } from './quality-evaluator'
+import { runSimulationInternal } from './simulation-runner'
 import type { SimModule, SimRun, SimResult, SimSummary, SimRunConfig } from './types'
 
 // ── Start a simulation run ────────────────────────────────────────────────────
@@ -19,153 +18,7 @@ export async function startSimulationRun(config: SimRunConfig): Promise<{
   error: string | null
 }> {
   const user = await requireAdmin()
-  const supabase = createServerClient()
-  const tenantId = user.tenantId!
-
-  const modules = config.modules
-  const scenariosPerModule = Math.min(config.scenariosPerModule ?? 5, 20)
-
-  // Create the run record
-  const { data: runData, error: runError } = await supabase
-    .from('simulation_runs')
-    .insert({
-      tenant_id: tenantId,
-      config: { modules, scenariosPerModule },
-      status: 'running',
-    })
-    .select('id')
-    .single()
-
-  if (runError || !runData) {
-    return { success: false, runId: null, error: runError?.message ?? 'Failed to create run' }
-  }
-
-  const runId = runData.id
-
-  try {
-    let totalScenarios = 0
-    let totalPassed = 0
-    const moduleBreakdown: Record<
-      string,
-      { count: number; passedCount: number; passRate: number }
-    > = {}
-    const fineTuningBuffer: Array<{
-      tenant_id: string
-      source: string
-      module: string
-      input_text: string
-      output_json: unknown
-      quality_score: number
-    }> = []
-
-    for (const module of modules) {
-      // Generate scenarios for this module
-      const scenarios = await generateScenarios(module, scenariosPerModule)
-      if (scenarios.length === 0) {
-        console.warn(`[sim] No scenarios generated for module: ${module}`)
-        moduleBreakdown[module] = { count: 0, passedCount: 0, passRate: 0 }
-        continue
-      }
-
-      let modulePassed = 0
-      const resultRows: Array<{
-        run_id: string
-        tenant_id: string
-        module: string
-        scenario_payload: string
-        raw_output: unknown
-        score: number
-        passed: boolean
-        failures: unknown
-        duration_ms: number
-      }> = []
-
-      for (const scenario of scenarios) {
-        // Run the scenario through the pipeline
-        const output = await runScenario(scenario)
-
-        // Evaluate the output
-        const evaluation = await evaluateOutput(scenario, output.rawOutput)
-
-        resultRows.push({
-          run_id: runId,
-          tenant_id: tenantId,
-          module,
-          scenario_payload: scenario.inputText,
-          raw_output: output.rawOutput,
-          score: evaluation.score,
-          passed: evaluation.passed,
-          failures: evaluation.failures,
-          duration_ms: output.durationMs,
-        })
-
-        if (evaluation.passed) {
-          modulePassed++
-          // High-quality results become fine-tuning examples
-          if (evaluation.score >= 90) {
-            fineTuningBuffer.push({
-              tenant_id: tenantId,
-              source: 'simulation',
-              module,
-              input_text: scenario.inputText,
-              output_json: output.rawOutput,
-              quality_score: evaluation.score,
-            })
-          }
-        }
-
-        totalScenarios++
-        if (evaluation.passed) totalPassed++
-      }
-
-      // Batch-insert results for this module
-      if (resultRows.length > 0) {
-        await supabase.from('simulation_results').insert(resultRows)
-      }
-
-      moduleBreakdown[module] = {
-        count: scenarios.length,
-        passedCount: modulePassed,
-        passRate: scenarios.length > 0 ? modulePassed / scenarios.length : 0,
-      }
-    }
-
-    // Store fine-tuning examples (non-blocking)
-    if (fineTuningBuffer.length > 0) {
-      try {
-        await supabase.from('fine_tuning_examples').insert(fineTuningBuffer)
-      } catch (err) {
-        console.warn('[sim] Failed to store fine-tuning examples:', err)
-      }
-    }
-
-    const passRate = totalScenarios > 0 ? totalPassed / totalScenarios : 0
-
-    // Mark run as completed
-    await supabase
-      .from('simulation_runs')
-      .update({
-        completed_at: new Date().toISOString(),
-        scenario_count: totalScenarios,
-        passed_count: totalPassed,
-        pass_rate: Math.round(passRate * 10000) / 100,
-        module_breakdown: moduleBreakdown,
-        status: 'completed',
-      })
-      .eq('id', runId)
-
-    return { success: true, runId, error: null }
-  } catch (err) {
-    // Mark run as failed
-    await supabase
-      .from('simulation_runs')
-      .update({ status: 'failed', completed_at: new Date().toISOString() })
-      .eq('id', runId)
-
-    const msg = err instanceof Error ? err.message : 'Simulation failed'
-    console.error('[sim] Simulation run failed:', err)
-    return { success: false, runId, error: msg }
-  }
+  return runSimulationInternal(user.tenantId!, config)
 }
 
 // ── Read runs ─────────────────────────────────────────────────────────────────

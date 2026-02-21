@@ -3,8 +3,8 @@
 // The generator acts as the "simulation" in sim-to-real: synthetic but realistic data.
 // Not a server action — called from simulation-actions.ts on the server.
 
-import { Ollama } from 'ollama'
 import { getOllamaConfig } from '@/lib/ai/providers'
+import { makeOllamaClient } from './ollama-client'
 import type { SimModule, SimScenario } from './types'
 
 function makeId(): string {
@@ -206,7 +206,7 @@ function parseGeneratedScenarios(
  */
 export async function generateScenarios(module: SimModule, count: number): Promise<SimScenario[]> {
   const config = getOllamaConfig()
-  const ollama = new Ollama({ host: config.baseUrl })
+  const ollama = makeOllamaClient()
   const prompt = buildGeneratorPrompt(module)
 
   try {
