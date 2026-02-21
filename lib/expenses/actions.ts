@@ -315,10 +315,10 @@ export async function getEventProfitSummary(eventId: string) {
     .eq('event_id', eventId)
     .eq('tenant_id', user.tenantId!)
 
-  // Get event time tracking and guest count data
+  // Get event time tracking, guest count, and estimated food cost data
   const { data: eventData } = await supabase
     .from('events')
-    .select('time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count')
+    .select('time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count, estimated_food_cost_cents')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -440,6 +440,19 @@ export async function getEventProfitSummary(eventId: string) {
     cashback: estimatedCashbackCents > 0 ? {
       estimatedCents: estimatedCashbackCents,
     } : null,
+    estimatedFoodCost: (() => {
+      const estimatedCents = (eventData as any)?.estimated_food_cost_cents ?? null
+      const actualCents = foodIngredientsCents > 0 ? foodIngredientsCents : null
+      const bothExist = estimatedCents !== null && actualCents !== null
+      return {
+        estimatedCents,
+        actualCents,
+        deltaCents: bothExist ? actualCents - estimatedCents : null,
+        deltaPct: bothExist
+          ? ((actualCents - estimatedCents) / estimatedCents * 100).toFixed(1)
+          : null,
+      }
+    })(),
   }
 }
 

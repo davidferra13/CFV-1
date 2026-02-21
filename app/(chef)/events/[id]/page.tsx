@@ -103,6 +103,7 @@ import { GratuityPanel } from '@/components/ai/gratuity-panel'
 import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { GuestCodePanel } from '@/components/events/guest-code-panel'
 import { getEventGuestLeadCount } from '@/lib/guest-leads/actions'
+import { HostMessageTemplate } from '@/components/sharing/host-message-template'
 
 async function getEventFinancialSummary(eventId: string) {
   const supabase = createServerClient()
@@ -302,6 +303,13 @@ export default async function EventDetailPage({
       ? getPackingConfirmationCount(params.id).catch(() => 0)
       : Promise.resolve(0),
   ])
+
+  // Fetch chef display name for templates
+  const chefDisplayName = await (async () => {
+    const sb = createServerClient()
+    const { data } = await sb.from('chefs').select('display_name, business_name').eq('id', user.entityId!).single()
+    return (data?.display_name || data?.business_name || 'your chef') as string
+  })()
 
   // For collaborating chefs (non-owners): find their row to show role context in the banner
   const myCollaboratorRow = !isEventOwner
@@ -642,6 +650,14 @@ export default async function EventDetailPage({
               originalGuestCount={event.guest_count}
               visibility={(activeShare?.visibility_settings as any) || null}
             />
+            {activeShare && (
+              <HostMessageTemplate
+                shareUrl={`${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}`}
+                occasion={event.occasion}
+                eventDate={event.event_date}
+                chefName={chefDisplayName}
+              />
+            )}
           </Card>
         )}
 
@@ -958,6 +974,29 @@ export default async function EventDetailPage({
                         avg {profitSummary.profit.chefAvgFoodCostPercent}%)
                       </span>
                     )}
+                  </span>
+                )}
+                {/* Estimated vs Actual food cost from grocery quote */}
+                {profitSummary.estimatedFoodCost.estimatedCents !== null &&
+                  profitSummary.estimatedFoodCost.actualCents !== null &&
+                  profitSummary.estimatedFoodCost.deltaPct !== null && (
+                  <span
+                    className={`font-medium ${
+                      Math.abs(Number(profitSummary.estimatedFoodCost.deltaPct)) <= 10
+                        ? 'text-emerald-600'
+                        : 'text-amber-600'
+                    }`}
+                  >
+                    Estimated: {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)}
+                    {' → '}Actual: {formatCurrency(profitSummary.estimatedFoodCost.actualCents)}
+                    {' '}({Number(profitSummary.estimatedFoodCost.deltaPct) > 0 ? '+' : ''}
+                    {profitSummary.estimatedFoodCost.deltaPct}%)
+                  </span>
+                )}
+                {profitSummary.estimatedFoodCost.estimatedCents !== null &&
+                  profitSummary.estimatedFoodCost.actualCents === null && (
+                  <span className="text-stone-500">
+                    Estimated food cost: {formatCurrency(profitSummary.estimatedFoodCost.estimatedCents)} (from grocery quote)
                   </span>
                 )}
                 {profitSummary.profit.effectiveHourlyRateCents && (

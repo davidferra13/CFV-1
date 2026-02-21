@@ -25,6 +25,8 @@ import { PaymentReminderEmail } from './templates/payment-reminder'
 import { PaymentReceivedChefEmail } from './templates/payment-received-chef'
 import { EventPrepareEmail } from './templates/event-prepare'
 import { EventReminder2dEmail } from './templates/event-reminder-2d'
+import { EventReminder30dEmail } from './templates/event-reminder-30d'
+import { EventReminder14dEmail } from './templates/event-reminder-14d'
 import { QuoteExpiringEmail } from './templates/quote-expiring'
 import { PhotosReadyEmail } from './templates/photos-ready'
 import { NewMessageChefEmail } from './templates/new-message-chef'
@@ -616,6 +618,66 @@ export async function sendEventReminder2dEmail(params: {
       arrivalTime: params.arrivalTime,
       location: params.location,
       guestCount: params.guestCount,
+      specialRequests: params.specialRequests,
+      eventId: params.eventId,
+      appUrl: APP_URL,
+    }),
+  })
+}
+
+// ─── Event 30-Day Reminder ──────────────────────────────────────────────
+
+export async function sendEventReminder30dEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  guestCount: number | null
+  location: string | null
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Looking forward to your ${params.occasion} next month`,
+    react: createElement(EventReminder30dEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+      guestCount: params.guestCount,
+      location: params.location,
+      eventId: params.eventId,
+      appUrl: APP_URL,
+    }),
+  })
+}
+
+// ─── Event 14-Day Reminder ──────────────────────────────────────────────
+
+export async function sendEventReminder14dEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  serveTime: string | null
+  guestCount: number | null
+  location: string | null
+  specialRequests: string | null
+  eventId: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Your ${params.occasion} is coming up in two weeks`,
+    react: createElement(EventReminder14dEmail, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: formatDate(params.eventDate),
+      serveTime: params.serveTime,
+      guestCount: params.guestCount,
+      location: params.location,
       specialRequests: params.specialRequests,
       eventId: params.eventId,
       appUrl: APP_URL,

@@ -429,39 +429,54 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     results.errors.push(`Payment reminders: ${(err as Error).message}`)
   }
 
-  // ── 5. Send 7-day and 2-day pre-event reminder emails ───────────────────
-  // Mirrors the payment reminder pattern (Section 4) using the new
-  // client_reminder_7d_sent_at / client_reminder_2d_sent_at / client_reminder_1d_sent_at
-  // dedup columns added in migration 20260303000015.
+  // ── 5. Send 30d/14d/7d/2d/1d pre-event reminder emails ──────────────────
+  // Mirrors the payment reminder pattern (Section 4) using dedup columns:
+  // client_reminder_30d_sent_at, client_reminder_14d_sent_at,
+  // client_reminder_7d_sent_at, client_reminder_2d_sent_at, client_reminder_1d_sent_at
   //
-  // client_reminder_1d replaces the date-match dedup used by Section 3 above,
-  // making all three reminder tiers idempotent and consistent.
+  // 30d and 14d added in migration 20260322000026; 7d/2d/1d from 20260303000015.
+  // Each interval can be independently toggled via chef_automation_settings.
 
   try {
     const today5 = new Date()
-    const sevenDaysOut5 = new Date(today5)
-    sevenDaysOut5.setDate(sevenDaysOut5.getDate() + 7)
+    const thirtyDaysOut5 = new Date(today5)
+    thirtyDaysOut5.setDate(thirtyDaysOut5.getDate() + 30)
 
     const reminderThresholds5 = [
+      {
+        days: 30,
+        column: 'client_reminder_30d_sent_at',
+        sendFn: 'sendEventReminder30dEmail',
+        settingsKey: 'event_reminder_30d_enabled',
+      },
+      {
+        days: 14,
+        column: 'client_reminder_14d_sent_at',
+        sendFn: 'sendEventReminder14dEmail',
+        settingsKey: 'event_reminder_14d_enabled',
+      },
       {
         days: 7,
         column: 'client_reminder_7d_sent_at',
         sendFn: 'sendEventPrepareEmail',
+        settingsKey: 'event_reminder_7d_enabled',
       },
       {
         days: 2,
         column: 'client_reminder_2d_sent_at',
         sendFn: 'sendEventReminder2dEmail',
+        settingsKey: 'event_reminder_2d_enabled',
       },
       {
         days: 1,
         column: 'client_reminder_1d_sent_at',
         sendFn: 'sendEventReminderEmail',
+        settingsKey: 'event_reminder_1d_enabled',
       },
     ] as const
 
     const todayDate5 = today5.toISOString().split('T')[0]
-    const sevenDaysOutDate5 = sevenDaysOut5.toISOString().split('T')[0]
+    const thirtyDaysOutDate5 = thirtyDaysOut5.toISOString().split('T')[0]
 
     // Cast to any: new columns not yet in generated types
     const { data: upcomingEvents5 } = (await (supabase as any)
@@ -471,16 +486,19 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
         id, tenant_id, occasion, event_date, serve_time, arrival_time,
         location_address, location_city, location_state,
         guest_count, special_requests,
+        client_reminder_30d_sent_at, client_reminder_14d_sent_at,
         client_reminder_7d_sent_at, client_reminder_2d_sent_at, client_reminder_1d_sent_at,
         client:clients(id, email, full_name, automated_emails_enabled)
       `
       )
       .in('status', ['paid', 'confirmed', 'in_progress'])
       .gte('event_date', todayDate5)
-      .lte('event_date', sevenDaysOutDate5)) as { data: any[] | null }
+      .lte('event_date', thirtyDaysOutDate5)) as { data: any[] | null }
 
     if (upcomingEvents5 && upcomingEvents5.length > 0) {
       const {
+        sendEventReminder30dEmail,
+        sendEventReminder14dEmail,
         sendEventPrepareEmail,
         sendEventReminder2dEmail,
         sendEventReminderEmail,
@@ -532,8 +550,35 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             const alreadySent = (event as any)[threshold.column] !== null
             if (alreadySent) continue
 
+            // Per-interval opt-out check
+            if (!(tenantSettings as any)[threshold.settingsKey]) continue
+
             // Send the appropriate email
-            if (threshold.sendFn === 'sendEventPrepareEmail') {
+            if (threshold.sendFn === 'sendEventReminder30dEmail') {
+              await sendEventReminder30dEmail({
+                clientEmail: client.email,
+                clientName: client.full_name,
+                chefName: chefName5,
+                occasion: occasion5,
+                eventDate: event.event_date,
+                guestCount: event.guest_count ?? null,
+                location: location5,
+                eventId: event.id,
+              })
+            } else if (threshold.sendFn === 'sendEventReminder14dEmail') {
+              await sendEventReminder14dEmail({
+                clientEmail: client.email,
+                clientName: client.full_name,
+                chefName: chefName5,
+                occasion: occasion5,
+                eventDate: event.event_date,
+                serveTime: event.serve_time ?? null,
+                guestCount: event.guest_count ?? null,
+                location: location5,
+                specialRequests: event.special_requests ?? null,
+                eventId: event.id,
+              })
+            } else if (threshold.sendFn === 'sendEventPrepareEmail') {
               await sendEventPrepareEmail({
                 clientEmail: client.email,
                 clientName: client.full_name,

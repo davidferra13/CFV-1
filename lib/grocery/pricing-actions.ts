@@ -511,6 +511,17 @@ export async function runGroceryPriceQuote(
     })
     .eq('id', quote.id)
 
+  // Persist estimated food cost to the event for Profit Summary integration (non-blocking)
+  try {
+    await supabase
+      .from('events')
+      .update({ estimated_food_cost_cents: averageTotal } as any)
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+  } catch (err) {
+    console.error('[GroceryQuote] Failed to persist estimate to event:', err)
+  }
+
   const { budgetCeilingCents, quotedPriceCents } = await getEventBudgetContext(
     eventId,
     user.tenantId!,

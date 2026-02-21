@@ -410,6 +410,12 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
               </p>
             )}
 
+            {quote && !quote.isFromCache && (
+              <p className="mt-3 text-sm text-blue-700">
+                Estimate saved to event — visible in Profit Summary.
+              </p>
+            )}
+
             <p className="mt-4 text-xs text-stone-400">
               "Save to Recipe Bible" updates the <em>last_price_cents</em> field on each
               ingredient, improving future food cost projections. The chef should verify the
