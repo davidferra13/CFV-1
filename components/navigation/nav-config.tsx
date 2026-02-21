@@ -434,6 +434,12 @@ export const navGroups: NavGroup[] = [
             icon: PieChart,
             visibility: 'advanced',
           },
+          {
+            href: '/finance/retainers',
+            label: 'Retainers',
+            icon: RefreshCw,
+            visibility: 'advanced',
+          },
         ],
       },
     ],

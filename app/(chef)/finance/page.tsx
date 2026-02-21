@@ -98,6 +98,12 @@ const SECTIONS = [
     description: 'Staff payments, YTD tracking, and 1099 filing alerts',
     icon: '👷',
   },
+  {
+    href: '/finance/retainers',
+    label: 'Retainers',
+    description: 'Recurring service agreements — monthly billing, event tracking',
+    icon: '🔁',
+  },
 ]
 
 export default async function FinancePage() {
@@ -111,32 +117,42 @@ export default async function FinancePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-stone-900">Finance</h1>
-        <p className="text-stone-500 mt-1">Complete financial management — invoices, expenses, ledger, and reporting</p>
+        <p className="text-stone-500 mt-1">
+          Complete financial management — invoices, expenses, ledger, and reporting
+        </p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{formatCurrency(summary.totalRevenueCents)}</p>
+          <p className="text-2xl font-bold text-stone-900">
+            {formatCurrency(summary.totalRevenueCents)}
+          </p>
           <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-green-700">{formatCurrency(summary.netRevenueCents)}</p>
+          <p className="text-2xl font-bold text-green-700">
+            {formatCurrency(summary.netRevenueCents)}
+          </p>
           <p className="text-sm text-stone-500 mt-1">Net revenue (after refunds)</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-red-600">{formatCurrency(summary.totalRefundsCents)}</p>
+          <p className="text-2xl font-bold text-red-600">
+            {formatCurrency(summary.totalRefundsCents)}
+          </p>
           <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
         </Card>
         {carryForwardSavings > 0 && (
           <Card className="p-4 border-emerald-200 bg-emerald-50">
-            <p className="text-2xl font-bold text-emerald-700">{formatCurrency(carryForwardSavings)}</p>
+            <p className="text-2xl font-bold text-emerald-700">
+              {formatCurrency(carryForwardSavings)}
+            </p>
             <p className="text-sm text-emerald-600 mt-1">Leftover credit applied YTD</p>
           </Card>
         )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {SECTIONS.map(section => (
+        {SECTIONS.map((section) => (
           <Link key={section.href} href={section.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
               <div className="flex items-start gap-3">
@@ -153,9 +169,13 @@ export default async function FinancePage() {
 
       <div className="text-sm text-stone-400 flex items-center gap-2">
         <span>Also available:</span>
-        <Link href="/financials" className="text-brand-600 hover:underline">Full Financial Dashboard</Link>
+        <Link href="/financials" className="text-brand-600 hover:underline">
+          Full Financial Dashboard
+        </Link>
         <span>·</span>
-        <Link href="/goals" className="text-brand-600 hover:underline">Revenue Goals</Link>
+        <Link href="/goals" className="text-brand-600 hover:underline">
+          Revenue Goals
+        </Link>
       </div>
     </div>
   )
