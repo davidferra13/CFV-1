@@ -5,11 +5,16 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireClient } from '@/lib/auth/get-user'
+import { isAdmin } from '@/lib/auth/admin'
 
 // ─── Access Check ─────────────────────────────────────────────────────────────
 
 export async function clientHasCannabisAccess(authUserId: string): Promise<boolean> {
   try {
+    // Admins always have cannabis tier access
+    const adminCheck = await isAdmin().catch(() => false)
+    if (adminCheck) return true
+
     const supabase = createServerClient()
     const { data, error } = await (supabase as any)
       .from('cannabis_tier_users')

@@ -6,16 +6,22 @@
 import { createServerClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { requireChef } from '@/lib/auth/get-user'
+import { isAdmin } from '@/lib/auth/admin'
 import { revalidatePath } from 'next/cache'
 
 // ─── Access Check ─────────────────────────────────────────────────────────────
 
 /**
  * Returns true if the given auth user ID has an active cannabis tier.
+ * Admins always have access — no manual grant required.
  * Used by the chef layout to conditionally show the cannabis nav section.
  */
 export async function hasCannabisAccess(authUserId: string): Promise<boolean> {
   try {
+    // Admins always have cannabis tier access
+    const adminCheck = await isAdmin().catch(() => false)
+    if (adminCheck) return true
+
     const supabase = createServerClient()
     const { data, error } = await (supabase as any)
       .from('cannabis_tier_users')
