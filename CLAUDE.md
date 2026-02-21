@@ -2,6 +2,16 @@
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
+## Quick Reference
+
+- **Stack:** Next.js · Supabase · Stripe — multi-tenant private chef platform
+- **Data safety first:** all migrations are additive, all destructive ops require explicit approval
+- **End every session:** commit everything → push the feature branch → update this file if new rules were found
+- **Private AI:** client data stays local via Ollama only — never Gemini, never cloud LLMs
+- **Never:** merge to `main`, deploy to Vercel, or run `supabase db push` without explicit user approval
+
+---
+
 ---
 
 ## DATA SAFETY (HIGHEST PRIORITY)
@@ -144,7 +154,11 @@ A persistent agent account exists for programmatic testing. **Use it proactively
 
 ### Full Workflow Reference
 
-See **`docs/AGENT-WORKFLOW.md`** for the complete step-by-step playbook covering health checks, migration safety, parallel agent rules, and merge procedure. Every agent should read it before starting significant work.
+**`docs/AGENT-WORKFLOW.md`** — complete step-by-step playbook: health checks, migration safety, parallel agent rules, merge procedure. Covers what to do before, during, and after every session. Read it before starting significant work.
+
+**`docs/AI_POLICY.md`** — governs all AI feature work. AI assists drafting only, never owns canonical state. Hard restrictions: no lifecycle transitions, no ledger writes, no silent automation. All AI output requires chef confirmation before becoming canonical.
+
+**`memory/action-inventory.md`** — 467-action lifecycle across 18 stages from first contact to post-service. Critical for understanding what the system must handle. Chef's irreducible core: creative decisions, physical cooking, relationship moments, final approval on all client-facing comms.
 
 ---
 
@@ -266,6 +280,10 @@ Private data categories that must stay local:
 - Budget amounts, quotes, payment history, revenue, expenses
 - Business analytics, insights, lead scores, pricing history
 - Temperature logs, staff data, event operational details
+
+---
+
+### General Architecture
 
 - **Server actions** with `'use server'` for all business logic
 - **Role checks** via `requireChef()`, `requireClient()`, `requireAuth()`
