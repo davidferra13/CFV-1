@@ -11,11 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { format } from 'date-fns'
 
-export default async function ReceiptsPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function ReceiptsPage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const [event, receipts] = await Promise.all([
@@ -34,20 +30,23 @@ export default async function ReceiptsPage({
         <div>
           <h1 className="text-xl font-bold text-stone-900">Receipt Summary</h1>
           <p className="text-stone-500 text-sm mt-1">
-            {event.occasion || 'Untitled Event'} · {format(new Date(event.event_date), 'MMM d, yyyy')}
+            {event.occasion || 'Untitled Event'} ·{' '}
+            {format(new Date(event.event_date), 'MMM d, yyyy')}
           </p>
         </div>
         <Link href={`/events/${params.id}`}>
-          <Button variant="ghost" size="sm">← Back to Event</Button>
+          <Button variant="ghost" size="sm">
+            ← Back to Event
+          </Button>
         </Link>
       </div>
 
       {/* Instructions */}
       <Card className="p-4 bg-stone-50 border-stone-200">
         <p className="text-sm text-stone-600">
-          Upload receipt photos from your event purchases. Use <strong>Extract with AI</strong> to automatically read
-          line items, then review and tag each item as <em>business</em> or <em>personal</em>.
-          Approving a receipt adds all business items to your event expenses.
+          Upload receipt photos from your event purchases. Use <strong>Auto-Extract</strong> to
+          automatically read line items, then review and tag each item as <em>business</em> or{' '}
+          <em>personal</em>. Approving a receipt adds all business items to your event expenses.
         </p>
       </Card>
 

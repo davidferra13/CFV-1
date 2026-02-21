@@ -33,7 +33,7 @@ export function CopilotDrawer() {
       content: message,
       timestamp: new Date().toISOString(),
     }
-    setMessages(prev => [...prev, userMsg])
+    setMessages((prev) => [...prev, userMsg])
     setLoading(true)
     try {
       const reply = await sendCopilotMessage(message, messages)
@@ -42,9 +42,9 @@ export function CopilotDrawer() {
         content: reply,
         timestamp: new Date().toISOString(),
       }
-      setMessages(prev => [...prev, assistantMsg])
+      setMessages((prev) => [...prev, assistantMsg])
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'AI assistant error'
+      const message = err instanceof Error ? err.message : 'Assistant error'
       toast.error(message)
     } finally {
       setLoading(false)
@@ -57,17 +57,17 @@ export function CopilotDrawer() {
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all"
-        aria-label="Open AI Co-Pilot"
+        aria-label="Open Assistant"
       >
         <Bot className="h-5 w-5" />
-        <span className="text-sm font-medium hidden sm:inline">AI Assistant</span>
+        <span className="text-sm font-medium hidden sm:inline">Assistant</span>
       </button>
 
       {/* Drawer overlay */}
       {open && (
         <div
           className="fixed inset-0 z-50 flex justify-end"
-          onClick={e => {
+          onClick={(e) => {
             if (e.target === e.currentTarget) setOpen(false)
           }}
         >
@@ -76,12 +76,12 @@ export function CopilotDrawer() {
             <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-700 bg-brand-600">
               <div className="flex items-center gap-2">
                 <Bot className="h-5 w-5 text-white" />
-                <span className="font-semibold text-white">AI Assistant</span>
+                <span className="font-semibold text-white">Assistant</span>
               </div>
               <button
                 onClick={() => setOpen(false)}
                 className="text-white/80 hover:text-white"
-                aria-label="Close AI Assistant"
+                aria-label="Close Assistant"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -96,7 +96,7 @@ export function CopilotDrawer() {
                     What would you like to do?
                   </p>
                   <div className="grid grid-cols-1 gap-2">
-                    {STARTER_PROMPTS.map(prompt => (
+                    {STARTER_PROMPTS.map((prompt) => (
                       <button
                         key={prompt}
                         onClick={() => handleSend(prompt)}
@@ -143,8 +143,8 @@ export function CopilotDrawer() {
               <div className="flex gap-2">
                 <textarea
                   value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={e => {
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                       e.preventDefault()
                       handleSend()

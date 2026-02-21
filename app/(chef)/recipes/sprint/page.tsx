@@ -14,9 +14,7 @@ export const metadata: Metadata = { title: 'Recipe Sprint — ChefFlow' }
 export default async function RecipeSprintPage() {
   await requireChef()
 
-  const [items] = await Promise.all([
-    getAllUnrecordedComponents(),
-  ])
+  const [items] = await Promise.all([getAllUnrecordedComponents()])
 
   const aiConfigured = !!(process.env.GEMINI_API_KEY || process.env.OPENAI_API_KEY)
 
@@ -35,25 +33,20 @@ export default async function RecipeSprintPage() {
               : 'All dish components have recipes recorded.'}
           </p>
         </div>
-        <Link
-          href="/recipes"
-          className="text-sm text-stone-500 hover:text-stone-700 font-medium"
-        >
+        <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-700 font-medium">
           View Recipe Bible
         </Link>
       </div>
 
       {!aiConfigured && items.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
-          <strong>AI parsing not configured.</strong> Set GEMINI_API_KEY in your environment for automatic ingredient and method extraction.
-          Descriptions will be saved as method text — you can edit the full recipe after.
+          <strong>Auto-parsing not configured.</strong> Set GEMINI_API_KEY in your environment for
+          automatic ingredient and method extraction. Descriptions will be saved as method text —
+          you can edit the full recipe after.
         </div>
       )}
 
-      <RecipeSprintClient
-        initialItems={items}
-        aiConfigured={aiConfigured}
-      />
+      <RecipeSprintClient initialItems={items} aiConfigured={aiConfigured} />
     </div>
   )
 }

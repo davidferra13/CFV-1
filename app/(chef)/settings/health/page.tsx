@@ -125,7 +125,7 @@ export default async function SystemHealthPage() {
     checks.push({
       label: 'Gmail Integration',
       status: 'warning',
-      detail: 'Not connected — email scanning and AI drafts unavailable',
+      detail: 'Not connected — email scanning and auto drafts unavailable',
       actionHref: '/settings',
       actionLabel: 'Connect Gmail →',
     })

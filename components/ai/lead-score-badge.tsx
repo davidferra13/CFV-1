@@ -1,0 +1,101 @@
+'use client'
+
+import { useState } from 'react'
+import { TrendingUp, Loader2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { scoreInquiry, type LeadScore } from '@/lib/ai/lead-scoring'
+import { toast } from 'sonner'
+
+const TIER_COLORS: Record<string, string> = {
+  hot: 'text-red-700 bg-red-50 border border-red-200',
+  warm: 'text-amber-700 bg-amber-50 border border-amber-200',
+  cold: 'text-blue-700 bg-blue-50 border border-blue-200',
+}
+
+export function LeadScoreBadge({
+  inquiryId,
+  compact = false,
+}: {
+  inquiryId: string
+  compact?: boolean
+}) {
+  const [score, setScore] = useState<LeadScore | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
+
+  async function run() {
+    setLoading(true)
+    try {
+      const data = await scoreInquiry(inquiryId)
+      setScore(data)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Lead scoring failed')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) return <Loader2 className="w-3 h-3 animate-spin text-stone-400" />
+
+  if (!score) {
+    return compact ? (
+      <button onClick={run} className="text-[11px] text-stone-400 hover:text-brand-600">
+        Score lead
+      </button>
+    ) : (
+      <Button variant="ghost" onClick={run}>
+        <TrendingUp className="w-3 h-3 mr-1" />
+        Score Lead
+      </Button>
+    )
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setShowDetail(!showDetail)}
+        className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${TIER_COLORS[score.tier]}`}
+      >
+        <TrendingUp className="w-3 h-3" />
+        {score.score} · {score.tier}
+      </button>
+
+      {showDetail && (
+        <div className="absolute top-6 right-0 z-20 w-64 bg-white border border-stone-200 rounded-lg shadow-lg p-3 text-xs space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="font-medium text-stone-700">Lead Score: {score.score}/100</span>
+            <button
+              onClick={() => setShowDetail(false)}
+              className="text-stone-400 hover:text-stone-600"
+            >
+              ✕
+            </button>
+          </div>
+          <p className="text-stone-600">{score.recommendation}</p>
+          {score.strengths.length > 0 && (
+            <div>
+              <div className="text-green-700 font-medium mb-0.5">Strengths</div>
+              {score.strengths.map((s, i) => (
+                <div key={i} className="text-stone-600">
+                  + {s}
+                </div>
+              ))}
+            </div>
+          )}
+          {score.weaknesses.length > 0 && (
+            <div>
+              <div className="text-red-700 font-medium mb-0.5">Weaknesses</div>
+              {score.weaknesses.map((w, i) => (
+                <div key={i} className="text-stone-600">
+                  - {w}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="text-stone-400 text-[10px]">Confidence: {score.confidence}</div>
+        </div>
+      )}
+    </div>
+  )
+}

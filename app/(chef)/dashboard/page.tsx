@@ -99,6 +99,11 @@ import type { PriorityQueue } from '@/lib/queue/types'
 import { MobileDashboardExpander } from '@/components/dashboard/mobile-dashboard-expander'
 
 import { BusinessInsightsPanel } from '@/components/ai/business-insights-panel'
+import { HolidayOutreachPanel } from '@/components/dashboard/holiday-outreach-panel'
+import {
+  getHolidayOutreachSuggestions,
+  type HolidayOutreachSuggestion,
+} from '@/lib/holidays/outreach-actions'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback
@@ -465,6 +470,11 @@ export default async function ChefDashboard() {
     () => getNextBestActions(5),
     emptyNextBestActions
   )
+  const holidayOutreachSuggestions = await safe(
+    'holidayOutreach',
+    getHolidayOutreachSuggestions,
+    [] as HolidayOutreachSuggestion[]
+  )
 
   const activeInquiryCount =
     inquiryStats.new +
@@ -592,6 +602,15 @@ export default async function ChefDashboard() {
               <span className="text-xs font-medium underline">Plan Week →</span>
             </Link>
           </div>
+        </section>
+      )}
+
+      {/* ============================================ */}
+      {/* HOLIDAY OUTREACH PANEL                        */}
+      {/* ============================================ */}
+      {holidayOutreachSuggestions.length > 0 && (
+        <section>
+          <HolidayOutreachPanel suggestions={holidayOutreachSuggestions} />
         </section>
       )}
 

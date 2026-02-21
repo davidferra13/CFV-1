@@ -40,8 +40,8 @@ export default async function ReceiptLibraryPage() {
       <Card className="p-4 bg-stone-50 border-stone-200">
         <p className="text-sm text-stone-600">
           Upload receipts for any expense — groceries, equipment, gas, supplies, or anything else.
-          Optionally link to an event or client for reporting. Use <strong>Extract with AI</strong>{' '}
-          to read line items automatically, then tag each item as <em>business</em> or{' '}
+          Optionally link to an event or client for reporting. Use <strong>Auto-Extract</strong> to
+          read line items automatically, then tag each item as <em>business</em> or{' '}
           <em>personal</em> and approve to add them to your expenses.
         </p>
       </Card>
