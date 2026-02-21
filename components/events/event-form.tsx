@@ -77,7 +77,13 @@ type EventFormProps = {
   partnerLocations?: Record<string, PartnerLocation[]>
 }
 
-export function EventForm({ clients, mode, event, partners = [], partnerLocations = {} }: EventFormProps) {
+export function EventForm({
+  clients,
+  mode,
+  event,
+  partners = [],
+  partnerLocations = {},
+}: EventFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -93,8 +99,12 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
   // Form state
   const [clientId, setClientId] = useState(event?.client_id || '')
   const [occasion, setOccasion] = useState(event?.occasion || '')
-  const [referralPartnerId, setReferralPartnerId] = useState<string | null>(event?.referral_partner_id ?? null)
-  const [partnerLocationId, setPartnerLocationId] = useState<string | null>(event?.partner_location_id ?? null)
+  const [referralPartnerId, setReferralPartnerId] = useState<string | null>(
+    event?.referral_partner_id ?? null
+  )
+  const [partnerLocationId, setPartnerLocationId] = useState<string | null>(
+    event?.partner_location_id ?? null
+  )
   const [eventTimezone, setEventTimezone] = useState(
     event?.event_timezone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/New_York'
   )
@@ -107,8 +117,12 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
   const [locationCity, setLocationCity] = useState(event?.location_city || '')
   const [locationState, setLocationState] = useState(event?.location_state || '')
   const [locationZip, setLocationZip] = useState(event?.location_zip || '')
-  const [locationLat, setLocationLat] = useState<number | null>((event as any)?.location_lat ?? null)
-  const [locationLng, setLocationLng] = useState<number | null>((event as any)?.location_lng ?? null)
+  const [locationLat, setLocationLat] = useState<number | null>(
+    (event as any)?.location_lat ?? null
+  )
+  const [locationLng, setLocationLng] = useState<number | null>(
+    (event as any)?.location_lng ?? null
+  )
   const [specialRequests, setSpecialRequests] = useState(event?.special_requests || '')
   const [totalAmount, setTotalAmount] = useState(
     event?.quoted_price_cents ? (event.quoted_price_cents / 100).toString() : ''
@@ -129,13 +143,34 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
   // Step 1 validation before advancing (async — checks availability conflicts)
   const handleContinue = async () => {
     setError(null)
-    if (!clientId) { setError('Please select a client'); return }
-    if (!eventDate) { setError('Event date & time is required'); return }
-    if (!serveTime) { setError('Serve time is required'); return }
-    if (!guestCount || parseInt(guestCount) <= 0) { setError('Guest count must be a positive number'); return }
-    if (!locationAddress) { setError('Address is required'); return }
-    if (!locationCity) { setError('City is required'); return }
-    if (!locationZip) { setError('ZIP code is required'); return }
+    if (!clientId) {
+      setError('Please select a client')
+      return
+    }
+    if (!eventDate) {
+      setError('Event date & time is required')
+      return
+    }
+    if (!serveTime) {
+      setError('Serve time is required')
+      return
+    }
+    if (!guestCount || parseInt(guestCount) <= 0) {
+      setError('Guest count must be a positive number')
+      return
+    }
+    if (!locationAddress) {
+      setError('Address is required')
+      return
+    }
+    if (!locationCity) {
+      setError('City is required')
+      return
+    }
+    if (!locationZip) {
+      setError('ZIP code is required')
+      return
+    }
 
     // If user already acknowledged conflicts, advance
     if (conflictWarnings !== null && conflictOverride) {
@@ -251,23 +286,31 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
       {/* Step indicator */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-            step === 1 ? 'bg-brand-600 text-white' : 'bg-green-500 text-white'
-          }`}>
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+              step === 1 ? 'bg-brand-600 text-white' : 'bg-green-500 text-white'
+            }`}
+          >
             {step === 1 ? '1' : '✓'}
           </div>
-          <span className={`text-sm font-medium ${step === 1 ? 'text-stone-900' : 'text-green-700'}`}>
+          <span
+            className={`text-sm font-medium ${step === 1 ? 'text-stone-900' : 'text-green-700'}`}
+          >
             Event Details
           </span>
         </div>
         <div className="flex-1 h-px bg-stone-200" />
         <div className="flex items-center gap-1.5">
-          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-            step === 2 ? 'bg-brand-600 text-white' : 'bg-stone-200 text-stone-500'
-          }`}>
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+              step === 2 ? 'bg-brand-600 text-white' : 'bg-stone-200 text-stone-500'
+            }`}
+          >
             2
           </div>
-          <span className={`text-sm font-medium ${step === 2 ? 'text-stone-900' : 'text-stone-400'}`}>
+          <span
+            className={`text-sm font-medium ${step === 2 ? 'text-stone-900' : 'text-stone-400'}`}
+          >
             Pricing &amp; Notes
           </span>
         </div>
@@ -286,14 +329,16 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
             <Select
               label="Client"
               required
-              options={clients.map(client => ({
+              options={clients.map((client) => ({
                 value: client.id,
-                label: `${client.full_name} (${client.email})`
+                label: `${client.full_name} (${client.email})`,
               }))}
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               disabled={mode === 'edit'}
-              helperText={mode === 'edit' ? 'Client cannot be changed after event creation' : undefined}
+              helperText={
+                mode === 'edit' ? 'Client cannot be changed after event creation' : undefined
+              }
             />
 
             <Input
@@ -336,6 +381,7 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
             <Input
               label="Number of Guests"
               type="number"
+              inputMode="numeric"
               required
               min="1"
               placeholder="e.g., 8"
@@ -407,7 +453,10 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
                 onClick={handleContinue}
                 variant="primary"
                 loading={conflictChecking}
-                disabled={conflictChecking || (conflictWarnings !== null && conflictWarnings.length > 0 && !conflictOverride)}
+                disabled={
+                  conflictChecking ||
+                  (conflictWarnings !== null && conflictWarnings.length > 0 && !conflictOverride)
+                }
               >
                 {conflictChecking ? 'Checking...' : 'Continue →'}
               </Button>
@@ -424,6 +473,7 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
             <Input
               label="Quoted Price ($)"
               type="number"
+              inputMode="decimal"
               step="0.01"
               min="0"
               placeholder="e.g., 2500.00"
@@ -435,6 +485,7 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
             <Input
               label="Deposit Amount ($)"
               type="number"
+              inputMode="decimal"
               step="0.01"
               min="0"
               placeholder="e.g., 500.00"
@@ -453,7 +504,9 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
 
             {partners.length > 0 && (
               <div className="border border-stone-200 rounded-lg p-4 space-y-1">
-                <p className="text-sm font-medium text-stone-700 mb-2">Partner Venue <span className="text-stone-400 font-normal">(optional)</span></p>
+                <p className="text-sm font-medium text-stone-700 mb-2">
+                  Partner Venue <span className="text-stone-400 font-normal">(optional)</span>
+                </p>
                 <PartnerSelect
                   partners={partners}
                   partnerLocations={partnerLocations}
@@ -466,18 +519,16 @@ export function EventForm({ clients, mode, event, partners = [], partnerLocation
             )}
 
             <div className="flex gap-3 pt-2">
-              <Button
-                type="submit"
-                loading={loading}
-                disabled={loading}
-                variant="primary"
-              >
+              <Button type="submit" loading={loading} disabled={loading} variant="primary">
                 {mode === 'create' ? 'Create Event' : 'Update Event'}
               </Button>
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => { setError(null); setStep(1) }}
+                onClick={() => {
+                  setError(null)
+                  setStep(1)
+                }}
                 disabled={loading}
               >
                 ← Back
