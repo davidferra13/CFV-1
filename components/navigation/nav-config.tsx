@@ -3,6 +3,7 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
+  AlertTriangle,
   BarChart3,
   Bot,
   CalendarDays,
@@ -30,6 +31,7 @@ import {
   Rss,
   Settings,
   ShieldAlert,
+  ShieldCheck,
   Target,
   TrendingUp,
   Users,
@@ -108,6 +110,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/guest-leads',
+        label: 'Guest Pipeline',
+        icon: Users,
+      },
+      {
         href: '/calls',
         label: 'Calls & Meetings',
         icon: Phone,
@@ -180,6 +187,7 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/ingredients', label: 'Ingredients Database', visibility: 'advanced' },
           { href: '/culinary/costing', label: 'Costing', visibility: 'advanced' },
           { href: '/culinary/vendors', label: 'Vendor Directory', visibility: 'advanced' },
+          { href: '/culinary/my-kitchen', label: 'My Kitchen', visibility: 'advanced' },
         ],
       },
       {
@@ -431,6 +439,43 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: 'protection',
+    label: 'Protection',
+    icon: ShieldCheck,
+    items: [
+      {
+        href: '/settings/protection',
+        label: 'Business Health',
+        icon: ShieldCheck,
+        children: [
+          { href: '/settings/protection/insurance', label: 'Insurance' },
+          { href: '/settings/protection/certifications', label: 'Certifications' },
+          { href: '/settings/protection/nda', label: 'NDA & Permissions' },
+          { href: '/settings/protection/continuity', label: 'Business Continuity' },
+          { href: '/settings/protection/crisis', label: 'Crisis Response' },
+        ],
+      },
+      {
+        href: '/safety/incidents',
+        label: 'Incidents',
+        icon: AlertTriangle,
+        children: [
+          { href: '/safety/incidents/new', label: 'Report Incident', visibility: 'advanced' },
+        ],
+      },
+      {
+        href: '/safety/backup-chef',
+        label: 'Backup Chef',
+        icon: Users,
+      },
+      {
+        href: '/reputation/mentions',
+        label: 'Brand Mentions',
+        icon: ShieldAlert,
+      },
+    ],
+  },
+  {
     id: 'more',
     label: 'More',
     icon: ListChecks,
@@ -520,6 +565,11 @@ export const navGroups: NavGroup[] = [
           { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
           { href: '/analytics/demand', label: 'Demand Heatmap' },
           { href: '/analytics/client-ltv', label: 'Client LTV' },
+          {
+            href: '/analytics/referral-sources',
+            label: 'Referral Sources',
+            visibility: 'advanced' as const,
+          },
         ],
       },
       {
@@ -616,6 +666,42 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     href: '/settings/billing',
     label: 'Subscription & Billing',
     icon: Settings,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/protection',
+    label: 'Business Protection Hub',
+    icon: ShieldCheck,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/protection/insurance',
+    label: 'Insurance Policies',
+    icon: ShieldCheck,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/protection/certifications',
+    label: 'Certifications',
+    icon: ShieldCheck,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/protection/nda',
+    label: 'NDA & Photo Permissions',
+    icon: ShieldCheck,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/protection/continuity',
+    label: 'Business Continuity Plan',
+    icon: ShieldCheck,
+    context: 'Settings',
+  },
+  {
+    href: '/settings/protection/crisis',
+    label: 'Crisis Response',
+    icon: ShieldCheck,
     context: 'Settings',
   },
 ]
