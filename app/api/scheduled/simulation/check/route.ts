@@ -48,7 +48,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const dueFor: string[] = []
 
   for (const tenantId of activeTenantIds) {
-    const { data: lastRun } = await supabase
+    const { data: lastRun } = await (supabase as any)
       .from('simulation_runs')
       .select('started_at')
       .eq('tenant_id', tenantId)
@@ -56,8 +56,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
       .limit(1)
       .maybeSingle()
 
+    const started = (lastRun as { started_at: string } | null)?.started_at
     // Due if never run, or last run was more than 3 days ago
-    if (!lastRun || lastRun.started_at < cutoff) {
+    if (!started || started < cutoff) {
       dueFor.push(tenantId)
     }
   }

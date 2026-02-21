@@ -322,7 +322,7 @@ export function PushDinnerBuilder() {
     setRecipients(
       list.map((r) => ({
         ...r,
-        client_full_name: r.client_id ? (nameMap.get(r.client_id) ?? null) : null,
+        client_full_name: r.client_id ? (nameMap.get(r.client_id) ?? undefined) : undefined,
       }))
     )
     setApprovedCount(list.filter((r) => r.chef_approved).length)
