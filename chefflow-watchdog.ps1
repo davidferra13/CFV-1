@@ -14,11 +14,30 @@ if ((Test-Path $logFile) -and (Get-Item $logFile).Length -gt 1MB) {
     Rename-Item  $logFile "$logFile.old" -ErrorAction SilentlyContinue
 }
 
-# ── Ollama Health + Auto-Start ──────────────────────────────────────────────
+# Ollama Health + Auto-Start
+
+# Reads OLLAMA_BASE_URL from .env.local so the watchdog always points to the
+# same host the app uses (localhost when on laptop, Pi IP when Pi is connected).
+function Get-OllamaBaseUrl {
+    $envFile = "$projectDir\.env.local"
+    if (Test-Path $envFile) {
+        $line = Get-Content $envFile | Where-Object { $_ -match '^OLLAMA_BASE_URL=' }
+        if ($line) {
+            return ($line -split '=', 2)[1].Trim()
+        }
+    }
+    return 'http://localhost:11434'
+}
+
+function Test-OllamaIsRemote {
+    $url = Get-OllamaBaseUrl
+    return ($url -notmatch 'localhost' -and $url -notmatch '127\.0\.0\.1')
+}
 
 function Test-OllamaHealth {
+    $url = Get-OllamaBaseUrl
     try {
-        $response = Invoke-WebRequest -Uri "http://localhost:11434/api/tags" `
+        $response = Invoke-WebRequest -Uri "$url/api/tags" `
             -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
         return $response.StatusCode -eq 200
     } catch {
@@ -32,20 +51,27 @@ function Ensure-OllamaRunning {
         return
     }
 
-    Write-Log "[ollama] Ollama not responding — attempting to start Windows service..."
+    # If Ollama is on the Raspberry Pi (remote URL), we cannot start it from Windows.
+    # Just log the warning — the Pi manages its own Ollama service via systemctl.
+    if (Test-OllamaIsRemote) {
+        $url = Get-OllamaBaseUrl
+        Write-Log "[ollama] Remote Ollama at $url is not responding. Check that the Pi is powered on and Ollama service is running."
+        return
+    }
+
+    Write-Log "[ollama] Ollama not responding - attempting to start..."
     try {
         $svc = Get-Service -Name "Ollama" -ErrorAction SilentlyContinue
         if ($null -ne $svc) {
             Start-Service -Name "Ollama" -ErrorAction Stop
-            Start-Sleep -Seconds 8   # give it time to initialize
+            Start-Sleep -Seconds 8
             if (Test-OllamaHealth) {
                 Write-Log "[ollama] Ollama service started successfully."
             } else {
-                Write-Log "[ollama] Ollama service started but not yet responding — continuing anyway."
+                Write-Log "[ollama] Ollama service started but not yet responding - continuing."
             }
         } else {
-            # Service not registered — try launching ollama.exe directly
-            Write-Log "[ollama] No Ollama Windows service found. Launching ollama.exe serve..."
+            Write-Log "[ollama] No Ollama service found. Launching ollama.exe serve..."
             $ollamaPsi = New-Object System.Diagnostics.ProcessStartInfo
             $ollamaPsi.FileName         = "ollama"
             $ollamaPsi.Arguments        = "serve"
@@ -57,29 +83,29 @@ function Ensure-OllamaRunning {
             if (Test-OllamaHealth) {
                 Write-Log "[ollama] ollama.exe serve started successfully."
             } else {
-                Write-Log "[ollama] ollama.exe serve launched but not yet responding — ChefFlow will use Gemini fallback until Ollama is ready."
+                Write-Log "[ollama] ollama.exe serve launched but not yet responding - continuing."
             }
         }
     } catch {
-        Write-Log "[ollama] Could not start Ollama: $_. ChefFlow will use Gemini fallback."
+        $errMsg = $_.Exception.Message
+        Write-Log "[ollama] Could not start Ollama: $errMsg"
     }
 }
 
-# ── Startup ──────────────────────────────────────────────────────────────────
+# Startup
 
 Write-Log "=== ChefFlow Watchdog Started ==="
 Ensure-OllamaRunning
 
-# ── Main Loop ────────────────────────────────────────────────────────────────
+# Main Loop
 
 $loopCount = 0
 
 while ($true) {
-    # Check Ollama every 10 restart cycles (~50 s of uptime per cycle)
     $loopCount++
     if ($loopCount % 10 -eq 0) {
         if (-not (Test-OllamaHealth)) {
-            Write-Log "[ollama] Periodic health check failed — attempting restart..."
+            Write-Log "[ollama] Periodic health check failed - attempting restart..."
             Ensure-OllamaRunning
         }
     }
@@ -87,8 +113,8 @@ while ($true) {
     Write-Log "Launching dev server..."
     try {
         $psi                  = New-Object System.Diagnostics.ProcessStartInfo
-        $psi.FileName         = "cmd.exe"
-        $psi.Arguments        = "/c npm run dev"
+        $psi.FileName         = "C:\nvm4w\nodejs\node.exe"
+        $psi.Arguments        = "`"C:\Users\david\Documents\CFv1\node_modules\next\dist\bin\next`" dev -p 3100 -H 0.0.0.0"
         $psi.WorkingDirectory = $projectDir
         $psi.WindowStyle      = [System.Diagnostics.ProcessWindowStyle]::Hidden
         $psi.CreateNoWindow   = $true
@@ -97,10 +123,10 @@ while ($true) {
         $proc = [System.Diagnostics.Process]::Start($psi)
         Write-Log "Server running (PID $($proc.Id))"
         $proc.WaitForExit()
-        Write-Log "Server stopped — exit code $($proc.ExitCode). Restarting in 5 s..."
-    }
-    catch {
-        Write-Log "Failed to launch: $_. Retrying in 10 s..."
+        Write-Log "Server stopped (exit $($proc.ExitCode)). Restarting in 5 s..."
+    } catch {
+        $errMsg = $_.Exception.Message
+        Write-Log "Failed to launch: $errMsg. Retrying in 10 s..."
         Start-Sleep -Seconds 10
         continue
     }
