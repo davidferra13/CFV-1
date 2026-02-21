@@ -31,6 +31,7 @@ import {
   Rss,
   Settings,
   ShieldAlert,
+  Star,
   ShieldCheck,
   Target,
   TrendingUp,
@@ -122,6 +123,11 @@ export const navGroups: NavGroup[] = [
         label: 'Guest Insights',
         icon: BarChart3,
         visibility: 'advanced' as const,
+      },
+      {
+        href: '/testimonials',
+        label: 'Testimonials',
+        icon: Star,
       },
       {
         href: '/calls',

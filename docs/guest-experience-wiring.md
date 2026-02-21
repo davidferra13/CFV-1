@@ -76,17 +76,34 @@ For completed events with an active share link, the chef sees a "View Recap Page
 
 **Wired into:** `app/(chef)/events/[id]/page.tsx` — after the Guests & RSVPs card, only for completed events
 
+### 7. Testimonials Management Page
+
+Chef-facing page to view, approve, and feature guest testimonials:
+
+- Filter tabs: All / Pending / Approved / Featured with counts
+- Each testimonial card shows guest name, star rating, event name, date, and review text
+- One-click Approve/Unapprove buttons
+- Feature button (only on approved testimonials) for highlighting the best ones
+- Empty state explains where testimonials come from (recap pages)
+
+**Page:** `app/(chef)/testimonials/page.tsx`
+**Component:** `components/testimonials/testimonial-manager.tsx` (new)
+**Nav:** Added to Pipeline group with Star icon
+
 ---
 
 ## File Summary
 
-| File                                        | Change                                                          |
-| ------------------------------------------- | --------------------------------------------------------------- |
-| `components/sharing/rsvp-form.tsx`          | Simplified photo consent checkbox wording                       |
-| `components/sharing/testimonial-form.tsx`   | **New** — star rating + review form                             |
-| `app/(public)/share/[token]/page.tsx`       | Added EventCountdown import + rendering                         |
-| `app/(public)/share/[token]/recap/page.tsx` | Added TestimonialForm import + rendering                        |
-| `app/(chef)/events/[id]/page.tsx`           | Added PhotoConsentSummary, RSVPTrackerPanel, Share Recap button |
+| File                                              | Change                                                          |
+| ------------------------------------------------- | --------------------------------------------------------------- |
+| `components/sharing/rsvp-form.tsx`                | Simplified photo consent checkbox wording                       |
+| `components/sharing/testimonial-form.tsx`         | **New** — star rating + review form                             |
+| `components/testimonials/testimonial-manager.tsx` | **New** — chef management UI (approve, feature, filter)         |
+| `app/(public)/share/[token]/page.tsx`             | Added EventCountdown import + rendering                         |
+| `app/(public)/share/[token]/recap/page.tsx`       | Added TestimonialForm import + rendering                        |
+| `app/(chef)/events/[id]/page.tsx`                 | Added PhotoConsentSummary, RSVPTrackerPanel, Share Recap button |
+| `app/(chef)/testimonials/page.tsx`                | **New** — chef testimonials management page                     |
+| `components/navigation/nav-config.tsx`            | Added Testimonials nav entry with Star icon                     |
 
 ---
 
