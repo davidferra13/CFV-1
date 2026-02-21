@@ -1,5 +1,6 @@
 // RSVP Form - Guest-facing form for submitting/updating RSVPs
 // Two-mode design: Quick RSVP (status + name = done) or expand for dietary/allergy details
+// Includes photo consent checkbox and plus-one detail capture
 // Used on the public share page. No authentication required.
 
 'use client'
@@ -23,6 +24,10 @@ interface RSVPFormProps {
     allergies: string[] | null
     notes: string | null
     plus_one: boolean
+    photo_consent?: boolean
+    plus_one_name?: string | null
+    plus_one_allergies?: string[] | null
+    plus_one_dietary?: string[] | null
     [key: string]: unknown
   } | null
 }
@@ -53,6 +58,14 @@ export function RSVPForm({
   const [allergyInput, setAllergyInput] = useState(existingGuest?.allergies?.join(', ') || '')
   const [notes, setNotes] = useState(existingGuest?.notes || '')
   const [plusOne, setPlusOne] = useState(existingGuest?.plus_one || false)
+  const [plusOneName, setPlusOneName] = useState(existingGuest?.plus_one_name || '')
+  const [plusOneAllergies, setPlusOneAllergies] = useState(
+    existingGuest?.plus_one_allergies?.join(', ') || ''
+  )
+  const [plusOneDietary, setPlusOneDietary] = useState(
+    existingGuest?.plus_one_dietary?.join(', ') || ''
+  )
+  const [photoConsent, setPhotoConsent] = useState(existingGuest?.photo_consent || false)
   const [loading, setLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -72,6 +85,14 @@ export function RSVPForm({
       .split(',')
       .map((s) => s.trim())
       .filter(Boolean)
+    const poAllergies = plusOneAllergies
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    const poDietary = plusOneDietary
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
 
     try {
       if (isEditing && guestToken) {
@@ -83,6 +104,10 @@ export function RSVPForm({
           allergies,
           notes: notes || undefined,
           plus_one: plusOne,
+          photo_consent: photoConsent,
+          plus_one_name: plusOne ? plusOneName || undefined : undefined,
+          plus_one_allergies: plusOne ? poAllergies : undefined,
+          plus_one_dietary: plusOne ? poDietary : undefined,
         })
       } else {
         const result = await submitRSVP({
@@ -94,11 +119,14 @@ export function RSVPForm({
           allergies,
           notes: notes || undefined,
           plus_one: plusOne,
+          photo_consent: photoConsent,
+          plus_one_name: plusOne ? plusOneName || undefined : undefined,
+          plus_one_allergies: plusOne ? poAllergies : undefined,
+          plus_one_dietary: plusOne ? poDietary : undefined,
         })
 
         if (result.guestToken) {
           setGuestToken(result.guestToken)
-          // Store guest token in cookie so returning guests see their RSVP
           document.cookie = `guest_token_${eventId}=${result.guestToken}; path=/; max-age=${60 * 60 * 24 * 90}; SameSite=Lax`
         }
 
@@ -201,7 +229,7 @@ export function RSVPForm({
         </div>
       </div>
 
-      {/* Name — always required */}
+      {/* Name */}
       <div>
         <label htmlFor="fullName" className="block text-sm font-medium text-stone-700 mb-1">
           Your Name <span className="text-red-500">*</span>
@@ -217,7 +245,7 @@ export function RSVPForm({
         />
       </div>
 
-      {/* Email — always visible, optional */}
+      {/* Email */}
       <div>
         <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
           Email <span className="text-stone-400 text-xs">(optional)</span>
@@ -233,7 +261,7 @@ export function RSVPForm({
         <p className="text-xs text-stone-500 mt-1">So we can reach you if anything changes</p>
       </div>
 
-      {/* Expandable details section — dietary, allergies, plus-one, notes */}
+      {/* Expandable details section */}
       {rsvpStatus !== 'declined' && (
         <>
           {!showDetails ? (
@@ -250,7 +278,7 @@ export function RSVPForm({
                   d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                 />
               </svg>
-              Add allergies, dietary needs, or a note
+              Add allergies, dietary needs, or a plus-one
             </button>
           ) : (
             <div className="space-y-4 bg-stone-50 rounded-lg p-4 border border-stone-200">
@@ -265,21 +293,76 @@ export function RSVPForm({
                 </button>
               </div>
 
-              {/* Plus One */}
-              <div className="flex items-center gap-3">
-                <input
-                  id="plusOne"
-                  type="checkbox"
-                  checked={plusOne}
-                  onChange={(e) => setPlusOne(e.target.checked)}
-                  className="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
-                />
-                <label htmlFor="plusOne" className="text-sm text-stone-700">
-                  I am bringing a plus-one
-                </label>
+              {/* Plus One toggle + details */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <input
+                    id="plusOne"
+                    type="checkbox"
+                    checked={plusOne}
+                    onChange={(e) => setPlusOne(e.target.checked)}
+                    className="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
+                  />
+                  <label htmlFor="plusOne" className="text-sm text-stone-700">
+                    I am bringing a plus-one
+                  </label>
+                </div>
+
+                {plusOne && (
+                  <div className="ml-7 space-y-3 pl-3 border-l-2 border-stone-200">
+                    <div>
+                      <label
+                        htmlFor="plusOneName"
+                        className="block text-sm font-medium text-stone-700 mb-1"
+                      >
+                        Plus-one's name
+                      </label>
+                      <input
+                        id="plusOneName"
+                        type="text"
+                        value={plusOneName}
+                        onChange={(e) => setPlusOneName(e.target.value)}
+                        placeholder="Their full name"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="plusOneAllergies"
+                        className="block text-sm font-medium text-stone-700 mb-1"
+                      >
+                        Their allergies
+                      </label>
+                      <input
+                        id="plusOneAllergies"
+                        type="text"
+                        value={plusOneAllergies}
+                        onChange={(e) => setPlusOneAllergies(e.target.value)}
+                        placeholder="e.g., peanuts, shellfish"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="plusOneDietary"
+                        className="block text-sm font-medium text-stone-700 mb-1"
+                      >
+                        Their dietary restrictions
+                      </label>
+                      <input
+                        id="plusOneDietary"
+                        type="text"
+                        value={plusOneDietary}
+                        onChange={(e) => setPlusOneDietary(e.target.value)}
+                        placeholder="e.g., vegetarian, gluten-free"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Dietary Restrictions */}
+              {/* Dietary */}
               <div>
                 <label htmlFor="dietary" className="block text-sm font-medium text-stone-700 mb-1">
                   Dietary Restrictions
@@ -347,6 +430,22 @@ export function RSVPForm({
             rows={2}
             className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none"
           />
+        </div>
+      )}
+
+      {/* Photo consent — simple, friendly, not creepy */}
+      {rsvpStatus !== 'declined' && (
+        <div className="flex items-center gap-3">
+          <input
+            id="photoConsent"
+            type="checkbox"
+            checked={photoConsent}
+            onChange={(e) => setPhotoConsent(e.target.checked)}
+            className="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
+          />
+          <label htmlFor="photoConsent" className="text-sm text-stone-600">
+            Cool to share food pics from the event
+          </label>
         </div>
       )}
 

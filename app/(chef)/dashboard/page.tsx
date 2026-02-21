@@ -357,6 +357,9 @@ const MONTH_NAMES = [
 export default async function ChefDashboard() {
   const user = await requireChef()
   const currentMonthName = MONTH_NAMES[new Date().getMonth()]
+  const hour = new Date().getHours()
+  const timeOfDay = hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening'
+  const firstName = (user.email ?? '').split('@')[0].split('.')[0]
 
   // All data fetches in parallel — each wrapped in safe() for graceful degradation
   const [
@@ -507,7 +510,10 @@ export default async function ChefDashboard() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">Dashboard</h1>
-          <p className="text-stone-600 mt-1">Your command center - everything at a glance.</p>
+          <p className="text-sm text-stone-400 mt-0.5">
+            Good {timeOfDay}
+            {firstName ? `, ${firstName}` : ''}.
+          </p>
         </div>
         <div className="flex gap-2 items-center flex-wrap">
           <DashboardQuickSettings initialWidgets={widgetPreferences} />
@@ -543,13 +549,18 @@ export default async function ChefDashboard() {
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
-                <span className="text-lg shrink-0" aria-hidden="true">
-                  {queue.nextAction.urgency === 'critical'
-                    ? '🔴'
-                    : queue.nextAction.urgency === 'high'
-                      ? '🟡'
-                      : '🟢'}
-                </span>
+                <span
+                  className="w-2.5 h-2.5 rounded-full shrink-0"
+                  style={{
+                    backgroundColor:
+                      queue.nextAction.urgency === 'critical'
+                        ? '#ef4444'
+                        : queue.nextAction.urgency === 'high'
+                          ? '#f59e0b'
+                          : '#e88f47',
+                  }}
+                  aria-hidden="true"
+                />
                 <div className="min-w-0">
                   <p className="text-sm font-semibold truncate">{queue.nextAction.title}</p>
                   <p className="text-xs opacity-75 mt-0.5 truncate">
@@ -565,9 +576,11 @@ export default async function ChefDashboard() {
           </Link>
         ) : (
           <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
-            <span className="text-lg" aria-hidden="true">
-              ✅
-            </span>
+            <span
+              className="w-2.5 h-2.5 rounded-full shrink-0"
+              style={{ backgroundColor: '#10b981' }}
+              aria-hidden="true"
+            />
             <p className="text-sm font-medium text-green-800">
               All caught up — nothing urgent right now.
             </p>

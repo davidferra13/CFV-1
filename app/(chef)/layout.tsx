@@ -66,7 +66,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
             <div
               className="min-h-screen"
               style={{
-                backgroundColor: profile.portal_background_color || '#f5f5f4',
+                backgroundColor: profile.portal_background_color || '#ede9e4',
                 backgroundImage: profile.portal_background_image_url
                   ? `url(${profile.portal_background_image_url})`
                   : undefined,

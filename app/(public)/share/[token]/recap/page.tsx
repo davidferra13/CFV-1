@@ -9,6 +9,8 @@ import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
 import { Card, CardContent } from '@/components/ui/card'
 import { RecapPhotoGrid } from '@/components/sharing/recap-photo-grid'
+import { TestimonialForm } from '@/components/sharing/testimonial-form'
+import { cookies } from 'next/headers'
 
 export async function generateMetadata({ params }: { params: { token: string } }) {
   const eventData = await getEventShareByToken(params.token)
@@ -30,6 +32,10 @@ export default async function RecapPage({ params }: { params: { token: string } 
   if (!eventData) {
     notFound()
   }
+
+  // Check for returning guest
+  const cookieStore = cookies()
+  const guestTokenCookie = cookieStore.get(`guest_token_${eventData.eventId}`)
 
   // Load messages and photos in parallel
   const [messages, photos] = await Promise.all([
@@ -111,6 +117,20 @@ export default async function RecapPage({ params }: { params: { token: string } 
             </div>
           </div>
         )}
+
+        {/* Leave a Review */}
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <h2 className="text-xl font-semibold text-stone-900 mb-4 text-center">
+              Leave a Review
+            </h2>
+            <TestimonialForm
+              shareToken={params.token}
+              guestName={guestTokenCookie ? undefined : undefined}
+              guestToken={guestTokenCookie?.value}
+            />
+          </CardContent>
+        </Card>
 
         {/* Chef CTA */}
         {eventData.chefProfileUrl && (

@@ -301,7 +301,11 @@ function NavGroupSection({
         <GroupIcon
           className={`w-[20px] h-[20px] flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-400'}`}
         />
-        <span className="flex-1 text-left tracking-tight">{group.label}</span>
+        <span
+          className={`flex-1 text-left tracking-tight transition-opacity ${active ? 'opacity-100' : 'opacity-50'}`}
+        >
+          {group.label}
+        </span>
         <ChevronDown
           className={`w-4 h-4 text-stone-400 transition-transform duration-200 ${
             isOpen ? 'rotate-0' : '-rotate-90'
@@ -403,10 +407,10 @@ function NavGroupSection({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                   itemActive
-                    ? 'bg-brand-50 text-brand-700'
-                    : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
+                    ? 'bg-brand-50 text-brand-700 border-brand-500'
+                    : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700 border-transparent'
                 }`}
               >
                 <Icon
@@ -594,10 +598,10 @@ export function ChefSidebar({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                     active
-                      ? 'bg-brand-50 text-brand-700'
-                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                      ? 'bg-brand-50 text-brand-700 border-brand-500'
+                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900 border-transparent'
                   }`}
                 >
                   <Icon
@@ -672,10 +676,10 @@ export function ChefSidebar({
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                     active
-                      ? 'bg-brand-50 text-brand-700'
-                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                      ? 'bg-brand-50 text-brand-700 border-brand-500'
+                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900 border-transparent'
                   }`}
                 >
                   <Icon
@@ -1118,11 +1122,11 @@ export function ChefMobileNav({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors ${
+                className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors ${
                   active ? 'text-brand-600' : 'text-stone-400'
                 }`}
               >
-                <Icon className="w-5 h-5" />
+                <Icon className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
                 {item.label}
               </Link>
             )
@@ -1130,9 +1134,9 @@ export function ChefMobileNav({
           <button
             type="button"
             onClick={() => setMenuOpen(true)}
-            className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium text-stone-400"
+            className="group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium text-stone-400"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
             More
           </button>
         </div>

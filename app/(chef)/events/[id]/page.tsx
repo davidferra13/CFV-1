@@ -106,6 +106,8 @@ import { getEventGuestLeadCount } from '@/lib/guest-leads/actions'
 import { HostMessageTemplate } from '@/components/sharing/host-message-template'
 import { GuestMessagesPanel } from '@/components/events/guest-messages-panel'
 import { PostEventOutreachPanel } from '@/components/events/post-event-outreach-panel'
+import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
+import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
 import { getEventMessagesForChef } from '@/lib/guest-messages/actions'
 
 async function getEventFinancialSummary(eventId: string) {
@@ -667,6 +669,44 @@ export default async function EventDetailPage({
                 chefName={chefDisplayName}
               />
             )}
+
+            {/* RSVP Tracker + Photo Consent — below the guest panel */}
+            {(guestList as any[]).length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <RSVPTrackerPanel
+                  guests={guestList as any[]}
+                  totalExpected={event.guest_count}
+                  shareUrl={
+                    activeShare
+                      ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}`
+                      : null
+                  }
+                  occasion={event.occasion}
+                />
+                <PhotoConsentSummary guests={guestList as any[]} />
+              </div>
+            )}
+          </Card>
+        )}
+
+        {/* Share Recap — for completed events with an active share link */}
+        {event.status === 'completed' && activeShare && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-stone-900">Event Recap</h3>
+                <p className="text-sm text-stone-500 mt-0.5">
+                  Share a keepsake page with guests — photos, messages, and a booking link.
+                </p>
+              </div>
+              <a
+                href={`${process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'}/share/${activeShare.token}/recap`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="secondary">View Recap Page</Button>
+              </a>
+            </div>
           </Card>
         )}
 

@@ -11,7 +11,7 @@ export function Skeleton({ className }: SkeletonProps) {
   return (
     <div
       className={cn(
-        'animate-pulse rounded-md bg-stone-100',
+        'rounded-md bg-gradient-to-r from-stone-100 via-stone-50 to-stone-100 bg-[length:200%_100%] animate-shimmer',
         className
       )}
       aria-hidden="true"
@@ -26,10 +26,7 @@ export function SkeletonCard({ lines = 3 }: { lines?: number }) {
     <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-3">
       <Skeleton className="h-5 w-1/3" />
       {Array.from({ length: lines }).map((_, i) => (
-        <Skeleton
-          key={i}
-          className={cn('h-4', i === lines - 1 ? 'w-2/3' : 'w-full')}
-        />
+        <Skeleton key={i} className={cn('h-4', i === lines - 1 ? 'w-2/3' : 'w-full')} />
       ))}
     </div>
   )

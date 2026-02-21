@@ -8,7 +8,12 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { parseCommandIntent } from '@/lib/ai/command-intent-parser'
-import { searchClientsByName } from '@/lib/clients/actions'
+import { searchClientsByName, getClients, getClientById } from '@/lib/clients/actions'
+import { getEvents, getEventById } from '@/lib/events/actions'
+import { getInquiries, getInquiryById } from '@/lib/inquiries/actions'
+import { getRecipes } from '@/lib/recipes/actions'
+import { getMenus } from '@/lib/menus/actions'
+import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { checkCalendarAvailability } from '@/lib/scheduling/calendar-sync'
 import { generateFollowUpDraft } from '@/lib/ai/followup-draft'
 import { parseEventFromText } from '@/lib/events/parse-event-from-text'
@@ -116,6 +121,202 @@ async function executeEventCreateDraft(inputs: Record<string, unknown>) {
   return { draft: result.draft, error: result.error }
 }
 
+// ─── Remy-expanded Executors ──────────────────────────────────────────────────
+
+async function executeClientListRecent(inputs: Record<string, unknown>) {
+  const limit = Number(inputs.limit) || 5
+  const allClients = await getClients()
+  const recent = (allClients ?? []).slice(0, limit)
+  return {
+    clients: recent.map((c: Record<string, unknown>) => ({
+      id: c.id as string,
+      name: (c.full_name as string) ?? 'Unknown',
+      email: (c.email as string) ?? '',
+    })),
+  }
+}
+
+async function executeClientDetails(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  const matches = await searchClientsByName(clientName)
+  if (matches.length === 0) return { found: false, clientName }
+
+  const client = await getClientById(matches[0].id)
+  if (!client) return { found: false, clientName }
+
+  return {
+    found: true,
+    client: {
+      id: (client as Record<string, unknown>).id,
+      name: (client as Record<string, unknown>).full_name ?? 'Unknown',
+      email: (client as Record<string, unknown>).email ?? '',
+      phone: (client as Record<string, unknown>).phone ?? '',
+      status: (client as Record<string, unknown>).status ?? '',
+      dietaryRestrictions: (client as Record<string, unknown>).dietary_restrictions ?? '',
+    },
+  }
+}
+
+async function executeEventDetails(inputs: Record<string, unknown>, tenantId: string) {
+  const eventName = String(inputs.eventName ?? '')
+  const supabase = createServerClient()
+
+  // Search events by occasion
+  const { data } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .ilike('occasion', `%${eventName}%`)
+    .order('event_date', { ascending: false })
+    .limit(1)
+
+  if (!data || data.length === 0) return { found: false, query: eventName }
+
+  const e = data[0] as Record<string, unknown>
+  return {
+    found: true,
+    event: {
+      id: e.id,
+      occasion: e.occasion,
+      date: e.event_date,
+      status: e.status,
+      guestCount: e.guest_count,
+      clientName: ((e.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+    },
+  }
+}
+
+async function executeEventListByStatus(inputs: Record<string, unknown>, tenantId: string) {
+  const status = String(inputs.status ?? 'confirmed')
+  const supabase = createServerClient()
+
+  const { data } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .eq('status', status)
+    .order('event_date', { ascending: true })
+    .limit(10)
+
+  return {
+    status,
+    events: (data ?? []).map((e: Record<string, unknown>) => ({
+      id: e.id as string,
+      occasion: e.occasion as string | null,
+      date: e.event_date as string | null,
+      status: e.status as string,
+      guestCount: e.guest_count as number | null,
+      clientName: ((e.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+    })),
+  }
+}
+
+async function executeInquiryListOpen() {
+  const inquiries = await getInquiries({
+    status: ['new', 'awaiting_chef', 'awaiting_client'] as never,
+  })
+
+  return {
+    inquiries: (inquiries ?? []).slice(0, 10).map((i: Record<string, unknown>) => ({
+      id: i.id as string,
+      status: i.status as string,
+      eventType: i.event_type as string | null,
+      eventDate: i.event_date as string | null,
+      guestCount: i.guest_count as number | null,
+      clientName: ((i.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+    })),
+  }
+}
+
+async function executeInquiryDetails(inputs: Record<string, unknown>) {
+  const query = String(inputs.query ?? '')
+  // Get all inquiries and search by client name or event type
+  const allInquiries = await getInquiries()
+  const match = (allInquiries ?? []).find((i: Record<string, unknown>) => {
+    const clientName = ((i.client as Record<string, unknown> | null)?.full_name as string) ?? ''
+    const eventType = (i.event_type as string) ?? ''
+    return (
+      clientName.toLowerCase().includes(query.toLowerCase()) ||
+      eventType.toLowerCase().includes(query.toLowerCase())
+    )
+  })
+
+  if (!match) return { found: false, query }
+
+  const m = match as Record<string, unknown>
+  return {
+    found: true,
+    inquiry: {
+      id: m.id,
+      status: m.status,
+      eventType: m.event_type,
+      eventDate: m.event_date,
+      guestCount: m.guest_count,
+      budget: m.budget_cents,
+      message: m.message,
+      clientName: ((m.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+    },
+  }
+}
+
+async function executeFinanceMonthlySnapshot() {
+  const summary = await getTenantFinancialSummary()
+  return {
+    totalRevenueCents: summary.totalRevenueCents,
+    totalRefundsCents: summary.totalRefundsCents,
+    totalTipsCents: summary.totalTipsCents,
+    netRevenueCents: summary.netRevenueCents,
+    totalWithTipsCents: summary.totalWithTipsCents,
+  }
+}
+
+async function executeRecipeSearch(inputs: Record<string, unknown>) {
+  const query = String(inputs.query ?? '')
+  const recipes = await getRecipes({ search: query })
+  return {
+    recipes: (recipes ?? []).slice(0, 10).map((r) => ({
+      id: r.id,
+      name: r.name,
+      category: r.category,
+      prepTime: r.prep_time_minutes,
+      cookTime: r.cook_time_minutes,
+      timesCooked: r.times_cooked,
+    })),
+  }
+}
+
+async function executeMenuList(inputs: Record<string, unknown>) {
+  const status = inputs.status as string | undefined
+  const menus = await getMenus(
+    status ? { statusFilter: status as 'draft' | 'shared' | 'locked' | 'archived' } : {}
+  )
+  return {
+    menus: (menus ?? []).slice(0, 10).map((m: Record<string, unknown>) => ({
+      id: m.id as string,
+      name: m.name as string,
+      status: m.status as string,
+    })),
+  }
+}
+
+async function executeSchedulingNextAvailable(inputs: Record<string, unknown>) {
+  const startDateStr = String(inputs.startDate ?? new Date().toISOString().split('T')[0])
+  const startDate = new Date(startDateStr)
+
+  // Check up to 30 days from start
+  for (let i = 0; i < 30; i++) {
+    const checkDate = new Date(startDate)
+    checkDate.setDate(checkDate.getDate() + i)
+    const dateStr = checkDate.toISOString().split('T')[0]
+    const result = await checkCalendarAvailability(dateStr)
+    if (result.available) {
+      return { nextAvailable: dateStr, daysFromStart: i }
+    }
+  }
+
+  return { nextAvailable: null, message: 'No availability found in the next 30 days.' }
+}
+
 // ─── DAG Execution Engine ─────────────────────────────────────────────────────
 
 /**
@@ -197,6 +398,36 @@ async function executeSingleTask(
         break
       case 'event.create_draft':
         data = await executeEventCreateDraft(task.inputs)
+        break
+      case 'client.list_recent':
+        data = await executeClientListRecent(task.inputs)
+        break
+      case 'client.details':
+        data = await executeClientDetails(task.inputs)
+        break
+      case 'event.details':
+        data = await executeEventDetails(task.inputs, tenantId)
+        break
+      case 'event.list_by_status':
+        data = await executeEventListByStatus(task.inputs, tenantId)
+        break
+      case 'inquiry.list_open':
+        data = await executeInquiryListOpen()
+        break
+      case 'inquiry.details':
+        data = await executeInquiryDetails(task.inputs)
+        break
+      case 'finance.monthly_snapshot':
+        data = await executeFinanceMonthlySnapshot()
+        break
+      case 'recipe.search':
+        data = await executeRecipeSearch(task.inputs)
+        break
+      case 'menu.list':
+        data = await executeMenuList(task.inputs)
+        break
+      case 'scheduling.next_available':
+        data = await executeSchedulingNextAvailable(task.inputs)
         break
       default:
         return {

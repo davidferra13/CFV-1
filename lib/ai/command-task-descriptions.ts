@@ -60,6 +60,87 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
       '{ "description": "string — full event description including date, guests, occasion, location, client name" }',
     tierNote: 'ALWAYS tier 2 — chef must review and confirm before saving.',
   },
+
+  // ─── Remy-expanded tasks ────────────────────────────────────────────────────
+
+  {
+    type: 'client.list_recent',
+    tier: 1,
+    name: 'Recent Clients',
+    description: 'List the 5 most recently added clients with their names.',
+    inputSchema: '{ "limit": "number — optional, defaults to 5" }',
+  },
+  {
+    type: 'client.details',
+    tier: 1,
+    name: 'Client Details',
+    description:
+      'Look up a specific client by name and return their profile details and event history.',
+    inputSchema: '{ "clientName": "string — client full name or first name to look up" }',
+  },
+  {
+    type: 'event.details',
+    tier: 1,
+    name: 'Event Details',
+    description:
+      'Get full details for a specific event including client, date, status, and guest count.',
+    inputSchema: '{ "eventName": "string — event occasion or description to search for" }',
+  },
+  {
+    type: 'event.list_by_status',
+    tier: 1,
+    name: 'Events by Status',
+    description:
+      'List events filtered by a specific status (draft, proposed, accepted, paid, confirmed, in_progress, completed, cancelled).',
+    inputSchema:
+      '{ "status": "string — one of: draft, proposed, accepted, paid, confirmed, in_progress, completed, cancelled" }',
+  },
+  {
+    type: 'inquiry.list_open',
+    tier: 1,
+    name: 'Open Inquiries',
+    description:
+      'List all active inquiries that need attention (new, awaiting_chef, awaiting_client statuses).',
+    inputSchema: '{}',
+  },
+  {
+    type: 'inquiry.details',
+    tier: 1,
+    name: 'Inquiry Details',
+    description:
+      'Get details for a specific inquiry by searching for it by client name or description.',
+    inputSchema: '{ "query": "string — client name or inquiry description to search for" }',
+  },
+  {
+    type: 'finance.monthly_snapshot',
+    tier: 1,
+    name: 'Monthly Financial Snapshot',
+    description:
+      'Get a financial snapshot: total revenue, refunds, tips, and net revenue for the current period.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'recipe.search',
+    tier: 1,
+    name: 'Search Recipes',
+    description: 'Search for recipes by name or keyword.',
+    inputSchema: '{ "query": "string — recipe name or keyword to search for" }',
+  },
+  {
+    type: 'menu.list',
+    tier: 1,
+    name: 'List Menus',
+    description: 'Show all menus, optionally filtered by status (draft, shared, locked, archived).',
+    inputSchema: '{ "status": "string — optional, one of: draft, shared, locked, archived" }',
+  },
+  {
+    type: 'scheduling.next_available',
+    tier: 1,
+    name: 'Next Available Date',
+    description: 'Find the next date with no events booked, starting from a given date.',
+    inputSchema:
+      '{ "startDate": "string — optional, YYYY-MM-DD to start searching from, defaults to today" }',
+  },
 ]
 
 export function buildTaskListForPrompt(): string {

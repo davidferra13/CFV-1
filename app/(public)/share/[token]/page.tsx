@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { RSVPForm } from '@/components/sharing/rsvp-form'
 import { ExcitementWall } from '@/components/sharing/excitement-wall'
 import { GuestPhotoGallery } from '@/components/sharing/guest-photo-gallery'
+import { EventCountdown } from '@/components/sharing/event-countdown'
 import { cookies } from 'next/headers'
 
 export default async function SharePage({ params }: { params: { token: string } }) {
@@ -50,6 +51,11 @@ export default async function SharePage({ params }: { params: { token: string } 
           </h1>
           <Badge variant="success">{statusLabel}</Badge>
         </div>
+
+        {/* Countdown — only for upcoming events */}
+        {eventData.status !== 'completed' && eventData.eventDate && (
+          <EventCountdown eventDate={eventData.eventDate} serveTime={eventData.serveTime} />
+        )}
 
         {/* Event Details Card */}
         <Card className="mb-6">

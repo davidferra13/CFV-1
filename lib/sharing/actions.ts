@@ -24,6 +24,10 @@ const SubmitRSVPSchema = z.object({
   allergies: z.array(z.string()).optional(),
   notes: z.string().optional(),
   plus_one: z.boolean().optional(),
+  photo_consent: z.boolean().optional(),
+  plus_one_name: z.string().optional(),
+  plus_one_allergies: z.array(z.string()).optional(),
+  plus_one_dietary: z.array(z.string()).optional(),
 })
 
 const UpdateRSVPSchema = z.object({
@@ -34,6 +38,10 @@ const UpdateRSVPSchema = z.object({
   allergies: z.array(z.string()).optional(),
   notes: z.string().optional(),
   plus_one: z.boolean().optional(),
+  photo_consent: z.boolean().optional(),
+  plus_one_name: z.string().optional(),
+  plus_one_allergies: z.array(z.string()).optional(),
+  plus_one_dietary: z.array(z.string()).optional(),
 })
 
 const VisibilitySettingsSchema = z.object({
@@ -558,6 +566,10 @@ export async function submitRSVP(input: SubmitRSVPInput) {
       allergies: validated.allergies || [],
       notes: validated.notes || null,
       plus_one: validated.plus_one || false,
+      photo_consent: validated.photo_consent || false,
+      plus_one_name: validated.plus_one_name || null,
+      plus_one_allergies: validated.plus_one_allergies || [],
+      plus_one_dietary: validated.plus_one_dietary || [],
     })
     .select()
     .single()
@@ -594,6 +606,12 @@ export async function updateRSVP(input: UpdateRSVPInput) {
   if (updateData.allergies !== undefined) payload.allergies = updateData.allergies
   if (updateData.notes !== undefined) payload.notes = updateData.notes
   if (updateData.plus_one !== undefined) payload.plus_one = updateData.plus_one
+  if (updateData.photo_consent !== undefined) payload.photo_consent = updateData.photo_consent
+  if (updateData.plus_one_name !== undefined) payload.plus_one_name = updateData.plus_one_name
+  if (updateData.plus_one_allergies !== undefined)
+    payload.plus_one_allergies = updateData.plus_one_allergies
+  if (updateData.plus_one_dietary !== undefined)
+    payload.plus_one_dietary = updateData.plus_one_dietary
 
   const { data: guest, error } = await supabase
     .from('event_guests')

@@ -27,6 +27,7 @@ const config: Config = {
           DEFAULT: '#ffffff',
           muted: '#faf9f7',
           accent: '#f5f3ef',
+          page: '#ede9e4',
         },
       },
       fontFamily: {
@@ -34,6 +35,25 @@ const config: Config = {
       },
       maxWidth: {
         content: '72rem',
+      },
+      keyframes: {
+        'fade-slide-up': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in': {
+          from: { opacity: '0', transform: 'scale(0.92)' },
+          to: { opacity: '1', transform: 'scale(1)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        },
+      },
+      animation: {
+        'fade-slide-up': 'fade-slide-up 220ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        'scale-in': 'scale-in 150ms cubic-bezier(0.16, 1, 0.3, 1) both',
+        shimmer: 'shimmer 1.6s linear infinite',
       },
     },
   },

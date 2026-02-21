@@ -65,6 +65,56 @@ Different names are used in different places. This is intentional — don't "fix
 
 ---
 
+## ANTI-LOOP RULE (MANDATORY — READ THIS)
+
+**Agents looping for an hour costs real money and produces nothing. These rules are hard stops.**
+
+### The 3-Strike Rule
+
+If you attempt something and it fails, you get **at most 2 more attempts** (3 total). On the 3rd failure, you **STOP and report to the user.** No exceptions.
+
+This applies to ALL repeated actions, not just builds:
+
+| Loop type              | Example                                                                | What to do after 3 failures                                                  |
+| ---------------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **Fix-retry**          | Fix a type error → build fails → fix again → fails again               | Stop. Report the error and what you tried. Let the user decide.              |
+| **Search loops**       | Can't find a file/function → search different paths → still can't find | Stop. Tell the user what you searched for and ask where it is.               |
+| **Permission denied**  | Command blocked → tweak command → blocked again                        | Stop. Ask the user to adjust permissions or tell you an alternative.         |
+| **API/network**        | External call fails → retry → fails again                              | Stop. Report the failure. Do not retry network calls more than once.         |
+| **Install/dependency** | Package install fails → try different version → fails                  | Stop. Report the error.                                                      |
+| **Test failures**      | Fix test → run → new failure → fix → run → new failure                 | Stop. You're chasing your tail. Report all failures and let the user assess. |
+
+### What Counts as a "Strike" (and What Doesn't)
+
+**Strikes = repeating the same approach to the same problem:**
+
+- Fix a type error on line 42 → build → same error → fix line 42 differently → build → same error = 3 strikes, stop
+- Run `npm install foo` → fails → run `npm install foo` again = 2 strikes immediately (you know it will fail)
+- Try to fix error A → it creates error B → fix B → it re-creates A → you're going in circles = stop
+
+**NOT strikes = genuinely different approaches, forward progress, normal work:**
+
+- Fix error A → build → error A gone but new error B on a different file → fix B → build → error C → fix C = this is **normal forward progress**, keep going
+- Try approach X → doesn't work → try completely different approach Y → doesn't work → try approach Z = different strategies, keep going (but if Z also fails, stop and report)
+- Reading multiple files to understand a problem = not looping, that's research
+- Making 10 edits across 10 files for one feature = not looping, that's implementation
+
+**The test: "Am I making forward progress or am I going in circles?"** If you're seeing the same errors come back, undoing your own fixes, or re-trying commands you know failed — you're looping. If each attempt moves you closer to the goal or reveals new information — you're working.
+
+### What "STOP" Means
+
+1. **Do not make another attempt at the thing that's failing**
+2. **Commit whatever work you've done so far** (partial progress is better than lost progress)
+3. **Report clearly:** what you were trying to do, what failed, what you tried, and what the error was
+4. **Let the user decide** the next step
+5. **Continue working on OTHER tasks** if you have them — stopping on one problem doesn't mean stopping everything
+
+### Why This Exists
+
+Without this rule, an agent that hits a tricky error will loop for 30–60+ minutes, burning hundreds of thousands of tokens, and often making the code worse with each iteration. The developer loses real money ($10–50+ per loop incident) and gets a worse result than if the agent had just stopped and asked for help after the second failure. The goal is not to limit agents — it's to redirect effort from futile repetition into asking for help.
+
+---
+
 ## DATA SAFETY (HIGHEST PRIORITY)
 
 These rules exist because this is a **live production app with real client data**. Data loss is unacceptable.
