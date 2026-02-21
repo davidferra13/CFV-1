@@ -15,10 +15,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
   const cronSecret = process.env.CRON_SECRET
 
   if (!cronSecret) {
-    return NextResponse.json(
-      { error: 'CRON_SECRET not configured' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'CRON_SECRET not configured' }, { status: 500 })
   }
 
   if (authHeader !== `Bearer ${cronSecret}`) {
@@ -58,7 +55,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           }
 
           const staleCutoff = new Date(
-            Date.now() - tenantSettings.inquiry_expiry_days * 24 * 60 * 60 * 1000,
+            Date.now() - tenantSettings.inquiry_expiry_days * 24 * 60 * 60 * 1000
           ).toISOString()
 
           if (inquiry.updated_at >= staleCutoff) {
@@ -80,14 +77,12 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
           // Notify chef (non-blocking)
           try {
-            const { createNotification, getChefAuthUserId } = await import(
-              '@/lib/notifications/actions'
-            )
+            const { createNotification, getChefAuthUserId } =
+              await import('@/lib/notifications/actions')
             const chefUserId = await getChefAuthUserId(inquiry.tenant_id)
             if (chefUserId) {
               const clientName =
-                (inquiry.client as { full_name: string } | null)?.full_name ??
-                'Unknown contact'
+                (inquiry.client as { full_name: string } | null)?.full_name ?? 'Unknown contact'
               await createNotification({
                 tenantId: inquiry.tenant_id,
                 recipientId: chefUserId,
@@ -106,9 +101,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
           results.inquiriesExpired++
         } catch (err) {
-          results.errors.push(
-            `Expire inquiry ${inquiry.id}: ${(err as Error).message}`,
-          )
+          results.errors.push(`Expire inquiry ${inquiry.id}: ${(err as Error).message}`)
         }
       }
     }
@@ -146,9 +139,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
           results.quotesExpired++
         } catch (err) {
-          results.errors.push(
-            `Expire quote ${quote.id}: ${(err as Error).message}`,
-          )
+          results.errors.push(`Expire quote ${quote.id}: ${(err as Error).message}`)
         }
       }
     }
@@ -168,12 +159,14 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
     const { data: upcomingEvents } = await supabase
       .from('events')
-      .select(`
+      .select(
+        `
         id, tenant_id, occasion, event_date, serve_time, arrival_time,
         location_address, location_city, location_state,
         guest_count, special_requests,
         client:clients(id, email, full_name, automated_emails_enabled)
-      `)
+      `
+      )
       .eq('event_date', tomorrowDate)
       .in('status', ['paid', 'confirmed', 'in_progress'])
 
@@ -226,9 +219,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
           results.eventReminders++
         } catch (err) {
-          results.errors.push(
-            `Reminder for event ${event.id}: ${(err as Error).message}`,
-          )
+          results.errors.push(`Reminder for event ${event.id}: ${(err as Error).message}`)
         }
       }
     }
@@ -257,17 +248,19 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
     // Cast to any: payment_reminder_*_sent_at columns are new (from migration 20260228000006)
     // and types/database.ts doesn't reflect them yet. Will resolve after supabase gen types.
-    const { data: unpaidEvents } = await (supabase as any)
+    const { data: unpaidEvents } = (await (supabase as any)
       .from('events')
-      .select(`
+      .select(
+        `
         id, tenant_id, occasion, event_date, deposit_amount_cents, quoted_price_cents,
         payment_reminder_7d_sent_at, payment_reminder_3d_sent_at, payment_reminder_1d_sent_at,
         client:clients(id, email, full_name, automated_emails_enabled)
-      `)
+      `
+      )
       .eq('status', 'accepted')
       .in('payment_status', ['unpaid', 'deposit_paid'])
       .gte('event_date', todayDate)
-      .lte('event_date', sevenDaysOutDate) as { data: any[] | null }
+      .lte('event_date', sevenDaysOutDate)) as { data: any[] | null }
 
     const paymentReminderResults = { sent: 0, skipped: 0 }
 
@@ -315,7 +308,8 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             .eq('event_id', event.id)
             .single()
 
-          const amountDueCents = financial?.outstanding_balance_cents ?? (event as any).quoted_price_cents ?? 0
+          const amountDueCents =
+            financial?.outstanding_balance_cents ?? (event as any).quoted_price_cents ?? 0
           const depositCents = (event as any).deposit_amount_cents ?? 0
 
           for (const threshold of reminderThresholds) {
@@ -350,9 +344,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             break // Only send the most-urgent threshold per cron run
           }
         } catch (err) {
-          results.errors.push(
-            `Payment reminder for event ${event.id}: ${(err as Error).message}`
-          )
+          results.errors.push(`Payment reminder for event ${event.id}: ${(err as Error).message}`)
         }
       }
     }
@@ -398,18 +390,20 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const sevenDaysOutDate5 = sevenDaysOut5.toISOString().split('T')[0]
 
     // Cast to any: new columns not yet in generated types
-    const { data: upcomingEvents5 } = await (supabase as any)
+    const { data: upcomingEvents5 } = (await (supabase as any)
       .from('events')
-      .select(`
+      .select(
+        `
         id, tenant_id, occasion, event_date, serve_time, arrival_time,
         location_address, location_city, location_state,
         guest_count, special_requests,
         client_reminder_7d_sent_at, client_reminder_2d_sent_at, client_reminder_1d_sent_at,
         client:clients(id, email, full_name, automated_emails_enabled)
-      `)
+      `
+      )
       .in('status', ['paid', 'confirmed', 'in_progress'])
       .gte('event_date', todayDate5)
-      .lte('event_date', sevenDaysOutDate5) as { data: any[] | null }
+      .lte('event_date', sevenDaysOutDate5)) as { data: any[] | null }
 
     if (upcomingEvents5 && upcomingEvents5.length > 0) {
       const {
@@ -455,7 +449,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
           const eventDateMs5 = new Date(event.event_date).getTime()
           const daysUntilEvent5 = Math.round(
-            (eventDateMs5 - today5.getTime()) / (1000 * 60 * 60 * 24),
+            (eventDateMs5 - today5.getTime()) / (1000 * 60 * 60 * 24)
           )
 
           for (const threshold of reminderThresholds5) {
@@ -519,9 +513,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             break // Only send the most urgent threshold per cron run
           }
         } catch (err) {
-          results.errors.push(
-            `Pre-event reminder for event ${event.id}: ${(err as Error).message}`,
-          )
+          results.errors.push(`Pre-event reminder for event ${event.id}: ${(err as Error).message}`)
         }
       }
     }
@@ -539,18 +531,20 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const fortyEightHoursOut6 = new Date(now6.getTime() + 48 * 60 * 60 * 1000)
 
     // Cast to any: expiry_warning_sent_at column not yet in generated types
-    const { data: expiringQuotes } = await (supabase as any)
+    const { data: expiringQuotes } = (await (supabase as any)
       .from('quotes')
-      .select(`
+      .select(
+        `
         id, tenant_id, total_quoted_cents, valid_until,
         inquiry_id, event_id, client_id,
         expiry_warning_sent_at
-      `)
+      `
+      )
       .eq('status', 'sent')
       .not('valid_until', 'is', null)
       .gte('valid_until', now6.toISOString())
       .lte('valid_until', fortyEightHoursOut6.toISOString())
-      .is('expiry_warning_sent_at', null) as { data: any[] | null }
+      .is('expiry_warning_sent_at', null)) as { data: any[] | null }
 
     if (expiringQuotes && expiringQuotes.length > 0) {
       const { sendQuoteExpiringEmail } = await import('@/lib/email/notifications')
@@ -632,7 +626,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           results.quoteExpiryWarnings++
         } catch (err) {
           results.errors.push(
-            `Quote expiry warning for quote ${quote.id}: ${(err as Error).message}`,
+            `Quote expiry warning for quote ${quote.id}: ${(err as Error).message}`
           )
         }
       }
@@ -641,8 +635,123 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     results.errors.push(`Quote expiry warnings: ${(err as Error).message}`)
   }
 
-  await recordCronHeartbeat('lifecycle', results as Record<string, unknown>)
-  return NextResponse.json(results)
+  // ── 7. Send automated post-event review requests (3–10 days post-completion) ──
+  // Finds events that completed 3–10 days ago without a review request yet.
+  // Sends a warm, template-based review request email. Chef can still send
+  // the AI-crafted version manually from the event detail page.
+
+  const reviewResults = { sent: 0, skipped: 0 }
+
+  try {
+    const now7 = new Date()
+    const tenDaysAgo = new Date(now7.getTime() - 10 * 86_400_000).toISOString().split('T')[0]
+    const threeDaysAgo = new Date(now7.getTime() - 3 * 86_400_000).toISOString().split('T')[0]
+
+    const { data: completedEvents } = (await (supabase as any)
+      .from('events')
+      .select(
+        `
+        id, tenant_id, occasion, event_date, guest_count,
+        review_request_sent_at,
+        client:clients(id, email, full_name, automated_emails_enabled)
+      `
+      )
+      .eq('status', 'completed')
+      .is('review_request_sent_at', null)
+      .gte('event_date', tenDaysAgo)
+      .lte('event_date', threeDaysAgo)) as { data: any[] | null }
+
+    if (completedEvents && completedEvents.length > 0) {
+      for (const event of completedEvents) {
+        try {
+          const client = event.client as {
+            id: string
+            email: string
+            full_name: string
+            automated_emails_enabled: boolean
+          } | null
+
+          if (!client?.email) continue
+
+          // Chef-level opt-out
+          const tenantSettings = await getAutomationSettingsForTenant(event.tenant_id)
+          if (!tenantSettings.client_event_reminders_enabled) {
+            reviewResults.skipped++
+            continue
+          }
+
+          // Client-level opt-out
+          if (client.automated_emails_enabled === false) {
+            reviewResults.skipped++
+            continue
+          }
+
+          // Get chef name
+          const { data: chef } = await supabase
+            .from('chefs')
+            .select('business_name, full_name')
+            .eq('id', event.tenant_id)
+            .single()
+
+          const chefName = (chef as any)?.business_name || (chef as any)?.full_name || 'Your Chef'
+          const firstName = client.full_name.split(' ')[0]
+          const occasion = event.occasion || 'your dinner'
+          const eventDateLabel = new Date(event.event_date).toLocaleDateString('en-US', {
+            month: 'long',
+            day: 'numeric',
+          })
+
+          const { sendEmail } = await import('@/lib/email/send')
+          const { CampaignEmail } = await import('@/lib/email/templates/campaign')
+          const React = await import('react')
+
+          const body = `Hi ${firstName},
+
+I've been thinking about ${occasion} on ${eventDateLabel} — it was genuinely one of my favorite evenings.
+
+If you have a moment, I'd love it if you left a quick review on Google. It means a lot and helps others find me.
+
+Thank you again for having me.
+
+${chefName}`
+
+          await sendEmail({
+            to: client.email,
+            subject: `Thank you for having me — would you leave a quick review?`,
+            react: React.default.createElement(CampaignEmail, {
+              chefName,
+              bodyText: body,
+              previewText: `It was a pleasure cooking for you — a quick review would mean a lot.`,
+              unsubscribeUrl: '',
+            }),
+          })
+
+          // Mark as sent
+          await (supabase as any)
+            .from('events')
+            .update({ review_request_sent_at: now7.toISOString() })
+            .eq('id', event.id)
+            .eq('tenant_id', event.tenant_id)
+
+          reviewResults.sent++
+        } catch (err) {
+          results.errors.push(`Review request for event ${event.id}: ${(err as Error).message}`)
+        }
+      }
+    }
+  } catch (err) {
+    results.errors.push(`Review requests: ${(err as Error).message}`)
+  }
+
+  await recordCronHeartbeat('lifecycle', { ...results, ...reviewResults } as Record<
+    string,
+    unknown
+  >)
+  return NextResponse.json({
+    ...results,
+    reviewRequestsSent: reviewResults.sent,
+    reviewRequestsSkipped: reviewResults.skipped,
+  })
 }
 
 export { handleLifecycle as GET, handleLifecycle as POST }
