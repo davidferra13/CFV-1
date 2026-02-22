@@ -1018,7 +1018,7 @@ export function RemyDrawer() {
       {!open && (
         <button
           onClick={() => setOpen(true)}
-          className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
+          className="fixed bottom-32 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
           aria-label="Open Remy (Ctrl+K)"
           title="Open Remy (Ctrl+K)"
         >
