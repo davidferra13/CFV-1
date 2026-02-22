@@ -1,5 +1,3 @@
-'use server'
-
 // Remy — Client Layer Context Loader
 // Loads ONLY this client's data — scoped by tenant + client ID.
 // PRIVACY: Client data = PII → must use Ollama. No cloud models.

@@ -82,7 +82,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/auth') ||
     pathname.startsWith('/api/gmail') ||
     pathname.startsWith('/api/scheduled') ||
-    pathname.startsWith('/api/e2e')
+    pathname.startsWith('/api/e2e') ||
+    pathname.startsWith('/api/remy/public')
   ) {
     return NextResponse.next()
   }

@@ -1,5 +1,3 @@
-'use server'
-
 // Remy — Public Layer Context Loader
 // Loads ONLY public-safe data for the visitor-facing Remy.
 // No financials, no client lists, no internal notes.
