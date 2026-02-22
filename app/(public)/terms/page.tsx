@@ -377,12 +377,13 @@ export default function TermsPage() {
             6.4 Chargebacks &amp; Disputes
           </h3>
           <p className="leading-relaxed">
-            Clients must contact ChefFlow at{' '}
+            If you have a concern about a payment, please contact ChefFlow at{' '}
             <a href="mailto:support@cheflowhq.com" className="text-brand-600 hover:underline">
               support@cheflowhq.com
             </a>{' '}
-            before initiating a credit card chargeback. Filing a chargeback without first using
-            ChefFlow&apos;s dispute process may result in account suspension.
+            before initiating a credit card chargeback. Our dispute process is faster and preserves
+            your relationship with your Chef. Chargebacks filed without first attempting resolution
+            through ChefFlow may be treated as a violation of these Terms.
           </p>
 
           <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
@@ -457,16 +458,6 @@ export default function TermsPage() {
           <p className="leading-relaxed">
             ChefFlow will give at least 30 days&apos; written notice before modifying the Platform
             Fee. Continued use of the Service after the effective date constitutes acceptance.
-          </p>
-
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
-            7.7 Subscriptions (Future)
-          </h3>
-          <p className="leading-relaxed">
-            Chef subscription tiers are planned for future implementation. When active,
-            subscriptions will be billed monthly in advance with no partial refunds for unused time.
-            Cancellation takes effect at the end of the current billing period. Client Portal access
-            is free for Clients of subscribed Chefs.
           </p>
         </section>
 
@@ -649,9 +640,9 @@ export default function TermsPage() {
             </p>
             <p className="mt-4">
               Chefflow&apos;s aggregate liability for any claim arising from or related to these
-              terms or the service shall not exceed the greater of: (a) the total platform fees paid
-              by or received from you in the twelve (12) months preceding the claim, or (b) one
-              hundred dollars (USD $100.00).
+              terms or the service shall not exceed the total platform fees paid by or received from
+              you in the twelve (12) months preceding the claim, or one hundred dollars (USD
+              $100.00), whichever is greater.
             </p>
           </div>
           <p className="mt-4 leading-relaxed text-sm text-stone-600">
@@ -695,8 +686,9 @@ export default function TermsPage() {
             <li>Client&apos;s breach of these Terms</li>
             <li>False or fraudulent dispute or chargeback claims</li>
             <li>
-              Claims by guests, household members, or third parties arising from Events at the
-              Client&apos;s premises
+              Claims by guests or third parties directly resulting from the Client&apos;s own acts
+              or omissions at the Event venue (e.g., unsafe premises conditions, failure to disclose
+              known hazards)
             </li>
             <li>Client&apos;s provision of false allergen or event information</li>
           </ul>

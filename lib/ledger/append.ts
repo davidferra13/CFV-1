@@ -33,6 +33,22 @@ export type AppendLedgerEntryInput = {
 }
 
 /**
+ * Append ledger entry on behalf of an authenticated chef.
+ * Caller should NOT provide tenant_id or created_by; these are filled from the session.
+ */
+export async function appendLedgerEntryForChef(
+  input: Omit<AppendLedgerEntryInput, 'tenant_id' | 'created_by'>
+) {
+  const user = await requireChef()
+
+  return appendLedgerEntryInternal({
+    ...input,
+    tenant_id: user.tenantId!,
+    created_by: user.id,
+  })
+}
+
+/**
  * Internal ledger append — NOT exported as a server action.
  * Only callable from other server-side functions in this module or via
  * the explicit re-export in lib/ledger/internal.ts for webhook use.

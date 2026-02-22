@@ -19,6 +19,7 @@ import {
   MessageSquare,
   ChevronLeft,
   Trash2,
+  Brain,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -33,9 +34,9 @@ import {
   autoTitleConversation,
   deleteConversation,
 } from '@/lib/ai/remy-conversation-actions'
-import { extractAndSaveMemories } from '@/lib/ai/remy-memory-actions'
+import { extractAndSaveMemories, deleteRemyMemory } from '@/lib/ai/remy-memory-actions'
 import { toast } from 'sonner'
-import type { RemyMessage } from '@/lib/ai/remy-types'
+import type { RemyMessage, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { RemyConversation } from '@/lib/ai/remy-conversation-actions'
 
 function generateId(): string {
@@ -54,7 +55,7 @@ const REMY_STARTERS = [
   { text: "What's on my plate this week?", icon: CalendarDays },
   { text: "How's business looking this month?", icon: TrendingUp },
   { text: 'Draft a follow-up for my last event', icon: Mail },
-  { text: 'Any clients I should reach out to?', icon: Users },
+  { text: 'Show my memories', icon: Brain },
 ]
 
 export function RemyDrawer() {
@@ -182,6 +183,26 @@ export function RemyDrawer() {
     toast.success('Message removed')
   }, [])
 
+  const handleDeleteMemory = useCallback(async (memoryId: string) => {
+    try {
+      await deleteRemyMemory(memoryId)
+      // Remove the memory item from the message that contains it
+      setMessages((prev) =>
+        prev.map((msg) => {
+          if (!msg.memoryItems) return msg
+          return {
+            ...msg,
+            memoryItems: msg.memoryItems.filter((m) => m.id !== memoryId),
+          }
+        })
+      )
+      toast.success('Memory deleted')
+    } catch (err) {
+      console.error('[remy] Failed to delete memory:', err)
+      toast.error('Failed to delete memory')
+    }
+  }, [])
+
   // Non-blocking auto-save: persist to artifacts + extract memories
   const autoSave = useCallback((userMessage: string, remyMsg: RemyMessage) => {
     // Save the conversational text to artifacts (non-blocking side effect)
@@ -265,6 +286,7 @@ export function RemyDrawer() {
           timestamp: new Date().toISOString(),
           tasks: response.tasks,
           navSuggestions: response.navSuggestions,
+          memoryItems: response.memoryItems,
         }
         setMessages((prev) => [...prev, remyMsg])
 
@@ -587,6 +609,53 @@ export function RemyDrawer() {
                               ))}
                             </div>
                           )}
+
+                        {/* Memory items with delete buttons */}
+                        {msg.role === 'remy' && msg.memoryItems && msg.memoryItems.length > 0 && (
+                          <div className="mt-2 space-y-1 max-h-80 overflow-y-auto">
+                            {(() => {
+                              // Group by category
+                              const grouped = new Map<string, RemyMemoryItem[]>()
+                              for (const item of msg.memoryItems) {
+                                const cat = item.category
+                                if (!grouped.has(cat)) grouped.set(cat, [])
+                                grouped.get(cat)!.push(item)
+                              }
+                              return Array.from(grouped.entries()).map(([category, items]) => (
+                                <div key={category} className="mb-2">
+                                  <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1 px-1">
+                                    {category.replace(/_/g, ' ')}
+                                  </p>
+                                  {items.map((item) => (
+                                    <div
+                                      key={item.id}
+                                      className="group/mem flex items-start gap-1.5 rounded-lg px-2 py-1.5 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
+                                    >
+                                      <span className="flex-1 text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
+                                        {item.content}
+                                        {item.importance >= 8 && (
+                                          <span
+                                            className="ml-1 text-amber-500"
+                                            title="High importance"
+                                          >
+                                            !
+                                          </span>
+                                        )}
+                                      </span>
+                                      <button
+                                        onClick={() => handleDeleteMemory(item.id)}
+                                        className="opacity-0 group-hover/mem:opacity-100 flex-shrink-0 mt-0.5 text-stone-400 hover:text-red-500 transition-all p-0.5"
+                                        title="Delete this memory"
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
+                              ))
+                            })()}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

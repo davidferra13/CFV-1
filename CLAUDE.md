@@ -228,30 +228,37 @@ Run these in order — stop and report any failure before continuing:
 - `types/database.ts` current with remote schema
 - Only after all of the above: merge to `main` with explicit user approval
 
-### Agent Testing Account — Use It
+### Agent Testing Account — Test AND Fix It Yourself
 
-A persistent agent account exists for programmatic testing. **Use it proactively** — don't ask the developer to manually test things you can verify yourself.
+> **🚨 NEVER tell the developer to "check the website," "verify this works," or "let me know if it looks right." You have your own admin account. Sign in, test it, find the problem, and FIX IT — all yourself. The developer is not your QA team. If you can test it, you MUST test it. If you find a bug, you MUST fix it. Do not report problems back — resolve them.**
+
+There are **two admin accounts**:
+
+1. **Developer's account** — theirs, for their own use. Don't touch it.
+2. **Agent account** — YOURS. Use it every time you need to see, test, or verify anything in the app.
 
 - **Credentials:** Read from `.auth/agent.json` (or `.env.local`: `AGENT_EMAIL` / `AGENT_PASSWORD`)
 - **Sign in:** `POST http://localhost:3100/api/e2e/auth` with `{ "email", "password" }` from the credentials
 - **Access:** Chef role + admin access (full app)
 - **Setup:** If `.auth/agent.json` doesn't exist, run `npm run agent:setup` first
 
-**When to use it:**
-
-- After implementing a UI change — sign in via Playwright and verify it renders correctly
-- When debugging auth, redirects, or page-load issues — sign in and inspect the behavior
-- When the user reports something is broken — sign in and reproduce it before guessing at fixes
-- During feature close-out — smoke-test the feature in a real browser, not just type-check
-
-**How:**
+**The full loop — test AND fix:**
 
 1. Ensure dev server is running on port 3100 (ask the user to start it if needed)
-2. Launch Playwright, POST to `/api/e2e/auth` with agent credentials
-3. Navigate, interact, screenshot, and report findings
-4. Do NOT sign out (preserves the session for follow-up checks)
+2. Launch Playwright, sign in with your agent credentials
+3. Navigate to the relevant page, interact, take screenshots
+4. If something is broken — **fix it right now.** You have the code and the browser. Close the loop.
+5. After fixing, sign in again and verify the fix actually works
+6. Only report back when it's DONE and WORKING
 
-**Rule: Verify before reporting.** If you can test something yourself with the agent account, do it. Only ask the developer to manually test when browser interaction is required that Playwright can't handle (e.g., OAuth popups, mobile-specific gestures).
+**Never say any of these:**
+
+- "Please verify X on the website" — YOU verify it
+- "Can you check if this looks correct?" — YOU check it
+- "Let me know if the fix works" — YOU test if it works
+- "You may want to test..." — YOU test it
+
+**The only exception:** Playwright literally cannot do it (OAuth popups, mobile-specific gestures, native device features). Everything else — you handle it end to end.
 
 ### Full Workflow Reference
 

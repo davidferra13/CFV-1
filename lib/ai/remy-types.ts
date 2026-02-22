@@ -12,6 +12,8 @@ export interface RemyMessage {
   tasks?: RemyTaskResult[]
   /** Clickable navigation links */
   navSuggestions?: NavigationSuggestion[]
+  /** Memory items for management UI (only on memory-related messages) */
+  memoryItems?: RemyMemoryItem[]
 }
 
 export interface NavigationSuggestion {
@@ -33,7 +35,17 @@ export interface RemyTaskResult {
 
 // ─── Server Response ────────────────────────────────────────────────────────
 
-export type MessageIntent = 'question' | 'command' | 'mixed'
+export type MessageIntent = 'question' | 'command' | 'mixed' | 'memory'
+
+export interface RemyMemoryItem {
+  id: string
+  category: string
+  content: string
+  importance: number
+  accessCount: number
+  relatedClientId: string | null
+  createdAt: string
+}
 
 export interface RemyResponse {
   /** Remy's conversational reply (always present) */
@@ -44,6 +56,8 @@ export interface RemyResponse {
   tasks?: RemyTaskResult[]
   /** Page navigation suggestions */
   navSuggestions?: NavigationSuggestion[]
+  /** Memory items for display/management (only on memory intent) */
+  memoryItems?: RemyMemoryItem[]
 }
 
 // ─── Context ────────────────────────────────────────────────────────────────

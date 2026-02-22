@@ -5014,6 +5014,79 @@ export type Database = {
           },
         ]
       }
+      client_photos: {
+        Row: {
+          caption: string | null
+          category: string
+          client_id: string
+          content_type: string
+          created_at: string
+          deleted_at: string | null
+          display_order: number
+          filename_original: string
+          id: string
+          size_bytes: number
+          storage_path: string
+          tenant_id: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          caption?: string | null
+          category?: string
+          client_id: string
+          content_type: string
+          created_at?: string
+          deleted_at?: string | null
+          display_order?: number
+          filename_original?: string
+          id?: string
+          size_bytes?: number
+          storage_path: string
+          tenant_id: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          caption?: string | null
+          category?: string
+          client_id?: string
+          content_type?: string
+          created_at?: string
+          deleted_at?: string | null
+          display_order?: number
+          filename_original?: string
+          id?: string
+          size_bytes?: number
+          storage_path?: string
+          tenant_id?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_photos_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "client_photos_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_photos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_preference_patterns: {
         Row: {
           chef_id: string
@@ -5368,14 +5441,24 @@ export type Database = {
       clients: {
         Row: {
           access_instructions: string | null
+          acquisition_cost_cents: number | null
           additional_addresses: Json | null
           address: string | null
           allergies: string[] | null
+          anniversary: string | null
           auth_user_id: string | null
           automated_emails_enabled: boolean
           availability_signal_notifications: boolean
+          available_place_settings: number | null
           average_spend_cents: number | null
+          birthday: string | null
+          budget_range_max_cents: number | null
+          budget_range_min_cents: number | null
           children: string[] | null
+          cleanup_expectations: string | null
+          communication_style_notes: string | null
+          company_name: string | null
+          complaint_handling_notes: string | null
           created_at: string
           dietary_protocols: string[] | null
           dietary_restrictions: string[] | null
@@ -5388,11 +5471,15 @@ export type Database = {
           favorite_cuisines: string[] | null
           favorite_dishes: string[] | null
           first_event_date: string | null
+          formality_level: string | null
           full_name: string
           fun_qa_answers: Json | null
+          gate_code: string | null
+          has_dishwasher: boolean | null
           has_received_welcome_points: boolean
           house_rules: string | null
           id: string
+          instagram_handle: string | null
           is_demo: boolean
           kitchen_burner_notes: string | null
           kitchen_constraints: string | null
@@ -5404,6 +5491,7 @@ export type Database = {
           kitchen_sink_notes: string | null
           kitchen_size: string | null
           last_event_date: string | null
+          leftovers_preference: string | null
           lifetime_value_cents: number | null
           loyalty_points: number | null
           loyalty_tier: Database["public"]["Enums"]["loyalty_tier"]
@@ -5414,11 +5502,15 @@ export type Database = {
           nda_document_url: string | null
           nda_effective_date: string | null
           nda_expiry_date: string | null
+          nearest_grocery_store: string | null
+          occupation: string | null
+          outdoor_cooking_notes: string | null
           parking_instructions: string | null
           partner_name: string | null
           partner_preferred_name: string | null
           payment_behavior: string | null
           personal_milestones: Json | null
+          pets: Json | null
           phone: string | null
           photo_permission: string | null
           portal_access_token: string | null
@@ -5426,10 +5518,16 @@ export type Database = {
           preferred_contact_method:
             | Database["public"]["Enums"]["contact_method"]
             | null
+          preferred_event_days: string[] | null
           preferred_name: string | null
+          preferred_service_style: string | null
+          red_flags: string | null
+          referral_potential: string | null
           referral_source: Database["public"]["Enums"]["referral_source"] | null
           referral_source_detail: string | null
           regular_guests: Json | null
+          security_notes: string | null
+          social_media_links: Json | null
           spice_tolerance: Database["public"]["Enums"]["spice_tolerance"] | null
           status: Database["public"]["Enums"]["client_status"]
           stripe_customer_id: string | null
@@ -5439,21 +5537,35 @@ export type Database = {
           total_events_count: number | null
           total_guests_served: number | null
           total_payments_received_cents: number | null
+          typical_guest_count: string | null
           updated_at: string
           vibe_notes: string | null
+          water_quality_notes: string | null
           what_they_care_about: string | null
+          wifi_password: string | null
           wine_beverage_preferences: string | null
+          wow_factors: string | null
         }
         Insert: {
           access_instructions?: string | null
+          acquisition_cost_cents?: number | null
           additional_addresses?: Json | null
           address?: string | null
           allergies?: string[] | null
+          anniversary?: string | null
           auth_user_id?: string | null
           automated_emails_enabled?: boolean
           availability_signal_notifications?: boolean
+          available_place_settings?: number | null
           average_spend_cents?: number | null
+          birthday?: string | null
+          budget_range_max_cents?: number | null
+          budget_range_min_cents?: number | null
           children?: string[] | null
+          cleanup_expectations?: string | null
+          communication_style_notes?: string | null
+          company_name?: string | null
+          complaint_handling_notes?: string | null
           created_at?: string
           dietary_protocols?: string[] | null
           dietary_restrictions?: string[] | null
@@ -5466,11 +5578,15 @@ export type Database = {
           favorite_cuisines?: string[] | null
           favorite_dishes?: string[] | null
           first_event_date?: string | null
+          formality_level?: string | null
           full_name: string
           fun_qa_answers?: Json | null
+          gate_code?: string | null
+          has_dishwasher?: boolean | null
           has_received_welcome_points?: boolean
           house_rules?: string | null
           id?: string
+          instagram_handle?: string | null
           is_demo?: boolean
           kitchen_burner_notes?: string | null
           kitchen_constraints?: string | null
@@ -5482,6 +5598,7 @@ export type Database = {
           kitchen_sink_notes?: string | null
           kitchen_size?: string | null
           last_event_date?: string | null
+          leftovers_preference?: string | null
           lifetime_value_cents?: number | null
           loyalty_points?: number | null
           loyalty_tier?: Database["public"]["Enums"]["loyalty_tier"]
@@ -5492,11 +5609,15 @@ export type Database = {
           nda_document_url?: string | null
           nda_effective_date?: string | null
           nda_expiry_date?: string | null
+          nearest_grocery_store?: string | null
+          occupation?: string | null
+          outdoor_cooking_notes?: string | null
           parking_instructions?: string | null
           partner_name?: string | null
           partner_preferred_name?: string | null
           payment_behavior?: string | null
           personal_milestones?: Json | null
+          pets?: Json | null
           phone?: string | null
           photo_permission?: string | null
           portal_access_token?: string | null
@@ -5504,12 +5625,18 @@ export type Database = {
           preferred_contact_method?:
             | Database["public"]["Enums"]["contact_method"]
             | null
+          preferred_event_days?: string[] | null
           preferred_name?: string | null
+          preferred_service_style?: string | null
+          red_flags?: string | null
+          referral_potential?: string | null
           referral_source?:
             | Database["public"]["Enums"]["referral_source"]
             | null
           referral_source_detail?: string | null
           regular_guests?: Json | null
+          security_notes?: string | null
+          social_media_links?: Json | null
           spice_tolerance?:
             | Database["public"]["Enums"]["spice_tolerance"]
             | null
@@ -5521,21 +5648,35 @@ export type Database = {
           total_events_count?: number | null
           total_guests_served?: number | null
           total_payments_received_cents?: number | null
+          typical_guest_count?: string | null
           updated_at?: string
           vibe_notes?: string | null
+          water_quality_notes?: string | null
           what_they_care_about?: string | null
+          wifi_password?: string | null
           wine_beverage_preferences?: string | null
+          wow_factors?: string | null
         }
         Update: {
           access_instructions?: string | null
+          acquisition_cost_cents?: number | null
           additional_addresses?: Json | null
           address?: string | null
           allergies?: string[] | null
+          anniversary?: string | null
           auth_user_id?: string | null
           automated_emails_enabled?: boolean
           availability_signal_notifications?: boolean
+          available_place_settings?: number | null
           average_spend_cents?: number | null
+          birthday?: string | null
+          budget_range_max_cents?: number | null
+          budget_range_min_cents?: number | null
           children?: string[] | null
+          cleanup_expectations?: string | null
+          communication_style_notes?: string | null
+          company_name?: string | null
+          complaint_handling_notes?: string | null
           created_at?: string
           dietary_protocols?: string[] | null
           dietary_restrictions?: string[] | null
@@ -5548,11 +5689,15 @@ export type Database = {
           favorite_cuisines?: string[] | null
           favorite_dishes?: string[] | null
           first_event_date?: string | null
+          formality_level?: string | null
           full_name?: string
           fun_qa_answers?: Json | null
+          gate_code?: string | null
+          has_dishwasher?: boolean | null
           has_received_welcome_points?: boolean
           house_rules?: string | null
           id?: string
+          instagram_handle?: string | null
           is_demo?: boolean
           kitchen_burner_notes?: string | null
           kitchen_constraints?: string | null
@@ -5564,6 +5709,7 @@ export type Database = {
           kitchen_sink_notes?: string | null
           kitchen_size?: string | null
           last_event_date?: string | null
+          leftovers_preference?: string | null
           lifetime_value_cents?: number | null
           loyalty_points?: number | null
           loyalty_tier?: Database["public"]["Enums"]["loyalty_tier"]
@@ -5574,11 +5720,15 @@ export type Database = {
           nda_document_url?: string | null
           nda_effective_date?: string | null
           nda_expiry_date?: string | null
+          nearest_grocery_store?: string | null
+          occupation?: string | null
+          outdoor_cooking_notes?: string | null
           parking_instructions?: string | null
           partner_name?: string | null
           partner_preferred_name?: string | null
           payment_behavior?: string | null
           personal_milestones?: Json | null
+          pets?: Json | null
           phone?: string | null
           photo_permission?: string | null
           portal_access_token?: string | null
@@ -5586,12 +5736,18 @@ export type Database = {
           preferred_contact_method?:
             | Database["public"]["Enums"]["contact_method"]
             | null
+          preferred_event_days?: string[] | null
           preferred_name?: string | null
+          preferred_service_style?: string | null
+          red_flags?: string | null
+          referral_potential?: string | null
           referral_source?:
             | Database["public"]["Enums"]["referral_source"]
             | null
           referral_source_detail?: string | null
           regular_guests?: Json | null
+          security_notes?: string | null
+          social_media_links?: Json | null
           spice_tolerance?:
             | Database["public"]["Enums"]["spice_tolerance"]
             | null
@@ -5603,10 +5759,14 @@ export type Database = {
           total_events_count?: number | null
           total_guests_served?: number | null
           total_payments_received_cents?: number | null
+          typical_guest_count?: string | null
           updated_at?: string
           vibe_notes?: string | null
+          water_quality_notes?: string | null
           what_they_care_about?: string | null
+          wifi_password?: string | null
           wine_beverage_preferences?: string | null
+          wow_factors?: string | null
         }
         Relationships: [
           {
@@ -15321,6 +15481,193 @@ export type Database = {
           },
           {
             foreignKeyName: "remy_artifacts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remy_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remy_conversations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remy_memories: {
+        Row: {
+          access_count: number
+          category: string
+          content: string
+          content_hash: string
+          created_at: string
+          id: string
+          importance: number
+          is_active: boolean
+          last_accessed_at: string
+          related_client_id: string | null
+          related_event_id: string | null
+          source_artifact_id: string | null
+          source_message: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          access_count?: number
+          category: string
+          content: string
+          content_hash: string
+          created_at?: string
+          id?: string
+          importance?: number
+          is_active?: boolean
+          last_accessed_at?: string
+          related_client_id?: string | null
+          related_event_id?: string | null
+          source_artifact_id?: string | null
+          source_message?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          access_count?: number
+          category?: string
+          content?: string
+          content_hash?: string
+          created_at?: string
+          id?: string
+          importance?: number
+          is_active?: boolean
+          last_accessed_at?: string
+          related_client_id?: string | null
+          related_event_id?: string | null
+          source_artifact_id?: string | null
+          source_message?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remy_memories_related_client_id_fkey"
+            columns: ["related_client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "remy_memories_related_client_id_fkey"
+            columns: ["related_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remy_memories_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "remy_memories_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "remy_memories_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remy_memories_source_artifact_id_fkey"
+            columns: ["source_artifact_id"]
+            isOneToOne: false
+            referencedRelation: "remy_artifacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remy_memories_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remy_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          nav_suggestions: Json | null
+          role: string
+          tasks: Json | null
+          tenant_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          nav_suggestions?: Json | null
+          role: string
+          tasks?: Json | null
+          tenant_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          nav_suggestions?: Json | null
+          role?: string
+          tasks?: Json | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remy_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "remy_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remy_messages_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"

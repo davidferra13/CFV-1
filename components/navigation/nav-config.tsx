@@ -66,6 +66,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/commands', label: 'Command Center', icon: Bot },
   { href: '/remy', label: 'Remy History', icon: Bot },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/clients', label: 'Clients', icon: Users },
   { href: '/inquiries', label: 'Inquiries', icon: Inbox },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays },

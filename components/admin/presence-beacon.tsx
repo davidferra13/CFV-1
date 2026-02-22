@@ -22,15 +22,26 @@ export interface PresencePayload {
 
 const CHANNEL_NAME = 'site:presence'
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  // Fallback for non-secure contexts (HTTP over LAN)
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0
+    return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16)
+  })
+}
+
 function getOrCreateSessionId(): string {
   try {
     const existing = sessionStorage.getItem('cf-presence-session')
     if (existing) return existing
-    const id = crypto.randomUUID()
+    const id = generateId()
     sessionStorage.setItem('cf-presence-session', id)
     return id
   } catch {
-    return crypto.randomUUID()
+    return generateId()
   }
 }
 
@@ -49,7 +60,11 @@ function getJoinedAt(): string {
 export function PresenceBeacon() {
   const pathname = usePathname()
   const channelRef = useRef<RealtimeChannel | null>(null)
-  const userInfoRef = useRef<{ userId: string | null; email: string | null; role: 'authenticated' | 'anonymous' }>({
+  const userInfoRef = useRef<{
+    userId: string | null
+    email: string | null
+    role: 'authenticated' | 'anonymous'
+  }>({
     userId: null,
     email: null,
     role: 'anonymous',
