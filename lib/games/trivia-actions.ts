@@ -4,16 +4,16 @@ import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 
+const TriviaQuestionSchema = z.object({
+  id: z.string(),
+  question: z.string(),
+  choices: z.array(z.string()).length(4),
+  correctIndex: z.number().int().min(0).max(3),
+  funFact: z.string(),
+})
+
 const TriviaSchema = z.object({
-  questions: z.array(
-    z.object({
-      id: z.string(),
-      question: z.string(),
-      choices: z.array(z.string()),
-      correctIndex: z.number(),
-      funFact: z.string(),
-    })
-  ),
+  questions: z.array(TriviaQuestionSchema).min(1),
 })
 
 export type TriviaQuestion = z.infer<typeof TriviaSchema>['questions'][number]

@@ -191,12 +191,15 @@ export default function TriviaGame() {
 
   const nextQuestion = () => {
     if (currentQ + 1 >= questions.length) {
-      // game over
-      const finalScore = score
-      if (finalScore > Number(localStorage.getItem('chefflow-trivia-hi') || '0')) {
-        localStorage.setItem('chefflow-trivia-hi', String(finalScore))
-        setHighScore(finalScore)
-      }
+      // game over — use updater to read the true current score,
+      // since setScore from handleAnswer may not have flushed yet
+      setScore((currentScore) => {
+        if (currentScore > Number(localStorage.getItem('chefflow-trivia-hi') || '0')) {
+          localStorage.setItem('chefflow-trivia-hi', String(currentScore))
+          setHighScore(currentScore)
+        }
+        return currentScore
+      })
       setPhase('result')
       return
     }
