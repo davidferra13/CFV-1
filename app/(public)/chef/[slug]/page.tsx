@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
+import { RemyPublicWidget } from '@/components/ai/remy-public-widget'
 
 type Props = { params: { slug: string } }
 
@@ -259,6 +260,9 @@ export default async function ChefProfilePage({ params }: Props) {
           </div>
         </div>
       </section>
+
+      {/* Remy Public Chat Widget */}
+      <RemyPublicWidget tenantId={chef.id} chefName={chef.display_name} />
     </div>
   )
 }

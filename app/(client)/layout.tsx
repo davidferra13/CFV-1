@@ -12,6 +12,7 @@ import {
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { NotificationProvider } from '@/components/notifications/notification-provider'
 import { ToastProvider } from '@/components/notifications/toast-provider'
+import { RemyClientChat } from '@/components/ai/remy-client-chat'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   let user
@@ -32,6 +33,7 @@ export default async function ClientLayout({ children }: { children: React.React
           <ClientMobileNav userEmail={user.email} hasCannabisTier={hasCannabisTier} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>{children}</ClientMainContent>
+          <RemyClientChat />
         </div>
       </NotificationProvider>
     </ClientSidebarProvider>
