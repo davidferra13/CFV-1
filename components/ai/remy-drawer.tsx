@@ -34,6 +34,7 @@ import {
   ChefHat,
   Mic,
   MicOff,
+  Settings2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -212,6 +213,43 @@ const markdownComponents = {
   hr: () => <hr className="border-stone-300 dark:border-stone-600 my-2" />,
 }
 
+// ─── Voice Settings ──────────────────────────────────────────────────────────
+
+interface VoiceSettings {
+  voiceURI: string | null
+  rate: number
+  pitch: number
+  volume: number
+}
+
+const VOICE_SETTINGS_KEY = 'remy-voice-settings'
+const DEFAULT_VOICE_SETTINGS: VoiceSettings = {
+  voiceURI: null,
+  rate: 1,
+  pitch: 1,
+  volume: 1,
+}
+
+function loadVoiceSettings(): VoiceSettings {
+  if (typeof window === 'undefined') return DEFAULT_VOICE_SETTINGS
+  try {
+    const raw = localStorage.getItem(VOICE_SETTINGS_KEY)
+    if (!raw) return DEFAULT_VOICE_SETTINGS
+    const parsed = JSON.parse(raw)
+    return { ...DEFAULT_VOICE_SETTINGS, ...parsed }
+  } catch {
+    return DEFAULT_VOICE_SETTINGS
+  }
+}
+
+function saveVoiceSettings(settings: VoiceSettings) {
+  try {
+    localStorage.setItem(VOICE_SETTINGS_KEY, JSON.stringify(settings))
+  } catch {
+    // localStorage full or unavailable
+  }
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function RemyDrawer() {
@@ -226,6 +264,9 @@ export function RemyDrawer() {
   const [speakingId, setSpeakingId] = useState<string | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
   const [isListening, setIsListening] = useState(false)
+  const [showVoiceSettings, setShowVoiceSettings] = useState(false)
+  const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(loadVoiceSettings)
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -281,6 +322,17 @@ export function RemyDrawer() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [open])
+
+  // Load available TTS voices (they load async in some browsers)
+  useEffect(() => {
+    function loadVoices() {
+      const voices = speechSynthesis.getVoices()
+      if (voices.length > 0) setAvailableVoices(voices)
+    }
+    loadVoices()
+    speechSynthesis.addEventListener('voiceschanged', loadVoices)
+    return () => speechSynthesis.removeEventListener('voiceschanged', loadVoices)
+  }, [])
 
   // Listen for custom 'open-remy' event so nav buttons can open the drawer
   useEffect(() => {
@@ -429,6 +481,33 @@ export function RemyDrawer() {
     })
   }, [])
 
+  const updateVoiceSetting = useCallback(
+    <K extends keyof VoiceSettings>(key: K, value: VoiceSettings[K]) => {
+      setVoiceSettings((prev) => {
+        const next = { ...prev, [key]: value }
+        saveVoiceSettings(next)
+        return next
+      })
+    },
+    []
+  )
+
+  const handlePreviewVoice = useCallback(
+    (voiceURI: string | null) => {
+      speechSynthesis.cancel()
+      const utterance = new SpeechSynthesisUtterance('Hey chef, this is Remy.')
+      utterance.rate = voiceSettings.rate
+      utterance.pitch = voiceSettings.pitch
+      utterance.volume = voiceSettings.volume
+      if (voiceURI) {
+        const voice = availableVoices.find((v) => v.voiceURI === voiceURI)
+        if (voice) utterance.voice = voice
+      }
+      speechSynthesis.speak(utterance)
+    },
+    [availableVoices, voiceSettings.rate, voiceSettings.pitch, voiceSettings.volume]
+  )
+
   const handleSpeak = useCallback(
     (msgId: string, content: string) => {
       // If already speaking this message, stop it
@@ -459,15 +538,20 @@ export function RemyDrawer() {
       if (!plainText) return
 
       const utterance = new SpeechSynthesisUtterance(plainText)
-      utterance.rate = 1
-      utterance.pitch = 1
+      utterance.rate = voiceSettings.rate
+      utterance.pitch = voiceSettings.pitch
+      utterance.volume = voiceSettings.volume
+      if (voiceSettings.voiceURI) {
+        const voice = availableVoices.find((v) => v.voiceURI === voiceSettings.voiceURI)
+        if (voice) utterance.voice = voice
+      }
       utterance.onend = () => setSpeakingId(null)
       utterance.onerror = () => setSpeakingId(null)
 
       setSpeakingId(msgId)
       speechSynthesis.speak(utterance)
     },
-    [speakingId]
+    [speakingId, voiceSettings, availableVoices]
   )
 
   // Stop TTS when drawer closes
@@ -999,6 +1083,13 @@ export function RemyDrawer() {
                         <VolumeX className="h-4 w-4" />
                       )}
                     </button>
+                    <button
+                      onClick={() => setShowVoiceSettings((prev) => !prev)}
+                      className={`transition-colors p-1 ${showVoiceSettings ? 'text-white' : 'text-white/80 hover:text-white'}`}
+                      title="Voice settings"
+                    >
+                      <Settings2 className="h-4 w-4" />
+                    </button>
                     {currentConversationId && (
                       <button
                         onClick={handleExport}
@@ -1041,6 +1132,148 @@ export function RemyDrawer() {
                 </button>
               </div>
             </div>
+
+            {/* Voice settings panel */}
+            {showVoiceSettings && (
+              <div className="border-b border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 px-4 py-3 space-y-3 max-h-[320px] overflow-y-auto">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide">
+                    Voice Settings
+                  </span>
+                  <button
+                    onClick={() => {
+                      setVoiceSettings(DEFAULT_VOICE_SETTINGS)
+                      saveVoiceSettings(DEFAULT_VOICE_SETTINGS)
+                    }}
+                    className="text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                {/* Voice selector */}
+                <div>
+                  <label className="block text-xs font-medium text-stone-600 dark:text-stone-300 mb-1">
+                    Voice
+                  </label>
+                  <div className="flex gap-1.5">
+                    <select
+                      value={voiceSettings.voiceURI ?? ''}
+                      onChange={(e) => updateVoiceSetting('voiceURI', e.target.value || null)}
+                      title="Select voice"
+                      className="flex-1 text-xs rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 px-2 py-1.5 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    >
+                      <option value="">System default</option>
+                      {availableVoices
+                        .filter((v) => v.lang.startsWith('en'))
+                        .map((v) => (
+                          <option key={v.voiceURI} value={v.voiceURI}>
+                            {v.name} {v.localService ? '' : '(network)'}
+                          </option>
+                        ))}
+                      {availableVoices.filter((v) => !v.lang.startsWith('en')).length > 0 && (
+                        <optgroup label="Other languages">
+                          {availableVoices
+                            .filter((v) => !v.lang.startsWith('en'))
+                            .map((v) => (
+                              <option key={v.voiceURI} value={v.voiceURI}>
+                                {v.name} ({v.lang})
+                              </option>
+                            ))}
+                        </optgroup>
+                      )}
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => handlePreviewVoice(voiceSettings.voiceURI)}
+                      className="text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-md px-2.5 py-1.5 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors whitespace-nowrap"
+                    >
+                      Preview
+                    </button>
+                  </div>
+                </div>
+
+                {/* Speed slider */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                      Speed
+                    </label>
+                    <span className="text-xs text-stone-400 tabular-nums">
+                      {voiceSettings.rate.toFixed(1)}x
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2"
+                    step="0.1"
+                    value={voiceSettings.rate}
+                    onChange={(e) => updateVoiceSetting('rate', parseFloat(e.target.value))}
+                    title="Speech speed"
+                    className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                    <span>Slow</span>
+                    <span>Normal</span>
+                    <span>Fast</span>
+                  </div>
+                </div>
+
+                {/* Pitch slider */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                      Pitch
+                    </label>
+                    <span className="text-xs text-stone-400 tabular-nums">
+                      {voiceSettings.pitch.toFixed(1)}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.5"
+                    step="0.1"
+                    value={voiceSettings.pitch}
+                    onChange={(e) => updateVoiceSetting('pitch', parseFloat(e.target.value))}
+                    title="Speech pitch"
+                    className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                    <span>Lower</span>
+                    <span>Normal</span>
+                    <span>Higher</span>
+                  </div>
+                </div>
+
+                {/* Volume slider */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                      Volume
+                    </label>
+                    <span className="text-xs text-stone-400 tabular-nums">
+                      {Math.round(voiceSettings.volume * 100)}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value={voiceSettings.volume}
+                    onChange={(e) => updateVoiceSetting('volume', parseFloat(e.target.value))}
+                    title="Speech volume"
+                    className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                    <span>Quiet</span>
+                    <span>Full</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Conversation list view */}
             {showConversationList ? (
