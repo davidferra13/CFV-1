@@ -19,7 +19,7 @@ const QUICK_PROMPTS = [
 
 function TierLegend() {
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-gray-500">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-stone-500">
       <span className="flex items-center gap-1.5">
         <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" />
         Auto (instant)
@@ -111,7 +111,7 @@ export function CommandCenterClient() {
       {/* Input form */}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div className="relative">
-          <Bot className="absolute top-4 left-4 w-5 h-5 text-gray-500 pointer-events-none" />
+          <Bot className="absolute top-4 left-4 w-5 h-5 text-stone-400 pointer-events-none" />
           <textarea
             ref={textareaRef}
             value={input}
@@ -120,12 +120,12 @@ export function CommandCenterClient() {
             placeholder="Tell me what you need… Find Sarah Johnson, check if March 15th is free, and draft her a follow-up."
             rows={4}
             disabled={loading}
-            className="w-full rounded-xl border border-gray-700 bg-gray-900 pl-12 pr-14 py-4 text-sm text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:opacity-60 transition-colors"
+            className="w-full rounded-xl border border-stone-300 bg-white pl-12 pr-14 py-4 text-sm text-stone-900 placeholder-stone-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 disabled:opacity-60 transition-colors"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="absolute bottom-3.5 right-3.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-gray-700 disabled:cursor-not-allowed p-2 transition-colors"
+            className="absolute bottom-3.5 right-3.5 rounded-lg bg-brand-500 hover:bg-brand-600 disabled:bg-stone-200 disabled:cursor-not-allowed p-2 transition-colors"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -134,7 +134,7 @@ export function CommandCenterClient() {
             )}
           </button>
         </div>
-        <p className="text-xs text-gray-600">
+        <p className="text-xs text-stone-400">
           Press Enter to run &middot; Shift+Enter for new line
         </p>
       </form>
@@ -142,16 +142,16 @@ export function CommandCenterClient() {
       {/* Quick prompts — shown only before first run */}
       {!currentRun && !loading && (
         <div className="space-y-2">
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Quick start</p>
+          <p className="text-xs text-stone-500 uppercase tracking-wider">Quick start</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {QUICK_PROMPTS.map((prompt) => (
               <button
                 type="button"
                 key={prompt}
                 onClick={() => handleQuickPrompt(prompt)}
-                className="flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900 hover:border-gray-600 hover:bg-gray-800 px-3 py-2.5 text-left text-sm text-gray-400 hover:text-white transition-all"
+                className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white hover:border-brand-300 hover:bg-brand-50/50 px-3 py-2.5 text-left text-sm text-stone-600 hover:text-brand-700 transition-all"
               >
-                <Zap className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                <Zap className="w-3.5 h-3.5 text-brand-500 shrink-0" />
                 {prompt}
               </button>
             ))}
@@ -161,15 +161,15 @@ export function CommandCenterClient() {
 
       {/* Loading state */}
       {loading && (
-        <div className="flex items-center gap-3 text-sm text-gray-400 py-4">
-          <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
+        <div className="flex items-center gap-3 text-sm text-stone-500 py-4">
+          <Loader2 className="w-4 h-4 animate-spin text-brand-500" />
           Parsing your command and running agents in parallel…
         </div>
       )}
 
       {/* Ollama offline */}
       {currentRun?.ollamaOffline && (
-        <div className="rounded-lg border border-red-800 bg-red-950/50 p-4 text-sm text-red-300">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
           <span className="font-medium">Ollama is offline.</span> Start Ollama to use the Command
           Center — your data stays private within ChefFlow.
         </div>
@@ -181,7 +181,7 @@ export function CommandCenterClient() {
           <div className="flex items-center justify-between">
             <TierLegend />
             {pendingApprovals > 0 && (
-              <span className="text-xs text-amber-400 font-medium">
+              <span className="text-xs text-amber-600 font-medium">
                 {pendingApprovals} draft{pendingApprovals !== 1 ? 's' : ''} awaiting your approval
               </span>
             )}
@@ -197,7 +197,7 @@ export function CommandCenterClient() {
             ))}
           </div>
 
-          <div className="flex items-center justify-between text-xs text-gray-700">
+          <div className="flex items-center justify-between text-xs text-stone-500">
             <span>
               {currentRun.results.length} task{currentRun.results.length !== 1 ? 's' : ''} processed
             </span>

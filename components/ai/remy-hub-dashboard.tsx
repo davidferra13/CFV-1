@@ -1,230 +1,308 @@
 'use client'
 
-import Link from 'next/link'
+import { useState, useEffect, useCallback } from 'react'
+import { Bot, MessageSquare, Brain, ShieldCheck, Trash2, Sparkles } from 'lucide-react'
+import { CommandCenterClient } from '@/components/ai/command-center-client'
+import { RemyHistoryList } from '@/components/ai/remy-history-list'
+import { DataControls } from '@/components/ai-privacy/data-controls'
+import { DataFlowSchematic } from '@/components/ai-privacy/data-flow-schematic'
 import {
-  Bot,
-  MessageSquare,
-  History,
-  Brain,
-  ShieldCheck,
-  Keyboard,
-  Clock,
-  ArrowRight,
-  Sparkles,
-} from 'lucide-react'
+  getAiPreferences,
+  getAiDataSummary,
+  type AiPreferences,
+  type AiDataSummary,
+} from '@/lib/ai/privacy-actions'
+import { listRemyMemories, deleteRemyMemory } from '@/lib/ai/remy-memory-actions'
+import type { RemyMemory } from '@/lib/ai/remy-memory-types'
+import { toast } from 'sonner'
+import { Badge } from '@/components/ui/badge'
 
-interface ConversationPreview {
-  id: string
-  title: string
-  lastMessage?: string
-  updatedAt: string
+// ─── Tab Config ────────────────────────────────────────────────────────────────
+
+const TABS = [
+  { id: 'chat', label: 'Chat', icon: Sparkles },
+  { id: 'history', label: 'History', icon: MessageSquare },
+  { id: 'memory', label: 'Memory', icon: Brain },
+  { id: 'settings', label: 'Settings', icon: ShieldCheck },
+] as const
+
+type TabId = (typeof TABS)[number]['id']
+
+// ─── Memory Tab ────────────────────────────────────────────────────────────────
+
+const CATEGORY_LABELS: Record<string, string> = {
+  chef_preference: 'Chef Preference',
+  client_insight: 'Client Insight',
+  business_rule: 'Business Rule',
+  communication_style: 'Communication Style',
+  culinary_note: 'Culinary Note',
+  scheduling_pattern: 'Scheduling',
+  pricing_pattern: 'Pricing',
+  workflow_preference: 'Workflow',
 }
 
-interface RemyHubDashboardProps {
-  recentConversations: ConversationPreview[]
-  totalConversations: number
-  totalArtifacts: number
-  totalMemories: number
-}
+function MemoryTab() {
+  const [memories, setMemories] = useState<RemyMemory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  href,
-}: {
-  icon: typeof Bot
-  label: string
-  value: number
-  href: string
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-3 rounded-xl border border-gray-800 bg-gray-900 hover:border-gray-600 hover:bg-gray-800/80 px-4 py-3 transition-all group"
-    >
-      <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-800 group-hover:bg-indigo-900/40 transition-colors">
-        <Icon className="w-4.5 h-4.5 text-gray-400 group-hover:text-indigo-400 transition-colors" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-lg font-semibold text-white">{value}</p>
-        <p className="text-xs text-gray-500">{label}</p>
-      </div>
-      <ArrowRight className="w-4 h-4 text-gray-700 group-hover:text-gray-400 transition-colors" />
-    </Link>
-  )
-}
+  const load = useCallback(async () => {
+    try {
+      const result = await listRemyMemories({ limit: 200 })
+      setMemories(result)
+    } catch {
+      toast.error('Failed to load memories')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
 
-function QuickLink({
-  icon: Icon,
-  label,
-  description,
-  href,
-  onClick,
-}: {
-  icon: typeof Bot
-  label: string
-  description: string
-  href?: string
-  onClick?: () => void
-}) {
-  const className =
-    'flex items-start gap-3 rounded-xl border border-gray-800 bg-gray-900 hover:border-gray-600 hover:bg-gray-800/80 px-4 py-3.5 transition-all group text-left w-full'
+  useEffect(() => {
+    load()
+  }, [load])
 
-  const content = (
-    <>
-      <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-800 group-hover:bg-indigo-900/40 transition-colors flex-shrink-0 mt-0.5">
-        <Icon className="w-4 h-4 text-gray-400 group-hover:text-indigo-400 transition-colors" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white group-hover:text-indigo-300 transition-colors">
-          {label}
-        </p>
-        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-      </div>
-    </>
-  )
+  const handleDelete = async (id: string) => {
+    setDeleting(id)
+    try {
+      await deleteRemyMemory(id)
+      setMemories((prev) => prev.filter((m) => m.id !== id))
+      toast.success('Memory deleted')
+    } catch {
+      toast.error('Failed to delete memory')
+    } finally {
+      setDeleting(null)
+    }
+  }
 
-  if (onClick) {
+  if (loading) {
     return (
-      <button type="button" onClick={onClick} className={className}>
-        {content}
-      </button>
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse rounded-lg bg-stone-100 h-16" />
+        ))}
+      </div>
+    )
+  }
+
+  if (memories.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Brain className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+        <p className="text-sm text-stone-500">
+          Remy hasn&apos;t formed any memories yet. Start a conversation and Remy will remember
+          important details automatically.
+        </p>
+      </div>
     )
   }
 
   return (
-    <Link href={href!} className={className}>
-      {content}
-    </Link>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-stone-500">
+          {memories.length} memor{memories.length === 1 ? 'y' : 'ies'} — Remy uses these to
+          personalize conversations.
+        </p>
+      </div>
+      <div className="space-y-2">
+        {memories.map((m) => (
+          <div
+            key={m.id}
+            className="flex items-start gap-3 rounded-lg border border-stone-200 bg-white p-3 group"
+          >
+            <Brain className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-stone-800">{m.content}</p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <Badge variant="default">{CATEGORY_LABELS[m.category] ?? m.category}</Badge>
+                <span className="text-xs text-stone-400">Importance: {m.importance}/10</span>
+                <span className="text-xs text-stone-400">Used {m.accessCount}x</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => handleDelete(m.id)}
+              disabled={deleting === m.id}
+              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-stone-400 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
+              aria-label="Delete memory"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return 'Just now'
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `${days}d ago`
-  return new Date(dateStr).toLocaleDateString()
+// ─── Settings Tab ──────────────────────────────────────────────────────────────
+
+function SettingsTab() {
+  const [prefs, setPrefs] = useState<AiPreferences | null>(null)
+  const [summary, setSummary] = useState<AiDataSummary | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const load = useCallback(async () => {
+    try {
+      const [p, s] = await Promise.all([getAiPreferences(), getAiDataSummary()])
+      setPrefs(p)
+      setSummary(s)
+    } catch {
+      toast.error('Failed to load settings')
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+  }, [load])
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="animate-pulse rounded-lg bg-stone-100 h-20" />
+        ))}
+      </div>
+    )
+  }
+
+  if (!prefs || !summary) {
+    return (
+      <div className="text-center py-12">
+        <ShieldCheck className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+        <p className="text-sm text-stone-500">Unable to load settings. Please try again.</p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Status banner */}
+      <div
+        className={`rounded-xl border p-4 flex items-center gap-3 ${
+          prefs.remy_enabled
+            ? 'border-emerald-200 bg-emerald-50/50'
+            : 'border-stone-200 bg-stone-50'
+        }`}
+      >
+        <Bot
+          className={`h-5 w-5 shrink-0 ${prefs.remy_enabled ? 'text-emerald-600' : 'text-stone-400'}`}
+        />
+        <div>
+          <p
+            className={`text-sm font-medium ${prefs.remy_enabled ? 'text-emerald-900' : 'text-stone-700'}`}
+          >
+            {prefs.remy_enabled
+              ? "Remy is active and running on ChefFlow's private infrastructure."
+              : 'Remy is currently disabled.'}
+          </p>
+          <p
+            className={`text-xs mt-0.5 ${prefs.remy_enabled ? 'text-emerald-700' : 'text-stone-500'}`}
+          >
+            {prefs.remy_enabled
+              ? 'Your data stays within ChefFlow. Nothing is sent to third-party AI services.'
+              : 'Your existing AI data is preserved. Enable Remy from the controls below.'}
+          </p>
+        </div>
+      </div>
+
+      {/* How It Works */}
+      <details className="rounded-xl border border-stone-200 bg-white">
+        <summary className="cursor-pointer px-5 py-4">
+          <span className="text-sm font-semibold text-stone-900">
+            How It Works — Data Flow Diagram
+          </span>
+        </summary>
+        <div className="border-t border-stone-200 p-5">
+          <DataFlowSchematic />
+        </div>
+      </details>
+
+      {/* Feature Toggles + Data Controls */}
+      <DataControls initialPrefs={prefs} initialSummary={summary} onRefresh={load} />
+
+      {/* Privacy promise */}
+      <div className="rounded-xl bg-stone-50 border border-stone-200 p-5 space-y-3">
+        <h3 className="font-semibold text-stone-900">Our Promise</h3>
+        <div className="text-sm text-stone-600 space-y-2">
+          <p>
+            <strong>We will never:</strong> Send your data to external AI services, use your data to
+            train any model, share your information with third parties, or make it difficult to
+            delete your data.
+          </p>
+          <p>
+            <strong>We will always:</strong> Process AI on ChefFlow&apos;s own servers, give you
+            complete visibility into what Remy knows, let you delete any or all data instantly, and
+            respect your choice to opt out entirely.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
 }
 
-export function RemyHubDashboard({
-  recentConversations,
-  totalConversations,
-  totalArtifacts,
-  totalMemories,
-}: RemyHubDashboardProps) {
-  const openDrawer = () => {
-    window.dispatchEvent(new CustomEvent('open-remy'))
-  }
+// ─── Main Tabbed Hub ───────────────────────────────────────────────────────────
+
+export function RemyHubDashboard() {
+  const [activeTab, setActiveTab] = useState<TabId>('chat')
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30">
-          <Bot className="w-6 h-6 text-indigo-400" />
+        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-100 border border-brand-200">
+          <Bot className="w-6 h-6 text-brand-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Remy</h1>
-          <p className="text-sm text-gray-400">
+          <h1 className="text-2xl font-bold tracking-tight text-stone-900">Remy</h1>
+          <p className="text-sm text-stone-500">
             Your AI assistant — research, drafts, memory, and task execution
           </p>
         </div>
       </div>
 
-      {/* Stats Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <StatCard
-          icon={MessageSquare}
-          label="Conversations"
-          value={totalConversations}
-          href="/remy"
-        />
-        <StatCard icon={History} label="Artifacts" value={totalArtifacts} href="/remy" />
-        <StatCard icon={Brain} label="Memories" value={totalMemories} href="/remy" />
-      </div>
-
-      {/* Quick Links Grid */}
-      <div>
-        <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          Quick Actions
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <QuickLink
-            icon={Sparkles}
-            label="Open Remy Chat"
-            description="Start a conversation from anywhere with Ctrl+K"
-            onClick={openDrawer}
-          />
-          <QuickLink
-            icon={History}
-            label="Conversation History"
-            description="Browse all past conversations and artifacts"
-            href="/remy"
-          />
-          <QuickLink
-            icon={ShieldCheck}
-            label="Privacy & Settings"
-            description="Trust center, data controls, and onboarding"
-            href="/settings/ai-privacy"
-          />
-          <QuickLink
-            icon={Keyboard}
-            label="How Remy Works"
-            description="Auto tasks run instantly, drafts need your approval"
-            href="/settings/ai-privacy"
-          />
-        </div>
-      </div>
-
-      {/* Recent Conversations */}
-      {recentConversations.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wider">
-              Recent Conversations
-            </h2>
-            <Link
-              href="/remy"
-              className="text-xs text-indigo-400 hover:text-indigo-300 transition-colors"
-            >
-              View all
-            </Link>
-          </div>
-          <div className="space-y-1.5">
-            {recentConversations.map((conv) => (
+      {/* Tab Bar */}
+      <div className="border-b border-stone-200">
+        <nav className="flex gap-1 -mb-px" aria-label="Remy tabs">
+          {TABS.map((tab) => {
+            const Icon = tab.icon
+            const isActive = activeTab === tab.id
+            return (
               <button
-                key={conv.id}
+                key={tab.id}
                 type="button"
-                onClick={() => {
-                  // Open the drawer — the conversation list is accessible there
-                  window.dispatchEvent(new CustomEvent('open-remy'))
-                }}
-                className="flex items-center gap-3 w-full rounded-lg border border-gray-800/60 bg-gray-900/60 hover:border-gray-700 hover:bg-gray-800/60 px-4 py-2.5 transition-all text-left group"
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
+                  isActive
+                    ? 'border-brand-500 text-brand-700'
+                    : 'border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300'
+                }`}
               >
-                <MessageSquare className="w-4 h-4 text-gray-600 group-hover:text-gray-400 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-300 group-hover:text-white truncate transition-colors">
-                    {conv.title || 'Untitled conversation'}
-                  </p>
-                  {conv.lastMessage && (
-                    <p className="text-xs text-gray-600 truncate mt-0.5">{conv.lastMessage}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 text-xs text-gray-600 flex-shrink-0">
-                  <Clock className="w-3 h-3" />
-                  {timeAgo(conv.updatedAt)}
-                </div>
+                <Icon className="w-4 h-4" />
+                {tab.label}
               </button>
-            ))}
+            )
+          })}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      <div>
+        {activeTab === 'chat' && (
+          <div>
+            <p className="text-sm text-stone-500 mb-4">
+              Tell Remy what you need. Multi-step commands run in parallel — drafts always need your
+              approval before anything goes out.
+            </p>
+            <CommandCenterClient />
           </div>
-        </div>
-      )}
+        )}
+        {activeTab === 'history' && <RemyHistoryList />}
+        {activeTab === 'memory' && <MemoryTab />}
+        {activeTab === 'settings' && <SettingsTab />}
+      </div>
     </div>
   )
 }
