@@ -30,7 +30,10 @@ import {
   Search,
   Volume2,
   VolumeX,
+  Square,
   ChefHat,
+  Mic,
+  MicOff,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -220,7 +223,11 @@ export function RemyDrawer() {
   const [streamingIntent, setStreamingIntent] = useState<string | undefined>()
   const [elapsedSec, setElapsedSec] = useState(0)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [speakingId, setSpeakingId] = useState<string | null>(null)
   const [soundEnabled, setSoundEnabled] = useState(true)
+  const [isListening, setIsListening] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -422,6 +429,55 @@ export function RemyDrawer() {
     })
   }, [])
 
+  const handleSpeak = useCallback(
+    (msgId: string, content: string) => {
+      // If already speaking this message, stop it
+      if (speakingId === msgId) {
+        speechSynthesis.cancel()
+        setSpeakingId(null)
+        return
+      }
+      // Stop any current speech first
+      speechSynthesis.cancel()
+
+      // Strip markdown formatting for cleaner speech
+      const plainText = content
+        .replace(/#{1,6}\s+/g, '') // headings
+        .replace(/\*\*(.+?)\*\*/g, '$1') // bold
+        .replace(/\*(.+?)\*/g, '$1') // italic
+        .replace(/_(.+?)_/g, '$1') // italic underscores
+        .replace(/`{1,3}[^`]*`{1,3}/g, '') // code
+        .replace(/\[(.+?)\]\(.+?\)/g, '$1') // links
+        .replace(/[-*+]\s+/g, '. ') // list items
+        .replace(/\d+\.\s+/g, '. ') // numbered lists
+        .replace(/>\s+/g, '') // blockquotes
+        .replace(/---+/g, '') // horizontal rules
+        .replace(/\n{2,}/g, '. ') // paragraph breaks
+        .replace(/\n/g, ' ') // line breaks
+        .trim()
+
+      if (!plainText) return
+
+      const utterance = new SpeechSynthesisUtterance(plainText)
+      utterance.rate = 1
+      utterance.pitch = 1
+      utterance.onend = () => setSpeakingId(null)
+      utterance.onerror = () => setSpeakingId(null)
+
+      setSpeakingId(msgId)
+      speechSynthesis.speak(utterance)
+    },
+    [speakingId]
+  )
+
+  // Stop TTS when drawer closes
+  useEffect(() => {
+    if (!open && speakingId) {
+      speechSynthesis.cancel()
+      setSpeakingId(null)
+    }
+  }, [open, speakingId])
+
   const handleExport = useCallback(async () => {
     if (!currentConversationId) return
     try {
@@ -471,6 +527,90 @@ export function RemyDrawer() {
 
     e.target.value = ''
   }, [])
+
+  // ─── Voice Input (Web Speech API) ──────────────────────────────────────────
+
+  const supportsVoice =
+    typeof window !== 'undefined' &&
+    ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)
+
+  const toggleVoiceInput = useCallback(() => {
+    if (isListening) {
+      // Stop listening
+      recognitionRef.current?.stop()
+      setIsListening(false)
+      return
+    }
+
+    if (!supportsVoice) {
+      toast.error('Voice input is not supported in this browser. Try Chrome or Edge.')
+      return
+    }
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    const recognition = new SpeechRecognition()
+    recognition.continuous = false
+    recognition.interimResults = true
+    recognition.lang = 'en-US'
+
+    let finalTranscript = ''
+
+    recognition.onstart = () => {
+      setIsListening(true)
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onresult = (event: any) => {
+      let interim = ''
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript
+        if (event.results[i].isFinal) {
+          finalTranscript += transcript
+        } else {
+          interim += transcript
+        }
+      }
+      // Show interim results in the input field
+      setInput((prev) => {
+        const base = prev.replace(/\[listening\.\.\.\].*$/i, '').trim()
+        const current = finalTranscript + interim
+        return base ? `${base} ${current}` : current
+      })
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    recognition.onerror = (event: any) => {
+      console.error('[remy-voice] Speech recognition error:', event.error)
+      setIsListening(false)
+      if (event.error === 'not-allowed') {
+        toast.error('Microphone access denied. Enable it in your browser settings.')
+      } else if (event.error !== 'aborted') {
+        toast.error('Voice input error. Try again.')
+      }
+    }
+
+    recognition.onend = () => {
+      setIsListening(false)
+      if (finalTranscript.trim()) {
+        setInput((prev) => {
+          const base = prev.replace(/\[listening\.\.\.\].*$/i, '').trim()
+          return base ? `${base} ${finalTranscript.trim()}` : finalTranscript.trim()
+        })
+      }
+    }
+
+    recognitionRef.current = recognition
+    recognition.start()
+  }, [isListening, supportsVoice])
+
+  // Stop voice input when drawer closes
+  useEffect(() => {
+    if (!open && isListening) {
+      recognitionRef.current?.stop()
+      setIsListening(false)
+    }
+  }, [open, isListening])
 
   const playNotificationSound = useCallback(() => {
     if (!soundEnabled) return
@@ -653,7 +793,7 @@ export function RemyDrawer() {
           }
         }
 
-        const cleanContent = fullContent.replace(/\nNAV_SUGGESTIONS:\s*\[.*\]/s, '').trim()
+        const cleanContent = fullContent.replace(/\nNAV_SUGGESTIONS:\s*\[[\s\S]*\]/, '').trim()
 
         const remyMsg: RemyMessage = {
           id: generateId(),
@@ -1008,17 +1148,34 @@ export function RemyDrawer() {
                         {/* Action buttons on hover */}
                         <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 z-10 transition-all">
                           {msg.role === 'remy' && (
-                            <button
-                              onClick={() => handleCopy(msg.id, msg.content)}
-                              className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
-                              title="Copy message"
-                            >
-                              {copiedId === msg.id ? (
-                                <Check className="h-3 w-3 text-green-500" />
-                              ) : (
-                                <Copy className="h-3 w-3" />
-                              )}
-                            </button>
+                            <>
+                              <button
+                                onClick={() => handleSpeak(msg.id, msg.content)}
+                                className={`bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 transition-colors ${
+                                  speakingId === msg.id
+                                    ? 'text-brand-600 dark:text-brand-400'
+                                    : 'text-stone-400 hover:text-brand-600'
+                                }`}
+                                title={speakingId === msg.id ? 'Stop listening' : 'Listen'}
+                              >
+                                {speakingId === msg.id ? (
+                                  <Square className="h-3 w-3" />
+                                ) : (
+                                  <Volume2 className="h-3 w-3" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleCopy(msg.id, msg.content)}
+                                className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
+                                title="Copy message"
+                              >
+                                {copiedId === msg.id ? (
+                                  <Check className="h-3 w-3 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </button>
+                            </>
                           )}
                           <button
                             onClick={() => handleDeleteMessage(msg.id)}
@@ -1207,6 +1364,20 @@ export function RemyDrawer() {
                         <Paperclip className="h-4 w-4" />
                       </button>
                     </div>
+                    {supportsVoice && (
+                      <button
+                        onClick={toggleVoiceInput}
+                        className={`flex items-center justify-center rounded-lg p-2 transition-colors ${
+                          isListening
+                            ? 'bg-red-500 text-white animate-pulse'
+                            : 'bg-stone-100 dark:bg-stone-700 text-stone-500 hover:text-brand-600 hover:bg-stone-200 dark:hover:bg-stone-600'
+                        }`}
+                        title={isListening ? 'Stop listening' : 'Voice input'}
+                        aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                      >
+                        {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                      </button>
+                    )}
                     <Button
                       onClick={() => handleSend()}
                       disabled={!input.trim() || loading}
