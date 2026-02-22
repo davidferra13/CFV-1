@@ -63,6 +63,7 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // Primary always-visible shortcuts
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
   { href: '/commands', label: 'Command Center', icon: Bot },
   { href: '/remy', label: 'Remy History', icon: Bot },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
@@ -121,6 +122,17 @@ export const navGroups: NavGroup[] = [
           { href: '/leads/converted', label: 'Converted', visibility: 'advanced' },
           { href: '/leads/archived', label: 'Archived', visibility: 'advanced' },
         ],
+      },
+      {
+        href: '/prospecting',
+        label: 'Prospecting',
+        icon: Target,
+        children: [
+          { href: '/prospecting/scrub', label: 'AI Scrub' },
+          { href: '/prospecting/queue', label: 'Call Queue' },
+          { href: '/prospecting/scripts', label: 'Call Scripts' },
+        ],
+        visibility: 'advanced' as const,
       },
       {
         href: '/guest-leads',
@@ -627,6 +639,7 @@ export const standaloneBottom: NavItem[] = [
 
 export const mobileTabItems: NavItem[] = [
   { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
+  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/events', label: 'Events', icon: CalendarDays },
   { href: '/clients', label: 'Clients', icon: Users },
@@ -655,6 +668,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   { href: '/settings/contracts', label: 'Contract Templates', icon: Settings, context: 'Settings' },
   { href: '/settings/repertoire', label: 'Seasonal Palettes', icon: Settings, context: 'Settings' },
   { href: '/settings/journal', label: 'Chef Journal', icon: Settings, context: 'Settings' },
+  { href: '/settings/favorite-chefs', label: 'Favorite Chefs', icon: Star, context: 'Settings' },
   { href: '/settings/profile', label: 'Network Profile', icon: Settings, context: 'Settings' },
   {
     href: '/settings/compliance',

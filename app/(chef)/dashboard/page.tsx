@@ -104,6 +104,8 @@ import {
   getHolidayOutreachSuggestions,
   type HolidayOutreachSuggestion,
 } from '@/lib/holidays/outreach-actions'
+import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback
@@ -478,6 +480,7 @@ export default async function ChefDashboard() {
     getHolidayOutreachSuggestions,
     [] as HolidayOutreachSuggestion[]
   )
+  const dailyPlanStats = await safe('dailyPlanStats', getDailyPlanStats, null)
 
   const activeInquiryCount =
     inquiryStats.new +
@@ -532,6 +535,15 @@ export default async function ChefDashboard() {
           </Link>
         </div>
       </div>
+
+      {/* ============================================ */}
+      {/* DAILY OPS BANNER                              */}
+      {/* ============================================ */}
+      {dailyPlanStats && dailyPlanStats.totalItems > 0 && (
+        <section>
+          <DailyPlanBanner stats={dailyPlanStats} />
+        </section>
+      )}
 
       {/* ============================================ */}
       {/* PRIORITY BANNER — always visible, not hideable */}

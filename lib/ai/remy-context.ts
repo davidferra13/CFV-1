@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import type { RemyContext } from '@/lib/ai/remy-types'
+import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -34,10 +35,11 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
   const tenantId = user.tenantId!
   const supabase = createServerClient()
 
-  // Tier 1: Always fresh (cheap count queries + chef profile)
-  const [chefProfile, counts] = await Promise.all([
+  // Tier 1: Always fresh (cheap count queries + chef profile + daily plan)
+  const [chefProfile, counts, dailyPlan] = await Promise.all([
     loadChefProfile(supabase, tenantId),
     loadQuickCounts(supabase, tenantId),
+    getDailyPlanStats().catch(() => null),
   ])
 
   // Tier 2: Cached for 5 minutes
@@ -66,6 +68,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     monthRevenueCents: detailed.monthRevenueCents,
     pendingQuoteCount: detailed.pendingQuoteCount,
     currentPage,
+    dailyPlan: dailyPlan ?? undefined,
   }
 }
 

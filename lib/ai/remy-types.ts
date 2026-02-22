@@ -84,4 +84,13 @@ export interface RemyContext {
   monthRevenueCents?: number
   pendingQuoteCount?: number
   currentPage?: string
+  /** Daily plan summary (if available) */
+  dailyPlan?: {
+    totalItems: number
+    adminItems: number
+    prepItems: number
+    creativeItems: number
+    relationshipItems: number
+    estimatedMinutes: number
+  }
 }
