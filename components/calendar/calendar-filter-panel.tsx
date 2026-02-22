@@ -5,7 +5,7 @@
 // Saves filter state to localStorage keyed by a storage key (chef-scoped).
 // Calls onFiltersChange whenever the user toggles a category.
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { CalendarFilters } from '@/lib/calendar/constants'
 import { DEFAULT_CALENDAR_FILTERS, BUILT_IN_VIEWS } from '@/lib/calendar/constants'
 
@@ -18,22 +18,66 @@ type Props = {
 type FilterDef = {
   key: keyof CalendarFilters
   label: string
-  activeColor: string   // tailwind bg class when active
-  dotColor: string      // hex dot to the left of label
+  activeColor: string // tailwind bg class when active
+  dotColor: string // hex dot to the left of label
 }
 
 const FILTER_DEFS: FilterDef[] = [
-  { key: 'showEvents',      label: 'Events',    activeColor: 'bg-amber-100 text-amber-800 border-amber-300', dotColor: '#F59E0B' },
-  { key: 'showDraftEvents', label: 'Drafts',    activeColor: 'bg-yellow-100 text-yellow-800 border-yellow-300', dotColor: '#FDE68A' },
-  { key: 'showPrepBlocks',  label: 'Prep',      activeColor: 'bg-green-100 text-green-800 border-green-300', dotColor: '#16A34A' },
-  { key: 'showCalls',       label: 'Calls',     activeColor: 'bg-blue-100 text-blue-800 border-blue-300', dotColor: '#3B82F6' },
-  { key: 'showPersonal',    label: 'Personal',  activeColor: 'bg-purple-100 text-purple-800 border-purple-300', dotColor: '#7C3AED' },
-  { key: 'showBusiness',    label: 'Business',  activeColor: 'bg-teal-100 text-teal-800 border-teal-300', dotColor: '#0D9488' },
-  { key: 'showIntentions',  label: 'Goals',     activeColor: 'bg-green-50 text-green-700 border-green-200', dotColor: '#4ADE80' },
-  { key: 'showLeads',       label: 'Leads',     activeColor: 'bg-orange-100 text-orange-800 border-orange-300', dotColor: '#EA580C' },
+  {
+    key: 'showEvents',
+    label: 'Events',
+    activeColor: 'bg-amber-100 text-amber-800 border-amber-300',
+    dotColor: '#F59E0B',
+  },
+  {
+    key: 'showDraftEvents',
+    label: 'Drafts',
+    activeColor: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+    dotColor: '#FDE68A',
+  },
+  {
+    key: 'showPrepBlocks',
+    label: 'Prep',
+    activeColor: 'bg-green-100 text-green-800 border-green-300',
+    dotColor: '#16A34A',
+  },
+  {
+    key: 'showCalls',
+    label: 'Calls',
+    activeColor: 'bg-blue-100 text-blue-800 border-blue-300',
+    dotColor: '#3B82F6',
+  },
+  {
+    key: 'showPersonal',
+    label: 'Personal',
+    activeColor: 'bg-purple-100 text-purple-800 border-purple-300',
+    dotColor: '#7C3AED',
+  },
+  {
+    key: 'showBusiness',
+    label: 'Business',
+    activeColor: 'bg-teal-100 text-teal-800 border-teal-300',
+    dotColor: '#0D9488',
+  },
+  {
+    key: 'showIntentions',
+    label: 'Goals',
+    activeColor: 'bg-green-50 text-green-700 border-green-200',
+    dotColor: '#4ADE80',
+  },
+  {
+    key: 'showLeads',
+    label: 'Leads',
+    activeColor: 'bg-orange-100 text-orange-800 border-orange-300',
+    dotColor: '#EA580C',
+  },
 ]
 
 export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Props) {
+  // Use a ref to avoid the onChange callback causing re-render loops
+  const onChangeRef = useRef(onChange)
+  onChangeRef.current = onChange
+
   const [filters, setFilters] = useState<CalendarFilters>(() => ({
     ...DEFAULT_CALENDAR_FILTERS,
     ...initialFilters,
@@ -48,27 +92,30 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
         const parsed = JSON.parse(stored)
         const merged = { ...DEFAULT_CALENDAR_FILTERS, ...parsed }
         setFilters(merged)
-        onChange(merged)
+        onChangeRef.current(merged)
         // Check if stored filters match a built-in view
-        const match = BUILT_IN_VIEWS.find(v =>
-          Object.keys(v.filters).every(k => v.filters[k as keyof CalendarFilters] === merged[k as keyof CalendarFilters])
+        const match = BUILT_IN_VIEWS.find((v) =>
+          Object.keys(v.filters).every(
+            (k) => v.filters[k as keyof CalendarFilters] === merged[k as keyof CalendarFilters]
+          )
         )
         setActiveViewId(match?.id ?? null)
       }
     } catch {
       // ignore parse errors
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [storageKey])
 
   function applyView(viewId: string) {
-    const view = BUILT_IN_VIEWS.find(v => v.id === viewId)
+    const view = BUILT_IN_VIEWS.find((v) => v.id === viewId)
     if (!view) return
     setFilters(view.filters)
     setActiveViewId(viewId)
     try {
       localStorage.setItem(storageKey, JSON.stringify(view.filters))
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     onChange(view.filters)
   }
 
@@ -78,7 +125,9 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
     setActiveViewId(null) // custom state — no longer matches any built-in view
     try {
       localStorage.setItem(storageKey, JSON.stringify(next))
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     onChange(next)
   }
 
@@ -87,7 +136,9 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
     setActiveViewId('full')
     try {
       localStorage.removeItem(storageKey)
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     onChange(DEFAULT_CALENDAR_FILTERS)
   }
 
@@ -98,7 +149,7 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
       {/* View selector (Calendar Sets) */}
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="text-xs text-stone-400 font-medium mr-0.5">View:</span>
-        {BUILT_IN_VIEWS.map(view => (
+        {BUILT_IN_VIEWS.map((view) => (
           <button
             key={view.id}
             type="button"
@@ -117,7 +168,7 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
 
       {/* Individual filter pills */}
       <div className="flex flex-wrap items-center gap-2">
-        {FILTER_DEFS.map(def => {
+        {FILTER_DEFS.map((def) => {
           const active = filters[def.key]
           return (
             <button

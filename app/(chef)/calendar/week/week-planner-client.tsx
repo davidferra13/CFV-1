@@ -67,13 +67,24 @@ type SuggestionModalProps = {
   isPending: boolean
 }
 
-function SuggestionModal({ eventId, eventName, suggestions, onConfirm, onCancel, isPending }: SuggestionModalProps) {
+function SuggestionModal({
+  eventId,
+  eventName,
+  suggestions,
+  onConfirm,
+  onCancel,
+  isPending,
+}: SuggestionModalProps) {
   const [edits, setEdits] = useState(
-    suggestions.map((s) => ({ date: s.suggested_date, startTime: s.suggested_start_time ?? '', included: true }))
+    suggestions.map((s) => ({
+      date: s.suggested_date,
+      startTime: s.suggested_start_time ?? '',
+      included: true,
+    }))
   )
   const includedCount = edits.filter((e) => e.included).length
 
-  function update(i: number, patch: Partial<typeof edits[0]>) {
+  function update(i: number, patch: Partial<(typeof edits)[0]>) {
     setEdits((prev) => prev.map((e, idx) => (idx === i ? { ...e, ...patch } : e)))
   }
 
@@ -101,35 +112,78 @@ function SuggestionModal({ eventId, eventName, suggestions, onConfirm, onCancel,
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <p className="font-semibold">Auto-schedule — {eventName}</p>
-            <p className="text-xs text-gray-500">Review suggestions, edit dates/times, then confirm.</p>
+            <p className="text-xs text-gray-500">
+              Review suggestions, edit dates/times, then confirm.
+            </p>
           </div>
-          <button type="button" aria-label="Close" className="text-gray-400 hover:text-gray-600" onClick={onCancel}>✕</button>
+          <button
+            type="button"
+            aria-label="Close"
+            className="text-gray-400 hover:text-gray-600"
+            onClick={onCancel}
+          >
+            ✕
+          </button>
         </div>
         <div className="overflow-y-auto flex-1 p-4 space-y-3">
           {suggestions.map((s, i) => (
-            <div key={i} className={`border rounded-lg p-3 text-sm ${edits[i].included ? 'border-amber-300 bg-amber-50' : 'border-gray-200 opacity-50'}`}>
+            <div
+              key={i}
+              className={`border rounded-lg p-3 text-sm ${edits[i].included ? 'border-amber-300 bg-amber-50' : 'border-gray-200 opacity-50'}`}
+            >
               <div className="flex items-start gap-2">
-                <input type="checkbox" aria-label={`Include ${s.title}`} className="mt-0.5" checked={edits[i].included}
-                  onChange={(e) => update(i, { included: e.target.checked })} />
+                <input
+                  type="checkbox"
+                  aria-label={`Include ${s.title}`}
+                  className="mt-0.5"
+                  checked={edits[i].included}
+                  onChange={(e) => update(i, { included: e.target.checked })}
+                />
                 <div className="flex-1 space-y-1.5">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${BLOCK_COLORS[s.block_type].split(' ').slice(0,2).join(' ')}`}>
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded font-medium ${BLOCK_COLORS[s.block_type].split(' ').slice(0, 2).join(' ')}`}
+                    >
                       {PREP_BLOCK_TYPE_LABELS[s.block_type]}
                     </span>
                     <span className="font-medium">{s.title}</span>
-                    <span className="text-xs text-gray-400">~{s.estimated_duration_minutes}min</span>
+                    <span className="text-xs text-gray-400">
+                      ~{s.estimated_duration_minutes}min
+                    </span>
                   </div>
                   <p className="text-xs text-gray-500">{s.reason}</p>
                   <div className="flex gap-3 flex-wrap">
                     <div>
-                      <label className="text-xs text-gray-400 block mb-0.5" htmlFor={`sug-date-${i}`}>Date</label>
-                      <input id={`sug-date-${i}`} type="date" title="Block date" className="text-xs border border-gray-300 rounded px-2 py-1"
-                        value={edits[i].date} onChange={(e) => update(i, { date: e.target.value })} />
+                      <label
+                        className="text-xs text-gray-400 block mb-0.5"
+                        htmlFor={`sug-date-${i}`}
+                      >
+                        Date
+                      </label>
+                      <input
+                        id={`sug-date-${i}`}
+                        type="date"
+                        title="Block date"
+                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                        value={edits[i].date}
+                        onChange={(e) => update(i, { date: e.target.value })}
+                      />
                     </div>
                     <div>
-                      <label className="text-xs text-gray-400 block mb-0.5" htmlFor={`sug-time-${i}`}>Time (opt.)</label>
-                      <input id={`sug-time-${i}`} type="time" title="Start time (optional)" className="text-xs border border-gray-300 rounded px-2 py-1"
-                        value={edits[i].startTime} onChange={(e) => update(i, { startTime: e.target.value })} />
+                      <label
+                        className="text-xs text-gray-400 block mb-0.5"
+                        htmlFor={`sug-time-${i}`}
+                      >
+                        Time (opt.)
+                      </label>
+                      <input
+                        id={`sug-time-${i}`}
+                        type="time"
+                        title="Start time (optional)"
+                        className="text-xs border border-gray-300 rounded px-2 py-1"
+                        value={edits[i].startTime}
+                        onChange={(e) => update(i, { startTime: e.target.value })}
+                      />
                     </div>
                   </div>
                 </div>
@@ -138,10 +192,19 @@ function SuggestionModal({ eventId, eventName, suggestions, onConfirm, onCancel,
           ))}
         </div>
         <div className="p-4 border-t flex gap-2">
-          <Button variant="primary" size="sm" onClick={confirm} disabled={isPending || includedCount === 0}>
-            {isPending ? 'Saving…' : `Confirm ${includedCount} Block${includedCount !== 1 ? 's' : ''}`}
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={confirm}
+            disabled={isPending || includedCount === 0}
+          >
+            {isPending
+              ? 'Saving…'
+              : `Confirm ${includedCount} Block${includedCount !== 1 ? 's' : ''}`}
           </Button>
-          <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>Cancel</Button>
+          <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
+            Cancel
+          </Button>
         </div>
       </div>
     </div>
@@ -150,7 +213,12 @@ function SuggestionModal({ eventId, eventName, suggestions, onConfirm, onCancel,
 
 // ---- Add block inline form ----
 
-type AddFormProps = { defaultDate: string; eventId?: string; onSaved: () => void; onCancel: () => void }
+type AddFormProps = {
+  defaultDate: string
+  eventId?: string
+  onSaved: () => void
+  onCancel: () => void
+}
 
 function AddBlockForm({ defaultDate, eventId, onSaved, onCancel }: AddFormProps) {
   const [type, setType] = useState<PrepBlockType>('custom')
@@ -162,7 +230,10 @@ function AddBlockForm({ defaultDate, eventId, onSaved, onCancel }: AddFormProps)
   const [error, setError] = useState('')
 
   async function save() {
-    if (!title.trim()) { setError('Title required.'); return }
+    if (!title.trim()) {
+      setError('Title required.')
+      return
+    }
     setSaving(true)
     const res = await createPrepBlock({
       event_id: eventId ?? null,
@@ -179,26 +250,62 @@ function AddBlockForm({ defaultDate, eventId, onSaved, onCancel }: AddFormProps)
 
   return (
     <div className="bg-gray-50 border border-dashed border-gray-300 rounded-lg p-2 space-y-1.5 text-xs">
-      <select title="Block type" className="w-full border border-gray-300 rounded px-2 py-1 text-xs" value={type}
-        onChange={(e) => { const t = e.target.value as PrepBlockType; setType(t); if (!title) setTitle(PREP_BLOCK_TYPE_LABELS[t]) }}>
+      <select
+        title="Block type"
+        className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+        value={type}
+        onChange={(e) => {
+          const t = e.target.value as PrepBlockType
+          setType(t)
+          if (!title) setTitle(PREP_BLOCK_TYPE_LABELS[t])
+        }}
+      >
         {(Object.keys(PREP_BLOCK_TYPE_LABELS) as PrepBlockType[]).map((t) => (
-          <option key={t} value={t}>{PREP_BLOCK_TYPE_LABELS[t]}</option>
+          <option key={t} value={t}>
+            {PREP_BLOCK_TYPE_LABELS[t]}
+          </option>
         ))}
       </select>
-      <input type="text" placeholder="Title *" className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
-        value={title} onChange={(e) => setTitle(e.target.value)} />
+      <input
+        type="text"
+        placeholder="Title *"
+        className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+      />
       <div className="flex gap-1">
-        <input type="date" title="Block date" className="flex-1 border border-gray-300 rounded px-1.5 py-1 text-xs" value={date}
-          onChange={(e) => setDate(e.target.value)} />
-        <input type="time" title="Start time (optional)" className="flex-1 border border-gray-300 rounded px-1.5 py-1 text-xs" value={startTime}
-          onChange={(e) => setStartTime(e.target.value)} />
+        <input
+          type="date"
+          title="Block date"
+          className="flex-1 border border-gray-300 rounded px-1.5 py-1 text-xs"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+        <input
+          type="time"
+          title="Start time (optional)"
+          className="flex-1 border border-gray-300 rounded px-1.5 py-1 text-xs"
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+        />
       </div>
-      <input type="number" min="5" step="5" placeholder="Duration (min)" className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
-        value={duration} onChange={(e) => setDuration(e.target.value)} />
+      <input
+        type="number"
+        min="5"
+        step="5"
+        placeholder="Duration (min)"
+        className="w-full border border-gray-300 rounded px-2 py-1 text-xs"
+        value={duration}
+        onChange={(e) => setDuration(e.target.value)}
+      />
       {error && <p className="text-red-600">{error}</p>}
       <div className="flex gap-1">
-        <Button variant="primary" size="sm" onClick={save} disabled={saving}>{saving ? '…' : 'Save'}</Button>
-        <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+        <Button variant="primary" size="sm" onClick={save} disabled={saving}>
+          {saving ? '…' : 'Save'}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          Cancel
+        </Button>
       </div>
     </div>
   )
@@ -214,21 +321,35 @@ type Props = {
   calendarEntries?: ChefCalendarEntry[]
 }
 
-export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffset, calendarEntries = [] }: Props) {
+export function WeekPlannerClient({
+  weekSchedule,
+  prepBlocks,
+  weekGaps,
+  weekOffset,
+  calendarEntries = [],
+}: Props) {
   const router = useRouter()
   const [, startTransition] = useTransition()
 
-  const [modal, setModal] = useState<{ eventId: string; eventName: string; suggestions: PrepBlockSuggestion[] } | null>(null)
+  const [modal, setModal] = useState<{
+    eventId: string
+    eventName: string
+    suggestions: PrepBlockSuggestion[]
+  } | null>(null)
   const [confirmPending, setConfirmPending] = useState(false)
   const [addFormDay, setAddFormDay] = useState<string | null>(null)
   const [toggling, setToggling] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
 
-  function go(offset: number) { router.push(`/calendar/week?offset=${offset}`) }
+  function go(offset: number) {
+    router.push(`/calendar/week?offset=${offset}`)
+    router.refresh()
+  }
 
   async function autoSchedule(eventId: string, eventName: string) {
     const res = await autoSuggestEventBlocks(eventId)
-    if (!res.error && res.suggestions.length > 0) setModal({ eventId, eventName, suggestions: res.suggestions })
+    if (!res.error && res.suggestions.length > 0)
+      setModal({ eventId, eventName, suggestions: res.suggestions })
   }
 
   async function confirmSuggestions(confirmed: CreatePrepBlockInput[]) {
@@ -263,11 +384,11 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
 
   // Calendar entries: build a map of date → entries overlapping that date
   function calendarEntriesForDate(date: string): ChefCalendarEntry[] {
-    return calendarEntries.filter(e => e.start_date <= date && e.end_date >= date)
+    return calendarEntries.filter((e) => e.start_date <= date && e.end_date >= date)
   }
 
   // Find entries that span the full week or multiple days (for banner row)
-  const multiDayEntries = calendarEntries.filter(e => e.end_date > e.start_date)
+  const multiDayEntries = calendarEntries.filter((e) => e.end_date > e.start_date)
 
   const { weekStart, weekEnd, days } = weekSchedule
   const weekLabel = `${format(parseISO(weekStart), 'MMM d')} – ${format(parseISO(weekEnd), 'MMM d, yyyy')}`
@@ -297,35 +418,75 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
           <p className="text-sm text-gray-500">{weekLabel}</p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="ghost" size="sm" onClick={() => go(weekOffset - 1)}>← Prev</Button>
-          <Button variant="ghost" size="sm" onClick={() => go(0)}>Today</Button>
-          <Button variant="ghost" size="sm" onClick={() => go(weekOffset + 1)}>Next →</Button>
-          <Link href="/calendar/year"><Button variant="secondary" size="sm">Year View</Button></Link>
-          <Link href="/calendar"><Button variant="ghost" size="sm">Availability</Button></Link>
+          <Link href={`/calendar/week?offset=${weekOffset - 1}`}>
+            <Button variant="ghost" size="sm">
+              ← Prev
+            </Button>
+          </Link>
+          <Link href="/calendar/week?offset=0">
+            <Button variant="ghost" size="sm">
+              Today
+            </Button>
+          </Link>
+          <Link href={`/calendar/week?offset=${weekOffset + 1}`}>
+            <Button variant="ghost" size="sm">
+              Next →
+            </Button>
+          </Link>
+          <Link href="/calendar/year">
+            <Button variant="secondary" size="sm">
+              Year View
+            </Button>
+          </Link>
+          <Link href="/calendar">
+            <Button variant="ghost" size="sm">
+              Availability
+            </Button>
+          </Link>
         </div>
       </div>
 
       {/* Gap alerts */}
       {criticalGaps.map((gap) => (
-        <div key={gap.event_id} className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+        <div
+          key={gap.event_id}
+          className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+        >
           <div>
             <span className="font-semibold">Urgent: </span>
-            <Link href={`/events/${gap.event_id}`} className="underline">{gap.event_occasion || 'Event'} — {gap.client_name}</Link>
-            {' '}(in {gap.days_until_event}d) missing: {gap.missing_block_types.map((t) => PREP_BLOCK_TYPE_LABELS[t]).join(', ')}
+            <Link href={`/events/${gap.event_id}`} className="underline">
+              {gap.event_occasion || 'Event'} — {gap.client_name}
+            </Link>{' '}
+            (in {gap.days_until_event}d) missing:{' '}
+            {gap.missing_block_types.map((t) => PREP_BLOCK_TYPE_LABELS[t]).join(', ')}
           </div>
-          <Button variant="danger" size="sm" onClick={() => autoSchedule(gap.event_id, gap.event_occasion ?? 'Event')}>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => autoSchedule(gap.event_id, gap.event_occasion ?? 'Event')}
+          >
             Auto-schedule
           </Button>
         </div>
       ))}
 
       {warningGaps.map((gap) => (
-        <div key={gap.event_id} className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div
+          key={gap.event_id}
+          className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+        >
           <div>
-            <span className="font-semibold">{gap.event_occasion || 'Event'} — {gap.client_name}</span>
-            {' '}(in {gap.days_until_event}d) missing: {gap.missing_block_types.map((t) => PREP_BLOCK_TYPE_LABELS[t]).join(', ')}
+            <span className="font-semibold">
+              {gap.event_occasion || 'Event'} — {gap.client_name}
+            </span>{' '}
+            (in {gap.days_until_event}d) missing:{' '}
+            {gap.missing_block_types.map((t) => PREP_BLOCK_TYPE_LABELS[t]).join(', ')}
           </div>
-          <Button variant="secondary" size="sm" onClick={() => autoSchedule(gap.event_id, gap.event_occasion ?? 'Event')}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => autoSchedule(gap.event_id, gap.event_occasion ?? 'Event')}
+          >
             Auto-schedule
           </Button>
         </div>
@@ -340,7 +501,7 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
       {/* Multi-day calendar entry banners (vacation, market, etc.) */}
       {multiDayEntries.length > 0 && (
         <div className="space-y-1">
-          {multiDayEntries.map(entry => {
+          {multiDayEntries.map((entry) => {
             const color = CALENDAR_COLORS[entry.entry_type] ?? '#6B7280'
             return (
               <div
@@ -350,7 +511,9 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
               >
                 <span>{entry.title}</span>
                 <span className="opacity-70">·</span>
-                <span className="opacity-70">{entry.start_date} – {entry.end_date}</span>
+                <span className="opacity-70">
+                  {entry.start_date} – {entry.end_date}
+                </span>
               </div>
             )
           })}
@@ -366,18 +529,24 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
             if (!b.start_time) return -1
             return a.start_time.localeCompare(b.start_time)
           })
-          const dayCalEntries = calendarEntriesForDate(day.date).filter(e => e.end_date === e.start_date)
+          const dayCalEntries = calendarEntriesForDate(day.date).filter(
+            (e) => e.end_date === e.start_date
+          )
 
           return (
             <div key={day.date} className="flex flex-col gap-1.5 min-w-0">
               {/* Day header */}
-              <div className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'}`}>
+              <div
+                className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+              >
                 <div>{format(parseISO(day.date), 'EEE')}</div>
-                <div className={`text-xs ${isToday ? 'text-amber-100' : 'text-gray-400'}`}>{format(parseISO(day.date), 'MMM d')}</div>
+                <div className={`text-xs ${isToday ? 'text-amber-100' : 'text-gray-400'}`}>
+                  {format(parseISO(day.date), 'MMM d')}
+                </div>
               </div>
 
               {/* Single-day calendar entries (personal, meeting, etc.) */}
-              {dayCalEntries.map(entry => {
+              {dayCalEntries.map((entry) => {
                 const color = CALENDAR_COLORS[entry.entry_type] ?? '#6B7280'
                 return (
                   <div
@@ -395,7 +564,9 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
               {day.events.map((ev) => (
                 <Link key={ev.id} href={`/events/${ev.id}`}>
                   <div className="bg-amber-50 border border-amber-300 rounded-md px-1.5 py-1 text-xs hover:bg-amber-100 transition-colors cursor-pointer">
-                    <p className="font-semibold text-amber-900 truncate">{ev.occasion || 'Event'}</p>
+                    <p className="font-semibold text-amber-900 truncate">
+                      {ev.occasion || 'Event'}
+                    </p>
                     <p className="text-amber-700 truncate text-xs">{ev.clientName}</p>
                     <p className="text-amber-600 text-xs">{ev.serveTime}</p>
                   </div>
@@ -404,21 +575,36 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
 
               {/* Prep blocks */}
               {dayBlocks.map((block) => (
-                <div key={block.id}
-                  className={`rounded-md border px-1.5 py-1 text-xs ${block.is_completed ? 'bg-green-50 border-green-200 opacity-70' : BLOCK_COLORS[block.block_type]}`}>
+                <div
+                  key={block.id}
+                  className={`rounded-md border px-1.5 py-1 text-xs ${block.is_completed ? 'bg-green-50 border-green-200 opacity-70' : BLOCK_COLORS[block.block_type]}`}
+                >
                   <div className="flex items-start justify-between gap-0.5">
                     <div className="flex-1 min-w-0">
-                      <p className={`font-medium truncate text-xs ${block.is_completed ? 'line-through text-gray-400' : ''}`}>{block.title}</p>
+                      <p
+                        className={`font-medium truncate text-xs ${block.is_completed ? 'line-through text-gray-400' : ''}`}
+                      >
+                        {block.title}
+                      </p>
                       <p className="text-gray-500 text-xs">{fmtTime(block)}</p>
                     </div>
                     <div className="flex flex-col gap-0.5 flex-shrink-0">
-                      <button type="button" className="text-gray-400 hover:text-emerald-600 text-xs leading-none"
-                        onClick={() => toggleComplete(block)} disabled={toggling === block.id}
-                        title={block.is_completed ? 'Mark incomplete' : 'Mark complete'}>
+                      <button
+                        type="button"
+                        className="text-gray-400 hover:text-emerald-600 text-xs leading-none"
+                        onClick={() => toggleComplete(block)}
+                        disabled={toggling === block.id}
+                        title={block.is_completed ? 'Mark incomplete' : 'Mark complete'}
+                      >
                         {block.is_completed ? '↩' : '✓'}
                       </button>
-                      <button type="button" title="Delete block" className="text-gray-300 hover:text-red-500 text-xs leading-none"
-                        onClick={() => removeBlock(block.id)} disabled={deleting === block.id}>
+                      <button
+                        type="button"
+                        title="Delete block"
+                        className="text-gray-300 hover:text-red-500 text-xs leading-none"
+                        onClick={() => removeBlock(block.id)}
+                        disabled={deleting === block.id}
+                      >
                         ✕
                       </button>
                     </div>
@@ -431,7 +617,10 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
                 <AddBlockForm
                   defaultDate={day.date}
                   eventId={day.events[0]?.id}
-                  onSaved={() => { setAddFormDay(null); startTransition(() => router.refresh()) }}
+                  onSaved={() => {
+                    setAddFormDay(null)
+                    startTransition(() => router.refresh())
+                  }}
                   onCancel={() => setAddFormDay(null)}
                 />
               ) : (
@@ -439,7 +628,8 @@ export function WeekPlannerClient({ weekSchedule, prepBlocks, weekGaps, weekOffs
                   type="button"
                   title={`Add prep block for ${format(parseISO(day.date), 'EEE MMM d')}`}
                   className="text-xs text-gray-400 hover:text-gray-600 py-1 border border-dashed border-gray-200 rounded-md hover:border-gray-300 transition-colors"
-                  onClick={() => setAddFormDay(day.date)}>
+                  onClick={() => setAddFormDay(day.date)}
+                >
                   + add
                 </button>
               )}

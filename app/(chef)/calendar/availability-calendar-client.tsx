@@ -4,8 +4,9 @@
 // Monthly calendar with unified calendar data, color-coded item types,
 // filter panel, multi-day entry banners, and entry creation modal.
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { getDaysInMonth, getDay, startOfMonth, format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { blockDate, unblockDate, addToWaitlist } from '@/lib/availability/actions'
@@ -35,14 +36,29 @@ type Props = {
 }
 
 const MONTH_NAMES = [
-  '', 'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  '',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 
 const FILTER_STORAGE_KEY_PREFIX = 'chef-calendar-filters'
 
 export function AvailabilityCalendarClient({
-  year, month, chefId, unifiedItems, waitlistEntries,
+  year,
+  month,
+  chefId,
+  unifiedItems,
+  waitlistEntries,
 }: Props) {
   const router = useRouter()
   const [filters, setFilters] = useState<CalendarFilters>(DEFAULT_CALENDAR_FILTERS)
@@ -56,6 +72,13 @@ export function AvailabilityCalendarClient({
 
   const storageKey = `${FILTER_STORAGE_KEY_PREFIX}-${chefId}`
 
+  // Reset selected date when month/year changes (props come from server)
+  useEffect(() => {
+    setSelectedDate(null)
+    setShowBlockForm(false)
+    setError(null)
+  }, [year, month])
+
   const daysInMonth = getDaysInMonth(new Date(year, month - 1))
   const firstDayOfWeek = getDay(startOfMonth(new Date(year, month - 1))) // 0=Sun
 
@@ -63,18 +86,23 @@ export function AvailabilityCalendarClient({
     return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
   }
 
-  function prevMonth() {
-    const d = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 }
-    router.push(`/calendar?year=${d.year}&month=${d.month}`)
-  }
-  function nextMonth() {
-    const d = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 }
-    router.push(`/calendar?year=${d.year}&month=${d.month}`)
-  }
+  const prev = month === 1 ? { year: year - 1, month: 12 } : { year, month: month - 1 }
+  const next = month === 12 ? { year: year + 1, month: 1 } : { year, month: month + 1 }
+  const prevHref = `/calendar?year=${prev.year}&month=${prev.month}`
+  const nextHref = `/calendar?year=${next.year}&month=${next.month}`
+
+  const isCurrentMonth = (() => {
+    const now = new Date()
+    return year === now.getFullYear() && month === now.getMonth() + 1
+  })()
+  const todayHref = (() => {
+    const now = new Date()
+    return `/calendar?year=${now.getFullYear()}&month=${now.getMonth() + 1}`
+  })()
 
   // Apply filters to items
   const filteredItems = useCallback((): UnifiedCalendarItem[] => {
-    return unifiedItems.filter(item => {
+    return unifiedItems.filter((item) => {
       if (item.category === 'events' && !filters.showEvents) return false
       if (item.category === 'draft' && !filters.showDraftEvents) return false
       if (item.category === 'prep' && !filters.showPrepBlocks) return false
@@ -82,31 +110,39 @@ export function AvailabilityCalendarClient({
       if (item.category === 'personal' && !filters.showPersonal) return false
       if (item.category === 'business' && !filters.showBusiness) return false
       if (item.category === 'intentions' && !filters.showIntentions) return false
-      if ((item.category === 'leads' || item.type === 'waitlist' || item.type === 'inquiry') && !filters.showLeads) return false
+      if (
+        (item.category === 'leads' || item.type === 'waitlist' || item.type === 'inquiry') &&
+        !filters.showLeads
+      )
+        return false
       return true
     })
   }, [unifiedItems, filters])
 
   // Get items for a specific date (including multi-day spans)
   function itemsForDate(ds: string): UnifiedCalendarItem[] {
-    return filteredItems().filter(item => item.startDate <= ds && item.endDate >= ds)
+    return filteredItems().filter((item) => item.startDate <= ds && item.endDate >= ds)
   }
 
   // Check if a date has any hard-blocking item
   function isDateBlocked(ds: string): boolean {
-    return itemsForDate(ds).some(item => item.isBlocking)
+    return itemsForDate(ds).some((item) => item.isBlocking)
   }
 
   // Check if an event (auto-block) is on this date
   function hasEvent(ds: string): boolean {
-    return itemsForDate(ds).some(item => item.type === 'event')
+    return itemsForDate(ds).some((item) => item.type === 'event')
   }
 
   async function handleBlock() {
     if (!selectedDate) return
     setLoading(true)
     try {
-      await blockDate({ block_date: selectedDate, block_type: 'full_day', reason: blockReason || undefined })
+      await blockDate({
+        block_date: selectedDate,
+        block_type: 'full_day',
+        reason: blockReason || undefined,
+      })
       setShowBlockForm(false)
       setBlockReason('')
       router.refresh()
@@ -135,7 +171,7 @@ export function AvailabilityCalendarClient({
   }
 
   const waitlistForSelected = selectedDate
-    ? waitlistEntries.filter(w => w.requested_date === selectedDate)
+    ? waitlistEntries.filter((w) => w.requested_date === selectedDate)
     : []
 
   const selectedDateItems = selectedDate ? itemsForDate(selectedDate) : []
@@ -161,30 +197,45 @@ export function AvailabilityCalendarClient({
 
       {/* Month navigation */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={prevMonth}>←</Button>
-        <h2 className="text-lg font-semibold text-stone-900">
-          {MONTH_NAMES[month]} {year}
-        </h2>
-        <Button variant="ghost" onClick={nextMonth}>→</Button>
+        <Link href={prevHref}>
+          <Button variant="ghost">←</Button>
+        </Link>
+        <div className="flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-stone-900">
+            {MONTH_NAMES[month]} {year}
+          </h2>
+          {!isCurrentMonth && (
+            <Link href={todayHref}>
+              <Button variant="secondary" size="sm">
+                Today
+              </Button>
+            </Link>
+          )}
+        </div>
+        <Link href={nextHref}>
+          <Button variant="ghost">→</Button>
+        </Link>
       </div>
 
       {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-1">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-          <div key={d} className="text-center text-xs text-stone-400 py-1 font-medium">{d}</div>
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+          <div key={d} className="text-center text-xs text-stone-400 py-1 font-medium">
+            {d}
+          </div>
         ))}
 
         {Array.from({ length: firstDayOfWeek }).map((_, i) => (
           <div key={`empty-${i}`} />
         ))}
 
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => {
           const ds = dateStr(day)
           const dayItems = itemsForDate(ds)
           const isSelected = selectedDate === ds
           const hasEventOnDay = hasEvent(ds)
           const hasBlock = dayItems.some(
-            i => i.type === 'availability_block' || (i.isBlocking && i.type === 'calendar_entry')
+            (i) => i.type === 'availability_block' || (i.isBlocking && i.type === 'calendar_entry')
           )
           const today = new Date().toISOString().split('T')[0]
           const isToday = ds === today
@@ -212,16 +263,20 @@ export function AvailabilityCalendarClient({
                 isToday ? 'font-bold' : '',
               ].join(' ')}
             >
-              <span className={[
-                'text-sm leading-none mb-1',
-                isToday ? 'bg-brand-600 text-white w-6 h-6 rounded-full flex items-center justify-center mx-auto' : 'text-stone-900',
-              ].join(' ')}>
+              <span
+                className={[
+                  'text-sm leading-none mb-1',
+                  isToday
+                    ? 'bg-brand-600 text-white w-6 h-6 rounded-full flex items-center justify-center mx-auto'
+                    : 'text-stone-900',
+                ].join(' ')}
+              >
                 {day}
               </span>
               {/* Color dots */}
               {dayItems.length > 0 && (
                 <div className="flex flex-wrap justify-center gap-0.5 mt-0.5">
-                  {visibleDots.map(item => (
+                  {visibleDots.map((item) => (
                     <span
                       key={item.id}
                       className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -246,11 +301,7 @@ export function AvailabilityCalendarClient({
             <h3 className="font-semibold text-stone-900">
               {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
             </h3>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => openNewEntry(selectedDate)}
-            >
+            <Button variant="secondary" size="sm" onClick={() => openNewEntry(selectedDate)}>
               + Add Entry
             </Button>
           </div>
@@ -258,8 +309,10 @@ export function AvailabilityCalendarClient({
           {/* Items on this date */}
           {selectedDateItems.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">Schedule</p>
-              {selectedDateItems.map(item => (
+              <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">
+                Schedule
+              </p>
+              {selectedDateItems.map((item) => (
                 <div
                   key={item.id}
                   className="flex items-start gap-2.5 px-3 py-2 rounded-lg"
@@ -272,7 +325,8 @@ export function AvailabilityCalendarClient({
                     <p className="text-sm font-medium text-stone-900 truncate">{item.title}</p>
                     {item.startTime && (
                       <p className="text-xs text-stone-500">
-                        {item.startTime}{item.endTime ? ` – ${item.endTime}` : ''}
+                        {item.startTime}
+                        {item.endTime ? ` – ${item.endTime}` : ''}
                       </p>
                     )}
                     {item.isMultiDay && (
@@ -307,13 +361,17 @@ export function AvailabilityCalendarClient({
                   <input
                     type="text"
                     value={blockReason}
-                    onChange={e => setBlockReason(e.target.value)}
+                    onChange={(e) => setBlockReason(e.target.value)}
                     placeholder="Reason (optional)"
                     className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
                   />
                   <div className="flex gap-2">
-                    <Button size="sm" onClick={handleBlock} loading={loading}>Block</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setShowBlockForm(false)}>Cancel</Button>
+                    <Button size="sm" onClick={handleBlock} loading={loading}>
+                      Block
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setShowBlockForm(false)}>
+                      Cancel
+                    </Button>
                   </div>
                 </div>
               )}
@@ -321,7 +379,7 @@ export function AvailabilityCalendarClient({
           )}
 
           {/* Availability block unblock option */}
-          {selectedDateItems.some(i => i.type === 'availability_block') && (
+          {selectedDateItems.some((i) => i.type === 'availability_block') && (
             <div className="pt-1 border-t border-stone-100">
               <Button
                 size="sm"
@@ -337,10 +395,17 @@ export function AvailabilityCalendarClient({
           {/* Waitlist for this date */}
           {waitlistForSelected.length > 0 && (
             <div className="space-y-2 pt-1 border-t border-stone-100">
-              <p className="text-sm font-medium text-stone-700">Waitlist ({waitlistForSelected.length})</p>
-              {waitlistForSelected.map(entry => (
-                <div key={entry.id} className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm">
-                  <p className="font-medium text-stone-900">{entry.clients?.full_name ?? 'Unknown client'}</p>
+              <p className="text-sm font-medium text-stone-700">
+                Waitlist ({waitlistForSelected.length})
+              </p>
+              {waitlistForSelected.map((entry) => (
+                <div
+                  key={entry.id}
+                  className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm"
+                >
+                  <p className="font-medium text-stone-900">
+                    {entry.clients?.full_name ?? 'Unknown client'}
+                  </p>
                   <p className="text-xs text-stone-500">
                     {entry.occasion ?? 'Event'} · {entry.guest_count_estimate ?? '?'} guests
                     {entry.notes ? ` · "${entry.notes}"` : ''}

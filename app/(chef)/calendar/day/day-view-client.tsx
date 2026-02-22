@@ -8,6 +8,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { format, parseISO } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { CalendarEntryModal } from '@/components/calendar/calendar-entry-modal'
@@ -62,34 +63,31 @@ export function DayViewClient({ date, items, chefId }: Props) {
   const [showModal, setShowModal] = useState(false)
   const [modalStartTime, setModalStartTime] = useState<string | undefined>()
 
-  // Navigate days
-  function prevDay() {
+  // Compute prev/next day href
+  const prevDate = (() => {
     const d = new Date(date + 'T00:00:00')
     d.setDate(d.getDate() - 1)
-    router.push(`/calendar/day?date=${d.toISOString().split('T')[0]}`)
-  }
-  function nextDay() {
+    return d.toISOString().split('T')[0]
+  })()
+  const nextDate = (() => {
     const d = new Date(date + 'T00:00:00')
     d.setDate(d.getDate() + 1)
-    router.push(`/calendar/day?date=${d.toISOString().split('T')[0]}`)
-  }
-  function goToday() {
-    router.push(`/calendar/day`)
-  }
+    return d.toISOString().split('T')[0]
+  })()
+  const prevHref = `/calendar/day?date=${prevDate}`
+  const nextHref = `/calendar/day?date=${nextDate}`
 
   const isToday = date === new Date().toISOString().split('T')[0]
 
   // Separate all-day items from timed items
-  const allDayItems = items.filter(i => i.allDay || !i.startTime)
-  const timedItems = items.filter(i => !i.allDay && i.startTime)
+  const allDayItems = items.filter((i) => i.allDay || !i.startTime)
+  const timedItems = items.filter((i) => !i.allDay && i.startTime)
 
   // Build slot map: slot index → items occupying that slot
   const slotMap: Record<number, UnifiedCalendarItem[]> = {}
   for (const item of timedItems) {
     const startSlot = Math.max(0, timeToSlot(item.startTime!))
-    const endSlot = item.endTime
-      ? Math.min(SLOT_COUNT, timeToSlot(item.endTime))
-      : startSlot + 2 // default 1 hour
+    const endSlot = item.endTime ? Math.min(SLOT_COUNT, timeToSlot(item.endTime)) : startSlot + 2 // default 1 hour
     for (let s = startSlot; s < Math.min(endSlot, SLOT_COUNT); s++) {
       if (!slotMap[s]) slotMap[s] = []
       slotMap[s].push(item)
@@ -108,19 +106,31 @@ export function DayViewClient({ date, items, chefId }: Props) {
     <div className="space-y-4">
       {/* Day navigation */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" onClick={prevDay}>← Prev</Button>
+        <Link href={prevHref}>
+          <Button variant="ghost" size="sm">
+            ← Prev
+          </Button>
+        </Link>
         <div className="text-center">
           <p className={`text-lg font-semibold ${isToday ? 'text-brand-600' : 'text-stone-900'}`}>
             {format(parseISO(date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
           </p>
           {isToday && <p className="text-xs text-brand-500 font-medium">Today</p>}
         </div>
-        <Button variant="ghost" size="sm" onClick={nextDay}>Next →</Button>
+        <Link href={nextHref}>
+          <Button variant="ghost" size="sm">
+            Next →
+          </Button>
+        </Link>
       </div>
 
       {!isToday && (
         <div className="flex justify-center">
-          <Button variant="secondary" size="sm" onClick={goToday}>Go to Today</Button>
+          <Link href="/calendar/day">
+            <Button variant="secondary" size="sm">
+              Go to Today
+            </Button>
+          </Link>
         </div>
       )}
 
@@ -128,7 +138,7 @@ export function DayViewClient({ date, items, chefId }: Props) {
       {allDayItems.length > 0 && (
         <div className="space-y-1.5">
           <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider">All Day</p>
-          {allDayItems.map(item => (
+          {allDayItems.map((item) => (
             <div
               key={item.id}
               className="flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium text-white"
@@ -157,9 +167,9 @@ export function DayViewClient({ date, items, chefId }: Props) {
         {Array.from({ length: SLOT_COUNT }, (_, slotIndex) => {
           const isHour = slotIndex % 2 === 0
           const label = isHour ? slotToLabel(slotIndex) : ''
-          const slotItems = (slotMap[slotIndex] ?? []).filter(i => !rendered.has(i.id))
+          const slotItems = (slotMap[slotIndex] ?? []).filter((i) => !rendered.has(i.id))
           // Mark first-occurrence items as rendered
-          slotItems.forEach(i => rendered.add(i.id))
+          slotItems.forEach((i) => rendered.add(i.id))
 
           return (
             <div
@@ -171,18 +181,16 @@ export function DayViewClient({ date, items, chefId }: Props) {
             >
               {/* Time label column */}
               <div className="w-16 flex-shrink-0 flex items-start justify-end pr-3 pt-1">
-                {label && (
-                  <span className="text-xs text-stone-400 font-medium">{label}</span>
-                )}
+                {label && <span className="text-xs text-stone-400 font-medium">{label}</span>}
               </div>
 
               {/* Content column */}
               <div
                 className="flex-1 px-2 py-0.5 cursor-pointer hover:bg-stone-50 transition-colors min-h-[40px] flex flex-col gap-1"
-                onClick={() => slotItems.length === 0 ? openNewEntry(slotIndex) : undefined}
+                onClick={() => (slotItems.length === 0 ? openNewEntry(slotIndex) : undefined)}
                 title={slotItems.length === 0 ? `Add entry at ${slotToTime(slotIndex)}` : undefined}
               >
-                {slotItems.map(item => (
+                {slotItems.map((item) => (
                   <div
                     key={item.id}
                     className="flex items-start justify-between px-2 py-1 rounded-md text-xs"
@@ -190,20 +198,26 @@ export function DayViewClient({ date, items, chefId }: Props) {
                       backgroundColor: item.color + '25',
                       borderLeft: `3px ${item.borderStyle} ${item.color}`,
                     }}
-                    onClick={e => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <div>
-                      <span className={`font-medium ${CATEGORY_TEXT_COLORS[item.category] ?? 'text-stone-800'}`}>
+                      <span
+                        className={`font-medium ${CATEGORY_TEXT_COLORS[item.category] ?? 'text-stone-800'}`}
+                      >
                         {item.title}
                       </span>
                       {item.startTime && (
                         <span className="text-stone-400 ml-1">
-                          {item.startTime}{item.endTime ? ` – ${item.endTime}` : ''}
+                          {item.startTime}
+                          {item.endTime ? ` – ${item.endTime}` : ''}
                         </span>
                       )}
                     </div>
                     {item.url && (
-                      <a href={item.url} className="text-brand-600 hover:underline text-xs flex-shrink-0 ml-2">
+                      <a
+                        href={item.url}
+                        className="text-brand-600 hover:underline text-xs flex-shrink-0 ml-2"
+                      >
                         View →
                       </a>
                     )}

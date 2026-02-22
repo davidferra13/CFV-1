@@ -5,6 +5,7 @@
 // Month labels as section headers. Click any week → week planner.
 
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { format, parseISO, differenceInCalendarDays } from 'date-fns'
 import type { YearSummary, YearWeekSummary } from '@/lib/scheduling/types'
 
@@ -26,10 +27,10 @@ function weekOffsetFromNow(weekStart: string): number {
 type WeekCellProps = {
   week: YearWeekSummary
   isCurrentWeek: boolean
-  onClick: () => void
+  href: string
 }
 
-function WeekCell({ week, isCurrentWeek, onClick }: WeekCellProps) {
+function WeekCell({ week, isCurrentWeek, href }: WeekCellProps) {
   const hasEvents = week.event_count > 0
   const hasGaps = week.has_gaps
 
@@ -43,11 +44,10 @@ function WeekCell({ week, isCurrentWeek, onClick }: WeekCellProps) {
   const ring = isCurrentWeek ? 'ring-2 ring-amber-500 ring-offset-1' : ''
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
+    <Link
+      href={href}
       title={`Week of ${format(parseISO(week.week_start), 'MMM d')}: ${week.event_count} event${week.event_count !== 1 ? 's' : ''}${hasGaps ? `, ${week.gap_count} gap${week.gap_count !== 1 ? 's' : ''}` : ''}`}
-      className={`rounded border border-gray-200 px-1 py-1.5 text-center cursor-pointer transition-colors text-xs ${bg} ${ring}`}
+      className={`rounded border border-gray-200 px-1 py-1.5 text-center cursor-pointer transition-colors text-xs block ${bg} ${ring}`}
     >
       <div className="font-medium text-xs leading-tight">
         {format(parseISO(week.week_start), 'M/d')}
@@ -56,13 +56,11 @@ function WeekCell({ week, isCurrentWeek, onClick }: WeekCellProps) {
         <div className="mt-0.5 space-y-0.5">
           <div className="text-xs leading-none">{week.event_count} ev</div>
           {hasGaps && (
-            <div className="text-xs leading-none text-red-600 font-semibold">
-              {week.gap_count}⚠
-            </div>
+            <div className="text-xs leading-none text-red-600 font-semibold">{week.gap_count}⚠</div>
           )}
         </div>
       )}
-    </button>
+    </Link>
   )
 }
 
@@ -109,9 +107,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
 
   const monthGroups = groupByMonth(summary.weeks)
 
-  const fullyScheduledWeeks = summary.weeks.filter(
-    (w) => w.event_count > 0 && !w.has_gaps
-  ).length
+  const fullyScheduledWeeks = summary.weeks.filter((w) => w.event_count > 0 && !w.has_gaps).length
   const eventWeeks = summary.weeks.filter((w) => w.event_count > 0).length
 
   return (
@@ -123,36 +119,32 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
           <p className="text-sm text-gray-500">Click any week to open the planner.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => router.push(`/calendar/year?year=${year - 1}`)}
+          <Link
+            href={`/calendar/year?year=${year - 1}`}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
           >
             ← {year - 1}
-          </button>
+          </Link>
           {year !== currentYear && (
-            <button
-              type="button"
-              onClick={() => router.push(`/calendar/year?year=${currentYear}`)}
+            <Link
+              href={`/calendar/year?year=${currentYear}`}
               className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
             >
               This Year
-            </button>
+            </Link>
           )}
-          <button
-            type="button"
-            onClick={() => router.push(`/calendar/year?year=${year + 1}`)}
+          <Link
+            href={`/calendar/year?year=${year + 1}`}
             className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-700"
           >
             {year + 1} →
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/calendar/week')}
+          </Link>
+          <Link
+            href="/calendar/week"
             className="px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600"
           >
             Week Planner
-          </button>
+          </Link>
         </div>
       </div>
 
@@ -163,11 +155,17 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
           <div className="text-xs text-gray-500">Events</div>
         </div>
         <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
-          <div className="text-lg font-bold text-amber-800">{fullyScheduledWeeks} / {eventWeeks}</div>
+          <div className="text-lg font-bold text-amber-800">
+            {fullyScheduledWeeks} / {eventWeeks}
+          </div>
           <div className="text-xs text-amber-600">Fully Scheduled</div>
         </div>
-        <div className={`border rounded-lg px-3 py-2 ${summary.total_gaps > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-          <div className={`text-lg font-bold ${summary.total_gaps > 0 ? 'text-red-700' : 'text-green-700'}`}>
+        <div
+          className={`border rounded-lg px-3 py-2 ${summary.total_gaps > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}
+        >
+          <div
+            className={`text-lg font-bold ${summary.total_gaps > 0 ? 'text-red-700' : 'text-green-700'}`}
+          >
             {summary.total_gaps}
           </div>
           <div className={`text-xs ${summary.total_gaps > 0 ? 'text-red-500' : 'text-green-500'}`}>
@@ -183,16 +181,15 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
             <div className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
               {group.month}
             </div>
-            <div className={`grid gap-1 ${group.weeks.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+            <div
+              className={`grid gap-1 ${group.weeks.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}
+            >
               {group.weeks.map((week) => (
                 <WeekCell
                   key={week.week_number}
                   week={week}
                   isCurrentWeek={week.week_start === todayMonday}
-                  onClick={() => {
-                    const offset = weekOffsetFromNow(week.week_start)
-                    router.push(`/calendar/week?offset=${offset}`)
-                  }}
+                  href={`/calendar/week?offset=${weekOffsetFromNow(week.week_start)}`}
                 />
               ))}
             </div>
