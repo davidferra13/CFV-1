@@ -97,6 +97,19 @@ export interface RemyContext {
     relationshipItems: number
     estimatedMinutes: number
   }
+  /** Email digest — recent inbox activity for proactive awareness */
+  emailDigest?: {
+    totalSinceYesterday: number
+    inquiryCount: number
+    threadReplyCount: number
+    recentEmails: Array<{
+      from: string
+      subject: string
+      snippet: string
+      classification: string
+      receivedAt: string
+    }>
+  }
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

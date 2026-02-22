@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -56,6 +57,12 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     })
   }
 
+  // Tier 2b: Email digest (non-blocking, cached alongside detailed context)
+  const emailDigest = await loadEmailDigest(tenantId).catch((err) => {
+    console.error('[non-blocking] Email digest failed:', err)
+    return undefined
+  })
+
   // Tier 3: Page-specific entity context (non-blocking)
   const pageEntity = await loadPageEntityContext(supabase, tenantId, currentPage).catch((err) => {
     console.error('[non-blocking] Page entity context failed:', err)
@@ -76,6 +83,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     currentPage,
     pageEntity,
     dailyPlan: dailyPlan ?? undefined,
+    emailDigest: emailDigest ?? undefined,
   }
 }
 

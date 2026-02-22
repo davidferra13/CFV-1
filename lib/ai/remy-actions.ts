@@ -145,6 +145,31 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
     parts.push(`\nRECENT CLIENTS: ${context.recentClients.map((c) => c.name).join(', ')}`)
   }
 
+  // Email digest — proactive communication awareness
+  if (context.emailDigest && context.emailDigest.totalSinceYesterday > 0) {
+    const d = context.emailDigest
+    const emailLines: string[] = [
+      `\nEMAIL INBOX (last 24 hours):`,
+      `- ${d.totalSinceYesterday} emails received${d.inquiryCount > 0 ? `, ${d.inquiryCount} new inquir${d.inquiryCount === 1 ? 'y' : 'ies'}` : ''}${d.threadReplyCount > 0 ? `, ${d.threadReplyCount} client repl${d.threadReplyCount === 1 ? 'y' : 'ies'}` : ''}`,
+    ]
+    if (d.recentEmails.length > 0) {
+      emailLines.push('Recent:')
+      for (const e of d.recentEmails) {
+        const cls =
+          e.classification === 'inquiry'
+            ? ' [NEW INQUIRY]'
+            : e.classification === 'existing_thread'
+              ? ' [CLIENT REPLY]'
+              : ''
+        emailLines.push(`- From: ${e.from} — "${e.subject}"${cls}`)
+      }
+    }
+    emailLines.push(
+      'You can search, read, or summarize emails. Draft replies are always drafts — never auto-sent.'
+    )
+    parts.push(emailLines.join('\n'))
+  }
+
   // Current page context
   if (context.currentPage) {
     parts.push(

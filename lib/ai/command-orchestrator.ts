@@ -38,6 +38,13 @@ import {
 } from '@/lib/ai/analytics-actions'
 import { getEventRecap, explainMenu } from '@/lib/ai/client-facing-actions'
 import {
+  getRecentEmails,
+  searchEmails,
+  getEmailThread,
+  summarizeInbox,
+  draftEmailReply,
+} from '@/lib/ai/remy-email-actions'
+import {
   generateThankYouDraft,
   generateReferralRequestDraft,
   generateTestimonialRequestDraft,
@@ -642,6 +649,35 @@ async function executeEmailGeneric(inputs: Record<string, unknown>) {
   }
 }
 
+// ─── Email Awareness Executors ────────────────────────────────────────────────
+
+async function executeEmailRecent(inputs: Record<string, unknown>) {
+  const limit = Number(inputs.limit) || 10
+  return getRecentEmails(limit)
+}
+
+async function executeEmailSearch(inputs: Record<string, unknown>) {
+  const query = String(inputs.query ?? '')
+  if (!query) return { error: 'Please specify what to search for in emails.' }
+  return searchEmails(query)
+}
+
+async function executeEmailThread(inputs: Record<string, unknown>) {
+  const threadId = String(inputs.threadId ?? '')
+  if (!threadId) return { error: 'Please specify a thread ID.' }
+  return getEmailThread(threadId)
+}
+
+async function executeEmailInboxSummary() {
+  return summarizeInbox()
+}
+
+async function executeEmailDraftReply(inputs: Record<string, unknown>) {
+  const messageId = String(inputs.messageId ?? '')
+  if (!messageId) return { error: 'Please specify which email to reply to.', draftText: '' }
+  return draftEmailReply(messageId)
+}
+
 // ─── DAG Execution Engine ─────────────────────────────────────────────────────
 
 /**
@@ -712,6 +748,11 @@ async function executeSingleTask(
       'event.list_upcoming',
       'finance.summary',
       'email.followup',
+      'email.recent',
+      'email.search',
+      'email.thread',
+      'email.inbox_summary',
+      'email.draft_reply',
       'event.create_draft',
       'client.list_recent',
       'client.details',
@@ -849,6 +890,21 @@ async function executeSingleTask(
         break
       case 'email.generic':
         data = await executeEmailGeneric(task.inputs)
+        break
+      case 'email.recent':
+        data = await executeEmailRecent(task.inputs)
+        break
+      case 'email.search':
+        data = await executeEmailSearch(task.inputs)
+        break
+      case 'email.thread':
+        data = await executeEmailThread(task.inputs)
+        break
+      case 'email.inbox_summary':
+        data = await executeEmailInboxSummary()
+        break
+      case 'email.draft_reply':
+        data = await executeEmailDraftReply(task.inputs)
         break
       case 'draft.thank_you':
         data = await executeDraftThankYou(task.inputs)
@@ -1019,7 +1075,8 @@ export async function approveTask(
 
   switch (taskType) {
     case 'email.followup':
-    case 'email.generic': {
+    case 'email.generic':
+    case 'email.draft_reply': {
       const d = data as { clientId?: string; clientName?: string; draftText?: string } | null
       if (d?.draftText) {
         // The draft text is returned to the client for clipboard copy

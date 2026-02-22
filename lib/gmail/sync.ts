@@ -531,6 +531,16 @@ async function logSyncEntry(
     error?: string | null
   }
 ) {
+  // Parse received_at from email date header
+  let receivedAt: string | null = null
+  if (email.date) {
+    try {
+      receivedAt = new Date(email.date).toISOString()
+    } catch {
+      // Leave null if date is unparseable
+    }
+  }
+
   await supabase.from('gmail_sync_log').upsert(
     {
       tenant_id: tenantId,
@@ -544,6 +554,11 @@ async function logSyncEntry(
       inquiry_id: entry.inquiry_id || null,
       message_id: entry.message_id || null,
       error: entry.error || null,
+      // Remy email awareness — store body content for search/context
+      body_preview: email.body?.slice(0, 2000) || null,
+      snippet: email.body?.slice(0, 200) || null,
+      to_address: ((email as Record<string, unknown>).to as string) || null,
+      received_at: receivedAt,
     },
     { onConflict: 'tenant_id,gmail_message_id' }
   )

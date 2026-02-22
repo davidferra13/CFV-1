@@ -319,6 +319,50 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     inputSchema: '{ "menuName": "string — menu name to explain" }',
   },
 
+  // ─── Email Awareness ────────────────────────────────────────────────────────
+
+  {
+    type: 'email.recent',
+    tier: 1,
+    name: 'Recent Emails',
+    description:
+      "Show the chef's most recent emails with sender, subject, and classification. Use when the chef asks what emails came in, what's new, or wants to see their inbox.",
+    inputSchema: '{ "limit": "number — optional, max emails to show, defaults to 10" }',
+  },
+  {
+    type: 'email.search',
+    tier: 1,
+    name: 'Search Emails',
+    description:
+      'Search emails by sender name, email address, subject, or body content. Use when the chef asks about a specific email, what someone said, or looks for a specific message.',
+    inputSchema: '{ "query": "string — search term (name, email, subject, or keyword)" }',
+  },
+  {
+    type: 'email.thread',
+    tier: 1,
+    name: 'Email Thread',
+    description:
+      'Show the full email conversation thread. Use when the chef wants to see the back-and-forth with a client or review an email chain.',
+    inputSchema: '{ "threadId": "string — Gmail thread ID to look up" }',
+  },
+  {
+    type: 'email.inbox_summary',
+    tier: 1,
+    name: 'Inbox Summary',
+    description:
+      "Get an overview of the chef's email inbox: total emails, new inquiries, client replies, spam filtered, and last sync time. Use when the chef asks to summarize their inbox or wants a communication overview.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'email.draft_reply',
+    tier: 2,
+    name: 'Draft Email Reply',
+    description:
+      "Draft a reply to a specific email. Loads the original email and any thread context to write a contextual, warm response in the chef's voice. Draft only — never auto-sent.",
+    inputSchema: '{ "messageId": "string — Gmail message ID to reply to" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews and sends manually. Never auto-send.',
+  },
+
   // ─── Communication Draft Templates ──────────────────────────────────────────
 
   {

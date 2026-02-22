@@ -197,7 +197,15 @@ async function processHistoricalMessage(
 
   // Skip outbound (emails sent by the chef themselves)
   if (connectedEmail && email.from.email.toLowerCase() === connectedEmail.toLowerCase()) {
-    await logScanEntry(supabase, tenantId, messageId, email, 'personal', 'high', 'skipped_outbound')
+    await logScanEntry(
+      supabase,
+      tenantId,
+      messageId,
+      { ...email, body: email.body, date: email.date },
+      'personal',
+      'high',
+      'skipped_outbound'
+    )
     result.skipped++
     return
   }
@@ -215,7 +223,7 @@ async function processHistoricalMessage(
     supabase,
     tenantId,
     messageId,
-    email,
+    { ...email, body: email.body, date: email.date },
     classification.category,
     classification.confidence,
     'historical_scan'
@@ -271,11 +279,27 @@ async function logScanEntry(
   supabase: ReturnType<typeof createServerClient>,
   tenantId: string,
   messageId: string,
-  email: { from: { email: string }; subject: string; threadId: string },
+  email: {
+    from: { email: string }
+    subject: string
+    threadId: string
+    body?: string
+    date?: string
+  },
   classification: string,
   confidence: string,
   actionTaken: string
 ) {
+  // Parse received_at from email date header
+  let receivedAt: string | null = null
+  if (email.date) {
+    try {
+      receivedAt = new Date(email.date).toISOString()
+    } catch {
+      // Leave null if date is unparseable
+    }
+  }
+
   try {
     await supabase.from('gmail_sync_log').insert({
       tenant_id: tenantId,
@@ -286,6 +310,10 @@ async function logScanEntry(
       classification,
       confidence,
       action_taken: actionTaken,
+      // Remy email awareness — store body content for search/context
+      body_preview: email.body?.slice(0, 2000) || null,
+      snippet: email.body?.slice(0, 200) || null,
+      received_at: receivedAt,
     })
   } catch {
     // Ignore dedup conflicts (same message already logged)
