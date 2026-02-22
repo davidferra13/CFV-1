@@ -9,6 +9,20 @@ import type { AiTaskDefinition } from './types'
 import { AI_PRIORITY } from './types'
 import { handleDraftTask } from '@/lib/ai/draft-actions'
 import {
+  handleDailyBriefing,
+  handleLeadScoring,
+  handleWeeklyInsights,
+  handleRevenueGoal,
+  handleChurnPrediction,
+  handleFoodCostAlert,
+  handlePipelineBottleneck,
+  handleCertExpiry,
+  handleFoodRecallMonitor,
+  handleQuoteAnalysis,
+  handleAnomalyDetection,
+  handleMenuEngineering,
+} from '@/lib/ai/scheduled/jobs'
+import {
   handleInquiryCreated,
   handleInquiryStale,
   handleEventConfirmed,
@@ -132,127 +146,7 @@ const placeholderTasks: Array<Omit<AiTaskDefinition, 'handler'>> = [
     recurrence: null,
   },
 
-  // PHASE D — Scheduled intelligence
-  {
-    taskType: 'scheduled.daily_briefing',
-    name: 'Daily Briefing Pre-Gen',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'standard',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 day',
-  },
-  {
-    taskType: 'scheduled.lead_scoring',
-    name: 'Auto Lead Scoring',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'fast',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '2 hours',
-  },
-  {
-    taskType: 'scheduled.weekly_insights',
-    name: 'Weekly Business Insights',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.BATCH,
-    modelTier: 'standard',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 week',
-  },
-  {
-    taskType: 'scheduled.revenue_goal',
-    name: 'Revenue Goal Progress',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.BATCH,
-    modelTier: 'standard',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 week',
-  },
-  {
-    taskType: 'scheduled.churn_prediction',
-    name: 'Client Churn Prediction',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.BATCH,
-    modelTier: 'standard',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 week',
-  },
-  {
-    taskType: 'scheduled.food_cost_alert',
-    name: 'Food Cost % Alert',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'fast',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: '1 week',
-  },
-  {
-    taskType: 'scheduled.pipeline_bottleneck',
-    name: 'Pipeline Bottleneck Report',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.BATCH,
-    modelTier: 'standard',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 week',
-  },
-  {
-    taskType: 'scheduled.cert_expiry',
-    name: 'Certification Expiry Check',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'fast',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: '1 day',
-  },
-  {
-    taskType: 'scheduled.food_recall',
-    name: 'FDA Recall Monitoring',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: '1 day',
-  },
-  {
-    taskType: 'scheduled.quote_analysis',
-    name: 'Quote Win/Loss Analysis',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.BATCH,
-    modelTier: 'standard',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 week',
-  },
-  {
-    taskType: 'scheduled.anomaly_detection',
-    name: 'Platform Anomaly Detection',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.BATCH,
-    modelTier: 'standard',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 day',
-  },
-  {
-    taskType: 'scheduled.menu_engineering',
-    name: 'Menu Engineering Report',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.BATCH,
-    modelTier: 'complex',
-    preferredEndpoint: 'pi',
-    maxAttempts: 2,
-    recurrence: '1 month',
-  },
+  // PHASE D — Scheduled intelligence (real handlers registered below)
 ]
 
 // Register all placeholder tasks
@@ -430,6 +324,127 @@ for (const [taskType, def] of Object.entries(REACTIVE_HANDLER_MAP)) {
     preferredEndpoint: 'auto',
     maxAttempts: def.maxAttempts,
     recurrence: null,
+    handler: def.handler,
+  })
+}
+
+// ── Scheduled Intelligence (real handlers) ────────────────────────────────────
+
+const SCHEDULED_HANDLER_MAP: Record<
+  string,
+  {
+    name: string
+    model: 'fast' | 'standard' | 'complex'
+    endpoint: 'auto' | 'pi'
+    recurrence: string
+    handler: (p: Record<string, unknown>, t: string) => Promise<Record<string, unknown>>
+  }
+> = {
+  'scheduled.daily_briefing': {
+    name: 'Daily Briefing Pre-Gen',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 day',
+    handler: handleDailyBriefing,
+  },
+  'scheduled.lead_scoring': {
+    name: 'Auto Lead Scoring',
+    model: 'fast',
+    endpoint: 'pi',
+    recurrence: '2 hours',
+    handler: handleLeadScoring,
+  },
+  'scheduled.weekly_insights': {
+    name: 'Weekly Business Insights',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 week',
+    handler: handleWeeklyInsights,
+  },
+  'scheduled.revenue_goal': {
+    name: 'Revenue Goal Progress',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 week',
+    handler: handleRevenueGoal,
+  },
+  'scheduled.churn_prediction': {
+    name: 'Client Churn Prediction',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 week',
+    handler: handleChurnPrediction,
+  },
+  'scheduled.food_cost_alert': {
+    name: 'Food Cost % Alert',
+    model: 'fast',
+    endpoint: 'auto',
+    recurrence: '1 week',
+    handler: handleFoodCostAlert,
+  },
+  'scheduled.pipeline_bottleneck': {
+    name: 'Pipeline Bottleneck Report',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 week',
+    handler: handlePipelineBottleneck,
+  },
+  'scheduled.cert_expiry': {
+    name: 'Certification Expiry Check',
+    model: 'fast',
+    endpoint: 'auto',
+    recurrence: '1 day',
+    handler: handleCertExpiry,
+  },
+  'scheduled.food_recall': {
+    name: 'FDA Recall Monitoring',
+    model: 'standard',
+    endpoint: 'auto',
+    recurrence: '1 day',
+    handler: handleFoodRecallMonitor,
+  },
+  'scheduled.quote_analysis': {
+    name: 'Quote Win/Loss Analysis',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 week',
+    handler: handleQuoteAnalysis,
+  },
+  'scheduled.anomaly_detection': {
+    name: 'Platform Anomaly Detection',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 day',
+    handler: handleAnomalyDetection,
+  },
+  'scheduled.menu_engineering': {
+    name: 'Menu Engineering Report',
+    model: 'complex',
+    endpoint: 'pi',
+    recurrence: '1 month',
+    handler: handleMenuEngineering,
+  },
+}
+
+for (const [taskType, def] of Object.entries(SCHEDULED_HANDLER_MAP)) {
+  registerTask({
+    taskType,
+    name: def.name,
+    approvalTier: 'auto',
+    defaultPriority:
+      taskType.includes('weekly') ||
+      taskType.includes('churn') ||
+      taskType.includes('revenue') ||
+      taskType.includes('pipeline') ||
+      taskType.includes('quote') ||
+      taskType.includes('anomaly') ||
+      taskType.includes('menu_engineering')
+        ? (AI_PRIORITY.BATCH as import('./types').AiPriorityLevel)
+        : (AI_PRIORITY.SCHEDULED as import('./types').AiPriorityLevel),
+    modelTier: def.model,
+    preferredEndpoint: def.endpoint,
+    maxAttempts: 2,
+    recurrence: def.recurrence,
     handler: def.handler,
   })
 }
