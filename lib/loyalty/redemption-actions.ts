@@ -78,7 +78,7 @@ export async function validateIncentiveCode(
     .eq('event_id', eventId)
     .single()
 
-  const outstandingCents = financial?.outstanding_balance_cents ?? (event.quoted_price_cents ?? 0)
+  const outstandingCents = financial?.outstanding_balance_cents ?? event.quoted_price_cents ?? 0
 
   if (outstandingCents <= 0) {
     return { valid: false, error: 'This event has no outstanding balance.' }
@@ -208,7 +208,7 @@ export async function redeemIncentiveCode(
       p_incentive_id: incentiveId,
       p_event_id: eventId,
       p_client_id: user.entityId,
-      p_tenant_id: (await getEventTenantId(supabase, eventId, user.entityId)),
+      p_tenant_id: await getEventTenantId(supabase, eventId, user.entityId),
       p_applied_cents: appliedAmountCents,
       p_incentive_type: type,
       p_code: normalizedCode,
@@ -269,7 +269,7 @@ async function getEventTenantId(
   eventId: string,
   clientId: string
 ): Promise<string> {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('events')
     .select('tenant_id')
     .eq('id', eventId)

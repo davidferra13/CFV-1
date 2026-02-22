@@ -16,8 +16,14 @@ import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-f
 
 const LogAdminTimeSchema = z.object({
   category: z.enum([
-    'email', 'calls', 'planning', 'bookkeeping',
-    'marketing', 'sourcing', 'travel_admin', 'other',
+    'email',
+    'calls',
+    'planning',
+    'bookkeeping',
+    'marketing',
+    'sourcing',
+    'travel_admin',
+    'other',
   ]),
   log_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   minutes: z.number().int().positive('Minutes must be positive'),
@@ -38,7 +44,7 @@ export async function logAdminTime(input: LogAdminTimeInput) {
   const validated = LogAdminTimeSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('admin_time_logs')
     .insert({
       chef_id: user.tenantId!,
@@ -61,11 +67,7 @@ export async function deleteAdminTimeLog(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any)
-    .from('admin_time_logs')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  await supabase.from('admin_time_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
 
   revalidatePath('/insights/time-analysis')
 }
@@ -78,7 +80,7 @@ export async function getAdminTimeForPeriod(startDate: string, endDate: string) 
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('admin_time_logs')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -117,7 +119,7 @@ export async function getAdminTimeForEvent(eventId: string): Promise<number> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('admin_time_logs')
     .select('minutes')
     .eq('chef_id', user.tenantId!)

@@ -41,7 +41,7 @@ export async function explainEquipmentDepreciation(): Promise<EquipmentDepreciat
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: equipment } = await (supabase as any)
+  const { data: equipment } = await supabase
     .from('equipment_items')
     .select(
       'name, purchase_price_cents, purchase_date, depreciation_years, depreciation_method, category'

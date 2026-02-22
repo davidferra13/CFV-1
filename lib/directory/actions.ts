@@ -22,9 +22,10 @@ export type DirectoryChef = {
 export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
   const supabase = createServerClient({ admin: true })
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chefs')
-    .select(`
+    .select(
+      `
       id,
       slug,
       display_name,
@@ -33,7 +34,8 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
       bio,
       profile_image_url,
       chef_preferences!inner(network_discoverable)
-    `)
+    `
+    )
     .not('slug', 'is', null)
     .eq('chef_preferences.network_discoverable', true)
     .order('created_at', { ascending: false })

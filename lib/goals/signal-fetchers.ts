@@ -9,7 +9,7 @@ export async function fetchBookingCount(
   start: string,
   end: string
 ): Promise<number> {
-  const { count } = await (supabase as any)
+  const { count } = await supabase
     .from('events')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -29,7 +29,7 @@ export async function fetchNewClientCount(
   start: string,
   end: string
 ): Promise<number> {
-  const { count } = await (supabase as any)
+  const { count } = await supabase
     .from('clients')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -47,7 +47,7 @@ export async function fetchRecipeCount(
   supabase: SupabaseClient,
   tenantId: string
 ): Promise<number> {
-  const { count } = await (supabase as any)
+  const { count } = await supabase
     .from('recipes')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -68,7 +68,7 @@ export async function fetchTrailingProfitMarginBp(
   const cutoff = new Date(Date.now() - trailingDays * 24 * 60 * 60 * 1000)
   const cutoffStr = cutoff.toISOString().slice(0, 10)
 
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('events')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -78,7 +78,7 @@ export async function fetchTrailingProfitMarginBp(
   const eventIds = ((events || []) as Array<{ id: string }>).map((e) => e.id)
   if (eventIds.length === 0) return 0
 
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('event_financial_summary')
     .select('profit_margin')
     .eq('tenant_id', tenantId)
@@ -106,12 +106,12 @@ export async function fetchTrailingExpenseRatioBp(
   const cutoffStr = cutoff.toISOString().slice(0, 10)
 
   const [{ data: expenses }, { data: events }] = await Promise.all([
-    (supabase as any)
+    supabase
       .from('expenses')
       .select('amount_cents')
       .eq('tenant_id', tenantId)
       .gte('expense_date', cutoffStr),
-    (supabase as any)
+    supabase
       .from('events')
       .select('id')
       .eq('tenant_id', tenantId)
@@ -127,7 +127,7 @@ export async function fetchTrailingExpenseRatioBp(
   const eventIds = ((events || []) as Array<{ id: string }>).map((e) => e.id)
   if (eventIds.length === 0 || totalExpenses === 0) return 0
 
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('event_financial_summary')
     .select('net_revenue_cents')
     .eq('tenant_id', tenantId)
@@ -151,7 +151,7 @@ export async function fetchRepeatBookingRateBp(
   tenantId: string
 ): Promise<number> {
   // Get all clients and count how many have 2+ completed events
-  const { data: clientEvents } = await (supabase as any)
+  const { data: clientEvents } = await supabase
     .from('events')
     .select('client_id')
     .eq('tenant_id', tenantId)
@@ -179,7 +179,7 @@ export async function fetchTotalReviews(
   supabase: SupabaseClient,
   tenantId: string
 ): Promise<number> {
-  const { count } = await (supabase as any)
+  const { count } = await supabase
     .from('external_reviews')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
@@ -195,7 +195,7 @@ export async function fetchReviewAverageBp(
   supabase: SupabaseClient,
   tenantId: string
 ): Promise<number> {
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('external_reviews')
     .select('rating')
     .eq('tenant_id', tenantId)
@@ -220,7 +220,7 @@ export async function fetchWorkshopsAttended(
   start: string,
   end: string
 ): Promise<number> {
-  const { count } = await (supabase as any)
+  const { count } = await supabase
     .from('professional_achievements')
     .select('id', { count: 'exact', head: true })
     .eq('chef_id', tenantId)

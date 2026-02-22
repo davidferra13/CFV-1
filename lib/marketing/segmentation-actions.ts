@@ -79,12 +79,15 @@ async function applyBehavioralFilters(
   const eventRows = events ?? []
 
   // Build per-client aggregates
-  const clientAgg: Record<string, {
-    eventCount: number
-    totalSpendCents: number
-    lastEventDate: string | null
-    tags: string[]
-  }> = {}
+  const clientAgg: Record<
+    string,
+    {
+      eventCount: number
+      totalSpendCents: number
+      lastEventDate: string | null
+      tags: string[]
+    }
+  > = {}
 
   for (const c of clients) {
     clientAgg[c.id] = { eventCount: 0, totalSpendCents: 0, lastEventDate: null, tags: [] }
@@ -102,13 +105,13 @@ async function applyBehavioralFilters(
 
   // If tag filtering is requested, fetch client tags
   if (filters.tags && filters.tags.length > 0) {
-    const { data: tagRows } = await (supabase as any)
+    const { data: tagRows } = await supabase
       .from('client_tags')
       .select('client_id, tag')
       .eq('chef_id', tenantId)
       .in('client_id', clientIds)
 
-    for (const t of (tagRows ?? [])) {
+    for (const t of tagRows ?? []) {
       if (clientAgg[t.client_id]) {
         clientAgg[t.client_id].tags.push(t.tag)
       }
@@ -122,9 +125,18 @@ async function applyBehavioralFilters(
 
     if (filters.minEvents !== undefined && agg.eventCount < filters.minEvents) return false
     if (filters.maxEvents !== undefined && agg.eventCount > filters.maxEvents) return false
-    if (filters.minSpendCents !== undefined && agg.totalSpendCents < filters.minSpendCents) return false
-    if (filters.lastEventBefore !== undefined && (!agg.lastEventDate || agg.lastEventDate >= filters.lastEventBefore)) return false
-    if (filters.lastEventAfter !== undefined && (!agg.lastEventDate || agg.lastEventDate <= filters.lastEventAfter)) return false
+    if (filters.minSpendCents !== undefined && agg.totalSpendCents < filters.minSpendCents)
+      return false
+    if (
+      filters.lastEventBefore !== undefined &&
+      (!agg.lastEventDate || agg.lastEventDate >= filters.lastEventBefore)
+    )
+      return false
+    if (
+      filters.lastEventAfter !== undefined &&
+      (!agg.lastEventDate || agg.lastEventDate <= filters.lastEventAfter)
+    )
+      return false
     if (filters.tags && filters.tags.length > 0) {
       const hasAll = filters.tags.every((t) => agg.tags.includes(t))
       if (!hasAll) return false
@@ -163,19 +175,35 @@ export async function buildBehavioralSegment(input: BuildBehavioralSegmentInput)
     filterEntries.push({ field: 'event_count', op: 'lte', value: validated.filters.maxEvents })
   }
   if (validated.filters.minSpendCents !== undefined) {
-    filterEntries.push({ field: 'total_spend_cents', op: 'gte', value: validated.filters.minSpendCents })
+    filterEntries.push({
+      field: 'total_spend_cents',
+      op: 'gte',
+      value: validated.filters.minSpendCents,
+    })
   }
   if (validated.filters.lastEventBefore !== undefined) {
-    filterEntries.push({ field: 'last_event_date', op: 'lt', value: validated.filters.lastEventBefore })
+    filterEntries.push({
+      field: 'last_event_date',
+      op: 'lt',
+      value: validated.filters.lastEventBefore,
+    })
   }
   if (validated.filters.lastEventAfter !== undefined) {
-    filterEntries.push({ field: 'last_event_date', op: 'gt', value: validated.filters.lastEventAfter })
+    filterEntries.push({
+      field: 'last_event_date',
+      op: 'gt',
+      value: validated.filters.lastEventAfter,
+    })
   }
   if (validated.filters.tags && validated.filters.tags.length > 0) {
-    filterEntries.push({ field: 'tags', op: 'contains_all', value: validated.filters.tags.join(',') })
+    filterEntries.push({
+      field: 'tags',
+      op: 'contains_all',
+      value: validated.filters.tags.join(','),
+    })
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('client_segments')
     .insert({
       tenant_id: user.tenantId!,
@@ -228,7 +256,7 @@ export async function evaluateSegmentFilters(segmentId: string): Promise<Evaluat
   const supabase = createServerClient()
 
   // Fetch the segment
-  const { data: segment, error } = await (supabase as any)
+  const { data: segment, error } = await supabase
     .from('client_segments')
     .select('*')
     .eq('id', segmentId)
@@ -241,7 +269,8 @@ export async function evaluateSegmentFilters(segmentId: string): Promise<Evaluat
   }
 
   // Parse the stored filter entries back into BehavioralFilters
-  const storedFilters: { field: string; op: string; value: string | number }[] = segment.filters ?? []
+  const storedFilters: { field: string; op: string; value: string | number }[] =
+    segment.filters ?? []
   const behavioralFilters: BehavioralFilters = {}
 
   for (const f of storedFilters) {

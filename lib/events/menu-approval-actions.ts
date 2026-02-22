@@ -40,7 +40,8 @@ export async function sendMenuForApproval(eventId: string) {
   // Load event + client + linked menus
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, menu_approval_status,
       clients (id, full_name, email),
       menus (
@@ -49,7 +50,8 @@ export async function sendMenuForApproval(eventId: string) {
           dishes (name)
         )
       )
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -106,9 +108,7 @@ export async function sendMenuForApproval(eventId: string) {
       react: React.createElement(MenuApprovalRequestEmail, {
         clientName: client.full_name ?? 'there',
         occasion: event.occasion ?? 'your upcoming event',
-        eventDate: event.event_date
-          ? format(new Date(event.event_date), 'MMMM d, yyyy')
-          : 'TBD',
+        eventDate: event.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
         menuSnapshot,
         approvalUrl,
       }),
@@ -238,12 +238,12 @@ export async function getClientMenuApprovalRequest(requestId: string) {
   const user = await requireClient()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = (await supabase
     .from('menu_approval_requests')
     .select('*')
     .eq('id', requestId)
     .eq('client_id', user.entityId)
-    .single() as { data: Record<string, any> | null }
+    .single()) as { data: Record<string, any> | null }
 
   return data
 }

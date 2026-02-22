@@ -15,7 +15,7 @@ export default async function ContractorsPage() {
   const [summary, payments, staffResult] = await Promise.all([
     get1099Summary(currentYear).catch(() => null),
     getContractorPayments().catch(() => null),
-    (supabase as any)
+    supabase
       .from('staff_members')
       .select('id, name, contractor_type')
       .eq('chef_id', user.tenantId!)
@@ -31,9 +31,13 @@ export default async function ContractorsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">&larr; Finance</Link>
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+          &larr; Finance
+        </Link>
         <h1 className="text-3xl font-bold text-stone-900 mt-1">1099 Contractors</h1>
-        <p className="text-stone-500 mt-1">Track contractor payments, generate 1099 forms, and manage compliance</p>
+        <p className="text-stone-500 mt-1">
+          Track contractor payments, generate 1099 forms, and manage compliance
+        </p>
       </div>
 
       <Contractor1099Panel

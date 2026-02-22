@@ -13,7 +13,7 @@ export default async function IncidentsPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data: incidents } = await (supabase as any)
+  const { data: incidents } = await supabase
     .from('chef_incidents')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

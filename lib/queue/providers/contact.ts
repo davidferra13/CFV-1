@@ -22,7 +22,7 @@ export async function getContactQueueItems(
   const now = new Date()
 
   // contact_submissions not yet in generated types -- cast needed
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('contact_submissions')
     .select('id, name, email, subject, created_at')
     .is('claimed_by_chef_id', null)
@@ -33,8 +33,7 @@ export async function getContactQueueItems(
   if (submissions.length === 0) return items
 
   for (const sub of submissions) {
-    const hoursSinceCreated =
-      (now.getTime() - new Date(sub.created_at).getTime()) / 3600000
+    const hoursSinceCreated = (now.getTime() - new Date(sub.created_at).getTime()) / 3600000
 
     const inputs: ScoreInputs = {
       hoursUntilDue: Math.max(0, 48 - hoursSinceCreated), // 48-hour response window

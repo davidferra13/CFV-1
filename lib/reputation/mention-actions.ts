@@ -44,7 +44,7 @@ export async function getMentions(filters?: {
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('chef_brand_mentions')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -68,7 +68,7 @@ export async function markReviewed(id: string): Promise<void> {
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_brand_mentions')
     .update({ is_reviewed: true })
     .eq('id', id)
@@ -90,7 +90,7 @@ export async function createMention(input: {
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_brand_mentions')
     .insert({
       tenant_id: tenantId,
@@ -116,7 +116,7 @@ export async function getUnreviewedCount(): Promise<number> {
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { count, error } = await (supabase as any)
+  const { count, error } = await supabase
     .from('chef_brand_mentions')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

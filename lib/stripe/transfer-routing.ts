@@ -22,7 +22,9 @@ export async function getChefStripeConfig(tenantId: string): Promise<ChefStripeC
 
   const { data: chef } = await supabase
     .from('chefs')
-    .select('stripe_account_id, stripe_onboarding_complete, platform_fee_percent, platform_fee_fixed_cents')
+    .select(
+      'stripe_account_id, stripe_onboarding_complete, platform_fee_percent, platform_fee_fixed_cents'
+    )
     .eq('id', tenantId)
     .single()
 
@@ -31,7 +33,9 @@ export async function getChefStripeConfig(tenantId: string): Promise<ChefStripeC
     onboardingComplete: (chef as any)?.stripe_onboarding_complete === true,
     platformFeePercent: Number((chef as any)?.platform_fee_percent ?? 0),
     platformFeeFixedCents: Number((chef as any)?.platform_fee_fixed_cents ?? 0),
-    canReceiveTransfers: !!((chef as any)?.stripe_account_id && (chef as any)?.stripe_onboarding_complete),
+    canReceiveTransfers: !!(
+      (chef as any)?.stripe_account_id && (chef as any)?.stripe_onboarding_complete
+    ),
   }
 }
 
@@ -67,7 +71,7 @@ export async function recordStripeTransfer(params: {
 }): Promise<void> {
   const supabase = createServerClient({ admin: true })
 
-  await (supabase as any).from('stripe_transfers').insert({
+  await supabase.from('stripe_transfers').insert({
     tenant_id: params.tenantId,
     event_id: params.eventId,
     stripe_transfer_id: params.stripeTransferId,
@@ -98,7 +102,7 @@ export async function recordPlatformFee(params: {
 }): Promise<void> {
   const supabase = createServerClient({ admin: true })
 
-  await (supabase as any).from('platform_fee_ledger').insert({
+  await supabase.from('platform_fee_ledger').insert({
     tenant_id: params.tenantId,
     event_id: params.eventId,
     stripe_transfer_id: params.stripeTransferId,

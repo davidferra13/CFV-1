@@ -88,9 +88,11 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
 
   if (menuErr || !menu) return null
 
-  const { data: dishes } = await (supabase as any)
+  const { data: dishes } = await supabase
     .from('dishes')
-    .select('id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url')
+    .select(
+      'id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url'
+    )
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
     .order('course_number', { ascending: true })
@@ -127,12 +129,14 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
   }
 
   // Load event with client
-  const { data: ev } = await (supabase as any)
+  const { data: ev } = (await supabase
     .from('events')
-    .select('id, occasion, event_date, serve_time, guest_count, quoted_price_cents, status, venue_name, venue_address, client_id')
+    .select(
+      'id, occasion, event_date, serve_time, guest_count, quoted_price_cents, status, venue_name, venue_address, client_id'
+    )
     .eq('id', menu.event_id)
     .eq('tenant_id', user.tenantId!)
-    .single() as { data: any }
+    .single()) as { data: any }
 
   let editorEvent: EditorEvent | null = null
   let clientId: string | null = null
@@ -185,8 +189,8 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
       .neq('id', menu.event_id)
 
     if (prevEvents && prevEvents.length > 0) {
-      const prevEventIds = prevEvents.map(e => e.id)
-      const eventDateMap = Object.fromEntries(prevEvents.map(e => [e.id, e.event_date]))
+      const prevEventIds = prevEvents.map((e) => e.id)
+      const eventDateMap = Object.fromEntries(prevEvents.map((e) => [e.id, e.event_date]))
 
       const { data: prevMenus } = await supabase
         .from('menus')
@@ -197,7 +201,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
         .order('created_at', { ascending: false })
         .limit(3)
 
-      previousMenus = (prevMenus ?? []).map(m => ({
+      previousMenus = (prevMenus ?? []).map((m) => ({
         id: m.id,
         name: m.name,
         cuisine_type: m.cuisine_type,
@@ -212,15 +216,18 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
 
 // ─── updateMenuMeta ───────────────────────────────────────────────────────────
 
-export async function updateMenuMeta(menuId: string, data: {
-  name?: string
-  cuisine_type?: string | null
-  service_style?: string | null
-  target_guest_count?: number | null
-  price_per_person_cents?: number | null
-  simple_mode?: boolean
-  simple_mode_content?: string | null
-}) {
+export async function updateMenuMeta(
+  menuId: string,
+  data: {
+    name?: string
+    cuisine_type?: string | null
+    service_style?: string | null
+    target_guest_count?: number | null
+    price_per_person_cents?: number | null
+    simple_mode?: boolean
+    simple_mode_content?: string | null
+  }
+) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -244,14 +251,17 @@ export async function updateMenuMeta(menuId: string, data: {
 
 // ─── updateDishEditorContent ──────────────────────────────────────────────────
 
-export async function updateDishEditorContent(dishId: string, data: {
-  name?: string | null
-  course_name?: string
-  description?: string | null
-  dietary_tags?: string[]
-  allergen_flags?: string[]
-  chef_notes?: string | null
-}) {
+export async function updateDishEditorContent(
+  dishId: string,
+  data: {
+    name?: string | null
+    course_name?: string
+    description?: string | null
+    dietary_tags?: string[]
+    allergen_flags?: string[]
+    chef_notes?: string | null
+  }
+) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -272,15 +282,18 @@ export async function updateDishEditorContent(dishId: string, data: {
 
 // ─── addEditorCourse ──────────────────────────────────────────────────────────
 
-export async function addEditorCourse(menuId: string, data: {
-  course_name: string
-  course_number: number
-  name?: string
-}) {
+export async function addEditorCourse(
+  menuId: string,
+  data: {
+    course_name: string
+    course_number: number
+    name?: string
+  }
+) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: dish, error } = await (supabase as any)
+  const { data: dish, error } = (await supabase
     .from('dishes')
     .insert({
       menu_id: menuId,
@@ -293,8 +306,10 @@ export async function addEditorCourse(menuId: string, data: {
       created_by: user.id,
       updated_by: user.id,
     })
-    .select('id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order')
-    .single() as { data: any; error: any }
+    .select(
+      'id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order'
+    )
+    .single()) as { data: any; error: any }
 
   if (error) {
     console.error('[addEditorCourse] Error:', error)
@@ -355,7 +370,7 @@ export async function reorderEditorCourse(
 
   if (!dishes || dishes.length < 2) return
 
-  const idx = dishes.findIndex(d => d.id === dishId)
+  const idx = dishes.findIndex((d) => d.id === dishId)
   if (idx === -1) return
 
   const swapIdx = direction === 'up' ? idx - 1 : idx + 1

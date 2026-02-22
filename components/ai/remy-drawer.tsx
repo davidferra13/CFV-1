@@ -8,15 +8,12 @@ import {
   X,
   Send,
   Loader2,
-  ChevronRight,
   ArrowRight,
   CalendarDays,
   TrendingUp,
   Mail,
   Users,
   AlertCircle,
-  Bookmark,
-  BookmarkCheck,
   History,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -39,7 +36,6 @@ export function RemyDrawer() {
   const [messages, setMessages] = useState<RemyMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
-  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const pathname = usePathname()
@@ -54,6 +50,29 @@ export function RemyDrawer() {
       setTimeout(() => textareaRef.current?.focus(), 100)
     }
   }, [open])
+
+  // Non-blocking auto-save: persist Remy's response + any task results
+  const autoSave = useCallback((userMessage: string, remyMsg: RemyMessage) => {
+    // Save the conversational text (non-blocking side effect)
+    const title =
+      remyMsg.content.length > 60 ? remyMsg.content.slice(0, 57) + '...' : remyMsg.content
+    saveRemyMessage({ title, content: remyMsg.content, sourceMessage: userMessage }).catch((err) =>
+      console.error('[non-blocking] Auto-save message failed', err)
+    )
+
+    // Save each task result individually (non-blocking)
+    if (remyMsg.tasks?.length) {
+      for (const task of remyMsg.tasks) {
+        if (task.status === 'error') continue // don't persist errors
+        saveRemyTaskResult({
+          taskType: task.taskType,
+          taskName: task.name,
+          data: task.data,
+          sourceMessage: userMessage,
+        }).catch((err) => console.error('[non-blocking] Auto-save task failed', err))
+      }
+    }
+  }, [])
 
   const handleSend = useCallback(
     async (text?: string) => {
@@ -81,6 +100,9 @@ export function RemyDrawer() {
           navSuggestions: response.navSuggestions,
         }
         setMessages((prev) => [...prev, remyMsg])
+
+        // Auto-save everything — nothing goes into the abyss
+        autoSave(message, remyMsg)
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : 'Remy is having trouble. Try again.'
         // Check if Ollama offline
@@ -101,7 +123,7 @@ export function RemyDrawer() {
         setLoading(false)
       }
     },
-    [input, loading, messages, pathname]
+    [input, loading, messages, pathname, autoSave]
   )
 
   const handleApproveTask = useCallback(async (taskId: string, taskType: string, data: unknown) => {
@@ -137,64 +159,6 @@ export function RemyDrawer() {
     )
     toast.success('Task dismissed')
   }, [])
-
-  // Save a Remy message to artifacts
-  const handleSaveMessage = useCallback(
-    async (msg: RemyMessage) => {
-      if (savedIds.has(msg.id)) return
-      try {
-        // Find the user message that prompted this response
-        const msgIndex = messages.findIndex((m) => m.id === msg.id)
-        const promptMsg = msgIndex > 0 ? messages[msgIndex - 1] : null
-        const sourceMessage = promptMsg?.role === 'user' ? promptMsg.content : undefined
-
-        const title = msg.content.length > 60 ? msg.content.slice(0, 57) + '...' : msg.content
-
-        await saveRemyMessage({
-          title,
-          content: msg.content,
-          sourceMessage: sourceMessage ?? '',
-        })
-        setSavedIds((prev) => new Set(prev).add(msg.id))
-        toast.success('Saved to Remy history')
-      } catch {
-        toast.error('Failed to save')
-      }
-    },
-    [savedIds, messages]
-  )
-
-  // Save a task result to artifacts
-  const handleSaveTask = useCallback(
-    async (taskId: string, taskType: string, taskName: string, data: unknown) => {
-      if (savedIds.has(taskId)) return
-      try {
-        // Find the user message that triggered this task
-        let sourceMessage: string | undefined
-        for (const msg of messages) {
-          if (msg.tasks?.some((t) => t.taskId === taskId)) {
-            const msgIndex = messages.indexOf(msg)
-            if (msgIndex > 0 && messages[msgIndex - 1].role === 'user') {
-              sourceMessage = messages[msgIndex - 1].content
-            }
-            break
-          }
-        }
-
-        await saveRemyTaskResult({
-          taskType,
-          taskName,
-          data,
-          sourceMessage,
-        })
-        setSavedIds((prev) => new Set(prev).add(taskId))
-        toast.success('Saved to Remy history')
-      } catch {
-        toast.error('Failed to save')
-      }
-    },
-    [savedIds, messages]
-  )
 
   return (
     <>

@@ -30,7 +30,7 @@ export async function getFinancialQueueItems(
     .gt('outstanding_balance_cents', 0)
 
   if (outstandingSummaries && outstandingSummaries.length > 0) {
-    const eventIds = outstandingSummaries.map(s => s.event_id).filter(Boolean) as string[]
+    const eventIds = outstandingSummaries.map((s) => s.event_id).filter(Boolean) as string[]
     const { data: events } = await supabase
       .from('events')
       .select('id, occasion, event_date, status, client:clients(full_name)')
@@ -38,8 +38,8 @@ export async function getFinancialQueueItems(
       .in('id', eventIds)
       .not('status', 'in', '("draft","cancelled")')
 
-    for (const event of (events || [])) {
-      const fin = outstandingSummaries.find(s => s.event_id === event.id)
+    for (const event of events || []) {
+      const fin = outstandingSummaries.find((s) => s.event_id === event.id)
       const outstanding = fin?.outstanding_balance_cents ?? 0
       const hoursSinceEvent = (now.getTime() - new Date(event.event_date).getTime()) / 3600000
       const clientName = (event.client as any)?.full_name ?? 'Unknown'
@@ -81,7 +81,7 @@ export async function getFinancialQueueItems(
     .order('expense_date', { ascending: false })
     .limit(10)
 
-  for (const exp of (expensesNoReceipt || [])) {
+  for (const exp of expensesNoReceipt || []) {
     const hoursSinceCreated = (now.getTime() - new Date(exp.expense_date).getTime()) / 3600000
     const inputs: ScoreInputs = {
       hoursUntilDue: null,
@@ -119,7 +119,7 @@ export async function getFinancialQueueItems(
     .order('event_date', { ascending: false })
     .limit(10)
 
-  for (const event of (unclosedEvents || [])) {
+  for (const event of unclosedEvents || []) {
     const clientName = (event.client as any)?.full_name ?? 'Unknown'
     const hoursSinceEvent = (now.getTime() - new Date(event.event_date).getTime()) / 3600000
     const inputs: ScoreInputs = {
@@ -150,14 +150,17 @@ export async function getFinancialQueueItems(
 
   // 4. Revenue goal gap (if program enabled)
   const { start: monthStart, end: monthEnd, endDate: monthEndDate } = getMonthBounds(now)
-  const { data: prefs } = await (supabase as any)
+  const { data: prefs } = await supabase
     .from('chef_preferences')
     .select('revenue_goal_program_enabled, target_monthly_revenue_cents')
     .eq('tenant_id', tenantId)
     .maybeSingle()
 
   if ((prefs as any)?.revenue_goal_program_enabled === true) {
-    const monthlyTargetCents = Math.max(0, Number((prefs as any)?.target_monthly_revenue_cents ?? 1000000))
+    const monthlyTargetCents = Math.max(
+      0,
+      Number((prefs as any)?.target_monthly_revenue_cents ?? 1000000)
+    )
     const { data: monthEvents } = await supabase
       .from('events')
       .select('id')

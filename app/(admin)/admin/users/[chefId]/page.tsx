@@ -11,7 +11,10 @@ import Link from 'next/link'
 import { ArrowLeft, User, CalendarRange, Users, DollarSign, Activity } from 'lucide-react'
 
 function formatCents(cents: number): string {
-  return '$' + (cents / 100).toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })
+  return (
+    '$' +
+    (cents / 100).toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })
+  )
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -34,7 +37,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
 
   const supabase = createAdminClient()
 
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('id, business_name, email, created_at, phone, account_status')
     .eq('id', params.chefId)
@@ -70,12 +73,14 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
   const clients = clientsResult.data ?? []
   const ledger = ledgerResult.data ?? []
 
-  const totalGMV = ledger.filter((l) => l.entry_type === 'payment').reduce((s, l) => s + (l.amount_cents ?? 0), 0)
-  const totalExpenses = ledger.filter((l) => (l.entry_type as string) === 'expense').reduce((s, l) => s + (l.amount_cents ?? 0), 0)
+  const totalGMV = ledger
+    .filter((l) => l.entry_type === 'payment')
+    .reduce((s, l) => s + (l.amount_cents ?? 0), 0)
+  const totalExpenses = ledger
+    .filter((l) => (l.entry_type as string) === 'expense')
+    .reduce((s, l) => s + (l.amount_cents ?? 0), 0)
 
-  const daysSinceSignup = Math.floor(
-    (Date.now() - new Date(chef.created_at).getTime()) / 86400000
-  )
+  const daysSinceSignup = Math.floor((Date.now() - new Date(chef.created_at).getTime()) / 86400000)
   const cutoff90 = new Date(Date.now() - 90 * 86400000)
   const recentEventCount = events.filter(
     (e) => e.event_date && new Date(e.event_date) >= cutoff90
@@ -95,7 +100,10 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
     <div className="space-y-6">
       {/* Back + Header */}
       <div>
-        <Link href="/admin/users" className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 mb-3">
+        <Link
+          href="/admin/users"
+          className="text-xs text-slate-400 hover:text-slate-600 flex items-center gap-1 mb-3"
+        >
           <ArrowLeft size={12} /> Back to Chefs
         </Link>
         <div className="flex items-start gap-4">
@@ -104,7 +112,9 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl font-bold text-slate-900">{chef.business_name ?? 'Unnamed Chef'}</h1>
+              <h1 className="text-2xl font-bold text-slate-900">
+                {chef.business_name ?? 'Unnamed Chef'}
+              </h1>
               <ChefHealthBadge
                 eventCount={events.length}
                 recentEventCount={recentEventCount}
@@ -122,7 +132,12 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             </div>
             <p className="text-sm text-slate-500 mt-0.5">{email ?? 'Email unavailable'}</p>
             <p className="text-xs text-slate-400 mt-1">
-              Joined {new Date(chef.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+              Joined{' '}
+              {new Date(chef.created_at).toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })}
             </p>
           </div>
         </div>
@@ -163,10 +178,25 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-0 divide-x divide-y divide-slate-100">
           {[
-            { label: 'Activity', desc: 'Events in last 90 days', score: healthScore.activityScore, max: 30 },
+            {
+              label: 'Activity',
+              desc: 'Events in last 90 days',
+              score: healthScore.activityScore,
+              max: 30,
+            },
             { label: 'Revenue', desc: 'Total GMV level', score: healthScore.revenueScore, max: 25 },
-            { label: 'Clients', desc: 'Client roster size', score: healthScore.clientScore, max: 25 },
-            { label: 'Setup', desc: 'Profile & onboarding', score: healthScore.setupScore, max: 20 },
+            {
+              label: 'Clients',
+              desc: 'Client roster size',
+              score: healthScore.clientScore,
+              max: 25,
+            },
+            {
+              label: 'Setup',
+              desc: 'Profile & onboarding',
+              score: healthScore.setupScore,
+              max: 20,
+            },
           ].map(({ label, desc, score, max }) => (
             <div key={label} className="px-4 py-4">
               <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{label}</p>
@@ -193,17 +223,25 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
               <thead>
                 <tr className="border-b border-slate-100">
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Name</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Status</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                    Status
+                  </th>
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Date</th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-slate-500">Value</th>
+                  <th className="text-right px-4 py-2.5 text-xs font-medium text-slate-500">
+                    Value
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {events.map((event) => (
                   <tr key={event.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-2.5 text-slate-900 font-medium">{event.occasion ?? '—'}</td>
+                    <td className="px-4 py-2.5 text-slate-900 font-medium">
+                      {event.occasion ?? '—'}
+                    </td>
                     <td className="px-4 py-2.5">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[event.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[event.status] ?? 'bg-slate-100 text-slate-600'}`}
+                      >
                         {event.status}
                       </span>
                     </td>
@@ -233,7 +271,9 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
             {clients.map((client) => (
               <div key={client.id} className="px-4 py-3 flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-900">{(client as {full_name?: string | null}).full_name ?? 'Unnamed'}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {(client as { full_name?: string | null }).full_name ?? 'Unnamed'}
+                  </p>
                   <p className="text-xs text-slate-400">{client.email ?? '—'}</p>
                 </div>
                 <p className="text-xs text-slate-400">
@@ -259,8 +299,12 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
               <thead>
                 <tr className="border-b border-slate-100">
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Type</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Description</th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-slate-500">Amount</th>
+                  <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">
+                    Description
+                  </th>
+                  <th className="text-right px-4 py-2.5 text-xs font-medium text-slate-500">
+                    Amount
+                  </th>
                   <th className="text-left px-4 py-2.5 text-xs font-medium text-slate-500">Date</th>
                 </tr>
               </thead>
@@ -268,10 +312,16 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 {ledger.map((entry) => (
                   <tr key={entry.id} className="hover:bg-slate-50">
                     <td className="px-4 py-2.5">
-                      <span className="text-xs font-medium text-slate-600 uppercase">{entry.entry_type}</span>
+                      <span className="text-xs font-medium text-slate-600 uppercase">
+                        {entry.entry_type}
+                      </span>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-600 text-xs">{entry.description ?? '—'}</td>
-                    <td className={`px-4 py-2.5 text-right font-medium ${(entry.amount_cents ?? 0) < 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                    <td className="px-4 py-2.5 text-slate-600 text-xs">
+                      {entry.description ?? '—'}
+                    </td>
+                    <td
+                      className={`px-4 py-2.5 text-right font-medium ${(entry.amount_cents ?? 0) < 0 ? 'text-red-600' : 'text-slate-900'}`}
+                    >
                       {formatCents(entry.amount_cents ?? 0)}
                     </td>
                     <td className="px-4 py-2.5 text-xs text-slate-400">

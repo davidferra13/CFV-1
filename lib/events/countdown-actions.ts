@@ -40,7 +40,7 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
   const supabase = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
-  const { data: event, error } = await (supabase as any)
+  const { data: event, error } = await supabase
     .from('events')
     .select('id, occasion, event_date, serve_time, status, countdown_enabled')
     .eq('id', validatedEventId)
@@ -95,7 +95,7 @@ export async function toggleCountdown(
     throw new Error('Event not found')
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('events')
     .update({
       countdown_enabled: validated.enabled,
@@ -125,7 +125,7 @@ export async function getUpcomingCountdowns(): Promise<EventCountdown[]> {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { data: events, error } = await (supabase as any)
+  const { data: events, error } = await supabase
     .from('events')
     .select('id, occasion, event_date, serve_time, status, countdown_enabled')
     .eq('tenant_id', user.tenantId!)

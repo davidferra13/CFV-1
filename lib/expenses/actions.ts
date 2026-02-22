@@ -323,7 +323,7 @@ export async function getEventProfitSummary(eventId: string) {
     .eq('tenant_id', user.tenantId!)
 
   // Get event time tracking, guest count, and estimated food cost data
-  const { data: eventData } = await (supabase as any)
+  const { data: eventData } = await supabase
     .from('events')
     .select(
       'time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes, guest_count, estimated_food_cost_cents'

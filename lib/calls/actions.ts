@@ -23,12 +23,7 @@ export type CallType =
   | 'partner'
   | 'general'
 
-export type CallStatus =
-  | 'scheduled'
-  | 'confirmed'
-  | 'completed'
-  | 'no_show'
-  | 'cancelled'
+export type CallStatus = 'scheduled' | 'confirmed' | 'completed' | 'no_show' | 'cancelled'
 
 export interface AgendaItem {
   id: string
@@ -77,8 +72,8 @@ export interface CallsFilter {
   status?: CallStatus | CallStatus[]
   call_type?: CallType
   client_id?: string
-  from?: string   // ISO date
-  to?: string     // ISO date
+  from?: string // ISO date
+  to?: string // ISO date
   limit?: number
 }
 
@@ -87,13 +82,16 @@ export interface CallsFilter {
 // ============================================
 
 const CALL_TYPES = [
-  'discovery', 'follow_up', 'proposal_walkthrough',
-  'pre_event_logistics', 'vendor_supplier', 'partner', 'general',
+  'discovery',
+  'follow_up',
+  'proposal_walkthrough',
+  'pre_event_logistics',
+  'vendor_supplier',
+  'partner',
+  'general',
 ] as const
 
-const CALL_STATUSES = [
-  'scheduled', 'confirmed', 'completed', 'no_show', 'cancelled',
-] as const
+const CALL_STATUSES = ['scheduled', 'confirmed', 'completed', 'no_show', 'cancelled'] as const
 
 const CreateCallSchema = z.object({
   call_type: z.enum(CALL_TYPES),
@@ -157,12 +155,15 @@ export async function createCall(input: CreateCallInput) {
   const agenda_items: AgendaItem[] = []
 
   if (validated.inquiry_id) {
-    const { data: inquiry } = await (supabase as any)
+    const { data: inquiry } = (await supabase
       .from('inquiries')
-      .select('confirmed_occasion, guest_count_adults, guest_count_kids, budget_min, budget_max, dietary_restrictions, unknown_blocking_questions')
+      .select(
+        'confirmed_occasion, guest_count_adults, guest_count_kids, budget_min, budget_max, dietary_restrictions, unknown_blocking_questions'
+      )
       .eq('id', validated.inquiry_id)
       .eq('tenant_id', user.tenantId!)
-      .single() as { data: {
+      .single()) as {
+      data: {
         confirmed_occasion?: string | null
         guest_count_adults?: number | null
         guest_count_kids?: number | null
@@ -170,30 +171,58 @@ export async function createCall(input: CreateCallInput) {
         budget_max?: number | null
         dietary_restrictions?: string[] | null
         unknown_blocking_questions?: string | null
-      } | null }
+      } | null
+    }
 
     if (inquiry) {
       if (inquiry.confirmed_occasion) {
-        agenda_items.push({ id: randomUUID(), item: `Occasion: ${inquiry.confirmed_occasion}`, completed: false, source: 'inquiry' })
+        agenda_items.push({
+          id: randomUUID(),
+          item: `Occasion: ${inquiry.confirmed_occasion}`,
+          completed: false,
+          source: 'inquiry',
+        })
       }
       const guestCount = [
         inquiry.guest_count_adults ? `${inquiry.guest_count_adults} adults` : null,
         inquiry.guest_count_kids ? `${inquiry.guest_count_kids} kids` : null,
-      ].filter(Boolean).join(', ')
+      ]
+        .filter(Boolean)
+        .join(', ')
       if (guestCount) {
-        agenda_items.push({ id: randomUUID(), item: `Guest count: ${guestCount}`, completed: false, source: 'inquiry' })
+        agenda_items.push({
+          id: randomUUID(),
+          item: `Guest count: ${guestCount}`,
+          completed: false,
+          source: 'inquiry',
+        })
       }
       if (inquiry.budget_min || inquiry.budget_max) {
         const budget = inquiry.budget_max
           ? `$${(inquiry.budget_min ?? 0) / 100}–$${inquiry.budget_max / 100}`
           : `from $${(inquiry.budget_min ?? 0) / 100}`
-        agenda_items.push({ id: randomUUID(), item: `Budget: ${budget}`, completed: false, source: 'inquiry' })
+        agenda_items.push({
+          id: randomUUID(),
+          item: `Budget: ${budget}`,
+          completed: false,
+          source: 'inquiry',
+        })
       }
       if (inquiry.dietary_restrictions) {
-        agenda_items.push({ id: randomUUID(), item: `Dietary: ${inquiry.dietary_restrictions}`, completed: false, source: 'inquiry' })
+        agenda_items.push({
+          id: randomUUID(),
+          item: `Dietary: ${inquiry.dietary_restrictions}`,
+          completed: false,
+          source: 'inquiry',
+        })
       }
       if (inquiry.unknown_blocking_questions) {
-        agenda_items.push({ id: randomUUID(), item: `Open question: ${inquiry.unknown_blocking_questions}`, completed: false, source: 'inquiry' })
+        agenda_items.push({
+          id: randomUUID(),
+          item: `Open question: ${inquiry.unknown_blocking_questions}`,
+          completed: false,
+          source: 'inquiry',
+        })
       }
     }
   }
@@ -208,16 +237,31 @@ export async function createCall(input: CreateCallInput) {
 
     if (event) {
       if (event.event_date) {
-        agenda_items.push({ id: randomUUID(), item: `Event date: ${new Date(event.event_date).toLocaleDateString()}`, completed: false, source: 'event' })
+        agenda_items.push({
+          id: randomUUID(),
+          item: `Event date: ${new Date(event.event_date).toLocaleDateString()}`,
+          completed: false,
+          source: 'event',
+        })
       }
       if (event.guest_count) {
-        agenda_items.push({ id: randomUUID(), item: `Guest count: ${event.guest_count}`, completed: false, source: 'event' })
+        agenda_items.push({
+          id: randomUUID(),
+          item: `Guest count: ${event.guest_count}`,
+          completed: false,
+          source: 'event',
+        })
       }
-      agenda_items.push({ id: randomUUID(), item: `Confirm event status: ${event.status}`, completed: false, source: 'event' })
+      agenda_items.push({
+        id: randomUUID(),
+        item: `Confirm event status: ${event.status}`,
+        completed: false,
+        source: 'event',
+      })
     }
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('scheduled_calls')
     .insert({
       tenant_id: user.tenantId!,
@@ -283,14 +327,16 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('scheduled_calls')
-    .select(`
+    .select(
+      `
       *,
       client:clients(id, full_name, email),
       inquiry:inquiries(id, confirmed_occasion),
       event:events(id, event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
 
   if (filter?.status) {
@@ -317,9 +363,7 @@ export async function getCalls(filter?: CallsFilter): Promise<ScheduledCall[]> {
     query = query.lte('scheduled_at', filter.to)
   }
 
-  query = query
-    .order('scheduled_at', { ascending: true })
-    .limit(filter?.limit ?? 100)
+  query = query.order('scheduled_at', { ascending: true }).limit(filter?.limit ?? 100)
 
   const { data, error } = await query
 
@@ -338,12 +382,14 @@ export async function getUpcomingCalls(limit = 5): Promise<ScheduledCall[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('scheduled_calls')
-    .select(`
+    .select(
+      `
       *,
       client:clients(id, full_name, email)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .in('status', ['scheduled', 'confirmed'])
     .gte('scheduled_at', new Date().toISOString())
@@ -365,14 +411,16 @@ export async function getCall(id: string): Promise<ScheduledCall | null> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('scheduled_calls')
-    .select(`
+    .select(
+      `
       *,
       client:clients(id, full_name, email),
       inquiry:inquiries(id, confirmed_occasion, status, guest_count_adults, budget_min, budget_max, dietary_restrictions),
       event:events(id, event_date, status, guest_count)
-    `)
+    `
+    )
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -399,7 +447,7 @@ export async function updateCall(id: string, input: UpdateCallInput) {
   const validated = UpdateCallSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('scheduled_calls')
     .update(validated)
     .eq('id', id)
@@ -440,7 +488,7 @@ export async function updateCallStatus(id: string, newStatus: CallStatus) {
   const supabase = createServerClient()
 
   // Fetch current status
-  const { data: current, error: fetchError } = await (supabase as any)
+  const { data: current, error: fetchError } = await supabase
     .from('scheduled_calls')
     .select('status, call_type, scheduled_at, client_id, contact_name')
     .eq('id', id)
@@ -460,7 +508,7 @@ export async function updateCallStatus(id: string, newStatus: CallStatus) {
   if (newStatus === 'completed') updates.completed_at = new Date().toISOString()
   if (newStatus === 'cancelled') updates.cancelled_at = new Date().toISOString()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('scheduled_calls')
     .update(updates)
     .eq('id', id)
@@ -507,7 +555,7 @@ export async function addAgendaItem(callId: string, itemText: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: current, error: fetchError } = await (supabase as any)
+  const { data: current, error: fetchError } = await supabase
     .from('scheduled_calls')
     .select('agenda_items')
     .eq('id', callId)
@@ -526,7 +574,7 @@ export async function addAgendaItem(callId: string, itemText: string) {
     source: 'manual',
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('scheduled_calls')
     .update({ agenda_items: [...existing, newItem] })
     .eq('id', callId)
@@ -549,7 +597,7 @@ export async function toggleAgendaItem(callId: string, itemId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: current, error: fetchError } = await (supabase as any)
+  const { data: current, error: fetchError } = await supabase
     .from('scheduled_calls')
     .select('agenda_items')
     .eq('id', callId)
@@ -561,11 +609,11 @@ export async function toggleAgendaItem(callId: string, itemId: string) {
   }
 
   const items: AgendaItem[] = (current.agenda_items as AgendaItem[]) || []
-  const updated = items.map(item =>
+  const updated = items.map((item) =>
     item.id === itemId ? { ...item, completed: !item.completed } : item
   )
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('scheduled_calls')
     .update({ agenda_items: updated })
     .eq('id', callId)
@@ -588,7 +636,7 @@ export async function removeAgendaItem(callId: string, itemId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: current, error: fetchError } = await (supabase as any)
+  const { data: current, error: fetchError } = await supabase
     .from('scheduled_calls')
     .select('agenda_items')
     .eq('id', callId)
@@ -600,9 +648,9 @@ export async function removeAgendaItem(callId: string, itemId: string) {
   }
 
   const items: AgendaItem[] = (current.agenda_items as AgendaItem[]) || []
-  const updated = items.filter(item => item.id !== itemId)
+  const updated = items.filter((item) => item.id !== itemId)
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('scheduled_calls')
     .update({ agenda_items: updated })
     .eq('id', callId)
@@ -633,7 +681,7 @@ export async function logCallOutcome(id: string, input: LogOutcomeInput) {
   const validated = LogOutcomeSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('scheduled_calls')
     .update({
       ...validated,
@@ -701,13 +749,15 @@ async function _notifyClientOfCall(callId: string, tenantId: string) {
   try {
     const supabase = createServerClient()
 
-    const { data: call } = await (supabase as any)
+    const { data: call } = await supabase
       .from('scheduled_calls')
-      .select(`
+      .select(
+        `
         id, scheduled_at, duration_minutes, call_type, title,
         client:clients(id, full_name, email),
         chef:chefs(id, display_name)
-      `)
+      `
+      )
       .eq('id', callId)
       .eq('tenant_id', tenantId)
       .single()
@@ -737,7 +787,7 @@ async function _notifyClientOfCall(callId: string, tenantId: string) {
     })
 
     // Mark notified
-    await (supabase as any)
+    await supabase
       .from('scheduled_calls')
       .update({ client_notified_at: new Date().toISOString() })
       .eq('id', callId)

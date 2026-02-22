@@ -32,40 +32,40 @@ const ConfirmPhotoTagSchema = z.object({
 // --- Heuristic tag map ---
 
 const FILENAME_TAG_MAP: Record<string, string[]> = {
-  'plat': ['plated', 'presentation'],
-  'plate': ['plated', 'presentation'],
-  'steak': ['steak', 'protein', 'entree'],
-  'salmon': ['salmon', 'fish', 'protein', 'entree'],
-  'chicken': ['chicken', 'poultry', 'protein', 'entree'],
-  'pasta': ['pasta', 'entree'],
-  'dessert': ['dessert', 'sweet'],
-  'cake': ['cake', 'dessert', 'sweet'],
-  'salad': ['salad', 'starter', 'vegetable'],
-  'soup': ['soup', 'starter'],
-  'appetizer': ['appetizer', 'starter'],
-  'app': ['appetizer', 'starter'],
-  'cocktail': ['cocktail', 'beverage'],
-  'wine': ['wine', 'beverage'],
-  'drink': ['beverage'],
-  'table': ['table-setting', 'presentation'],
-  'setup': ['setup', 'preparation'],
-  'prep': ['prep', 'preparation'],
-  'kitchen': ['kitchen', 'behind-the-scenes'],
-  'buffet': ['buffet', 'service-style'],
-  'charcuterie': ['charcuterie', 'appetizer', 'board'],
-  'cheese': ['cheese', 'dairy'],
-  'bread': ['bread', 'baking'],
-  'grill': ['grilled', 'cooking-method'],
-  'bbq': ['bbq', 'grilled', 'cooking-method'],
-  'sushi': ['sushi', 'japanese', 'raw-fish'],
-  'taco': ['taco', 'mexican'],
-  'burger': ['burger', 'casual'],
-  'seafood': ['seafood', 'protein'],
-  'vegan': ['vegan', 'plant-based'],
-  'vegetarian': ['vegetarian', 'plant-based'],
-  'brunch': ['brunch', 'morning'],
-  'breakfast': ['breakfast', 'morning'],
-  'receipt': ['receipt', 'expense'],
+  plat: ['plated', 'presentation'],
+  plate: ['plated', 'presentation'],
+  steak: ['steak', 'protein', 'entree'],
+  salmon: ['salmon', 'fish', 'protein', 'entree'],
+  chicken: ['chicken', 'poultry', 'protein', 'entree'],
+  pasta: ['pasta', 'entree'],
+  dessert: ['dessert', 'sweet'],
+  cake: ['cake', 'dessert', 'sweet'],
+  salad: ['salad', 'starter', 'vegetable'],
+  soup: ['soup', 'starter'],
+  appetizer: ['appetizer', 'starter'],
+  app: ['appetizer', 'starter'],
+  cocktail: ['cocktail', 'beverage'],
+  wine: ['wine', 'beverage'],
+  drink: ['beverage'],
+  table: ['table-setting', 'presentation'],
+  setup: ['setup', 'preparation'],
+  prep: ['prep', 'preparation'],
+  kitchen: ['kitchen', 'behind-the-scenes'],
+  buffet: ['buffet', 'service-style'],
+  charcuterie: ['charcuterie', 'appetizer', 'board'],
+  cheese: ['cheese', 'dairy'],
+  bread: ['bread', 'baking'],
+  grill: ['grilled', 'cooking-method'],
+  bbq: ['bbq', 'grilled', 'cooking-method'],
+  sushi: ['sushi', 'japanese', 'raw-fish'],
+  taco: ['taco', 'mexican'],
+  burger: ['burger', 'casual'],
+  seafood: ['seafood', 'protein'],
+  vegan: ['vegan', 'plant-based'],
+  vegetarian: ['vegetarian', 'plant-based'],
+  brunch: ['brunch', 'morning'],
+  breakfast: ['breakfast', 'morning'],
+  receipt: ['receipt', 'expense'],
 }
 
 // --- Actions ---
@@ -140,7 +140,7 @@ export async function confirmPhotoTag(
   const validated = ConfirmPhotoTagSchema.parse({ photoId, tags })
 
   // Try to update the event_photos table
-  const { data: photo, error: fetchError } = await (supabase as any)
+  const { data: photo, error: fetchError } = await supabase
     .from('event_photos')
     .select('id, event_id')
     .eq('id', validated.photoId)
@@ -154,7 +154,7 @@ export async function confirmPhotoTag(
     return { success: true }
   }
 
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('event_photos')
     .update({ tags: validated.tags })
     .eq('id', validated.photoId)

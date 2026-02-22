@@ -9,16 +9,14 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { FileAARButton } from '@/components/aar/file-aar-button'
 import { format } from 'date-fns'
+import { NoReviewsIllustration } from '@/components/ui/branded-illustrations'
 
 export const metadata: Metadata = { title: 'After Action Reviews - ChefFlow' }
 
 export default async function AARHistoryPage() {
   await requireChef()
 
-  const [aars, stats] = await Promise.all([
-    getRecentAARs(20),
-    getAARStats(),
-  ])
+  const [aars, stats] = await Promise.all([getRecentAARs(20), getAARStats()])
 
   return (
     <div className="space-y-8">
@@ -49,10 +47,14 @@ export default async function AARHistoryPage() {
               {stats.totalReviews >= 5 && (
                 <p className="text-xs mt-2">
                   {stats.trendDirection === 'improving' && (
-                    <span className="text-emerald-600">Trending up from {stats.avgCalmRating} overall</span>
+                    <span className="text-emerald-600">
+                      Trending up from {stats.avgCalmRating} overall
+                    </span>
                   )}
                   {stats.trendDirection === 'declining' && (
-                    <span className="text-red-600">Trending down from {stats.avgCalmRating} overall</span>
+                    <span className="text-red-600">
+                      Trending down from {stats.avgCalmRating} overall
+                    </span>
                   )}
                   {stats.trendDirection === 'neutral' && (
                     <span className="text-stone-500">Steady at {stats.avgCalmRating} overall</span>
@@ -93,7 +95,9 @@ export default async function AARHistoryPage() {
                   {stats.topForgottenItems.slice(0, 3).map(({ item, count }) => (
                     <div key={item} className="flex justify-between text-sm">
                       <span className="text-stone-700 capitalize">{item}</span>
-                      <span className={`font-medium ${count >= 2 ? 'text-red-600' : 'text-stone-400'}`}>
+                      <span
+                        className={`font-medium ${count >= 2 ? 'text-red-600' : 'text-stone-400'}`}
+                      >
                         {count}x
                       </span>
                     </div>
@@ -108,18 +112,22 @@ export default async function AARHistoryPage() {
       )}
 
       {/* Frequently Forgotten Items Warning */}
-      {stats && stats.topForgottenItems.filter(i => i.count >= 2).length > 0 && (
+      {stats && stats.topForgottenItems.filter((i) => i.count >= 2).length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <h3 className="font-medium text-amber-900">Items forgotten 2+ times (auto-added to checklist)</h3>
+          <h3 className="font-medium text-amber-900">
+            Items forgotten 2+ times (auto-added to checklist)
+          </h3>
           <div className="flex flex-wrap gap-2 mt-2">
-            {stats.topForgottenItems.filter(i => i.count >= 2).map(({ item, count }) => (
-              <span
-                key={item}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800"
-              >
-                {item} ({count}x)
-              </span>
-            ))}
+            {stats.topForgottenItems
+              .filter((i) => i.count >= 2)
+              .map(({ item, count }) => (
+                <span
+                  key={item}
+                  className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-amber-100 text-amber-800"
+                >
+                  {item} ({count}x)
+                </span>
+              ))}
           </div>
         </div>
       )}
@@ -127,6 +135,9 @@ export default async function AARHistoryPage() {
       {/* AAR List */}
       {aars.length === 0 ? (
         <Card className="p-12 text-center">
+          <div className="flex justify-center mb-4">
+            <NoReviewsIllustration className="h-24 w-24" />
+          </div>
           <h2 className="text-lg font-semibold text-stone-900">No reviews yet</h2>
           <p className="text-stone-500 mt-2">
             After Action Reviews will appear here after you complete events and file reviews.
@@ -149,15 +160,12 @@ export default async function AARHistoryPage() {
                       <h3 className="font-medium text-stone-900">
                         {aar.event?.occasion || 'Untitled Event'}
                       </h3>
-                      <span className="text-sm text-stone-500">
-                        {aar.event?.client?.full_name}
-                      </span>
+                      <span className="text-sm text-stone-500">{aar.event?.client?.full_name}</span>
                     </div>
                     <p className="text-sm text-stone-500 mt-1">
                       {aar.event?.event_date
                         ? format(new Date(aar.event.event_date), 'MMM d, yyyy')
-                        : 'Unknown date'
-                      }
+                        : 'Unknown date'}
                       {aar.event?.guest_count && ` \u00B7 ${aar.event.guest_count} guests`}
                     </p>
                   </div>

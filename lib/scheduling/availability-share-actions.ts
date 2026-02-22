@@ -164,7 +164,7 @@ export async function getSharedAvailability(token: string): Promise<{
     .not('status', 'in', '("cancelled","draft")')
 
   // Fetch protected blocks in the window
-  const { data: protectedBlocks } = await (supabase as any)
+  const { data: protectedBlocks } = await supabase
     .from('event_prep_blocks')
     .select('block_date')
     .eq('chef_id', tenantId)

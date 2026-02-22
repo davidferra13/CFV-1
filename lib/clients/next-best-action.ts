@@ -98,7 +98,7 @@ export async function getNextBestActions(limit = 10): Promise<NextBestAction[]> 
   }
 
   // Fetch upcoming milestones (next 14 days) — using personal_milestones field
-  const { data: milestonesData } = await (supabase as any)
+  const { data: milestonesData } = await supabase
     .from('clients')
     .select('id, personal_milestones')
     .eq('tenant_id', user.tenantId!)

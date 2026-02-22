@@ -61,7 +61,7 @@ export async function createIncident(input: CreateIncidentInput) {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_incidents')
     .insert({
       ...validated,
@@ -89,7 +89,7 @@ export async function updateIncident(id: string, input: UpdateIncidentInput) {
 
   const supabase = createServerClient()
 
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_incidents')
     .select('id')
     .eq('id', id)
@@ -98,7 +98,7 @@ export async function updateIncident(id: string, input: UpdateIncidentInput) {
 
   if (!existing) throw new Error('Incident not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_incidents')
     .update({ ...validated, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -122,7 +122,7 @@ export async function addFollowUpStep(id: string, step: string) {
 
   const supabase = createServerClient()
 
-  const { data: existing, error: fetchError } = await (supabase as any)
+  const { data: existing, error: fetchError } = await supabase
     .from('chef_incidents')
     .select('follow_up_steps')
     .eq('id', id)
@@ -142,7 +142,7 @@ export async function addFollowUpStep(id: string, step: string) {
 
   const updatedSteps = [...currentSteps, newStep]
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_incidents')
     .update({
       follow_up_steps: updatedSteps,
@@ -168,7 +168,7 @@ export async function toggleFollowUpStep(incidentId: string, stepId: string) {
 
   const supabase = createServerClient()
 
-  const { data: existing, error: fetchError } = await (supabase as any)
+  const { data: existing, error: fetchError } = await supabase
     .from('chef_incidents')
     .select('follow_up_steps')
     .eq('id', incidentId)
@@ -189,7 +189,7 @@ export async function toggleFollowUpStep(incidentId: string, stepId: string) {
     }
   })
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_incidents')
     .update({
       follow_up_steps: updatedSteps,
@@ -218,7 +218,7 @@ export async function updateResolutionStatus(
 
   const supabase = createServerClient()
 
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_incidents')
     .select('id')
     .eq('id', id)
@@ -227,7 +227,7 @@ export async function updateResolutionStatus(
 
   if (!existing) throw new Error('Incident not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_incidents')
     .update({ resolution_status: status, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -254,7 +254,7 @@ export async function getIncidents(filters?: {
 
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('chef_incidents')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -283,7 +283,7 @@ export async function getIncident(id: string) {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_incidents')
     .select('*')
     .eq('id', id)
@@ -306,7 +306,7 @@ export async function getIncidentsByEvent(eventId: string) {
   const supabase = createServerClient()
 
   // Verify the event belongs to this tenant
-  const { data: eventCheck } = await (supabase as any)
+  const { data: eventCheck } = await supabase
     .from('events')
     .select('id')
     .eq('id', eventId)
@@ -315,7 +315,7 @@ export async function getIncidentsByEvent(eventId: string) {
 
   if (!eventCheck) throw new Error('Event not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_incidents')
     .select('*')
     .eq('tenant_id', tenantId)

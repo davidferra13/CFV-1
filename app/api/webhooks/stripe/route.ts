@@ -190,7 +190,7 @@ async function handleGiftCardPurchaseCompleted(
   )
 
   // Idempotency: if already processed, skip
-  const { data: intent } = await (supabase as any)
+  const { data: intent } = await supabase
     .from('gift_card_purchase_intents')
     .select('*')
     .eq('id', purchase_intent_id)
@@ -217,7 +217,7 @@ async function handleGiftCardPurchaseCompleted(
   const code = `GFT-${crypto.randomBytes(8).toString('hex').toUpperCase()}`
 
   // Fetch the chef's display name and email for the gift card title and notification
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name, email')
     .eq('id', tenant_id)
@@ -227,7 +227,7 @@ async function handleGiftCardPurchaseCompleted(
   const amountDollars = (intent.amount_cents / 100).toFixed(2)
 
   // Create the client_incentives row (the actual gift card)
-  const { data: incentive, error: incentiveError } = await (supabase as any)
+  const { data: incentive, error: incentiveError } = await supabase
     .from('client_incentives')
     .insert({
       tenant_id,
@@ -257,7 +257,7 @@ async function handleGiftCardPurchaseCompleted(
   if (incentiveError || !incentive) {
     console.error('[handleGiftCardPurchaseCompleted] Failed to create incentive:', incentiveError)
     // Mark as failed so we can retry / investigate
-    await (supabase as any)
+    await supabase
       .from('gift_card_purchase_intents')
       .update({ status: 'failed' })
       .eq('id', purchase_intent_id)
@@ -265,7 +265,7 @@ async function handleGiftCardPurchaseCompleted(
   }
 
   // Mark the intent as paid and link the created incentive
-  await (supabase as any)
+  await supabase
     .from('gift_card_purchase_intents')
     .update({
       status: 'paid',
@@ -1066,7 +1066,7 @@ async function handleApplicationFeeRefunded(event: Stripe.Event) {
   let stripeTransferId: string | null = null
 
   if (chargeId) {
-    const { data: transferRecord } = await (supabase as any)
+    const { data: transferRecord } = await supabase
       .from('stripe_transfers')
       .select('tenant_id, event_id, stripe_payment_intent_id, stripe_transfer_id')
       .eq('stripe_charge_id', chargeId)

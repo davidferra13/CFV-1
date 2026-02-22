@@ -44,7 +44,7 @@ export async function addPolicy(input: AddPolicyInput) {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_insurance_policies')
     .insert({ ...validated, tenant_id: tenantId })
     .select()
@@ -67,7 +67,7 @@ export async function updatePolicy(id: string, input: UpdatePolicyInput) {
   const supabase = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_insurance_policies')
     .select('id')
     .eq('id', id)
@@ -76,7 +76,7 @@ export async function updatePolicy(id: string, input: UpdatePolicyInput) {
 
   if (!existing) throw new Error('Policy not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_insurance_policies')
     .update({ ...validated, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -100,7 +100,7 @@ export async function deletePolicy(id: string) {
   const supabase = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_insurance_policies')
     .select('id')
     .eq('id', id)
@@ -109,7 +109,7 @@ export async function deletePolicy(id: string) {
 
   if (!existing) throw new Error('Policy not found or access denied')
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_insurance_policies')
     .delete()
     .eq('id', id)
@@ -129,7 +129,7 @@ export async function getPolicies() {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_insurance_policies')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -154,7 +154,7 @@ export async function getExpiringPolicies(daysAhead: number) {
   const cutoff = new Date(today)
   cutoff.setDate(today.getDate() + daysAhead)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_insurance_policies')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -179,7 +179,7 @@ export async function getCoverageGapReport() {
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_insurance_policies')
     .select('policy_type')
     .eq('tenant_id', tenantId)

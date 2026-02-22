@@ -44,7 +44,7 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
   if (!entries || entries.length === 0) return []
 
   // Get all existing stripe_transfer event references
-  const { data: transfers } = await (supabase as any)
+  const { data: transfers } = await supabase
     .from('stripe_transfers')
     .select('stripe_payment_intent_id, tenant_id')
 
@@ -78,7 +78,7 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
     .select('id, business_name, display_name, stripe_account_id, stripe_onboarding_complete')
     .in('id', tenantIds)
 
-  return (chefs ?? []).map(chef => {
+  return (chefs ?? []).map((chef) => {
     const deferred = deferredByTenant.get(chef.id) ?? { count: 0, totalCents: 0 }
     const onboardingComplete = (chef as any).stripe_onboarding_complete === true
     const stripeAccountId = (chef as any).stripe_account_id ?? null
@@ -109,7 +109,9 @@ export async function resolveDeferredTransfers(
   // Verify chef has completed Connect onboarding
   const { data: chef } = await supabase
     .from('chefs')
-    .select('stripe_account_id, stripe_onboarding_complete, platform_fee_percent, platform_fee_fixed_cents')
+    .select(
+      'stripe_account_id, stripe_onboarding_complete, platform_fee_percent, platform_fee_fixed_cents'
+    )
     .eq('id', tenantId)
     .single()
 
@@ -135,7 +137,7 @@ export async function resolveDeferredTransfers(
   }
 
   // Check which entries already have transfers
-  const { data: existingTransfers } = await (supabase as any)
+  const { data: existingTransfers } = await supabase
     .from('stripe_transfers')
     .select('event_id')
     .eq('tenant_id', tenantId)
@@ -145,7 +147,8 @@ export async function resolveDeferredTransfers(
   )
 
   const stripe = getStripe()
-  const { recordStripeTransfer, recordPlatformFee, computeApplicationFee } = await import('@/lib/stripe/transfer-routing')
+  const { recordStripeTransfer, recordPlatformFee, computeApplicationFee } =
+    await import('@/lib/stripe/transfer-routing')
 
   const feePercent = Number((chef as any)?.platform_fee_percent ?? 0)
   const feeFixed = Number((chef as any)?.platform_fee_fixed_cents ?? 0)

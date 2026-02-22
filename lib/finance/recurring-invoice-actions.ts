@@ -89,7 +89,7 @@ export async function createRecurringInvoice(
   const parsed = CreateSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('recurring_invoices')
     .insert({
       chef_id: user.tenantId!,
@@ -126,7 +126,7 @@ export async function updateRecurringInvoice(
   if (parsed.lateFeeCents !== undefined) updates.late_fee_cents = parsed.lateFeeCents
   if (parsed.lateFeeDays !== undefined) updates.late_fee_days = parsed.lateFeeDays
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('recurring_invoices')
     .update(updates)
     .eq('id', parsed.id)
@@ -144,7 +144,7 @@ export async function pauseRecurringInvoice(id: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('recurring_invoices')
     .update({ is_active: false })
     .eq('id', id)
@@ -158,7 +158,7 @@ export async function getRecurringInvoices(activeOnly = true): Promise<Recurring
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('recurring_invoices')
     .select('*, clients(full_name)')
     .eq('chef_id', user.tenantId!)
@@ -181,7 +181,7 @@ export async function processRecurringInvoices(): Promise<{
   const today = new Date().toISOString().split('T')[0]
 
   // Get all active recurring invoices due today or earlier
-  const { data: due } = await (supabase as any)
+  const { data: due } = await supabase
     .from('recurring_invoices')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -196,7 +196,7 @@ export async function processRecurringInvoices(): Promise<{
       // Advance the next_send_date
       const newNextDate = nextDate(invoice.next_send_date, invoice.frequency)
 
-      await (supabase as any)
+      await supabase
         .from('recurring_invoices')
         .update({
           next_send_date: newNextDate,

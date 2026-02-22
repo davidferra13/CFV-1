@@ -16,8 +16,8 @@ import {
 
 export type InitiateRefundInput = {
   eventId: string
-  amountCents: number         // Actual amount to refund (chef may override)
-  refundDepositAlso: boolean  // Whether to also refund the deposit
+  amountCents: number // Actual amount to refund (chef may override)
+  refundDepositAlso: boolean // Whether to also refund the deposit
   reason: string
 }
 
@@ -39,7 +39,9 @@ export async function getCancellationRefundRecommendation(eventId: string) {
   // Fetch event
   const { data: event } = await supabase
     .from('events')
-    .select('id, tenant_id, client_id, status, event_date, deposit_amount_cents, cancelled_at, created_at')
+    .select(
+      'id, tenant_id, client_id, status, event_date, deposit_amount_cents, cancelled_at, created_at'
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -49,11 +51,11 @@ export async function getCancellationRefundRecommendation(eventId: string) {
   // Fetch chef's cancellation policy config
   // Cast to any: cancellation_cutoff_days and deposit_refundable are new columns from
   // migration 20260228000006, not yet reflected in types/database.ts until supabase gen types.
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = (await supabase
     .from('chefs')
     .select('cancellation_cutoff_days, deposit_refundable')
     .eq('id', user.tenantId!)
-    .single() as { data: { cancellation_cutoff_days: number; deposit_refundable: boolean } | null }
+    .single()) as { data: { cancellation_cutoff_days: number; deposit_refundable: boolean } | null }
 
   const policy: CancellationPolicyConfig = {
     cancellationCutoffDays: chef?.cancellation_cutoff_days ?? DEFAULT_POLICY.cancellationCutoffDays,

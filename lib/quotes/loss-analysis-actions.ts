@@ -9,7 +9,7 @@ export async function recordLostReason(quoteId: string, reason: string, notes?: 
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('quotes')
     .update({
       lost_reason: reason,
@@ -31,7 +31,7 @@ export async function getLossAnalysis(): Promise<Array<{ reason: string; count: 
   const since = new Date()
   since.setFullYear(since.getFullYear() - 1)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('quotes')
     .select('lost_reason')
     .eq('tenant_id', tenantId)

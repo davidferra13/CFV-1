@@ -60,7 +60,7 @@ export async function generateClientPortalToken(clientId: string): Promise<strin
 
   const token = randomBytes(32).toString('hex')
 
-  await (supabase as any)
+  await supabase
     .from('clients')
     .update({
       portal_access_token: token,
@@ -79,7 +79,7 @@ export async function revokeClientPortalToken(clientId: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any)
+  await supabase
     .from('clients')
     .update({
       portal_access_token: null,
@@ -99,7 +99,7 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
   const supabase = createServerClient({ admin: true })
 
   // Look up client by token
-  const { data: client } = await (supabase as any)
+  const { data: client } = await supabase
     .from('clients')
     .select('id, first_name, last_name, portal_access_token')
     .eq('portal_access_token', token)
@@ -108,7 +108,8 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
   if (!client) return null
 
   const clientId = client.id
-  const clientName = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Valued Client'
+  const clientName =
+    [client.first_name, client.last_name].filter(Boolean).join(' ') || 'Valued Client'
 
   const now = new Date().toISOString()
 
@@ -120,15 +121,15 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
     .not('status', 'eq', 'cancelled')
     .order('event_date', { ascending: true })
 
-  const upcoming = (events ?? []).filter(e =>
-    e.event_date >= now && !['completed'].includes(e.status)
+  const upcoming = (events ?? []).filter(
+    (e) => e.event_date >= now && !['completed'].includes(e.status)
   )
-  const past = (events ?? []).filter(e =>
-    e.status === 'completed' || e.event_date < now
-  ).slice(-5)
+  const past = (events ?? [])
+    .filter((e) => e.status === 'completed' || e.event_date < now)
+    .slice(-5)
 
   // Fetch active (sent) quotes for this client's events
-  const eventIds = (events ?? []).map(e => e.id)
+  const eventIds = (events ?? []).map((e) => e.id)
   let activeQuotes: ClientPortalData['activeQuotes'] = []
 
   if (eventIds.length > 0) {
@@ -138,15 +139,17 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       .in('event_id', eventIds)
       .eq('status', 'sent')
 
-    const eventMap = new Map((events ?? []).map(e => [e.id, e]))
-    activeQuotes = (quotes ?? []).filter(q => q.event_id != null).map(q => ({
-      id: q.id,
-      event_id: q.event_id!,
-      event_occasion: eventMap.get(q.event_id!)?.occasion ?? null,
-      amount_cents: q.total_quoted_cents ?? 0,
-      valid_until: q.valid_until,
-      status: q.status,
-    }))
+    const eventMap = new Map((events ?? []).map((e) => [e.id, e]))
+    activeQuotes = (quotes ?? [])
+      .filter((q) => q.event_id != null)
+      .map((q) => ({
+        id: q.id,
+        event_id: q.event_id!,
+        event_occasion: eventMap.get(q.event_id!)?.occasion ?? null,
+        amount_cents: q.total_quoted_cents ?? 0,
+        valid_until: q.valid_until,
+        status: q.status,
+      }))
   }
 
   // Fetch outstanding payments from event_financial_summary
@@ -158,8 +161,8 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
       .in('event_id', eventIds)
       .gt('outstanding_balance_cents', 0)
 
-    const eventMap = new Map((events ?? []).map(e => [e.id, e]))
-    for (const s of (summaries ?? []).filter(s => s.event_id != null)) {
+    const eventMap = new Map((events ?? []).map((e) => [e.id, e]))
+    for (const s of (summaries ?? []).filter((s) => s.event_id != null)) {
       const ev = eventMap.get(s.event_id!)
       if (!ev) continue
       pendingPayments.push({
@@ -183,11 +186,13 @@ export async function getClientPortalData(token: string): Promise<ClientPortalDa
 
 // ─── Chef: get portal token for a client (for display on client detail) ───────
 
-export async function getClientPortalToken(clientId: string): Promise<{ token: string | null; createdAt: string | null }> {
+export async function getClientPortalToken(
+  clientId: string
+): Promise<{ token: string | null; createdAt: string | null }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('clients')
     .select('portal_access_token, portal_token_created_at')
     .eq('id', clientId)

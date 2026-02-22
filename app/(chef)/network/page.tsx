@@ -30,16 +30,7 @@ import { ChefSearch } from './chef-search'
 import { PendingRequests } from './pending-requests'
 import { FriendsList } from './friends-list'
 import { ContactShares } from './contact-shares'
-import {
-  Rss,
-  Hash,
-  Compass,
-  Users,
-  ShieldOff,
-  Settings,
-  Bell,
-  Bookmark,
-} from 'lucide-react'
+import { Rss, Hash, Compass, Users, ShieldOff, Settings, Bell, Bookmark } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Chef Community — ChefFlow' }
 
@@ -56,7 +47,7 @@ export default async function NetworkPage({
 
   // Get chef's own profile info for composer
   const supabase = createServerClient({ admin: true })
-  const { data: myChef } = await (supabase as any)
+  const { data: myChef } = await supabase
     .from('chefs')
     .select('display_name, business_name, profile_image_url')
     .eq('id', user.entityId)
@@ -111,7 +102,9 @@ export default async function NetworkPage({
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
           <ShieldOff className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-medium text-amber-800">You&apos;re hidden from the community</p>
+            <p className="text-sm font-medium text-amber-800">
+              You&apos;re hidden from the community
+            </p>
             <p className="text-sm text-amber-700 mt-0.5">
               Other chefs can&apos;t find or follow you.{' '}
               <Link href="/settings" className="underline font-medium hover:text-amber-900">
@@ -129,7 +122,10 @@ export default async function NetworkPage({
           <p className="text-sm text-blue-800 font-medium">
             {pending.filter((p) => p.direction === 'received').length} pending connection request(s)
           </p>
-          <Link href="?tab=connections" className="text-sm text-blue-700 font-medium hover:underline">
+          <Link
+            href="?tab=connections"
+            className="text-sm text-blue-700 font-medium hover:underline"
+          >
             View →
           </Link>
         </div>
@@ -139,9 +135,9 @@ export default async function NetworkPage({
       <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
         <nav className="flex border-b border-stone-100">
           {[
-            { id: 'feed',        label: 'Feed',        icon: Rss },
-            { id: 'channels',    label: 'Channels',    icon: Hash },
-            { id: 'discover',    label: 'Discover',    icon: Compass },
+            { id: 'feed', label: 'Feed', icon: Rss },
+            { id: 'channels', label: 'Channels', icon: Hash },
+            { id: 'discover', label: 'Discover', icon: Compass },
             { id: 'connections', label: 'Connections', icon: Users },
           ].map(({ id, label, icon: Icon }) => (
             <Link
@@ -160,9 +156,7 @@ export default async function NetworkPage({
         </nav>
 
         <div className="p-4">
-          {tab === 'feed' && (
-            <FeedTab myName={myName} myAvatar={myAvatar} chefId={user.entityId} />
-          )}
+          {tab === 'feed' && <FeedTab myName={myName} myAvatar={myAvatar} chefId={user.entityId} />}
           {tab === 'channels' && <ChannelsTab />}
           {tab === 'discover' && <DiscoverTab />}
           {tab === 'connections' && <ConnectionsTab chefId={user.entityId} />}
@@ -254,10 +248,7 @@ async function DiscoverTab() {
       </div>
 
       {/* Discover chefs */}
-      <SocialDiscoverPanel
-        suggestedChefs={suggestedChefs}
-        trendingHashtags={[]}
-      />
+      <SocialDiscoverPanel suggestedChefs={suggestedChefs} trendingHashtags={[]} />
 
       {/* Trending posts */}
       {trending.length > 0 && (
@@ -269,13 +260,19 @@ async function DiscoverTab() {
               return (
                 <div key={post.id} className="border border-stone-200 rounded-xl p-3 space-y-1">
                   <div className="flex items-center gap-2 text-xs text-stone-500">
-                    <Link href={`/network/${post.chef_id}`} className="font-medium text-stone-700 hover:underline">
+                    <Link
+                      href={`/network/${post.chef_id}`}
+                      className="font-medium text-stone-700 hover:underline"
+                    >
                       {authorName}
                     </Link>
                     {post.channel && (
                       <>
                         <span>·</span>
-                        <Link href={`/network/channels/${post.channel.slug}`} className="text-amber-700 hover:underline">
+                        <Link
+                          href={`/network/channels/${post.channel.slug}`}
+                          className="text-amber-700 hover:underline"
+                        >
                           {post.channel.icon} {post.channel.name}
                         </Link>
                       </>

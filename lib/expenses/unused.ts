@@ -141,7 +141,7 @@ export async function markIngredientExpired(id: string, eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('unused_ingredients')
     .update({ expired: true })
     .eq('id', id)

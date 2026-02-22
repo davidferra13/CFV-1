@@ -31,7 +31,7 @@ export async function postGuestMessage(input: {
   const supabase = createServerClient({ admin: true })
 
   // Resolve share token → event + tenant
-  const { data: share } = await (supabase as any)
+  const { data: share } = await supabase
     .from('event_shares')
     .select('event_id, tenant_id')
     .eq('token', validated.shareToken)
@@ -45,7 +45,7 @@ export async function postGuestMessage(input: {
   // If guest token provided, link to guest record
   let guestId: string | null = null
   if (validated.guestToken) {
-    const { data: guest } = await (supabase as any)
+    const { data: guest } = await supabase
       .from('event_guests')
       .select('id')
       .eq('guest_token', validated.guestToken)
@@ -58,7 +58,7 @@ export async function postGuestMessage(input: {
   }
 
   // Rate limit: max 10 messages per guest per event (by name, loose limit)
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('guest_messages')
     .select('id', { count: 'exact' })
     .eq('event_id', share.event_id)
@@ -68,7 +68,7 @@ export async function postGuestMessage(input: {
     throw new Error('Message limit reached for this event')
   }
 
-  const { error } = await (supabase as any).from('guest_messages').insert({
+  const { error } = await supabase.from('guest_messages').insert({
     tenant_id: share.tenant_id,
     event_id: share.event_id,
     guest_id: guestId,
@@ -95,7 +95,7 @@ export async function getEventMessages(shareToken: string) {
   const supabase = createServerClient({ admin: true })
 
   // Resolve share token → event
-  const { data: share } = await (supabase as any)
+  const { data: share } = await supabase
     .from('event_shares')
     .select('event_id')
     .eq('token', shareToken)
@@ -104,7 +104,7 @@ export async function getEventMessages(shareToken: string) {
 
   if (!share) return []
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('guest_messages')
     .select('id, guest_name, message, emoji, is_pinned, created_at')
     .eq('event_id', share.event_id)
@@ -132,7 +132,7 @@ export async function getEventMessagesForChef(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('guest_messages')
     .select('id, guest_name, message, emoji, is_visible, is_pinned, guest_id, created_at')
     .eq('event_id', eventId)
@@ -154,7 +154,7 @@ export async function toggleMessageVisibility(messageId: string, visible: boolea
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('guest_messages')
     .update({ is_visible: visible })
     .eq('id', messageId)
@@ -173,7 +173,7 @@ export async function toggleMessagePin(messageId: string, pinned: boolean) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('guest_messages')
     .update({ is_pinned: pinned })
     .eq('id', messageId)
@@ -192,7 +192,7 @@ export async function deleteGuestMessage(messageId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('guest_messages')
     .delete()
     .eq('id', messageId)
@@ -211,7 +211,7 @@ export async function getExcitementWallStats(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('guest_messages')
     .select('id, is_visible')
     .eq('event_id', eventId)

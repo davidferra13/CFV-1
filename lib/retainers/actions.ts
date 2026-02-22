@@ -74,7 +74,7 @@ export async function createRetainer(input: z.infer<typeof CreateRetainerSchema>
   const parsed = CreateRetainerSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('retainers')
     .insert({
       tenant_id: user.tenantId!,
@@ -105,7 +105,7 @@ export async function updateRetainer(id: string, input: z.infer<typeof UpdateRet
   const supabase = createServerClient()
 
   // Verify retainer exists and is editable
-  const { data: existing, error: fetchError } = await (supabase as any)
+  const { data: existing, error: fetchError } = await supabase
     .from('retainers')
     .select('status')
     .eq('id', id)
@@ -129,7 +129,7 @@ export async function updateRetainer(id: string, input: z.infer<typeof UpdateRet
   if (parsed.notes !== undefined) updates.notes = parsed.notes
   if (parsed.termsSummary !== undefined) updates.terms_summary = parsed.termsSummary
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('retainers')
     .update(updates)
     .eq('id', id)
@@ -148,7 +148,7 @@ export async function activateRetainer(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: retainer, error: fetchError } = await (supabase as any)
+  const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
     .select('*')
     .eq('id', id)
@@ -165,7 +165,7 @@ export async function activateRetainer(id: string) {
   const nextBilling = computeNextBillingDate(periodStart, retainer.billing_cycle)
 
   // Update retainer status and next billing date
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('retainers')
     .update({
       status: 'active',
@@ -177,7 +177,7 @@ export async function activateRetainer(id: string) {
   if (updateError) throw new Error(`Failed to activate retainer: ${updateError.message}`)
 
   // Generate first billing period
-  const { error: periodError } = await (supabase as any).from('retainer_periods').insert({
+  const { error: periodError } = await supabase.from('retainer_periods').insert({
     retainer_id: id,
     tenant_id: user.tenantId!,
     period_start: periodStart,
@@ -217,7 +217,7 @@ export async function pauseRetainer(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: retainer, error: fetchError } = await (supabase as any)
+  const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
     .select('status, name, client_id')
     .eq('id', id)
@@ -229,7 +229,7 @@ export async function pauseRetainer(id: string) {
     throw new Error(`Can only pause an active retainer (current: ${retainer.status})`)
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('retainers')
     .update({ status: 'paused' })
     .eq('id', id)
@@ -264,7 +264,7 @@ export async function resumeRetainer(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: retainer, error: fetchError } = await (supabase as any)
+  const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
     .select('*')
     .eq('id', id)
@@ -280,7 +280,7 @@ export async function resumeRetainer(id: string) {
   const today = new Date().toISOString().split('T')[0]
   const nextBilling = computeNextBillingDate(today, retainer.billing_cycle)
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('retainers')
     .update({
       status: 'active',
@@ -318,7 +318,7 @@ export async function cancelRetainer(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: retainer, error: fetchError } = await (supabase as any)
+  const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
     .select('status, name, client_id')
     .eq('id', id)
@@ -333,7 +333,7 @@ export async function cancelRetainer(id: string) {
   }
 
   // Cancel the retainer
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('retainers')
     .update({ status: 'cancelled', next_billing_date: null })
     .eq('id', id)
@@ -342,7 +342,7 @@ export async function cancelRetainer(id: string) {
   if (error) throw new Error(`Failed to cancel retainer: ${error.message}`)
 
   // Void all pending periods
-  const { error: voidError } = await (supabase as any)
+  const { error: voidError } = await supabase
     .from('retainer_periods')
     .update({ status: 'void' })
     .eq('retainer_id', id)
@@ -380,7 +380,7 @@ export async function completeRetainer(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: retainer, error: fetchError } = await (supabase as any)
+  const { data: retainer, error: fetchError } = await supabase
     .from('retainers')
     .select('status, name, client_id')
     .eq('id', id)
@@ -392,7 +392,7 @@ export async function completeRetainer(id: string) {
     throw new Error(`Can only complete an active retainer (current: ${retainer.status})`)
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('retainers')
     .update({ status: 'completed', next_billing_date: null })
     .eq('id', id)
@@ -427,7 +427,7 @@ export async function getRetainersByTenant() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('retainers')
     .select('*, clients(full_name)')
     .eq('tenant_id', user.tenantId!)
@@ -442,7 +442,7 @@ export async function getRetainerDetail(retainerId: string) {
   const supabase = createServerClient()
 
   // Fetch retainer with client name
-  const { data: retainer, error: retainerError } = await (supabase as any)
+  const { data: retainer, error: retainerError } = await supabase
     .from('retainers')
     .select('*, clients(full_name, email)')
     .eq('id', retainerId)
@@ -452,7 +452,7 @@ export async function getRetainerDetail(retainerId: string) {
   if (retainerError || !retainer) throw new Error('Retainer not found')
 
   // Fetch periods
-  const { data: periods, error: periodsError } = await (supabase as any)
+  const { data: periods, error: periodsError } = await supabase
     .from('retainer_periods')
     .select('*')
     .eq('retainer_id', retainerId)
@@ -462,7 +462,7 @@ export async function getRetainerDetail(retainerId: string) {
   if (periodsError) throw new Error(`Failed to fetch periods: ${periodsError.message}`)
 
   // Fetch linked events
-  const { data: events, error: eventsError } = await (supabase as any)
+  const { data: events, error: eventsError } = await supabase
     .from('events')
     .select('id, occasion, event_date, status, guest_count')
     .eq('retainer_id', retainerId)
@@ -489,7 +489,7 @@ export async function recordRetainerPayment(
   const supabase = createServerClient()
 
   // Fetch the period and its parent retainer
-  const { data: period, error: periodError } = await (supabase as any)
+  const { data: period, error: periodError } = await supabase
     .from('retainer_periods')
     .select('*, retainers(tenant_id, client_id, name)')
     .eq('id', periodId)
@@ -528,7 +528,7 @@ export async function recordRetainerPayment(
   }
 
   // Update period to paid
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('retainer_periods')
     .update({
       status: 'paid',
@@ -583,7 +583,7 @@ export async function linkEventToRetainer(eventId: string, retainerId: string) {
 
   if (eventError || !event) throw new Error('Event not found')
 
-  const { data: retainer, error: retainerError } = await (supabase as any)
+  const { data: retainer, error: retainerError } = await supabase
     .from('retainers')
     .select('id, status')
     .eq('id', retainerId)
@@ -596,7 +596,7 @@ export async function linkEventToRetainer(eventId: string, retainerId: string) {
   }
 
   // Link event to retainer
-  const { error: linkError } = await (supabase as any)
+  const { error: linkError } = await supabase
     .from('events')
     .update({ retainer_id: retainerId })
     .eq('id', eventId)
@@ -606,7 +606,7 @@ export async function linkEventToRetainer(eventId: string, retainerId: string) {
 
   // Find the current active period and increment events_used
   const today = new Date().toISOString().split('T')[0]
-  const { data: currentPeriod } = await (supabase as any)
+  const { data: currentPeriod } = await supabase
     .from('retainer_periods')
     .select('id, events_used')
     .eq('retainer_id', retainerId)
@@ -620,13 +620,13 @@ export async function linkEventToRetainer(eventId: string, retainerId: string) {
 
   if (currentPeriod) {
     // Also link event to the specific period
-    await (supabase as any)
+    await supabase
       .from('events')
       .update({ retainer_period_id: currentPeriod.id })
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
 
-    await (supabase as any)
+    await supabase
       .from('retainer_periods')
       .update({ events_used: (currentPeriod.events_used || 0) + 1 })
       .eq('id', currentPeriod.id)
@@ -644,7 +644,7 @@ export async function unlinkEventFromRetainer(eventId: string) {
   const supabase = createServerClient()
 
   // Fetch event with retainer info
-  const { data: event, error: eventError } = await (supabase as any)
+  const { data: event, error: eventError } = await supabase
     .from('events')
     .select('id, retainer_id, retainer_period_id, tenant_id')
     .eq('id', eventId)
@@ -658,7 +658,7 @@ export async function unlinkEventFromRetainer(eventId: string) {
   const periodId = event.retainer_period_id
 
   // Unlink event
-  const { error: unlinkError } = await (supabase as any)
+  const { error: unlinkError } = await supabase
     .from('events')
     .update({ retainer_id: null, retainer_period_id: null })
     .eq('id', eventId)
@@ -668,7 +668,7 @@ export async function unlinkEventFromRetainer(eventId: string) {
 
   // Decrement events_used on the period if we know which one
   if (periodId) {
-    const { data: period } = await (supabase as any)
+    const { data: period } = await supabase
       .from('retainer_periods')
       .select('id, events_used')
       .eq('id', periodId)
@@ -676,7 +676,7 @@ export async function unlinkEventFromRetainer(eventId: string) {
       .single()
 
     if (period && period.events_used > 0) {
-      await (supabase as any)
+      await supabase
         .from('retainer_periods')
         .update({ events_used: period.events_used - 1 })
         .eq('id', periodId)

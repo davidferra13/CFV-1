@@ -16,7 +16,7 @@ export default async function ProposalTemplatesPage() {
 
   const [templates, menusResult] = await Promise.all([
     listProposalTemplates().catch(() => []),
-    (supabase as any)
+    supabase
       .from('menus')
       .select('id, name')
       .eq('chef_id', user.tenantId!)

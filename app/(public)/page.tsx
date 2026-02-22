@@ -48,8 +48,8 @@ const STEPS = [
 export default function Home() {
   return (
     <main>
-      <section className="relative overflow-hidden border-b border-stone-200 bg-gradient-to-b from-brand-50 via-white to-white">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-brand-100/50 blur-3xl" />
+      <section className="relative overflow-hidden border-b border-stone-200 bg-gradient-to-b from-brand-50 via-surface-accent to-white">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl" />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 md:pb-20 md:pt-24 lg:px-8">
           <p className="mb-5 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
             Private Chef Operating System
@@ -85,7 +85,7 @@ export default function Home() {
             return (
               <article
                 key={feature.title}
-                className="rounded-xl border border-stone-200 bg-white p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]"
+                className="rounded-xl border border-stone-200 bg-white p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
               >
                 <div className="mb-4 inline-flex rounded-lg bg-brand-50 p-2.5 text-brand-700">
                   <Icon className="h-5 w-5" />
@@ -98,7 +98,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-stone-200 bg-stone-50/70">
+      <section className="border-y border-stone-200 bg-surface-muted">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20 lg:px-8">
           <div>
             <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
@@ -109,7 +109,7 @@ export default function Home() {
               fragmented spreadsheets.
             </p>
           </div>
-          <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-6">
+          <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-6 shadow-[var(--shadow-card)]">
             {STEPS.map((step) => (
               <div key={step} className="flex items-start gap-3">
                 <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />

@@ -25,14 +25,29 @@ import type {
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
 
 const JourneyStatusSchema = z.enum(['planning', 'in_progress', 'completed', 'archived'])
-const EntryTypeSchema = z.enum(['destination', 'meal', 'lesson', 'experience', 'idea', 'reflection', 'technique', 'ingredient'])
+const EntryTypeSchema = z.enum([
+  'destination',
+  'meal',
+  'lesson',
+  'experience',
+  'idea',
+  'reflection',
+  'technique',
+  'ingredient',
+])
 const IdeaStatusSchema = z.enum(['backlog', 'testing', 'adopted', 'parked'])
 const IdeaAreaSchema = z.enum(['menu', 'technique', 'service', 'sourcing', 'team', 'operations'])
 const JournalMediaTypeSchema = z.enum(['photo', 'video', 'document'])
 
 const CHEF_JOURNAL_MEDIA_BUCKET = 'chef-journal-media'
 const MAX_JOURNAL_PHOTO_SIZE = 15 * 1024 * 1024 // 15MB
-const ALLOWED_JOURNAL_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
+const ALLOWED_JOURNAL_PHOTO_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/heic',
+  'image/heif',
+  'image/webp',
+]
 const JOURNAL_PHOTO_MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -41,31 +56,22 @@ const JOURNAL_PHOTO_MIME_TO_EXT: Record<string, string> = {
   'image/webp': 'webp',
 }
 
-const OptionalTextSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== 'string') return null
-    const trimmed = value.trim()
-    return trimmed.length > 0 ? trimmed : null
-  },
-  z.string().max(300).nullable(),
-)
+const OptionalTextSchema = z.preprocess((value) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}, z.string().max(300).nullable())
 
-const OptionalLongTextSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== 'string') return ''
-    return value.trim()
-  },
-  z.string().max(6000),
-)
+const OptionalLongTextSchema = z.preprocess((value) => {
+  if (typeof value !== 'string') return ''
+  return value.trim()
+}, z.string().max(6000))
 
-const OptionalDateSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== 'string') return null
-    const trimmed = value.trim()
-    return trimmed.length > 0 ? trimmed : null
-  },
-  z.string().regex(DATE_PATTERN, 'Use YYYY-MM-DD').nullable(),
-)
+const OptionalDateSchema = z.preprocess((value) => {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}, z.string().regex(DATE_PATTERN, 'Use YYYY-MM-DD').nullable())
 
 const HttpUrlSchema = z
   .string()
@@ -79,23 +85,16 @@ const HttpUrlSchema = z
     }
   }, 'Use an http(s) URL')
 
-const OptionalNumberSchema = z.preprocess(
-  (value) => {
-    if (value === null || value === undefined || value === '') return null
-    if (typeof value === 'string') {
-      const parsed = Number(value)
-      return Number.isFinite(parsed) ? parsed : value
-    }
-    return value
-  },
-  z.number().finite().nullable(),
-)
+const OptionalNumberSchema = z.preprocess((value) => {
+  if (value === null || value === undefined || value === '') return null
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : value
+  }
+  return value
+}, z.number().finite().nullable())
 
-const StringListSchema = z
-  .array(z.string().trim().min(1).max(220))
-  .max(60)
-  .optional()
-  .default([])
+const StringListSchema = z.array(z.string().trim().min(1).max(220)).max(60).optional().default([])
 
 const JourneySchema = z
   .object({
@@ -113,14 +112,11 @@ const JourneySchema = z
     inspiration_ideas: StringListSchema,
     culinary_focus_tags: StringListSchema,
     collaborators: StringListSchema,
-    cover_image_url: z.preprocess(
-      (value) => {
-        if (typeof value !== 'string') return null
-        const trimmed = value.trim()
-        return trimmed.length > 0 ? trimmed : null
-      },
-      z.string().url().nullable(),
-    ),
+    cover_image_url: z.preprocess((value) => {
+      if (typeof value !== 'string') return null
+      const trimmed = value.trim()
+      return trimmed.length > 0 ? trimmed : null
+    }, z.string().url().nullable()),
   })
   .superRefine((value, ctx) => {
     if (value.started_on && value.ended_on && value.ended_on < value.started_on) {
@@ -135,7 +131,7 @@ const JourneySchema = z
 function validateCoordinates(
   latitude: number | null,
   longitude: number | null,
-  ctx: z.RefinementCtx,
+  ctx: z.RefinementCtx
 ): void {
   const hasLat = typeof latitude === 'number'
   const hasLng = typeof longitude === 'number'
@@ -179,21 +175,15 @@ const JourneyEntryCoreSchema = z.object({
   mistakes_made: StringListSchema,
   proud_moments: StringListSchema,
   what_to_change_next_time: StringListSchema,
-  source_links: z
-    .array(z.string().trim().max(500))
-    .max(20)
-    .optional()
-    .default([]),
+  source_links: z.array(z.string().trim().max(500)).max(20).optional().default([]),
   is_highlight: z.boolean().optional().default(false),
 })
 
-const JourneyEntrySchema = JourneyEntryCoreSchema
-  .extend({
-    journey_id: z.string().uuid(),
-  })
-  .superRefine((value, ctx) => {
-    validateCoordinates(value.latitude, value.longitude, ctx)
-  })
+const JourneyEntrySchema = JourneyEntryCoreSchema.extend({
+  journey_id: z.string().uuid(),
+}).superRefine((value, ctx) => {
+  validateCoordinates(value.latitude, value.longitude, ctx)
+})
 
 const JourneyEntryUpdateSchema = JourneyEntryCoreSchema.superRefine((value, ctx) => {
   validateCoordinates(value.latitude, value.longitude, ctx)
@@ -228,13 +218,11 @@ const JourneyMediaCoreSchema = z.object({
   is_cover: z.boolean().optional().default(false),
 })
 
-const JourneyMediaSchema = JourneyMediaCoreSchema
-  .extend({
-    journey_id: z.string().uuid(),
-  })
-  .superRefine((value, ctx) => {
-    validateCoordinates(value.latitude, value.longitude, ctx)
-  })
+const JourneyMediaSchema = JourneyMediaCoreSchema.extend({
+  journey_id: z.string().uuid(),
+}).superRefine((value, ctx) => {
+  validateCoordinates(value.latitude, value.longitude, ctx)
+})
 
 const JourneyMediaUpdateSchema = JourneyMediaCoreSchema.superRefine((value, ctx) => {
   validateCoordinates(value.latitude, value.longitude, ctx)
@@ -246,17 +234,14 @@ const JourneyRecipeLinkSchema = z.object({
   recipe_id: z.string().uuid(),
   adaptation_notes: OptionalLongTextSchema.optional().default(''),
   outcome_notes: OptionalLongTextSchema.optional().default(''),
-  outcome_rating: z.preprocess(
-    (value) => {
-      if (value === null || value === undefined || value === '') return null
-      if (typeof value === 'string') {
-        const parsed = Number(value)
-        return Number.isFinite(parsed) ? parsed : value
-      }
-      return value
-    },
-    z.number().int().min(1).max(5).nullable(),
-  ),
+  outcome_rating: z.preprocess((value) => {
+    if (value === null || value === undefined || value === '') return null
+    if (typeof value === 'string') {
+      const parsed = Number(value)
+      return Number.isFinite(parsed) ? parsed : value
+    }
+    return value
+  }, z.number().int().min(1).max(5).nullable()),
   first_tested_on: OptionalDateSchema,
   would_repeat: z.boolean().optional().default(true),
 })
@@ -279,23 +264,23 @@ export type CreateChefJourneyRecipeLinkInput = z.input<typeof JourneyRecipeLinkS
 export type UpdateChefJourneyRecipeLinkInput = z.input<typeof JourneyRecipeLinkUpdateSchema>
 
 function fromChefJourneys(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_journeys')
+  return supabase.from('chef_journeys')
 }
 
 function fromChefJourneyEntries(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_journey_entries')
+  return supabase.from('chef_journey_entries')
 }
 
 function fromChefJourneyIdeas(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_journey_ideas')
+  return supabase.from('chef_journey_ideas')
 }
 
 function fromChefJournalMedia(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_journal_media')
+  return supabase.from('chef_journal_media')
 }
 
 function fromChefJournalRecipeLinks(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_journal_recipe_links')
+  return supabase.from('chef_journal_recipe_links')
 }
 
 function normalizeList(values: string[] | undefined, max = 40): string[] {
@@ -315,7 +300,7 @@ function normalizeList(values: string[] | undefined, max = 40): string[] {
 
 function normalizeLinks(values: string[] | undefined): string[] {
   const links = normalizeList(values, 20)
-  return links.filter(link => {
+  return links.filter((link) => {
     if (link.startsWith('http://') || link.startsWith('https://')) return true
     return false
   })
@@ -323,7 +308,10 @@ function normalizeLinks(values: string[] | undefined): string[] {
 
 function asStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return []
-  return value.filter((item): item is string => typeof item === 'string').map(item => item.trim()).filter(Boolean)
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean)
 }
 
 function asNumberOrNull(value: unknown): number | null {
@@ -452,19 +440,18 @@ function mapRecipeLink(row: Record<string, unknown>): ChefJourneyRecipeLink {
 }
 
 function toDestinationLabel(journey: ChefJourney): string {
-  const parts = [journey.destination_city, journey.destination_region, journey.destination_country]
-    .filter((part): part is string => Boolean(part && part.trim().length > 0))
+  const parts = [
+    journey.destination_city,
+    journey.destination_region,
+    journey.destination_country,
+  ].filter((part): part is string => Boolean(part && part.trim().length > 0))
   return parts.join(', ')
 }
 
-function toDestinationFromParts(
-  city: unknown,
-  region: unknown,
-  country: unknown,
-): string {
+function toDestinationFromParts(city: unknown, region: unknown, country: unknown): string {
   const parts = [city, region, country]
     .filter((part): part is string => typeof part === 'string' && part.trim().length > 0)
-    .map(part => part.trim())
+    .map((part) => part.trim())
   return parts.join(', ')
 }
 
@@ -486,7 +473,7 @@ function buildTopCounts(values: string[], limit = 5): JourneyTopicSummary[] {
   return Array.from(counts.values())
     .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
     .slice(0, limit)
-    .map(item => ({ topic: item.label, count: item.count }))
+    .map((item) => ({ topic: item.label, count: item.count }))
 }
 
 function todayDateString(): string {
@@ -497,7 +484,7 @@ async function ensureEntryBelongsToJourney(
   supabase: ReturnType<typeof createServerClient>,
   tenantId: string,
   journeyId: string,
-  entryId: string,
+  entryId: string
 ): Promise<void> {
   const { data, error } = await fromChefJourneyEntries(supabase)
     .select('id')
@@ -514,9 +501,9 @@ async function ensureEntryBelongsToJourney(
 async function ensureRecipeBelongsToTenant(
   supabase: ReturnType<typeof createServerClient>,
   tenantId: string,
-  recipeId: string,
+  recipeId: string
 ): Promise<void> {
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('recipes')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -531,7 +518,7 @@ async function ensureRecipeBelongsToTenant(
 async function ensureJourneyBelongsToTenant(
   supabase: ReturnType<typeof createServerClient>,
   tenantId: string,
-  journeyId: string,
+  journeyId: string
 ): Promise<void> {
   const { data, error } = await fromChefJourneys(supabase)
     .select('id')
@@ -549,7 +536,10 @@ function extractChefJournalMediaPath(url: string | null | undefined): string | n
   const marker = `/storage/v1/object/public/${CHEF_JOURNAL_MEDIA_BUCKET}/`
   const markerIndex = url.indexOf(marker)
   if (markerIndex === -1) return null
-  const encodedPath = url.slice(markerIndex + marker.length).split('?')[0].split('#')[0]
+  const encodedPath = url
+    .slice(markerIndex + marker.length)
+    .split('?')[0]
+    .split('#')[0]
   if (!encodedPath) return null
   return decodeURIComponent(encodedPath)
 }
@@ -585,7 +575,7 @@ async function ensureChefJournalMediaBucket(supabase: ReturnType<typeof createSe
 
 async function removeChefJournalMediaObject(
   supabase: ReturnType<typeof createServerClient>,
-  mediaUrl: string | null | undefined,
+  mediaUrl: string | null | undefined
 ): Promise<void> {
   const storagePath = extractChefJournalMediaPath(mediaUrl)
   if (!storagePath) return
@@ -596,10 +586,12 @@ async function removeChefJournalMediaObject(
   }
 }
 
-export async function getChefJourneys(options: {
-  status?: ChefJourneyStatus | 'all'
-  limit?: number
-} = {}): Promise<ChefJourneyWithStats[]> {
+export async function getChefJourneys(
+  options: {
+    status?: ChefJourneyStatus | 'all'
+    limit?: number
+  } = {}
+): Promise<ChefJourneyWithStats[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -624,25 +616,26 @@ export async function getChefJourneys(options: {
   const journeys = ((data || []) as any[]).map(mapJourney)
   if (journeys.length === 0) return []
 
-  const journeyIds = journeys.map(j => j.id)
-  const [{ data: entryRows }, { data: ideaRows }, { data: mediaRows }, { data: recipeLinkRows }] = await Promise.all([
-    fromChefJourneyEntries(supabase)
-      .select('journey_id, is_highlight')
-      .eq('tenant_id', user.tenantId)
-      .in('journey_id', journeyIds),
-    fromChefJourneyIdeas(supabase)
-      .select('journey_id, status')
-      .eq('tenant_id', user.tenantId)
-      .in('journey_id', journeyIds),
-    fromChefJournalMedia(supabase)
-      .select('journey_id')
-      .eq('tenant_id', user.tenantId)
-      .in('journey_id', journeyIds),
-    fromChefJournalRecipeLinks(supabase)
-      .select('journey_id')
-      .eq('tenant_id', user.tenantId)
-      .in('journey_id', journeyIds),
-  ])
+  const journeyIds = journeys.map((j) => j.id)
+  const [{ data: entryRows }, { data: ideaRows }, { data: mediaRows }, { data: recipeLinkRows }] =
+    await Promise.all([
+      fromChefJourneyEntries(supabase)
+        .select('journey_id, is_highlight')
+        .eq('tenant_id', user.tenantId)
+        .in('journey_id', journeyIds),
+      fromChefJourneyIdeas(supabase)
+        .select('journey_id, status')
+        .eq('tenant_id', user.tenantId)
+        .in('journey_id', journeyIds),
+      fromChefJournalMedia(supabase)
+        .select('journey_id')
+        .eq('tenant_id', user.tenantId)
+        .in('journey_id', journeyIds),
+      fromChefJournalRecipeLinks(supabase)
+        .select('journey_id')
+        .eq('tenant_id', user.tenantId)
+        .in('journey_id', journeyIds),
+    ])
 
   const entryCounts = new Map<string, number>()
   const highlightCounts = new Map<string, number>()
@@ -655,7 +648,10 @@ export async function getChefJourneys(options: {
 
   const ideaCounts = new Map<string, number>()
   const adoptedCounts = new Map<string, number>()
-  for (const row of (ideaRows || []) as Array<{ journey_id: string; status: ChefJourneyIdeaStatus }>) {
+  for (const row of (ideaRows || []) as Array<{
+    journey_id: string
+    status: ChefJourneyIdeaStatus
+  }>) {
     ideaCounts.set(row.journey_id, (ideaCounts.get(row.journey_id) || 0) + 1)
     if (row.status === 'adopted') {
       adoptedCounts.set(row.journey_id, (adoptedCounts.get(row.journey_id) || 0) + 1)
@@ -672,7 +668,7 @@ export async function getChefJourneys(options: {
     recipeLinkCounts.set(row.journey_id, (recipeLinkCounts.get(row.journey_id) || 0) + 1)
   }
 
-  return journeys.map(journey => ({
+  return journeys.map((journey) => ({
     ...journey,
     entry_count: entryCounts.get(journey.id) || 0,
     highlight_count: highlightCounts.get(journey.id) || 0,
@@ -754,7 +750,9 @@ export async function getChefJourneyMedia(journeyId: string): Promise<ChefJourne
   return ((data || []) as any[]).map(mapMedia)
 }
 
-export async function getChefJourneyRecipeLinks(journeyId: string): Promise<ChefJourneyRecipeLink[]> {
+export async function getChefJourneyRecipeLinks(
+  journeyId: string
+): Promise<ChefJourneyRecipeLink[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -783,15 +781,9 @@ export async function getChefJourneyInsights(): Promise<ChefJourneyInsights> {
     fromChefJourneyEntries(supabase)
       .select('is_highlight, what_i_learned, latitude, longitude, mistakes_made')
       .eq('tenant_id', user.tenantId),
-    fromChefJourneyIdeas(supabase)
-      .select('status')
-      .eq('tenant_id', user.tenantId),
-    fromChefJournalMedia(supabase)
-      .select('id')
-      .eq('tenant_id', user.tenantId),
-    fromChefJournalRecipeLinks(supabase)
-      .select('id')
-      .eq('tenant_id', user.tenantId),
+    fromChefJourneyIdeas(supabase).select('status').eq('tenant_id', user.tenantId),
+    fromChefJournalMedia(supabase).select('id').eq('tenant_id', user.tenantId),
+    fromChefJournalRecipeLinks(supabase).select('id').eq('tenant_id', user.tenantId),
   ])
 
   const journeyRows = (journeys.data || []) as Array<Record<string, unknown>>
@@ -815,7 +807,7 @@ export async function getChefJourneyInsights(): Promise<ChefJourneyInsights> {
     const destination = toDestinationFromParts(
       row.destination_city,
       row.destination_region,
-      row.destination_country,
+      row.destination_country
     )
     if (destination) {
       destinationCounts.set(destination, (destinationCounts.get(destination) || 0) + 1)
@@ -865,7 +857,9 @@ export async function getChefJourneyInsights(): Promise<ChefJourneyInsights> {
   }
 }
 
-export async function createChefJourney(input: CreateChefJourneyInput): Promise<{ success: true; journey: ChefJourney }> {
+export async function createChefJourney(
+  input: CreateChefJourneyInput
+): Promise<{ success: true; journey: ChefJourney }> {
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = JourneySchema.parse(input)
@@ -890,10 +884,7 @@ export async function createChefJourney(input: CreateChefJourneyInput): Promise<
     cover_image_url: validated.cover_image_url,
   }
 
-  const { data, error } = await fromChefJourneys(supabase)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromChefJourneys(supabase).insert(payload).select('*').single()
 
   if (error || !data) {
     console.error('[createChefJourney] Error:', error)
@@ -925,7 +916,7 @@ export async function createChefJourney(input: CreateChefJourneyInput): Promise<
 
 export async function updateChefJourney(
   journeyId: string,
-  input: UpdateChefJourneyInput,
+  input: UpdateChefJourneyInput
 ): Promise<{ success: true; journey: ChefJourney }> {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -1026,7 +1017,7 @@ export async function deleteChefJourney(journeyId: string): Promise<{ success: t
 }
 
 export async function createChefJourneyEntry(
-  input: CreateChefJourneyEntryInput,
+  input: CreateChefJourneyEntryInput
 ): Promise<{ success: true; entry: ChefJourneyEntry }> {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -1093,7 +1084,7 @@ export async function createChefJourneyEntry(
 
 export async function updateChefJourneyEntry(
   entryId: string,
-  input: UpdateChefJourneyEntryInput,
+  input: UpdateChefJourneyEntryInput
 ): Promise<{ success: true; entry: ChefJourneyEntry }> {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -1199,15 +1190,16 @@ export async function deleteChefJourneyEntry(entryId: string): Promise<{ success
 }
 
 export async function createChefJourneyIdea(
-  input: CreateChefJourneyIdeaInput,
+  input: CreateChefJourneyIdeaInput
 ): Promise<{ success: true; idea: ChefJourneyIdea }> {
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = JourneyIdeaSchema.parse(input)
 
-  const adoptedOn = validated.status === 'adopted'
-    ? (validated.adopted_on || todayDateString())
-    : validated.adopted_on
+  const adoptedOn =
+    validated.status === 'adopted'
+      ? validated.adopted_on || todayDateString()
+      : validated.adopted_on
 
   const payload = {
     journey_id: validated.journey_id,
@@ -1226,10 +1218,7 @@ export async function createChefJourneyIdea(
     adopted_recipe_id: validated.adopted_recipe_id || null,
   }
 
-  const { data, error } = await fromChefJourneyIdeas(supabase)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromChefJourneyIdeas(supabase).insert(payload).select('*').single()
 
   if (error || !data) {
     console.error('[createChefJourneyIdea] Error:', error)
@@ -1245,9 +1234,10 @@ export async function createChefJourneyIdea(
     domain: 'operational',
     entityType: 'chef_journey_idea',
     entityId: idea.id,
-    summary: idea.status === 'adopted'
-      ? `Adopted journal idea: "${idea.title}"`
-      : `Added journal idea: "${idea.title}"`,
+    summary:
+      idea.status === 'adopted'
+        ? `Adopted journal idea: "${idea.title}"`
+        : `Added journal idea: "${idea.title}"`,
     context: {
       journey_id: idea.journey_id,
       area: idea.application_area,
@@ -1266,15 +1256,14 @@ export async function createChefJourneyIdea(
 
 export async function updateChefJourneyIdea(
   ideaId: string,
-  input: UpdateChefJourneyIdeaInput,
+  input: UpdateChefJourneyIdeaInput
 ): Promise<{ success: true; idea: ChefJourneyIdea }> {
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = JourneyIdeaUpdateSchema.parse(input)
 
-  const adoptedOn = validated.status === 'adopted'
-    ? (validated.adopted_on || todayDateString())
-    : null
+  const adoptedOn =
+    validated.status === 'adopted' ? validated.adopted_on || todayDateString() : null
 
   const { data, error } = await fromChefJourneyIdeas(supabase)
     .update({
@@ -1309,9 +1298,10 @@ export async function updateChefJourneyIdea(
     domain: 'operational',
     entityType: 'chef_journey_idea',
     entityId: idea.id,
-    summary: idea.status === 'adopted'
-      ? `Marked idea as adopted: "${idea.title}"`
-      : `Updated journal idea: "${idea.title}"`,
+    summary:
+      idea.status === 'adopted'
+        ? `Marked idea as adopted: "${idea.title}"`
+        : `Updated journal idea: "${idea.title}"`,
     context: {
       journey_id: idea.journey_id,
       area: idea.application_area,
@@ -1358,7 +1348,7 @@ export async function deleteChefJourneyIdea(ideaId: string): Promise<{ success: 
 }
 
 export async function uploadChefJourneyPhoto(
-  formData: FormData,
+  formData: FormData
 ): Promise<{ success: true; url: string }> {
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
@@ -1370,7 +1360,9 @@ export async function uploadChefJourneyPhoto(
     throw new Error('Invalid image type. Use JPEG, PNG, HEIC, or WebP')
   }
   if (file.size > MAX_JOURNAL_PHOTO_SIZE) {
-    throw new Error(`Photo is too large. Maximum ${(MAX_JOURNAL_PHOTO_SIZE / 1024 / 1024).toFixed(0)}MB`)
+    throw new Error(
+      `Photo is too large. Maximum ${(MAX_JOURNAL_PHOTO_SIZE / 1024 / 1024).toFixed(0)}MB`
+    )
   }
 
   const journeyIdRaw = formData.get('journey_id')
@@ -1378,9 +1370,10 @@ export async function uploadChefJourneyPhoto(
   const journeyId = z.string().uuid().parse(journeyIdRaw.trim())
 
   const entryIdRaw = formData.get('entry_id')
-  const entryId = typeof entryIdRaw === 'string' && entryIdRaw.trim().length > 0
-    ? z.string().uuid().parse(entryIdRaw.trim())
-    : null
+  const entryId =
+    typeof entryIdRaw === 'string' && entryIdRaw.trim().length > 0
+      ? z.string().uuid().parse(entryIdRaw.trim())
+      : null
 
   await ensureJourneyBelongsToTenant(supabase, user.tenantId!, journeyId)
   if (entryId) {
@@ -1391,16 +1384,19 @@ export async function uploadChefJourneyPhoto(
   const storagePath = `${user.tenantId}/${journeyId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
   const uploadFile = async () =>
-    supabase.storage
-      .from(CHEF_JOURNAL_MEDIA_BUCKET)
-      .upload(storagePath, file, {
-        contentType: file.type,
-        upsert: false,
-      })
+    supabase.storage.from(CHEF_JOURNAL_MEDIA_BUCKET).upload(storagePath, file, {
+      contentType: file.type,
+      upsert: false,
+    })
 
   let { error: uploadError } = await uploadFile()
 
-  if (uploadError && String(uploadError.message || '').toLowerCase().includes('bucket')) {
+  if (
+    uploadError &&
+    String(uploadError.message || '')
+      .toLowerCase()
+      .includes('bucket')
+  ) {
     await ensureChefJournalMediaBucket(supabase)
     const retry = await uploadFile()
     uploadError = retry.error
@@ -1419,14 +1415,19 @@ export async function uploadChefJourneyPhoto(
 }
 
 export async function createChefJourneyMedia(
-  input: CreateChefJourneyMediaInput,
+  input: CreateChefJourneyMediaInput
 ): Promise<{ success: true; media: ChefJourneyMedia }> {
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = JourneyMediaSchema.parse(input)
 
   if (validated.entry_id) {
-    await ensureEntryBelongsToJourney(supabase, user.tenantId!, validated.journey_id, validated.entry_id)
+    await ensureEntryBelongsToJourney(
+      supabase,
+      user.tenantId!,
+      validated.journey_id,
+      validated.entry_id
+    )
   }
 
   const { data, error } = await fromChefJournalMedia(supabase)
@@ -1479,7 +1480,7 @@ export async function createChefJourneyMedia(
 
 export async function updateChefJourneyMedia(
   mediaId: string,
-  input: UpdateChefJourneyMediaInput,
+  input: UpdateChefJourneyMediaInput
 ): Promise<{ success: true; media: ChefJourneyMedia }> {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -1500,7 +1501,7 @@ export async function updateChefJourneyMedia(
       supabase,
       user.tenantId!,
       String((existingMedia as Record<string, unknown>).journey_id),
-      validated.entry_id,
+      validated.entry_id
     )
   }
 
@@ -1579,7 +1580,7 @@ export async function deleteChefJourneyMedia(mediaId: string): Promise<{ success
     const adminSupabase = createServerClient({ admin: true })
     await removeChefJournalMediaObject(
       adminSupabase,
-      String((existing as Record<string, unknown>).media_url || ''),
+      String((existing as Record<string, unknown>).media_url || '')
     )
 
     await logChefActivity({
@@ -1607,7 +1608,7 @@ export async function deleteChefJourneyMedia(mediaId: string): Promise<{ success
 }
 
 export async function createChefJourneyRecipeLink(
-  input: CreateChefJourneyRecipeLinkInput,
+  input: CreateChefJourneyRecipeLinkInput
 ): Promise<{ success: true; recipeLink: ChefJourneyRecipeLink }> {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -1615,7 +1616,12 @@ export async function createChefJourneyRecipeLink(
 
   await ensureRecipeBelongsToTenant(supabase, user.tenantId!, validated.recipe_id)
   if (validated.entry_id) {
-    await ensureEntryBelongsToJourney(supabase, user.tenantId!, validated.journey_id, validated.entry_id)
+    await ensureEntryBelongsToJourney(
+      supabase,
+      user.tenantId!,
+      validated.journey_id,
+      validated.entry_id
+    )
   }
 
   const { data, error } = await fromChefJournalRecipeLinks(supabase)
@@ -1667,17 +1673,18 @@ export async function createChefJourneyRecipeLink(
 
 export async function updateChefJourneyRecipeLink(
   recipeLinkId: string,
-  input: UpdateChefJourneyRecipeLinkInput,
+  input: UpdateChefJourneyRecipeLinkInput
 ): Promise<{ success: true; recipeLink: ChefJourneyRecipeLink }> {
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = JourneyRecipeLinkUpdateSchema.parse(input)
 
-  const { data: existingRecipeLink, error: existingRecipeLinkError } = await fromChefJournalRecipeLinks(supabase)
-    .select('journey_id')
-    .eq('id', recipeLinkId)
-    .eq('tenant_id', user.tenantId)
-    .single()
+  const { data: existingRecipeLink, error: existingRecipeLinkError } =
+    await fromChefJournalRecipeLinks(supabase)
+      .select('journey_id')
+      .eq('id', recipeLinkId)
+      .eq('tenant_id', user.tenantId)
+      .single()
 
   if (existingRecipeLinkError || !existingRecipeLink) {
     throw new Error('Journal recipe link was not found')
@@ -1689,7 +1696,7 @@ export async function updateChefJourneyRecipeLink(
       supabase,
       user.tenantId!,
       String((existingRecipeLink as Record<string, unknown>).journey_id),
-      validated.entry_id,
+      validated.entry_id
     )
   }
 
@@ -1738,7 +1745,9 @@ export async function updateChefJourneyRecipeLink(
   return { success: true, recipeLink }
 }
 
-export async function deleteChefJourneyRecipeLink(recipeLinkId: string): Promise<{ success: true }> {
+export async function deleteChefJourneyRecipeLink(
+  recipeLinkId: string
+): Promise<{ success: true }> {
   const user = await requireChef()
   const supabase = createServerClient()
 

@@ -14,7 +14,7 @@ import { DEFAULT_SEASONS } from './types'
 
 // Type assertion helper — seasonal_palettes not in generated types until migration applied
 function fromSeasonalPalettes(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('seasonal_palettes')
+  return supabase.from('seasonal_palettes')
 }
 
 // ============================================
@@ -23,8 +23,14 @@ function fromSeasonalPalettes(supabase: ReturnType<typeof createServerClient>): 
 
 const MicroWindowSchema = z.object({
   ingredient: z.string().min(1, 'Ingredient required'),
-  start_date: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format').or(z.literal('')),
-  end_date: z.string().regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format').or(z.literal('')),
+  start_date: z
+    .string()
+    .regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format')
+    .or(z.literal('')),
+  end_date: z
+    .string()
+    .regex(/^\d{2}-\d{2}$/, 'Must be MM-DD format')
+    .or(z.literal('')),
   notes: z.string().default(''),
   // Legacy fields — accepted but not required
   name: z.string().optional(),
@@ -265,16 +271,14 @@ export async function deactivateAllSeasons() {
 async function seedDefaultPalettes(tenantId: string, userId: string): Promise<SeasonalPalette[]> {
   const supabase = createServerClient()
 
-  const rows = DEFAULT_SEASONS.map(s => ({
+  const rows = DEFAULT_SEASONS.map((s) => ({
     tenant_id: tenantId,
     ...s,
     created_by: userId,
     updated_by: userId,
   }))
 
-  const { data, error } = await fromSeasonalPalettes(supabase)
-    .insert(rows)
-    .select()
+  const { data, error } = await fromSeasonalPalettes(supabase).insert(rows).select()
 
   if (error) {
     console.error('[seedDefaultPalettes] Error:', error)

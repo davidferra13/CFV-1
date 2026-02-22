@@ -13,7 +13,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type Stripe from 'stripe'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 function getStripe(): Stripe {
   const StripeLib = require('stripe')
@@ -24,8 +25,8 @@ function getStripe(): Stripe {
 }
 
 export type ConnectAccountStatus = {
-  connected: boolean      // true when Stripe reports charges_enabled
-  pending: boolean        // stripe_account_id set but not yet charges_enabled
+  connected: boolean // true when Stripe reports charges_enabled
+  pending: boolean // stripe_account_id set but not yet charges_enabled
   accountId: string | null
   chargesEnabled: boolean
   payoutsEnabled: boolean
@@ -42,7 +43,7 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chefs')
     .select('stripe_account_id, stripe_onboarding_complete')
     .eq('id', user.entityId)
@@ -75,15 +76,13 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
  *
  * @param fromOnboarding - true when called from the wizard; affects the return URL.
  */
-export async function createConnectAccountLink(
-  fromOnboarding = false
-): Promise<{ url: string }> {
+export async function createConnectAccountLink(fromOnboarding = false): Promise<{ url: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
   const stripe = getStripe()
 
   // Fetch current state
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('stripe_account_id, email, business_name')
     .eq('id', user.entityId)
@@ -107,7 +106,7 @@ export async function createConnectAccountLink(
 
     accountId = account.id
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('chefs')
       .update({ stripe_account_id: accountId })
       .eq('id', user.entityId)
@@ -145,7 +144,7 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
   const supabase = createServerClient()
   const stripe = getStripe()
 
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('stripe_account_id')
     .eq('id', user.entityId)
@@ -163,7 +162,7 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
 
   const account = await stripe.accounts.retrieve(chef.stripe_account_id)
 
-  await (supabase as any)
+  await supabase
     .from('chefs')
     .update({ stripe_onboarding_complete: account.charges_enabled === true })
     .eq('id', user.entityId)
@@ -192,7 +191,7 @@ export async function updateConnectStatusFromWebhook(
 ): Promise<void> {
   const supabase = createServerClient({ admin: true })
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chefs')
     .update({ stripe_onboarding_complete: chargesEnabled })
     .eq('stripe_account_id', stripeAccountId)

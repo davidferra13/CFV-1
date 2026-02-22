@@ -57,7 +57,7 @@ export async function generateDemandForecast(
 
   // Group inquiry counts by year-month
   const monthCounts = new Map<string, number>() // key: 'YYYY-MM'
-  for (const inq of (inquiries || [])) {
+  for (const inq of inquiries || []) {
     if (!inq.created_at) continue
     const d = new Date(inq.created_at)
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
@@ -70,7 +70,9 @@ export async function generateDemandForecast(
     years.add(parseInt(key.split('-')[0]))
   }
   // Exclude the target year from historical data
-  const historicalYears = Array.from(years).filter(y => y < validated.year).sort()
+  const historicalYears = Array.from(years)
+    .filter((y) => y < validated.year)
+    .sort()
 
   // Also get actual inquiry counts for the target year (if any exist)
   const actualCounts = new Map<number, number>()
@@ -94,9 +96,10 @@ export async function generateDemandForecast(
     }
 
     // Predict: average of historical values for this month
-    const predictedInquiryCount = historicalValues.length > 0
-      ? Math.round(historicalValues.reduce((s, v) => s + v, 0) / historicalValues.length)
-      : 0
+    const predictedInquiryCount =
+      historicalValues.length > 0
+        ? Math.round(historicalValues.reduce((s, v) => s + v, 0) / historicalValues.length)
+        : 0
 
     // Confidence based on years of data
     let confidence = 0
@@ -121,19 +124,17 @@ export async function generateDemandForecast(
 
   // Upsert all 12 months into demand_forecasts
   for (const r of results) {
-    const { error } = await (supabase as any)
-      .from('demand_forecasts')
-      .upsert(
-        {
-          chef_id: user.tenantId!,
-          month: r.month,
-          year: r.year,
-          predicted_inquiry_count: r.predictedInquiryCount,
-          actual_inquiry_count: r.actualInquiryCount,
-          confidence: r.confidence,
-        },
-        { onConflict: 'chef_id,month,year' }
-      )
+    const { error } = await supabase.from('demand_forecasts').upsert(
+      {
+        chef_id: user.tenantId!,
+        month: r.month,
+        year: r.year,
+        predicted_inquiry_count: r.predictedInquiryCount,
+        actual_inquiry_count: r.actualInquiryCount,
+        confidence: r.confidence,
+      },
+      { onConflict: 'chef_id,month,year' }
+    )
 
     if (error) {
       console.error(`[generateDemandForecast] Error upserting month ${r.month}:`, error)
@@ -156,7 +157,7 @@ export async function getSeasonalHeatmap(year?: number): Promise<SeasonalHeatmap
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: forecasts, error } = await (supabase as any)
+  const { data: forecasts, error } = await supabase
     .from('demand_forecasts')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -169,7 +170,7 @@ export async function getSeasonalHeatmap(year?: number): Promise<SeasonalHeatmap
 
   // Build full 12-month array, filling in any missing months
   const forecastMap = new Map<number, any>()
-  for (const f of (forecasts || [])) {
+  for (const f of forecasts || []) {
     forecastMap.set(f.month, f)
   }
 

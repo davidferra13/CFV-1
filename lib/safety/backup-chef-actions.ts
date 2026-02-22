@@ -33,7 +33,7 @@ export async function addBackupContact(input: AddBackupContactInput) {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_backup_contacts')
     .insert({ ...validated, tenant_id: tenantId })
     .select()
@@ -55,7 +55,7 @@ export async function updateBackupContact(id: string, input: UpdateBackupContact
 
   const supabase = createServerClient()
 
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_backup_contacts')
     .select('id')
     .eq('id', id)
@@ -64,7 +64,7 @@ export async function updateBackupContact(id: string, input: UpdateBackupContact
 
   if (!existing) throw new Error('Backup contact not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_backup_contacts')
     .update(validated)
     .eq('id', id)
@@ -88,7 +88,7 @@ export async function deactivateBackupContact(id: string) {
 
   const supabase = createServerClient()
 
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_backup_contacts')
     .select('id')
     .eq('id', id)
@@ -97,7 +97,7 @@ export async function deactivateBackupContact(id: string) {
 
   if (!existing) throw new Error('Backup contact not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_backup_contacts')
     .update({ is_active: false })
     .eq('id', id)
@@ -120,7 +120,7 @@ export async function getBackupContacts() {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_backup_contacts')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -142,7 +142,7 @@ export async function hasActiveBackupContact(): Promise<boolean> {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_backup_contacts')
     .select('id')
     .eq('tenant_id', tenantId)

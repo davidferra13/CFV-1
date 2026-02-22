@@ -87,10 +87,7 @@ async function toMetaLongLived(shortToken: string): Promise<string> {
 
 // ── Main handler ───────────────────────────────────────────────────────────────
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { platform: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { platform: string } }) {
   const { platform } = params
   const origin = request.nextUrl.origin
 
@@ -124,7 +121,7 @@ export async function GET(
   const supabase = createAdminClient()
 
   // Validate CSRF state
-  const { data: stateRow } = await (supabase as any)
+  const { data: stateRow } = await supabase
     .from('social_oauth_states')
     .select('*')
     .eq('state', state)
@@ -138,7 +135,7 @@ export async function GET(
   if ((stateRow as any).tenant_id !== user.tenantId) return failRedirect('OAuth state mismatch')
 
   // Delete used state (one-time use)
-  await (supabase as any).from('social_oauth_states').delete().eq('state', state)
+  await supabase.from('social_oauth_states').delete().eq('state', state)
 
   const codeVerifier: string | null = (stateRow as any).code_verifier ?? null
 
@@ -177,7 +174,8 @@ export async function GET(
         }
       }
 
-      if (!igUserId) throw new Error('No Instagram Business Account found on this Facebook account.')
+      if (!igUserId)
+        throw new Error('No Instagram Business Account found on this Facebook account.')
 
       await upsertCredential({
         tenantId,

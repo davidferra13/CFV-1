@@ -65,7 +65,8 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, serve_time, arrival_time,
       guest_count, status,
       location_address, location_city,
@@ -75,7 +76,8 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
       shopping_completed_at, prep_completed_at,
       aar_filed, reset_complete, follow_up_sent, financially_closed,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -83,16 +85,13 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
   if (!event) return null
 
   // Get menu component count
-  const { data: menus } = await supabase
-    .from('menus')
-    .select('id')
-    .eq('event_id', eventId)
+  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', eventId)
 
   let componentCount = 0
   let hasAlcohol = false
 
   if (menus && menus.length > 0) {
-    const menuIds = menus.map(m => m.id)
+    const menuIds = menus.map((m) => m.id)
 
     const { count } = await supabase
       .from('dishes')
@@ -124,7 +123,8 @@ async function fetchUpcomingSchedulingEvents(): Promise<SchedulingEvent[]> {
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, serve_time, arrival_time,
       guest_count, status,
       location_address, location_city,
@@ -134,14 +134,15 @@ async function fetchUpcomingSchedulingEvents(): Promise<SchedulingEvent[]> {
       shopping_completed_at, prep_completed_at,
       aar_filed, reset_complete, follow_up_sent, financially_closed,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .not('status', 'in', '("cancelled")')
     .order('event_date', { ascending: true })
 
   if (!events) return []
 
-  return events.map(event => mapEventToScheduling(event))
+  return events.map((event) => mapEventToScheduling(event))
 }
 
 // ============================================
@@ -173,7 +174,9 @@ export async function getEventDOPSchedule(eventId: string): Promise<DOPSchedule 
 /**
  * Get DOP progress (completed/total) for a single event.
  */
-export async function getEventDOPProgress(eventId: string): Promise<{ completed: number; total: number } | null> {
+export async function getEventDOPProgress(
+  eventId: string
+): Promise<{ completed: number; total: number } | null> {
   const schedule = await getEventDOPSchedule(eventId)
   if (!schedule) return null
   return getDOPProgress(schedule)
@@ -199,7 +202,7 @@ export async function getTodaysSchedule(): Promise<{
   const events = await fetchUpcomingSchedulingEvents()
   const today = new Date().toISOString().split('T')[0]
 
-  const todayEvent = events.find(e => e.event_date === today)
+  const todayEvent = events.find((e) => e.event_date === today)
   if (!todayEvent) return null
 
   const fullEvent = await fetchSchedulingEvent(todayEvent.id)
@@ -223,7 +226,7 @@ export async function getWeekSchedule(weekOffset: number = 0): Promise<WeekSched
   const now = new Date()
   const dayOfWeek = now.getDay()
   const monday = new Date(now)
-  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + (weekOffset * 7))
+  monday.setDate(now.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1) + weekOffset * 7)
   monday.setHours(0, 0, 0, 0)
 
   const sunday = new Date(monday)
@@ -242,13 +245,13 @@ export async function getWeekSchedule(weekOffset: number = 0): Promise<WeekSched
     dayDate.setDate(monday.getDate() + i)
     const dateStr = dayDate.toISOString().split('T')[0]
 
-    const dayEvents = events.filter(e => e.event_date === dateStr)
+    const dayEvents = events.filter((e) => e.event_date === dateStr)
 
     // Check if this is a prep day (day before an event)
     const nextDay = new Date(dayDate)
     nextDay.setDate(dayDate.getDate() + 1)
     const nextDateStr = nextDay.toISOString().split('T')[0]
-    const tomorrowEvents = events.filter(e => e.event_date === nextDateStr)
+    const tomorrowEvents = events.filter((e) => e.event_date === nextDateStr)
     const isPrepDay = tomorrowEvents.length > 0 && prefs.shop_day_before
 
     let dayType: WeekDay['dayType'] = 'free'
@@ -260,7 +263,7 @@ export async function getWeekSchedule(weekOffset: number = 0): Promise<WeekSched
       date: dateStr,
       dayOfWeek: dayNames[i],
       dayType,
-      events: dayEvents.map(e => ({
+      events: dayEvents.map((e) => ({
         id: e.id,
         occasion: e.occasion,
         clientName: e.client?.full_name ?? 'Unknown',
@@ -269,12 +272,12 @@ export async function getWeekSchedule(weekOffset: number = 0): Promise<WeekSched
         status: e.status,
         prepStatus: derivePrepStatus(e),
       })),
-      isPrepDayFor: isPrepDay ? tomorrowEvents.map(e => e.id) : undefined,
+      isPrepDayFor: isPrepDay ? tomorrowEvents.map((e) => e.id) : undefined,
     })
   }
 
   // Check for burnout warnings
-  const eventDays = days.filter(d => d.dayType === 'event')
+  const eventDays = days.filter((d) => d.dayType === 'event')
   for (let i = 1; i < eventDays.length; i++) {
     const prevDate = new Date(eventDays[i - 1].date)
     const currDate = new Date(eventDays[i].date)
@@ -363,7 +366,7 @@ export async function rescheduleEvent(
   // Clear orphaned system-generated prep blocks from the old date
   let clearedPrepBlocks = 0
   try {
-    const { data: oldBlocks } = await (supabase as any)
+    const { data: oldBlocks } = await supabase
       .from('event_prep_blocks')
       .select('id')
       .eq('event_id', eventId)
@@ -371,10 +374,13 @@ export async function rescheduleEvent(
       .eq('is_system_generated', true)
 
     if (oldBlocks && oldBlocks.length > 0) {
-      await (supabase as any)
+      await supabase
         .from('event_prep_blocks')
         .delete()
-        .in('id', oldBlocks.map((b: any) => b.id))
+        .in(
+          'id',
+          oldBlocks.map((b: any) => b.id)
+        )
       clearedPrepBlocks = oldBlocks.length
     }
   } catch (prepErr) {
@@ -394,8 +400,8 @@ export async function rescheduleEvent(
 export interface CalendarEvent {
   id: string
   title: string
-  start: string       // ISO datetime
-  end: string         // ISO datetime
+  start: string // ISO datetime
+  end: string // ISO datetime
   allDay: boolean
   extendedProps: {
     eventId: string
@@ -426,14 +432,16 @@ export async function getCalendarEvents(
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, serve_time, arrival_time,
       guest_count, status,
       location_address, location_city,
       grocery_list_ready, prep_list_ready, packing_list_ready,
       equipment_list_ready, timeline_ready,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .not('status', 'in', '("cancelled")')
     .gte('event_date', rangeStart)
@@ -454,8 +462,7 @@ export async function getCalendarEvents(
     ]
     const readyCount = readyFlags.filter(Boolean).length
     const prepStatus: 'ready' | 'partial' | 'not_started' =
-      readyCount === readyFlags.length ? 'ready' :
-      readyCount > 0 ? 'partial' : 'not_started'
+      readyCount === readyFlags.length ? 'ready' : readyCount > 0 ? 'partial' : 'not_started'
 
     // Build start/end datetimes from serve_time
     const serveTime = event.serve_time || '18:00'
@@ -522,10 +529,12 @@ export async function getCalendarEvents(
 
   const { data: inquiries } = await supabase
     .from('inquiries')
-    .select(`
+    .select(
+      `
       id, confirmed_date, confirmed_occasion, confirmed_guest_count, status,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .not('confirmed_date', 'is', null)
     .not('status', 'in', '("declined","expired","confirmed")')
@@ -535,9 +544,8 @@ export async function getCalendarEvents(
   if (inquiries) {
     for (const inquiry of inquiries) {
       // Skip inquiries that already converted to events (avoid duplication)
-      const dateStr = typeof inquiry.confirmed_date === 'string'
-        ? inquiry.confirmed_date.split('T')[0]
-        : ''
+      const dateStr =
+        typeof inquiry.confirmed_date === 'string' ? inquiry.confirmed_date.split('T')[0] : ''
       if (!dateStr) continue
 
       calendarEvents.push({
@@ -574,7 +582,7 @@ export async function updateEventTravelTime(eventId: string, travelTimeMinutes: 
   const supabase = createServerClient()
 
   // travel_time_minutes added in Layer 5 migration — type assertion until types regenerated
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('events')
     .update({ travel_time_minutes: travelTimeMinutes, updated_by: user.id })
     .eq('id', eventId)

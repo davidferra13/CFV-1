@@ -16,7 +16,7 @@ export async function clientHasCannabisAccess(authUserId: string): Promise<boole
     if (adminCheck) return true
 
     const supabase = createServerClient()
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('cannabis_tier_users')
       .select('status')
       .eq('auth_user_id', authUserId)
@@ -64,7 +64,7 @@ export async function getClientCannabisEvents() {
   let details: any[] = []
 
   if (eventIds.length > 0) {
-    const { data: detailData } = await (supabase as any)
+    const { data: detailData } = await supabase
       .from('cannabis_event_details')
       .select('event_id, cannabis_category, guest_consent_confirmed')
       .in('event_id', eventIds)

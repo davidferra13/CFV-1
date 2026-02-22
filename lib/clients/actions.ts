@@ -272,7 +272,7 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
 
   const supabase = createServerClient()
 
-  const { data: client, error } = await (supabase as any)
+  const { data: client, error } = await supabase
     .from('clients')
     .update(validated)
     .eq('id', clientId)

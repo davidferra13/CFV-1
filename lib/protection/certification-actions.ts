@@ -46,7 +46,7 @@ export async function addCertification(input: AddCertificationInput) {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_certifications')
     .insert({ ...validated, tenant_id: tenantId })
     .select()
@@ -69,7 +69,7 @@ export async function updateCertification(id: string, input: UpdateCertification
   const supabase = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_certifications')
     .select('id')
     .eq('id', id)
@@ -78,7 +78,7 @@ export async function updateCertification(id: string, input: UpdateCertification
 
   if (!existing) throw new Error('Certification not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_certifications')
     .update(validated)
     .eq('id', id)
@@ -102,7 +102,7 @@ export async function deleteCertification(id: string) {
   const supabase = createServerClient()
 
   // Verify ownership
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('chef_certifications')
     .select('id')
     .eq('id', id)
@@ -111,7 +111,7 @@ export async function deleteCertification(id: string) {
 
   if (!existing) throw new Error('Certification not found or access denied')
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_certifications')
     .delete()
     .eq('id', id)
@@ -132,7 +132,7 @@ export async function getCertifications() {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_certifications')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -157,7 +157,7 @@ export async function getExpiringCertifications(daysAhead: number) {
   const cutoff = new Date(today)
   cutoff.setDate(today.getDate() + daysAhead)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_certifications')
     .select('*')
     .eq('tenant_id', tenantId)
@@ -182,7 +182,7 @@ export async function hasActiveCertification(certType: string): Promise<boolean>
 
   const today = new Date().toISOString().slice(0, 10)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_certifications')
     .select('id')
     .eq('tenant_id', tenantId)

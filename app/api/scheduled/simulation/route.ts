@@ -44,7 +44,7 @@ async function handleSimulation(req: NextRequest): Promise<NextResponse> {
 
   // If no tenant IDs specified, run for all chefs
   if (tenantIds.length === 0) {
-    const { data: chefs } = await (supabase as any).from('chefs').select('id')
+    const { data: chefs } = await supabase.from('chefs').select('id')
     tenantIds = (chefs ?? []).map((c: { id: string }) => c.id)
   }
 

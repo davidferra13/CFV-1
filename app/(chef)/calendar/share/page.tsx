@@ -5,7 +5,7 @@ import { AvailabilityShareSettings } from '@/components/calendar/availability-sh
 export default async function CalendarSharePage() {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { data: tokens } = await (supabase as any)
+  const { data: tokens } = await supabase
     .from('chef_availability_share_tokens')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

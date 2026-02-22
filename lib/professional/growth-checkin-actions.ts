@@ -17,7 +17,7 @@ export async function submitCheckin(input: {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const { error } = await (supabase as any).from('chef_growth_checkins').upsert(
+  const { error } = await supabase.from('chef_growth_checkins').upsert(
     {
       tenant_id: tenantId,
       checkin_date: today,
@@ -50,7 +50,7 @@ export async function getCheckinHistory(): Promise<
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_growth_checkins')
     .select(
       'id, checkin_date, satisfaction_score, learned_this_quarter, draining_this_quarter, goal_next_quarter, track_request, created_at'
@@ -70,7 +70,7 @@ export async function isDue(): Promise<boolean> {
   const since = new Date()
   since.setDate(since.getDate() - 90)
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_growth_checkins')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -86,7 +86,7 @@ export async function getLatestSatisfactionScore(): Promise<number | null> {
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_growth_checkins')
     .select('satisfaction_score')
     .eq('tenant_id', tenantId)

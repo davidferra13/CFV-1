@@ -15,7 +15,11 @@ import type {
   DefaultStore,
   RevenueGoalCustom,
 } from '@/lib/scheduling/types'
-import { DASHBOARD_WIDGET_IDS, DEFAULT_DASHBOARD_WIDGETS, DEFAULT_PREFERENCES } from '@/lib/scheduling/types'
+import {
+  DASHBOARD_WIDGET_IDS,
+  DEFAULT_DASHBOARD_WIDGETS,
+  DEFAULT_PREFERENCES,
+} from '@/lib/scheduling/types'
 
 // ============================================
 // VALIDATION
@@ -27,17 +31,19 @@ const DefaultStoreSchema = z.object({
   place_id: z.string().optional().nullable(),
 })
 
-const RevenueGoalCustomSchema = z.object({
-  id: z.string().uuid(),
-  label: z.string().trim().min(1).max(80),
-  target_cents: z.number().int().min(0),
-  period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  period_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  enabled: z.boolean(),
-}).refine((goal) => goal.period_start <= goal.period_end, {
-  message: 'Custom goal start date must be before end date',
-  path: ['period_end'],
-})
+const RevenueGoalCustomSchema = z
+  .object({
+    id: z.string().uuid(),
+    label: z.string().trim().min(1).max(80),
+    target_cents: z.number().int().min(0),
+    period_start: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    period_end: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    enabled: z.boolean(),
+  })
+  .refine((goal) => goal.period_start <= goal.period_end, {
+    message: 'Custom goal start date must be before end date',
+    path: ['period_end'],
+  })
 
 const DashboardWidgetPreferenceSchema = z.object({
   id: z.enum(DASHBOARD_WIDGET_IDS),
@@ -82,7 +88,7 @@ export type UpdatePreferencesInput = z.infer<typeof UpdatePreferencesSchema>
 
 // Type assertion helper — chef_preferences not in generated types until migration applied
 function fromChefPreferences(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_preferences')
+  return supabase.from('chef_preferences')
 }
 
 function normalizeStore(store: DefaultStore): DefaultStore {
@@ -280,15 +286,13 @@ export async function getChefPreferences(): Promise<ChefPreferences> {
     default_packing_minutes: (row.default_packing_minutes as number) ?? 30,
     target_margin_percent: Number(row.target_margin_percent ?? 60),
     target_monthly_revenue_cents: Number(row.target_monthly_revenue_cents ?? 1000000),
-    target_annual_revenue_cents: row.target_annual_revenue_cents == null
-      ? null
-      : Number(row.target_annual_revenue_cents),
+    target_annual_revenue_cents:
+      row.target_annual_revenue_cents == null ? null : Number(row.target_annual_revenue_cents),
     revenue_goal_program_enabled: (row.revenue_goal_program_enabled as boolean) ?? false,
-    revenue_goal_nudge_level: (
-      row.revenue_goal_nudge_level === 'standard' || row.revenue_goal_nudge_level === 'aggressive'
-        ? row.revenue_goal_nudge_level
-        : 'gentle'
-    ) as ChefPreferences['revenue_goal_nudge_level'],
+    revenue_goal_nudge_level: (row.revenue_goal_nudge_level === 'standard' ||
+    row.revenue_goal_nudge_level === 'aggressive'
+      ? row.revenue_goal_nudge_level
+      : 'gentle') as ChefPreferences['revenue_goal_nudge_level'],
     revenue_goal_custom: getRevenueGoalCustomFromUnknown(row.revenue_goal_custom),
     shop_day_before: (row.shop_day_before as boolean) ?? true,
     dashboard_widgets: getDashboardWidgetsFromUnknown(row.dashboard_widgets),
@@ -366,12 +370,11 @@ export async function updateChefPreferences(input: UpdatePreferencesInput) {
       throw new Error('Failed to update preferences')
     }
   } else {
-    const { error } = await fromChefPreferences(supabase)
-      .insert({
-        chef_id: user.entityId,
-        tenant_id: user.tenantId!,
-        ...payload,
-      })
+    const { error } = await fromChefPreferences(supabase).insert({
+      chef_id: user.entityId,
+      tenant_id: user.tenantId!,
+      ...payload,
+    })
 
     if (error) {
       console.error('[updateChefPreferences] Insert error:', error)
@@ -427,7 +430,8 @@ export async function setBusinessMode(input: {
   const payload: Record<string, unknown> = {
     is_business: input.is_business,
   }
-  if ('business_legal_name' in input) payload.business_legal_name = input.business_legal_name?.trim() || null
+  if ('business_legal_name' in input)
+    payload.business_legal_name = input.business_legal_name?.trim() || null
   if ('business_address' in input) payload.business_address = input.business_address?.trim() || null
 
   const { data: existing } = await fromChefPreferences(supabase)
@@ -441,8 +445,11 @@ export async function setBusinessMode(input: {
       .eq('chef_id', user.entityId)
     if (error) throw new Error('Failed to update business mode')
   } else {
-    const { error } = await fromChefPreferences(supabase)
-      .insert({ chef_id: user.entityId, tenant_id: user.tenantId!, ...payload })
+    const { error } = await fromChefPreferences(supabase).insert({
+      chef_id: user.entityId,
+      tenant_id: user.tenantId!,
+      ...payload,
+    })
     if (error) throw new Error('Failed to save business mode')
   }
 

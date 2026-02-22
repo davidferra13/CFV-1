@@ -17,7 +17,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 export async function getCannabisInviteByToken(token: string) {
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('cannabis_tier_invitations')
     .select(
       'id, invitee_email, invitee_name, personal_note, expires_at, claimed_at, admin_approval_status'
@@ -72,14 +72,14 @@ export async function claimCannabisInvite(token: string) {
   }
 
   // Get user role info
-  const { data: roleData } = await (supabase as any)
+  const { data: roleData } = await supabase
     .from('user_roles')
     .select('role, entity_id')
     .eq('auth_user_id', user.id)
     .single()
 
   // Check if they already have tier access
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('cannabis_tier_users')
     .select('status')
     .eq('auth_user_id', user.id)

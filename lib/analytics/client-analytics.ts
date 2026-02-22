@@ -9,28 +9,28 @@ import { createServerClient } from '@/lib/supabase/server'
 export interface ClientRetentionStats {
   activeClients: number
   repeatClients: number
-  repeatBookingRate: number  // % of events from returning clients
-  retentionRate: number      // % of clients who booked again in next 6 months
+  repeatBookingRate: number // % of events from returning clients
+  retentionRate: number // % of clients who booked again in next 6 months
 }
 
 export interface ClientChurnStats {
-  totalAtRisk: number      // 120+ days inactive after 2+ events
-  dormantCount: number     // 90+ days with no engagement
-  churnRate: number        // % of historical clients now dormant
+  totalAtRisk: number // 120+ days inactive after 2+ events
+  dormantCount: number // 90+ days with no engagement
+  churnRate: number // % of historical clients now dormant
   avgDaysSinceLastEvent: number
 }
 
 export interface RevenueConcentrationStats {
   top5Clients: Array<{ clientId: string; name: string; revenueCents: number; sharePercent: number }>
-  top5SharePercent: number   // % of total revenue from top 5
-  herfindahlIndex: number    // 0–1 concentration score (higher = more concentrated)
+  top5SharePercent: number // % of total revenue from top 5
+  herfindahlIndex: number // 0–1 concentration score (higher = more concentrated)
 }
 
 export interface ClientAcquisitionStats {
   newClientsThisPeriod: number
   totalMarketingSpendCents: number
-  cacCents: number           // cost per new client
-  cacRatio: number           // CAC vs avg first-event value
+  cacCents: number // cost per new client
+  cacRatio: number // CAC vs avg first-event value
 }
 
 export interface ReferralConversionStats {
@@ -47,7 +47,7 @@ export interface WinbackStats {
 }
 
 export interface NpsStats {
-  npsScore: number           // % promoters − % detractors (−100 to 100)
+  npsScore: number // % promoters − % detractors (−100 to 100)
   promoters: number
   passives: number
   detractors: number
@@ -58,14 +58,14 @@ export interface NpsStats {
   avgValueRating: number
   avgPresentationRating: number
   wouldRebookPercent: number
-  responseRate: number       // responded / sent
+  responseRate: number // responded / sent
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function pct(numerator: number, denominator: number): number {
   if (denominator === 0) return 0
-  return Math.round((numerator / denominator) * 1000) / 10  // 1 decimal place
+  return Math.round((numerator / denominator) * 1000) / 10 // 1 decimal place
 }
 
 // ─── Actions ─────────────────────────────────────────────────────────────────
@@ -98,7 +98,9 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
   }
 
   const activeClients = clientEvents.size
-  const repeatClients = Array.from(clientEvents.values()).filter(dates => dates.length >= 2).length
+  const repeatClients = Array.from(clientEvents.values()).filter(
+    (dates) => dates.length >= 2
+  ).length
 
   // Repeat booking rate: events from clients with 2+ events / total events
   let eventsFromRepeatClients = 0
@@ -115,10 +117,10 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
   const cohortClients = new Set<string>()
   const retainedClients = new Set<string>()
   for (const [clientId, dates] of clientEvents) {
-    const inCohort = dates.some(d => new Date(d) >= oneYearAgo && new Date(d) < sixMonthsAgo)
+    const inCohort = dates.some((d) => new Date(d) >= oneYearAgo && new Date(d) < sixMonthsAgo)
     if (inCohort) {
       cohortClients.add(clientId)
-      const retained = dates.some(d => new Date(d) >= sixMonthsAgo)
+      const retained = dates.some((d) => new Date(d) >= sixMonthsAgo)
       if (retained) retainedClients.add(clientId)
     }
   }
@@ -230,10 +232,13 @@ export async function getRevenueConcentration(): Promise<RevenueConcentrationSta
     sharePercent: pct(revenueCents, totalRevenue),
   }))
 
-  const top5SharePercent = pct(sorted.reduce((sum, [, r]) => sum + r, 0), totalRevenue)
+  const top5SharePercent = pct(
+    sorted.reduce((sum, [, r]) => sum + r, 0),
+    totalRevenue
+  )
 
   // Herfindahl-Hirschman Index: sum of squared market shares (0 = perfect spread, 1 = monopoly)
-  const allShares = Array.from(clientRevenue.values()).map(r => r / totalRevenue)
+  const allShares = Array.from(clientRevenue.values()).map((r) => r / totalRevenue)
   const hhi = allShares.reduce((sum, s) => sum + s * s, 0)
 
   return {
@@ -245,7 +250,7 @@ export async function getRevenueConcentration(): Promise<RevenueConcentrationSta
 
 export async function getClientAcquisitionStats(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<ClientAcquisitionStats> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -259,14 +264,17 @@ export async function getClientAcquisitionStats(
     .lte('first_event_date', endDate)
 
   // Marketing spend in period
-  const { data: spendData } = await (supabase as any)
+  const { data: spendData } = await supabase
     .from('marketing_spend_log')
     .select('amount_cents')
     .eq('chef_id', chef.id)
     .gte('spend_date', startDate)
     .lte('spend_date', endDate)
 
-  const totalSpend = (spendData ?? []).reduce((sum: number, s: { amount_cents: number }) => sum + s.amount_cents, 0)
+  const totalSpend = (spendData ?? []).reduce(
+    (sum: number, s: { amount_cents: number }) => sum + s.amount_cents,
+    0
+  )
   const newClientCount = newClients ?? 0
   const cac = newClientCount > 0 ? Math.round(totalSpend / newClientCount) : 0
 
@@ -279,7 +287,10 @@ export async function getClientAcquisitionStats(
     .lte('first_event_date', endDate)
 
   const avgFirstValue = firstEvents?.length
-    ? Math.round((firstEvents ?? []).reduce((sum, c) => sum + (c.average_spend_cents ?? 0), 0) / firstEvents.length)
+    ? Math.round(
+        (firstEvents ?? []).reduce((sum, c) => sum + (c.average_spend_cents ?? 0), 0) /
+          firstEvents.length
+      )
     : 0
 
   return {
@@ -301,12 +312,10 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
     .eq('channel', 'referral')
 
   const referred = inquiries?.length ?? 0
-  const converted = (inquiries ?? []).filter(i => i.converted_to_event_id != null).length
+  const converted = (inquiries ?? []).filter((i) => i.converted_to_event_id != null).length
 
   // Revenue from referral-sourced events
-  const eventIds = (inquiries ?? [])
-    .map(i => i.converted_to_event_id)
-    .filter(Boolean) as string[]
+  const eventIds = (inquiries ?? []).map((i) => i.converted_to_event_id).filter(Boolean) as string[]
 
   let referralRevenue = 0
   if (eventIds.length > 0) {
@@ -317,7 +326,10 @@ export async function getReferralConversionStats(): Promise<ReferralConversionSt
       .in('event_id', eventIds)
       .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on'])
 
-    referralRevenue = (ledger ?? []).reduce((sum, e) => sum + (e.is_refund ? -e.amount_cents : e.amount_cents), 0)
+    referralRevenue = (ledger ?? []).reduce(
+      (sum, e) => sum + (e.is_refund ? -e.amount_cents : e.amount_cents),
+      0
+    )
   }
 
   return {
@@ -348,18 +360,21 @@ export async function getNpsStats(): Promise<NpsStats> {
   const responses = surveys ?? []
   const sentCount = (sent as unknown as { count: number })?.count ?? 0
 
-  const withNps = responses.filter(s => s.nps_score != null)
-  const promoters = withNps.filter(s => (s.nps_score ?? 0) >= 9).length
-  const detractors = withNps.filter(s => (s.nps_score ?? 0) <= 6).length
+  const withNps = responses.filter((s) => s.nps_score != null)
+  const promoters = withNps.filter((s) => (s.nps_score ?? 0) >= 9).length
+  const detractors = withNps.filter((s) => (s.nps_score ?? 0) <= 6).length
   const passives = withNps.length - promoters - detractors
-  const npsScore = withNps.length > 0 ? Math.round((promoters - detractors) / withNps.length * 100) : 0
+  const npsScore =
+    withNps.length > 0 ? Math.round(((promoters - detractors) / withNps.length) * 100) : 0
 
-  const avg = (field: keyof typeof responses[0]) => {
-    const vals = responses.filter(s => s[field] != null).map(s => Number(s[field]))
-    return vals.length > 0 ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length * 10) / 10 : 0
+  const avg = (field: keyof (typeof responses)[0]) => {
+    const vals = responses.filter((s) => s[field] != null).map((s) => Number(s[field]))
+    return vals.length > 0
+      ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10
+      : 0
   }
 
-  const withRebook = responses.filter(s => s.would_rebook != null)
+  const withRebook = responses.filter((s) => s.would_rebook != null)
 
   return {
     npsScore,
@@ -372,7 +387,7 @@ export async function getNpsStats(): Promise<NpsStats> {
     avgServiceRating: avg('service_rating'),
     avgValueRating: avg('value_rating'),
     avgPresentationRating: avg('presentation_rating'),
-    wouldRebookPercent: pct(withRebook.filter(s => s.would_rebook).length, withRebook.length),
+    wouldRebookPercent: pct(withRebook.filter((s) => s.would_rebook).length, withRebook.length),
     responseRate: pct(responses.length, sentCount),
   }
 }

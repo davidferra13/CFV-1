@@ -24,7 +24,7 @@ export async function sendChefPublishFailureNotification(
   const label = PLATFORM_LABELS[platform] ?? platform
 
   // Resolve chef's auth_user_id from user_roles
-  const { data: role } = await (supabase as any)
+  const { data: role } = await supabase
     .from('user_roles')
     .select('auth_user_id')
     .eq('entity_id', tenantId)
@@ -33,7 +33,7 @@ export async function sendChefPublishFailureNotification(
 
   if (!role?.auth_user_id) return
 
-  await (supabase as any).from('notifications').insert({
+  await supabase.from('notifications').insert({
     user_id: role.auth_user_id,
     tenant_id: tenantId,
     type: 'social_publish_failed',

@@ -57,7 +57,7 @@ export async function recordProposalView(
   // Use admin client — no auth required for client-side tracking
   const supabase = createServerClient({ admin: true })
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('proposal_views')
     .insert({
       quote_id: parsed.quoteId,
@@ -78,14 +78,12 @@ export async function recordProposalView(
  * Get analytics for proposal views on a specific quote.
  * Requires chef auth — only the owning chef can see view analytics.
  */
-export async function getProposalViewAnalytics(
-  quoteId: string
-): Promise<ProposalViewAnalytics> {
+export async function getProposalViewAnalytics(quoteId: string): Promise<ProposalViewAnalytics> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   // Verify the quote belongs to this chef
-  const { data: quote, error: quoteError } = await (supabase as any)
+  const { data: quote, error: quoteError } = await supabase
     .from('quotes')
     .select('id')
     .eq('id', quoteId)

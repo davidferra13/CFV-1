@@ -114,7 +114,7 @@ export async function uploadStandaloneReceipt(
     return { success: false, error: 'Failed to generate access URL — please try again' }
   }
 
-  const { data: photoRecord, error: dbError } = await (supabase as any)
+  const { data: photoRecord, error: dbError } = await supabase
     .from('receipt_photos')
     .insert({
       event_id: opts.eventId ?? null,
@@ -204,7 +204,7 @@ export async function getAllReceiptsForChef(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('receipt_photos')
     .select(
       `

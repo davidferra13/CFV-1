@@ -18,7 +18,7 @@ export async function getOutstandingPayments() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: summaries, error } = await (supabase as any)
+  const { data: summaries, error } = await supabase
     .from('event_financial_summary')
     .select('event_id, outstanding_balance_cents, quoted_price_cents, total_paid_cents')
     .eq('tenant_id', user.tenantId!)
@@ -40,7 +40,7 @@ export async function getOutstandingPayments() {
     .not('status', 'in', '("draft","cancelled")')
     .order('event_date', { ascending: true })
 
-  const enriched: OutstandingEvent[] = (events || []).map(event => {
+  const enriched: OutstandingEvent[] = (events || []).map((event) => {
     const fin = summaries.find((s: any) => s.event_id === event.id)
     return {
       eventId: event.id,
@@ -80,21 +80,28 @@ export async function getDashboardQuoteStats() {
 
   if (error) {
     console.error('[getDashboardQuoteStats] Error:', error)
-    return { draft: 0, sent: 0, expiringSoon: 0, total: 0, expiringDetails: [] as { clientName: string; validUntil: string; amountCents: number }[] }
+    return {
+      draft: 0,
+      sent: 0,
+      expiringSoon: 0,
+      total: 0,
+      expiringDetails: [] as { clientName: string; validUntil: string; amountCents: number }[],
+    }
   }
 
   const allQuotes = quotes || []
   const threeDaysFromNow = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
-    .toISOString().split('T')[0]
+    .toISOString()
+    .split('T')[0]
 
-  const draft = allQuotes.filter(q => q.status === 'draft').length
-  const sent = allQuotes.filter(q => q.status === 'sent').length
+  const draft = allQuotes.filter((q) => q.status === 'draft').length
+  const sent = allQuotes.filter((q) => q.status === 'sent').length
 
-  const expiringQuotes = allQuotes.filter(q =>
-    q.status === 'sent' && q.valid_until && q.valid_until <= threeDaysFromNow
+  const expiringQuotes = allQuotes.filter(
+    (q) => q.status === 'sent' && q.valid_until && q.valid_until <= threeDaysFromNow
   )
 
-  const expiringDetails = expiringQuotes.map(q => ({
+  const expiringDetails = expiringQuotes.map((q) => ({
     clientName: (q.client as any)?.full_name ?? 'Unknown',
     validUntil: q.valid_until!,
     amountCents: q.total_quoted_cents ?? 0,
@@ -124,20 +131,30 @@ export async function getDashboardEventCounts() {
 
   if (error) {
     console.error('[getDashboardEventCounts] Error:', error)
-    return { thisMonth: 0, ytd: 0, completedThisMonth: 0, completedYtd: 0, upcomingThisMonth: 0, totalGuestsThisMonth: 0, totalGuestsYtd: 0 }
+    return {
+      thisMonth: 0,
+      ytd: 0,
+      completedThisMonth: 0,
+      completedYtd: 0,
+      upcomingThisMonth: 0,
+      totalGuestsThisMonth: 0,
+      totalGuestsYtd: 0,
+    }
   }
 
   const allEvents = events || []
-  const thisMonthEvents = allEvents.filter(e => e.event_date >= monthStart)
+  const thisMonthEvents = allEvents.filter((e) => e.event_date >= monthStart)
   const today = new Date().toISOString().split('T')[0]
-  const completedThisMonth = thisMonthEvents.filter(e => e.status === 'completed').length
-  const upcomingThisMonth = thisMonthEvents.filter(e => e.event_date >= today && e.status !== 'completed').length
+  const completedThisMonth = thisMonthEvents.filter((e) => e.status === 'completed').length
+  const upcomingThisMonth = thisMonthEvents.filter(
+    (e) => e.event_date >= today && e.status !== 'completed'
+  ).length
 
   return {
     thisMonth: thisMonthEvents.length,
     ytd: allEvents.length,
     completedThisMonth,
-    completedYtd: allEvents.filter(e => e.status === 'completed').length,
+    completedYtd: allEvents.filter((e) => e.status === 'completed').length,
     upcomingThisMonth,
     totalGuestsThisMonth: thisMonthEvents.reduce((sum, e) => sum + (e.guest_count || 0), 0),
     totalGuestsYtd: allEvents.reduce((sum, e) => sum + (e.guest_count || 0), 0),
@@ -160,9 +177,10 @@ export async function getMonthOverMonthRevenue() {
 
   const prevMonthStart = `${prevYear}-${String(prevMonth).padStart(2, '0')}-01`
   const currentMonthStart = `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`
-  const nextMonthStart = currentMonth === 12
-    ? `${currentYear + 1}-01-01`
-    : `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`
+  const nextMonthStart =
+    currentMonth === 12
+      ? `${currentYear + 1}-01-01`
+      : `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`
 
   // Get events for current and previous months
   const { data: events } = await supabase
@@ -182,8 +200,8 @@ export async function getMonthOverMonthRevenue() {
     }
   }
 
-  const currentIds = events.filter(e => e.event_date >= currentMonthStart).map(e => e.id)
-  const prevIds = events.filter(e => e.event_date < currentMonthStart).map(e => e.id)
+  const currentIds = events.filter((e) => e.event_date >= currentMonthStart).map((e) => e.id)
+  const prevIds = events.filter((e) => e.event_date < currentMonthStart).map((e) => e.id)
   const allIds = [...currentIds, ...prevIds]
 
   if (allIds.length === 0) {
@@ -195,7 +213,7 @@ export async function getMonthOverMonthRevenue() {
     }
   }
 
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('event_financial_summary')
     .select('event_id, total_paid_cents, profit_cents')
     .eq('tenant_id', user.tenantId!)
@@ -205,18 +223,21 @@ export async function getMonthOverMonthRevenue() {
   let prevRevenue = 0
   let currentProfit = 0
 
-  for (const s of (summaries || [])) {
+  for (const s of summaries || []) {
     if (s.event_id && currentIds.includes(s.event_id)) {
-      currentRevenue += (s.total_paid_cents ?? 0)
-      currentProfit += (s.profit_cents ?? 0)
+      currentRevenue += s.total_paid_cents ?? 0
+      currentProfit += s.profit_cents ?? 0
     } else if (s.event_id && prevIds.includes(s.event_id)) {
-      prevRevenue += (s.total_paid_cents ?? 0)
+      prevRevenue += s.total_paid_cents ?? 0
     }
   }
 
-  const changePercent = prevRevenue > 0
-    ? Math.round(((currentRevenue - prevRevenue) / prevRevenue) * 100)
-    : currentRevenue > 0 ? 100 : 0
+  const changePercent =
+    prevRevenue > 0
+      ? Math.round(((currentRevenue - prevRevenue) / prevRevenue) * 100)
+      : currentRevenue > 0
+        ? 100
+        : 0
 
   return {
     currentMonthRevenueCents: currentRevenue,
@@ -251,7 +272,7 @@ export async function getCurrentMonthExpenseSummary() {
   let businessCents = 0
   let totalCents = 0
 
-  for (const exp of (data || [])) {
+  for (const exp of data || []) {
     totalCents += exp.amount_cents
     if (exp.is_business) {
       businessCents += exp.amount_cents
@@ -321,13 +342,17 @@ const MANUAL_LABOR_CATEGORIES = [
 export type ManualLaborCategory = (typeof MANUAL_LABOR_CATEGORIES)[number]
 
 const LogDashboardHoursSchema = z.object({
-  minutes: z.number().int().positive().max(24 * 60),
-  logged_for: z.string()
+  minutes: z
+    .number()
+    .int()
+    .positive()
+    .max(24 * 60),
+  logged_for: z
+    .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format')
-    .refine(
-      (val) => val <= new Date().toISOString().slice(0, 10),
-      { message: 'Cannot log hours for a future date.' }
-    )
+    .refine((val) => val <= new Date().toISOString().slice(0, 10), {
+      message: 'Cannot log hours for a future date.',
+    })
     .optional(),
   category: z.enum(MANUAL_LABOR_CATEGORIES),
   note: z.string().trim().max(500).optional(),
@@ -431,7 +456,8 @@ function computeTrackingStreak(
 ): { streak: number; todayLogged: boolean } {
   const todayLogged = loggedDates.has(todayIso)
   const yesterday = new Date(new Date(`${todayIso}T12:00:00Z`).getTime() - 86400000)
-    .toISOString().slice(0, 10)
+    .toISOString()
+    .slice(0, 10)
   const startDate = todayLogged ? todayIso : yesterday
 
   let streak = 0
@@ -504,7 +530,9 @@ function buildTopActivity(
   let topKey: DashboardHoursActivityKey | null = null
   let topMinutes = 0
 
-  for (const [key, minutes] of Object.entries(totals) as Array<[DashboardHoursActivityKey, number]>) {
+  for (const [key, minutes] of Object.entries(totals) as Array<
+    [DashboardHoursActivityKey, number]
+  >) {
     if (minutes > topMinutes) {
       topKey = key
       topMinutes = minutes
@@ -537,7 +565,9 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
       while (true) {
         const { data, error } = await supabase
           .from('events')
-          .select('event_date, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes')
+          .select(
+            'event_date, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
+          )
           .eq('tenant_id', user.tenantId!)
           .range(from, from + batchSize - 1)
 
@@ -559,7 +589,7 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
       let from = 0
 
       while (true) {
-        const { data, error } = await (supabase as any)
+        const { data, error } = await supabase
           .from('chef_activity_log')
           .select('id, action, created_at, context')
           .eq('tenant_id', user.tenantId!)
@@ -586,10 +616,24 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
   let weekMinutes = 0
   let allTimeMinutes = 0
   const emptyTotals = (): Record<DashboardHoursActivityKey, number> => ({
-    shopping: 0, prep: 0, travel: 0, service: 0, packing: 0,
-    planning: 0, admin: 0, client_comms: 0, marketing: 0, recipe_dev: 0,
-    shopping_sourcing: 0, prep_work: 0, cooking_service: 0, cleanup: 0, learning: 0,
-    manual: 0, charity: 0, other: 0,
+    shopping: 0,
+    prep: 0,
+    travel: 0,
+    service: 0,
+    packing: 0,
+    planning: 0,
+    admin: 0,
+    client_comms: 0,
+    marketing: 0,
+    recipe_dev: 0,
+    shopping_sourcing: 0,
+    prep_work: 0,
+    cooking_service: 0,
+    cleanup: 0,
+    learning: 0,
+    manual: 0,
+    charity: 0,
+    other: 0,
   })
   const activityTotals = emptyTotals()
   const weekActivityTotals = emptyTotals()
@@ -628,9 +672,10 @@ export async function getDashboardHoursSnapshot(): Promise<DashboardHoursSnapsho
 
     const fallbackDate = row.created_at.slice(0, 10)
     const loggedFor = coerceIsoDate(context?.logged_for, fallbackDate)
-    const note = typeof context?.note === 'string' && context.note.trim().length > 0
-      ? context.note.trim()
-      : null
+    const note =
+      typeof context?.note === 'string' && context.note.trim().length > 0
+        ? context.note.trim()
+        : null
 
     const rawCategory = typeof context?.category === 'string' ? context.category : null
     let activityKey: DashboardHoursActivityKey
@@ -726,16 +771,16 @@ export async function getTopEventsByProfit(limit = 3): Promise<TopProfitEvent[]>
 
   if (!events || events.length === 0) return []
 
-  const eventIds = events.map(e => e.id)
+  const eventIds = events.map((e) => e.id)
 
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('event_financial_summary')
     .select('event_id, profit_cents, profit_margin, total_paid_cents')
     .eq('tenant_id', user.tenantId!)
     .in('event_id', eventIds)
 
   return events
-    .map(event => {
+    .map((event) => {
       const fin = (summaries || []).find((s: any) => s.event_id === event.id)
       const profitMarginRaw = fin?.profit_margin ?? 0
       return {
@@ -763,9 +808,11 @@ export async function getMonthlyAvgHourlyRate(): Promise<number | null> {
   const now = new Date()
   const monthStart = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`
 
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('events')
-    .select('id, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes')
+    .select(
+      'id, time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
     .gte('event_date', monthStart)
@@ -774,7 +821,7 @@ export async function getMonthlyAvgHourlyRate(): Promise<number | null> {
 
   const eventIds = events.map((e: any) => e.id)
 
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('event_financial_summary')
     .select('event_id, profit_cents, tip_amount_cents')
     .eq('tenant_id', user.tenantId!)

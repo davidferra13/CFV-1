@@ -69,10 +69,7 @@ export interface ChatInsight {
  * Process a client message for insights.
  * Called asynchronously after message receipt -- non-blocking.
  */
-export async function processMessageInsights(
-  messageId: string,
-  conversationId: string
-) {
+export async function processMessageInsights(messageId: string, conversationId: string) {
   try {
     const supabase = createServerClient()
 
@@ -135,11 +132,7 @@ export async function processMessageInsights(
     }
 
     // Run AI analysis
-    const insights = await analyzeMessageForInsights(
-      message.body,
-      context,
-      profileSummary
-    )
+    const insights = await analyzeMessageForInsights(message.body, context, profileSummary)
 
     if (insights.length === 0) return
 
@@ -160,9 +153,7 @@ export async function processMessageInsights(
       confidence: i.confidence,
     }))
 
-    const { error } = await supabase
-      .from('chat_insights')
-      .insert(insightRows)
+    const { error } = await supabase.from('chat_insights').insert(insightRows)
 
     if (error) {
       console.error('[processMessageInsights] Insert error:', error)
@@ -221,7 +212,13 @@ async function autoEscalateAllergyInsight({
   tenantId: string
   clientId: string
   messageId: string
-  insight: { type: string; title: string; detail: string | null; extracted_data: Record<string, unknown>; confidence: number }
+  insight: {
+    type: string
+    title: string
+    detail: string | null
+    extracted_data: Record<string, unknown>
+    confidence: number
+  }
 }) {
   // Extract the allergen name from the AI's extracted_data or fall back to title
   const allergen: string =
@@ -252,31 +249,36 @@ async function autoEscalateAllergyInsight({
   // 1. Upsert client_allergy_records (ON CONFLICT on lower(allergen) per client)
   //    We use a raw insert with ON CONFLICT DO NOTHING so we don't overwrite
   //    chef-confirmed records with AI guesses.
-  const { error: upsertError } = await (supabase as any)
-    .from('client_allergy_records')
-    .upsert(
-      {
-        tenant_id: tenantId,
-        client_id: clientId,
-        allergen: allergen.trim(),
-        severity,
-        source: 'ai_detected',
-        confirmed_by_chef: false,
-        notes: insight.detail || null,
-        detected_in_message_id: messageId,
-      },
-      {
-        onConflict: 'client_id,allergen',
-        ignoreDuplicates: true,   // Don't overwrite existing (chef-entered) record
-      }
-    )
+  const { error: upsertError } = await supabase.from('client_allergy_records').upsert(
+    {
+      tenant_id: tenantId,
+      client_id: clientId,
+      allergen: allergen.trim(),
+      severity,
+      source: 'ai_detected',
+      confirmed_by_chef: false,
+      notes: insight.detail || null,
+      detected_in_message_id: messageId,
+    },
+    {
+      onConflict: 'client_id,allergen',
+      ignoreDuplicates: true, // Don't overwrite existing (chef-entered) record
+    }
+  )
 
   if (upsertError) {
     console.error('[autoEscalateAllergyInsight] Upsert error:', upsertError)
   }
 
   // 2. Create a pinned dietary note (always creates — notes are a log, not deduplicated)
-  const noteEmoji = severity === 'anaphylaxis' ? '⚠️ ANAPHYLAXIS' : severity === 'allergy' ? 'Allergy' : severity === 'intolerance' ? 'Intolerance' : 'Preference'
+  const noteEmoji =
+    severity === 'anaphylaxis'
+      ? '⚠️ ANAPHYLAXIS'
+      : severity === 'allergy'
+        ? 'Allergy'
+        : severity === 'intolerance'
+          ? 'Intolerance'
+          : 'Preference'
   const noteText = `AI Detected — ${noteEmoji}: ${allergen}${insight.detail ? ` — ${insight.detail}` : ''} (confidence: ${Math.round(insight.confidence * 100)}% — confirm in client profile)`
 
   await addClientNote({
@@ -323,9 +325,7 @@ async function autoEscalateAllergyInsight({
 /**
  * Get pending insights for a conversation.
  */
-export async function getPendingInsights(
-  conversationId: string
-): Promise<ChatInsight[]> {
+export async function getPendingInsights(conversationId: string): Promise<ChatInsight[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 

@@ -58,7 +58,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
   // Travel legs (primary + any consolidated leg that includes this event)
   let legs: TravelLegWithIngredients[] = []
   try {
-    const { data: legsRaw } = await (supabase as any)
+    const { data: legsRaw } = await supabase
       .from('event_travel_legs')
       .select('*')
       .or(`primary_event_id.eq.${eventId},linked_event_ids.cs.{${eventId}}`)
@@ -69,7 +69,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
 
     // For each leg, fetch ingredients (specialty legs only)
     for (const leg of (legsRaw ?? []) as any[]) {
-      const { data: ings } = await (supabase as any)
+      const { data: ings } = await supabase
         .from('travel_leg_ingredients')
         .select('*, ingredients(name)')
         .eq('leg_id', leg.id)
@@ -89,7 +89,7 @@ export async function fetchTravelRouteData(eventId: string): Promise<TravelRoute
     legs = []
   }
 
-  const clientData = (event.clients as unknown as { full_name: string } | null)
+  const clientData = event.clients as unknown as { full_name: string } | null
   return {
     event: {
       id: event.id,
@@ -110,7 +110,12 @@ function legDateLine(legDate: string): string {
   return format(parseISO(legDate), 'EEEE, MMMM d, yyyy')
 }
 
-function renderLegPage(pdf: PDFLayout, leg: TravelLegWithIngredients, eventLabel: string, chefName: string) {
+function renderLegPage(
+  pdf: PDFLayout,
+  leg: TravelLegWithIngredients,
+  eventLabel: string,
+  chefName: string
+) {
   const typeLabel = LEG_TYPE_LABELS[leg.leg_type]
   const dateLabel = legDateLine(leg.leg_date)
 
@@ -198,7 +203,11 @@ function renderLegPage(pdf: PDFLayout, leg: TravelLegWithIngredients, eventLabel
       const store = ing.store_name ? ` @ ${ing.store_name}` : ''
       const label = `${ing.ingredient_name ?? 'Unknown'}${qty ? ` — ${qty}` : ''}${store}`
       const isSourced = ing.status === 'sourced'
-      const statusNote = isSourced ? 'sourced' : ing.status === 'unavailable' ? 'unavailable' : undefined
+      const statusNote = isSourced
+        ? 'sourced'
+        : ing.status === 'unavailable'
+          ? 'unavailable'
+          : undefined
       pdf.checkbox(label, 8, statusNote, isSourced)
     }
     pdf.space(1)
@@ -230,7 +239,11 @@ export function renderTravelRoute(pdf: PDFLayout, data: TravelRouteData) {
     ])
     pdf.space(3)
     pdf.text('No travel legs planned for this event.', 10, 'italic')
-    pdf.text('Open the Travel Plan tab on the event page to start planning your routes.', 9, 'normal')
+    pdf.text(
+      'Open the Travel Plan tab on the event page to start planning your routes.',
+      9,
+      'normal'
+    )
     return
   }
 

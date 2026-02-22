@@ -25,7 +25,9 @@ export type ServiceCourse = {
 
 const GenerateCoursesSchema = z.object({
   eventId: z.string().uuid(),
-  courseNames: z.array(z.string().min(1, 'Course name is required')).min(1, 'At least one course is required'),
+  courseNames: z
+    .array(z.string().min(1, 'Course name is required'))
+    .min(1, 'At least one course is required'),
 })
 
 const ReorderCoursesSchema = z.object({
@@ -61,7 +63,7 @@ export async function generateDefaultCourses(
   }
 
   // Check if courses already exist for this event
-  const { data: existingCourses } = await (supabase as any)
+  const { data: existingCourses } = await supabase
     .from('service_courses')
     .select('id')
     .eq('event_id', validated.eventId)
@@ -69,7 +71,7 @@ export async function generateDefaultCourses(
 
   if (existingCourses && existingCourses.length > 0) {
     // Delete existing courses before generating new ones
-    await (supabase as any)
+    await supabase
       .from('service_courses')
       .delete()
       .eq('event_id', validated.eventId)
@@ -85,7 +87,7 @@ export async function generateDefaultCourses(
     notes: null,
   }))
 
-  const { data: courses, error } = await (supabase as any)
+  const { data: courses, error } = await supabase
     .from('service_courses')
     .insert(insertPayload)
     .select()
@@ -115,16 +117,14 @@ export async function generateDefaultCourses(
  * Reorder service courses based on the provided array of course IDs.
  * The position in the array determines the new course_number (1-indexed).
  */
-export async function reorderCourses(
-  courseIds: string[]
-): Promise<{ success: boolean }> {
+export async function reorderCourses(courseIds: string[]): Promise<{ success: boolean }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   const validated = ReorderCoursesSchema.parse({ courseIds })
 
   // Verify all courses belong to this chef
-  const { data: existingCourses, error: fetchError } = await (supabase as any)
+  const { data: existingCourses, error: fetchError } = await supabase
     .from('service_courses')
     .select('id, event_id')
     .eq('chef_id', user.tenantId!)
@@ -141,7 +141,7 @@ export async function reorderCourses(
 
   // Update each course's course_number based on its index in the array
   const updatePromises = validated.courseIds.map((courseId, index) =>
-    (supabase as any)
+    supabase
       .from('service_courses')
       .update({ course_number: index + 1 })
       .eq('id', courseId)
@@ -176,7 +176,7 @@ export async function getEventCourses(eventId: string): Promise<ServiceCourse[]>
 
   const validatedEventId = z.string().uuid().parse(eventId)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('service_courses')
     .select('*')
     .eq('event_id', validatedEventId)
@@ -212,7 +212,7 @@ export async function updateCourseNotes(
   const validatedCourseId = z.string().uuid().parse(courseId)
   const validatedNotes = z.string().max(1000).parse(notes)
 
-  const { data: course, error: fetchError } = await (supabase as any)
+  const { data: course, error: fetchError } = await supabase
     .from('service_courses')
     .select('event_id')
     .eq('id', validatedCourseId)
@@ -223,7 +223,7 @@ export async function updateCourseNotes(
     throw new Error('Course not found')
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('service_courses')
     .update({ notes: validatedNotes || null })
     .eq('id', validatedCourseId)

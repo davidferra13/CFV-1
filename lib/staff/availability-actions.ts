@@ -69,7 +69,7 @@ export async function setAvailability(
   const parsed = SetAvailabilitySchema.parse({ staffMemberId, date, isAvailable, notes })
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_availability')
     .upsert(
       {
@@ -113,7 +113,7 @@ export async function getStaffAvailabilityGrid(
   const supabase = createServerClient()
 
   // Fetch all active staff members
-  const { data: staffMembers, error: staffError } = await (supabase as any)
+  const { data: staffMembers, error: staffError } = await supabase
     .from('staff_members')
     .select('id, name, role')
     .eq('chef_id', user.tenantId!)
@@ -123,7 +123,7 @@ export async function getStaffAvailabilityGrid(
   if (staffError) throw new Error(`Failed to load staff: ${staffError.message}`)
 
   // Fetch all availability records in the date range
-  const { data: availRecords, error: availError } = await (supabase as any)
+  const { data: availRecords, error: availError } = await supabase
     .from('staff_availability')
     .select('staff_member_id, date, is_available, notes')
     .eq('chef_id', user.tenantId!)
@@ -134,7 +134,7 @@ export async function getStaffAvailabilityGrid(
 
   // Build a lookup: staffMemberId -> date -> record
   const lookup: Record<string, Record<string, { isAvailable: boolean; notes: string | null }>> = {}
-  for (const row of (availRecords || [])) {
+  for (const row of availRecords || []) {
     if (!lookup[row.staff_member_id]) lookup[row.staff_member_id] = {}
     lookup[row.staff_member_id][row.date] = {
       isAvailable: row.is_available,
@@ -154,15 +154,15 @@ export async function getStaffAvailabilityGrid(
  * Returns only staff members who are available on a specific date.
  * Staff with no availability record for the date are assumed available.
  */
-export async function getAvailableStaffForDate(
-  date: string
-): Promise<AvailableStaffMember[]> {
+export async function getAvailableStaffForDate(date: string): Promise<AvailableStaffMember[]> {
   const user = await requireChef()
-  z.string().regex(/^\d{4}-\d{2}-\d{2}$/).parse(date)
+  z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .parse(date)
   const supabase = createServerClient()
 
   // Get all active staff
-  const { data: allStaff, error: staffError } = await (supabase as any)
+  const { data: allStaff, error: staffError } = await supabase
     .from('staff_members')
     .select('id, name, role, phone, hourly_rate_cents, notes')
     .eq('chef_id', user.tenantId!)
@@ -172,7 +172,7 @@ export async function getAvailableStaffForDate(
   if (staffError) throw new Error(`Failed to load staff: ${staffError.message}`)
 
   // Get unavailability records for this date
-  const { data: unavailRecords, error: availError } = await (supabase as any)
+  const { data: unavailRecords, error: availError } = await supabase
     .from('staff_availability')
     .select('staff_member_id')
     .eq('chef_id', user.tenantId!)
@@ -181,9 +181,7 @@ export async function getAvailableStaffForDate(
 
   if (availError) throw new Error(`Failed to load availability: ${availError.message}`)
 
-  const unavailableIds = new Set(
-    (unavailRecords || []).map((r: any) => r.staff_member_id)
-  )
+  const unavailableIds = new Set((unavailRecords || []).map((r: any) => r.staff_member_id))
 
   return (allStaff || [])
     .filter((s: any) => !unavailableIds.has(s.id))
@@ -217,7 +215,7 @@ export async function bulkSetAvailability(
     is_available: parsed.isAvailable,
   }))
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_availability')
     .upsert(rows, { onConflict: 'staff_member_id,date' })
     .select()

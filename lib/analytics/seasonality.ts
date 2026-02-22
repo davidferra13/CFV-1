@@ -59,8 +59,8 @@ export async function getBookingSeasonality(): Promise<BookingSeasonality> {
   const supabase = createServerClient()
 
   // Fetch all completed + in-progress events (i.e., real bookings, not drafts)
-  // (supabase as any) because amount_paid_cents is not yet in the generated types
-  const { data: events } = await (supabase as any)
+  // supabase because amount_paid_cents is not yet in the generated types
+  const { data: events } = await supabase
     .from('events')
     .select('event_date, amount_paid_cents')
     .eq('tenant_id', user.tenantId!)
@@ -207,7 +207,7 @@ export async function getHolidayYearOverYear(): Promise<HolidayYoYRow[]> {
   const threeYearsAgo = new Date()
   threeYearsAgo.setFullYear(currentYear - 3)
 
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('events')
     .select('event_date, amount_paid_cents')
     .eq('tenant_id', user.tenantId!)

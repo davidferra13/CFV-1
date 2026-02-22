@@ -69,7 +69,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
   const supabase = createServerClient()
 
   // Fetch event + client in one query
-  const { data: event, error: eventError } = await (supabase as any)
+  const { data: event, error: eventError } = await supabase
     .from('events')
     .select(
       `
@@ -90,7 +90,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
   if (eventError || !event) return null
 
   // Fetch staff assignments
-  const { data: assignments } = await (supabase as any)
+  const { data: assignments } = await supabase
     .from('event_staff_assignments')
     .select(
       `
@@ -103,7 +103,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     .order('created_at')
 
   // Fetch confirmed dietary restrictions from linked inquiry (if any)
-  const { data: inquiry } = await (supabase as any)
+  const { data: inquiry } = await supabase
     .from('inquiries')
     .select('confirmed_dietary_restrictions, service_style_pref')
     .eq('converted_to_event_id', eventId)
@@ -111,7 +111,7 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
     .maybeSingle()
 
   // Fetch active menu items for this event
-  const { data: menuRows } = await (supabase as any)
+  const { data: menuRows } = await supabase
     .from('event_menu_items')
     .select('name, description, course')
     .eq('event_id', eventId)

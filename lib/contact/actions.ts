@@ -34,7 +34,7 @@ export async function submitContactForm(data: ContactFormData) {
   // Use admin client since this is a public form (no auth required)
   const supabase = createServerClient({ admin: true })
 
-  const { data: submission, error } = await (supabase as any)
+  const { data: submission, error } = await supabase
     .from('contact_submissions')
     .insert({ name, email, subject, message })
     .select('id')
@@ -49,7 +49,12 @@ export async function submitContactForm(data: ContactFormData) {
   const ownerChefId = process.env.PLATFORM_OWNER_CHEF_ID
   if (ownerChefId && submission?.id) {
     try {
-      await autoAssignToOwner(supabase, submission.id, ownerChefId, { name, email, subject, message })
+      await autoAssignToOwner(supabase, submission.id, ownerChefId, {
+        name,
+        email,
+        subject,
+        message,
+      })
     } catch (err) {
       // Non-fatal: submission is saved, just won't be auto-assigned
       console.error('[submitContactForm] Auto-assign failed (submission saved in pool):', err)
@@ -92,10 +97,9 @@ async function autoAssignToOwner(
     if (contact.email) unknownFields.client_email = contact.email
   }
 
-  const sourceMessage = [
-    contact.subject ? `Subject: ${contact.subject}` : '',
-    contact.message,
-  ].filter(Boolean).join('\n\n')
+  const sourceMessage = [contact.subject ? `Subject: ${contact.subject}` : '', contact.message]
+    .filter(Boolean)
+    .join('\n\n')
 
   // Create inquiry for the platform owner
   const { data: inquiry, error: inquiryError } = await supabase

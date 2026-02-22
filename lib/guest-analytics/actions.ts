@@ -12,7 +12,7 @@ export async function getRepeatGuests() {
   const supabase = createServerClient()
 
   // Get all guests across all events for this chef, grouped by email
-  const { data: allGuests, error } = await (supabase as any)
+  const { data: allGuests, error } = await supabase
     .from('event_guests')
     .select(
       `
@@ -78,7 +78,7 @@ export async function getGuestFrequencyStats() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_guests')
     .select(
       `
@@ -123,7 +123,7 @@ export async function getDinnerGroups() {
   const supabase = createServerClient()
 
   // Get all events with their attending guests
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_guests')
     .select(
       `

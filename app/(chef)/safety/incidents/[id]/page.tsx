@@ -15,7 +15,7 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data: incident } = await (supabase as any)
+  const { data: incident } = await supabase
     .from('chef_incidents')
     .select('*')
     .eq('id', params.id)

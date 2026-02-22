@@ -27,7 +27,6 @@ export type SurveyPublic = {
   }
 }
 
-
 // ─── Survey creation (admin client, called from transition hook) ──────────────
 
 /**
@@ -40,7 +39,7 @@ export async function createSurveyForEvent(
 ): Promise<string | null> {
   const supabase = createServerClient({ admin: true })
 
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('event_surveys')
     .select('token')
     .eq('event_id', eventId)
@@ -48,7 +47,7 @@ export async function createSurveyForEvent(
 
   if (existing) return existing.token
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_surveys')
     .insert({ event_id: eventId, chef_id: tenantId, tenant_id: tenantId })
     .select('token')
@@ -70,19 +69,19 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
  * Creates (or retrieves) the survey for an event and emails the survey link to the client.
  * Called from the event detail page when the chef clicks "Send Survey".
  */
-export async function sendClientSurvey(
-  eventId: string
-): Promise<{ ok: boolean; error?: string }> {
+export async function sendClientSurvey(eventId: string): Promise<{ ok: boolean; error?: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: event } = await (supabase as any)
+  const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion,
       client:clients(full_name, email),
       chef:chefs(business_name, display_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.entityId)
     .single()
@@ -113,13 +112,15 @@ export async function sendClientSurvey(
 export async function getSurveyByToken(token: string): Promise<SurveyPublic | null> {
   const supabase = createServerClient({ admin: true })
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_surveys')
-    .select(`
+    .select(
+      `
       id, token, submitted_at,
       event:events(occasion, event_date),
       chef:chefs(display_name, business_name)
-    `)
+    `
+    )
     .eq('token', token)
     .single()
 
@@ -160,7 +161,7 @@ export async function submitSurvey(input: SurveySubmitInput): Promise<{ success:
   const validated = SurveySubmitSchema.parse(input)
   const supabase = createServerClient({ admin: true })
 
-  const { data: existing, error: fetchError } = await (supabase as any)
+  const { data: existing, error: fetchError } = await supabase
     .from('event_surveys')
     .select('id, submitted_at')
     .eq('token', validated.token)
@@ -169,7 +170,7 @@ export async function submitSurvey(input: SurveySubmitInput): Promise<{ success:
   if (fetchError || !existing) throw new Error('Survey not found')
   if (existing.submitted_at) throw new Error('Survey has already been submitted')
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('event_surveys')
     .update({
       overall_rating: validated.overall_rating,
@@ -217,7 +218,8 @@ export async function submitSurveyResponse(input: {
       food_quality_rating: Math.min(5, Math.max(1, input.foodQualityRating || fallback)),
       communication_rating: Math.min(5, Math.max(1, input.serviceRating || fallback)),
       value_rating: Math.min(5, Math.max(1, input.valueRating || fallback)),
-      would_book_again: input.wouldRebook === true ? 'yes' : input.wouldRebook === false ? 'no' : 'maybe',
+      would_book_again:
+        input.wouldRebook === true ? 'yes' : input.wouldRebook === false ? 'no' : 'maybe',
       highlight_text: input.highlightText || undefined,
       suggestions_text: input.improvementText || undefined,
       testimonial_consent: input.consentToDisplay,
@@ -234,14 +236,16 @@ export async function getChefSurveys(): Promise<ChefSurveyRow[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_surveys')
-    .select(`
+    .select(
+      `
       id, token, submitted_at, created_at,
       overall_rating, food_quality_rating, communication_rating, value_rating,
       would_book_again, highlight_text, testimonial_consent,
       event:events(id, occasion, event_date, client:clients(full_name))
-    `)
+    `
+    )
     .eq('tenant_id', user.entityId)
     .order('created_at', { ascending: false })
 
@@ -272,4 +276,3 @@ export async function getChefSurveys(): Promise<ChefSurveyRow[]> {
       : null,
   }))
 }
-

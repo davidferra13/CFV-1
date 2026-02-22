@@ -50,23 +50,28 @@ const ConnectBankSchema = z.object({
 
 // ─── Actions ─────────────────────────────────────────────────────
 
-export async function connectBankAccount(input: z.infer<typeof ConnectBankSchema>): Promise<BankConnection> {
+export async function connectBankAccount(
+  input: z.infer<typeof ConnectBankSchema>
+): Promise<BankConnection> {
   const user = await requireChef()
   const parsed = ConnectBankSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('bank_connections')
-    .upsert({
-      chef_id: user.tenantId!,
-      provider: parsed.provider,
-      provider_account_id: parsed.providerAccountId,
-      institution_name: parsed.institutionName,
-      account_name: parsed.accountName || null,
-      account_type: parsed.accountType,
-      is_active: true,
-      connected_at: new Date().toISOString(),
-    }, { onConflict: 'chef_id,provider_account_id' })
+    .upsert(
+      {
+        chef_id: user.tenantId!,
+        provider: parsed.provider,
+        provider_account_id: parsed.providerAccountId,
+        institution_name: parsed.institutionName,
+        account_name: parsed.accountName || null,
+        account_type: parsed.accountType,
+        is_active: true,
+        connected_at: new Date().toISOString(),
+      },
+      { onConflict: 'chef_id,provider_account_id' }
+    )
     .select()
     .single()
 
@@ -89,7 +94,7 @@ export async function disconnectBankAccount(connectionId: string): Promise<void>
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('bank_connections')
     .update({ is_active: false })
     .eq('id', connectionId)
@@ -103,7 +108,7 @@ export async function getBankConnections(): Promise<BankConnection[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('bank_connections')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -132,7 +137,7 @@ export async function getBankTransactions(filters?: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('bank_transactions')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -171,7 +176,7 @@ export async function confirmTransaction(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('bank_transactions')
     .update({
       status: 'confirmed',
@@ -206,7 +211,7 @@ export async function ignoreTransaction(transactionId: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('bank_transactions')
     .update({ status: 'ignored' })
     .eq('id', transactionId)
@@ -220,7 +225,7 @@ export async function getReconciliationSummary(): Promise<ReconciliationSummary>
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('bank_transactions')
     .select('status, amount_cents')
     .eq('chef_id', user.tenantId!)

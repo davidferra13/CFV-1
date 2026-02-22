@@ -77,7 +77,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
   }
 
   // ── avg satisfaction last 90d ─────────────────────────────────────────────
-  const { data: checkins } = await (supabase as any)
+  const { data: checkins } = await supabase
     .from('chef_growth_checkins')
     .select('satisfaction_score')
     .eq('tenant_id', tenantId)
@@ -98,7 +98,7 @@ export async function getWellbeingSignals(): Promise<WellbeingResult> {
   // chef_journey_entries is the journal table (from chef_journey expansion migration)
   let daysSinceJournalEntry = 60 // default: assume 60 days if no table or no entries
   try {
-    const { data: journalEntry } = await (supabase as any)
+    const { data: journalEntry } = await supabase
       .from('chef_journey_entries')
       .select('entry_date')
       .eq('tenant_id', tenantId)

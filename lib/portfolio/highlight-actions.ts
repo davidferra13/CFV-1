@@ -60,18 +60,16 @@ export async function createHighlight(
   const supabase = createServerClient()
 
   // Get current max display_order
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('profile_highlights')
     .select('display_order')
     .eq('chef_id', user.tenantId!)
     .order('display_order', { ascending: false })
     .limit(1)
 
-  const nextOrder = (existing && existing.length > 0)
-    ? (existing[0].display_order ?? 0) + 1
-    : 0
+  const nextOrder = existing && existing.length > 0 ? (existing[0].display_order ?? 0) + 1 : 0
 
-  const { data: highlight, error } = await (supabase as any)
+  const { data: highlight, error } = await supabase
     .from('profile_highlights')
     .insert({
       chef_id: user.tenantId!,
@@ -119,7 +117,7 @@ export async function updateHighlight(
     throw new Error('No fields to update')
   }
 
-  const { data: highlight, error } = await (supabase as any)
+  const { data: highlight, error } = await supabase
     .from('profile_highlights')
     .update(updatePayload)
     .eq('id', id)
@@ -144,14 +142,12 @@ export async function updateHighlight(
 /**
  * Delete a highlight by ID (with chef_id ownership check).
  */
-export async function deleteHighlight(
-  id: string
-): Promise<{ success: boolean }> {
+export async function deleteHighlight(id: string): Promise<{ success: boolean }> {
   const validated = DeleteHighlightSchema.parse({ id })
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('profile_highlights')
     .delete()
     .eq('id', validated.id)
@@ -175,7 +171,7 @@ export async function getHighlights(): Promise<ProfileHighlight[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: highlights, error } = await (supabase as any)
+  const { data: highlights, error } = await supabase
     .from('profile_highlights')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -199,13 +195,15 @@ export async function removeHighlight(id: string) {
   return deleteHighlight(id)
 }
 
-export async function reorderHighlights(ordered: { id: string; displayOrder: number }[]): Promise<{ success: boolean }> {
+export async function reorderHighlights(
+  ordered: { id: string; displayOrder: number }[]
+): Promise<{ success: boolean }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   await Promise.all(
     ordered.map(({ id, displayOrder }) =>
-      (supabase as any)
+      supabase
         .from('profile_highlights')
         .update({ display_order: displayOrder })
         .eq('id', id)

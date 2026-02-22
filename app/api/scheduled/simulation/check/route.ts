@@ -25,12 +25,12 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   // created in the last 6 months. This excludes demo, test, and empty accounts.
   const activeSince = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()
 
-  const { data: activeEvents } = await (supabase as any)
+  const { data: activeEvents } = await supabase
     .from('events')
     .select('tenant_id')
     .gte('created_at', activeSince)
 
-  const { data: activeInquiries } = await (supabase as any)
+  const { data: activeInquiries } = await supabase
     .from('inquiries')
     .select('tenant_id')
     .gte('created_at', activeSince)
@@ -48,7 +48,7 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const dueFor: string[] = []
 
   for (const tenantId of activeTenantIds) {
-    const { data: lastRun } = await (supabase as any)
+    const { data: lastRun } = await supabase
       .from('simulation_runs')
       .select('started_at')
       .eq('tenant_id', tenantId)

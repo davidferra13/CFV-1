@@ -10,6 +10,7 @@ export const metadata: Metadata = { title: 'Clients - ChefFlow' }
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
+import { NoClientsIllustration } from '@/components/ui/branded-illustrations'
 import { SkeletonTable } from '@/components/ui/skeleton'
 import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
@@ -49,7 +50,9 @@ export default async function ClientsPage() {
 
           <div className="border-t pt-6">
             <h3 className="text-sm font-medium text-stone-900 mb-4">Pending Invitations</h3>
-            <Suspense fallback={<div className="text-sm text-stone-500">Loading invitations...</div>}>
+            <Suspense
+              fallback={<div className="text-sm text-stone-500">Loading invitations...</div>}
+            >
               <PendingInvitationsContent />
             </Suspense>
           </div>
@@ -87,11 +90,12 @@ async function ClientsListContent() {
     getClientHealthScores().catch(() => ({ scores: [], medianLtv: 0, avgEventsPerYear: 0 })),
   ])
 
-  const healthMap = new Map(healthSummary.scores.map(s => [s.clientId, s]))
+  const healthMap = new Map(healthSummary.scores.map((s) => [s.clientId, s]))
 
   if (clients.length === 0) {
     return (
       <EmptyState
+        illustration={<NoClientsIllustration />}
         title="No clients yet"
         description="Invite your first client to start tracking their preferences, events, and loyalty rewards."
         action={{ label: 'Send Invitation', href: '#invite' }}

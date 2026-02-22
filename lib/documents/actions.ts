@@ -55,7 +55,7 @@ export async function getBusinessDocInfo(eventId: string): Promise<BusinessDocIn
 
   // Most recent contract — scope by tenant_id (not chef_id) to match the
   // established tenant-isolation pattern used everywhere else in the codebase.
-  const { data: contracts } = await (supabase as any)
+  const { data: contracts } = await supabase
     .from('event_contracts')
     .select('id, status, signed_at')
     .eq('event_id', eventId)
@@ -109,10 +109,12 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
   // Fetch event basics
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, serve_time, arrival_time, dietary_restrictions, allergies,
       guest_count, location_address
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -159,7 +161,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
         .eq('menu_id', menus[0].id)
         .eq('tenant_id', user.tenantId!)
 
-      const dishIds = (dishes || []).map(d => d.id)
+      const dishIds = (dishes || []).map((d) => d.id)
       if (dishIds.length > 0) {
         const { count: compCount } = await supabase
           .from('components')
@@ -193,7 +195,7 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
   // Travel route: ready when at least one service_travel leg exists
   let hasTravelRoute = false
   try {
-    const { count: legCount } = await (supabase as any)
+    const { count: legCount } = await supabase
       .from('event_travel_legs')
       .select('id', { count: 'exact', head: true })
       .eq('primary_event_id', eventId)
@@ -216,7 +218,9 @@ export async function getDocumentReadiness(eventId: string): Promise<DocumentRea
     resetChecklist: { ready: true, missing: [] },
     travelRoute: {
       ready: hasTravelRoute,
-      missing: hasTravelRoute ? [] : ['No service travel leg added yet — open Travel Plan to add one'],
+      missing: hasTravelRoute
+        ? []
+        : ['No service travel leg added yet — open Travel Plan to add one'],
     },
   }
 }

@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { formatDistanceToNow, format } from 'date-fns'
+import { NoQuotesIllustration } from '@/components/ui/branded-illustrations'
 
 type QuoteFilter = 'all' | 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 
@@ -27,6 +28,11 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
   if (quotes.length === 0) {
     return (
       <Card className="p-8 text-center">
+        {filter === 'all' && (
+          <div className="flex justify-center mb-4">
+            <NoQuotesIllustration className="h-24 w-24" />
+          </div>
+        )}
         <p className="text-stone-500 mb-4">
           {filter === 'all'
             ? 'No quotes yet. Create your first quote!'
@@ -61,9 +67,7 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-medium text-stone-900">{clientName}</span>
                   <QuoteStatusBadge status={quote.status as any} />
-                  {quote.pricing_model && (
-                    <PricingModelBadge model={quote.pricing_model as any} />
-                  )}
+                  {quote.pricing_model && <PricingModelBadge model={quote.pricing_model as any} />}
                 </div>
                 {quote.quote_name && (
                   <p className="text-sm text-stone-600 mt-1">{quote.quote_name}</p>
@@ -80,7 +84,8 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
                 </p>
                 {quote.price_per_person_cents && quote.guest_count_estimated && (
                   <p className="text-xs text-stone-500">
-                    {formatCurrency(quote.price_per_person_cents)}/person x {quote.guest_count_estimated}
+                    {formatCurrency(quote.price_per_person_cents)}/person x{' '}
+                    {quote.guest_count_estimated}
                   </p>
                 )}
                 <p className="text-xs text-stone-400 mt-1">
@@ -96,7 +101,7 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
 }
 
 export default async function QuotesPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: { status?: QuoteFilter }
 }) {
@@ -137,10 +142,7 @@ export default async function QuotesPage({
         <div className="flex gap-2 flex-wrap">
           {tabs.map((tab) => (
             <Link key={tab.value} href={`/quotes?status=${tab.value}`}>
-              <Button
-                size="sm"
-                variant={filter === tab.value ? 'primary' : 'secondary'}
-              >
+              <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
                 {tab.label}
               </Button>
             </Link>
@@ -149,11 +151,13 @@ export default async function QuotesPage({
       </Card>
 
       {/* Quote List */}
-      <Suspense fallback={
-        <Card className="p-8 text-center">
-          <p className="text-stone-500">Loading quotes...</p>
-        </Card>
-      }>
+      <Suspense
+        fallback={
+          <Card className="p-8 text-center">
+            <p className="text-stone-500">Loading quotes...</p>
+          </Card>
+        }
+      >
         <QuoteList filter={filter} />
       </Suspense>
     </div>

@@ -18,7 +18,7 @@ export default async function GuestCardPage({ params }: Props) {
 
   // Get chef display info
   const supabase = createServerClient()
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name, tagline, profile_image_url')
     .eq('id', user.tenantId!)

@@ -9,7 +9,7 @@ export default async function PublicAvailabilityPage({
   const { token } = await params
   const supabase = await createServerClient()
 
-  const { data: shareToken } = await (supabase as any)
+  const { data: shareToken } = await supabase
     .from('chef_availability_share_tokens')
     .select('*, chefs(display_name)')
     .eq('token', token)

@@ -10,7 +10,10 @@ ALTER TABLE chefs
   ADD COLUMN IF NOT EXISTS off_days TEXT[] DEFAULT '{}',
   ADD COLUMN IF NOT EXISTS business_continuity_plan JSONB DEFAULT '{}';
 
--- Protected time blocks in calendar
-ALTER TABLE prep_blocks
-  ADD COLUMN IF NOT EXISTS block_type TEXT DEFAULT 'prep'
-    CHECK (block_type IN ('prep','protected_personal','rest'));
+-- Protected time blocks in calendar (only if prep_blocks table exists)
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'prep_blocks') THEN
+    ALTER TABLE prep_blocks ADD COLUMN IF NOT EXISTS block_type TEXT DEFAULT 'prep';
+  END IF;
+END $$;

@@ -26,15 +26,17 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
 
   // ── 24-hour window ────────────────────────────────────────────────────────
   const window24hStart = new Date(now.getTime() + 23 * 60 * 60 * 1000).toISOString()
-  const window24hEnd   = new Date(now.getTime() + 25 * 60 * 60 * 1000).toISOString()
+  const window24hEnd = new Date(now.getTime() + 25 * 60 * 60 * 1000).toISOString()
 
-  const { data: calls24h, error: err24 } = await (supabase as any)
+  const { data: calls24h, error: err24 } = await supabase
     .from('scheduled_calls')
-    .select(`
+    .select(
+      `
       id, tenant_id, call_type, title, scheduled_at, duration_minutes, timezone,
       contact_name, contact_company, reminder_24h_sent_at,
       client:clients(id, full_name, email)
-    `)
+    `
+    )
     .in('status', ['scheduled', 'confirmed'])
     .gte('scheduled_at', window24hStart)
     .lte('scheduled_at', window24hEnd)
@@ -42,15 +44,17 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
 
   // ── 1-hour window ────────────────────────────────────────────────────────
   const window1hStart = new Date(now.getTime() + 45 * 60 * 1000).toISOString()
-  const window1hEnd   = new Date(now.getTime() + 75 * 60 * 1000).toISOString()
+  const window1hEnd = new Date(now.getTime() + 75 * 60 * 1000).toISOString()
 
-  const { data: calls1h, error: err1 } = await (supabase as any)
+  const { data: calls1h, error: err1 } = await supabase
     .from('scheduled_calls')
-    .select(`
+    .select(
+      `
       id, tenant_id, call_type, title, scheduled_at, duration_minutes, timezone,
       contact_name, contact_company, reminder_1h_sent_at,
       client:clients(id, full_name, email)
-    `)
+    `
+    )
     .in('status', ['scheduled', 'confirmed'])
     .gte('scheduled_at', window1hStart)
     .lte('scheduled_at', window1hEnd)
@@ -72,7 +76,9 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
   let errors = 0
 
   // Helper: find the chef's auth email for a tenant
-  async function getChefEmail(tenantId: string): Promise<{ email: string; displayName: string } | null> {
+  async function getChefEmail(
+    tenantId: string
+  ): Promise<{ email: string; displayName: string } | null> {
     const { data } = await supabase
       .from('user_roles')
       .select('auth_user_id')
@@ -119,7 +125,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         }),
       })
 
-      await (supabase as any)
+      await supabase
         .from('scheduled_calls')
         .update({ reminder_24h_sent_at: new Date().toISOString() })
         .eq('id', call.id)
@@ -153,7 +159,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         }),
       })
 
-      await (supabase as any)
+      await supabase
         .from('scheduled_calls')
         .update({ reminder_1h_sent_at: new Date().toISOString() })
         .eq('id', call.id)

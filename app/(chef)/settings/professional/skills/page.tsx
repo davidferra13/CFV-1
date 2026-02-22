@@ -5,7 +5,7 @@ import { CapabilityInventory } from '@/components/professional/capability-invent
 export default async function SkillsPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_capability_inventory')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

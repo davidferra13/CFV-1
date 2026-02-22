@@ -31,7 +31,7 @@ export async function getOnboardingProgress(): Promise<OnboardingProgress> {
       .from('clients')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!),
-    (supabase as any)
+    supabase
       .from('loyalty_config')
       .select('is_active')
       .eq('tenant_id', user.tenantId!)
@@ -41,28 +41,21 @@ export async function getOnboardingProgress(): Promise<OnboardingProgress> {
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', user.tenantId!)
       .eq('archived', false),
-    (supabase as any)
+    supabase
       .from('staff_members')
       .select('id', { count: 'exact', head: true })
       .eq('chef_id', user.tenantId!),
   ])
 
-  const profileDone = !!(
-    chefRow.data?.business_name &&
-    chefRow.data?.display_name
-  )
+  const profileDone = !!(chefRow.data?.business_name && chefRow.data?.display_name)
   const clientsDone = (clients.count ?? 0) > 0
   const loyaltyDone = loyaltyConfig.data !== null
   const recipesDone = (recipes.count ?? 0) > 0
   const staffDone = (staff.count ?? 0) > 0
 
-  const completedPhases = [
-    profileDone,
-    clientsDone,
-    loyaltyDone,
-    recipesDone,
-    staffDone,
-  ].filter(Boolean).length
+  const completedPhases = [profileDone, clientsDone, loyaltyDone, recipesDone, staffDone].filter(
+    Boolean
+  ).length
 
   return {
     profile: profileDone,

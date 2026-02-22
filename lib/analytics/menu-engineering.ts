@@ -15,10 +15,10 @@ export interface MenuEngineeringItem {
   id: string
   name: string
   salesCount: number
-  sellingPrice: number     // cents
-  foodCost: number         // cents
-  contribution: number     // cents (sellingPrice - foodCost)
-  foodCostPct: number      // percentage
+  sellingPrice: number // cents
+  foodCost: number // cents
+  contribution: number // cents (sellingPrice - foodCost)
+  foodCostPct: number // percentage
   quadrant: Quadrant
 }
 
@@ -38,7 +38,7 @@ function assignQuadrant(
   salesCount: number,
   contribution: number,
   avgPopularity: number,
-  avgContribution: number,
+  avgContribution: number
 ): Quadrant {
   const highPopularity = salesCount >= avgPopularity
   const highContribution = contribution >= avgContribution
@@ -52,20 +52,22 @@ function assignQuadrant(
 
 export async function computeMenuEngineering(
   menuId?: string,
-  targetFoodCostPct: number = 30,
+  targetFoodCostPct: number = 30
 ): Promise<MenuEngineeringResult> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
   // Get menu items with their recipes and cost data
   // TODO: menu_items table does not exist yet — using dishes as proxy
-  let query = (supabase as any)
+  let query = supabase
     .from('menu_items')
-    .select(`
+    .select(
+      `
       id, name, price,
       menu_id,
       recipe:recipes(id, name, cost_per_serving)
-    `)
+    `
+    )
     .eq('menus.chef_id', chef.id)
 
   if (menuId) {
@@ -108,7 +110,7 @@ export async function computeMenuEngineering(
   const totalSalesCount = rawItems.reduce((s, i) => s + i.salesCount, 0)
   const avgContribution = totalSalesCount > 0 ? totalContribution / totalSalesCount : 0
 
-  const items: MenuEngineeringItem[] = rawItems.map(i => ({
+  const items: MenuEngineeringItem[] = rawItems.map((i) => ({
     ...i,
     quadrant: assignQuadrant(i.salesCount, i.contribution, avgPopularity, avgContribution),
   }))
@@ -117,8 +119,8 @@ export async function computeMenuEngineering(
   const totalFoodCost = items.reduce((s, i) => s + i.foodCost * i.salesCount, 0)
 
   const alerts = items
-    .filter(i => i.foodCostPct > targetFoodCostPct)
-    .map(i => ({
+    .filter((i) => i.foodCostPct > targetFoodCostPct)
+    .map((i) => ({
       itemId: i.id,
       itemName: i.name,
       foodCostPct: i.foodCostPct,
@@ -131,7 +133,8 @@ export async function computeMenuEngineering(
     avgPopularity,
     totalRevenue,
     totalFoodCost,
-    overallFoodCostPct: totalRevenue > 0 ? Math.round((totalFoodCost / totalRevenue) * 1000) / 10 : 0,
+    overallFoodCostPct:
+      totalRevenue > 0 ? Math.round((totalFoodCost / totalRevenue) * 1000) / 10 : 0,
     alerts,
   }
 }

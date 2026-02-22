@@ -63,7 +63,7 @@ export async function saveEquipmentChecklist(eventId: string, items: EquipmentIt
   const eqItems: StoredEqItem[] = items.map(toStored)
 
   // Check if a checklist record exists for this event
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('event_safety_checklists')
     .select('*')
     .eq('event_id', eventId)
@@ -76,7 +76,7 @@ export async function saveEquipmentChecklist(eventId: string, items: EquipmentIt
     const nonEqItems = currentItems.filter((i) => !i.key.startsWith('EQ_'))
     const merged = [...nonEqItems, ...eqItems]
 
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('event_safety_checklists')
       .update({ items: merged, updated_at: new Date().toISOString() })
       .eq('id', existing.id)
@@ -86,7 +86,7 @@ export async function saveEquipmentChecklist(eventId: string, items: EquipmentIt
       throw new Error('Failed to save equipment checklist')
     }
   } else {
-    const { error } = await (supabase as any).from('event_safety_checklists').insert({
+    const { error } = await supabase.from('event_safety_checklists').insert({
       event_id: eventId,
       tenant_id: tenantId,
       items: eqItems,
@@ -105,7 +105,7 @@ export async function getEquipmentChecklist(eventId: string): Promise<EquipmentI
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { data: checklist } = await (supabase as any)
+  const { data: checklist } = await supabase
     .from('event_safety_checklists')
     .select('items')
     .eq('event_id', eventId)

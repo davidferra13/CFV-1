@@ -52,7 +52,7 @@ export async function saveEmailTemplate(
   const validated = SaveEmailTemplateSchema.parse(input)
 
   // Check if a template with this name already exists (non-system)
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('campaign_templates')
     .select('id, is_system')
     .eq('chef_id', user.tenantId!)
@@ -67,7 +67,7 @@ export async function saveEmailTemplate(
 
   if (existing) {
     // Update existing template
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('campaign_templates')
       .update({
         subject: validated.subject,
@@ -86,7 +86,7 @@ export async function saveEmailTemplate(
     result = data
   } else {
     // Create new template
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('campaign_templates')
       .insert({
         chef_id: user.tenantId!,
@@ -133,7 +133,7 @@ export async function listEmailTemplates(): Promise<EmailTemplate[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('campaign_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -170,7 +170,7 @@ export async function deleteEmailTemplate(id: string): Promise<{ success: boolea
   const validatedId = TemplateIdSchema.parse(id)
 
   // Verify the template exists, belongs to this chef, and is not a system template
-  const { data: template } = await (supabase as any)
+  const { data: template } = await supabase
     .from('campaign_templates')
     .select('id, is_system')
     .eq('id', validatedId)
@@ -185,7 +185,7 @@ export async function deleteEmailTemplate(id: string): Promise<{ success: boolea
     throw new Error('Cannot delete system templates')
   }
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('campaign_templates')
     .delete()
     .eq('id', validatedId)

@@ -90,4 +90,4 @@ CREATE POLICY remy_artifacts_delete ON remy_artifacts
 CREATE TRIGGER set_remy_artifacts_updated_at
   BEFORE UPDATE ON remy_artifacts
   FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at();
+  EXECUTE FUNCTION update_updated_at_column();

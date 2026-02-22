@@ -39,9 +39,11 @@ export async function buildClientSuggestions(
   if (gapCents <= 0) return []
 
   // Fetch dormant clients from financial summary view
-  const { data: summaryRows } = await (supabase as any)
+  const { data: summaryRows } = await supabase
     .from('client_financial_summary')
-    .select('client_id, lifetime_value_cents, average_spend_per_event, days_since_last_event, is_dormant')
+    .select(
+      'client_id, lifetime_value_cents, average_spend_per_event, days_since_last_event, is_dormant'
+    )
     .eq('tenant_id', tenantId)
     .eq('is_dormant', true)
     .order('lifetime_value_cents', { ascending: false })
@@ -53,7 +55,7 @@ export async function buildClientSuggestions(
   const clientIds = rows.map((r) => r.client_id as string)
 
   // Fetch client names and statuses
-  const { data: clientRows } = await (supabase as any)
+  const { data: clientRows } = await supabase
     .from('clients')
     .select('id, full_name, status')
     .eq('tenant_id', tenantId)
@@ -64,7 +66,7 @@ export async function buildClientSuggestions(
   )
 
   // Fetch existing suggestion rows to merge current status + ID
-  const { data: existingRows } = await (supabase as any)
+  const { data: existingRows } = await supabase
     .from('goal_client_suggestions')
     .select('client_id, id, status')
     .eq('tenant_id', tenantId)
@@ -125,17 +127,20 @@ export async function buildClientSuggestions(
   }))
 
   // ignoreDuplicates: true ensures existing rows (with non-pending status) are not overwritten
-  await (supabase as any)
+  await supabase
     .from('goal_client_suggestions')
     .upsert(insertRows, { onConflict: 'goal_id,client_id', ignoreDuplicates: true })
 
   // Re-fetch newly inserted rows to capture their auto-generated IDs
-  const { data: freshRows } = await (supabase as any)
+  const { data: freshRows } = await supabase
     .from('goal_client_suggestions')
     .select('client_id, id, status')
     .eq('tenant_id', tenantId)
     .eq('goal_id', goalId)
-    .in('client_id', newSuggestions.map((s) => s.clientId))
+    .in(
+      'client_id',
+      newSuggestions.map((s) => s.clientId)
+    )
 
   const freshMap = new Map<string, ExistingSuggestionRow>(
     ((freshRows || []) as ExistingSuggestionRow[]).map((r) => [r.client_id, r])
@@ -154,9 +159,10 @@ function buildReason(
   avgSpendCents: number,
   clientStatus: string
 ): string {
-  const dollarAvg = avgSpendCents > 0
-    ? `avg $${Math.round(avgSpendCents / 100).toLocaleString('en-US')} booking`
-    : 'prior client'
+  const dollarAvg =
+    avgSpendCents > 0
+      ? `avg $${Math.round(avgSpendCents / 100).toLocaleString('en-US')} booking`
+      : 'prior client'
 
   if (clientStatus === 'repeat_ready') {
     return `Ready to rebook — ${dollarAvg}`

@@ -12,13 +12,30 @@ import { getEvents } from '@/lib/events/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { EventsKanban } from '@/components/events/events-kanban'
 import { Button } from '@/components/ui/button'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { NoEventsIllustration } from '@/components/ui/branded-illustrations'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-type EventStatus = 'all' | 'draft' | 'proposed' | 'accepted' | 'paid' | 'confirmed' | 'in_progress' | 'completed' | 'cancelled'
+type EventStatus =
+  | 'all'
+  | 'draft'
+  | 'proposed'
+  | 'accepted'
+  | 'paid'
+  | 'confirmed'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
 type ViewMode = 'list' | 'kanban'
 
 async function EventsList({ status }: { status: EventStatus }) {
@@ -27,11 +44,11 @@ async function EventsList({ status }: { status: EventStatus }) {
   let events = await getEvents()
 
   if (status !== 'all') {
-    events = events.filter(event => event.status === status)
+    events = events.filter((event) => event.status === status)
   }
 
-  events = events.sort((a, b) =>
-    new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+  events = events.sort(
+    (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
 
   if (events.length === 0) {
@@ -39,6 +56,7 @@ async function EventsList({ status }: { status: EventStatus }) {
       <Card>
         {status === 'all' ? (
           <EmptyState
+            illustration={<NoEventsIllustration />}
             title="No events yet"
             description="Create your first event to start managing proposals, timelines, and financials in one place."
             action={{ label: 'Create Event', href: '/events/new' }}
@@ -78,26 +96,24 @@ async function EventsList({ status }: { status: EventStatus }) {
                   {event.occasion || 'Untitled Event'}
                 </Link>
               </TableCell>
-              <TableCell>
-                {format(new Date(event.event_date), 'MMM d, yyyy')}
-              </TableCell>
-              <TableCell>
-                {event.client?.full_name || 'Unknown'}
-              </TableCell>
+              <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
+              <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
               <TableCell>
                 <EventStatusBadge status={event.status} />
               </TableCell>
-              <TableCell>
-                {formatCurrency(event.quoted_price_cents ?? 0)}
-              </TableCell>
+              <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Link href={`/events/${event.id}`}>
-                    <Button size="sm" variant="secondary">View</Button>
+                    <Button size="sm" variant="secondary">
+                      View
+                    </Button>
                   </Link>
                   {event.status === 'draft' && (
                     <Link href={`/events/${event.id}/edit`}>
-                      <Button size="sm" variant="secondary">Edit</Button>
+                      <Button size="sm" variant="secondary">
+                        Edit
+                      </Button>
                     </Link>
                   )}
                 </div>
@@ -117,7 +133,7 @@ async function EventsKanbanView() {
 }
 
 export default async function EventsPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: { status?: EventStatus; view?: ViewMode }
 }) {
@@ -166,9 +182,11 @@ export default async function EventsPage({
 
       {view === 'kanban' ? (
         /* Kanban Board */
-        <Suspense fallback={
-          <div className="py-12 text-center text-stone-500 text-sm">Loading board...</div>
-        }>
+        <Suspense
+          fallback={
+            <div className="py-12 text-center text-stone-500 text-sm">Loading board...</div>
+          }
+        >
           <EventsKanbanView />
         </Suspense>
       ) : (
@@ -176,13 +194,26 @@ export default async function EventsPage({
           {/* Status Filter — list view only */}
           <Card className="p-4">
             <div className="flex gap-2 flex-wrap">
-              {(['all', 'draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'cancelled'] as const).map(s => (
+              {(
+                [
+                  'all',
+                  'draft',
+                  'proposed',
+                  'accepted',
+                  'paid',
+                  'confirmed',
+                  'in_progress',
+                  'completed',
+                  'cancelled',
+                ] as const
+              ).map((s) => (
                 <Link key={s} href={`/events?status=${s}&view=list`}>
-                  <Button
-                    size="sm"
-                    variant={status === s ? 'primary' : 'secondary'}
-                  >
-                    {s === 'all' ? 'All' : s === 'in_progress' ? 'In Progress' : s.charAt(0).toUpperCase() + s.slice(1)}
+                  <Button size="sm" variant={status === s ? 'primary' : 'secondary'}>
+                    {s === 'all'
+                      ? 'All'
+                      : s === 'in_progress'
+                        ? 'In Progress'
+                        : s.charAt(0).toUpperCase() + s.slice(1)}
                   </Button>
                 </Link>
               ))}
@@ -190,11 +221,13 @@ export default async function EventsPage({
           </Card>
 
           {/* Events Table */}
-          <Suspense fallback={
-            <Card className="p-8 text-center">
-              <p className="text-stone-500">Loading events...</p>
-            </Card>
-          }>
+          <Suspense
+            fallback={
+              <Card className="p-8 text-center">
+                <p className="text-stone-500">Loading events...</p>
+              </Card>
+            }
+          >
             <EventsList status={status} />
           </Suspense>
         </>

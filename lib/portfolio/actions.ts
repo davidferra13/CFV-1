@@ -56,18 +56,16 @@ export async function addPortfolioItem(
   const supabase = createServerClient()
 
   // Get current max display_order
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('portfolio_items')
     .select('display_order')
     .eq('chef_id', user.tenantId!)
     .order('display_order', { ascending: false })
     .limit(1)
 
-  const nextOrder = (existing && existing.length > 0)
-    ? (existing[0].display_order ?? 0) + 1
-    : 0
+  const nextOrder = existing && existing.length > 0 ? (existing[0].display_order ?? 0) + 1 : 0
 
-  const { data: item, error } = await (supabase as any)
+  const { data: item, error } = await supabase
     .from('portfolio_items')
     .insert({
       chef_id: user.tenantId!,
@@ -99,16 +97,14 @@ export async function addPortfolioItem(
  * Reorder portfolio items based on the provided array of item IDs.
  * Each item's display_order is set to its index in the array.
  */
-export async function reorderPortfolio(
-  itemIds: string[]
-): Promise<{ success: boolean }> {
+export async function reorderPortfolio(itemIds: string[]): Promise<{ success: boolean }> {
   const validated = ReorderPortfolioSchema.parse({ itemIds })
   const user = await requireChef()
   const supabase = createServerClient()
 
   // Update display_order for each item
   for (let i = 0; i < validated.itemIds.length; i++) {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('portfolio_items')
       .update({ display_order: i })
       .eq('id', validated.itemIds[i])
@@ -129,14 +125,12 @@ export async function reorderPortfolio(
 /**
  * Remove a portfolio item by ID (with chef_id ownership check).
  */
-export async function removePortfolioItem(
-  itemId: string
-): Promise<{ success: boolean }> {
+export async function removePortfolioItem(itemId: string): Promise<{ success: boolean }> {
   const validated = RemovePortfolioItemSchema.parse({ itemId })
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('portfolio_items')
     .delete()
     .eq('id', validated.itemId)
@@ -160,7 +154,7 @@ export async function getPortfolio(): Promise<PortfolioItem[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: items, error } = await (supabase as any)
+  const { data: items, error } = await supabase
     .from('portfolio_items')
     .select('*')
     .eq('chef_id', user.tenantId!)

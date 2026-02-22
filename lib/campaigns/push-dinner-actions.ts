@@ -104,7 +104,7 @@ export async function createPushDinner(input: PushDinnerInput): Promise<string> 
   const token = generateToken()
   const seats = input.seats_available ?? input.guest_count_max ?? 12
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('marketing_campaigns')
     .insert({
       chef_id: chef.entityId,
@@ -138,7 +138,7 @@ export async function updatePushDinner(id: string, input: Partial<PushDinnerInpu
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('marketing_campaigns')
     .update(input)
     .eq('id', id)
@@ -153,7 +153,7 @@ export async function getPushDinner(id: string): Promise<PushDinner | null> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('marketing_campaigns')
     .select('*')
     .eq('id', id)
@@ -168,7 +168,7 @@ export async function listPushDinners(): Promise<PushDinner[]> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('marketing_campaigns')
     .select('*')
     .eq('chef_id', chef.entityId)
@@ -184,7 +184,7 @@ export async function cancelPushDinner(id: string): Promise<void> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('marketing_campaigns')
     .update({ status: 'cancelled' })
     .eq('id', id)
@@ -207,7 +207,7 @@ export async function addRecipientsToCampaign(
   const supabase = await createServerClient()
 
   // Verify campaign ownership
-  const { data: campaign } = await (supabase as any)
+  const { data: campaign } = await supabase
     .from('marketing_campaigns')
     .select('id, status')
     .eq('id', campaignId)
@@ -218,7 +218,7 @@ export async function addRecipientsToCampaign(
   if (campaign.status !== 'draft') throw new Error('Campaign is no longer in draft')
 
   // Fetch existing recipients to avoid duplicates
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('campaign_recipients')
     .select('client_id')
     .eq('campaign_id', campaignId)
@@ -236,7 +236,7 @@ export async function addRecipientsToCampaign(
 
   if (toInsert.length === 0) return
 
-  const { error } = await (supabase as any).from('campaign_recipients').insert(toInsert)
+  const { error } = await supabase.from('campaign_recipients').insert(toInsert)
 
   if (error) throw new Error(error.message)
   revalidatePath(`/marketing/push-dinners/${campaignId}`)
@@ -246,7 +246,7 @@ export async function getCampaignRecipients(campaignId: string): Promise<PushDin
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('campaign_recipients')
     .select('*')
     .eq('campaign_id', campaignId)
@@ -269,7 +269,7 @@ export async function updateDraft(
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('campaign_recipients')
     .update({
       draft_subject: subject,
@@ -287,7 +287,7 @@ export async function approveDraft(recipientId: string): Promise<void> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('campaign_recipients')
     .update({ chef_approved: true, chef_approved_at: new Date().toISOString() })
     .eq('id', recipientId)
@@ -302,7 +302,7 @@ export async function approveAllDrafts(campaignId: string): Promise<void> {
 
   const now = new Date().toISOString()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('campaign_recipients')
     .update({ chef_approved: true, chef_approved_at: now })
     .eq('campaign_id', campaignId)
@@ -318,7 +318,7 @@ export async function skipRecipient(recipientId: string): Promise<void> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('campaign_recipients')
     .delete()
     .eq('id', recipientId)
@@ -343,7 +343,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
   const supabase = await createServerClient()
 
   // Verify ownership + status
-  const { data: campaign, error: campErr } = await (supabase as any)
+  const { data: campaign, error: campErr } = await supabase
     .from('marketing_campaigns')
     .select('*')
     .eq('id', campaignId)
@@ -354,13 +354,10 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
   if (campaign.status !== 'draft') throw new Error('Campaign is not in draft status')
 
   // Mark as sending
-  await (supabase as any)
-    .from('marketing_campaigns')
-    .update({ status: 'sending' })
-    .eq('id', campaignId)
+  await supabase.from('marketing_campaigns').update({ status: 'sending' }).eq('id', campaignId)
 
   // Fetch all approved recipients not yet sent
-  const { data: recipients } = await (supabase as any)
+  const { data: recipients } = await supabase
     .from('campaign_recipients')
     .select('*')
     .eq('campaign_id', campaignId)
@@ -395,7 +392,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
 
     if (!resend) {
       console.log('[push-dinner] RESEND_API_KEY not set — skipping email to', recipient.email)
-      await (supabase as any)
+      await supabase
         .from('campaign_recipients')
         .update({ error_message: 'Email not configured' })
         .eq('id', recipient.id)
@@ -422,20 +419,20 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
       })
 
       if (sendError) {
-        await (supabase as any)
+        await supabase
           .from('campaign_recipients')
           .update({ error_message: sendError.message })
           .eq('id', recipient.id)
         failed++
       } else {
-        await (supabase as any)
+        await supabase
           .from('campaign_recipients')
           .update({ sent_at: new Date().toISOString() })
           .eq('id', recipient.id)
         sent++
       }
     } catch (err) {
-      await (supabase as any)
+      await supabase
         .from('campaign_recipients')
         .update({ error_message: err instanceof Error ? err.message : 'Delivery failed' })
         .eq('id', recipient.id)
@@ -444,7 +441,7 @@ export async function launchCampaign(campaignId: string): Promise<LaunchResult> 
   }
 
   // Mark campaign as sent
-  await (supabase as any)
+  await supabase
     .from('marketing_campaigns')
     .update({
       status: 'sent',
@@ -476,7 +473,7 @@ export async function getPushDinnerStats(campaignId: string): Promise<PushDinner
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('campaign_recipients')
     .select(
       'draft_body, chef_approved, sent_at, responded_at, converted_to_inquiry_id, error_message'

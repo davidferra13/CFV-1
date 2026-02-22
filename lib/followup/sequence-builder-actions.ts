@@ -53,15 +53,13 @@ const BuildBirthdaySchema = z.object({
  *   - Menu review request (day 3)
  *   - Final details reminder (day -7 from event date, stored as relative days)
  */
-export async function buildPostBookingSequence(
-  eventId: string
-): Promise<AutomatedSequence> {
+export async function buildPostBookingSequence(eventId: string): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildPostBookingSchema.parse({ eventId })
   const supabase = createServerClient()
 
   // Fetch the event to get event_date for the final-details step
-  const { data: event, error: eventError } = await (supabase as any)
+  const { data: event, error: eventError } = await supabase
     .from('events')
     .select('id, event_date, client_id')
     .eq('id', eventId)
@@ -79,7 +77,7 @@ export async function buildPostBookingSequence(
   const finalDetailsDelay = Math.max(0, daysUntilEvent - 7)
 
   // Insert the sequence
-  const { data: sequence, error: seqError } = await (supabase as any)
+  const { data: sequence, error: seqError } = await supabase
     .from('automated_sequences')
     .insert({
       chef_id: user.tenantId!,
@@ -101,15 +99,15 @@ export async function buildPostBookingSequence(
       step_key: 'thank_you',
       delay_days: 0,
       subject: 'Thank you for your booking!',
-      body: 'We are excited to cater your upcoming event. Please don\'t hesitate to reach out with any questions.',
+      body: "We are excited to cater your upcoming event. Please don't hesitate to reach out with any questions.",
       sort_order: 1,
     },
     {
       sequence_id: sequence.id,
       step_key: 'menu_review',
       delay_days: 3,
-      subject: 'Let\'s review your menu',
-      body: 'It\'s a great time to review and finalize the menu for your event. Let us know if you\'d like to make any adjustments.',
+      subject: "Let's review your menu",
+      body: "It's a great time to review and finalize the menu for your event. Let us know if you'd like to make any adjustments.",
       sort_order: 2,
     },
     {
@@ -117,12 +115,12 @@ export async function buildPostBookingSequence(
       step_key: 'final_details',
       delay_days: finalDetailsDelay,
       subject: 'Final details for your event',
-      body: 'Your event is one week away! Let\'s confirm the final headcount, any dietary restrictions, and logistics.',
+      body: "Your event is one week away! Let's confirm the final headcount, any dietary restrictions, and logistics.",
       sort_order: 3,
     },
   ]
 
-  const { data: steps, error: stepsError } = await (supabase as any)
+  const { data: steps, error: stepsError } = await supabase
     .from('sequence_steps')
     .insert(stepRows)
     .select()
@@ -140,15 +138,13 @@ export async function buildPostBookingSequence(
  *   - Special offer (day 7)
  *   - Follow-up (day 21)
  */
-export async function buildReEngagementSequence(
-  clientId: string
-): Promise<AutomatedSequence> {
+export async function buildReEngagementSequence(clientId: string): Promise<AutomatedSequence> {
   const user = await requireChef()
   BuildReEngagementSchema.parse({ clientId })
   const supabase = createServerClient()
 
   // Verify the client belongs to this chef
-  const { data: client, error: clientError } = await (supabase as any)
+  const { data: client, error: clientError } = await supabase
     .from('clients')
     .select('id, first_name, last_name')
     .eq('id', clientId)
@@ -162,7 +158,7 @@ export async function buildReEngagementSequence(
   const clientName = [client.first_name, client.last_name].filter(Boolean).join(' ') || 'there'
 
   // Insert the sequence
-  const { data: sequence, error: seqError } = await (supabase as any)
+  const { data: sequence, error: seqError } = await supabase
     .from('automated_sequences')
     .insert({
       chef_id: user.tenantId!,
@@ -184,7 +180,7 @@ export async function buildReEngagementSequence(
       step_key: 'check_in',
       delay_days: 0,
       subject: `Hi ${clientName}, we miss cooking for you!`,
-      body: 'It\'s been a while since your last event with us. We\'d love to hear what you\'ve been up to and see if we can help with any upcoming occasions.',
+      body: "It's been a while since your last event with us. We'd love to hear what you've been up to and see if we can help with any upcoming occasions.",
       sort_order: 1,
     },
     {
@@ -192,7 +188,7 @@ export async function buildReEngagementSequence(
       step_key: 'special_offer',
       delay_days: 7,
       subject: 'A special offer just for you',
-      body: 'As a valued client, we\'d like to offer you something special for your next event. Get in touch and we\'ll make it memorable.',
+      body: "As a valued client, we'd like to offer you something special for your next event. Get in touch and we'll make it memorable.",
       sort_order: 2,
     },
     {
@@ -200,12 +196,12 @@ export async function buildReEngagementSequence(
       step_key: 'follow_up',
       delay_days: 21,
       subject: 'Still thinking about your next event?',
-      body: 'We wanted to follow up one more time. Whether it\'s an intimate dinner or a large gathering, we\'re here when you\'re ready.',
+      body: "We wanted to follow up one more time. Whether it's an intimate dinner or a large gathering, we're here when you're ready.",
       sort_order: 3,
     },
   ]
 
-  const { data: steps, error: stepsError } = await (supabase as any)
+  const { data: steps, error: stepsError } = await supabase
     .from('sequence_steps')
     .insert(stepRows)
     .select()
@@ -231,7 +227,7 @@ export async function buildBirthdaySequence(
   const supabase = createServerClient()
 
   // Verify the client belongs to this chef
-  const { data: client, error: clientError } = await (supabase as any)
+  const { data: client, error: clientError } = await supabase
     .from('clients')
     .select('id, first_name, last_name')
     .eq('id', clientId)
@@ -253,7 +249,7 @@ export async function buildBirthdaySequence(
   )
 
   // Insert the sequence
-  const { data: sequence, error: seqError } = await (supabase as any)
+  const { data: sequence, error: seqError } = await supabase
     .from('automated_sequences')
     .insert({
       chef_id: user.tenantId!,
@@ -288,7 +284,7 @@ export async function buildBirthdaySequence(
     },
   ]
 
-  const { data: steps, error: stepsError } = await (supabase as any)
+  const { data: steps, error: stepsError } = await supabase
     .from('sequence_steps')
     .insert(stepRows)
     .select()

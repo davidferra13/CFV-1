@@ -17,7 +17,7 @@ export function PublicFooter() {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-stone-200 bg-white">
+    <footer className="border-t border-stone-200 bg-surface-muted">
       <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-10 px-4 py-12 sm:px-6 lg:grid-cols-4 lg:px-8">
         <div className="lg:col-span-2">
           <Link href="/" className="inline-flex items-center gap-2.5">
@@ -56,7 +56,7 @@ export function PublicFooter() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-stone-200 py-4">
+      <div className="border-t border-stone-300/50 py-4">
         <p className="text-center text-xs text-stone-500">
           Copyright {year} ChefFlow. All rights reserved.
         </p>

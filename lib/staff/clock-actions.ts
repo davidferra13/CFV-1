@@ -54,12 +54,20 @@ const ClockOutSchema = z.object({
   entryId: z.string().uuid(),
 })
 
-const ClockFiltersSchema = z.object({
-  staffMemberId: z.string().uuid().optional(),
-  eventId: z.string().uuid().optional(),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-}).optional()
+const ClockFiltersSchema = z
+  .object({
+    staffMemberId: z.string().uuid().optional(),
+    eventId: z.string().uuid().optional(),
+    startDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+    endDate: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
+  })
+  .optional()
 
 // ─── Actions ─────────────────────────────────────────────────────
 
@@ -77,7 +85,7 @@ export async function clockIn(
   const parsed = ClockInSchema.parse({ staffMemberId, eventId, gpsLat, gpsLng })
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_clock_entries')
     .insert({
       staff_member_id: parsed.staffMemberId,
@@ -119,7 +127,7 @@ export async function clockOut(entryId: string): Promise<ClockEntry> {
   const supabase = createServerClient()
 
   // Fetch the existing entry to compute duration
-  const { data: existing, error: fetchError } = await (supabase as any)
+  const { data: existing, error: fetchError } = await supabase
     .from('staff_clock_entries')
     .select('*')
     .eq('id', entryId)
@@ -133,7 +141,7 @@ export async function clockOut(entryId: string): Promise<ClockEntry> {
   const clockInAt = new Date(existing.clock_in_at)
   const totalMinutes = Math.round((clockOutAt.getTime() - clockInAt.getTime()) / 60000)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_clock_entries')
     .update({
       clock_out_at: clockOutAt.toISOString(),
@@ -176,12 +184,14 @@ export async function getClockEntries(filters?: {
   ClockFiltersSchema.parse(filters)
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('staff_clock_entries')
-    .select(`
+    .select(
+      `
       *,
       staff_members (id, name, role)
-    `)
+    `
+    )
     .eq('chef_id', user.tenantId!)
     .order('clock_in_at', { ascending: false })
     .limit(500)
@@ -219,12 +229,14 @@ export async function getEventClockSummary(eventId: string): Promise<EventClockS
   z.string().uuid().parse(eventId)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_clock_entries')
-    .select(`
+    .select(
+      `
       *,
       staff_members (id, name, role, hourly_rate_cents)
-    `)
+    `
+    )
     .eq('event_id', eventId)
     .eq('chef_id', user.tenantId!)
     .order('clock_in_at', { ascending: true })

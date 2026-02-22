@@ -36,19 +36,26 @@ const AlertIdSchema = z.string().uuid()
 
 // Common critical allergens (life-threatening)
 const CRITICAL_ALLERGENS = [
-  'peanut', 'peanuts', 'tree nut', 'tree nuts', 'nuts', 'shellfish',
-  'anaphylaxis', 'epipen', 'sesame', 'soy', 'fish',
+  'peanut',
+  'peanuts',
+  'tree nut',
+  'tree nuts',
+  'nuts',
+  'shellfish',
+  'anaphylaxis',
+  'epipen',
+  'sesame',
+  'soy',
+  'fish',
 ]
 
 // Significant but typically not life-threatening
-const WARNING_ALLERGENS = [
-  'gluten', 'dairy', 'lactose', 'egg', 'eggs', 'wheat', 'corn',
-]
+const WARNING_ALLERGENS = ['gluten', 'dairy', 'lactose', 'egg', 'eggs', 'wheat', 'corn']
 
 function classifySeverity(allergy: string): DietaryConflictSeverity {
   const lower = allergy.toLowerCase().trim()
-  if (CRITICAL_ALLERGENS.some(a => lower.includes(a))) return 'critical'
-  if (WARNING_ALLERGENS.some(a => lower.includes(a))) return 'warning'
+  if (CRITICAL_ALLERGENS.some((a) => lower.includes(a))) return 'critical'
+  if (WARNING_ALLERGENS.some((a) => lower.includes(a))) return 'warning'
   return 'info'
 }
 
@@ -87,16 +94,13 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
   }
 
   // Fetch menus and dishes for this event
-  const { data: menus } = await supabase
-    .from('menus')
-    .select('id')
-    .eq('event_id', validatedEventId)
+  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', validatedEventId)
 
   if (!menus || menus.length === 0) {
     return []
   }
 
-  const menuIds = menus.map(m => m.id)
+  const menuIds = menus.map((m) => m.id)
 
   const { data: dishesRaw } = await supabase
     .from('dishes')
@@ -104,7 +108,9 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
     .in('menu_id', menuIds)
 
   const dishes = dishesRaw as unknown as Array<{
-    id: string; name: string; description: string | null;
+    id: string
+    name: string
+    description: string | null
   }> | null
 
   if (!dishes || dishes.length === 0) {
@@ -112,8 +118,8 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
   }
 
   // Also fetch recipe ingredients if available
-  const dishIds = dishes.map(d => d.id)
-  const { data: recipeLinks } = await (supabase as any)
+  const dishIds = dishes.map((d) => d.id)
+  const { data: recipeLinks } = await supabase
     .from('dish_recipes')
     .select('dish_id, recipe_id')
     .in('dish_id', dishIds)
@@ -122,7 +128,7 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
 
   let ingredientNames: string[] = []
   if (recipeIds.length > 0) {
-    const { data: ingredients } = await (supabase as any)
+    const { data: ingredients } = await supabase
       .from('recipe_ingredients')
       .select('name, recipe_id')
       .in('recipe_id', recipeIds)
@@ -152,7 +158,7 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
 
       // Check ingredients
       const ingredientMatch = ingredientNames.some(
-        ing => ing.includes(concernLower) || concernLower.includes(ing)
+        (ing) => ing.includes(concernLower) || concernLower.includes(ing)
       )
 
       if (nameMatch || descMatch || ingredientMatch) {
@@ -171,14 +177,14 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
   }
 
   // Clear previous alerts for this event before inserting new ones
-  await (supabase as any)
+  await supabase
     .from('dietary_conflict_alerts')
     .delete()
     .eq('event_id', validatedEventId)
     .eq('chef_id', user.tenantId!)
 
   // Insert new conflicts
-  const insertPayload = conflicts.map(c => ({
+  const insertPayload = conflicts.map((c) => ({
     event_id: validatedEventId,
     chef_id: user.tenantId!,
     guest_name: c.guestName,
@@ -188,7 +194,7 @@ export async function checkDietaryConflicts(eventId: string): Promise<DietaryCon
     acknowledged: false,
   }))
 
-  const { data: inserted, error: insertError } = await (supabase as any)
+  const { data: inserted, error: insertError } = await supabase
     .from('dietary_conflict_alerts')
     .insert(insertPayload)
     .select()
@@ -221,7 +227,7 @@ export async function acknowledgeDietaryConflict(alertId: string): Promise<{ suc
   const supabase = createServerClient()
   const validatedAlertId = AlertIdSchema.parse(alertId)
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('dietary_conflict_alerts')
     .update({ acknowledged: true })
     .eq('id', validatedAlertId)
@@ -245,7 +251,7 @@ export async function getDietaryConflicts(eventId: string): Promise<DietaryConfl
   const supabase = createServerClient()
   const validatedEventId = EventIdSchema.parse(eventId)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('dietary_conflict_alerts')
     .select('*')
     .eq('event_id', validatedEventId)

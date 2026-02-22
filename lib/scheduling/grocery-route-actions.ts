@@ -75,10 +75,7 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   }
 
   // Fetch menus for this event
-  const { data: menus } = await supabase
-    .from('menus')
-    .select('id')
-    .eq('event_id', validatedEventId)
+  const { data: menus } = await supabase.from('menus').select('id').eq('event_id', validatedEventId)
 
   if (!menus || menus.length === 0) {
     return {
@@ -91,13 +88,10 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
     }
   }
 
-  const menuIds = menus.map(m => m.id)
+  const menuIds = menus.map((m) => m.id)
 
   // Fetch dishes from menus
-  const { data: dishes } = await supabase
-    .from('dishes')
-    .select('id, name')
-    .in('menu_id', menuIds)
+  const { data: dishes } = await supabase.from('dishes').select('id, name').in('menu_id', menuIds)
 
   if (!dishes || dishes.length === 0) {
     return {
@@ -126,7 +120,7 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   }
 
   // Fetch ingredients for all recipes
-  const { data: ingredients } = await (supabase as any)
+  const { data: ingredients } = await supabase
     .from('recipe_ingredients')
     .select('id, name, quantity, unit, recipe_id, vendor_id')
     .in('recipe_id', recipeIds)
@@ -146,14 +140,14 @@ export async function getGroceryRoute(eventId: string): Promise<GroceryRoute> {
   const vendorIds = [
     ...new Set(
       (ingredients as any[])
-        .map(i => i.vendor_id)
+        .map((i) => i.vendor_id)
         .filter((id): id is string => id !== null && id !== undefined)
     ),
   ]
 
   const vendorMap = new Map<string, string>()
   if (vendorIds.length > 0) {
-    const { data: vendors } = await (supabase as any)
+    const { data: vendors } = await supabase
       .from('vendors')
       .select('id, name')
       .eq('chef_id', user.tenantId!)
@@ -235,13 +229,13 @@ export async function optimizeStoreOrder(eventId: string): Promise<OptimizedRout
     return {
       eventId,
       suggestedOrder: [],
-      reasoning: 'No stores assigned to ingredients yet. Assign vendors to recipe ingredients for route optimization.',
+      reasoning:
+        'No stores assigned to ingredients yet. Assign vendors to recipe ingredients for route optimization.',
     }
   }
 
   // Sort stores by item count descending (visit the store with the most items first)
-  const sorted = [...route.stores]
-    .sort((a, b) => b.itemCount - a.itemCount)
+  const sorted = [...route.stores].sort((a, b) => b.itemCount - a.itemCount)
 
   const suggestedOrder: StoreVisitOrder[] = sorted.map((store, index) => ({
     storeName: store.storeName,

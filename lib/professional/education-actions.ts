@@ -16,7 +16,7 @@ export async function createEducationEntry(input: {
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any).from('chef_education_log').insert({
+  const { error } = await supabase.from('chef_education_log').insert({
     tenant_id: tenantId,
     entry_type: input.entry_type,
     title: input.title,
@@ -46,7 +46,7 @@ export async function listEducationEntries(): Promise<
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_education_log')
     .select(
       'id, entry_type, title, description, learned, how_changed_cooking, entry_date, created_at'
@@ -66,7 +66,7 @@ export async function getAnnualCount(): Promise<number> {
   const since = new Date()
   since.setFullYear(since.getFullYear() - 1)
 
-  const { count, error } = await (supabase as any)
+  const { count, error } = await supabase
     .from('chef_education_log')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)

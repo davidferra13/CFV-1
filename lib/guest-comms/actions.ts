@@ -11,7 +11,7 @@ export async function getGuestEmailList(filters?: { eventId?: string; rsvpStatus
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('event_guests')
     .select(
       `
@@ -65,14 +65,14 @@ export async function draftPostEventEmail(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: event } = await (supabase as any)
+  const { data: event } = await supabase
     .from('events')
     .select('occasion, event_date, guest_code')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name, booking_slug')
     .eq('id', user.tenantId!)
@@ -144,14 +144,14 @@ export async function draftTestimonialRequest(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: event } = await (supabase as any)
+  const { data: event } = await supabase
     .from('events')
     .select('occasion, event_date')
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('display_name, business_name')
     .eq('id', user.tenantId!)

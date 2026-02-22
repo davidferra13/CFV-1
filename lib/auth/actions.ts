@@ -105,7 +105,7 @@ export async function signUpChef(input: ChefSignupInput) {
     }
 
     // Create default chef preferences so network visibility works immediately
-    const { error: preferencesError } = await (supabase as any).from('chef_preferences').insert({
+    const { error: preferencesError } = await supabase.from('chef_preferences').insert({
       chef_id: chef.id,
       tenant_id: chef.id,
     })

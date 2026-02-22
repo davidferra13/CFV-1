@@ -14,7 +14,7 @@ import { z } from 'zod'
 export type SchedulingRules = {
   id: string
   tenant_id: string
-  blocked_days_of_week: number[]   // 0=Sun, 1=Mon … 6=Sat
+  blocked_days_of_week: number[] // 0=Sun, 1=Mon … 6=Sat
   max_events_per_week: number | null
   max_events_per_month: number | null
   min_buffer_days: number
@@ -26,18 +26,18 @@ export type SchedulingRules = {
 
 export type DateRuleValidation = {
   allowed: boolean
-  blockers: string[]   // hard blocks — shown as errors
-  warnings: string[]   // soft warnings — shown as caution
+  blockers: string[] // hard blocks — shown as errors
+  warnings: string[] // soft warnings — shown as caution
 }
 
 // ── Schema ─────────────────────────────────────────────────────────────────────
 
 const UpsertRulesSchema = z.object({
-  blocked_days_of_week:   z.array(z.number().int().min(0).max(6)).default([]),
-  max_events_per_week:    z.number().int().positive().nullable().optional(),
-  max_events_per_month:   z.number().int().positive().nullable().optional(),
-  min_buffer_days:        z.number().int().min(0).default(0),
-  min_lead_days:          z.number().int().min(0).default(0),
+  blocked_days_of_week: z.array(z.number().int().min(0).max(6)).default([]),
+  max_events_per_week: z.number().int().positive().nullable().optional(),
+  max_events_per_month: z.number().int().positive().nullable().optional(),
+  min_buffer_days: z.number().int().min(0).default(0),
+  min_lead_days: z.number().int().min(0).default(0),
   preferred_days_of_week: z.array(z.number().int().min(0).max(6)).default([]),
 })
 
@@ -50,7 +50,7 @@ export async function getSchedulingRules(): Promise<SchedulingRules | null> {
   const supabase = createServerClient()
 
   // cast as any — table not in generated types until migration is pushed
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_scheduling_rules')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -69,20 +69,18 @@ export async function upsertSchedulingRules(
   const supabase = createServerClient()
 
   // cast as any — table not in generated types until migration is pushed
-  const { error } = await (supabase as any)
-    .from('chef_scheduling_rules')
-    .upsert(
-      {
-        tenant_id:               user.tenantId!,
-        blocked_days_of_week:    validated.blocked_days_of_week,
-        max_events_per_week:     validated.max_events_per_week ?? null,
-        max_events_per_month:    validated.max_events_per_month ?? null,
-        min_buffer_days:         validated.min_buffer_days,
-        min_lead_days:           validated.min_lead_days,
-        preferred_days_of_week:  validated.preferred_days_of_week,
-      },
-      { onConflict: 'tenant_id' }
-    )
+  const { error } = await supabase.from('chef_scheduling_rules').upsert(
+    {
+      tenant_id: user.tenantId!,
+      blocked_days_of_week: validated.blocked_days_of_week,
+      max_events_per_week: validated.max_events_per_week ?? null,
+      max_events_per_month: validated.max_events_per_month ?? null,
+      min_buffer_days: validated.min_buffer_days,
+      min_lead_days: validated.min_lead_days,
+      preferred_days_of_week: validated.preferred_days_of_week,
+    },
+    { onConflict: 'tenant_id' }
+  )
 
   if (error) return { success: false, error: error.message }
 
@@ -112,7 +110,7 @@ export async function validateDateAgainstRules(
   const warnings: string[] = []
 
   // Fetch rules (may not exist yet) — cast as any until migration is pushed
-  const { data: rules } = await (supabase as any)
+  const { data: rules } = await supabase
     .from('chef_scheduling_rules')
     .select('*')
     .eq('tenant_id', tenantId)

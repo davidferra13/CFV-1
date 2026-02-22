@@ -17,7 +17,7 @@ export async function getFixedExpenses(): Promise<number> {
   const thirtyDaysAgo = new Date()
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('expenses')
     .select('amount_cents, recurrence')
     .eq('tenant_id', tenantId)

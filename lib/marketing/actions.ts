@@ -21,12 +21,14 @@ const HIGH_VALUE_THRESHOLD_CENTS = 150_000 // $1,500
 // ============================================
 
 const CampaignSchema = z.object({
-  name:           z.string().min(1, 'Name is required'),
-  campaign_type:  z.enum(['re_engagement', 'seasonal', 'announcement', 'thank_you', 'promotion', 'other']).default('re_engagement'),
-  subject:        z.string().min(1, 'Subject is required'),
-  body_html:      z.string().min(1, 'Body is required'),
+  name: z.string().min(1, 'Name is required'),
+  campaign_type: z
+    .enum(['re_engagement', 'seasonal', 'announcement', 'thank_you', 'promotion', 'other'])
+    .default('re_engagement'),
+  subject: z.string().min(1, 'Subject is required'),
+  body_html: z.string().min(1, 'Body is required'),
   target_segment: z.record(z.string(), z.unknown()).default({}),
-  scheduled_at:   z.string().datetime().optional(),
+  scheduled_at: z.string().datetime().optional(),
 })
 
 export type CampaignInput = z.infer<typeof CampaignSchema>
@@ -46,14 +48,14 @@ type AudienceClient = {
 
 async function resolveAudience(
   chefEntityId: string,
-  segment: Record<string, unknown>,
+  segment: Record<string, unknown>
 ): Promise<AudienceClient[]> {
   const supabase = await createServerClient()
   const baseSelect = 'id, full_name, email, phone, preferred_contact_method'
 
   // Base query factory
   const base = () =>
-    (supabase as any)
+    supabase
       .from('clients')
       .select(baseSelect)
       .eq('chef_id', chefEntityId)
@@ -152,7 +154,7 @@ async function resolveAudience(
     }
 
     case 'client_ids': {
-      const ids = Array.isArray(segment.ids) ? segment.ids as string[] : []
+      const ids = Array.isArray(segment.ids) ? (segment.ids as string[]) : []
       if (ids.length === 0) return []
       const { data } = await base().in('id', ids)
       return data ?? []
@@ -172,12 +174,12 @@ export async function createCampaign(input: CampaignInput) {
   const supabase = await createServerClient()
   const data = CampaignSchema.parse(input)
 
-  const { data: campaign, error } = await (supabase as any)
+  const { data: campaign, error } = await supabase
     .from('marketing_campaigns')
     .insert({
       ...data,
-      chef_id:      chef.entityId,
-      status:       data.scheduled_at ? 'scheduled' : 'draft',
+      chef_id: chef.entityId,
+      status: data.scheduled_at ? 'scheduled' : 'draft',
       scheduled_at: data.scheduled_at ?? null,
     })
     .select('id')
@@ -192,7 +194,7 @@ export async function updateCampaign(id: string, input: Partial<CampaignInput>) 
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('marketing_campaigns')
     .update(input)
     .eq('id', id)
@@ -207,7 +209,7 @@ export async function deleteCampaign(id: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('marketing_campaigns')
     .delete()
     .eq('id', id)
@@ -222,7 +224,7 @@ export async function listCampaigns() {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('marketing_campaigns')
     .select('*')
     .eq('chef_id', chef.entityId)
@@ -236,7 +238,7 @@ export async function getCampaign(id: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('marketing_campaigns')
     .select('*')
     .eq('id', id)
@@ -261,9 +263,9 @@ export async function previewCampaignAudience(segment: Record<string, unknown>) 
 // ============================================
 
 export type ChannelSplit = {
-  email:     AudienceClient[]
-  sms:       AudienceClient[]
-  call:      AudienceClient[]
+  email: AudienceClient[]
+  sms: AudienceClient[]
+  call: AudienceClient[]
   instagram: AudienceClient[]
   no_method: AudienceClient[]
 }
@@ -303,7 +305,7 @@ export async function getChannelSplit(segment: Record<string, unknown>): Promise
 async function getChefDisplayName(chefEntityId: string): Promise<string> {
   const supabase = await createServerClient()
   // Try chef_preferences for display_name first, fall back to chefs.name
-  const { data: prefs } = await (supabase as any)
+  const { data: prefs } = await supabase
     .from('chef_preferences')
     .select('display_name, business_name')
     .eq('chef_id', chefEntityId)
@@ -316,7 +318,7 @@ export async function sendCampaignNow(campaignId: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data: campaign, error: campErr } = await (supabase as any)
+  const { data: campaign, error: campErr } = await supabase
     .from('marketing_campaigns')
     .select('*')
     .eq('id', campaignId)
@@ -326,12 +328,12 @@ export async function sendCampaignNow(campaignId: string) {
   if (campErr || !campaign) throw new Error('Campaign not found')
   if (campaign.status === 'sent') throw new Error('Campaign already sent')
 
-  await (supabase as any)
-    .from('marketing_campaigns')
-    .update({ status: 'sending' })
-    .eq('id', campaignId)
+  await supabase.from('marketing_campaigns').update({ status: 'sending' }).eq('id', campaignId)
 
-  const audience = await resolveAudience(chef.entityId, campaign.target_segment as Record<string, unknown>)
+  const audience = await resolveAudience(
+    chef.entityId,
+    campaign.target_segment as Record<string, unknown>
+  )
   const chefName = await getChefDisplayName(chef.entityId)
 
   let sentCount = 0
@@ -342,13 +344,13 @@ export async function sendCampaignNow(campaignId: string) {
     const { first, last } = splitName(client.full_name)
 
     // Insert recipient row first — its ID is the unsubscribe token
-    const { data: recipientRow } = await (supabase as any)
+    const { data: recipientRow } = await supabase
       .from('campaign_recipients')
       .insert({
         campaign_id: campaignId,
-        chef_id:     chef.entityId,
-        client_id:   client.id,
-        email:       client.email,
+        chef_id: chef.entityId,
+        client_id: client.id,
+        email: client.email,
       })
       .select('id')
       .single()
@@ -358,22 +360,22 @@ export async function sendCampaignNow(campaignId: string) {
     const unsubscribeUrl = `${APP_URL}/unsubscribe?rid=${recipientRow.id}`
 
     const tokenCtx = {
-      first_name:       first,
-      last_name:        last,
-      full_name:        client.full_name,
-      chef_name:        chefName,
-      last_event_date:  client.last_event_date ?? '',
-      unsubscribe_url:  unsubscribeUrl,
+      first_name: first,
+      last_name: last,
+      full_name: client.full_name,
+      chef_name: chefName,
+      last_event_date: client.last_event_date ?? '',
+      unsubscribe_url: unsubscribeUrl,
     }
 
     const renderedSubject = renderTokens(campaign.subject, tokenCtx)
-    const renderedBody    = renderTokens(campaign.body_html, tokenCtx)
+    const renderedBody = renderTokens(campaign.body_html, tokenCtx)
 
     try {
       // Call Resend directly to capture the message ID
       if (!process.env.RESEND_API_KEY) {
         console.log('[campaign] RESEND_API_KEY not configured, skipping email to:', client.email)
-        await (supabase as any)
+        await supabase
           .from('campaign_recipients')
           .update({ error_message: 'Email not configured' })
           .eq('id', recipientRow.id)
@@ -382,45 +384,45 @@ export async function sendCampaignNow(campaignId: string) {
 
       const resend = getResendClient()
       const { data: sendData, error: sendError } = await resend.emails.send({
-        from:    `${chefName} via CheFlow <${FROM_EMAIL}>`,
-        to:      client.email,
+        from: `${chefName} via CheFlow <${FROM_EMAIL}>`,
+        to: client.email,
         subject: renderedSubject,
-        react:   React.createElement(CampaignEmail, {
+        react: React.createElement(CampaignEmail, {
           chefName,
-          bodyText:       renderedBody,
-          previewText:    renderedBody.slice(0, 90),
+          bodyText: renderedBody,
+          previewText: renderedBody.slice(0, 90),
           unsubscribeUrl,
         }),
       })
 
       if (sendError) {
-        await (supabase as any)
+        await supabase
           .from('campaign_recipients')
           .update({ error_message: sendError.message })
           .eq('id', recipientRow.id)
       } else {
-        await (supabase as any)
+        await supabase
           .from('campaign_recipients')
           .update({
-            sent_at:           new Date().toISOString(),
+            sent_at: new Date().toISOString(),
             resend_message_id: sendData?.id ?? null,
           })
           .eq('id', recipientRow.id)
         sentCount++
       }
     } catch (err) {
-      await (supabase as any)
+      await supabase
         .from('campaign_recipients')
         .update({ error_message: err instanceof Error ? err.message : 'Delivery failed' })
         .eq('id', recipientRow.id)
     }
   }
 
-  await (supabase as any)
+  await supabase
     .from('marketing_campaigns')
     .update({
-      status:          'sent',
-      sent_at:         new Date().toISOString(),
+      status: 'sent',
+      sent_at: new Date().toISOString(),
       recipient_count: sentCount,
     })
     .eq('id', campaignId)
@@ -467,7 +469,7 @@ export async function recordUnsubscribeByRecipientId(recipientId: string) {
   await db
     .from('clients')
     .update({
-      marketing_unsubscribed:    true,
+      marketing_unsubscribed: true,
       marketing_unsubscribed_at: new Date().toISOString(),
     })
     .eq('id', recipient.client_id)
@@ -491,7 +493,7 @@ export async function getCampaignStats(campaignId: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data: recipients } = await (supabase as any)
+  const { data: recipients } = await supabase
     .from('campaign_recipients')
     .select('sent_at, opened_at, clicked_at, unsubscribed_at, error_message')
     .eq('campaign_id', campaignId)
@@ -504,12 +506,14 @@ export async function getCampaignStats(campaignId: string) {
   return {
     total,
     sent,
-    failed:       rows.filter((r: any) => r.error_message).length,
-    opened:       rows.filter((r: any) => r.opened_at).length,
-    clicked:      rows.filter((r: any) => r.clicked_at).length,
+    failed: rows.filter((r: any) => r.error_message).length,
+    opened: rows.filter((r: any) => r.opened_at).length,
+    clicked: rows.filter((r: any) => r.clicked_at).length,
     unsubscribed: rows.filter((r: any) => r.unsubscribed_at).length,
-    open_rate:    sent > 0 ? Math.round((rows.filter((r: any) => r.opened_at).length / sent) * 100) : 0,
-    click_rate:   sent > 0 ? Math.round((rows.filter((r: any) => r.clicked_at).length / sent) * 100) : 0,
+    open_rate:
+      sent > 0 ? Math.round((rows.filter((r: any) => r.opened_at).length / sent) * 100) : 0,
+    click_rate:
+      sent > 0 ? Math.round((rows.filter((r: any) => r.clicked_at).length / sent) * 100) : 0,
   }
 }
 
@@ -517,7 +521,7 @@ export async function getCampaignRecipients(campaignId: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('campaign_recipients')
     .select('id, email, client_id, sent_at, opened_at, clicked_at, unsubscribed_at, error_message')
     .eq('campaign_id', campaignId)
@@ -538,7 +542,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data: campaign } = await (supabase as any)
+  const { data: campaign } = await supabase
     .from('marketing_campaigns')
     .select('sent_at')
     .eq('id', campaignId)
@@ -551,7 +555,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
   const windowEnd = addDays(sentAt, 30).toISOString()
 
   // Get client IDs from this campaign
-  const { data: recipients } = await (supabase as any)
+  const { data: recipients } = await supabase
     .from('campaign_recipients')
     .select('client_id')
     .eq('campaign_id', campaignId)
@@ -562,7 +566,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
   if (clientIds.length === 0) return { bookings: 0, revenue_cents: 0 }
 
   // Events created in the 30-day window after send
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('events')
     .select('id, total_cents')
     .eq('chef_id', chef.entityId)
@@ -573,7 +577,7 @@ export async function getCampaignRevenueAttribution(campaignId: string) {
 
   const evs = events ?? []
   return {
-    bookings:      evs.length,
+    bookings: evs.length,
     revenue_cents: evs.reduce((sum: number, e: any) => sum + (e.total_cents ?? 0), 0),
   }
 }
@@ -590,7 +594,7 @@ export async function listCampaignTemplates() {
   // Ensure system templates are seeded for this chef
   await ensureSystemTemplatesSeeded(chef.entityId, supabase)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('campaign_templates')
     .select('*')
     .eq('chef_id', chef.entityId)
@@ -614,7 +618,7 @@ async function ensureSystemTemplatesSeeded(chefEntityId: string, supabase: any) 
   await supabase.from('campaign_templates').insert(
     SYSTEM_TEMPLATES.map((t) => ({
       ...t,
-      chef_id:   chefEntityId,
+      chef_id: chefEntityId,
       is_system: true,
     }))
   )
@@ -629,13 +633,11 @@ export async function createCampaignTemplate(input: {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
-    .from('campaign_templates')
-    .insert({
-      ...input,
-      chef_id:   chef.entityId,
-      is_system: false,
-    })
+  const { error } = await supabase.from('campaign_templates').insert({
+    ...input,
+    chef_id: chef.entityId,
+    is_system: false,
+  })
 
   if (error) throw new Error(error.message)
   revalidatePath('/marketing/templates')
@@ -645,7 +647,7 @@ export async function deleteCampaignTemplate(id: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('campaign_templates')
     .delete()
     .eq('id', id)
@@ -660,7 +662,7 @@ export async function saveAsTemplate(campaignId: string, templateName: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data: campaign } = await (supabase as any)
+  const { data: campaign } = await supabase
     .from('marketing_campaigns')
     .select('campaign_type, subject, body_html')
     .eq('id', campaignId)
@@ -669,16 +671,14 @@ export async function saveAsTemplate(campaignId: string, templateName: string) {
 
   if (!campaign) throw new Error('Campaign not found')
 
-  await (supabase as any)
-    .from('campaign_templates')
-    .insert({
-      name:          templateName,
-      campaign_type: campaign.campaign_type,
-      subject:       campaign.subject,
-      body_html:     campaign.body_html,
-      chef_id:       chef.entityId,
-      is_system:     false,
-    })
+  await supabase.from('campaign_templates').insert({
+    name: templateName,
+    campaign_type: campaign.campaign_type,
+    subject: campaign.subject,
+    body_html: campaign.body_html,
+    chef_id: chef.entityId,
+    is_system: false,
+  })
 
   revalidatePath('/marketing/templates')
 }
@@ -697,7 +697,7 @@ export async function sendDirectOutreach(input: {
   const supabase = await createServerClient()
 
   // Fetch client
-  const { data: client } = await (supabase as any)
+  const { data: client } = await supabase
     .from('clients')
     .select('id, full_name, email, phone, chef_id')
     .eq('id', input.clientId)
@@ -714,22 +714,22 @@ export async function sendDirectOutreach(input: {
     const chefName = await getChefDisplayName(chef.entityId)
     const { first, last } = splitName(client.full_name)
     const tokenCtx = {
-      first_name:      first,
-      last_name:       last,
-      full_name:       client.full_name,
-      chef_name:       chefName,
+      first_name: first,
+      last_name: last,
+      full_name: client.full_name,
+      chef_name: chefName,
       unsubscribe_url: '', // no unsubscribe for 1:1 outreach (not marketing)
     }
-    const renderedBody    = renderTokens(input.body, tokenCtx)
+    const renderedBody = renderTokens(input.body, tokenCtx)
     const renderedSubject = renderTokens(input.subject ?? 'A note from your chef', tokenCtx)
 
     const ok = await sendEmail({
-      to:      client.email,
+      to: client.email,
       subject: renderedSubject,
-      react:   React.createElement(CampaignEmail, {
+      react: React.createElement(CampaignEmail, {
         chefName,
-        bodyText:       renderedBody,
-        previewText:    renderedBody.slice(0, 90),
+        bodyText: renderedBody,
+        previewText: renderedBody.slice(0, 90),
         unsubscribeUrl: '', // omitted for 1:1
       }),
     })
@@ -750,17 +750,15 @@ export async function sendDirectOutreach(input: {
   }
 
   // Log to direct_outreach_log
-  await (supabase as any)
-    .from('direct_outreach_log')
-    .insert({
-      chef_id:   chef.entityId,
-      client_id: input.clientId,
-      channel:   input.channel,
-      subject:   input.subject ?? null,
-      body:      input.body,
-      delivered,
-      error_msg: errorMsg,
-    })
+  await supabase.from('direct_outreach_log').insert({
+    chef_id: chef.entityId,
+    client_id: input.clientId,
+    channel: input.channel,
+    subject: input.subject ?? null,
+    body: input.body,
+    delivered,
+    error_msg: errorMsg,
+  })
 
   revalidatePath(`/clients/${input.clientId}`)
 }
@@ -769,7 +767,7 @@ export async function getClientOutreachHistory(clientId: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('direct_outreach_log')
     .select('id, channel, subject, body, delivered, error_msg, sent_at')
     .eq('chef_id', chef.entityId)
@@ -791,7 +789,7 @@ export async function getClientOutreachHistory(clientId: string) {
 export async function processScheduledCampaigns() {
   const supabase = await createServerClient()
 
-  const { data: due } = await (supabase as any)
+  const { data: due } = await supabase
     .from('marketing_campaigns')
     .select('id, chef_id')
     .eq('status', 'scheduled')
@@ -806,10 +804,7 @@ export async function processScheduledCampaigns() {
       processed++
     } catch (err) {
       console.error('[campaigns] Failed to send scheduled campaign', campaign.id, err)
-      await (supabase as any)
-        .from('marketing_campaigns')
-        .update({ status: 'draft' })
-        .eq('id', campaign.id)
+      await supabase.from('marketing_campaigns').update({ status: 'draft' }).eq('id', campaign.id)
     }
   }
 
@@ -821,8 +816,8 @@ export async function processScheduledCampaigns() {
 // ============================================
 
 const SequenceSchema = z.object({
-  name:                z.string().min(1),
-  trigger_type:        z.enum(['birthday', 'dormant_90', 'post_event', 'seasonal']),
+  name: z.string().min(1),
+  trigger_type: z.enum(['birthday', 'dormant_90', 'post_event', 'seasonal']),
   days_before_trigger: z.number().int().min(0).default(7),
 })
 
@@ -830,7 +825,7 @@ export async function listSequences() {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('automated_sequences')
     .select('*, sequence_steps(*), sequence_enrollments(count)')
     .eq('chef_id', chef.entityId)
@@ -850,7 +845,7 @@ export async function createSequence(input: {
   const supabase = await createServerClient()
   const data = SequenceSchema.parse(input)
 
-  const { data: seq, error } = await (supabase as any)
+  const { data: seq, error } = await supabase
     .from('automated_sequences')
     .insert({ ...data, chef_id: chef.entityId })
     .select('id')
@@ -859,7 +854,7 @@ export async function createSequence(input: {
   if (error) throw new Error(error.message)
 
   if (input.steps && input.steps.length > 0) {
-    await (supabase as any)
+    await supabase
       .from('sequence_steps')
       .insert(input.steps.map((s) => ({ ...s, sequence_id: seq.id })))
   }
@@ -872,7 +867,7 @@ export async function toggleSequence(id: string, isActive: boolean) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('automated_sequences')
     .update({ is_active: isActive })
     .eq('id', id)
@@ -886,11 +881,7 @@ export async function deleteSequence(id: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  await (supabase as any)
-    .from('automated_sequences')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', chef.entityId)
+  await supabase.from('automated_sequences').delete().eq('id', id).eq('chef_id', chef.entityId)
 
   revalidatePath('/marketing/sequences')
 }
@@ -903,11 +894,11 @@ export async function enrollInSequence(
   chefEntityId: string,
   clientId: string,
   triggerType: 'birthday' | 'dormant_90' | 'post_event',
-  firstSendAt: Date,
+  firstSendAt: Date
 ) {
   const supabase = await createServerClient()
 
-  const { data: sequences } = await (supabase as any)
+  const { data: sequences } = await supabase
     .from('automated_sequences')
     .select('id, sequence_steps(*)')
     .eq('chef_id', chefEntityId)
@@ -917,7 +908,7 @@ export async function enrollInSequence(
   if (!sequences || sequences.length === 0) return
 
   // Check client is not unsubscribed
-  const { data: client } = await (supabase as any)
+  const { data: client } = await supabase
     .from('clients')
     .select('marketing_unsubscribed')
     .eq('id', clientId)
@@ -930,18 +921,16 @@ export async function enrollInSequence(
     if (steps.length === 0) continue
 
     // Upsert enrollment (ignore conflict = already enrolled)
-    await (supabase as any)
-      .from('sequence_enrollments')
-      .upsert(
-        {
-          sequence_id:  seq.id,
-          chef_id:      chefEntityId,
-          client_id:    clientId,
-          current_step: 1,
-          next_send_at: addDays(firstSendAt, steps[0].delay_days).toISOString(),
-        },
-        { onConflict: 'sequence_id,client_id', ignoreDuplicates: true }
-      )
+    await supabase.from('sequence_enrollments').upsert(
+      {
+        sequence_id: seq.id,
+        chef_id: chefEntityId,
+        client_id: clientId,
+        current_step: 1,
+        next_send_at: addDays(firstSendAt, steps[0].delay_days).toISOString(),
+      },
+      { onConflict: 'sequence_id,client_id', ignoreDuplicates: true }
+    )
   }
 }
 
@@ -953,13 +942,15 @@ export async function processSequences() {
   const supabase = await createServerClient()
 
   // Find all pending enrollments due to send
-  const { data: pending } = await (supabase as any)
+  const { data: pending } = await supabase
     .from('sequence_enrollments')
-    .select(`
+    .select(
+      `
       id, sequence_id, chef_id, client_id, current_step, next_send_at,
       automated_sequences(chef_id, days_before_trigger),
       clients(full_name, email, marketing_unsubscribed)
-    `)
+    `
+    )
     .is('completed_at', null)
     .is('cancelled_at', null)
     .lte('next_send_at', new Date().toISOString())
@@ -972,7 +963,7 @@ export async function processSequences() {
     const client = enrollment.clients
     if (!client || client.marketing_unsubscribed || !client.email) {
       // Cancel enrollment
-      await (supabase as any)
+      await supabase
         .from('sequence_enrollments')
         .update({ cancelled_at: new Date().toISOString() })
         .eq('id', enrollment.id)
@@ -980,7 +971,7 @@ export async function processSequences() {
     }
 
     // Fetch the current step
-    const { data: step } = await (supabase as any)
+    const { data: step } = await supabase
       .from('sequence_steps')
       .select('*')
       .eq('sequence_id', enrollment.sequence_id)
@@ -988,7 +979,7 @@ export async function processSequences() {
       .single()
 
     if (!step) {
-      await (supabase as any)
+      await supabase
         .from('sequence_enrollments')
         .update({ completed_at: new Date().toISOString() })
         .eq('id', enrollment.id)
@@ -999,29 +990,29 @@ export async function processSequences() {
     const chefName = await getChefDisplayName(enrollment.chef_id)
     const { first, last } = splitName(client.full_name)
     const tokenCtx = {
-      first_name:      first,
-      last_name:       last,
-      full_name:       client.full_name,
-      chef_name:       chefName,
+      first_name: first,
+      last_name: last,
+      full_name: client.full_name,
+      chef_name: chefName,
       unsubscribe_url: `${APP_URL}/unsubscribe?rid=sequence-${enrollment.id}`,
     }
 
     const renderedSubject = renderTokens(step.subject, tokenCtx)
-    const renderedBody    = renderTokens(step.body_html, tokenCtx)
+    const renderedBody = renderTokens(step.body_html, tokenCtx)
 
     await sendEmail({
-      to:      client.email,
+      to: client.email,
       subject: renderedSubject,
-      react:   React.createElement(CampaignEmail, {
+      react: React.createElement(CampaignEmail, {
         chefName,
-        bodyText:       renderedBody,
-        previewText:    renderedBody.slice(0, 90),
+        bodyText: renderedBody,
+        previewText: renderedBody.slice(0, 90),
         unsubscribeUrl: tokenCtx.unsubscribe_url,
       }),
     })
 
     // Find next step
-    const { data: nextStep } = await (supabase as any)
+    const { data: nextStep } = await supabase
       .from('sequence_steps')
       .select('step_number, delay_days')
       .eq('sequence_id', enrollment.sequence_id)
@@ -1029,7 +1020,7 @@ export async function processSequences() {
       .maybeSingle()
 
     if (nextStep) {
-      await (supabase as any)
+      await supabase
         .from('sequence_enrollments')
         .update({
           current_step: nextStep.step_number,
@@ -1037,7 +1028,7 @@ export async function processSequences() {
         })
         .eq('id', enrollment.id)
     } else {
-      await (supabase as any)
+      await supabase
         .from('sequence_enrollments')
         .update({ completed_at: new Date().toISOString() })
         .eq('id', enrollment.id)
@@ -1057,7 +1048,7 @@ export async function processBirthdayEnrollments() {
   const supabase = await createServerClient()
 
   // Find all active birthday sequences
-  const { data: sequences } = await (supabase as any)
+  const { data: sequences } = await supabase
     .from('automated_sequences')
     .select('id, chef_id, days_before_trigger, sequence_steps(*)')
     .eq('trigger_type', 'birthday')
@@ -1070,7 +1061,7 @@ export async function processBirthdayEnrollments() {
     const triggerDate = addDays(new Date(), daysBefore)
 
     // Fetch clients with milestones for this chef
-    const { data: clients } = await (supabase as any)
+    const { data: clients } = await supabase
       .from('clients')
       .select('id, full_name, email, personal_milestones')
       .eq('chef_id', seq.chef_id)
@@ -1089,7 +1080,9 @@ export async function processBirthdayEnrollments() {
             thisYear.getMonth() === triggerDate.getMonth() &&
             thisYear.getDate() === triggerDate.getDate()
           )
-        } catch { return false }
+        } catch {
+          return false
+        }
       })
 
       if (hasBirthday) {

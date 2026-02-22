@@ -23,7 +23,7 @@ export default async function GiftCardsPage() {
   const user = await requireChef()
 
   // Fetch clients for the "for client" dropdown in the issue form
-  const { data: clientsRaw } = await (supabase as any)
+  const { data: clientsRaw } = await supabase
     .from('clients')
     .select('id, full_name')
     .eq('tenant_id', user.tenantId!)
@@ -98,14 +98,30 @@ export default async function GiftCardsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-stone-200">
-                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">Code</th>
-                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">Title</th>
-                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">Value</th>
-                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">Remaining</th>
-                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">Redeemed</th>
-                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">Status</th>
-                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">Expires</th>
-                    <th className="text-right py-3 font-medium text-stone-500 text-xs uppercase tracking-wide">Actions</th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Code
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Title
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Value
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Remaining
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Redeemed
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Status
+                    </th>
+                    <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Expires
+                    </th>
+                    <th className="text-right py-3 font-medium text-stone-500 text-xs uppercase tracking-wide">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -119,15 +135,17 @@ export default async function GiftCardsPage() {
                     const statusLabel = !incentive.is_active
                       ? 'Inactive'
                       : isExpired
-                      ? 'Expired'
-                      : isFullyUsed
-                      ? 'Used'
-                      : 'Active'
-                    const statusVariant =
-                      statusLabel === 'Active' ? 'success' : 'default'
+                        ? 'Expired'
+                        : isFullyUsed
+                          ? 'Used'
+                          : 'Active'
+                    const statusVariant = statusLabel === 'Active' ? 'success' : 'default'
 
                     return (
-                      <tr key={incentive.id} className="border-b border-stone-100 hover:bg-stone-50">
+                      <tr
+                        key={incentive.id}
+                        className="border-b border-stone-100 hover:bg-stone-50"
+                      >
                         <td className="py-3 pr-4">
                           <span className="font-mono text-xs bg-stone-100 px-2 py-0.5 rounded text-stone-800">
                             {incentive.code}
@@ -146,13 +164,15 @@ export default async function GiftCardsPage() {
                           {incentive.discount_percent != null
                             ? `${incentive.discount_percent}% off`
                             : incentive.amount_cents != null
-                            ? formatCurrency(incentive.amount_cents)
-                            : '—'}
+                              ? formatCurrency(incentive.amount_cents)
+                              : '—'}
                         </td>
                         <td className="py-3 pr-4 text-stone-700">
-                          {isGiftCard && incentive.remaining_balance_cents != null
-                            ? formatCurrency(incentive.remaining_balance_cents)
-                            : <span className="text-stone-400">—</span>}
+                          {isGiftCard && incentive.remaining_balance_cents != null ? (
+                            formatCurrency(incentive.remaining_balance_cents)
+                          ) : (
+                            <span className="text-stone-400">—</span>
+                          )}
                         </td>
                         <td className="py-3 pr-4 text-stone-700">
                           {incentive.redemptions_used} / {incentive.max_redemptions}
@@ -161,9 +181,11 @@ export default async function GiftCardsPage() {
                           <Badge variant={statusVariant as any}>{statusLabel}</Badge>
                         </td>
                         <td className="py-3 pr-4 text-stone-500 text-xs whitespace-nowrap">
-                          {incentive.expires_at
-                            ? format(new Date(incentive.expires_at), 'MMM d, yyyy')
-                            : <span className="text-stone-300">Never</span>}
+                          {incentive.expires_at ? (
+                            format(new Date(incentive.expires_at), 'MMM d, yyyy')
+                          ) : (
+                            <span className="text-stone-300">Never</span>
+                          )}
                         </td>
                         <td className="py-3 text-right">
                           <GiftCardsClientShell.RowActions incentive={incentive} />

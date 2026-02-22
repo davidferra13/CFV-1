@@ -223,7 +223,7 @@ export async function runPublishingEngine(): Promise<EngineRun> {
   // 5-minute lookahead so a post scheduled at :00 is caught by the :55 cron run
   const cutoff = new Date(Date.now() + 5 * 60 * 1000).toISOString()
 
-  const { data: posts, error: queryErr } = await (supabase as any)
+  const { data: posts, error: queryErr } = await supabase
     .from('social_posts')
     .select(
       'id, tenant_id, platforms, published_to_platforms, publish_attempts, title, ' +
@@ -262,7 +262,13 @@ export async function runPublishingEngine(): Promise<EngineRun> {
         const result = await publishToPlatform(post, platform, tenantId)
 
         if (result.success) {
-          await markPlatformPublished(supabase, post.id, tenantId, platform, result.externalId ?? 'unknown')
+          await markPlatformPublished(
+            supabase,
+            post.id,
+            tenantId,
+            platform,
+            result.externalId ?? 'unknown'
+          )
           await recordPublishSuccess(tenantId, platform)
           run.succeeded++
         } else {

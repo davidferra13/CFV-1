@@ -17,11 +17,11 @@ import { createServerClient } from '@/lib/supabase/server'
 export async function recordCronHeartbeat(
   cronName: string,
   result?: Record<string, unknown>,
-  durationMs?: number,
+  durationMs?: number
 ): Promise<void> {
   try {
     const supabase = createServerClient({ admin: true })
-    const { error } = await (supabase as any).from('cron_executions').insert({
+    const { error } = await supabase.from('cron_executions').insert({
       cron_name: cronName,
       status: 'success',
       duration_ms: durationMs ?? null,
@@ -38,11 +38,11 @@ export async function recordCronHeartbeat(
 export async function recordCronError(
   cronName: string,
   errorText: string,
-  durationMs?: number,
+  durationMs?: number
 ): Promise<void> {
   try {
     const supabase = createServerClient({ admin: true })
-    const { error } = await (supabase as any).from('cron_executions').insert({
+    const { error } = await supabase.from('cron_executions').insert({
       cron_name: cronName,
       status: 'error',
       duration_ms: durationMs ?? null,

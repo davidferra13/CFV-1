@@ -18,19 +18,19 @@ export default async function ProtectionHubPage() {
   const tenantId = chef.tenantId!
 
   // Fetch insurance policies
-  const { data: policies } = await (supabase as any)
+  const { data: policies } = await supabase
     .from('chef_insurance_policies')
     .select('id, status, expiry_date')
     .eq('tenant_id', tenantId)
 
   // Fetch business health checklist items
-  const { data: healthItems } = await (supabase as any)
+  const { data: healthItems } = await supabase
     .from('chef_business_health_items')
     .select('id, completed')
     .eq('tenant_id', tenantId)
 
   // Fetch certifications
-  const { data: certifications } = await (supabase as any)
+  const { data: certifications } = await supabase
     .from('chef_certifications')
     .select('id, status, expiry_date')
     .eq('tenant_id', tenantId)

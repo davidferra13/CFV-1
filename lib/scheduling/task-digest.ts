@@ -99,7 +99,8 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, serve_time, arrival_time,
       guest_count, status,
       location_address, location_city,
@@ -109,7 +110,8 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
       shopping_completed_at, prep_completed_at,
       aar_filed, reset_complete, follow_up_sent, financially_closed,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .neq('status', 'cancelled')
     .gte('event_date', sevenDaysAgoStr)
@@ -121,11 +123,11 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
   }
 
   // Chef preferences for DOP computation (shop_day_before, etc.)
-  const prefs = await getChefPreferences().catch(() => null) as ChefPreferences | null
+  const prefs = (await getChefPreferences().catch(() => null)) as ChefPreferences | null
 
   // Fetch all manual completions for these events in one query
   const eventIds = events.map((e: any) => e.id)
-  const { data: completionRows } = await (supabase as any)
+  const { data: completionRows } = await supabase
     .from('dop_task_completions')
     .select('event_id, task_key')
     .eq('tenant_id', user.tenantId!)
@@ -133,7 +135,7 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
 
   // Build a map: eventId → Set<taskKey>
   const completionMap = new Map<string, Set<string>>()
-  for (const row of (completionRows ?? [])) {
+  for (const row of completionRows ?? []) {
     if (!completionMap.has(row.event_id)) {
       completionMap.set(row.event_id, new Set())
     }
@@ -158,8 +160,7 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
         if (isComplete) continue
 
         const isOverdue =
-          task.isOverdue ||
-          (task.deadline != null && new Date(task.deadline) < new Date())
+          task.isOverdue || (task.deadline != null && new Date(task.deadline) < new Date())
 
         allTasks.push({
           taskId: task.id,
@@ -187,11 +188,17 @@ export async function getDOPTaskDigest(): Promise<DOPTaskDigest> {
     return a.eventDate.localeCompare(b.eventDate)
   })
 
-  const overdueCount = allTasks.filter(t => t.isOverdue).length
+  const overdueCount = allTasks.filter((t) => t.isOverdue).length
   const dueTodayCount = allTasks.filter(
-    t => !t.isOverdue && t.deadline?.startsWith(todayStr)
+    (t) => !t.isOverdue && t.deadline?.startsWith(todayStr)
   ).length
   const upcomingCount = allTasks.length - overdueCount - dueTodayCount
 
-  return { tasks: allTasks, overdueCount, dueTodayCount, upcomingCount, totalIncomplete: allTasks.length }
+  return {
+    tasks: allTasks,
+    overdueCount,
+    dueTodayCount,
+    upcomingCount,
+    totalIncomplete: allTasks.length,
+  }
 }

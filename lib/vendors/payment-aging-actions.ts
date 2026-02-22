@@ -13,7 +13,7 @@ export async function getVendorPaymentAging(): Promise<VendorAgingEntry[]> {
   const supabase = createServerClient()
 
   // Fetch unpaid expenses with vendor info
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('expenses')
     .select('vendor_name, amount_cents, due_date, paid_at')
     .eq('tenant_id', tenantId)

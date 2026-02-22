@@ -15,10 +15,7 @@ function generatePKCE(): { codeVerifier: string; codeChallenge: string } {
   return { codeVerifier, codeChallenge }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { platform: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { platform: string } }) {
   const { platform } = params
   const origin = request.nextUrl.origin
 
@@ -61,7 +58,7 @@ export async function GET(
   }
 
   const supabase = createAdminClient()
-  const { error: stateErr } = await (supabase as any).from('social_oauth_states').insert({
+  const { error: stateErr } = await supabase.from('social_oauth_states').insert({
     tenant_id: user.tenantId,
     platform,
     state,

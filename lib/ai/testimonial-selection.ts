@@ -63,7 +63,7 @@ export async function selectTestimonialHighlights(): Promise<TestimonialSelectio
       .eq('tenant_id', user.tenantId!)
       .eq('direction', 'in')
       .limit(50),
-    (supabase as any)
+    supabase
       .from('client_surveys')
       .select(
         `

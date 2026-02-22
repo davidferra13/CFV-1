@@ -92,7 +92,7 @@ export async function quickCaptureReceipt(
   }
 
   // Register the receipt photo record (storage_path stored for future URL regeneration)
-  const { data: photoRecord, error: dbError } = await (supabase as any)
+  const { data: photoRecord, error: dbError } = await supabase
     .from('receipt_photos')
     .insert({
       event_id: eventId,

@@ -12,7 +12,7 @@ export default async function BusinessContinuityPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data: chefRow } = await (supabase as any)
+  const { data: chefRow } = await supabase
     .from('chefs')
     .select('business_continuity_plan')
     .eq('id', chef.tenantId!)

@@ -10,9 +10,23 @@
 -- ADDITIVE ONLY — no drops, no renames, no type changes.
 
 -- ============================================================
--- 1. Extend campaign_type enum with 'push_dinner'
+-- 1. Extend campaign_type CHECK constraint with 'push_dinner'
+--    campaign_type is a TEXT column with CHECK, not a PG enum.
 -- ============================================================
-ALTER TYPE campaign_type ADD VALUE IF NOT EXISTS 'push_dinner';
+ALTER TABLE marketing_campaigns DROP CONSTRAINT IF EXISTS marketing_campaigns_campaign_type_check;
+ALTER TABLE marketing_campaigns ADD CONSTRAINT marketing_campaigns_campaign_type_check
+  CHECK (campaign_type IN (
+    're_engagement', 'seasonal', 'announcement',
+    'thank_you', 'promotion', 'other', 'push_dinner'
+  ));
+
+-- Also update campaign_templates if it exists
+ALTER TABLE campaign_templates DROP CONSTRAINT IF EXISTS campaign_templates_campaign_type_check;
+ALTER TABLE campaign_templates ADD CONSTRAINT campaign_templates_campaign_type_check
+  CHECK (campaign_type IN (
+    're_engagement', 'seasonal', 'announcement',
+    'thank_you', 'promotion', 'other', 'push_dinner'
+  ));
 
 -- ============================================================
 -- 2. Extend marketing_campaigns with push-dinner fields

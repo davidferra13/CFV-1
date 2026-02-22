@@ -56,7 +56,7 @@ export async function identifyMissedDeductions(
   const expenseList = expenses ?? []
 
   // Also check mileage logs
-  const { data: mileageLogs } = await (supabase as any)
+  const { data: mileageLogs } = await supabase
     .from('mileage_logs')
     .select('miles, purpose, date')
     .eq('tenant_id', user.tenantId!)

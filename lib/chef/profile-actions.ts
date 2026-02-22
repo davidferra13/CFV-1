@@ -20,7 +20,12 @@ function extractChefLogoPath(url: string | null | undefined): string | null {
   const marker = `/storage/v1/object/public/${CHEF_LOGOS_BUCKET}/`
   const markerIndex = url.indexOf(marker)
   if (markerIndex === -1) return null
-  return decodeURIComponent(url.slice(markerIndex + marker.length).split('?')[0].split('#')[0])
+  return decodeURIComponent(
+    url
+      .slice(markerIndex + marker.length)
+      .split('?')[0]
+      .split('#')[0]
+  )
 }
 
 async function ensureChefLogosBucket(supabase: any) {
@@ -53,9 +58,7 @@ const UpdateChefFullProfileSchema = z.object({
   logo_url: z.string().url('Logo URL must be valid').nullable().optional(),
   website_url: z.string().url('Website URL must be valid').nullable().optional(),
   show_website_on_public_profile: z.boolean().optional(),
-  preferred_inquiry_destination: z
-    .enum(['website_only', 'chefflow_only', 'both'])
-    .optional(),
+  preferred_inquiry_destination: z.enum(['website_only', 'chefflow_only', 'both']).optional(),
 })
 
 export type UpdateChefFullProfileInput = z.infer<typeof UpdateChefFullProfileSchema>
@@ -80,7 +83,8 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
 
   let { data, error } = await supabase
     .from('chefs')
-    .select(`
+    .select(
+      `
       business_name,
       display_name,
       bio,
@@ -92,7 +96,8 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
       website_url,
       show_website_on_public_profile,
       preferred_inquiry_destination
-    `)
+    `
+    )
     .eq('id', user.entityId)
     .single()
 
@@ -100,7 +105,9 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
   if (error?.code === '42703') {
     const fallback = await supabase
       .from('chefs')
-      .select('business_name, display_name, bio, phone, tagline, google_review_url, profile_image_url')
+      .select(
+        'business_name, display_name, bio, phone, tagline, google_review_url, profile_image_url'
+      )
       .eq('id', user.entityId)
       .single()
     data = fallback.data
@@ -151,10 +158,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
     payload.business_name = trimmedBusinessName
   }
 
-  let { error } = await supabase
-    .from('chefs')
-    .update(payload)
-    .eq('id', user.entityId)
+  let { error } = await supabase.from('chefs').update(payload).eq('id', user.entityId)
 
   // Backward compatibility before the migration is applied.
   if (error?.code === '42703') {
@@ -167,10 +171,7 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
       profile_image_url: payload.profile_image_url,
     }
     if (payload.business_name) fallbackPayload.business_name = payload.business_name
-    const fallback = await supabase
-      .from('chefs')
-      .update(fallbackPayload)
-      .eq('id', user.entityId)
+    const fallback = await supabase.from('chefs').update(fallbackPayload).eq('id', user.entityId)
     error = fallback.error
   }
 
@@ -208,7 +209,7 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
     throw new Error(`File too large. Maximum ${(MAX_LOGO_SIZE / 1024 / 1024).toFixed(0)}MB`)
   }
 
-  const { data: currentChef } = await (supabase as any)
+  const { data: currentChef } = await supabase
     .from('chefs')
     .select('logo_url')
     .eq('id', user.entityId)
@@ -219,13 +220,18 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
   const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
   const uploadFile = async () =>
-    (supabase as any).storage
+    supabase.storage
       .from(CHEF_LOGOS_BUCKET)
       .upload(storagePath, file, { contentType: file.type, upsert: false })
 
   let { error: uploadError } = await uploadFile()
 
-  if (uploadError && String(uploadError.message || '').toLowerCase().includes('bucket')) {
+  if (
+    uploadError &&
+    String(uploadError.message || '')
+      .toLowerCase()
+      .includes('bucket')
+  ) {
     await ensureChefLogosBucket(supabase)
     const retry = await uploadFile()
     uploadError = retry.error
@@ -236,25 +242,23 @@ export async function uploadChefLogo(formData: FormData): Promise<{ success: tru
     throw new Error('Failed to upload logo')
   }
 
-  const { data: publicUrlData } = (supabase as any).storage
-    .from(CHEF_LOGOS_BUCKET)
-    .getPublicUrl(storagePath)
+  const { data: publicUrlData } = supabase.storage.from(CHEF_LOGOS_BUCKET).getPublicUrl(storagePath)
 
   const publicUrl = publicUrlData.publicUrl
 
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('chefs')
     .update({ logo_url: publicUrl })
     .eq('id', user.entityId)
 
   if (updateError) {
     console.error('[uploadChefLogo] update error:', updateError)
-    await (supabase as any).storage.from(CHEF_LOGOS_BUCKET).remove([storagePath])
+    await supabase.storage.from(CHEF_LOGOS_BUCKET).remove([storagePath])
     throw new Error('Logo uploaded but failed to save to profile')
   }
 
   if (previousPath && previousPath !== storagePath) {
-    await (supabase as any).storage.from(CHEF_LOGOS_BUCKET).remove([previousPath])
+    await supabase.storage.from(CHEF_LOGOS_BUCKET).remove([previousPath])
   }
 
   revalidatePath('/settings')
@@ -267,7 +271,7 @@ export async function markOnboardingComplete() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any)
+  await supabase
     .from('chefs')
     .update({ onboarding_completed_at: new Date().toISOString() })
     .eq('id', user.entityId)
@@ -279,7 +283,7 @@ export async function getOnboardingStatus(): Promise<boolean> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chefs')
     .select('onboarding_completed_at')
     .eq('id', user.entityId)

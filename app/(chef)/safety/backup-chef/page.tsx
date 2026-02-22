@@ -12,7 +12,7 @@ export default async function BackupChefPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data: contacts } = await (supabase as any)
+  const { data: contacts } = await supabase
     .from('chef_backup_contacts')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

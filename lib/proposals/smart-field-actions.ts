@@ -32,11 +32,13 @@ const SaveSmartFieldSchema = z.object({
 
 const RenderSmartFieldsSchema = z.object({
   template: z.string(),
-  context: z.object({
-    clientName: z.string().optional(),
-    eventDate: z.string().optional(),
-    guestCount: z.number().int().optional(),
-  }).optional(),
+  context: z
+    .object({
+      clientName: z.string().optional(),
+      eventDate: z.string().optional(),
+      guestCount: z.number().int().optional(),
+    })
+    .optional(),
 })
 
 // ─── Actions ─────────────────────────────────────────────────────
@@ -45,7 +47,7 @@ export async function getSmartFields(): Promise<SmartField[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('smart_field_values')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -56,15 +58,12 @@ export async function getSmartFields(): Promise<SmartField[]> {
   return (data || []).map(mapSmartField)
 }
 
-export async function saveSmartField(
-  fieldKey: string,
-  fieldValue: string
-): Promise<SmartField> {
+export async function saveSmartField(fieldKey: string, fieldValue: string): Promise<SmartField> {
   const user = await requireChef()
   const parsed = SaveSmartFieldSchema.parse({ fieldKey, fieldValue })
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('smart_field_values')
     .upsert(
       {
@@ -100,7 +99,7 @@ export async function renderSmartFields(
   const supabase = createServerClient()
 
   // Fetch all smart fields for this chef
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('smart_field_values')
     .select('field_key, field_value')
     .eq('chef_id', user.tenantId!)
@@ -116,7 +115,8 @@ export async function renderSmartFields(
   // Context values override smart fields with the same key
   if (parsed.context?.clientName) fieldMap['clientName'] = parsed.context.clientName
   if (parsed.context?.eventDate) fieldMap['eventDate'] = parsed.context.eventDate
-  if (parsed.context?.guestCount !== undefined) fieldMap['guestCount'] = String(parsed.context.guestCount)
+  if (parsed.context?.guestCount !== undefined)
+    fieldMap['guestCount'] = String(parsed.context.guestCount)
 
   // Find all tokens in the template
   const tokenRegex = /\{([^}]+)\}/g

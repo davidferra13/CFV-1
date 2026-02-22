@@ -38,7 +38,7 @@ export async function getOrCreateOnboardingChecklist(
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { data: existing, error: fetchError } = await (supabase as any)
+  const { data: existing, error: fetchError } = await supabase
     .from('staff_onboarding_items')
     .select('*')
     .eq('staff_member_id', staffMemberId)
@@ -61,7 +61,7 @@ export async function getOrCreateOnboardingChecklist(
     completed_at: null,
   }))
 
-  const { data: created, error: insertError } = await (supabase as any)
+  const { data: created, error: insertError } = await supabase
     .from('staff_onboarding_items')
     .insert(defaultItems)
     .select('*')
@@ -86,7 +86,7 @@ export async function updateOnboardingItem(
 
   const completedAt = status === 'complete' ? new Date().toISOString() : null
 
-  const { error } = await (supabase as any).from('staff_onboarding_items').upsert(
+  const { error } = await supabase.from('staff_onboarding_items').upsert(
     {
       staff_member_id: staffMemberId,
       tenant_id: tenantId,
@@ -112,7 +112,7 @@ export async function getOnboardingStatus(staffMemberId: string): Promise<Onboar
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_onboarding_items')
     .select('item_key, status')
     .eq('staff_member_id', staffMemberId)

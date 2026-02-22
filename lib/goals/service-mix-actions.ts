@@ -250,7 +250,7 @@ export async function getClientMatchesForServiceType(
   const serviceType = mapServiceTypeRow(stRow as Record<string, unknown>)
 
   // Fetch financial summary for all clients (not filtered by dormancy)
-  const { data: summaryRows } = await (supabase as any)
+  const { data: summaryRows } = await supabase
     .from('client_financial_summary')
     .select('client_id, lifetime_value_cents, average_spend_per_event, days_since_last_event')
     .eq('tenant_id', user.tenantId)

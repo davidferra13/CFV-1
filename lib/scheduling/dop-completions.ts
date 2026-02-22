@@ -17,7 +17,7 @@ export async function getDOPManualCompletions(eventId: string): Promise<Set<stri
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('dop_task_completions')
     .select('task_key')
     .eq('event_id', eventId)
@@ -40,7 +40,7 @@ export async function toggleDOPTaskCompletion(
   const supabase = createServerClient()
 
   // Check if already completed
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('dop_task_completions')
     .select('id')
     .eq('event_id', eventId)
@@ -50,7 +50,7 @@ export async function toggleDOPTaskCompletion(
 
   if (existing) {
     // Un-mark (delete)
-    await (supabase as any)
+    await supabase
       .from('dop_task_completions')
       .delete()
       .eq('id', existing.id)
@@ -62,14 +62,12 @@ export async function toggleDOPTaskCompletion(
     return { completed: false }
   } else {
     // Mark complete
-    await (supabase as any)
-      .from('dop_task_completions')
-      .insert({
-        event_id: eventId,
-        tenant_id: user.tenantId!,
-        task_key: taskKey,
-        notes: notes ?? null,
-      })
+    await supabase.from('dop_task_completions').insert({
+      event_id: eventId,
+      tenant_id: user.tenantId!,
+      task_key: taskKey,
+      notes: notes ?? null,
+    })
 
     revalidatePath(`/events/${eventId}`)
     revalidatePath(`/events/${eventId}/schedule`)

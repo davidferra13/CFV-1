@@ -25,7 +25,7 @@ export type OpenDateSlot = {
 
 // Base query: all subscribed clients for this chef
 async function baseClients(chefId: string, supabase: any) {
-  return (supabase as any)
+  return supabase
     .from('clients')
     .select('id, full_name, email, loyalty_tier')
     .eq('chef_id', chefId)
@@ -42,7 +42,7 @@ export async function getClientsByOccasion(occasion: string): Promise<TargetClie
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('events')
     .select('client_id, occasion, event_date')
     .eq('chef_id', chef.entityId)
@@ -76,7 +76,7 @@ export async function getDormantClients(dayThreshold = 90): Promise<TargetClient
 
   const cutoff = subDays(new Date(), dayThreshold).toISOString().slice(0, 10)
 
-  const { data: recentEvents } = await (supabase as any)
+  const { data: recentEvents } = await supabase
     .from('events')
     .select('client_id')
     .eq('chef_id', chef.entityId)
@@ -134,7 +134,7 @@ export async function getSeasonalClients(month: number): Promise<TargetClient[]>
   const supabase = await createServerClient()
 
   // Fetch all events for this chef (limited), then filter by month in JS
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('events')
     .select('client_id, event_date, occasion')
     .eq('chef_id', chef.entityId)
@@ -172,7 +172,7 @@ export async function searchClientsForCampaign(query: string): Promise<TargetCli
   const q = query.toLowerCase().trim()
   if (!q) return []
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('clients')
     .select('id, full_name, email, loyalty_tier')
     .eq('chef_id', chef.entityId)
@@ -203,7 +203,7 @@ export async function getOpenDateSuggestions(): Promise<OpenDateSlot[]> {
   const endDate = addDays(today, 90)
 
   // Get all booked event dates in window
-  const { data: events } = await (supabase as any)
+  const { data: events } = await supabase
     .from('events')
     .select('event_date')
     .eq('chef_id', chef.entityId)

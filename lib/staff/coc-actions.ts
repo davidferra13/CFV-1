@@ -8,7 +8,7 @@ export async function acknowledgeCOC(assignmentId: string) {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('event_staff_assignments')
     .update({
       coc_acknowledged: true,
@@ -24,7 +24,7 @@ export async function getCOCStatus(eventId: string) {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_staff_assignments')
     .select('id, staff_member_id, coc_acknowledged, coc_acknowledged_at, staff_members(full_name)')
     .eq('event_id', eventId)

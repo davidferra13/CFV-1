@@ -25,16 +25,12 @@ export async function generateMetadata({
   return { title: `#${slug} — Chef Community` }
 }
 
-export default async function ChannelPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>
-}) {
+export default async function ChannelPage({ params }: { params: Promise<{ slug: string }> }) {
   const user = await requireChef()
   const { slug } = await params
 
   const supabase = createServerClient({ admin: true })
-  const { data: channel } = await (supabase as any)
+  const { data: channel } = await supabase
     .from('chef_social_channels')
     .select('*')
     .eq('slug', slug)
@@ -54,7 +50,7 @@ export default async function ChannelPage({
       getActiveStories(),
     ])
 
-  const { data: me } = await (supabase as any)
+  const { data: me } = await supabase
     .from('chefs')
     .select('display_name, business_name, profile_image_url')
     .eq('id', user.entityId)
@@ -77,7 +73,10 @@ export default async function ChannelPage({
       {/* Channel header */}
       <div
         className="rounded-2xl p-6 flex items-start gap-4"
-        style={{ backgroundColor: ch.color ? `${ch.color}15` : '#fafaf9', borderLeft: ch.color ? `4px solid ${ch.color}` : undefined }}
+        style={{
+          backgroundColor: ch.color ? `${ch.color}15` : '#fafaf9',
+          borderLeft: ch.color ? `4px solid ${ch.color}` : undefined,
+        }}
       >
         <div
           className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl flex-shrink-0"
@@ -94,9 +93,7 @@ export default async function ChannelPage({
               </span>
             )}
           </div>
-          {ch.description && (
-            <p className="text-stone-500 mt-1 text-sm">{ch.description}</p>
-          )}
+          {ch.description && <p className="text-stone-500 mt-1 text-sm">{ch.description}</p>}
           <div className="flex items-center gap-4 mt-3 text-sm text-stone-400">
             <span className="flex items-center gap-1.5">
               <Users className="h-4 w-4" />
@@ -109,10 +106,7 @@ export default async function ChannelPage({
           </div>
         </div>
 
-        <ChannelJoinButton
-          channelId={ch.id}
-          isMember={myChannels.some((mc) => mc.id === ch.id)}
-        />
+        <ChannelJoinButton channelId={ch.id} isMember={myChannels.some((mc) => mc.id === ch.id)} />
       </div>
 
       {/* Feed (channel-scoped) */}

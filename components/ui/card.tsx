@@ -2,14 +2,17 @@
 
 import { HTMLAttributes, forwardRef } from 'react'
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {}
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  /** Adds hover lift + shadow for clickable cards */
+  interactive?: boolean
+}
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className = '', children, ...props }, ref) => {
+  ({ className = '', interactive, children, ...props }, ref) => {
     return (
       <div
         ref={ref}
-        className={`bg-white rounded-xl border border-stone-200/80 shadow-[var(--shadow-card)] transition-shadow duration-200 ${className}`}
+        className={`bg-white rounded-xl border border-stone-200/80 shadow-[var(--shadow-card)] transition-all duration-200 ${interactive ? 'hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5 cursor-pointer' : ''} ${className}`}
         {...props}
       >
         {children}

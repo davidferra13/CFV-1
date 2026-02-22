@@ -41,7 +41,7 @@ export async function createProtectedBlock(input: {
   // Since event_prep_blocks only has block_date (not start/end), we insert one row per day
   // OR we store end_date in the notes column. Using notes for end_date is the pragmatic
   // approach until a dedicated table is added.
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_prep_blocks')
     .insert({
       chef_id: chef.tenantId!,
@@ -72,7 +72,7 @@ export async function deleteProtectedBlock(id: string): Promise<{ success: boole
   const supabase = createServerClient()
 
   // Verify ownership before deleting
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('event_prep_blocks')
     .select('id, chef_id')
     .eq('id', id)
@@ -82,7 +82,7 @@ export async function deleteProtectedBlock(id: string): Promise<{ success: boole
     throw new Error('Block not found or access denied')
   }
 
-  const { error } = await (supabase as any).from('event_prep_blocks').delete().eq('id', id)
+  const { error } = await supabase.from('event_prep_blocks').delete().eq('id', id)
 
   if (error) {
     console.error('[deleteProtectedBlock] Error:', error)
@@ -100,7 +100,7 @@ export async function listProtectedBlocks(): Promise<ProtectedBlock[]> {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_prep_blocks')
     .select('id, title, block_date, notes, block_type, created_at')
     .eq('chef_id', chef.tenantId!)

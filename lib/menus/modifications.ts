@@ -100,8 +100,11 @@ export async function deleteMenuModification(id: string, eventId: string) {
 const MOD_PHOTO_BUCKET = 'event-photos'
 const ALLOWED_PHOTO_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
 const MIME_TO_EXT: Record<string, string> = {
-  'image/jpeg': 'jpg', 'image/png': 'png',
-  'image/heic': 'heic', 'image/heif': 'heif', 'image/webp': 'webp',
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/heic': 'heic',
+  'image/heif': 'heif',
+  'image/webp': 'webp',
 }
 const MAX_PHOTO_SIZE = 10 * 1024 * 1024
 
@@ -123,7 +126,7 @@ export async function uploadModificationPhoto(
   const supabase = createServerClient()
 
   // Verify modification belongs to this chef
-  const { data: mod } = await (supabase as any)
+  const { data: mod } = await supabase
     .from('menu_modifications')
     .select('id')
     .eq('id', modId)
@@ -134,8 +137,13 @@ export async function uploadModificationPhoto(
 
   const file = formData.get('photo') as File | null
   if (!file || file.size === 0) return { success: false, error: 'No file provided' }
-  if (!ALLOWED_PHOTO_TYPES.includes(file.type)) return { success: false, error: 'Invalid file type.' }
-  if (file.size > MAX_PHOTO_SIZE) return { success: false, error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max 10 MB.` }
+  if (!ALLOWED_PHOTO_TYPES.includes(file.type))
+    return { success: false, error: 'Invalid file type.' }
+  if (file.size > MAX_PHOTO_SIZE)
+    return {
+      success: false,
+      error: `File too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Max 10 MB.`,
+    }
 
   const ext = MIME_TO_EXT[file.type] ?? 'jpg'
   const storagePath = `${user.tenantId}/${eventId}/mods/${modId}.${ext}`
@@ -156,7 +164,7 @@ export async function uploadModificationPhoto(
   const signedUrl = signedData?.signedUrl ?? ''
 
   // Store the storage path (not the signed URL) so it can be re-signed later
-  await (supabase as any)
+  await supabase
     .from('menu_modifications')
     .update({ photo_url: storagePath })
     .eq('id', modId)
@@ -196,7 +204,11 @@ export async function getModificationStats() {
       reasonCounts[mod.reason] = (reasonCounts[mod.reason] || 0) + 1
     }
 
-    if (mod.modification_type === 'substitution' && mod.original_description && mod.actual_description) {
+    if (
+      mod.modification_type === 'substitution' &&
+      mod.original_description &&
+      mod.actual_description
+    ) {
       const key = `${mod.original_description} → ${mod.actual_description}`
       substitutionCounts[key] = (substitutionCounts[key] || 0) + 1
     }

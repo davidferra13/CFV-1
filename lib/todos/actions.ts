@@ -17,11 +17,11 @@ export async function getTodos(): Promise<ChefTodo[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_todos')
     .select('id, text, completed, completed_at, sort_order, created_at')
     .eq('chef_id', user.entityId)
-    .order('completed', { ascending: true })   // incomplete first
+    .order('completed', { ascending: true }) // incomplete first
     .order('sort_order', { ascending: true })
     .order('created_at', { ascending: true })
 
@@ -33,7 +33,9 @@ export async function getTodos(): Promise<ChefTodo[]> {
   return data ?? []
 }
 
-export async function createTodo(text: string): Promise<{ success: boolean; id?: string; error?: string }> {
+export async function createTodo(
+  text: string
+): Promise<{ success: boolean; id?: string; error?: string }> {
   const user = await requireChef()
 
   const trimmed = text.trim()
@@ -44,7 +46,7 @@ export async function createTodo(text: string): Promise<{ success: boolean; id?:
   const supabase = createServerClient()
 
   // Append at the end of incomplete items
-  const { data: last } = await (supabase as any)
+  const { data: last } = await supabase
     .from('chef_todos')
     .select('sort_order')
     .eq('chef_id', user.entityId)
@@ -55,7 +57,7 @@ export async function createTodo(text: string): Promise<{ success: boolean; id?:
 
   const nextOrder = (last?.sort_order ?? -1) + 1
 
-  const { data: created, error } = await (supabase as any)
+  const { data: created, error } = await supabase
     .from('chef_todos')
     .insert({
       chef_id: user.entityId,
@@ -81,7 +83,7 @@ export async function toggleTodo(id: string): Promise<{ success: boolean; error?
   const supabase = createServerClient()
 
   // Fetch current state scoped to this chef
-  const { data: todo, error: fetchError } = await (supabase as any)
+  const { data: todo, error: fetchError } = await supabase
     .from('chef_todos')
     .select('id, completed')
     .eq('id', id)
@@ -94,7 +96,7 @@ export async function toggleTodo(id: string): Promise<{ success: boolean; error?
 
   const nowCompleted = !todo.completed
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_todos')
     .update({
       completed: nowCompleted,
@@ -116,7 +118,7 @@ export async function deleteTodo(id: string): Promise<{ success: boolean; error?
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_todos')
     .delete()
     .eq('id', id)

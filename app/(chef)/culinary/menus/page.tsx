@@ -4,8 +4,16 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getMenus } from '@/lib/menus/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { format } from 'date-fns'
+import { NoMenusIllustration } from '@/components/ui/branded-illustrations'
 
 export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 
@@ -35,7 +43,7 @@ const SERVICE_STYLE_LABELS: Record<string, string> = {
 export default async function ChefMenusPage() {
   await requireChef()
   const menus = await getMenus()
-  const activeMenus = menus.filter(m => m.status !== 'archived')
+  const activeMenus = menus.filter((m) => m.status !== 'archived')
 
   return (
     <div className="space-y-6">
@@ -56,10 +64,17 @@ export default async function ChefMenusPage() {
 
       {activeMenus.length === 0 ? (
         <Card className="p-12 text-center">
+          <div className="flex justify-center mb-4">
+            <NoMenusIllustration className="h-24 w-24" />
+          </div>
           <p className="text-stone-600 font-medium mb-1">No menus yet</p>
-          <p className="text-stone-400 text-sm mb-4">Create a menu template or attach one to an event</p>
+          <p className="text-stone-400 text-sm mb-4">
+            Create a menu template or attach one to an event
+          </p>
           <Link href="/culinary/menus/new">
-            <Button variant="secondary" size="sm">Create First Menu</Button>
+            <Button variant="secondary" size="sm">
+              Create First Menu
+            </Button>
           </Link>
         </Card>
       ) : (
@@ -77,7 +92,7 @@ export default async function ChefMenusPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {activeMenus.map(menu => (
+              {activeMenus.map((menu) => (
                 <TableRow key={menu.id}>
                   <TableCell className="font-medium">
                     <Link
@@ -87,31 +102,43 @@ export default async function ChefMenusPage() {
                       {menu.name}
                     </Link>
                     {menu.description && (
-                      <p className="text-xs text-stone-400 mt-0.5 truncate max-w-xs">{menu.description}</p>
+                      <p className="text-xs text-stone-400 mt-0.5 truncate max-w-xs">
+                        {menu.description}
+                      </p>
                     )}
                   </TableCell>
                   <TableCell>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLES[menu.status] ?? 'bg-stone-100 text-stone-600'}`}>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLES[menu.status] ?? 'bg-stone-100 text-stone-600'}`}
+                    >
                       {STATUS_LABELS[menu.status] ?? menu.status}
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-600 text-sm">
-                    {menu.service_style ? (SERVICE_STYLE_LABELS[menu.service_style] ?? menu.service_style) : '—'}
+                    {menu.service_style
+                      ? (SERVICE_STYLE_LABELS[menu.service_style] ?? menu.service_style)
+                      : '—'}
                   </TableCell>
                   <TableCell className="text-stone-600 text-sm">
                     {menu.cuisine_type || '—'}
                   </TableCell>
                   <TableCell>
                     {menu.is_template ? (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Template</span>
-                    ) : '—'}
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                        Template
+                      </span>
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {format(new Date(menu.created_at), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell>
                     <Link href={`/culinary/menus/${menu.id}`}>
-                      <Button size="sm" variant="secondary">View</Button>
+                      <Button size="sm" variant="secondary">
+                        View
+                      </Button>
                     </Link>
                   </TableCell>
                 </TableRow>

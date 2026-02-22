@@ -47,18 +47,18 @@ export type UnifiedCalendarItem = {
   type: UnifiedCalendarItemType
   category: CalendarCategory
   title: string
-  startDate: string         // ISO YYYY-MM-DD
-  endDate: string           // ISO YYYY-MM-DD (same as startDate for single-day)
-  startTime?: string        // HH:MM (omit for all-day)
-  endTime?: string          // HH:MM
+  startDate: string // ISO YYYY-MM-DD
+  endDate: string // ISO YYYY-MM-DD (same as startDate for single-day)
+  startTime?: string // HH:MM (omit for all-day)
+  endTime?: string // HH:MM
   allDay: boolean
-  color: string             // hex
+  color: string // hex
   borderStyle: 'solid' | 'dashed' | 'dotted'
-  url?: string              // deep link to detail page
-  isBlocking: boolean       // whether this item blocks a booking
-  status?: string           // event/call status
-  subType?: string          // prep_block_type, calendar entry_type, etc.
-  isMultiDay: boolean       // convenience: endDate !== startDate
+  url?: string // deep link to detail page
+  isBlocking: boolean // whether this item blocks a booking
+  status?: string // event/call status
+  subType?: string // prep_block_type, calendar entry_type, etc.
+  isMultiDay: boolean // convenience: endDate !== startDate
 }
 
 // CalendarFilters type and DEFAULT_CALENDAR_FILTERS live in lib/calendar/constants.ts
@@ -87,7 +87,7 @@ export async function getUnifiedCalendar(
     inquiriesResult,
   ] = await Promise.all([
     // 1. Events
-    (supabase as any)
+    supabase
       .from('events')
       .select('id, occasion, event_date, serve_time, status, location_city')
       .eq('tenant_id', chefId)
@@ -96,7 +96,7 @@ export async function getUnifiedCalendar(
       .not('status', 'eq', 'cancelled'),
 
     // 2. Prep blocks
-    (supabase as any)
+    supabase
       .from('event_prep_blocks')
       .select('id, block_date, start_time, end_time, block_type, title, is_completed, event_id')
       .eq('chef_id', chefId)
@@ -104,7 +104,7 @@ export async function getUnifiedCalendar(
       .lte('block_date', endDate),
 
     // 3. Scheduled calls
-    (supabase as any)
+    supabase
       .from('scheduled_calls')
       .select('id, title, call_type, scheduled_at, duration_minutes, status, client_id')
       .eq('tenant_id', chefId)
@@ -113,7 +113,7 @@ export async function getUnifiedCalendar(
       .not('status', 'in', '("cancelled","no_show")'),
 
     // 4. Manual availability blocks
-    (supabase as any)
+    supabase
       .from('chef_availability_blocks')
       .select('id, block_date, reason, is_event_auto')
       .eq('chef_id', chefId)
@@ -122,7 +122,7 @@ export async function getUnifiedCalendar(
       .eq('is_event_auto', false), // event-auto blocks already covered by events
 
     // 5. Waitlist entries (lead indicators)
-    (supabase as any)
+    supabase
       .from('waitlist_entries')
       .select('id, requested_date, requested_date_end, occasion, status')
       .eq('chef_id', chefId)
@@ -131,15 +131,17 @@ export async function getUnifiedCalendar(
       .lte('requested_date', endDate),
 
     // 6. Chef calendar entries
-    (supabase as any)
+    supabase
       .from('chef_calendar_entries')
-      .select('id, entry_type, title, start_date, end_date, all_day, start_time, end_time, blocks_bookings, color_override, is_completed')
+      .select(
+        'id, entry_type, title, start_date, end_date, all_day, start_time, end_time, blocks_bookings, color_override, is_completed'
+      )
       .eq('chef_id', chefId)
       .lte('start_date', endDate)
       .gte('end_date', startDate),
 
     // 7. Inquiries with an event date target
-    (supabase as any)
+    supabase
       .from('inquiries')
       .select('id, occasion, preferred_date, status')
       .eq('chef_id', chefId)
@@ -150,7 +152,7 @@ export async function getUnifiedCalendar(
   ])
 
   // -- 1. Events --
-  for (const event of (eventsResult.data ?? [])) {
+  for (const event of eventsResult.data ?? []) {
     const isDraft = ['draft', 'proposed', 'accepted'].includes(event.status)
     const subType = isDraft ? 'event_draft' : 'event_confirmed'
     items.push({
@@ -173,7 +175,7 @@ export async function getUnifiedCalendar(
   }
 
   // -- 2. Prep Blocks --
-  for (const block of (prepBlocksResult.data ?? [])) {
+  for (const block of prepBlocksResult.data ?? []) {
     items.push({
       id: block.id,
       type: 'prep_block',
@@ -194,13 +196,12 @@ export async function getUnifiedCalendar(
   }
 
   // -- 3. Scheduled Calls --
-  for (const call of (callsResult.data ?? [])) {
+  for (const call of callsResult.data ?? []) {
     const callDate = call.scheduled_at.split('T')[0]
     const callTime = call.scheduled_at.split('T')[1]?.substring(0, 5) // HH:MM
-    const endMinutes =
-      call.duration_minutes
-        ? addMinutesToTime(callTime, call.duration_minutes)
-        : undefined
+    const endMinutes = call.duration_minutes
+      ? addMinutesToTime(callTime, call.duration_minutes)
+      : undefined
     items.push({
       id: call.id,
       type: 'call',
@@ -221,7 +222,7 @@ export async function getUnifiedCalendar(
   }
 
   // -- 4. Manual Availability Blocks --
-  for (const block of (availBlocksResult.data ?? [])) {
+  for (const block of availBlocksResult.data ?? []) {
     items.push({
       id: block.id,
       type: 'availability_block',
@@ -238,7 +239,7 @@ export async function getUnifiedCalendar(
   }
 
   // -- 5. Waitlist Entries --
-  for (const entry of (waitlistResult.data ?? [])) {
+  for (const entry of waitlistResult.data ?? []) {
     items.push({
       id: entry.id,
       type: 'waitlist',
@@ -259,7 +260,7 @@ export async function getUnifiedCalendar(
   const PERSONAL_TYPES = new Set(['vacation', 'time_off', 'personal'])
   const INTENTION_TYPES = new Set(['target_booking', 'soft_preference'])
 
-  for (const entry of (calendarEntriesResult.data ?? [])) {
+  for (const entry of calendarEntriesResult.data ?? []) {
     let category: CalendarCategory = 'business'
     if (PERSONAL_TYPES.has(entry.entry_type)) category = 'personal'
     else if (INTENTION_TYPES.has(entry.entry_type)) category = 'intentions'
@@ -286,7 +287,7 @@ export async function getUnifiedCalendar(
   }
 
   // -- 7. Inquiries (date-targeted) --
-  for (const inquiry of (inquiriesResult.data ?? [])) {
+  for (const inquiry of inquiriesResult.data ?? []) {
     if (!inquiry.preferred_date) continue
     items.push({
       id: inquiry.id,
@@ -348,7 +349,7 @@ export async function getFilteredCalendar(
   const allItems = await getUnifiedCalendar(startDate, endDate)
   const f = { ...DEFAULT_CALENDAR_FILTERS, ...filters }
 
-  return allItems.filter(item => {
+  return allItems.filter((item) => {
     if (item.category === 'events' && !f.showEvents) return false
     if (item.category === 'draft' && !f.showDraftEvents) return false
     if (item.category === 'prep' && !f.showPrepBlocks) return false
@@ -356,7 +357,11 @@ export async function getFilteredCalendar(
     if (item.category === 'personal' && !f.showPersonal) return false
     if (item.category === 'business' && !f.showBusiness) return false
     if (item.category === 'intentions' && !f.showIntentions) return false
-    if ((item.category === 'leads' || item.type === 'waitlist' || item.type === 'inquiry') && !f.showLeads) return false
+    if (
+      (item.category === 'leads' || item.type === 'waitlist' || item.type === 'inquiry') &&
+      !f.showLeads
+    )
+      return false
     return true
   })
 }
@@ -366,7 +371,7 @@ export async function getFilteredCalendar(
 // ============================================
 
 export type WeekDensity = {
-  weekStart: string        // Monday of the week, ISO date
+  weekStart: string // Monday of the week, ISO date
   eventCount: number
   prepBlockCount: number
   calendarEntryCount: number
@@ -413,18 +418,19 @@ export async function getYearDensity(year: number): Promise<WeekDensity[]> {
       if (byDate[dateStr]) weekItems.push(...byDate[dateStr])
     }
 
-    const eventCount = weekItems.filter(i => i.type === 'event' && i.category === 'events').length
-    const prepBlockCount = weekItems.filter(i => i.type === 'prep_block').length
-    const calendarEntryCount = weekItems.filter(i => i.type === 'calendar_entry').length
-    const callCount = weekItems.filter(i => i.type === 'call').length
+    const eventCount = weekItems.filter((i) => i.type === 'event' && i.category === 'events').length
+    const prepBlockCount = weekItems.filter((i) => i.type === 'prep_block').length
+    const calendarEntryCount = weekItems.filter((i) => i.type === 'calendar_entry').length
+    const callCount = weekItems.filter((i) => i.type === 'call').length
 
     // Dominant category for week tinting
     const categoryCounts: Record<string, number> = {}
     for (const item of weekItems) {
       categoryCounts[item.category] = (categoryCounts[item.category] ?? 0) + 1
     }
-    const dominantCategory = Object.entries(categoryCounts)
-      .sort(([, a], [, b]) => b - a)[0]?.[0] as CalendarCategory | undefined
+    const dominantCategory = Object.entries(categoryCounts).sort(
+      ([, a], [, b]) => b - a
+    )[0]?.[0] as CalendarCategory | undefined
 
     weeks.push({
       weekStart,

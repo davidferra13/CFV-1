@@ -67,7 +67,7 @@ export async function previewPriceCascade(
   const supabase = createServerClient()
 
   // Get the current price point for this ingredient
-  const { data: pricePoint, error: priceError } = await (supabase as any)
+  const { data: pricePoint, error: priceError } = await supabase
     .from('vendor_price_points')
     .select('*')
     .eq('ingredient_id', ingredientId)
@@ -83,7 +83,7 @@ export async function previewPriceCascade(
   const oldPriceCents = pricePoint.price_cents
 
   // Get all recipe_ingredients rows that reference this ingredient
-  const { data: recipeIngredients, error: riError } = await (supabase as any)
+  const { data: recipeIngredients, error: riError } = await supabase
     .from('recipe_ingredients')
     .select('id, recipe_id, ingredient_id, quantity, unit, cost_cents')
     .eq('ingredient_id', ingredientId)
@@ -106,7 +106,7 @@ export async function previewPriceCascade(
   const recipeIds = [...new Set(recipeIngredients.map((ri: any) => ri.recipe_id))]
 
   // Fetch recipe details — tenant-scoped
-  const { data: recipes, error: recipesError } = await (supabase as any)
+  const { data: recipes, error: recipesError } = await supabase
     .from('recipes')
     .select('id, name, total_cost_cents')
     .eq('chef_id', user.tenantId!)
@@ -120,7 +120,7 @@ export async function previewPriceCascade(
   }
 
   // Also get ALL recipe_ingredients for the affected recipes (to compute new totals)
-  const { data: allRecipeIngredients, error: allRiError } = await (supabase as any)
+  const { data: allRecipeIngredients, error: allRiError } = await supabase
     .from('recipe_ingredients')
     .select('recipe_id, cost_cents')
     .in('recipe_id', recipeIds)
@@ -202,15 +202,13 @@ export async function cascadeIngredientPrice(
   const preview = await previewPriceCascade(ingredientId, newPriceCents)
 
   // Insert a new price point (append-only: we don't update the old one)
-  const { error: insertError } = await (supabase as any)
-    .from('vendor_price_points')
-    .insert({
-      chef_id: user.tenantId!,
-      ingredient_id: ingredientId,
-      ingredient_name: preview.ingredientName,
-      price_cents: newPriceCents,
-      effective_date: new Date().toISOString().split('T')[0],
-    })
+  const { error: insertError } = await supabase.from('vendor_price_points').insert({
+    chef_id: user.tenantId!,
+    ingredient_id: ingredientId,
+    ingredient_name: preview.ingredientName,
+    price_cents: newPriceCents,
+    effective_date: new Date().toISOString().split('T')[0],
+  })
 
   if (insertError) throw new Error(`Failed to insert price point: ${insertError.message}`)
 
@@ -220,7 +218,7 @@ export async function cascadeIngredientPrice(
 
   for (const affected of preview.affectedRecipes) {
     // Update the recipe_ingredient cost_cents for this specific line
-    const { error: riUpdateError } = await (supabase as any)
+    const { error: riUpdateError } = await supabase
       .from('recipe_ingredients')
       .update({ cost_cents: affected.newCostCents })
       .eq('recipe_id', affected.recipeId)
@@ -239,7 +237,7 @@ export async function cascadeIngredientPrice(
   // Update total_cost_cents on each affected recipe
   for (const recipeId of updatedRecipeIds) {
     // Sum all recipe_ingredients for this recipe
-    const { data: ingredients, error: sumError } = await (supabase as any)
+    const { data: ingredients, error: sumError } = await supabase
       .from('recipe_ingredients')
       .select('cost_cents')
       .eq('recipe_id', recipeId)
@@ -256,7 +254,7 @@ export async function cascadeIngredientPrice(
       0
     )
 
-    const { error: recipeUpdateError } = await (supabase as any)
+    const { error: recipeUpdateError } = await supabase
       .from('recipes')
       .update({ total_cost_cents: newTotal })
       .eq('id', recipeId)

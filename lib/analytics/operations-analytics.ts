@@ -7,11 +7,11 @@ import { createServerClient } from '@/lib/supabase/server'
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface ComplianceStats {
-  onTimeStartRate: number         // service_started_at <= serve_time %
-  receiptSubmissionRate: number   // receipt uploaded within 24h of event %
-  kitchenComplianceRate: number   // reset_complete = true %
-  menuDeviationRate: number       // events with actual_menu_deviations %
-  tempLogComplianceRate: number   // events with ≥1 temp log %
+  onTimeStartRate: number // service_started_at <= serve_time %
+  receiptSubmissionRate: number // receipt uploaded within 24h of event %
+  kitchenComplianceRate: number // reset_complete = true %
+  menuDeviationRate: number // events with actual_menu_deviations %
+  tempLogComplianceRate: number // events with ≥1 temp log %
   dietaryAccommodationRate: number // events with dietary restrictions %
 }
 
@@ -28,7 +28,7 @@ export interface WasteStats {
   totalFoodSpendCents: number
   leftoverCarriedForwardCents: number
   netFoodCostCents: number
-  wastePercent: number            // leftover carried forward / food spend
+  wastePercent: number // leftover carried forward / food spend
   eventsWithLeftovers: number
 }
 
@@ -61,19 +61,21 @@ function phaseMinutes(start: string | null, end: string | null): number | null {
 
 export async function getComplianceStats(
   startDate?: string,
-  endDate?: string,
+  endDate?: string
 ): Promise<ComplianceStats> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, serve_time, service_started_at,
       reset_complete, actual_menu_deviations,
       dietary_restrictions, receipt_uploaded,
       event_date
-    `)
+    `
+    )
     .eq('tenant_id', chef.id)
     .eq('status', 'completed')
 
@@ -115,7 +117,7 @@ export async function getComplianceStats(
   }
 
   // Receipt within 24h: check expenses table
-  const eventIds = (events ?? []).map(e => e.id)
+  const eventIds = (events ?? []).map((e) => e.id)
   let receiptUploaded = 0
   if (eventIds.length > 0) {
     const { data: expenses } = await supabase
@@ -125,7 +127,7 @@ export async function getComplianceStats(
       .eq('receipt_uploaded', true)
 
     // Get unique events that had at least one receipt uploaded
-    const uploadedEventIds = new Set((expenses ?? []).map(e => e.event_id))
+    const uploadedEventIds = new Set((expenses ?? []).map((e) => e.event_id))
     receiptUploaded = uploadedEventIds.size
   }
 
@@ -137,7 +139,7 @@ export async function getComplianceStats(
       .select('event_id')
       .in('event_id', eventIds)
 
-    const loggedEventIds = new Set((tempLogs ?? []).map(t => t.event_id))
+    const loggedEventIds = new Set((tempLogs ?? []).map((t) => t.event_id))
     tempLogCount = loggedEventIds.size
   }
 
@@ -153,21 +155,23 @@ export async function getComplianceStats(
 
 export async function getTimePhaseStats(
   startDate?: string,
-  endDate?: string,
+  endDate?: string
 ): Promise<TimePhaseStats[]> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
   let query = supabase
     .from('events')
-    .select(`
+    .select(
+      `
       shopping_started_at, shopping_completed_at,
       prep_started_at, prep_completed_at,
       travel_started_at, travel_completed_at,
       service_started_at, service_completed_at,
       reset_started_at, reset_completed_at,
       event_date
-    `)
+    `
+    )
     .eq('tenant_id', chef.id)
     .eq('status', 'completed')
 
@@ -177,20 +181,52 @@ export async function getTimePhaseStats(
   const { data: events } = await query
 
   const phases = [
-    { key: 'shopping', label: 'Shopping', start: 'shopping_started_at' as const, end: 'shopping_completed_at' as const },
-    { key: 'prep', label: 'Prep', start: 'prep_started_at' as const, end: 'prep_completed_at' as const },
-    { key: 'travel', label: 'Travel', start: 'travel_started_at' as const, end: 'travel_completed_at' as const },
-    { key: 'service', label: 'Service', start: 'service_started_at' as const, end: 'service_completed_at' as const },
-    { key: 'reset', label: 'Reset/Cleanup', start: 'reset_started_at' as const, end: 'reset_completed_at' as const },
+    {
+      key: 'shopping',
+      label: 'Shopping',
+      start: 'shopping_started_at' as const,
+      end: 'shopping_completed_at' as const,
+    },
+    {
+      key: 'prep',
+      label: 'Prep',
+      start: 'prep_started_at' as const,
+      end: 'prep_completed_at' as const,
+    },
+    {
+      key: 'travel',
+      label: 'Travel',
+      start: 'travel_started_at' as const,
+      end: 'travel_completed_at' as const,
+    },
+    {
+      key: 'service',
+      label: 'Service',
+      start: 'service_started_at' as const,
+      end: 'service_completed_at' as const,
+    },
+    {
+      key: 'reset',
+      label: 'Reset/Cleanup',
+      start: 'reset_started_at' as const,
+      end: 'reset_completed_at' as const,
+    },
   ]
 
   return phases.map(({ label, start, end }) => {
     const durations = (events ?? [])
-      .map(ev => phaseMinutes(ev[start], ev[end]))
+      .map((ev) => phaseMinutes(ev[start], ev[end]))
       .filter((d): d is number => d !== null)
 
     if (durations.length === 0) {
-      return { phase: label, avgMinutes: 0, minMinutes: 0, maxMinutes: 0, totalMinutes: 0, eventCount: 0 }
+      return {
+        phase: label,
+        avgMinutes: 0,
+        minMinutes: 0,
+        maxMinutes: 0,
+        totalMinutes: 0,
+        eventCount: 0,
+      }
     }
 
     const total = durations.reduce((a, b) => a + b, 0)
@@ -205,10 +241,7 @@ export async function getTimePhaseStats(
   })
 }
 
-export async function getWasteStats(
-  startDate: string,
-  endDate: string,
-): Promise<WasteStats> {
+export async function getWasteStats(startDate: string, endDate: string): Promise<WasteStats> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
@@ -220,9 +253,14 @@ export async function getWasteStats(
     .gte('event_date', startDate)
     .lte('event_date', endDate)
 
-  const eventIds = (events ?? []).map(e => e.id)
-  const leftoverTotal = (events ?? []).reduce((s, e) => s + (e.leftover_value_carried_forward_cents ?? 0), 0)
-  const eventsWithLeftovers = (events ?? []).filter(e => (e.leftover_value_carried_forward_cents ?? 0) > 0).length
+  const eventIds = (events ?? []).map((e) => e.id)
+  const leftoverTotal = (events ?? []).reduce(
+    (s, e) => s + (e.leftover_value_carried_forward_cents ?? 0),
+    0
+  )
+  const eventsWithLeftovers = (events ?? []).filter(
+    (e) => (e.leftover_value_carried_forward_cents ?? 0) > 0
+  ).length
 
   let foodSpend = 0
   if (eventIds.length > 0) {
@@ -257,14 +295,15 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
 
   const total = events?.length ?? 0
   const totalGuests = (events ?? []).reduce((s, e) => s + (e.guest_count ?? 0), 0)
-  const avgGuests = total > 0 ? Math.round(totalGuests / total * 10) / 10 : 0
+  const avgGuests = total > 0 ? Math.round((totalGuests / total) * 10) / 10 : 0
 
   // Most common occasion
   const occasionCounts = new Map<string, number>()
   for (const ev of events ?? []) {
     if (ev.occasion) occasionCounts.set(ev.occasion, (occasionCounts.get(ev.occasion) ?? 0) + 1)
   }
-  const topOccasion = Array.from(occasionCounts.entries()).sort(([, a], [, b]) => b - a)[0]?.[0] ?? 'N/A'
+  const topOccasion =
+    Array.from(occasionCounts.entries()).sort(([, a], [, b]) => b - a)[0]?.[0] ?? 'N/A'
 
   // Dietary restriction frequency
   const restrictionCounts = new Map<string, number>()
@@ -278,7 +317,7 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
     .map(([restriction, count]) => ({ restriction, count, percent: pct(count, total) }))
 
   // Avg courses per event (from dishes table via menus)
-  const eventIds = (events ?? []).map(e => e.id)
+  const eventIds = (events ?? []).map((e) => e.id)
   let avgCourses = 0
   if (eventIds.length > 0) {
     const { data: menus } = await supabase
@@ -288,8 +327,11 @@ export async function getCulinaryOperationsStats(): Promise<CulinaryOperationsSt
       .not('event_id', 'is', null)
 
     if (menus?.length) {
-      const totalDishes = (menus ?? []).reduce((s, m) => s + (Array.isArray(m.dishes) ? m.dishes.length : 0), 0)
-      avgCourses = Math.round(totalDishes / menus.length * 10) / 10
+      const totalDishes = (menus ?? []).reduce(
+        (s, m) => s + (Array.isArray(m.dishes) ? m.dishes.length : 0),
+        0
+      )
+      avgCourses = Math.round((totalDishes / menus.length) * 10) / 10
     }
   }
 
@@ -310,14 +352,16 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, event_date, quoted_price_cents,
       shopping_started_at, shopping_completed_at,
       prep_started_at, prep_completed_at,
       travel_started_at, travel_completed_at,
       service_started_at, service_completed_at,
       reset_started_at, reset_completed_at
-    `)
+    `
+    )
     .eq('tenant_id', chef.id)
     .eq('status', 'completed')
     .gte('event_date', oneYearAgo.toISOString().slice(0, 10))
@@ -325,7 +369,7 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
   const monthMap = new Map<string, { revenue: number; minutes: number; count: number }>()
 
   for (const ev of events ?? []) {
-    const month = ev.event_date.slice(0, 7)  // YYYY-MM
+    const month = ev.event_date.slice(0, 7) // YYYY-MM
     const slot = monthMap.get(month) ?? { revenue: 0, minutes: 0, count: 0 }
     slot.revenue += ev.quoted_price_cents ?? 0
     slot.count++
@@ -347,7 +391,8 @@ export async function getEffectiveHourlyRateByMonth(): Promise<EffectiveHourlyRa
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, { revenue, minutes, count }]) => ({
       month,
-      avgHourlyRateCents: minutes > 0 ? Math.round((revenue / (minutes / 60)) * count / count) : 0,
+      avgHourlyRateCents:
+        minutes > 0 ? Math.round(((revenue / (minutes / 60)) * count) / count) : 0,
       eventCount: count,
     }))
 }

@@ -55,15 +55,17 @@ export async function createInstantBookingCheckout(
   const supabase = createServerClient({ admin: true })
 
   // 1. Resolve chef and verify instant-book configuration
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
-    .select(`
+    .select(
+      `
       id, business_name, booking_slug, booking_enabled, booking_model,
       booking_base_price_cents, booking_pricing_type,
       booking_deposit_type, booking_deposit_percent, booking_deposit_fixed_cents,
       stripe_account_id, stripe_onboarding_complete,
       platform_fee_percent, platform_fee_fixed_cents
-    `)
+    `
+    )
     .eq('booking_slug', validated.chef_slug)
     .eq('booking_enabled', true)
     .single()
@@ -88,9 +90,10 @@ export async function createInstantBookingCheckout(
   const tenantId = chef.id as string
 
   // 2. Compute total and deposit
-  const totalCents = chef.booking_pricing_type === 'per_person'
-    ? basePriceCents * validated.guest_count
-    : basePriceCents
+  const totalCents =
+    chef.booking_pricing_type === 'per_person'
+      ? basePriceCents * validated.guest_count
+      : basePriceCents
 
   let depositCents: number
   if (chef.booking_deposit_type === 'fixed' && chef.booking_deposit_fixed_cents > 0) {
@@ -111,7 +114,7 @@ export async function createInstantBookingCheckout(
   })
 
   // 4. Create inquiry for traceability
-  const { data: inquiry } = await (supabase as any)
+  const { data: inquiry } = await supabase
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -129,7 +132,7 @@ export async function createInstantBookingCheckout(
     .single()
 
   // 5. Create draft event with booking_source = 'instant_book'
-  const { data: event, error: eventError } = await (supabase as any)
+  const { data: event, error: eventError } = await supabase
     .from('events')
     .insert({
       tenant_id: tenantId,
@@ -156,7 +159,7 @@ export async function createInstantBookingCheckout(
   }
 
   // Log initial transition (null → draft)
-  await (supabase as any).from('event_state_transitions').insert({
+  await supabase.from('event_state_transitions').insert({
     tenant_id: tenantId,
     event_id: event.id,
     from_status: null,
@@ -170,7 +173,7 @@ export async function createInstantBookingCheckout(
 
   // Link inquiry to event
   if (inquiry?.id) {
-    await (supabase as any)
+    await supabase
       .from('inquiries')
       .update({ converted_to_event_id: event.id })
       .eq('id', inquiry.id)

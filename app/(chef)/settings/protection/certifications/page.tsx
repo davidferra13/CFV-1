@@ -13,7 +13,7 @@ export default async function ProtectionCertificationsPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data: certs } = await (supabase as any)
+  const { data: certs } = await supabase
     .from('chef_certifications')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

@@ -51,7 +51,7 @@ export async function computePerformanceScore(
   const supabase = createServerClient()
 
   // Fetch all assignments for this staff member
-  const { data: assignments, error: assignError } = await (supabase as any)
+  const { data: assignments, error: assignError } = await supabase
     .from('event_staff_assignments')
     .select('id, status, rating')
     .eq('staff_member_id', staffMemberId)
@@ -65,23 +65,25 @@ export async function computePerformanceScore(
   const cancelledRows = rows.filter((r: any) => r.status === 'cancelled')
 
   // On-time rate: completed / total (as percentage 0-100)
-  const onTimeRate = totalEvents > 0
-    ? Math.round((completedRows.length / totalEvents) * 10000) / 100
-    : 0
+  const onTimeRate =
+    totalEvents > 0 ? Math.round((completedRows.length / totalEvents) * 10000) / 100 : 0
 
   // Cancellation count
   const cancellationCount = cancelledRows.length
 
   // Average rating from completed assignments that have a rating
   const ratedRows = completedRows.filter((r: any) => r.rating != null && r.rating > 0)
-  const avgRating = ratedRows.length > 0
-    ? Math.round(
-        (ratedRows.reduce((sum: number, r: any) => sum + Number(r.rating), 0) / ratedRows.length) * 100
-      ) / 100
-    : 0
+  const avgRating =
+    ratedRows.length > 0
+      ? Math.round(
+          (ratedRows.reduce((sum: number, r: any) => sum + Number(r.rating), 0) /
+            ratedRows.length) *
+            100
+        ) / 100
+      : 0
 
   // Fetch staff member name/role for the return value
-  const { data: staffMember, error: staffError } = await (supabase as any)
+  const { data: staffMember, error: staffError } = await supabase
     .from('staff_members')
     .select('name, role')
     .eq('id', staffMemberId)
@@ -93,7 +95,7 @@ export async function computePerformanceScore(
   const now = new Date().toISOString()
 
   // Upsert into performance_scores
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_performance_scores')
     .upsert(
       {
@@ -135,12 +137,14 @@ export async function getStaffPerformanceBoard(): Promise<StaffPerformanceScore[
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_performance_scores')
-    .select(`
+    .select(
+      `
       *,
       staff_members (id, name, role)
-    `)
+    `
+    )
     .eq('chef_id', user.tenantId!)
     .order('total_events', { ascending: false })
 
@@ -171,13 +175,15 @@ export async function getStaffReliabilityForEvent(
   const supabase = createServerClient()
 
   // Get staff assigned to this event
-  const { data: assignments, error: assignError } = await (supabase as any)
+  const { data: assignments, error: assignError } = await supabase
     .from('event_staff_assignments')
-    .select(`
+    .select(
+      `
       staff_member_id,
       status,
       staff_members (id, name, role)
-    `)
+    `
+    )
     .eq('event_id', eventId)
     .eq('chef_id', user.tenantId!)
 
@@ -188,7 +194,7 @@ export async function getStaffReliabilityForEvent(
   // Get performance scores for these staff members
   const staffIds = assignments.map((a: any) => a.staff_member_id)
 
-  const { data: scores, error: scoresError } = await (supabase as any)
+  const { data: scores, error: scoresError } = await supabase
     .from('staff_performance_scores')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -198,7 +204,7 @@ export async function getStaffReliabilityForEvent(
 
   // Build a lookup by staff_member_id
   const scoreLookup: Record<string, any> = {}
-  for (const score of (scores || [])) {
+  for (const score of scores || []) {
     scoreLookup[score.staff_member_id] = score
   }
 

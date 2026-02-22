@@ -76,9 +76,10 @@ export async function getLaborByEvent(eventId: string): Promise<LaborByEventResu
   z.string().uuid().parse(eventId)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_staff_assignments')
-    .select(`
+    .select(
+      `
       id,
       staff_member_id,
       role_override,
@@ -88,7 +89,8 @@ export async function getLaborByEvent(eventId: string): Promise<LaborByEventResu
       pay_amount_cents,
       status,
       staff_members (id, name, role, hourly_rate_cents)
-    `)
+    `
+    )
     .eq('event_id', eventId)
     .eq('chef_id', user.tenantId!)
     .order('created_at')
@@ -135,10 +137,7 @@ export async function getLaborByEvent(eventId: string): Promise<LaborByEventResu
  * Get labor cost for all events in a given month, grouped by event.
  * Joins event_staff_assignments with events to get event titles and dates.
  */
-export async function getLaborByMonth(
-  year: number,
-  month: number
-): Promise<LaborByMonthResult> {
+export async function getLaborByMonth(year: number, month: number): Promise<LaborByMonthResult> {
   const user = await requireChef()
   LaborByMonthSchema.parse({ year, month })
   const supabase = createServerClient()
@@ -150,7 +149,7 @@ export async function getLaborByMonth(
   const endDate = `${endYear}-${String(endMonth).padStart(2, '0')}-01`
 
   // Get all events in this month for the chef
-  const { data: events, error: eventsError } = await (supabase as any)
+  const { data: events, error: eventsError } = await supabase
     .from('events')
     .select('id, title, date')
     .eq('chef_id', user.tenantId!)
@@ -173,7 +172,7 @@ export async function getLaborByMonth(
   const eventIds = events.map((e: any) => e.id)
 
   // Get all staff assignments for these events
-  const { data: assignments, error: assignError } = await (supabase as any)
+  const { data: assignments, error: assignError } = await supabase
     .from('event_staff_assignments')
     .select('event_id, actual_hours, pay_amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -182,8 +181,9 @@ export async function getLaborByMonth(
   if (assignError) throw new Error(`Failed to load assignments: ${assignError.message}`)
 
   // Aggregate by event
-  const eventAgg: Record<string, { staffCount: number; totalHours: number; totalCents: number }> = {}
-  for (const a of (assignments || [])) {
+  const eventAgg: Record<string, { staffCount: number; totalHours: number; totalCents: number }> =
+    {}
+  for (const a of assignments || []) {
     if (!eventAgg[a.event_id]) {
       eventAgg[a.event_id] = { staffCount: 0, totalHours: 0, totalCents: 0 }
     }
@@ -233,7 +233,7 @@ export async function getLaborRevenueRatio(
   const supabase = createServerClient()
 
   // Get events in the date range with their revenue
-  const { data: events, error: eventsError } = await (supabase as any)
+  const { data: events, error: eventsError } = await supabase
     .from('events')
     .select('id, total_amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -261,7 +261,7 @@ export async function getLaborRevenueRatio(
   const eventIds = events.map((e: any) => e.id)
 
   // Get labor cost for these events
-  const { data: assignments, error: assignError } = await (supabase as any)
+  const { data: assignments, error: assignError } = await supabase
     .from('event_staff_assignments')
     .select('pay_amount_cents')
     .eq('chef_id', user.tenantId!)
@@ -274,9 +274,8 @@ export async function getLaborRevenueRatio(
     0
   )
 
-  const ratioPercent = totalRevenueCents > 0
-    ? Math.round((totalLaborCostCents / totalRevenueCents) * 10000) / 100
-    : 0
+  const ratioPercent =
+    totalRevenueCents > 0 ? Math.round((totalLaborCostCents / totalRevenueCents) * 10000) / 100 : 0
 
   return {
     startDate,

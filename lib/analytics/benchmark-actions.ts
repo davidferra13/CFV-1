@@ -45,7 +45,10 @@ const GetBenchmarkHistorySchema = z.object({
  * Compute all benchmark metrics from events/expenses/inquiries for today
  * and upsert into benchmark_snapshots.
  */
-export async function computeBenchmarkSnapshot(): Promise<{ success: boolean; snapshot: BenchmarkSnapshot }> {
+export async function computeBenchmarkSnapshot(): Promise<{
+  success: boolean
+  snapshot: BenchmarkSnapshot
+}> {
   const user = await requireChef()
   const supabase = createServerClient()
   const today = new Date().toISOString().split('T')[0]
@@ -58,14 +61,15 @@ export async function computeBenchmarkSnapshot(): Promise<{ success: boolean; sn
     .eq('status', 'completed')
 
   const events = completedEvents || []
-  const avgEventValueCents = events.length > 0
-    ? Math.round(events.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0) / events.length)
-    : 0
+  const avgEventValueCents =
+    events.length > 0
+      ? Math.round(events.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0) / events.length)
+      : 0
 
   // 2. Average food cost %: total food expenses / total revenue * 100
   const totalRevenueCents = events.reduce((sum, e) => sum + (e.quoted_price_cents || 0), 0)
 
-  const eventIds = events.map(e => e.id)
+  const eventIds = events.map((e) => e.id)
   let totalFoodExpenseCents = 0
   if (eventIds.length > 0) {
     const { data: foodExpenses } = await supabase
@@ -79,9 +83,10 @@ export async function computeBenchmarkSnapshot(): Promise<{ success: boolean; sn
     totalFoodExpenseCents = (foodExpenses || []).reduce((sum, e) => sum + e.amount_cents, 0)
   }
 
-  const avgFoodCostPct = totalRevenueCents > 0
-    ? parseFloat(((totalFoodExpenseCents / totalRevenueCents) * 100).toFixed(2))
-    : 0
+  const avgFoodCostPct =
+    totalRevenueCents > 0
+      ? parseFloat(((totalFoodExpenseCents / totalRevenueCents) * 100).toFixed(2))
+      : 0
 
   // 3. Booking conversion rate: completed events / total inquiries * 100
   const { count: inquiryCount } = await supabase
@@ -89,9 +94,10 @@ export async function computeBenchmarkSnapshot(): Promise<{ success: boolean; sn
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', user.tenantId!)
 
-  const bookingConversionRate = (inquiryCount ?? 0) > 0
-    ? parseFloat(((events.length / (inquiryCount ?? 1)) * 100).toFixed(2))
-    : 0
+  const bookingConversionRate =
+    (inquiryCount ?? 0) > 0
+      ? parseFloat(((events.length / (inquiryCount ?? 1)) * 100).toFixed(2))
+      : 0
 
   // 4. Client return rate: clients with 2+ events / total clients * 100
   const { data: allClients } = await supabase
@@ -109,26 +115,27 @@ export async function computeBenchmarkSnapshot(): Promise<{ success: boolean; sn
     .eq('status', 'completed')
 
   const clientEventCounts = new Map<string, number>()
-  for (const ce of (clientEvents || [])) {
+  for (const ce of clientEvents || []) {
     if (ce.client_id) {
       clientEventCounts.set(ce.client_id, (clientEventCounts.get(ce.client_id) || 0) + 1)
     }
   }
-  const returningClients = Array.from(clientEventCounts.values()).filter(c => c >= 2).length
-  const clientReturnRate = totalClients > 0
-    ? parseFloat(((returningClients / totalClients) * 100).toFixed(2))
-    : 0
+  const returningClients = Array.from(clientEventCounts.values()).filter((c) => c >= 2).length
+  const clientReturnRate =
+    totalClients > 0 ? parseFloat(((returningClients / totalClients) * 100).toFixed(2)) : 0
 
   // 5. Revenue per hour: total revenue / total event hours
   // Use time tracking fields if available, otherwise estimate from serve_time/departure_time
   const { data: eventTimeData } = await supabase
     .from('events')
-    .select('time_service_minutes, time_prep_minutes, time_shopping_minutes, time_travel_minutes, time_reset_minutes')
+    .select(
+      'time_service_minutes, time_prep_minutes, time_shopping_minutes, time_travel_minutes, time_reset_minutes'
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
 
   let totalHours = 0
-  for (const e of (eventTimeData || [])) {
+  for (const e of eventTimeData || []) {
     const totalMinutes =
       (e.time_service_minutes ?? 0) +
       (e.time_prep_minutes ?? 0) +
@@ -143,12 +150,10 @@ export async function computeBenchmarkSnapshot(): Promise<{ success: boolean; sn
     totalHours = events.length * 4
   }
 
-  const revenuePerHourCents = totalHours > 0
-    ? Math.round(totalRevenueCents / totalHours)
-    : 0
+  const revenuePerHourCents = totalHours > 0 ? Math.round(totalRevenueCents / totalHours) : 0
 
   // Upsert into benchmark_snapshots
-  const { data: snapshot, error } = await (supabase as any)
+  const { data: snapshot, error } = await supabase
     .from('benchmark_snapshots')
     .upsert(
       {
@@ -202,7 +207,7 @@ export async function getBenchmarkHistory(months?: number): Promise<BenchmarkSna
   cutoffDate.setMonth(cutoffDate.getMonth() - monthCount)
   const cutoffStr = cutoffDate.toISOString().split('T')[0]
 
-  const { data: snapshots, error } = await (supabase as any)
+  const { data: snapshots, error } = await supabase
     .from('benchmark_snapshots')
     .select('*')
     .eq('chef_id', user.tenantId!)

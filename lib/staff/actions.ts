@@ -15,8 +15,13 @@ import { z } from 'zod'
 const CreateStaffSchema = z.object({
   name: z.string().min(1, 'Name required'),
   role: z.enum([
-    'sous_chef', 'kitchen_assistant', 'service_staff',
-    'server', 'bartender', 'dishwasher', 'other',
+    'sous_chef',
+    'kitchen_assistant',
+    'service_staff',
+    'server',
+    'bartender',
+    'dishwasher',
+    'other',
   ]),
   phone: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
@@ -29,10 +34,18 @@ const UpdateStaffSchema = CreateStaffSchema.partial()
 const AssignStaffSchema = z.object({
   event_id: z.string().uuid(),
   staff_member_id: z.string().uuid(),
-  role_override: z.enum([
-    'sous_chef', 'kitchen_assistant', 'service_staff',
-    'server', 'bartender', 'dishwasher', 'other',
-  ]).nullable().optional(),
+  role_override: z
+    .enum([
+      'sous_chef',
+      'kitchen_assistant',
+      'service_staff',
+      'server',
+      'bartender',
+      'dishwasher',
+      'other',
+    ])
+    .nullable()
+    .optional(),
   rate_override_cents: z.number().int().min(0).nullable().optional(),
   scheduled_hours: z.number().min(0).nullable().optional(),
   notes: z.string().optional(),
@@ -43,10 +56,10 @@ const RecordHoursSchema = z.object({
   actual_hours: z.number().min(0),
 })
 
-export type CreateStaffInput   = z.infer<typeof CreateStaffSchema>
-export type UpdateStaffInput   = z.infer<typeof UpdateStaffSchema>
-export type AssignStaffInput   = z.infer<typeof AssignStaffSchema>
-export type RecordHoursInput   = z.infer<typeof RecordHoursSchema>
+export type CreateStaffInput = z.infer<typeof CreateStaffSchema>
+export type UpdateStaffInput = z.infer<typeof UpdateStaffSchema>
+export type AssignStaffInput = z.infer<typeof AssignStaffSchema>
+export type RecordHoursInput = z.infer<typeof RecordHoursSchema>
 
 // ============================================
 // STAFF ROSTER ACTIONS
@@ -57,7 +70,7 @@ export async function createStaffMember(input: CreateStaffInput) {
   const validated = CreateStaffSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_members')
     .insert({ ...validated, chef_id: user.tenantId! })
     .select()
@@ -77,7 +90,7 @@ export async function updateStaffMember(id: string, input: UpdateStaffInput) {
   const validated = UpdateStaffSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('staff_members')
     .update(validated)
     .eq('id', id)
@@ -98,7 +111,7 @@ export async function deactivateStaffMember(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('staff_members')
     .update({ status: 'inactive' })
     .eq('id', id)
@@ -112,11 +125,7 @@ export async function listStaffMembers(activeOnly = true) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
-    .from('staff_members')
-    .select('*')
-    .eq('chef_id', user.tenantId!)
-    .order('name')
+  let query = supabase.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
 
   if (activeOnly) query = query.eq('status', 'active')
 
@@ -134,7 +143,7 @@ export async function assignStaffToEvent(input: AssignStaffInput) {
   const validated = AssignStaffSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_staff_assignments')
     .upsert(
       {
@@ -165,7 +174,7 @@ export async function removeStaffFromEvent(assignmentId: string, eventId: string
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('event_staff_assignments')
     .delete()
     .eq('id', assignmentId)
@@ -179,12 +188,14 @@ export async function getEventStaffRoster(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_staff_assignments')
-    .select(`
+    .select(
+      `
       *,
       staff_members (id, name, role, hourly_rate_cents, phone)
-    `)
+    `
+    )
     .eq('event_id', eventId)
     .eq('chef_id', user.tenantId!)
     .order('created_at')
@@ -203,12 +214,14 @@ export async function recordStaffHours(input: RecordHoursInput) {
   const supabase = createServerClient()
 
   // Load assignment + staff default rate
-  const { data: assignment } = await (supabase as any)
+  const { data: assignment } = await supabase
     .from('event_staff_assignments')
-    .select(`
+    .select(
+      `
       id, event_id, rate_override_cents,
       staff_members (hourly_rate_cents)
-    `)
+    `
+    )
     .eq('id', validated.assignment_id)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -220,7 +233,7 @@ export async function recordStaffHours(input: RecordHoursInput) {
   const effectiveRate = assignment.rate_override_cents ?? staffRate
   const payAmountCents = Math.round(validated.actual_hours * effectiveRate)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_staff_assignments')
     .update({
       actual_hours: validated.actual_hours,
@@ -248,7 +261,7 @@ export async function computeEventLaborCost(eventId: string): Promise<number> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_staff_assignments')
     .select('pay_amount_cents')
     .eq('event_id', eventId)

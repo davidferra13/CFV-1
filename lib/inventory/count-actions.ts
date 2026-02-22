@@ -71,7 +71,7 @@ export async function updateInventoryCount(
   const parsed = UpdateInventoryCountSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('inventory_counts')
     .upsert(
       {
@@ -114,7 +114,7 @@ export async function getInventoryCounts(): Promise<InventoryCount[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('inventory_counts')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -145,7 +145,7 @@ export async function getParAlerts(): Promise<ParAlert[]> {
   const supabase = createServerClient()
 
   // Fetch items that have a par_level set
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('inventory_counts')
     .select('*')
     .eq('chef_id', user.tenantId!)

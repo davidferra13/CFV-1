@@ -39,12 +39,12 @@ export async function getChefPayoutSummary(): Promise<ChefPayoutSummary> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: transfers } = await (supabase as any)
+  const { data: transfers } = await supabase
     .from('stripe_transfers')
     .select('gross_amount_cents, platform_fee_cents, net_transfer_cents, status, created_at')
     .eq('tenant_id', user.entityId)
 
-  const { data: chef } = await (supabase as any)
+  const { data: chef } = await supabase
     .from('chefs')
     .select('stripe_account_id, stripe_onboarding_complete')
     .eq('id', user.entityId)
@@ -54,9 +54,18 @@ export async function getChefPayoutSummary(): Promise<ChefPayoutSummary> {
   const paid = rows.filter((t: any) => t.status === 'paid')
   const pending = rows.filter((t: any) => t.status === 'pending')
 
-  const totalTransferredCents = paid.reduce((s: number, t: any) => s + (t.gross_amount_cents ?? 0), 0)
-  const totalPlatformFeesCents = paid.reduce((s: number, t: any) => s + (t.platform_fee_cents ?? 0), 0)
-  const totalNetReceivedCents = paid.reduce((s: number, t: any) => s + (t.net_transfer_cents ?? 0), 0)
+  const totalTransferredCents = paid.reduce(
+    (s: number, t: any) => s + (t.gross_amount_cents ?? 0),
+    0
+  )
+  const totalPlatformFeesCents = paid.reduce(
+    (s: number, t: any) => s + (t.platform_fee_cents ?? 0),
+    0
+  )
+  const totalNetReceivedCents = paid.reduce(
+    (s: number, t: any) => s + (t.net_transfer_cents ?? 0),
+    0
+  )
 
   const sortedDates = paid
     .map((t: any) => t.created_at)
@@ -88,9 +97,10 @@ export async function getChefTransfers(opts?: {
   const limit = opts?.limit ?? 50
   const offset = opts?.offset ?? 0
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('stripe_transfers')
-    .select(`
+    .select(
+      `
       id,
       event_id,
       stripe_transfer_id,
@@ -101,7 +111,8 @@ export async function getChefTransfers(opts?: {
       is_deferred,
       created_at,
       event:events(occasion, event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.entityId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)

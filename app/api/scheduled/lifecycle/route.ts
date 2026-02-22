@@ -322,7 +322,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
     // Cast to any: payment_reminder_*_sent_at columns are new (from migration 20260228000006)
     // and types/database.ts doesn't reflect them yet. Will resolve after supabase gen types.
-    const { data: unpaidEvents } = (await (supabase as any)
+    const { data: unpaidEvents } = (await supabase
       .from('events')
       .select(
         `
@@ -408,7 +408,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
 
             // Mark as sent
             // Cast to any: new column not yet in generated types
-            await (supabase as any)
+            await supabase
               .from('events')
               .update({ [threshold.column]: new Date().toISOString() })
               .eq('id', event.id)
@@ -479,7 +479,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const thirtyDaysOutDate5 = thirtyDaysOut5.toISOString().split('T')[0]
 
     // Cast to any: new columns not yet in generated types
-    const { data: upcomingEvents5 } = (await (supabase as any)
+    const { data: upcomingEvents5 } = (await supabase
       .from('events')
       .select(
         `
@@ -622,7 +622,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
             }
 
             // Mark as sent
-            await (supabase as any)
+            await supabase
               .from('events')
               .update({ [threshold.column]: new Date().toISOString() })
               .eq('id', event.id)
@@ -650,7 +650,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const fortyEightHoursOut6 = new Date(now6.getTime() + 48 * 60 * 60 * 1000)
 
     // Cast to any: expiry_warning_sent_at column not yet in generated types
-    const { data: expiringQuotes } = (await (supabase as any)
+    const { data: expiringQuotes } = (await supabase
       .from('quotes')
       .select(
         `
@@ -736,7 +736,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
           })
 
           // Mark warning as sent
-          await (supabase as any)
+          await supabase
             .from('quotes')
             .update({ expiry_warning_sent_at: new Date().toISOString() })
             .eq('id', quote.id)
@@ -766,7 +766,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
     const tenDaysAgo = new Date(now7.getTime() - 10 * 86_400_000).toISOString().split('T')[0]
     const threeDaysAgo = new Date(now7.getTime() - 3 * 86_400_000).toISOString().split('T')[0]
 
-    const { data: completedEvents } = (await (supabase as any)
+    const { data: completedEvents } = (await supabase
       .from('events')
       .select(
         `
@@ -846,7 +846,7 @@ ${chefName}`
           })
 
           // Mark as sent
-          await (supabase as any)
+          await supabase
             .from('events')
             .update({ review_request_sent_at: now7.toISOString() })
             .eq('id', event.id)

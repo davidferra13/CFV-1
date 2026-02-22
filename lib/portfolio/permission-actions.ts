@@ -7,7 +7,7 @@ import { revalidatePath } from 'next/cache'
 export async function updatePhotoPermission(photoId: string, permissionOverride: string) {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('event_photos')
     .update({ permission_override: permissionOverride })
     .eq('id', photoId)
@@ -18,7 +18,7 @@ export async function updatePhotoPermission(photoId: string, permissionOverride:
 export async function getPortfolioPermissionAudit() {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('event_photos')
     .select(
       'id, url, event_id, client_id, permission_override, clients(full_name, photo_permission)'

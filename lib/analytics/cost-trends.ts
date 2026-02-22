@@ -9,22 +9,32 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 
 export type FoodCostTrendMonth = {
-  month: string              // 'YYYY-MM'
-  label: string              // 'Jan '26'
+  month: string // 'YYYY-MM'
+  label: string // 'Jan '26'
   avgFoodCostPercent: number // 0-100, 0 = no data for that month
   eventCount: number
 }
 
 export type FoodCostTrend = {
   months: FoodCostTrendMonth[]
-  isRising: boolean            // true = 2+ consecutive recent months of increase
-  risingMonthCount: number     // how many consecutive months at the tail
+  isRising: boolean // true = 2+ consecutive recent months of increase
+  risingMonthCount: number // how many consecutive months at the tail
   overallAvgFoodCostPercent: number | null
 }
 
 const MONTH_LABELS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ]
 
 export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
@@ -49,11 +59,11 @@ export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
     return buildEmpty(months)
   }
 
-  const eventIds = events.map(e => e.id)
-  const dateMap = new Map<string, string>(events.map(e => [e.id, e.event_date]))
+  const eventIds = events.map((e) => e.id)
+  const dateMap = new Map<string, string>(events.map((e) => [e.id, e.event_date]))
 
   // Fetch food_cost_percentage from the event_financial_summary view
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('event_financial_summary')
     .select('event_id, food_cost_percentage')
     .eq('tenant_id', user.tenantId!)
@@ -86,22 +96,20 @@ export async function getFoodCostTrend(months = 6): Promise<FoodCostTrend> {
     monthRange.push(ym)
   }
 
-  const result: FoodCostTrendMonth[] = monthRange.map(ym => {
+  const result: FoodCostTrendMonth[] = monthRange.map((ym) => {
     const entry = byMonth.get(ym)
     const [year, month] = ym.split('-')
     const label = `${MONTH_LABELS[parseInt(month) - 1]} '${year.slice(2)}`
     return {
       month: ym,
       label,
-      avgFoodCostPercent: entry
-        ? parseFloat((entry.sum / entry.count).toFixed(1))
-        : 0,
+      avgFoodCostPercent: entry ? parseFloat((entry.sum / entry.count).toFixed(1)) : 0,
       eventCount: entry?.count ?? 0,
     }
   })
 
   // Overall average across months that have data
-  const withData = result.filter(m => m.eventCount > 0)
+  const withData = result.filter((m) => m.eventCount > 0)
   const overallAvgFoodCostPercent =
     withData.length > 0
       ? parseFloat(
@@ -141,5 +149,10 @@ function buildEmpty(months: number): FoodCostTrend {
       eventCount: 0,
     })
   }
-  return { months: monthRange, isRising: false, risingMonthCount: 0, overallAvgFoodCostPercent: null }
+  return {
+    months: monthRange,
+    isRising: false,
+    risingMonthCount: 0,
+    overallAvgFoodCostPercent: null,
+  }
 }

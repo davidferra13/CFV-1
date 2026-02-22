@@ -11,7 +11,7 @@ import { addDays, isBefore } from 'date-fns'
 // ============================================
 
 const CertificationSchema = z.object({
-  cert_type:            z.enum([
+  cert_type: z.enum([
     'food_handler',
     'servsafe_manager',
     'allergen_awareness',
@@ -21,14 +21,20 @@ const CertificationSchema = z.object({
     'cottage_food',
     'other',
   ]),
-  name:                 z.string().min(1, 'Name is required'),
-  issuing_body:         z.string().optional(),
-  issued_date:          z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  expiry_date:          z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  name: z.string().min(1, 'Name is required'),
+  issuing_body: z.string().optional(),
+  issued_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  expiry_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   reminder_days_before: z.number().int().min(0).default(30),
-  cert_number:          z.string().optional(),
-  document_url:         z.string().url().optional().or(z.literal('')),
-  status:               z.enum(['active', 'expired', 'pending_renewal']).default('active'),
+  cert_number: z.string().optional(),
+  document_url: z.string().url().optional().or(z.literal('')),
+  status: z.enum(['active', 'expired', 'pending_renewal']).default('active'),
 })
 
 export type CertificationInput = z.infer<typeof CertificationSchema>
@@ -38,15 +44,13 @@ export async function createCertification(input: CertificationInput) {
   const supabase = await createServerClient()
   const data = CertificationSchema.parse(input)
 
-  const { error } = await (supabase as any)
-    .from('chef_certifications')
-    .insert({
-      ...data,
-      chef_id:      chef.id,
-      document_url: data.document_url || null,
-      issued_date:  data.issued_date  || null,
-      expiry_date:  data.expiry_date  || null,
-    })
+  const { error } = await supabase.from('chef_certifications').insert({
+    ...data,
+    chef_id: chef.id,
+    document_url: data.document_url || null,
+    issued_date: data.issued_date || null,
+    expiry_date: data.expiry_date || null,
+  })
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/compliance')
@@ -57,13 +61,13 @@ export async function updateCertification(id: string, input: CertificationInput)
   const supabase = await createServerClient()
   const data = CertificationSchema.parse(input)
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_certifications')
     .update({
       ...data,
       document_url: data.document_url || null,
-      issued_date:  data.issued_date  || null,
-      expiry_date:  data.expiry_date  || null,
+      issued_date: data.issued_date || null,
+      expiry_date: data.expiry_date || null,
     })
     .eq('id', id)
     .eq('chef_id', chef.id)
@@ -76,7 +80,7 @@ export async function deleteCertification(id: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_certifications')
     .delete()
     .eq('id', id)
@@ -90,7 +94,7 @@ export async function listCertifications() {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_certifications')
     .select('*')
     .eq('chef_id', chef.id)
@@ -104,11 +108,11 @@ export async function getExpiringCertifications(daysAhead = 60) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const today     = new Date()
+  const today = new Date()
   const threshold = addDays(today, daysAhead).toISOString().slice(0, 10)
-  const todayStr  = today.toISOString().slice(0, 10)
+  const todayStr = today.toISOString().slice(0, 10)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_certifications')
     .select('*')
     .eq('chef_id', chef.id)
@@ -122,18 +126,17 @@ export async function getExpiringCertifications(daysAhead = 60) {
   return data ?? []
 }
 
-
 // ============================================
 // TEMPERATURE LOGS
 // ============================================
 
 const TempLogSchema = z.object({
-  event_id:         z.string().uuid(),
+  event_id: z.string().uuid(),
   item_description: z.string().min(1, 'Item description is required'),
-  temp_fahrenheit:  z.number(),
-  phase:            z.enum(['receiving', 'cold_holding', 'hot_holding', 'cooling', 'reheating']),
-  is_safe:          z.boolean().optional(),
-  notes:            z.string().optional(),
+  temp_fahrenheit: z.number(),
+  phase: z.enum(['receiving', 'cold_holding', 'hot_holding', 'cooling', 'reheating']),
+  is_safe: z.boolean().optional(),
+  notes: z.string().optional(),
 })
 
 export type TempLogInput = z.infer<typeof TempLogSchema>
@@ -145,9 +148,7 @@ export async function logTemperature(input: TempLogInput) {
   const supabase = await createServerClient()
   const data = TempLogSchema.parse(input)
 
-  const { error } = await (supabase as any)
-    .from('event_temp_logs')
-    .insert({ ...data, chef_id: chef.id })
+  const { error } = await supabase.from('event_temp_logs').insert({ ...data, chef_id: chef.id })
 
   if (error) throw new Error(error.message)
   revalidatePath(`/events/${data.event_id}`)
@@ -157,7 +158,7 @@ export async function deleteTempLog(id: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('event_temp_logs')
     .delete()
     .eq('id', id)
@@ -170,7 +171,7 @@ export async function getEventTempLog(eventId: string) {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('event_temp_logs')
     .select('*')
     .eq('event_id', eventId)
@@ -209,22 +210,24 @@ export async function getAllergenRiskSummary(eventId: string) {
   // Get menu dishes if menu is linked
   let dishes: Array<{ name: string; allergens: string[] }> = []
   if (event.menu_id) {
-    const { data: menuDishes } = await (supabase as any)
+    const { data: menuDishes } = await supabase
       .from('menu_items')
       .select('name, allergen_notes')
       .eq('menu_id', event.menu_id)
 
     dishes = (menuDishes ?? []).map((d: any) => ({
-      name:      d.name,
+      name: d.name,
       allergens: d.allergen_notes ? [d.allergen_notes] : [],
     }))
   }
 
   return {
-    clientName:           client?.full_name ?? 'Unknown client',
-    dietaryRestrictions:  client?.dietary_restrictions ?? null,
-    allergies:            (client as { allergies?: string } | null)?.allergies ?? null,
-    menuDishes:           dishes,
-    hasAllergenConcerns:  !!(client?.dietary_restrictions || (client as { allergies?: string } | null)?.allergies),
+    clientName: client?.full_name ?? 'Unknown client',
+    dietaryRestrictions: client?.dietary_restrictions ?? null,
+    allergies: (client as { allergies?: string } | null)?.allergies ?? null,
+    menuDishes: dishes,
+    hasAllergenConcerns: !!(
+      client?.dietary_restrictions || (client as { allergies?: string } | null)?.allergies
+    ),
   }
 }

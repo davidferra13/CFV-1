@@ -31,7 +31,7 @@ const TaxSettingsSchema = z.object({
   home_total_sqft: z.number().int().positive().nullable().optional(),
 })
 
-export type MileageInput     = z.infer<typeof MileageSchema>
+export type MileageInput = z.infer<typeof MileageSchema>
 export type TaxSettingsInput = z.infer<typeof TaxSettingsSchema>
 
 // ============================================
@@ -43,7 +43,7 @@ export async function logMileage(input: MileageInput) {
   const validated = MileageSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('mileage_logs')
     .insert({
       chef_id: user.tenantId!,
@@ -65,7 +65,7 @@ export async function logMileage(input: MileageInput) {
 export async function deleteMileageLog(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
-  await (supabase as any).from('mileage_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
+  await supabase.from('mileage_logs').delete().eq('id', id).eq('chef_id', user.tenantId!)
   revalidatePath('/finance/tax')
 }
 
@@ -73,7 +73,7 @@ export async function getMileageForPeriod(startDate: string, endDate: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('mileage_logs')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -85,7 +85,10 @@ export async function getMileageForPeriod(startDate: string, endDate: string) {
 
   const logs = data ?? []
   const totalMiles = logs.reduce((sum: number, l: any) => sum + Number(l.miles), 0)
-  const totalDeductionCents = logs.reduce((sum: number, l: any) => sum + (l.deduction_cents ?? 0), 0)
+  const totalDeductionCents = logs.reduce(
+    (sum: number, l: any) => sum + (l.deduction_cents ?? 0),
+    0
+  )
 
   return { logs, totalMiles, totalDeductionCents }
 }
@@ -105,12 +108,9 @@ export async function saveTaxSettings(input: TaxSettingsInput) {
   const validated = TaxSettingsSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('tax_settings')
-    .upsert(
-      { chef_id: user.tenantId!, ...validated },
-      { onConflict: 'chef_id,tax_year' }
-    )
+    .upsert({ chef_id: user.tenantId!, ...validated }, { onConflict: 'chef_id,tax_year' })
     .select()
     .single()
 
@@ -123,7 +123,7 @@ export async function getTaxSettings(year: number) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('tax_settings')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -200,7 +200,8 @@ export async function computeQuarterlyEstimate(year: number, quarter: 1 | 2 | 3 
     seTaxCents,
     incomeTaxCents,
     totalEstimatedCents,
-    disclaimer: 'This is a rough estimate for planning purposes only. Consult a CPA for accurate tax advice.',
+    disclaimer:
+      'This is a rough estimate for planning purposes only. Consult a CPA for accurate tax advice.',
   }
 }
 
@@ -259,8 +260,11 @@ export async function generateAccountantExport(year: number) {
   }
 
   // Mileage
-  const { totalMiles, totalDeductionCents: mileageDeductionCents, logs: mileageLogs } =
-    await getYearlyMileageSummary(year)
+  const {
+    totalMiles,
+    totalDeductionCents: mileageDeductionCents,
+    logs: mileageLogs,
+  } = await getYearlyMileageSummary(year)
 
   const netProfitCents = netIncomeCents - totalExpensesCents - mileageDeductionCents
 

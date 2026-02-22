@@ -14,7 +14,7 @@ export async function createCreativeProject(input: {
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any).from('chef_creative_projects').insert({
+  const { error } = await supabase.from('chef_creative_projects').insert({
     tenant_id: tenantId,
     dish_name: input.dish_name,
     cuisine: input.cuisine ?? null,
@@ -35,7 +35,7 @@ export async function updateCreativeProject(
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_creative_projects')
     .update({ ...input, updated_at: new Date().toISOString() })
     .eq('id', id)
@@ -50,7 +50,7 @@ export async function deleteCreativeProject(id: string) {
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chef_creative_projects')
     .delete()
     .eq('id', id)
@@ -76,7 +76,7 @@ export async function listCreativeProjects(filters?: { status?: string }): Promi
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('chef_creative_projects')
     .select('id, dish_name, cuisine, notes, status, photos, entry_date, created_at')
     .eq('tenant_id', tenantId)

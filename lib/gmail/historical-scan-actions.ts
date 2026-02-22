@@ -46,7 +46,7 @@ export async function enableHistoricalEmailScan(): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any)
+  await supabase
     .from('google_connections')
     .update({
       historical_scan_enabled: true,
@@ -64,7 +64,7 @@ export async function disableHistoricalEmailScan(): Promise<void> {
   const supabase = createServerClient()
 
   // Pause (not reset) — preserves progress and existing findings
-  await (supabase as any)
+  await supabase
     .from('google_connections')
     .update({
       historical_scan_enabled: false,
@@ -81,7 +81,7 @@ export async function getHistoricalScanStatus(): Promise<HistoricalScanStatus | 
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('google_connections')
     .select(
       'gmail_connected, historical_scan_enabled, historical_scan_status, historical_scan_total_processed, historical_scan_lookback_days, historical_scan_started_at, historical_scan_completed_at, historical_scan_last_run_at'
@@ -114,7 +114,7 @@ export async function getHistoricalFindings(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('gmail_historical_findings')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -149,14 +149,12 @@ export async function getHistoricalFindings(
 
 // ─── Import a Finding as an Inquiry ──────────────────────────────────────────
 
-export async function importHistoricalFinding(
-  findingId: string
-): Promise<{ inquiryId: string }> {
+export async function importHistoricalFinding(findingId: string): Promise<{ inquiryId: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   // Load the finding (tenant-scoped)
-  const { data: finding, error: findErr } = await (supabase as any)
+  const { data: finding, error: findErr } = await supabase
     .from('gmail_historical_findings')
     .select('*')
     .eq('id', findingId)
@@ -177,9 +175,7 @@ export async function importHistoricalFinding(
   const leadEmail = emailMatch ? emailMatch[1] : fromAddressRaw.trim()
   const nameMatch = fromAddressRaw.match(/^(.+?)\s*</)
   const leadName =
-    parseResult.parsed.client_name ||
-    (nameMatch ? nameMatch[1].trim() : null) ||
-    'Unknown'
+    parseResult.parsed.client_name || (nameMatch ? nameMatch[1].trim() : null) || 'Unknown'
 
   // Find or create client
   let clientId: string | null = null
@@ -228,9 +224,7 @@ export async function importHistoricalFinding(
       confirmed_service_expectations: parseResult.parsed.confirmed_service_expectations ?? null,
       source_message: bodyText,
       unknown_fields:
-        Object.keys(unknownFields).length > 0
-          ? (unknownFields as unknown as Json)
-          : null,
+        Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
       next_action_required: 'Review imported historical inquiry',
       next_action_by: 'chef',
     })
@@ -255,7 +249,7 @@ export async function importHistoricalFinding(
   })
 
   // Mark finding as imported
-  await (supabase as any)
+  await supabase
     .from('gmail_historical_findings')
     .update({
       status: 'imported',
@@ -277,7 +271,7 @@ export async function dismissHistoricalFinding(findingId: string): Promise<void>
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any)
+  await supabase
     .from('gmail_historical_findings')
     .update({
       status: 'dismissed',
@@ -298,7 +292,7 @@ export async function dismissAllFindings(filter: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('gmail_historical_findings')
     .update({
       status: 'dismissed',

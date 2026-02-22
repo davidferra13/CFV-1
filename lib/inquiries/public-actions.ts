@@ -72,7 +72,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   const sourceMessage = sourceParts.join('\n')
 
   // 1. Resolve chef slug → tenant_id (prefer slug; fallback to hardcoded email)
-  let chefQuery = (supabase as any).from('chefs').select('id, business_name')
+  let chefQuery = supabase.from('chefs').select('id, business_name')
 
   if (validated.chef_slug) {
     chefQuery = chefQuery.eq('booking_slug', validated.chef_slug)
@@ -104,7 +104,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     null
 
   // 3. Create inquiry record linked to client
-  const { data: inquiry, error: inquiryError } = await (supabase as any)
+  const { data: inquiry, error: inquiryError } = await supabase
     .from('inquiries')
     .insert({
       tenant_id: tenantId,
@@ -153,7 +153,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   }
 
   // 4. Create draft event with available info (TBD for missing required fields)
-  const { data: event, error: eventError } = await (supabase as any)
+  const { data: event, error: eventError } = await supabase
     .from('events')
     .insert({
       tenant_id: tenantId,
@@ -180,7 +180,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   }
 
   // 5. Log initial event state transition (null → draft)
-  await (supabase as any).from('event_state_transitions').insert({
+  await supabase.from('event_state_transitions').insert({
     tenant_id: tenantId,
     event_id: event.id,
     from_status: null,
@@ -189,10 +189,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   })
 
   // 6. Link inquiry to the created event
-  await (supabase as any)
-    .from('inquiries')
-    .update({ converted_to_event_id: event.id })
-    .eq('id', inquiry.id)
+  await supabase.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
   return { success: true, inquiryCreated: true, eventCreated: true }
 }

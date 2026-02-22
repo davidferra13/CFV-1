@@ -14,7 +14,7 @@ import { revalidatePath } from 'next/cache'
 // 2025 rate: $0.70/mile (67 cents in 2024). The 2026 rate is typically announced
 // in December of the prior year — check https://www.irs.gov/tax-professionals/standard-mileage-rates
 // and update this constant when the IRS publishes the new rate.
-const IRS_MILEAGE_RATE_CENTS_PER_MILE = 70  // $0.70/mile — verify 2026 rate when published
+const IRS_MILEAGE_RATE_CENTS_PER_MILE = 70 // $0.70/mile — verify 2026 rate when published
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -37,16 +37,16 @@ export type EventFinancialSummaryData = {
     basePaymentReceivedCents: number
     tipCents: number
     totalReceivedCents: number
-    varianceCents: number  // positive = overpaid (tip or extra), negative = underpaid
+    varianceCents: number // positive = overpaid (tip or extra), negative = underpaid
   }
   // Section 3: Costs
   costs: {
-    projectedFoodCostCents: number | null  // from recipe bible before shopping
-    actualGrocerySpendCents: number        // from approved receipt data
-    leftoverCreditInCents: number | null   // from prior event surplus
-    leftoverCreditOutCents: number | null  // surplus carried to future event
-    netFoodCostCents: number               // actual - leftover in - leftover out
-    additionalExpensesCents: number        // gas, mileage, specialty non-grocery
+    projectedFoodCostCents: number | null // from recipe bible before shopping
+    actualGrocerySpendCents: number // from approved receipt data
+    leftoverCreditInCents: number | null // from prior event surplus
+    leftoverCreditOutCents: number | null // surplus carried to future event
+    netFoodCostCents: number // actual - leftover in - leftover out
+    additionalExpensesCents: number // gas, mileage, specialty non-grocery
     totalCostCents: number
   }
   // Section 4: Margins
@@ -64,7 +64,7 @@ export type EventFinancialSummaryData = {
     serviceMinutes: number | null
     resetMinutes: number | null
     totalMinutes: number | null
-    effectiveHourlyRateCents: number | null  // net profit / total hours
+    effectiveHourlyRateCents: number | null // net profit / total hours
   }
   // Section 6: Mileage
   mileage: {
@@ -84,14 +84,17 @@ export type EventFinancialSummaryData = {
 
 // ─── getEventFinancialSummaryFull ─────────────────────────────────────────────
 
-export async function getEventFinancialSummaryFull(eventId: string): Promise<EventFinancialSummaryData | null> {
+export async function getEventFinancialSummaryFull(
+  eventId: string
+): Promise<EventFinancialSummaryData | null> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   // Fetch base event data with financial fields
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count,
       financial_closed, financial_closed_at,
       mileage_miles,
@@ -99,7 +102,8 @@ export async function getEventFinancialSummaryFull(eventId: string): Promise<Eve
       leftover_value_received_cents,
       leftover_notes,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -133,17 +137,17 @@ export async function getEventFinancialSummaryFull(eventId: string): Promise<Eve
   if (basePaymentCents === 0) pendingItems.push('Payment not yet recorded')
 
   // Costs section
-  const actualGrocerySpendCents = (profitSummary?.expenses.groceriesCents ?? 0)
-    + (profitSummary?.expenses.alcoholCents ?? 0)
-    + (profitSummary?.expenses.specialtyCents ?? 0)
-  const additionalExpensesCents = (profitSummary?.expenses.gasMileageCents ?? 0)
-    + (profitSummary?.expenses.otherCents ?? 0)
+  const actualGrocerySpendCents =
+    (profitSummary?.expenses.groceriesCents ?? 0) +
+    (profitSummary?.expenses.alcoholCents ?? 0) +
+    (profitSummary?.expenses.specialtyCents ?? 0)
+  const additionalExpensesCents =
+    (profitSummary?.expenses.gasMileageCents ?? 0) + (profitSummary?.expenses.otherCents ?? 0)
   const leftoverCreditInCents = event.leftover_value_received_cents ?? null
   const leftoverCreditOutCents = event.leftover_value_carried_forward_cents ?? null
 
-  const netFoodCostCents = actualGrocerySpendCents
-    - (leftoverCreditInCents ?? 0)
-    - (leftoverCreditOutCents ?? 0)
+  const netFoodCostCents =
+    actualGrocerySpendCents - (leftoverCreditInCents ?? 0) - (leftoverCreditOutCents ?? 0)
 
   const totalCostCents = netFoodCostCents + additionalExpensesCents
 
@@ -151,12 +155,10 @@ export async function getEventFinancialSummaryFull(eventId: string): Promise<Eve
 
   // Margins
   const grossProfitCents = quotedPriceCents - totalCostCents
-  const grossMarginPercent = quotedPriceCents > 0
-    ? parseFloat(((grossProfitCents / quotedPriceCents) * 100).toFixed(1))
-    : 0
-  const foodCostPercent = quotedPriceCents > 0
-    ? parseFloat(((netFoodCostCents / quotedPriceCents) * 100).toFixed(1))
-    : 0
+  const grossMarginPercent =
+    quotedPriceCents > 0 ? parseFloat(((grossProfitCents / quotedPriceCents) * 100).toFixed(1)) : 0
+  const foodCostPercent =
+    quotedPriceCents > 0 ? parseFloat(((netFoodCostCents / quotedPriceCents) * 100).toFixed(1)) : 0
   const netProfitWithTipCents = grossProfitCents + tipCents
 
   // Time tracking — from profitSummary.timeInvested (already computed by getEventProfitSummary)
@@ -168,9 +170,10 @@ export async function getEventFinancialSummaryFull(eventId: string): Promise<Eve
   const resetMinutes = timeInvested?.resetMinutes ?? null
   const totalMinutes = timeInvested?.totalMinutes ?? null
 
-  const effectiveHourlyRateCents = totalMinutes && totalMinutes > 0 && netProfitWithTipCents
-    ? Math.round((netProfitWithTipCents / totalMinutes) * 60)
-    : null
+  const effectiveHourlyRateCents =
+    totalMinutes && totalMinutes > 0 && netProfitWithTipCents
+      ? Math.round((netProfitWithTipCents / totalMinutes) * 60)
+      : null
 
   // Mileage
   const mileageMiles = event.mileage_miles ? parseFloat(String(event.mileage_miles)) : null
@@ -188,14 +191,16 @@ export async function getEventFinancialSummaryFull(eventId: string): Promise<Eve
     .limit(20)
 
   if (historicalSummaries && historicalSummaries.length >= 3) {
-    const validSummaries = historicalSummaries.filter(s =>
-      s.food_cost_percentage !== null && s.profit_margin !== null
+    const validSummaries = historicalSummaries.filter(
+      (s) => s.food_cost_percentage !== null && s.profit_margin !== null
     )
     if (validSummaries.length >= 3) {
-      const avgFoodCost = validSummaries.reduce((sum, s) => sum + (s.food_cost_percentage as number), 0)
-        / validSummaries.length
-      const avgMargin = validSummaries.reduce((sum, s) => sum + (s.profit_margin as number), 0)
-        / validSummaries.length
+      const avgFoodCost =
+        validSummaries.reduce((sum, s) => sum + (s.food_cost_percentage as number), 0) /
+        validSummaries.length
+      const avgMargin =
+        validSummaries.reduce((sum, s) => sum + (s.profit_margin as number), 0) /
+        validSummaries.length
 
       comparison = {
         vsAverageFoodCostPercent: parseFloat((foodCostPercent - avgFoodCost * 100).toFixed(1)),
@@ -226,7 +231,7 @@ export async function getEventFinancialSummaryFull(eventId: string): Promise<Eve
       varianceCents,
     },
     costs: {
-      projectedFoodCostCents: null,  // future: derive from recipe bible
+      projectedFoodCostCents: null, // future: derive from recipe bible
       actualGrocerySpendCents,
       leftoverCreditInCents,
       leftoverCreditOutCents,
@@ -407,7 +412,12 @@ export type CloseOutData = {
     deductionValueCents: number | null
   }
   existingTip: { amountCents: number; paymentMethod: string } | null
-  expensesNeedingReceipts: Array<{ id: string; description: string; amountCents: number; receiptUploaded: boolean }>
+  expensesNeedingReceipts: Array<{
+    id: string
+    description: string
+    amountCents: number
+    receiptUploaded: boolean
+  }>
   hasAnyExpenses: boolean
   aarExists: boolean
 }
@@ -423,11 +433,13 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
   // Fetch event with client name
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count, status,
       financial_closed, aar_filed, mileage_miles,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -444,7 +456,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .select('*')
       .eq('event_id', eventId)
       .single()
-      .then(r => r.data),
+      .then((r) => r.data),
 
     supabase
       .from('ledger_entries')
@@ -454,7 +466,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .eq('entry_type', 'tip')
       .order('created_at', { ascending: false })
       .limit(1)
-      .then(r => r.data?.[0] ?? null),
+      .then((r) => r.data?.[0] ?? null),
 
     supabase
       .from('expenses')
@@ -462,7 +474,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .order('created_at', { ascending: true })
-      .then(r => r.data ?? []),
+      .then((r) => r.data ?? []),
 
     supabase
       .from('after_action_reviews')
@@ -470,7 +482,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .limit(1)
-      .then(r => (r.data?.length ?? 0) > 0),
+      .then((r) => (r.data?.length ?? 0) > 0),
   ])
 
   const totalPaid = financialRow?.total_paid_cents ?? 0
@@ -478,7 +490,7 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
   const quoted = financialRow?.quoted_price_cents ?? 0
   const outstanding = financialRow?.outstanding_balance_cents ?? 0
   const totalExpenses = (financialRow as any)?.total_expenses_cents ?? 0
-  const grossProfit = (financialRow as any)?.profit_cents ?? (quoted - totalExpenses)
+  const grossProfit = (financialRow as any)?.profit_cents ?? quoted - totalExpenses
   const grossMargin = (financialRow as any)?.profit_margin
     ? parseFloat(String((financialRow as any).profit_margin)) * 100
     : 0
@@ -495,20 +507,26 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
   const netProfitWithTipCents = grossProfit + tipCents
 
   // Effective hourly rate — columns use time_ prefix (added in 20260216000003_operational_refinements.sql)
-  const { data: timeRow } = await (supabase as any)
+  const { data: timeRow } = await supabase
     .from('events')
-    .select('time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes')
+    .select(
+      'time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes'
+    )
     .eq('id', eventId)
     .single()
 
   const totalMinutes = timeRow
-    ? (timeRow.time_shopping_minutes ?? 0) + (timeRow.time_prep_minutes ?? 0) +
-      (timeRow.time_travel_minutes ?? 0) + (timeRow.time_service_minutes ?? 0) + (timeRow.time_reset_minutes ?? 0)
+    ? (timeRow.time_shopping_minutes ?? 0) +
+      (timeRow.time_prep_minutes ?? 0) +
+      (timeRow.time_travel_minutes ?? 0) +
+      (timeRow.time_service_minutes ?? 0) +
+      (timeRow.time_reset_minutes ?? 0)
     : 0
 
-  const effectiveHourlyRateCents = totalMinutes > 0 && netProfitWithTipCents > 0
-    ? Math.round((netProfitWithTipCents / totalMinutes) * 60)
-    : null
+  const effectiveHourlyRateCents =
+    totalMinutes > 0 && netProfitWithTipCents > 0
+      ? Math.round((netProfitWithTipCents / totalMinutes) * 60)
+      : null
 
   return {
     event: {
@@ -537,7 +555,9 @@ export async function getEventCloseOutData(eventId: string): Promise<CloseOutDat
       foodCostPercent: Math.round(foodCostPct * 10) / 10,
       deductionValueCents,
     },
-    existingTip: tipRow ? { amountCents: tipRow.amount_cents, paymentMethod: tipRow.payment_method } : null,
+    existingTip: tipRow
+      ? { amountCents: tipRow.amount_cents, paymentMethod: tipRow.payment_method }
+      : null,
     expensesNeedingReceipts: (expenses ?? [])
       .filter((e: any) => !e.receipt_uploaded)
       .map((e: any) => ({

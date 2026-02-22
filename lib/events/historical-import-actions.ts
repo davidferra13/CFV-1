@@ -19,14 +19,14 @@ import { revalidatePath } from 'next/cache'
 // ============================================
 
 export type HistoricalEventInput = {
-  event_date: string           // YYYY-MM-DD required
-  client_id: string | null     // UUID of existing client — if provided, skip name lookup
-  client_name: string | null   // Used to find/create client if client_id is null
+  event_date: string // YYYY-MM-DD required
+  client_id: string | null // UUID of existing client — if provided, skip name lookup
+  client_name: string | null // Used to find/create client if client_id is null
   occasion: string | null
   guest_count: number | null
   location_city: string | null
   service_style: 'plated' | 'family_style' | 'buffet' | 'cocktail' | 'tasting_menu' | 'other' | null
-  amount_paid_cents: number | null  // If > 0, creates a ledger entry
+  amount_paid_cents: number | null // If > 0, creates a ledger entry
   payment_method: 'cash' | 'venmo' | 'paypal' | 'zelle' | 'card' | 'check' | 'other' | null
   notes: string | null
 }
@@ -37,7 +37,7 @@ export type HistoricalEventResult = {
   clientId?: string
   clientCreated?: boolean
   error?: string
-  label: string  // human-readable description for result display
+  label: string // human-readable description for result display
 }
 
 // ============================================
@@ -112,11 +112,7 @@ export async function importHistoricalEvent(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const label = [
-    input.event_date,
-    input.client_name || 'Unknown client',
-    input.occasion || '',
-  ]
+  const label = [input.event_date, input.client_name || 'Unknown client', input.occasion || '']
     .filter(Boolean)
     .join(' — ')
 
@@ -132,7 +128,7 @@ export async function importHistoricalEvent(
 
     // 2. Insert event directly as `completed`
     const city = input.location_city?.trim() || 'Imported'
-    const { data: event, error: eventError } = await (supabase as any)
+    const { data: event, error: eventError } = await supabase
       .from('events')
       .insert({
         tenant_id: user.tenantId!,
@@ -147,10 +143,7 @@ export async function importHistoricalEvent(
         location_city: city,
         location_state: null,
         location_zip: '00000',
-        site_notes: [
-          input.notes,
-          '[Historical import — logged during onboarding]',
-        ]
+        site_notes: [input.notes, '[Historical import — logged during onboarding]']
           .filter(Boolean)
           .join('\n'),
         quoted_price_cents: input.amount_paid_cents ?? null,
@@ -169,20 +162,18 @@ export async function importHistoricalEvent(
     // 3. Optionally create ledger entry for the payment
     if (input.amount_paid_cents && input.amount_paid_cents > 0) {
       const paymentMethod = input.payment_method || 'cash'
-      const { error: ledgerError } = await supabase
-        .from('ledger_entries')
-        .insert({
-          tenant_id: user.tenantId!,
-          client_id: resolvedClientId,
-          event_id: event.id,
-          entry_type: 'payment',
-          amount_cents: input.amount_paid_cents,
-          payment_method: paymentMethod,
-          description: `Historical payment — ${input.occasion || input.event_date}`,
-          received_at: `${input.event_date}T00:00:00Z`,
-          internal_notes: 'Imported from historical records during chef onboarding',
-          created_by: user.id,
-        })
+      const { error: ledgerError } = await supabase.from('ledger_entries').insert({
+        tenant_id: user.tenantId!,
+        client_id: resolvedClientId,
+        event_id: event.id,
+        entry_type: 'payment',
+        amount_cents: input.amount_paid_cents,
+        payment_method: paymentMethod,
+        description: `Historical payment — ${input.occasion || input.event_date}`,
+        received_at: `${input.event_date}T00:00:00Z`,
+        internal_notes: 'Imported from historical records during chef onboarding',
+        created_by: user.id,
+      })
 
       if (ledgerError) {
         // Ledger failure is logged but not fatal — the event still exists
@@ -214,9 +205,7 @@ export async function importHistoricalEvent(
 // IMPORT MULTIPLE HISTORICAL EVENTS (BATCH)
 // ============================================
 
-export async function importHistoricalEvents(
-  inputs: HistoricalEventInput[]
-): Promise<{
+export async function importHistoricalEvents(inputs: HistoricalEventInput[]): Promise<{
   results: HistoricalEventResult[]
   imported: number
   failed: number
@@ -230,8 +219,8 @@ export async function importHistoricalEvents(
 
   return {
     results,
-    imported: results.filter(r => r.success).length,
-    failed: results.filter(r => !r.success).length,
+    imported: results.filter((r) => r.success).length,
+    failed: results.filter((r) => !r.success).length,
   }
 }
 

@@ -62,7 +62,7 @@ export async function createFollowupRule(
   const parsed = CreateFollowupRuleSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('followup_rules')
     .insert({
       chef_id: user.tenantId!,
@@ -85,7 +85,7 @@ export async function listFollowupRules(): Promise<FollowupRule[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('followup_rules')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -97,14 +97,11 @@ export async function listFollowupRules(): Promise<FollowupRule[]> {
   return (data || []).map(mapRule)
 }
 
-export async function toggleFollowupRule(
-  id: string,
-  isActive: boolean
-): Promise<FollowupRule> {
+export async function toggleFollowupRule(id: string, isActive: boolean): Promise<FollowupRule> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('followup_rules')
     .update({ is_active: isActive })
     .eq('id', id)
@@ -130,7 +127,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
   const supabase = createServerClient()
 
   // Fetch all active rules
-  const { data: rules, error: rulesError } = await (supabase as any)
+  const { data: rules, error: rulesError } = await supabase
     .from('followup_rules')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -152,7 +149,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- proposal_sent: quotes in 'proposed' status ---
   if (rulesByTrigger['proposal_sent']) {
-    const { data: quotes } = await (supabase as any)
+    const { data: quotes } = await supabase
       .from('quotes')
       .select('id, event_id, created_at')
       .eq('chef_id', user.tenantId!)
@@ -178,7 +175,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- proposal_viewed: check proposal_views for quotes ---
   if (rulesByTrigger['proposal_viewed']) {
-    const { data: views } = await (supabase as any)
+    const { data: views } = await supabase
       .from('proposal_views')
       .select('quote_id, viewed_at')
       .order('viewed_at', { ascending: false })
@@ -211,7 +208,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- booking_confirmed: events that transitioned to 'confirmed' ---
   if (rulesByTrigger['booking_confirmed']) {
-    const { data: transitions } = await (supabase as any)
+    const { data: transitions } = await supabase
       .from('event_transitions')
       .select('event_id, transitioned_at')
       .eq('to_status', 'confirmed')
@@ -236,7 +233,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
 
   // --- event_completed: events in 'completed' status ---
   if (rulesByTrigger['event_completed']) {
-    const { data: events } = await (supabase as any)
+    const { data: events } = await supabase
       .from('events')
       .select('id, client_id, updated_at')
       .eq('chef_id', user.tenantId!)
@@ -264,7 +261,7 @@ export async function processFollowupRules(): Promise<PendingFollowup[]> {
   if (rulesByTrigger['dormant']) {
     const ninetyDaysAgo = addDays(now, -90).toISOString()
 
-    const { data: clients } = await (supabase as any)
+    const { data: clients } = await supabase
       .from('clients')
       .select('id, last_event_date')
       .eq('tenant_id', user.tenantId!)

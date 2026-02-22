@@ -17,7 +17,7 @@ export interface RevenuePerUnitStats {
 
 export interface RevenueByDayOfWeek {
   day: string
-  dayIndex: number  // 0=Sun, 1=Mon ... 6=Sat
+  dayIndex: number // 0=Sun, 1=Mon ... 6=Sat
   eventCount: number
   revenueCents: number
   avgRevenueCents: number
@@ -51,8 +51,8 @@ export interface TrueLaborCostStats {
 export interface CapacityStats {
   maxEventsPerMonth: number | null
   bookedThisMonth: number
-  utilization: number  // 0–100 %
-  demandOverflow: number  // inquiries declined for capacity/date reasons
+  utilization: number // 0–100 %
+  demandOverflow: number // inquiries declined for capacity/date reasons
 }
 
 export interface CarryForwardStats {
@@ -72,7 +72,12 @@ export interface BreakEvenStats {
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-const SEASON_LABELS: Record<string, string> = { Q1: 'Jan–Mar', Q2: 'Apr–Jun', Q3: 'Jul–Sep', Q4: 'Oct–Dec' }
+const SEASON_LABELS: Record<string, string> = {
+  Q1: 'Jan–Mar',
+  Q2: 'Apr–Jun',
+  Q3: 'Jul–Sep',
+  Q4: 'Oct–Dec',
+}
 
 function pct(n: number, d: number) {
   return d === 0 ? 0 : Math.round((n / d) * 1000) / 10
@@ -89,21 +94,23 @@ function monthToSeason(month: number): 'Q1' | 'Q2' | 'Q3' | 'Q4' {
 
 export async function getRevenuePerUnitStats(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<RevenuePerUnitStats> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, guest_count, mileage_miles,
       shopping_started_at, shopping_completed_at,
       prep_started_at, prep_completed_at,
       travel_started_at, travel_completed_at,
       service_started_at, service_completed_at,
       reset_started_at, reset_completed_at
-    `)
+    `
+    )
     .eq('tenant_id', chef.id)
     .eq('status', 'completed')
     .gte('event_date', startDate)
@@ -115,9 +122,9 @@ export async function getRevenuePerUnitStats(
     .eq('tenant_id', chef.id)
     .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on', 'credit'])
 
-  const eventIds = new Set((events ?? []).map(e => e.id))
+  const eventIds = new Set((events ?? []).map((e) => e.id))
   const netRevenue = (ledger ?? [])
-    .filter(l => l.event_id && eventIds.has(l.event_id))
+    .filter((l) => l.event_id && eventIds.has(l.event_id))
     .reduce((sum, l) => sum + (l.is_refund ? -l.amount_cents : l.amount_cents), 0)
 
   let totalGuests = 0
@@ -156,7 +163,7 @@ export async function getRevenuePerUnitStats(
 
 export async function getRevenueByDayOfWeek(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<RevenueByDayOfWeek[]> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -190,7 +197,7 @@ export async function getRevenueByDayOfWeek(
 
 export async function getRevenueByEventType(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<RevenueByEventType[]> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -239,7 +246,7 @@ export async function getRevenueBySeason(): Promise<RevenueBySeason[]> {
   for (const q of ['Q1', 'Q2', 'Q3', 'Q4']) seasonMap.set(q, { count: 0, revenue: 0 })
 
   for (const ev of events ?? []) {
-    const month = new Date(ev.event_date).getMonth()  // 0-indexed
+    const month = new Date(ev.event_date).getMonth() // 0-indexed
     const season = monthToSeason(month)
     const slot = seasonMap.get(season)!
     slot.count++
@@ -257,13 +264,13 @@ export async function getRevenueBySeason(): Promise<RevenueBySeason[]> {
 
 export async function getTrueLaborCostStats(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<TrueLaborCostStats> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
   // Get owner hourly rate from preferences
-  const { data: prefs } = await (supabase as any)
+  const { data: prefs } = await supabase
     .from('chef_preferences')
     .select('owner_hourly_rate_cents')
     .eq('tenant_id', chef.id)
@@ -274,14 +281,16 @@ export async function getTrueLaborCostStats(
   // Get completed events in period with time tracking
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, quoted_price_cents,
       shopping_started_at, shopping_completed_at,
       prep_started_at, prep_completed_at,
       travel_started_at, travel_completed_at,
       service_started_at, service_completed_at,
       reset_started_at, reset_completed_at
-    `)
+    `
+    )
     .eq('tenant_id', chef.id)
     .eq('status', 'completed')
     .gte('event_date', startDate)
@@ -295,7 +304,7 @@ export async function getTrueLaborCostStats(
     const addPhase = (start: string | null, end: string | null) => {
       if (start && end) {
         const mins = (new Date(end).getTime() - new Date(start).getTime()) / 60000
-        if (mins > 0 && mins < 1440) totalOwnerMinutes += mins  // cap at 24h to filter bad data
+        if (mins > 0 && mins < 1440) totalOwnerMinutes += mins // cap at 24h to filter bad data
       }
     }
     addPhase(ev.shopping_started_at, ev.shopping_completed_at)
@@ -305,12 +314,11 @@ export async function getTrueLaborCostStats(
     addPhase(ev.reset_started_at, ev.reset_completed_at)
   }
 
-  const ownerHoursCents = ownerRateCents > 0
-    ? Math.round((totalOwnerMinutes / 60) * ownerRateCents)
-    : 0
+  const ownerHoursCents =
+    ownerRateCents > 0 ? Math.round((totalOwnerMinutes / 60) * ownerRateCents) : 0
 
   // Staff costs in period
-  const eventIds = (events ?? []).map(e => e.id)
+  const eventIds = (events ?? []).map((e) => e.id)
   let staffCostCents = 0
   if (eventIds.length > 0) {
     const { data: staff } = await supabase
@@ -353,7 +361,7 @@ export async function getCapacityStats(month: string): Promise<CapacityStats> {
   const chef = await requireChef()
   const supabase = await createServerClient()
 
-  const { data: prefs } = await (supabase as any)
+  const { data: prefs } = await supabase
     .from('chef_preferences')
     .select('max_events_per_month')
     .eq('tenant_id', chef.id)
@@ -363,7 +371,8 @@ export async function getCapacityStats(month: string): Promise<CapacityStats> {
 
   const startDate = `${month}-01`
   const endDate = new Date(new Date(startDate).getFullYear(), new Date(startDate).getMonth() + 1, 0)
-    .toISOString().slice(0, 10)
+    .toISOString()
+    .slice(0, 10)
 
   const { count: booked } = await supabase
     .from('events')
@@ -396,7 +405,7 @@ export async function getCapacityStats(month: string): Promise<CapacityStats> {
 
 export async function getCarryForwardStats(
   startDate: string,
-  endDate: string,
+  endDate: string
 ): Promise<CarryForwardStats> {
   const chef = await requireChef()
   const supabase = await createServerClient()
@@ -409,11 +418,14 @@ export async function getCarryForwardStats(
     .gte('event_date', startDate)
     .lte('event_date', endDate)
 
-  const eventsWithCarry = (events ?? []).filter(e => (e.leftover_value_received_cents ?? 0) > 0)
-  const totalSavings = eventsWithCarry.reduce((sum, e) => sum + (e.leftover_value_received_cents ?? 0), 0)
+  const eventsWithCarry = (events ?? []).filter((e) => (e.leftover_value_received_cents ?? 0) > 0)
+  const totalSavings = eventsWithCarry.reduce(
+    (sum, e) => sum + (e.leftover_value_received_cents ?? 0),
+    0
+  )
 
   // Total food cost in period
-  const eventIds = (events ?? []).map(e => e.id)
+  const eventIds = (events ?? []).map((e) => e.id)
   let totalFoodCost = 0
   if (eventIds.length > 0) {
     const { data: expenses } = await supabase
@@ -428,7 +440,8 @@ export async function getCarryForwardStats(
 
   return {
     totalSavingsCents: totalSavings,
-    avgSavingsPerEvent: eventsWithCarry.length > 0 ? Math.round(totalSavings / eventsWithCarry.length) : 0,
+    avgSavingsPerEvent:
+      eventsWithCarry.length > 0 ? Math.round(totalSavings / eventsWithCarry.length) : 0,
     eventsWithCarryForward: eventsWithCarry.length,
     savingsAsPercentOfFoodCost: pct(totalSavings, totalFoodCost),
   }
@@ -463,7 +476,7 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
     .eq('status', 'completed')
     .gte('event_date', oneYearAgo.toISOString().slice(0, 10))
 
-  const avgEventsPerMonth = Math.round((eventsYtd ?? 0) / 12 * 10) / 10
+  const avgEventsPerMonth = Math.round(((eventsYtd ?? 0) / 12) * 10) / 10
 
   // Average revenue per event
   const { data: revenueData } = await supabase
@@ -475,7 +488,9 @@ export async function getBreakEvenStats(): Promise<BreakEvenStats> {
     .not('quoted_price_cents', 'is', null)
 
   const avgRevenue = revenueData?.length
-    ? Math.round(revenueData.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0) / revenueData.length)
+    ? Math.round(
+        revenueData.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0) / revenueData.length
+      )
     : 0
 
   // Break-even: how many events per month cover fixed costs

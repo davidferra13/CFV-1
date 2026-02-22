@@ -161,7 +161,7 @@ export async function runHistoricalScanBatch(
     }
   }
 
-  await (supabase as any).from('google_connections').update(progressUpdate).eq('chef_id', chefId)
+  await supabase.from('google_connections').update(progressUpdate).eq('chef_id', chefId)
 
   return result
 }
@@ -244,7 +244,7 @@ async function processHistoricalMessage(
   }
 
   // Upsert into gmail_historical_findings
-  await (supabase as any).from('gmail_historical_findings').upsert(
+  await supabase.from('gmail_historical_findings').upsert(
     {
       tenant_id: tenantId,
       chef_id: chefId,

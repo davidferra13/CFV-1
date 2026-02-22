@@ -23,7 +23,7 @@ export async function hasCannabisAccess(authUserId: string): Promise<boolean> {
     if (adminCheck) return true
 
     const supabase = createServerClient()
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('cannabis_tier_users')
       .select('status')
       .eq('auth_user_id', authUserId)
@@ -75,7 +75,7 @@ export async function getCannabisEvents() {
   let details: any[] = []
 
   if (eventIds.length > 0) {
-    const { data: detailData } = await (supabase as any)
+    const { data: detailData } = await supabase
       .from('cannabis_event_details')
       .select('*')
       .in('event_id', eventIds)
@@ -97,7 +97,7 @@ export async function getCannabisEventDetails(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('cannabis_event_details')
     .select('*')
     .eq('event_id', eventId)
@@ -118,7 +118,7 @@ export async function upsertCannabisEventDetails(input: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any).from('cannabis_event_details').upsert(
+  const { error } = await supabase.from('cannabis_event_details').upsert(
     {
       event_id: input.eventId,
       tenant_id: user.tenantId!,
@@ -218,7 +218,7 @@ export async function sendCannabisInvite(input: {
   const supabase = createServerClient()
 
   // Check if an invite for this email is already pending or approved
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('cannabis_tier_invitations')
     .select('id, admin_approval_status, claimed_at')
     .eq('invitee_email', input.inviteeEmail.toLowerCase())
@@ -233,7 +233,7 @@ export async function sendCannabisInvite(input: {
     throw new Error('An active invite for this email already exists.')
   }
 
-  const { error } = await (supabase as any).from('cannabis_tier_invitations').insert({
+  const { error } = await supabase.from('cannabis_tier_invitations').insert({
     invited_by_auth_user_id: user.id,
     invited_by_user_type: 'chef',
     invitee_email: input.inviteeEmail.toLowerCase(),
@@ -254,7 +254,7 @@ export async function getMySentCannabisInvites() {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('cannabis_tier_invitations')
     .select('*')
     .eq('invited_by_auth_user_id', user.id)

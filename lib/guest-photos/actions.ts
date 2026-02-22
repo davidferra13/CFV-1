@@ -30,7 +30,7 @@ export async function uploadGuestPhoto(formData: FormData) {
   const supabase = createServerClient({ admin: true })
 
   // Resolve share token → event + tenant
-  const { data: share } = await (supabase as any)
+  const { data: share } = await supabase
     .from('event_shares')
     .select('event_id, tenant_id')
     .eq('token', shareToken)
@@ -42,7 +42,7 @@ export async function uploadGuestPhoto(formData: FormData) {
   }
 
   // Rate limit: max 20 photos per guest per event
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('guest_photos')
     .select('id')
     .eq('event_id', share.event_id)
@@ -55,7 +55,7 @@ export async function uploadGuestPhoto(formData: FormData) {
   // Resolve guest ID if token provided
   let guestId: string | null = null
   if (guestToken) {
-    const { data: guest } = await (supabase as any)
+    const { data: guest } = await supabase
       .from('event_guests')
       .select('id')
       .eq('guest_token', guestToken)
@@ -79,7 +79,7 @@ export async function uploadGuestPhoto(formData: FormData) {
   }
 
   // Insert record
-  const { error: insertError } = await (supabase as any).from('guest_photos').insert({
+  const { error: insertError } = await supabase.from('guest_photos').insert({
     tenant_id: share.tenant_id,
     event_id: share.event_id,
     guest_id: guestId,
@@ -106,7 +106,7 @@ export async function getEventGuestPhotos(shareToken: string) {
   const supabase = createServerClient({ admin: true })
 
   // Resolve share token → event
-  const { data: share } = await (supabase as any)
+  const { data: share } = await supabase
     .from('event_shares')
     .select('event_id')
     .eq('token', shareToken)
@@ -115,7 +115,7 @@ export async function getEventGuestPhotos(shareToken: string) {
 
   if (!share) return []
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('guest_photos')
     .select('id, guest_name, storage_path, caption, created_at')
     .eq('event_id', share.event_id)
@@ -151,7 +151,7 @@ export async function getGuestPhotosForChef(eventId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('guest_photos')
     .select('id, guest_name, storage_path, caption, is_visible, guest_id, created_at')
     .eq('event_id', eventId)
@@ -182,7 +182,7 @@ export async function toggleGuestPhotoVisibility(photoId: string, visible: boole
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('guest_photos')
     .update({ is_visible: visible })
     .eq('id', photoId)
@@ -202,7 +202,7 @@ export async function deleteGuestPhoto(photoId: string) {
   const supabase = createServerClient()
 
   // Get storage path first
-  const { data: photo } = await (supabase as any)
+  const { data: photo } = await supabase
     .from('guest_photos')
     .select('storage_path')
     .eq('id', photoId)
@@ -215,7 +215,7 @@ export async function deleteGuestPhoto(photoId: string) {
   await supabase.storage.from('guest-photos').remove([photo.storage_path])
 
   // Delete record
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('guest_photos')
     .delete()
     .eq('id', photoId)

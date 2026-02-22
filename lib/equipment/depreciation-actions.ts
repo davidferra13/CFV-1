@@ -58,7 +58,7 @@ export async function setDepreciationMethod(input: z.infer<typeof SetMethodSchem
   const parsed = SetMethodSchema.parse(input)
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('equipment_items')
     .update({
       depreciation_method: parsed.depreciationMethod,
@@ -84,7 +84,7 @@ export async function generateDepreciationSchedule(
   const supabase = createServerClient()
 
   // Fetch the equipment item
-  const { data: item, error: itemError } = await (supabase as any)
+  const { data: item, error: itemError } = await supabase
     .from('equipment_items')
     .select(
       'id, name, purchase_price_cents, depreciation_method, useful_life_years, salvage_value_cents, tax_year_placed_in_service'
@@ -147,14 +147,14 @@ export async function generateDepreciationSchedule(
   }
 
   // Delete existing schedule rows for this item, then re-insert
-  await (supabase as any)
+  await supabase
     .from('equipment_depreciation_schedules')
     .delete()
     .eq('equipment_item_id', equipmentItemId)
     .eq('chef_id', user.tenantId!)
 
   if (scheduleRows.length > 0) {
-    const { error: insertError } = await (supabase as any)
+    const { error: insertError } = await supabase
       .from('equipment_depreciation_schedules')
       .insert(scheduleRows)
 
@@ -168,7 +168,7 @@ async function getScheduleForItem(equipmentItemId: string): Promise<Depreciation
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('equipment_depreciation_schedules')
     .select('*, equipment_items(name)')
     .eq('equipment_item_id', equipmentItemId)
@@ -196,7 +196,7 @@ export async function getDepreciationForYear(taxYear: number): Promise<Depreciat
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('equipment_depreciation_schedules')
     .select('*, equipment_items(name)')
     .eq('chef_id', user.tenantId!)
@@ -239,7 +239,7 @@ export async function markDepreciationClaimed(scheduleId: string): Promise<void>
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('equipment_depreciation_schedules')
     .update({ claimed: true, claimed_at: new Date().toISOString() })
     .eq('id', scheduleId)
@@ -255,7 +255,7 @@ export async function getEquipmentWithDepreciation(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: items, error } = await (supabase as any)
+  const { data: items, error } = await supabase
     .from('equipment_items')
     .select(
       'id, name, category, purchase_price_cents, purchase_date, depreciation_method, useful_life_years, salvage_value_cents, tax_year_placed_in_service'
@@ -267,7 +267,7 @@ export async function getEquipmentWithDepreciation(
   if (error) throw new Error(`Failed to fetch equipment: ${error.message}`)
 
   // Fetch current-year schedules
-  const { data: schedules } = await (supabase as any)
+  const { data: schedules } = await supabase
     .from('equipment_depreciation_schedules')
     .select('*')
     .eq('chef_id', user.tenantId!)

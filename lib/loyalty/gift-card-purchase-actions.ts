@@ -59,7 +59,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
   const supabase = createServerClient({ admin: true })
 
   // Verify chef exists and get their display name for the checkout line item
-  const { data: chef, error: chefError } = await (supabase as any)
+  const { data: chef, error: chefError } = await supabase
     .from('chefs')
     .select('id, display_name, business_name, is_discoverable')
     .eq('id', validated.tenantId)
@@ -73,7 +73,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
   // Create the purchase intent row first (pre-payment audit state)
-  const { data: intent, error: intentError } = await (supabase as any)
+  const { data: intent, error: intentError } = await supabase
     .from('gift_card_purchase_intents')
     .insert({
       tenant_id: validated.tenantId,
@@ -140,7 +140,7 @@ export async function initiateGiftCardPurchase(input: InitiateGiftCardPurchaseIn
   }
 
   // Store the session ID on the intent for later lookup
-  await (supabase as any)
+  await supabase
     .from('gift_card_purchase_intents')
     .update({ stripe_checkout_session_id: session.id })
     .eq('id', intent.id)
@@ -157,9 +157,10 @@ export async function getGiftCardPurchaseBySession(sessionId: string) {
 
   const supabase = createServerClient({ admin: true })
 
-  const { data: intent } = await (supabase as any)
+  const { data: intent } = await supabase
     .from('gift_card_purchase_intents')
-    .select(`
+    .select(
+      `
       *,
       incentive:created_incentive_id (
         code,
@@ -167,7 +168,8 @@ export async function getGiftCardPurchaseBySession(sessionId: string) {
         remaining_balance_cents,
         is_active
       )
-    `)
+    `
+    )
     .eq('stripe_checkout_session_id', sessionId)
     .single()
 

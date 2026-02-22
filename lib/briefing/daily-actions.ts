@@ -53,7 +53,10 @@ export type DailyBriefing = {
 
 // --- Schemas ---
 
-const DateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()
+const DateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/)
+  .optional()
 
 // --- Actions ---
 
@@ -71,10 +74,12 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   // 1. Events today
   const { data: todayEvents } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, serve_time, guest_count, status,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('event_date', briefingDate)
     .not('status', 'eq', 'cancelled')
@@ -92,10 +97,14 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   // 2. Tasks due — events needing closure items or upcoming prep
   const { data: closureEvents } = await supabase
     .from('events')
-    .select('id, occasion, event_date, aar_filed, reset_complete, follow_up_sent, financially_closed')
+    .select(
+      'id, occasion, event_date, aar_filed, reset_complete, follow_up_sent, financially_closed'
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
-    .or('aar_filed.eq.false,reset_complete.eq.false,follow_up_sent.eq.false,financially_closed.eq.false')
+    .or(
+      'aar_filed.eq.false,reset_complete.eq.false,follow_up_sent.eq.false,financially_closed.eq.false'
+    )
     .order('event_date', { ascending: true })
     .limit(10)
 
@@ -156,16 +165,16 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   let revenueThisWeekCents = 0
 
   if (weekEvents && weekEvents.length > 0) {
-    const weekEventIds = weekEvents.map(e => e.id)
+    const weekEventIds = weekEvents.map((e) => e.id)
 
-    const { data: summaries } = await (supabase as any)
+    const { data: summaries } = await supabase
       .from('event_financial_summary')
       .select('total_paid_cents')
       .eq('tenant_id', user.tenantId!)
       .in('event_id', weekEventIds)
 
     for (const s of summaries || []) {
-      revenueThisWeekCents += (s.total_paid_cents ?? 0)
+      revenueThisWeekCents += s.total_paid_cents ?? 0
     }
   }
 
@@ -229,7 +238,7 @@ export async function generateDailyBriefing(date?: string): Promise<DailyBriefin
   }
 
   // Upsert the briefing
-  const { data: briefing, error } = await (supabase as any)
+  const { data: briefing, error } = await supabase
     .from('chef_daily_briefings')
     .upsert(
       {
@@ -268,7 +277,7 @@ export async function getDailyBriefing(date?: string): Promise<DailyBriefing | n
 
   const briefingDate = DateSchema.parse(date) ?? new Date().toISOString().split('T')[0]
 
-  const { data: briefing, error } = await (supabase as any)
+  const { data: briefing, error } = await supabase
     .from('chef_daily_briefings')
     .select('*')
     .eq('chef_id', user.tenantId!)

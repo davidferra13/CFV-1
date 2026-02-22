@@ -32,10 +32,12 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
       const [chefResult, prefsResult] = await Promise.all([
         supabase
           .from('chefs')
-          .select('slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url')
+          .select(
+            'slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url'
+          )
           .eq('id', chefId)
           .single(),
-        (supabase as any)
+        supabase
           .from('chef_preferences')
           .select('primary_nav_hrefs')
           .eq('chef_id', chefId)
@@ -59,6 +61,6 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
     {
       revalidate: 60,
       tags: [`${CHEF_LAYOUT_CACHE_TAG}-${chefId}`],
-    },
+    }
   )()
 }

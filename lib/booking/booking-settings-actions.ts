@@ -50,7 +50,7 @@ export async function getBookingSettings(): Promise<BookingSettings> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chefs')
     .select(
       `
@@ -91,7 +91,7 @@ export async function upsertBookingSettings(
     }
 
     // Verify Stripe Connect is ready
-    const { data: chef } = await (supabase as any)
+    const { data: chef } = await supabase
       .from('chefs')
       .select('stripe_onboarding_complete')
       .eq('id', user.entityId)
@@ -119,7 +119,7 @@ export async function upsertBookingSettings(
     update.booking_slug = validated.booking_slug.toLowerCase().trim()
   }
 
-  const { error } = await (supabase as any).from('chefs').update(update).eq('id', user.entityId)
+  const { error } = await supabase.from('chefs').update(update).eq('id', user.entityId)
 
   if (error) return { success: false, error: error.message }
 
@@ -146,7 +146,7 @@ export async function getPublicBookingConfig(
 ): Promise<PublicBookingConfig | null> {
   const supabase = createServerClient({ admin: true })
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chefs')
     .select(
       `

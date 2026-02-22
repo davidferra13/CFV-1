@@ -18,7 +18,7 @@ export async function clientRedeemReward(rewardId: string) {
     throw new Error('Client record not found')
   }
 
-  const { data: reward } = await (supabase as any)
+  const { data: reward } = await supabase
     .from('loyalty_rewards')
     .select('*')
     .eq('id', rewardId)
@@ -38,7 +38,7 @@ export async function clientRedeemReward(rewardId: string) {
   const newBalance = currentPoints - reward.points_required
 
   // Insert the redemption transaction
-  const { data: txData, error: txError } = await (supabase as any)
+  const { data: txData, error: txError } = await supabase
     .from('loyalty_transactions')
     .insert({
       tenant_id: client.tenant_id,
@@ -85,7 +85,10 @@ export async function clientRedeemReward(rewardId: string) {
         redeemedBy: 'client',
       })
     } catch (delivErr) {
-      console.error('[clientRedeemReward] Pending delivery creation failed (non-blocking):', delivErr)
+      console.error(
+        '[clientRedeemReward] Pending delivery creation failed (non-blocking):',
+        delivErr
+      )
     }
   }
 

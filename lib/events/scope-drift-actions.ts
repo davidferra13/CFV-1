@@ -9,7 +9,7 @@ export async function acknowledgeScopeDrift(eventId: string) {
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('events')
     .update({
       scope_drift_acknowledged: true,
@@ -31,7 +31,7 @@ export async function getConvertingQuote(eventId: string) {
   const supabase = createServerClient()
 
   // First, find the converting_quote_id on the event
-  const { data: event, error: eventError } = await (supabase as any)
+  const { data: event, error: eventError } = await supabase
     .from('events')
     .select('converting_quote_id')
     .eq('id', eventId)

@@ -17,11 +17,11 @@ export type ClientHealthTier = 'champion' | 'loyal' | 'at_risk' | 'dormant' | 'n
 
 export type ClientHealthScore = {
   clientId: string
-  score: number           // 0–100
+  score: number // 0–100
   tier: ClientHealthTier
-  recencyScore: number    // 0–30
-  frequencyScore: number  // 0–25
-  monetaryScore: number   // 0–25
+  recencyScore: number // 0–30
+  frequencyScore: number // 0–25
+  monetaryScore: number // 0–25
   engagementScore: number // 0–20
   daysSinceLastEvent: number | null
   totalEvents: number
@@ -92,22 +92,24 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
 
   // Fetch client financial summary + event counts
   // cast as any — total_events/days_since_last_event may not be in generated types
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('client_financial_summary')
     .select('client_id, lifetime_value_cents, total_events, days_since_last_event')
     .eq('tenant_id', user.tenantId!)
 
   // Fetch client profile completeness indicators
   // cast as any — some columns may not be in generated types yet
-  const { data: clients } = await (supabase as any)
+  const { data: clients } = await supabase
     .from('clients')
-    .select('id, allergies, dietary_preferences, kitchen_constraints, what_they_care_about, personal_milestones')
+    .select(
+      'id, allergies, dietary_preferences, kitchen_constraints, what_they_care_about, personal_milestones'
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('is_active', true)
 
   // Fetch referral counts per client (how many new clients they've referred)
   // cast as any — referred_by_client_id not in generated types yet
-  const { data: referrals } = await (supabase as any)
+  const { data: referrals } = await supabase
     .from('clients')
     .select('referred_by_client_id')
     .eq('tenant_id', user.tenantId!)
@@ -188,18 +190,22 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
   return {
     scores,
     medianLtv,
-    avgEventsPerYear: ltvValues.length > 0
-      ? (summaries ?? []).reduce((s: number, x: any) => s + (x.total_events ?? 0), 0) / ltvValues.length
-      : 0,
+    avgEventsPerYear:
+      ltvValues.length > 0
+        ? (summaries ?? []).reduce((s: number, x: any) => s + (x.total_events ?? 0), 0) /
+          ltvValues.length
+        : 0,
   }
 }
 
 /**
  * Get health score for a single client (used on client detail page).
  */
-export async function getSingleClientHealthScore(clientId: string): Promise<ClientHealthScore | null> {
+export async function getSingleClientHealthScore(
+  clientId: string
+): Promise<ClientHealthScore | null> {
   const summary = await getClientHealthScores()
-  return summary.scores.find(s => s.clientId === clientId) ?? null
+  return summary.scores.find((s) => s.clientId === clientId) ?? null
 }
 
 // TIER_LABELS and TIER_COLORS moved to lib/clients/health-score-utils.ts

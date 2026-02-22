@@ -27,7 +27,7 @@ const getChefForBooking = unstable_cache(
   async (slug: string): Promise<ChefPublicProfile | null> => {
     const supabase = createServerClient({ admin: true })
 
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from('chefs')
       .select(
         `

@@ -12,7 +12,7 @@ export default async function InsurancePoliciesPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
 
-  const { data: policies } = await (supabase as any)
+  const { data: policies } = await supabase
     .from('chef_insurance_policies')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

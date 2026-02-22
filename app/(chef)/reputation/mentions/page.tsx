@@ -5,7 +5,7 @@ import { MentionFeed } from '@/components/reputation/mention-feed'
 export default async function MentionsPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_brand_mentions')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

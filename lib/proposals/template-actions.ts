@@ -40,7 +40,7 @@ export async function createProposalTemplate(
   const parsed = CreateTemplateSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('proposal_templates')
     .insert({
       chef_id: user.tenantId!,
@@ -65,7 +65,7 @@ export async function listProposalTemplates(): Promise<ProposalTemplate[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('proposal_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -80,7 +80,7 @@ export async function getProposalTemplate(id: string): Promise<ProposalTemplate>
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('proposal_templates')
     .select('*')
     .eq('id', id)
@@ -96,7 +96,7 @@ export async function deleteProposalTemplate(id: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('proposal_templates')
     .delete()
     .eq('id', id)

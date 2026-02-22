@@ -17,28 +17,28 @@ export async function computeAndStoreMomentum() {
   const ago365str = ago365.toISOString().split('T')[0]
 
   // new_clients_90d
-  const { count: newClients90d } = await (supabase as any)
+  const { count: newClients90d } = await supabase
     .from('clients')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
     .gte('created_at', ago90)
 
   // education_entries_12m
-  const { count: educationEntries12m } = await (supabase as any)
+  const { count: educationEntries12m } = await supabase
     .from('chef_education_log')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
     .gte('entry_date', ago365str)
 
   // creative_projects_90d
-  const { count: creativeProjects90d } = await (supabase as any)
+  const { count: creativeProjects90d } = await supabase
     .from('chef_creative_projects')
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
     .gte('entry_date', ago90)
 
   // avg_satisfaction_90d
-  const { data: checkins } = await (supabase as any)
+  const { data: checkins } = await supabase
     .from('chef_growth_checkins')
     .select('satisfaction_score')
     .eq('tenant_id', tenantId)
@@ -66,7 +66,7 @@ export async function computeAndStoreMomentum() {
     momentumDirection = 'maintaining'
   }
 
-  const { error } = await (supabase as any).from('chef_momentum_snapshots').upsert(
+  const { error } = await supabase.from('chef_momentum_snapshots').upsert(
     {
       tenant_id: tenantId,
       snapshot_date: today,
@@ -98,7 +98,7 @@ export async function getMomentumHistory(): Promise<
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_momentum_snapshots')
     .select(
       'id, snapshot_date, new_clients_90d, education_entries_12m, creative_projects_90d, avg_satisfaction_90d, momentum_direction'
@@ -122,7 +122,7 @@ export async function getCurrentMomentum(): Promise<{
   const tenantId = chef.tenantId!
   const supabase = await createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_momentum_snapshots')
     .select(
       'new_clients_90d, education_entries_12m, creative_projects_90d, avg_satisfaction_90d, momentum_direction'

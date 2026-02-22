@@ -166,7 +166,7 @@ export async function learnClientPreferences(clientId: string): Promise<ClientPa
   }
 
   // Upsert all patterns
-  const { data: upserted, error } = await (supabase as any)
+  const { data: upserted, error } = await supabase
     .from('client_preference_patterns')
     .upsert(upsertPayloads, {
       onConflict: 'chef_id,client_id,pattern_type,pattern_value',
@@ -200,7 +200,7 @@ export async function getClientPatterns(clientId: string): Promise<ClientPattern
   const supabase = createServerClient()
   const validatedClientId = ClientIdSchema.parse(clientId)
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('client_preference_patterns')
     .select('*')
     .eq('chef_id', user.tenantId!)

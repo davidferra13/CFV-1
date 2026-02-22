@@ -18,7 +18,13 @@ import {
 
 const CHEF_PROFILE_IMAGES_BUCKET = 'chef-profile-images'
 const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
-const ALLOWED_PROFILE_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
+const ALLOWED_PROFILE_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/heic',
+  'image/heif',
+  'image/webp',
+]
 const PROFILE_IMAGE_MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
@@ -196,42 +202,44 @@ const RespondContactShareSchema = z.object({
 
 const HelpRequestTypeSchema = z.enum(['date_help', 'inquiry_help', 'full_handover'])
 
-const RequestNetworkHelpSchema = z.object({
-  recipient_chef_id: z.string().uuid(),
-  help_type: HelpRequestTypeSchema,
-  calendar_date: z.string().date().optional().nullable(),
-  inquiry_id: z.string().uuid().optional().nullable(),
-  inquiry_summary: z.string().trim().max(200).optional().nullable(),
-  contact_name: z.string().trim().min(1).max(150),
-  contact_phone: z.string().trim().max(50).optional().nullable(),
-  contact_email: z.string().trim().email().max(200).optional().nullable(),
-  location: z.string().trim().max(200).optional().nullable(),
-  details: z.string().trim().max(2000).optional().nullable(),
-}).superRefine((input, ctx) => {
-  if (input.help_type === 'date_help' && !input.calendar_date) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['calendar_date'],
-      message: 'calendar_date is required for date_help',
-    })
-  }
+const RequestNetworkHelpSchema = z
+  .object({
+    recipient_chef_id: z.string().uuid(),
+    help_type: HelpRequestTypeSchema,
+    calendar_date: z.string().date().optional().nullable(),
+    inquiry_id: z.string().uuid().optional().nullable(),
+    inquiry_summary: z.string().trim().max(200).optional().nullable(),
+    contact_name: z.string().trim().min(1).max(150),
+    contact_phone: z.string().trim().max(50).optional().nullable(),
+    contact_email: z.string().trim().email().max(200).optional().nullable(),
+    location: z.string().trim().max(200).optional().nullable(),
+    details: z.string().trim().max(2000).optional().nullable(),
+  })
+  .superRefine((input, ctx) => {
+    if (input.help_type === 'date_help' && !input.calendar_date) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['calendar_date'],
+        message: 'calendar_date is required for date_help',
+      })
+    }
 
-  if (input.help_type === 'inquiry_help' && !input.inquiry_id && !input.inquiry_summary) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['inquiry_summary'],
-      message: 'Provide inquiry_id or inquiry_summary for inquiry_help',
-    })
-  }
+    if (input.help_type === 'inquiry_help' && !input.inquiry_id && !input.inquiry_summary) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['inquiry_summary'],
+        message: 'Provide inquiry_id or inquiry_summary for inquiry_help',
+      })
+    }
 
-  if (input.help_type === 'full_handover' && !input.details) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      path: ['details'],
-      message: 'Provide handover details for full_handover',
-    })
-  }
-})
+    if (input.help_type === 'full_handover' && !input.details) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['details'],
+        message: 'Provide handover details for full_handover',
+      })
+    }
+  })
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
 
@@ -241,23 +249,23 @@ export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>
 
 // chef_connections not in generated types until migration applied and types regenerated
 function fromChefConnections(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_connections')
+  return supabase.from('chef_connections')
 }
 
 function fromChefPreferences(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_preferences')
+  return supabase.from('chef_preferences')
 }
 
 function fromChefNetworkPosts(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_network_posts')
+  return supabase.from('chef_network_posts')
 }
 
 function fromChefNetworkFeaturePreferences(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_network_feature_preferences')
+  return supabase.from('chef_network_feature_preferences')
 }
 
 function fromChefNetworkContactShares(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('chef_network_contact_shares')
+  return supabase.from('chef_network_contact_shares')
 }
 
 function extractChefProfileImagePath(url: string | null | undefined): string | null {
@@ -265,7 +273,10 @@ function extractChefProfileImagePath(url: string | null | undefined): string | n
   const marker = `/storage/v1/object/public/${CHEF_PROFILE_IMAGES_BUCKET}/`
   const markerIndex = url.indexOf(marker)
   if (markerIndex === -1) return null
-  const encodedPath = url.slice(markerIndex + marker.length).split('?')[0].split('#')[0]
+  const encodedPath = url
+    .slice(markerIndex + marker.length)
+    .split('?')[0]
+    .split('#')[0]
   if (!encodedPath) return null
   return decodeURIComponent(encodedPath)
 }
@@ -297,7 +308,9 @@ async function ensureChefProfileImagesBucket(supabase: ReturnType<typeof createS
   }
 
   console.error('[ensureChefProfileImagesBucket] createBucket error:', createError)
-  throw new Error('Storage bucket setup failed. Please create bucket "chef-profile-images" (public) in Supabase Storage.')
+  throw new Error(
+    'Storage bucket setup failed. Please create bucket "chef-profile-images" (public) in Supabase Storage.'
+  )
 }
 
 function getDefaultFeaturePreferenceMap(): Record<NetworkFeatureKey, boolean> {
@@ -341,23 +354,27 @@ async function getFeaturePreferenceMapForChef(
  * Search for discoverable chefs by name.
  * Returns results annotated with connection status relative to the current chef.
  */
-export async function searchChefs(input: z.infer<typeof SearchChefsSchema>): Promise<SearchableChef[]> {
+export async function searchChefs(
+  input: z.infer<typeof SearchChefsSchema>
+): Promise<SearchableChef[]> {
   const user = await requireChef()
   const validated = SearchChefsSchema.parse(input)
   const supabase = createServerClient({ admin: true })
   const query = validated.query.trim()
 
   // Find discoverable chefs (optionally filtered by query)
-  let chefsQuery = (supabase as any)
+  let chefsQuery = supabase
     .from('chefs')
-    .select(`
+    .select(
+      `
       id,
       display_name,
       business_name,
       bio,
       profile_image_url,
       chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state, network_discoverable)
-    `)
+    `
+    )
     .neq('id', user.entityId)
     .limit(20)
 
@@ -382,7 +399,9 @@ export async function searchChefs(input: z.infer<typeof SearchChefsSchema>): Pro
   }
 
   const visibleChefs = (chefs as any[]).filter((chef) => {
-    const prefs = Array.isArray(chef.chef_preferences) ? chef.chef_preferences[0] : chef.chef_preferences
+    const prefs = Array.isArray(chef.chef_preferences)
+      ? chef.chef_preferences[0]
+      : chef.chef_preferences
     return prefs?.network_discoverable !== false
   })
 
@@ -391,12 +410,16 @@ export async function searchChefs(input: z.infer<typeof SearchChefsSchema>): Pro
     let connection_status: SearchableChef['connection_status'] = 'none'
     if (conn) {
       if (conn.status === 'accepted') connection_status = 'accepted'
-      else if (conn.status === 'pending' && conn.direction === 'sent') connection_status = 'pending_sent'
-      else if (conn.status === 'pending' && conn.direction === 'received') connection_status = 'pending_received'
+      else if (conn.status === 'pending' && conn.direction === 'sent')
+        connection_status = 'pending_sent'
+      else if (conn.status === 'pending' && conn.direction === 'received')
+        connection_status = 'pending_received'
       else if (conn.status === 'declined') connection_status = 'declined'
     }
 
-    const prefs = Array.isArray(chef.chef_preferences) ? chef.chef_preferences[0] : chef.chef_preferences
+    const prefs = Array.isArray(chef.chef_preferences)
+      ? chef.chef_preferences[0]
+      : chef.chef_preferences
     return {
       id: chef.id,
       display_name: chef.display_name,
@@ -430,12 +453,14 @@ export async function getMyConnections(): Promise<ChefFriend[]> {
     c.requester_id === user.entityId ? c.addressee_id : c.requester_id
   )
 
-  const { data: chefs } = await (supabase as any)
+  const { data: chefs } = await supabase
     .from('chefs')
-    .select(`
+    .select(
+      `
       id, display_name, business_name, bio, profile_image_url,
       chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)
-    `)
+    `
+    )
     .in('id', friendChefIds)
 
   const chefMap = new Map<string, any>()
@@ -446,7 +471,9 @@ export async function getMyConnections(): Promise<ChefFriend[]> {
   return (connections as any[]).map((conn: any) => {
     const friendId = conn.requester_id === user.entityId ? conn.addressee_id : conn.requester_id
     const chef = chefMap.get(friendId)
-    const prefs = Array.isArray(chef?.chef_preferences) ? chef.chef_preferences[0] : chef?.chef_preferences
+    const prefs = Array.isArray(chef?.chef_preferences)
+      ? chef.chef_preferences[0]
+      : chef?.chef_preferences
     return {
       id: conn.id,
       chef_id: friendId,
@@ -480,9 +507,11 @@ export async function getPendingRequests(): Promise<PendingRequest[]> {
     p.requester_id === user.entityId ? p.addressee_id : p.requester_id
   )
 
-  const { data: chefs } = await (supabase as any)
+  const { data: chefs } = await supabase
     .from('chefs')
-    .select('id, display_name, business_name, chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)')
+    .select(
+      'id, display_name, business_name, chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)'
+    )
     .in('id', otherIds)
 
   const chefMap = new Map<string, any>()
@@ -492,10 +521,12 @@ export async function getPendingRequests(): Promise<PendingRequest[]> {
     const isSent = p.requester_id === user.entityId
     const otherId = isSent ? p.addressee_id : p.requester_id
     const chef = chefMap.get(otherId)
-    const prefs = Array.isArray(chef?.chef_preferences) ? chef.chef_preferences[0] : chef?.chef_preferences
+    const prefs = Array.isArray(chef?.chef_preferences)
+      ? chef.chef_preferences[0]
+      : chef?.chef_preferences
     return {
       id: p.id,
-      direction: isSent ? 'sent' as const : 'received' as const,
+      direction: isSent ? ('sent' as const) : ('received' as const),
       chef_id: otherId,
       display_name: chef?.display_name ?? null,
       business_name: chef?.business_name ?? 'Unknown',
@@ -543,12 +574,14 @@ export async function getNetworkFeed(
   if (postsError || !posts?.length) return []
 
   const authorIds = Array.from(new Set((posts as any[]).map((p) => p.author_chef_id)))
-  const { data: authors } = await (supabase as any)
+  const { data: authors } = await supabase
     .from('chefs')
-    .select(`
+    .select(
+      `
       id, display_name, business_name, profile_image_url,
       chef_preferences!chef_preferences_chef_id_fkey(home_city, home_state)
-    `)
+    `
+    )
     .in('id', authorIds)
 
   const authorMap = new Map<string, any>()
@@ -558,7 +591,9 @@ export async function getNetworkFeed(
 
   return (posts as any[]).map((post: any) => {
     const author = authorMap.get(post.author_chef_id)
-    const prefs = Array.isArray(author?.chef_preferences) ? author.chef_preferences[0] : author?.chef_preferences
+    const prefs = Array.isArray(author?.chef_preferences)
+      ? author.chef_preferences[0]
+      : author?.chef_preferences
     return {
       id: post.id,
       content: post.content,
@@ -605,7 +640,8 @@ export async function getNetworkContactShares(
   const supabase = createServerClient({ admin: true })
 
   const { data: shares, error } = await fromChefNetworkContactShares(supabase)
-    .select(`
+    .select(
+      `
       id,
       sender_chef_id,
       recipient_chef_id,
@@ -619,7 +655,8 @@ export async function getNetworkContactShares(
       response_note,
       created_at,
       responded_at
-    `)
+    `
+    )
     .or(`sender_chef_id.eq.${user.entityId},recipient_chef_id.eq.${user.entityId}`)
     .order('created_at', { ascending: false })
     .limit(validated.limit ?? 80)
@@ -634,7 +671,7 @@ export async function getNetworkContactShares(
     )
   )
 
-  const { data: chefs } = await (supabase as any)
+  const { data: chefs } = await supabase
     .from('chefs')
     .select('id, display_name, business_name, profile_image_url')
     .in('id', otherChefIds)
@@ -680,20 +717,16 @@ export async function getNetworkInsights(): Promise<NetworkInsights> {
   const tenantId = user.tenantId || user.entityId
 
   const [inquiriesRes, eventsRes, clientsRes, sharesRes] = await Promise.all([
-    (supabase as any)
+    supabase
       .from('inquiries')
       .select('id, client_id, converted_to_event_id, confirmed_date')
       .eq('tenant_id', tenantId),
-    (supabase as any)
-      .from('events')
-      .select('id, event_date, status')
-      .eq('tenant_id', tenantId),
-    (supabase as any)
-      .from('clients')
-      .select('id, full_name, email, phone')
-      .eq('tenant_id', tenantId),
+    supabase.from('events').select('id, event_date, status').eq('tenant_id', tenantId),
+    supabase.from('clients').select('id, full_name, email, phone').eq('tenant_id', tenantId),
     fromChefNetworkContactShares(supabase)
-      .select('id, sender_chef_id, recipient_chef_id, status, contact_email, contact_phone, event_date, details')
+      .select(
+        'id, sender_chef_id, recipient_chef_id, status, contact_email, contact_phone, event_date, details'
+      )
       .or(`sender_chef_id.eq.${user.entityId},recipient_chef_id.eq.${user.entityId}`),
   ])
 
@@ -777,7 +810,8 @@ export async function getNetworkInsights(): Promise<NetworkInsights> {
 
   return {
     inquiries_total: inquiries.length,
-    inquiries_converted: inquiries.filter((inquiry) => inquiry.converted_to_event_id != null).length,
+    inquiries_converted: inquiries.filter((inquiry) => inquiry.converted_to_event_id != null)
+      .length,
     inquiries_with_client: inquiries.filter((inquiry) => inquiry.client_id != null).length,
     inquiries_shared: sharedInquiryIds.size,
     inquiries_unshared: Math.max(0, inquiries.length - sharedInquiryIds.size),
@@ -790,7 +824,8 @@ export async function getNetworkInsights(): Promise<NetworkInsights> {
     clients_shared: sharedClientIds.size,
     clients_unshared: Math.max(0, clients.length - sharedClientIds.size),
     shares_sent_total: shares.filter((share) => share.sender_chef_id === user.entityId).length,
-    shares_received_total: shares.filter((share) => share.recipient_chef_id === user.entityId).length,
+    shares_received_total: shares.filter((share) => share.recipient_chef_id === user.entityId)
+      .length,
     shares_open: shares.filter((share) => share.status === 'open').length,
     shares_accepted: shares.filter((share) => share.status === 'accepted').length,
     shares_passed: shares.filter((share) => share.status === 'passed').length,
@@ -879,7 +914,7 @@ export async function sendConnectionRequest(input: z.infer<typeof SendRequestSch
     .select('id, status')
     .or(
       `and(requester_id.eq.${user.entityId},addressee_id.eq.${validated.addressee_id}),` +
-      `and(requester_id.eq.${validated.addressee_id},addressee_id.eq.${user.entityId})`
+        `and(requester_id.eq.${validated.addressee_id},addressee_id.eq.${user.entityId})`
     )
     .limit(1)
     .maybeSingle()
@@ -905,12 +940,11 @@ export async function sendConnectionRequest(input: z.infer<typeof SendRequestSch
   }
 
   // Insert new connection request
-  const { error } = await fromChefConnections(supabase)
-    .insert({
-      requester_id: user.entityId,
-      addressee_id: validated.addressee_id,
-      request_message: validated.message ?? null,
-    })
+  const { error } = await fromChefConnections(supabase).insert({
+    requester_id: user.entityId,
+    addressee_id: validated.addressee_id,
+    request_message: validated.message ?? null,
+  })
 
   if (error) {
     console.error('[sendConnectionRequest] Error:', error)
@@ -941,9 +975,10 @@ export async function respondToConnectionRequest(input: z.infer<typeof RespondSc
     throw new Error('Connection request not found or already responded to')
   }
 
-  const updateData = validated.action === 'accept'
-    ? { status: 'accepted' as const, accepted_at: new Date().toISOString() }
-    : { status: 'declined' as const, declined_at: new Date().toISOString() }
+  const updateData =
+    validated.action === 'accept'
+      ? { status: 'accepted' as const, accepted_at: new Date().toISOString() }
+      : { status: 'declined' as const, declined_at: new Date().toISOString() }
 
   const { error } = await fromChefConnections(supabase)
     .update(updateData)
@@ -1006,12 +1041,11 @@ export async function toggleNetworkDiscoverable(discoverable: boolean) {
 
     if (error) throw new Error('Failed to update discoverability')
   } else {
-    const { error } = await fromChefPreferences(supabase)
-      .insert({
-        chef_id: user.entityId,
-        tenant_id: user.tenantId!,
-        network_discoverable: discoverable,
-      })
+    const { error } = await fromChefPreferences(supabase).insert({
+      chef_id: user.entityId,
+      tenant_id: user.tenantId!,
+      network_discoverable: discoverable,
+    })
 
     if (error) throw new Error('Failed to save discoverability')
   }
@@ -1029,10 +1063,7 @@ export async function updateChefProfile(input: UpdateProfileInput) {
   const validated = UpdateProfileSchema.parse(input)
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
-    .from('chefs')
-    .update(validated)
-    .eq('id', user.entityId)
+  const { error } = await supabase.from('chefs').update(validated).eq('id', user.entityId)
 
   if (error) {
     console.error('[updateChefProfile] Error:', error)
@@ -1047,7 +1078,9 @@ export async function updateChefProfile(input: UpdateProfileInput) {
 /**
  * Upload a chef profile image file and save the resulting public URL on the profile.
  */
-export async function uploadChefProfileImage(formData: FormData): Promise<{ success: true; url: string }> {
+export async function uploadChefProfileImage(
+  formData: FormData
+): Promise<{ success: true; url: string }> {
   const user = await requireChef()
   const supabase = createServerClient({ admin: true })
 
@@ -1061,10 +1094,12 @@ export async function uploadChefProfileImage(formData: FormData): Promise<{ succ
   }
 
   if (file.size > MAX_PROFILE_IMAGE_SIZE) {
-    throw new Error(`File too large. Maximum ${(MAX_PROFILE_IMAGE_SIZE / 1024 / 1024).toFixed(0)}MB`)
+    throw new Error(
+      `File too large. Maximum ${(MAX_PROFILE_IMAGE_SIZE / 1024 / 1024).toFixed(0)}MB`
+    )
   }
 
-  const { data: currentChef } = await (supabase as any)
+  const { data: currentChef } = await supabase
     .from('chefs')
     .select('profile_image_url')
     .eq('id', user.entityId)
@@ -1075,16 +1110,19 @@ export async function uploadChefProfileImage(formData: FormData): Promise<{ succ
   const storagePath = `${user.entityId}/${Date.now()}-${crypto.randomUUID()}.${ext}`
 
   const uploadFile = async () =>
-    supabase.storage
-      .from(CHEF_PROFILE_IMAGES_BUCKET)
-      .upload(storagePath, file, {
-        contentType: file.type,
-        upsert: false,
-      })
+    supabase.storage.from(CHEF_PROFILE_IMAGES_BUCKET).upload(storagePath, file, {
+      contentType: file.type,
+      upsert: false,
+    })
 
   let { error: uploadError } = await uploadFile()
 
-  if (uploadError && String(uploadError.message || '').toLowerCase().includes('bucket')) {
+  if (
+    uploadError &&
+    String(uploadError.message || '')
+      .toLowerCase()
+      .includes('bucket')
+  ) {
     await ensureChefProfileImagesBucket(supabase)
     const retry = await uploadFile()
     uploadError = retry.error
@@ -1100,7 +1138,7 @@ export async function uploadChefProfileImage(formData: FormData): Promise<{ succ
     .getPublicUrl(storagePath)
 
   const publicUrl = publicUrlData.publicUrl
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('chefs')
     .update({ profile_image_url: publicUrl })
     .eq('id', user.entityId)
@@ -1157,20 +1195,21 @@ export async function createNetworkPost(input: z.infer<typeof CreatePostSchema>)
 /**
  * Opt in/out of a specific network feature.
  */
-export async function updateNetworkFeaturePreference(input: z.infer<typeof UpdateFeaturePreferenceSchema>) {
+export async function updateNetworkFeaturePreference(
+  input: z.infer<typeof UpdateFeaturePreferenceSchema>
+) {
   const user = await requireChef()
   const validated = UpdateFeaturePreferenceSchema.parse(input)
   const supabase = createServerClient()
 
-  const { error } = await fromChefNetworkFeaturePreferences(supabase)
-    .upsert(
-      {
-        chef_id: user.entityId,
-        feature_key: validated.feature_key,
-        enabled: validated.enabled,
-      },
-      { onConflict: 'chef_id,feature_key' }
-    )
+  const { error } = await fromChefNetworkFeaturePreferences(supabase).upsert(
+    {
+      chef_id: user.entityId,
+      feature_key: validated.feature_key,
+      enabled: validated.enabled,
+    },
+    { onConflict: 'chef_id,feature_key' }
+  )
 
   if (error) {
     console.error('[updateNetworkFeaturePreference] Error:', error)
@@ -1194,9 +1233,7 @@ export async function requestNetworkHelp(input: z.infer<typeof RequestNetworkHel
     full_handover: 'Full Handover Request',
   }
 
-  const structuredLines = [
-    `[${helpTypeLabels[validated.help_type]}]`,
-  ]
+  const structuredLines = [`[${helpTypeLabels[validated.help_type]}]`]
 
   if (validated.calendar_date) {
     structuredLines.push(`Calendar Date: ${validated.calendar_date}`)
@@ -1244,7 +1281,7 @@ export async function createNetworkContactShare(input: z.infer<typeof CreateCont
     .eq('status', 'accepted')
     .or(
       `and(requester_id.eq.${user.entityId},addressee_id.eq.${validated.recipient_chef_id}),` +
-      `and(requester_id.eq.${validated.recipient_chef_id},addressee_id.eq.${user.entityId})`
+        `and(requester_id.eq.${validated.recipient_chef_id},addressee_id.eq.${user.entityId})`
     )
     .limit(1)
     .maybeSingle()
@@ -1276,7 +1313,9 @@ export async function createNetworkContactShare(input: z.infer<typeof CreateCont
 /**
  * Recipient can accept/pass a direct contact share.
  */
-export async function respondToNetworkContactShare(input: z.infer<typeof RespondContactShareSchema>) {
+export async function respondToNetworkContactShare(
+  input: z.infer<typeof RespondContactShareSchema>
+) {
   const user = await requireChef()
   const validated = RespondContactShareSchema.parse(input)
   const supabase = createServerClient({ admin: true })

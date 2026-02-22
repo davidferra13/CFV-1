@@ -12,15 +12,26 @@ import { scoreInquiry, type LeadScore } from '@/lib/leads/scoring'
 import { LeadScoreBadge } from '@/components/inquiries/lead-score-badge'
 
 export const metadata: Metadata = { title: 'Inquiries - ChefFlow' }
-import { InquiryStatusBadge, InquiryChannelBadge } from '@/components/inquiries/inquiry-status-badge'
+import {
+  InquiryStatusBadge,
+  InquiryChannelBadge,
+} from '@/components/inquiries/inquiry-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
+import { NoInquiriesIllustration } from '@/components/ui/branded-illustrations'
 import { formatDistanceToNow, format } from 'date-fns'
 import type { BookingScore } from '@/lib/analytics/booking-score'
 import { InquiriesViewWrapper } from '@/components/inquiries/inquiries-view-wrapper'
 
-type InquiryFilter = 'all' | 'new' | 'awaiting_client' | 'awaiting_chef' | 'quoted' | 'confirmed' | 'closed'
+type InquiryFilter =
+  | 'all'
+  | 'new'
+  | 'awaiting_client'
+  | 'awaiting_chef'
+  | 'quoted'
+  | 'confirmed'
+  | 'closed'
 
 const OPEN_STATUSES = new Set(['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
@@ -45,9 +56,9 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 
   // Apply filter
   if (filter === 'closed') {
-    inquiries = inquiries.filter(i => i.status === 'declined' || i.status === 'expired')
+    inquiries = inquiries.filter((i) => i.status === 'declined' || i.status === 'expired')
   } else if (filter !== 'all') {
-    inquiries = inquiries.filter(i => i.status === filter)
+    inquiries = inquiries.filter((i) => i.status === filter)
   }
 
   // Build booking score lookup map
@@ -78,6 +89,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
       <Card>
         {filter === 'all' ? (
           <EmptyState
+            illustration={<NoInquiriesIllustration />}
             title="No inquiries yet"
             description="Log your first inquiry to start tracking leads from initial contact through to a booked event."
             action={{ label: 'Log New Inquiry', href: '/inquiries/new' }}
@@ -99,7 +111,9 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
         const name = getDisplayName(inquiry)
         const isNew = inquiry.status === 'new'
         const score = OPEN_STATUSES.has(inquiry.status) ? scoreMap.get(inquiry.id) : undefined
-        const leadScore = OPEN_STATUSES.has(inquiry.status) ? leadScoreMap.get(inquiry.id) : undefined
+        const leadScore = OPEN_STATUSES.has(inquiry.status)
+          ? leadScoreMap.get(inquiry.id)
+          : undefined
 
         return (
           <Link
@@ -124,7 +138,9 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
                 )}
                 {inquiry.next_action_required && (
-                  <p className="text-xs text-brand-600 mt-1">Next: {inquiry.next_action_required}</p>
+                  <p className="text-xs text-brand-600 mt-1">
+                    Next: {inquiry.next_action_required}
+                  </p>
                 )}
               </div>
               <div className="text-right flex-shrink-0">
@@ -149,7 +165,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 }
 
 export default async function InquiriesPage({
-  searchParams
+  searchParams,
 }: {
   searchParams: { status?: InquiryFilter }
 }) {
@@ -204,10 +220,7 @@ export default async function InquiriesPage({
             <div className="flex gap-2 flex-wrap">
               {tabs.map((tab) => (
                 <Link key={tab.value} href={`/inquiries?status=${tab.value}`}>
-                  <Button
-                    size="sm"
-                    variant={filter === tab.value ? 'primary' : 'secondary'}
-                  >
+                  <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
                     {tab.label}
                   </Button>
                 </Link>
@@ -216,11 +229,13 @@ export default async function InquiriesPage({
           </Card>
 
           {/* Inquiry List */}
-          <Suspense fallback={
-            <Card className="p-8 text-center">
-              <p className="text-stone-500">Loading inquiries...</p>
-            </Card>
-          }>
+          <Suspense
+            fallback={
+              <Card className="p-8 text-center">
+                <p className="text-stone-500">Loading inquiries...</p>
+              </Card>
+            }
+          >
             <InquiryList filter={filter} />
           </Suspense>
         </div>

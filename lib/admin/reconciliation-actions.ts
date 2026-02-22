@@ -48,12 +48,14 @@ export async function getPlatformReconciliation(): Promise<PlatformReconciliatio
     .eq('is_refund', true)
 
   // 3. Transfers
-  const { data: transfers } = await (supabase as any)
+  const { data: transfers } = await supabase
     .from('stripe_transfers')
-    .select('tenant_id, gross_amount_cents, platform_fee_cents, net_transfer_cents, status, is_deferred')
+    .select(
+      'tenant_id, gross_amount_cents, platform_fee_cents, net_transfer_cents, status, is_deferred'
+    )
 
   // 4. Platform fees
-  const { data: fees } = await (supabase as any)
+  const { data: fees } = await supabase
     .from('platform_fee_ledger')
     .select('tenant_id, amount_cents, entry_type')
 
@@ -120,7 +122,7 @@ export async function getPlatformReconciliation(): Promise<PlatformReconciliatio
   }
 
   const chefsArray = Array.from(tenantMap.values())
-    .filter(c => c.gmvCents > 0 || c.transferredCents > 0)
+    .filter((c) => c.gmvCents > 0 || c.transferredCents > 0)
     .sort((a, b) => b.gmvCents - a.gmvCents)
 
   return {

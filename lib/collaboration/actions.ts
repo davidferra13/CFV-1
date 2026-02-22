@@ -27,11 +27,11 @@ import { ROLE_DEFAULTS } from './types'
 // ─── Helpers ─────────────────────────────────
 
 function collab(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('event_collaborators')
+  return supabase.from('event_collaborators')
 }
 
 function recipeShares(supabase: ReturnType<typeof createServerClient>): any {
-  return (supabase as any).from('recipe_shares')
+  return supabase.from('recipe_shares')
 }
 
 /** Check that an accepted chef_connections row exists between two chefs. */
@@ -40,7 +40,7 @@ async function assertConnected(
   chefAId: string,
   chefBId: string
 ): Promise<void> {
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_connections')
     .select('id')
     .eq('status', 'accepted')
@@ -51,7 +51,9 @@ async function assertConnected(
     .single()
 
   if (!data) {
-    throw new Error('You can only collaborate with chefs you are connected with in the Chef Network.')
+    throw new Error(
+      'You can only collaborate with chefs you are connected with in the Chef Network.'
+    )
   }
 }
 
@@ -79,11 +81,11 @@ export async function getEventCollaborators(eventId: string): Promise<EventColla
   const supabase = createServerClient()
 
   // Verify caller owns event OR is themselves a collaborator
-  const { data: event } = await supabase
+  const { data: event } = (await supabase
     .from('events')
     .select('id, tenant_id')
     .eq('id', eventId)
-    .single() as any
+    .single()) as any
 
   if (!event) throw new Error('Event not found')
 
@@ -100,11 +102,13 @@ export async function getEventCollaborators(eventId: string): Promise<EventColla
   }
 
   const { data, error } = await collab(supabase)
-    .select(`
+    .select(
+      `
       id, event_id, chef_id, invited_by_chef_id, role, status, permissions, note, responded_at, created_at,
       chef:chefs!event_collaborators_chef_id_fkey(${CHEF_PROFILE_SELECT}),
       invited_by:chefs!event_collaborators_invited_by_chef_id_fkey(${CHEF_PROFILE_SELECT})
-    `)
+    `
+    )
     .eq('event_id', eventId)
     .order('created_at', { ascending: true })
 
@@ -130,12 +134,12 @@ export async function inviteChefToEvent(input: {
   const supabase = createServerClient()
 
   // Verify the event belongs to the caller
-  const { data: event, error: evErr } = await supabase
+  const { data: event, error: evErr } = (await supabase
     .from('events')
     .select('id, tenant_id, occasion, event_date')
     .eq('id', input.eventId)
     .eq('tenant_id', user.entityId)
-    .single() as any
+    .single()) as any
 
   if (evErr || !event) throw new Error('Event not found or access denied')
 
@@ -143,7 +147,7 @@ export async function inviteChefToEvent(input: {
   await assertConnected(supabase, user.entityId, input.targetChefId)
 
   // Check target chef hasn't opted out of collaboration
-  const { data: prefs } = await (supabase as any)
+  const { data: prefs } = await supabase
     .from('chef_network_feature_preferences')
     .select('event_collaboration')
     .eq('chef_id', input.targetChefId)
@@ -181,14 +185,23 @@ export async function inviteChefToEvent(input: {
   ;(async () => {
     try {
       const [{ data: targetChef }, { data: invitingChef }] = await Promise.all([
-        (supabase as any).from('chefs').select('email, display_name, business_name').eq('id', input.targetChefId).single(),
-        (supabase as any).from('chefs').select('display_name, business_name').eq('id', user.entityId).single(),
+        supabase
+          .from('chefs')
+          .select('email, display_name, business_name')
+          .eq('id', input.targetChefId)
+          .single(),
+        supabase
+          .from('chefs')
+          .select('display_name, business_name')
+          .eq('id', user.entityId)
+          .single(),
       ])
       if (targetChef?.email) {
         await sendCollaborationInviteEmail({
           chefEmail: targetChef.email,
           chefName: targetChef.display_name || targetChef.business_name,
-          inviterName: invitingChef?.display_name || invitingChef?.business_name || 'A connected chef',
+          inviterName:
+            invitingChef?.display_name || invitingChef?.business_name || 'A connected chef',
           occasion: event.occasion || 'an upcoming event',
           eventDate: event.event_date || null,
           role: input.role,
@@ -263,11 +276,11 @@ export async function updateCollaboratorRole(input: {
 
   if (!row) throw new Error('Collaborator not found')
 
-  const { data: event } = await supabase
+  const { data: event } = (await supabase
     .from('events')
     .select('tenant_id')
     .eq('id', row.event_id)
-    .single() as any
+    .single()) as any
 
   if (!event || event.tenant_id !== user.entityId) {
     throw new Error('Only the event owner can change collaborator roles')
@@ -304,11 +317,11 @@ export async function removeCollaborator(collaboratorId: string) {
   if (!row) throw new Error('Collaborator not found')
 
   // Either the event owner or the collaborator themselves can remove
-  const { data: event } = await supabase
+  const { data: event } = (await supabase
     .from('events')
     .select('tenant_id')
     .eq('id', row.event_id)
-    .single() as any
+    .single()) as any
 
   const isOwner = event?.tenant_id === user.entityId
   const isSelf = row.chef_id === user.entityId
@@ -330,20 +343,17 @@ export async function removeCollaborator(collaboratorId: string) {
  * Event tenant_id is NOT changed — ownership in the platform sense stays with original chef,
  * but operational primary shifts.
  */
-export async function handoffEvent(input: {
-  eventId: string
-  newPrimaryChefId: string
-}) {
+export async function handoffEvent(input: { eventId: string; newPrimaryChefId: string }) {
   const user = await requireChef()
   const supabase = createServerClient()
 
   // Verify caller owns the event
-  const { data: event, error: evErr } = await supabase
+  const { data: event, error: evErr } = (await supabase
     .from('events')
     .select('id, tenant_id')
     .eq('id', input.eventId)
     .eq('tenant_id', user.entityId)
-    .single() as any
+    .single()) as any
 
   if (evErr || !event) throw new Error('Event not found or access denied')
 
@@ -410,12 +420,14 @@ export async function getPendingCollaborationInvitations(): Promise<EventCollabo
   const supabase = createServerClient()
 
   const { data, error } = await collab(supabase)
-    .select(`
+    .select(
+      `
       id, event_id, chef_id, invited_by_chef_id, role, status, permissions, note, responded_at, created_at,
       chef:chefs!event_collaborators_chef_id_fkey(${CHEF_PROFILE_SELECT}),
       invited_by:chefs!event_collaborators_invited_by_chef_id_fkey(${CHEF_PROFILE_SELECT}),
       event:events(id, occasion, event_date, status)
-    `)
+    `
+    )
     .eq('chef_id', user.entityId)
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
@@ -432,25 +444,29 @@ export async function getPendingCollaborationInvitations(): Promise<EventCollabo
  * Get events where the current chef is an accepted collaborator (not owner).
  * Used for the "Collaborating On" section on the dashboard.
  */
-export async function getCollaboratingOnEvents(): Promise<Array<{
-  event: {
-    id: string
-    occasion: string | null
-    event_date: string | null
-    status: string
-    client: { full_name: string } | null
-  }
-  role: CollaboratorRole
-  permissions: CollaboratorPermissions
-}>> {
+export async function getCollaboratingOnEvents(): Promise<
+  Array<{
+    event: {
+      id: string
+      occasion: string | null
+      event_date: string | null
+      status: string
+      client: { full_name: string } | null
+    }
+    role: CollaboratorRole
+    permissions: CollaboratorPermissions
+  }>
+> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   const { data, error } = await collab(supabase)
-    .select(`
+    .select(
+      `
       role, permissions,
       event:events(id, occasion, event_date, status, tenant_id, client:clients(full_name))
-    `)
+    `
+    )
     .eq('chef_id', user.entityId)
     .eq('status', 'accepted')
     .order('created_at', { ascending: false })
@@ -460,33 +476,37 @@ export async function getCollaboratingOnEvents(): Promise<Array<{
     return []
   }
 
-  return (data || [])
-    // Exclude events this chef owns — post-handoff the original owner gets an observer row,
-    // but the event already appears in their main events list via tenant_id ownership.
-    .filter((row: any) => row.event?.tenant_id !== user.entityId)
-    .map((row: any) => ({
-      event: row.event,
-      role: row.role as CollaboratorRole,
-      permissions: row.permissions as CollaboratorPermissions,
-    }))
+  return (
+    (data || [])
+      // Exclude events this chef owns — post-handoff the original owner gets an observer row,
+      // but the event already appears in their main events list via tenant_id ownership.
+      .filter((row: any) => row.event?.tenant_id !== user.entityId)
+      .map((row: any) => ({
+        event: row.event,
+        role: row.role as CollaboratorRole,
+        permissions: row.permissions as CollaboratorPermissions,
+      }))
+  )
 }
 
 /**
  * Get connected chefs that can be invited to collaborate.
  * Filters out chefs who have opted out of collaboration.
  */
-export async function getConnectedChefsForCollaboration(search?: string): Promise<Array<{
-  id: string
-  business_name: string
-  display_name: string | null
-  profile_image_url: string | null
-  email: string
-}>> {
+export async function getConnectedChefsForCollaboration(search?: string): Promise<
+  Array<{
+    id: string
+    business_name: string
+    display_name: string | null
+    profile_image_url: string | null
+    email: string
+  }>
+> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   // Get accepted connections
-  const { data: connections } = await (supabase as any)
+  const { data: connections } = await supabase
     .from('chef_connections')
     .select('requester_id, addressee_id')
     .eq('status', 'accepted')
@@ -498,10 +518,7 @@ export async function getConnectedChefsForCollaboration(search?: string): Promis
     c.requester_id === user.entityId ? c.addressee_id : c.requester_id
   )
 
-  let query = (supabase as any)
-    .from('chefs')
-    .select(CHEF_PROFILE_SELECT)
-    .in('id', connectedIds)
+  let query = supabase.from('chefs').select(CHEF_PROFILE_SELECT).in('id', connectedIds)
 
   if (search?.trim()) {
     const q = `%${search.trim()}%`
@@ -528,12 +545,12 @@ export async function shareRecipe(input: {
   const supabase = createServerClient()
 
   // Verify recipe belongs to caller
-  const { data: recipe, error: recipeErr } = await supabase
+  const { data: recipe, error: recipeErr } = (await supabase
     .from('recipes')
     .select('id, name, category, tenant_id')
     .eq('id', input.recipeId)
     .eq('tenant_id', user.tenantId!)
-    .single() as any
+    .single()) as any
 
   if (recipeErr || !recipe) throw new Error('Recipe not found or access denied')
 
@@ -541,7 +558,7 @@ export async function shareRecipe(input: {
   await assertConnected(supabase, user.entityId, input.targetChefId)
 
   // Check target hasn't opted out of recipe sharing
-  const { data: prefs } = await (supabase as any)
+  const { data: prefs } = await supabase
     .from('chef_network_feature_preferences')
     .select('recipe_sharing')
     .eq('chef_id', input.targetChefId)
@@ -559,7 +576,8 @@ export async function shareRecipe(input: {
   })
 
   if (error) {
-    if (error.code === '23505') throw new Error('You have already shared this recipe with this chef.')
+    if (error.code === '23505')
+      throw new Error('You have already shared this recipe with this chef.')
     console.error('[shareRecipe]', error)
     throw new Error('Failed to share recipe')
   }
@@ -570,8 +588,16 @@ export async function shareRecipe(input: {
   ;(async () => {
     try {
       const [{ data: targetChef }, { data: sharingChef }] = await Promise.all([
-        (supabase as any).from('chefs').select('email, display_name, business_name').eq('id', input.targetChefId).single(),
-        (supabase as any).from('chefs').select('display_name, business_name').eq('id', user.entityId).single(),
+        supabase
+          .from('chefs')
+          .select('email, display_name, business_name')
+          .eq('id', input.targetChefId)
+          .single(),
+        supabase
+          .from('chefs')
+          .select('display_name, business_name')
+          .eq('id', user.entityId)
+          .single(),
       ])
       if (targetChef?.email) {
         await sendRecipeShareEmail({
@@ -595,10 +621,7 @@ export async function shareRecipe(input: {
  * Respond to an incoming recipe share.
  * If accepted, creates an editable deep copy in the receiving chef's namespace.
  */
-export async function respondToRecipeShare(input: {
-  shareId: string
-  accepted: boolean
-}) {
+export async function respondToRecipeShare(input: { shareId: string; accepted: boolean }) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -651,7 +674,7 @@ async function deepCopyRecipe(input: {
   const { originalRecipeId, toTenantId, toUserId, supabase } = input
 
   // Fetch original recipe
-  const { data: original, error: origErr } = await (supabase as any)
+  const { data: original, error: origErr } = await supabase
     .from('recipes')
     .select('*')
     .eq('id', originalRecipeId)
@@ -660,17 +683,19 @@ async function deepCopyRecipe(input: {
   if (origErr || !original) throw new Error('Failed to read original recipe')
 
   // Fetch original recipe ingredients with ingredient details
-  const { data: origIngredients } = await (supabase as any)
+  const { data: origIngredients } = await supabase
     .from('recipe_ingredients')
-    .select(`
+    .select(
+      `
       quantity, unit, sort_order, is_optional, preparation_notes, substitution_notes,
       ingredient:ingredients(name, category, default_unit)
-    `)
+    `
+    )
     .eq('recipe_id', originalRecipeId)
     .order('sort_order', { ascending: true })
 
   // Create recipe copy in target namespace
-  const { data: newRecipe, error: createErr } = await (supabase as any)
+  const { data: newRecipe, error: createErr } = await supabase
     .from('recipes')
     .insert({
       tenant_id: toTenantId,
@@ -679,10 +704,9 @@ async function deepCopyRecipe(input: {
       method: original.method || '',
       method_detailed: original.method_detailed || null,
       description: original.description || null,
-      notes: [
-        original.notes,
-        'Shared from another chef via ChefFlow.',
-      ].filter(Boolean).join('\n\n'),
+      notes: [original.notes, 'Shared from another chef via ChefFlow.']
+        .filter(Boolean)
+        .join('\n\n'),
       adaptations: original.adaptations || null,
       prep_time_minutes: original.prep_time_minutes || null,
       cook_time_minutes: original.cook_time_minutes || null,
@@ -705,7 +729,7 @@ async function deepCopyRecipe(input: {
     if (!ing) continue
 
     // Find existing ingredient in target tenant (case-insensitive name match)
-    let { data: existingIng } = await (supabase as any)
+    let { data: existingIng } = await supabase
       .from('ingredients')
       .select('id')
       .eq('tenant_id', toTenantId)
@@ -715,7 +739,7 @@ async function deepCopyRecipe(input: {
 
     if (!existingIng) {
       // Create ingredient in target tenant
-      const { data: newIng } = await (supabase as any)
+      const { data: newIng } = await supabase
         .from('ingredients')
         .insert({
           tenant_id: toTenantId,
@@ -730,7 +754,7 @@ async function deepCopyRecipe(input: {
 
     if (!existingIng?.id) continue
 
-    await (supabase as any).from('recipe_ingredients').insert({
+    await supabase.from('recipe_ingredients').insert({
       recipe_id: newRecipe.id,
       ingredient_id: existingIng.id,
       quantity: ri.quantity,
@@ -753,12 +777,14 @@ export async function getPendingRecipeShares(): Promise<RecipeShare[]> {
   const supabase = createServerClient()
 
   const { data, error } = await recipeShares(supabase)
-    .select(`
+    .select(
+      `
       id, original_recipe_id, from_chef_id, to_chef_id, status, note, created_recipe_id, responded_at, created_at,
       from_chef:chefs!recipe_shares_from_chef_id_fkey(${CHEF_PROFILE_SELECT}),
       to_chef:chefs!recipe_shares_to_chef_id_fkey(${CHEF_PROFILE_SELECT}),
       recipe:recipes!recipe_shares_original_recipe_id_fkey(id, name, category)
-    `)
+    `
+    )
     .eq('to_chef_id', user.entityId)
     .eq('status', 'pending')
     .order('created_at', { ascending: false })
@@ -779,11 +805,13 @@ export async function getOutgoingRecipeShares(recipeId?: string): Promise<Recipe
   const supabase = createServerClient()
 
   let query = recipeShares(supabase)
-    .select(`
+    .select(
+      `
       id, original_recipe_id, from_chef_id, to_chef_id, status, note, created_recipe_id, responded_at, created_at,
       from_chef:chefs!recipe_shares_from_chef_id_fkey(${CHEF_PROFILE_SELECT}),
       to_chef:chefs!recipe_shares_to_chef_id_fkey(${CHEF_PROFILE_SELECT})
-    `)
+    `
+    )
     .eq('from_chef_id', user.entityId)
 
   if (recipeId) query = query.eq('original_recipe_id', recipeId)

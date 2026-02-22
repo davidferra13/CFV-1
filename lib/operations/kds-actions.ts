@@ -15,12 +15,14 @@ import { z } from 'zod'
 
 const CreateServiceCoursesSchema = z.object({
   eventId: z.string().uuid('Event ID must be a valid UUID'),
-  courses: z.array(
-    z.object({
-      courseName: z.string().min(1, 'Course name is required'),
-      courseNumber: z.number().int().positive('Course number must be positive'),
-    })
-  ).min(1, 'At least one course is required'),
+  courses: z
+    .array(
+      z.object({
+        courseName: z.string().min(1, 'Course name is required'),
+        courseNumber: z.number().int().positive('Course number must be positive'),
+      })
+    )
+    .min(1, 'At least one course is required'),
 })
 
 export type CreateServiceCoursesInput = z.infer<typeof CreateServiceCoursesSchema>
@@ -70,7 +72,7 @@ export async function getServiceCourses(eventId: string): Promise<ServiceCourse[
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('service_courses')
     .select('*')
     .eq('event_id', eventId)
@@ -89,7 +91,10 @@ export async function getServiceCourses(eventId: string): Promise<ServiceCourse[
  * Bulk create service courses for an event.
  * Typically called when setting up the service plan before an event.
  */
-export async function createServiceCourses(eventId: string, courses: { courseName: string; courseNumber: number }[]) {
+export async function createServiceCourses(
+  eventId: string,
+  courses: { courseName: string; courseNumber: number }[]
+) {
   const user = await requireChef()
   const validated = CreateServiceCoursesSchema.parse({ eventId, courses })
   const supabase = createServerClient()
@@ -102,10 +107,7 @@ export async function createServiceCourses(eventId: string, courses: { courseNam
     status: 'pending',
   }))
 
-  const { data, error } = await (supabase as any)
-    .from('service_courses')
-    .insert(rows)
-    .select()
+  const { data, error } = await supabase.from('service_courses').insert(rows).select()
 
   if (error) {
     console.error('[createServiceCourses] Error:', error)
@@ -124,7 +126,7 @@ export async function fireCourse(courseId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('service_courses')
     .update({
       status: 'fired',
@@ -151,7 +153,7 @@ export async function markCoursePlated(courseId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('service_courses')
     .update({ status: 'plated' })
     .eq('id', courseId)
@@ -176,7 +178,7 @@ export async function markCourseServed(courseId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('service_courses')
     .update({
       status: 'served',
@@ -212,7 +214,7 @@ export async function mark86(courseId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('service_courses')
     .update({ status: 'eighty_sixed' })
     .eq('id', courseId)

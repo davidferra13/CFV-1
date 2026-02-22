@@ -123,7 +123,7 @@ export async function syncEventToGoogleCalendar(
 
     // Fetch event details — cast to any because google_calendar_event_id may not be in
     // the generated types yet (migration pending push)
-    const { data: event } = await (supabase as any)
+    const { data: event } = await supabase
       .from('events')
       .select(
         'id, occasion, event_date, serve_time, guest_count, location_address, location_city, location_state, special_requests, google_calendar_event_id'
@@ -202,7 +202,7 @@ export async function syncEventToGoogleCalendar(
 
     // Store Google event ID back on the ChefFlow event
     // cast as any — columns not in generated types until migration is pushed
-    await (supabase as any)
+    await supabase
       .from('events')
       .update({
         google_calendar_event_id: googleEventId,
@@ -238,7 +238,7 @@ export async function deleteEventFromGoogleCalendar(
     const chef = await requireChef()
     const supabase = createServerClient()
 
-    const { data: event } = await (supabase as any)
+    const { data: event } = await supabase
       .from('events')
       .select('google_calendar_event_id')
       .eq('id', eventId)

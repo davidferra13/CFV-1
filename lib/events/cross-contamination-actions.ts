@@ -91,7 +91,7 @@ export async function getOrCreateCrossContaminationChecklist(eventId: string, al
   })
 
   // Check if a safety checklist exists for this event
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('event_safety_checklists')
     .select('*')
     .eq('event_id', eventId)
@@ -116,7 +116,7 @@ export async function getOrCreateCrossContaminationChecklist(eventId: string, al
     const newXcItems = buildItemsForAllergens(allergens)
     const merged = [...currentItems, ...newXcItems]
 
-    await (supabase as any)
+    await supabase
       .from('event_safety_checklists')
       .update({ items: merged, updated_at: new Date().toISOString() })
       .eq('id', existing.id)
@@ -133,7 +133,7 @@ export async function getOrCreateCrossContaminationChecklist(eventId: string, al
 
   // No safety checklist exists — create one with only XC items
   const xcItems = buildItemsForAllergens(allergens)
-  const { data: created, error } = await (supabase as any)
+  const { data: created, error } = await supabase
     .from('event_safety_checklists')
     .insert({
       event_id: eventId,
@@ -161,7 +161,7 @@ export async function toggleCrossContaminationItem(checklistId: string, itemKey:
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { data: checklist, error: fetchError } = await (supabase as any)
+  const { data: checklist, error: fetchError } = await supabase
     .from('event_safety_checklists')
     .select('*')
     .eq('id', checklistId)
@@ -184,7 +184,7 @@ export async function toggleCrossContaminationItem(checklistId: string, itemKey:
     return item
   })
 
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('event_safety_checklists')
     .update({ items, updated_at: new Date().toISOString() })
     .eq('id', checklistId)

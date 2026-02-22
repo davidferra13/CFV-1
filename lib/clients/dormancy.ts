@@ -21,7 +21,7 @@ export async function getDormantClients(limit = 5): Promise<DormantClientEntry[]
   const supabase = createServerClient()
 
   // Join clients + client_financial_summary in one query using the view
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('client_financial_summary')
     .select('client_id, days_since_last_event, last_event_date, lifetime_value_cents')
     .eq('tenant_id', user.tenantId!)
@@ -43,7 +43,7 @@ export async function getDormantClients(limit = 5): Promise<DormantClientEntry[]
 
   if (!clients) return []
 
-  const nameMap = new Map<string, string>(clients.map(c => [c.id, c.full_name]))
+  const nameMap = new Map<string, string>(clients.map((c) => [c.id, c.full_name]))
 
   return summaries
     .map((s: any) => ({

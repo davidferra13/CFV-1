@@ -60,7 +60,7 @@ export async function addRetirementContribution(
   const parsed = AddContributionSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('retirement_contributions')
     .insert({
       chef_id: user.tenantId!,
@@ -90,7 +90,7 @@ export async function deleteRetirementContribution(id: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('retirement_contributions')
     .delete()
     .eq('id', id)
@@ -109,7 +109,7 @@ export async function getRetirementContributions(taxYear: number): Promise<{
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('retirement_contributions')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -166,7 +166,7 @@ export async function addHealthInsurancePremium(
   const parsed = AddPremiumSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('health_insurance_premiums')
     .insert({
       chef_id: user.tenantId!,
@@ -194,7 +194,7 @@ export async function deleteHealthInsurancePremium(id: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('health_insurance_premiums')
     .delete()
     .eq('id', id)
@@ -211,7 +211,7 @@ export async function getHealthInsurancePremiums(taxYear: number): Promise<{
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('health_insurance_premiums')
     .select('*')
     .eq('chef_id', user.tenantId!)

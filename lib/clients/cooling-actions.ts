@@ -64,7 +64,7 @@ export async function markIntentionallyInactive(clientId: string): Promise<void>
   const marker = '[INTENTIONALLY_INACTIVE]'
   if (currentNotes.includes(marker)) return // already marked
 
-  await (supabase as any)
+  await supabase
     .from('clients')
     .update({ notes: `${currentNotes}\n${marker}`.trim() })
     .eq('id', clientId)

@@ -15,7 +15,7 @@ export async function getAllCannabisUsers() {
   await requireAdmin()
   const supabase = createAdminClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('cannabis_tier_users')
     .select('*')
     .order('granted_at', { ascending: false })
@@ -40,7 +40,7 @@ export async function getPendingInvites() {
   await requireAdmin()
   const supabase = createAdminClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('cannabis_tier_invitations')
     .select('*')
     .eq('admin_approval_status', 'pending')
@@ -65,7 +65,7 @@ export async function getAllCannabisInvites() {
   await requireAdmin()
   const supabase = createAdminClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('cannabis_tier_invitations')
     .select('*')
     .order('created_at', { ascending: false })
@@ -103,7 +103,7 @@ export async function grantCannabisTier(input: {
   const admin = await requireAdmin()
   const supabase = createAdminClient()
 
-  const { error } = await (supabase as any).from('cannabis_tier_users').upsert(
+  const { error } = await supabase.from('cannabis_tier_users').upsert(
     {
       auth_user_id: input.authUserId,
       user_type: input.userType,
@@ -136,7 +136,7 @@ export async function revokeCannabisTier(authUserId: string) {
   const admin = await requireAdmin()
   const supabase = createAdminClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('cannabis_tier_users')
     .update({ status: 'suspended' })
     .eq('auth_user_id', authUserId)
@@ -166,7 +166,7 @@ export async function approveInvite(inviteId: string) {
   const token = randomBytes(32).toString('hex')
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('cannabis_tier_invitations')
     .update({
       admin_approval_status: 'approved',
@@ -199,7 +199,7 @@ export async function rejectInvite(inviteId: string, reason?: string) {
   const admin = await requireAdmin()
   const supabase = createAdminClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('cannabis_tier_invitations')
     .update({
       admin_approval_status: 'rejected',
@@ -240,7 +240,7 @@ export async function adminGrantTierByEmail(input: { email: string; notes?: stri
   if (!targetUser) throw new Error(`No account found for email: ${input.email}`)
 
   // Get their role
-  const { data: roleData } = await (supabase as any)
+  const { data: roleData } = await supabase
     .from('user_roles')
     .select('role, entity_id')
     .eq('auth_user_id', targetUser.id)

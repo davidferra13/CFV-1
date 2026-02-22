@@ -34,7 +34,7 @@ export async function getUnclaimedSubmissions() {
   await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('contact_submissions')
     .select('id, name, email, subject, message, created_at')
     .is('claimed_by_chef_id', null)
@@ -45,7 +45,10 @@ export async function getUnclaimedSubmissions() {
     throw new Error('Failed to fetch submissions')
   }
 
-  return (data ?? []) as Pick<ContactSubmission, 'id' | 'name' | 'email' | 'subject' | 'message' | 'created_at'>[]
+  return (data ?? []) as Pick<
+    ContactSubmission,
+    'id' | 'name' | 'email' | 'subject' | 'message' | 'created_at'
+  >[]
 }
 
 /**
@@ -55,7 +58,7 @@ export async function getUnclaimedCount(): Promise<number> {
   await requireChef()
   const supabase = createServerClient()
 
-  const { count, error } = await (supabase as any)
+  const { count, error } = await supabase
     .from('contact_submissions')
     .select('*', { count: 'exact', head: true })
     .is('claimed_by_chef_id', null)
@@ -80,7 +83,7 @@ export async function claimContactSubmission(submissionId: string) {
   const supabase = createServerClient()
 
   // 1. Fetch and verify unclaimed
-  const { data: submission, error: fetchError } = await (supabase as any)
+  const { data: submission, error: fetchError } = await supabase
     .from('contact_submissions')
     .select('id, name, email, subject, message, created_at')
     .eq('id', submissionId)
@@ -91,13 +94,15 @@ export async function claimContactSubmission(submissionId: string) {
     throw new Error('Submission not found or already claimed')
   }
 
-  const sub = submission as Pick<ContactSubmission, 'id' | 'name' | 'email' | 'subject' | 'message' | 'created_at'>
+  const sub = submission as Pick<
+    ContactSubmission,
+    'id' | 'name' | 'email' | 'subject' | 'message' | 'created_at'
+  >
 
   // 2. Create inquiry using existing pipeline
-  const sourceMessage = [
-    sub.subject ? `Subject: ${sub.subject}` : '',
-    sub.message,
-  ].filter(Boolean).join('\n\n')
+  const sourceMessage = [sub.subject ? `Subject: ${sub.subject}` : '', sub.message]
+    .filter(Boolean)
+    .join('\n\n')
 
   const result = await createInquiry({
     channel: 'website',
@@ -108,7 +113,7 @@ export async function claimContactSubmission(submissionId: string) {
   })
 
   // 3. Mark as claimed with back-reference
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('contact_submissions')
     .update({
       claimed_by_chef_id: user.entityId,
@@ -139,7 +144,7 @@ export async function dismissContactSubmission(submissionId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('contact_submissions')
     .update({
       claimed_by_chef_id: user.entityId,
@@ -165,11 +170,13 @@ export async function dismissContactSubmission(submissionId: string) {
  * Check if an inquiry has a linked contact submission.
  * Used to determine if "Release to Marketplace" should be shown.
  */
-export async function getLinkedContactSubmission(inquiryId: string): Promise<{ id: string } | null> {
+export async function getLinkedContactSubmission(
+  inquiryId: string
+): Promise<{ id: string } | null> {
   await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('contact_submissions')
     .select('id')
     .eq('inquiry_id', inquiryId)
@@ -204,7 +211,7 @@ export async function releaseToMarketplace(inquiryId: string) {
   }
 
   // Find the linked contact submission
-  const { data: submission } = await (supabase as any)
+  const { data: submission } = await supabase
     .from('contact_submissions')
     .select('id')
     .eq('inquiry_id', inquiryId)
@@ -215,7 +222,7 @@ export async function releaseToMarketplace(inquiryId: string) {
   }
 
   // Unclaim the submission so it reappears in the marketplace
-  const { error: unclaimError } = await (supabase as any)
+  const { error: unclaimError } = await supabase
     .from('contact_submissions')
     .update({
       claimed_by_chef_id: null,

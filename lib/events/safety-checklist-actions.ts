@@ -26,7 +26,7 @@ export async function getOrCreateSafetyChecklist(eventId: string) {
   const supabase = createServerClient()
 
   // Try to fetch existing checklist
-  const { data: existing, error: fetchError } = await (supabase as any)
+  const { data: existing, error: fetchError } = await supabase
     .from('event_safety_checklists')
     .select('*')
     .eq('event_id', eventId)
@@ -48,7 +48,7 @@ export async function getOrCreateSafetyChecklist(eventId: string) {
     completed_at: null,
   }))
 
-  const { data: created, error: createError } = await (supabase as any)
+  const { data: created, error: createError } = await supabase
     .from('event_safety_checklists')
     .insert({
       event_id: eventId,
@@ -71,7 +71,7 @@ export async function toggleSafetyItem(checklistId: string, itemKey: string) {
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { data: checklist, error: fetchError } = await (supabase as any)
+  const { data: checklist, error: fetchError } = await supabase
     .from('event_safety_checklists')
     .select('*')
     .eq('id', checklistId)
@@ -101,7 +101,7 @@ export async function toggleSafetyItem(checklistId: string, itemKey: string) {
     return item
   })
 
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('event_safety_checklists')
     .update({ items, updated_at: new Date().toISOString() })
     .eq('id', checklistId)
@@ -119,7 +119,7 @@ export async function completeSafetyChecklist(checklistId: string) {
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  const { data: checklist, error: fetchError } = await (supabase as any)
+  const { data: checklist, error: fetchError } = await supabase
     .from('event_safety_checklists')
     .select('event_id')
     .eq('id', checklistId)
@@ -130,7 +130,7 @@ export async function completeSafetyChecklist(checklistId: string) {
     throw new Error('Safety checklist not found')
   }
 
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('event_safety_checklists')
     .update({
       completed_at: new Date().toISOString(),
@@ -145,7 +145,7 @@ export async function completeSafetyChecklist(checklistId: string) {
 
   // Mark event-level safety checklist complete flag (non-blocking)
   try {
-    await (supabase as any)
+    await supabase
       .from('events')
       .update({ safety_checklist_complete: true })
       .eq('id', checklist.event_id)

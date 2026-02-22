@@ -16,7 +16,7 @@ export async function getChargebackRate(): Promise<ChargebackRate | null> {
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12)
 
   // Count payment disputes in last 12 months
-  const { count: disputeCount, error: disputeError } = await (supabase as any)
+  const { count: disputeCount, error: disputeError } = await supabase
     .from('payment_disputes')
     .select('id', { count: 'exact', head: true })
     .eq('chef_id', tenantId)

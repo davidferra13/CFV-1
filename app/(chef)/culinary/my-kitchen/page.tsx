@@ -6,7 +6,7 @@ import { CreativeProjectForm } from '@/components/professional/creative-project-
 export default async function MyKitchenPage() {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { data: projects } = await (supabase as any)
+  const { data: projects } = await supabase
     .from('chef_creative_projects')
     .select('*')
     .eq('tenant_id', chef.tenantId!)

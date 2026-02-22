@@ -50,7 +50,7 @@ export async function createAddon(
   const parsed = CreateAddonSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('proposal_addons')
     .insert({
       chef_id: user.tenantId!,
@@ -73,7 +73,7 @@ export async function listAddons(): Promise<ProposalAddon[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('proposal_addons')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -96,14 +96,15 @@ export async function updateAddon(
   const payload: Record<string, unknown> = {}
   if (parsed.name !== undefined) payload.name = parsed.name
   if (parsed.description !== undefined) payload.description = parsed.description
-  if (parsed.priceCentsPerPerson !== undefined) payload.price_cents_per_person = parsed.priceCentsPerPerson
+  if (parsed.priceCentsPerPerson !== undefined)
+    payload.price_cents_per_person = parsed.priceCentsPerPerson
   if (parsed.isDefault !== undefined) payload.is_default = parsed.isDefault
 
   if (Object.keys(payload).length === 0) {
     throw new Error('No fields to update')
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('proposal_addons')
     .update(payload)
     .eq('id', id)
@@ -122,7 +123,7 @@ export async function deleteAddon(id: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('proposal_addons')
     .delete()
     .eq('id', id)
@@ -142,7 +143,7 @@ export async function toggleAddonForQuote(
   const supabase = createServerClient()
 
   // Fetch the addon to get its price (with tenant check)
-  const { data: addon, error } = await (supabase as any)
+  const { data: addon, error } = await supabase
     .from('proposal_addons')
     .select('id, name, price_cents_per_person')
     .eq('id', addonId)

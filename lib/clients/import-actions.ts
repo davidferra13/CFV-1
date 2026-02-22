@@ -48,7 +48,7 @@ export async function importClientDirect(input: ImportClientInput) {
     }
   }
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('clients')
     .insert({
       tenant_id: user.tenantId!,
@@ -75,7 +75,10 @@ export async function importClientDirect(input: ImportClientInput) {
   revalidatePath('/onboarding/clients')
   revalidatePath('/clients')
 
-  return { success: true as const, client: data as { id: string; full_name: string; total_events_count: number | null } }
+  return {
+    success: true as const,
+    client: data as { id: string; full_name: string; total_events_count: number | null },
+  }
 }
 
 // Lightweight client list for the loyalty seeding page

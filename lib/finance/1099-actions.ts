@@ -56,7 +56,7 @@ export async function generate1099NECReports(taxYear: number): Promise<Form1099N
   const supabase = createServerClient()
 
   // Get all active staff with W-9 fields
-  const { data: staff, error: staffError } = await (supabase as any)
+  const { data: staff, error: staffError } = await supabase
     .from('staff_members')
     .select(
       'id, name, business_name, tin, tin_type, address_street, address_city, address_state, address_zip, w9_collected'
@@ -68,7 +68,7 @@ export async function generate1099NECReports(taxYear: number): Promise<Form1099N
   if (!staff?.length) return []
 
   // Get all payments for the year
-  const { data: payments, error: payError } = await (supabase as any)
+  const { data: payments, error: payError } = await supabase
     .from('contractor_payments')
     .select('staff_member_id, amount_cents')
     .eq('chef_id', user.tenantId!)

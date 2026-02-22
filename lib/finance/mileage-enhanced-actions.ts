@@ -91,7 +91,7 @@ export async function logRoundTrip(
     leg: 'return',
   }
 
-  const { data: entries, error } = await (supabase as any)
+  const { data: entries, error } = await supabase
     .from('mileage_logs')
     .insert([outboundPayload, returnPayload])
     .select()
@@ -134,7 +134,7 @@ export async function getMileageByPurpose(taxYear: number): Promise<MileageSumma
   const yearStart = `${validatedYear}-01-01`
   const yearEnd = `${validatedYear}-12-31`
 
-  const { data: logs, error } = await (supabase as any)
+  const { data: logs, error } = await supabase
     .from('mileage_logs')
     .select('purpose, distance_miles')
     .eq('chef_id', user.tenantId!)

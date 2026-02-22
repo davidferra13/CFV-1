@@ -104,7 +104,7 @@ export async function recordContentPerformance(input: RecordContentPerformanceIn
   const validated = RecordContentPerformanceSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('content_performance')
     .insert({
       chef_id: user.tenantId!,
@@ -132,14 +132,14 @@ export async function recordContentPerformance(input: RecordContentPerformanceIn
  * Get aggregated content ROI stats by platform.
  * Optionally filter by date range. Returns inquiry conversion rates.
  */
-export async function getContentROI(startDate?: string, endDate?: string): Promise<ContentROISummary> {
+export async function getContentROI(
+  startDate?: string,
+  endDate?: string
+): Promise<ContentROISummary> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
-    .from('content_performance')
-    .select('*')
-    .eq('chef_id', user.tenantId!)
+  let query = supabase.from('content_performance').select('*').eq('chef_id', user.tenantId!)
 
   if (startDate) {
     query = query.gte('recorded_at', startDate)
@@ -209,7 +209,7 @@ export async function getBestPerformingContent(limit = 10): Promise<RankedConten
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('content_performance')
     .select('*')
     .eq('chef_id', user.tenantId!)

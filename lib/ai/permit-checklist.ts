@@ -12,20 +12,20 @@ import { GoogleGenAI } from '@google/genai'
 export interface PermitChecklistItem {
   step: number
   task: string
-  leadTimeDays: number  // how many days before expiry to start this step
+  leadTimeDays: number // how many days before expiry to start this step
   notes: string | null
-  isRequired: boolean   // vs. recommended
+  isRequired: boolean // vs. recommended
 }
 
 export interface PermitChecklistResult {
   permitType: string
   jurisdiction: string
   expiryDate: string | null
-  renewalStartDate: string | null  // suggested date to begin renewal (leadTime from expiry)
+  renewalStartDate: string | null // suggested date to begin renewal (leadTime from expiry)
   totalLeadTimeDays: number
   checklist: PermitChecklistItem[]
-  estimatedCostRange: string       // e.g. "$50–$150 depending on county"
-  keyContacts: string              // who to contact (health dept, etc.)
+  estimatedCostRange: string // e.g. "$50–$150 depending on county"
+  keyContacts: string // who to contact (health dept, etc.)
   disclaimer: string
   generatedAt: string
 }
@@ -43,10 +43,15 @@ export async function generatePermitRenewalChecklist(
   const supabase = createServerClient()
 
   // Try to fetch permit from health permits table
-  let permitData: { permit_type?: string; jurisdiction?: string; expiry_date?: string; notes?: string } | null = null
+  let permitData: {
+    permit_type?: string
+    jurisdiction?: string
+    expiry_date?: string
+    notes?: string
+  } | null = null
 
   if (permitId) {
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from('health_permits')
       .select('permit_type, jurisdiction, expiry_date, notes')
       .eq('id', permitId)
@@ -55,7 +60,7 @@ export async function generatePermitRenewalChecklist(
     permitData = data
   } else {
     // Get soonest-expiring permit
-    const { data } = await (supabase as any)
+    const { data } = await supabase
       .from('health_permits')
       .select('permit_type, jurisdiction, expiry_date, notes')
       .eq('tenant_id', user.tenantId!)
@@ -128,7 +133,8 @@ Return ONLY valid JSON.`
       checklist: parsed.checklist ?? [],
       estimatedCostRange: parsed.estimatedCostRange ?? 'Varies — check with local health authority',
       keyContacts: parsed.keyContacts ?? 'Contact your local county health department',
-      disclaimer: 'This checklist is AI-generated and may not reflect current local requirements. Always verify permit requirements directly with your local health authority before beginning the renewal process.',
+      disclaimer:
+        'This checklist is AI-generated and may not reflect current local requirements. Always verify permit requirements directly with your local health authority before beginning the renewal process.',
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {

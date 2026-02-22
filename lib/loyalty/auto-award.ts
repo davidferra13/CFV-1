@@ -36,7 +36,7 @@ export async function autoAwardWelcomePoints(
   const supabase = createServerClient({ admin: true })
 
   // Idempotency check — never double-award
-  const { data: client } = await (supabase as any)
+  const { data: client } = await supabase
     .from('clients')
     .select('id, full_name, has_received_welcome_points, loyalty_points')
     .eq('id', clientId)
@@ -53,7 +53,7 @@ export async function autoAwardWelcomePoints(
   }
 
   // Get loyalty config for this tenant
-  const { data: config } = await (supabase as any)
+  const { data: config } = await supabase
     .from('loyalty_config')
     .select('welcome_points, is_active')
     .eq('tenant_id', tenantId)
@@ -61,26 +61,21 @@ export async function autoAwardWelcomePoints(
 
   // If program is inactive, no config, or welcome_points = 0 — mark received and skip
   if (!config || !config.is_active || (config.welcome_points ?? 0) <= 0) {
-    await (supabase as any)
-      .from('clients')
-      .update({ has_received_welcome_points: true })
-      .eq('id', clientId)
+    await supabase.from('clients').update({ has_received_welcome_points: true }).eq('id', clientId)
     return { awarded: false, points: 0 }
   }
 
   const welcomePoints = config.welcome_points as number
 
   // Insert bonus transaction (type = 'bonus', no event_id)
-  const { error: txError } = await (supabase as any)
-    .from('loyalty_transactions')
-    .insert({
-      tenant_id: tenantId,
-      client_id: clientId,
-      type: 'bonus',
-      points: welcomePoints,
-      description: 'Welcome bonus — thanks for joining!',
-      created_by: null, // system-generated
-    })
+  const { error: txError } = await supabase.from('loyalty_transactions').insert({
+    tenant_id: tenantId,
+    client_id: clientId,
+    type: 'bonus',
+    points: welcomePoints,
+    description: 'Welcome bonus — thanks for joining!',
+    created_by: null, // system-generated
+  })
 
   if (txError) {
     console.error('[autoAwardWelcomePoints] Transaction insert error:', txError)
@@ -90,7 +85,7 @@ export async function autoAwardWelcomePoints(
   // Update client balance + mark welcome points received
   const newBalance = (client.loyalty_points || 0) + welcomePoints
 
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('clients')
     .update({
       loyalty_points: newBalance,
@@ -166,7 +161,7 @@ export async function createPendingDelivery({
   // Admin client: this may be called from server actions without a chef session
   const supabase = createServerClient({ admin: true })
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('loyalty_reward_redemptions')
     .insert({
       tenant_id: tenantId,
@@ -199,12 +194,14 @@ export async function getPendingRewardDeliveries(): Promise<PendingDeliveryWithC
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('loyalty_reward_redemptions')
-    .select(`
+    .select(
+      `
       *,
       clients:client_id (id, full_name, email)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('delivery_status', 'pending')
     .order('created_at', { ascending: false })
@@ -225,7 +222,7 @@ export async function getClientRedemptionHistory(clientId: string): Promise<Pend
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('loyalty_reward_redemptions')
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -253,7 +250,7 @@ export async function markRewardDelivered(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('loyalty_reward_redemptions')
     .update({
       delivery_status: 'delivered',
@@ -288,7 +285,7 @@ export async function cancelRewardDelivery(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('loyalty_reward_redemptions')
     .update({
       delivery_status: 'cancelled',
@@ -315,7 +312,7 @@ export async function getMyPendingRedemptions(): Promise<PendingDelivery[]> {
   const user = await requireClient()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('loyalty_reward_redemptions')
     .select('*')
     .eq('client_id', user.entityId)

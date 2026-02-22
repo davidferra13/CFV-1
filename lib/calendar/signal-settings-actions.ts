@@ -16,7 +16,7 @@ export async function getAvailabilitySignalSetting(): Promise<boolean> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chefs')
     .select('show_availability_signals')
     .eq('id', user.tenantId!)
@@ -29,7 +29,7 @@ export async function setAvailabilitySignalSetting(enabled: boolean) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chefs')
     .update({ show_availability_signals: enabled })
     .eq('id', user.tenantId!)
@@ -51,7 +51,7 @@ export async function getClientSignalNotificationPref(): Promise<boolean> {
   const user = await requireClient()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('clients')
     .select('availability_signal_notifications')
     .eq('id', user.entityId)
@@ -64,7 +64,7 @@ export async function setClientSignalNotificationPref(enabled: boolean) {
   const user = await requireClient()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('clients')
     .update({ availability_signal_notifications: enabled })
     .eq('id', user.entityId)

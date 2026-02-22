@@ -66,7 +66,7 @@ export async function addComment(input: AddCommentInput) {
   const validated = AddCommentSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('document_comments')
     .insert({
       chef_id: user.tenantId!,
@@ -94,7 +94,7 @@ export async function resolveComment(commentId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('document_comments')
     .update({ resolved: true })
     .eq('id', commentId)
@@ -121,7 +121,7 @@ export async function getComments(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('document_comments')
     .select('*')
     .eq('chef_id', user.tenantId!)

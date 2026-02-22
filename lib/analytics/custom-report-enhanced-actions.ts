@@ -37,8 +37,14 @@ export type RevenueBySourceResult = {
 // --- Schemas ---
 
 const DateRangeSchema = z.object({
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  startDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
+  endDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 })
 
 // --- Helpers ---
@@ -88,24 +94,23 @@ export async function getClientRetentionRate(
   const clientEventCount = new Map<string, number>()
   for (const event of allEvents) {
     if (!event.client_id) continue
-    clientEventCount.set(
-      event.client_id,
-      (clientEventCount.get(event.client_id) || 0) + 1
-    )
+    clientEventCount.set(event.client_id, (clientEventCount.get(event.client_id) || 0) + 1)
   }
 
   const totalClients = clientEventCount.size
-  const repeatClients = Array.from(clientEventCount.values()).filter(count => count > 1).length
+  const repeatClients = Array.from(clientEventCount.values()).filter((count) => count > 1).length
 
-  const retentionRatePercent = totalClients > 0
-    ? Math.round((repeatClients / totalClients) * 100)
-    : 0
+  const retentionRatePercent =
+    totalClients > 0 ? Math.round((repeatClients / totalClients) * 100) : 0
 
   // Average events per repeat client
-  const repeatEventCounts = Array.from(clientEventCount.values()).filter(count => count > 1)
-  const averageEventsPerRepeatClient = repeatEventCounts.length > 0
-    ? Math.round((repeatEventCounts.reduce((sum, c) => sum + c, 0) / repeatEventCounts.length) * 10) / 10
-    : 0
+  const repeatEventCounts = Array.from(clientEventCount.values()).filter((count) => count > 1)
+  const averageEventsPerRepeatClient =
+    repeatEventCounts.length > 0
+      ? Math.round(
+          (repeatEventCounts.reduce((sum, c) => sum + c, 0) / repeatEventCounts.length) * 10
+        ) / 10
+      : 0
 
   return {
     startDate: rangeStart,
@@ -151,11 +156,11 @@ export async function getRevenueBySource(
   const allEvents = events || []
 
   // Also fetch financial summaries for actual paid amounts
-  const eventIds = allEvents.map(e => e.id)
+  const eventIds = allEvents.map((e) => e.id)
 
   let paidMap = new Map<string, number>()
   if (eventIds.length > 0) {
-    const { data: summaries } = await (supabase as any)
+    const { data: summaries } = await supabase
       .from('event_financial_summary')
       .select('event_id, total_paid_cents')
       .eq('tenant_id', user.tenantId!)
@@ -173,7 +178,7 @@ export async function getRevenueBySource(
 
   for (const event of allEvents) {
     const source = (event.client as any)?.referral_source || 'unknown'
-    const revenueCents = paidMap.get(event.id) ?? (event.quoted_price_cents ?? 0)
+    const revenueCents = paidMap.get(event.id) ?? event.quoted_price_cents ?? 0
 
     const existing = sourceMap.get(source) || { revenueCents: 0, eventCount: 0 }
     existing.revenueCents += revenueCents
@@ -186,9 +191,8 @@ export async function getRevenueBySource(
       source,
       revenueCents: data.revenueCents,
       eventCount: data.eventCount,
-      averageRevenueCents: data.eventCount > 0
-        ? Math.round(data.revenueCents / data.eventCount)
-        : 0,
+      averageRevenueCents:
+        data.eventCount > 0 ? Math.round(data.revenueCents / data.eventCount) : 0,
     }))
     .sort((a, b) => b.revenueCents - a.revenueCents)
 

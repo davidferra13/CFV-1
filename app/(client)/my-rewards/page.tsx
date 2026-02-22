@@ -31,13 +31,17 @@ const TIER_BADGE: Record<string, string> = {
   platinum: 'bg-indigo-100 text-indigo-800',
 }
 
-type TierKey = typeof TIER_ORDER[number]
+type TierKey = (typeof TIER_ORDER)[number]
 
-function getTierProgress(tier: TierKey, points: number, config: {
-  tier_silver_min: number
-  tier_gold_min: number
-  tier_platinum_min: number
-} | null) {
+function getTierProgress(
+  tier: TierKey,
+  points: number,
+  config: {
+    tier_silver_min: number
+    tier_gold_min: number
+    tier_platinum_min: number
+  } | null
+) {
   const thresholds = {
     bronze: 0,
     silver: config?.tier_silver_min ?? 100,
@@ -90,9 +94,11 @@ export default async function MyRewardsPage() {
       .eq('tenant_id', client?.tenant_id || '')
       .eq('is_active', true)
       .order('points_required', { ascending: true }),
-    (supabase as any)
+    supabase
       .from('loyalty_config')
-      .select('tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses')
+      .select(
+        'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses'
+      )
       .eq('tenant_id', client?.tenant_id || '')
       .maybeSingle(),
     getMyPendingRedemptions(),
@@ -106,7 +112,9 @@ export default async function MyRewardsPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-stone-900">Rewards</h1>
-        <p className="text-stone-600 mt-1">Track your points, tier progress, and redeem available rewards.</p>
+        <p className="text-stone-600 mt-1">
+          Track your points, tier progress, and redeem available rewards.
+        </p>
       </div>
 
       <Card>
@@ -114,12 +122,18 @@ export default async function MyRewardsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${TIER_BADGE[status.tier]}`}>
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${TIER_BADGE[status.tier]}`}
+                >
                   {TIER_LABELS[status.tier]} Tier
                 </span>
-                <p className="text-2xl font-bold text-stone-900">{status.pointsBalance.toLocaleString()} points</p>
+                <p className="text-2xl font-bold text-stone-900">
+                  {status.pointsBalance.toLocaleString()} points
+                </p>
               </div>
-              <p className="text-sm text-stone-600">{status.totalEventsCompleted} completed events</p>
+              <p className="text-sm text-stone-600">
+                {status.totalEventsCompleted} completed events
+              </p>
             </div>
             <Badge variant="info">{status.totalGuestsServed} guests served</Badge>
           </div>
@@ -128,7 +142,10 @@ export default async function MyRewardsPage() {
             <div className="h-2.5 w-full bg-stone-100 rounded-full overflow-hidden">
               {/* Dynamic progress — inline style is the only option for runtime percentages */}
               {/* eslint-disable-next-line react/forbid-dom-props */}
-              <div className="h-full bg-brand-600 rounded-full transition-all duration-500" style={{ width: `${progress.percent}%` }} />
+              <div
+                className="h-full bg-brand-600 rounded-full transition-all duration-500"
+                style={{ width: `${progress.percent}%` }}
+              />
             </div>
             <p className="text-sm text-stone-600 mt-2">{progress.label}</p>
           </div>
@@ -147,7 +164,9 @@ export default async function MyRewardsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Alert variant="info">No rewards are currently redeemable. Keep earning points to unlock your first reward.</Alert>
+        <Alert variant="info">
+          No rewards are currently redeemable. Keep earning points to unlock your first reward.
+        </Alert>
       )}
 
       <Card>
@@ -172,15 +191,31 @@ export default async function MyRewardsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {pendingRedemptions.map((r) => (
-              <div key={r.id} className="flex items-start justify-between gap-3 py-3 border-b border-amber-100 last:border-b-0">
+              <div
+                key={r.id}
+                className="flex items-start justify-between gap-3 py-3 border-b border-amber-100 last:border-b-0"
+              >
                 <div>
                   <p className="text-sm font-semibold text-stone-900">{r.reward_name}</p>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Redeemed {format(new Date(r.created_at), 'MMM d, yyyy')} · {r.points_spent} pts spent
+                    Redeemed {format(new Date(r.created_at), 'MMM d, yyyy')} · {r.points_spent} pts
+                    spent
                   </p>
                 </div>
-                <Badge variant={r.delivery_status === 'delivered' ? 'success' : r.delivery_status === 'cancelled' ? 'error' : 'warning'}>
-                  {r.delivery_status === 'delivered' ? 'Delivered' : r.delivery_status === 'cancelled' ? 'Cancelled' : 'Pending'}
+                <Badge
+                  variant={
+                    r.delivery_status === 'delivered'
+                      ? 'success'
+                      : r.delivery_status === 'cancelled'
+                        ? 'error'
+                        : 'warning'
+                  }
+                >
+                  {r.delivery_status === 'delivered'
+                    ? 'Delivered'
+                    : r.delivery_status === 'cancelled'
+                      ? 'Cancelled'
+                      : 'Pending'}
                 </Badge>
               </div>
             ))}
@@ -205,7 +240,10 @@ export default async function MyRewardsPage() {
             points_per_guest: configData.points_per_guest ?? 10,
             bonus_large_party_threshold: configData.bonus_large_party_threshold ?? null,
             bonus_large_party_points: configData.bonus_large_party_points ?? null,
-            milestone_bonuses: (configData.milestone_bonuses ?? []) as { events: number; bonus: number }[],
+            milestone_bonuses: (configData.milestone_bonuses ?? []) as {
+              events: number
+              bonus: number
+            }[],
             welcome_points: configData.welcome_points ?? 25,
           }}
         />
@@ -221,13 +259,21 @@ export default async function MyRewardsPage() {
           ) : (
             <div className="space-y-3">
               {status.recentTransactions.map((tx) => (
-                <div key={tx.id} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-b-0">
+                <div
+                  key={tx.id}
+                  className="flex items-center justify-between py-2 border-b border-stone-100 last:border-b-0"
+                >
                   <div>
                     <p className="text-sm font-medium text-stone-900">{tx.description}</p>
-                    <p className="text-xs text-stone-500">{format(new Date(tx.created_at), 'PPP')}</p>
+                    <p className="text-xs text-stone-500">
+                      {format(new Date(tx.created_at), 'PPP')}
+                    </p>
                   </div>
-                  <span className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-700'}`}>
-                    {tx.points >= 0 ? '+' : ''}{tx.points}
+                  <span
+                    className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-700'}`}
+                  >
+                    {tx.points >= 0 ? '+' : ''}
+                    {tx.points}
                   </span>
                 </div>
               ))}

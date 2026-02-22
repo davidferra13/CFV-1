@@ -92,11 +92,7 @@ export async function listEmployees(includeTerminated = false): Promise<Employee
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
-    .from('employees')
-    .select('*')
-    .eq('chef_id', user.entityId)
-    .order('name')
+  let query = supabase.from('employees').select('*').eq('chef_id', user.entityId).order('name')
 
   if (!includeTerminated) {
     query = query.neq('status', 'terminated')
@@ -127,7 +123,7 @@ export async function createEmployee(input: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any).from('employees').insert({
+  await supabase.from('employees').insert({
     chef_id: user.entityId,
     staff_member_id: input.staffMemberId ?? null,
     name: input.name,
@@ -187,14 +183,14 @@ export async function updateEmployee(
   if (input.hourlyRateCents !== undefined) patch.hourly_rate_cents = input.hourlyRateCents
   if (input.annualSalaryCents !== undefined) patch.annual_salary_cents = input.annualSalaryCents
 
-  await (supabase as any).from('employees').update(patch).eq('id', id).eq('chef_id', user.entityId)
+  await supabase.from('employees').update(patch).eq('id', id).eq('chef_id', user.entityId)
 }
 
 export async function terminateEmployee(id: string, terminationDate: string): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any)
+  await supabase
     .from('employees')
     .update({
       status: 'terminated',
@@ -238,7 +234,7 @@ export async function recordPayroll(input: {
 
   const netPayCents = grossPayCents - totalEmployeeDeductions
 
-  await (supabase as any).from('payroll_records').insert({
+  await supabase.from('payroll_records').insert({
     chef_id: user.entityId,
     employee_id: input.employeeId,
     pay_period_start: input.payPeriodStart,
@@ -268,7 +264,7 @@ export async function getPayrollRecords(filters?: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('payroll_records')
     .select('*, employees(name)')
     .eq('chef_id', user.entityId)
@@ -304,7 +300,7 @@ export async function compute941Summary(
   }
   const [start, end] = quarterRanges[quarter]
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('payroll_records')
     .select(
       'gross_pay_cents, federal_income_tax_cents, employee_ss_tax_cents, employee_medicare_tax_cents, employer_ss_tax_cents, employer_medicare_tax_cents'
@@ -353,7 +349,7 @@ export async function save941Summary(taxYear: number, quarter: number): Promise<
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any).from('payroll_941_summaries').upsert(
+  await supabase.from('payroll_941_summaries').upsert(
     {
       chef_id: user.entityId,
       tax_year: taxYear,
@@ -380,7 +376,7 @@ export async function mark941Filed(input: {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  await (supabase as any)
+  await supabase
     .from('payroll_941_summaries')
     .update({
       filed: true,
@@ -398,7 +394,7 @@ export async function get941Summaries(taxYear: number): Promise<Payroll941Summar
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('payroll_941_summaries')
     .select('*')
     .eq('chef_id', user.entityId)
@@ -414,12 +410,12 @@ export async function generateW2Summaries(taxYear: number): Promise<void> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: employees } = await (supabase as any)
+  const { data: employees } = await supabase
     .from('employees')
     .select('id')
     .eq('chef_id', user.entityId)
 
-  const { data: records } = await (supabase as any)
+  const { data: records } = await supabase
     .from('payroll_records')
     .select(
       'employee_id, gross_pay_cents, federal_income_tax_cents, employee_ss_tax_cents, employee_medicare_tax_cents, state_income_tax_cents'
@@ -440,7 +436,7 @@ export async function generateW2Summaries(taxYear: number): Promise<void> {
     const box6 = empRecords.reduce((s: number, r: any) => s + r.employee_medicare_tax_cents, 0)
     const box17 = empRecords.reduce((s: number, r: any) => s + r.state_income_tax_cents, 0)
 
-    await (supabase as any).from('payroll_w2_summaries').upsert(
+    await supabase.from('payroll_w2_summaries').upsert(
       {
         chef_id: user.entityId,
         employee_id: emp.id,
@@ -463,7 +459,7 @@ export async function getW2Summaries(taxYear: number): Promise<PayrollW2Summary[
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('payroll_w2_summaries')
     .select('*, employees(name)')
     .eq('chef_id', user.entityId)

@@ -19,7 +19,9 @@ export type PackingStatus = {
  * Mark the car as packed for this event.
  * Sets car_packed = true and packing_list_ready = true.
  */
-export async function markCarPacked(eventId: string): Promise<{ success: boolean; error?: string }> {
+export async function markCarPacked(
+  eventId: string
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -46,7 +48,9 @@ export async function markCarPacked(eventId: string): Promise<{ success: boolean
  * Reset packing status — for corrections before departure.
  * Clears car_packed and car_packed_at so the chef can re-check.
  */
-export async function resetPackingStatus(eventId: string): Promise<{ success: boolean; error?: string }> {
+export async function resetPackingStatus(
+  eventId: string
+): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -107,14 +111,14 @@ export async function togglePackingConfirmation(
   const supabase = createServerClient()
 
   if (confirmed) {
-    await (supabase as any)
+    await supabase
       .from('packing_confirmations')
       .upsert(
         { event_id: eventId, tenant_id: user.tenantId!, item_key: itemKey },
         { onConflict: 'event_id,item_key' }
       )
   } else {
-    await (supabase as any)
+    await supabase
       .from('packing_confirmations')
       .delete()
       .eq('event_id', eventId)
@@ -131,7 +135,7 @@ export async function getPackingConfirmationCount(eventId: string): Promise<numb
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { count } = await (supabase as any)
+  const { count } = await supabase
     .from('packing_confirmations')
     .select('id', { count: 'exact', head: true })
     .eq('event_id', eventId)

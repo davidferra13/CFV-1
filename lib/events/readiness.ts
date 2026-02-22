@@ -48,19 +48,19 @@ export interface GateResult {
   status: GateStatus
   label: string
   description: string
-  isHardBlock: boolean        // true = cannot be overridden (e.g., anaphylaxis present)
-  details?: string            // Context about why it's pending
-  overrideReason?: string     // If status = 'overridden', what reason the chef gave
+  isHardBlock: boolean // true = cannot be overridden (e.g., anaphylaxis present)
+  details?: string // Context about why it's pending
+  overrideReason?: string // If status = 'overridden', what reason the chef gave
 }
 
 export interface ReadinessResult {
   eventId: string
   targetStatus: EventStatus
-  ready: boolean              // true only if all gates passed or overridden
-  hardBlocked: boolean        // true if any gate is a hard block
+  ready: boolean // true only if all gates passed or overridden
+  hardBlocked: boolean // true if any gate is a hard block
   gates: GateResult[]
-  blockers: GateResult[]      // gates still pending (and not overridden)
-  warnings: GateResult[]      // gates overridden with reason (logged, not blocking)
+  blockers: GateResult[] // gates still pending (and not overridden)
+  warnings: GateResult[] // gates overridden with reason (logged, not blocking)
 }
 
 // Gate definitions by transition
@@ -166,7 +166,7 @@ export async function evaluateReadinessForTransition(
   }
 
   // Fetch existing gate records for this event
-  const { data: existingGates } = await (supabase as any)
+  const { data: existingGates } = await supabase
     .from('event_readiness_gates')
     .select('*')
     .eq('event_id', eventId)
@@ -294,7 +294,13 @@ async function checkDepositGate(
 
   // No deposit required — gate passes automatically
   if (!depositRequired || depositRequired <= 0) {
-    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+    return {
+      gate,
+      status: 'passed',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+    }
   }
 
   // Check how much has been paid via ledger
@@ -307,10 +313,17 @@ async function checkDepositGate(
   const totalPaid = (summary?.total_paid_cents ?? 0) as number
 
   if (totalPaid >= depositRequired) {
-    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+    return {
+      gate,
+      status: 'passed',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+    }
   }
 
-  const formatCents = (c: number) => `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
+  const formatCents = (c: number) =>
+    `$${(c / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`
   const shortfall = depositRequired - totalPaid
 
   return {
@@ -318,7 +331,7 @@ async function checkDepositGate(
     status: 'pending',
     label: catalog.label,
     description: catalog.description,
-    isHardBlock: false,   // Soft block: chef can override if deposit was collected off-platform
+    isHardBlock: false, // Soft block: chef can override if deposit was collected off-platform
     details: `Deposit required: ${formatCents(depositRequired)} — collected: ${formatCents(totalPaid)} — shortfall: ${formatCents(shortfall)}. Record the payment to proceed, or override if collected off-platform.`,
   }
 }
@@ -335,7 +348,13 @@ async function checkAllergyGate(
 ): Promise<GateResult> {
   if (!clientId) {
     // No client assigned — can't verify, treat as passed (no one to check)
-    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+    return {
+      gate,
+      status: 'passed',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+    }
   }
 
   // Check for unconfirmed allergy records
@@ -347,7 +366,13 @@ async function checkAllergyGate(
 
   if (!unconfirmed || unconfirmed.length === 0) {
     // Either no allergies, or all confirmed — gate passes
-    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+    return {
+      gate,
+      status: 'passed',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+    }
   }
 
   const hasAnaphylaxis = unconfirmed.some((r: any) => r.severity === 'anaphylaxis')
@@ -386,7 +411,13 @@ async function checkDocumentsGate(
   if (!event?.packing_list_generated_at) missingDocs.push('Packing List')
 
   if (missingDocs.length === 0) {
-    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+    return {
+      gate,
+      status: 'passed',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+    }
   }
 
   return {
@@ -417,7 +448,13 @@ async function checkMenuApprovalGate(
     .single()
 
   if (approval) {
-    return { gate, status: 'passed', label: catalog.label, description: catalog.description, isHardBlock: false }
+    return {
+      gate,
+      status: 'passed',
+      label: catalog.label,
+      description: catalog.description,
+      isHardBlock: false,
+    }
   }
 
   // Check if there's a pending approval request
@@ -449,12 +486,12 @@ export async function getClientAllergyRecords(clientId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('client_allergy_records')
     .select('*')
     .eq('client_id', clientId)
     .eq('tenant_id', user.tenantId!)
-    .order('severity', { ascending: false })  // anaphylaxis first
+    .order('severity', { ascending: false }) // anaphylaxis first
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -482,7 +519,7 @@ export async function confirmAllergyRecord(
   if (options?.severity) updateData.severity = options.severity
   if (options?.notes !== undefined) updateData.notes = options.notes
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('client_allergy_records')
     .update(updateData)
     .eq('id', allergyRecordId)
@@ -504,7 +541,7 @@ export async function dismissAllergyRecord(allergyRecordId: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('client_allergy_records')
     .delete()
     .eq('id', allergyRecordId)
@@ -529,21 +566,19 @@ export async function addAllergyRecord(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
-    .from('client_allergy_records')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        client_id: clientId,
-        allergen: data.allergen.trim(),
-        severity: data.severity,
-        source: 'chef_entered',
-        confirmed_by_chef: true,
-        confirmed_at: new Date().toISOString(),
-        notes: data.notes || null,
-      },
-      { onConflict: 'client_id,allergen' }
-    )
+  const { error } = await supabase.from('client_allergy_records').upsert(
+    {
+      tenant_id: user.tenantId!,
+      client_id: clientId,
+      allergen: data.allergen.trim(),
+      severity: data.severity,
+      source: 'chef_entered',
+      confirmed_by_chef: true,
+      confirmed_at: new Date().toISOString(),
+      notes: data.notes || null,
+    },
+    { onConflict: 'client_id,allergen' }
+  )
 
   if (error) {
     console.error('[addAllergyRecord] Error:', error)
@@ -577,19 +612,17 @@ export async function markGatePassed(
 
   if (!event) throw new Error('Event not found')
 
-  const { error } = await (supabase as any)
-    .from('event_readiness_gates')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        event_id: eventId,
-        gate,
-        status: 'passed',
-        resolved_at: new Date().toISOString(),
-        metadata: metadata || null,
-      },
-      { onConflict: 'event_id,gate' }
-    )
+  const { error } = await supabase.from('event_readiness_gates').upsert(
+    {
+      tenant_id: user.tenantId!,
+      event_id: eventId,
+      gate,
+      status: 'passed',
+      resolved_at: new Date().toISOString(),
+      metadata: metadata || null,
+    },
+    { onConflict: 'event_id,gate' }
+  )
 
   if (error) {
     console.error('[markGatePassed] Error:', error)
@@ -604,11 +637,7 @@ export async function markGatePassed(
  * Override a readiness gate with a mandatory reason (chef bypass).
  * Hard-blocked gates (anaphylaxis) cannot be overridden.
  */
-export async function overrideGate(
-  eventId: string,
-  gate: ReadinessGate,
-  reason: string
-) {
+export async function overrideGate(eventId: string, gate: ReadinessGate, reason: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -628,7 +657,7 @@ export async function overrideGate(
 
   // Check if this gate is hard-blocked (anaphylaxis allergy present)
   if (gate === 'allergies_verified' && event.client_id) {
-    const { data: criticalAllergies } = await (supabase as any)
+    const { data: criticalAllergies } = await supabase
       .from('client_allergy_records')
       .select('allergen')
       .eq('client_id', event.client_id)
@@ -643,20 +672,18 @@ export async function overrideGate(
     }
   }
 
-  const { error } = await (supabase as any)
-    .from('event_readiness_gates')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        event_id: eventId,
-        gate,
-        status: 'overridden',
-        resolved_at: new Date().toISOString(),
-        overridden_by: user.id,
-        override_reason: reason.trim(),
-      },
-      { onConflict: 'event_id,gate' }
-    )
+  const { error } = await supabase.from('event_readiness_gates').upsert(
+    {
+      tenant_id: user.tenantId!,
+      event_id: eventId,
+      gate,
+      status: 'overridden',
+      resolved_at: new Date().toISOString(),
+      overridden_by: user.id,
+      override_reason: reason.trim(),
+    },
+    { onConflict: 'event_id,gate' }
+  )
 
   if (error) {
     console.error('[overrideGate] Error:', error)
@@ -689,8 +716,8 @@ export async function getEventReadiness(eventId: string) {
   // Figure out what the next transition is
   const nextTransitionMap: Record<string, { from: EventStatus; to: EventStatus } | null> = {
     draft: { from: 'draft', to: 'proposed' },
-    proposed: null,     // client action, no gates needed
-    accepted: null,     // Stripe webhook, no gates needed
+    proposed: null, // client action, no gates needed
+    accepted: null, // Stripe webhook, no gates needed
     paid: { from: 'paid', to: 'confirmed' },
     confirmed: { from: 'confirmed', to: 'in_progress' },
     in_progress: { from: 'in_progress', to: 'completed' },
@@ -726,7 +753,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   if (!event?.client_id) return { hasConflicts: false, conflicts: [] }
 
   // Get confirmed allergy records
-  const { data: allergies } = await (supabase as any)
+  const { data: allergies } = await supabase
     .from('client_allergy_records')
     .select('allergen, severity')
     .eq('client_id', event.client_id)
@@ -736,7 +763,7 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   if (!allergies || allergies.length === 0) return { hasConflicts: false, conflicts: [] }
 
   // Get event menu items (components attached to this event's menus)
-  const { data: components } = await (supabase as any)
+  const { data: components } = await supabase
     .from('menu_components')
     .select('name, ingredients')
     .eq('event_id', eventId)
@@ -755,10 +782,9 @@ export async function checkMenuAllergyConflicts(eventId: string): Promise<{
   for (const allergy of allergies) {
     const allergenLower = allergy.allergen.toLowerCase()
     for (const component of components) {
-      const componentText = [
-        component.name || '',
-        ...(component.ingredients || []),
-      ].join(' ').toLowerCase()
+      const componentText = [component.name || '', ...(component.ingredients || [])]
+        .join(' ')
+        .toLowerCase()
 
       if (componentText.includes(allergenLower)) {
         conflicts.push({

@@ -180,7 +180,7 @@ export async function listContractTemplates(): Promise<ContractTemplate[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('contract_templates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -199,7 +199,7 @@ export async function deleteContractTemplate(id: string) {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('contract_templates')
     .delete()
     .eq('id', id)
@@ -229,12 +229,14 @@ export async function generateEventContract(eventId: string, templateId?: string
   // Load event + client
   const { data: event, error: eventError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, event_date, quoted_price_cents, deposit_amount_cents,
       occasion, guest_count, location_address, location_city, location_state,
       cancellation_reason,
       clients (id, full_name, email)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -278,9 +280,7 @@ export async function generateEventContract(eventId: string, templateId?: string
   // Render merge fields
   const renderedBody = renderMergeFields(bodyMarkdown, {
     client_name: client.full_name ?? 'Client',
-    event_date: event.event_date
-      ? format(new Date(event.event_date), 'MMMM d, yyyy')
-      : 'TBD',
+    event_date: event.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
     quoted_price: formatCents(event.quoted_price_cents),
     deposit_amount: formatCents(event.deposit_amount_cents),
     cancellation_policy: event.cancellation_reason ?? 'Per standard cancellation policy.',
@@ -294,7 +294,11 @@ export async function generateEventContract(eventId: string, templateId?: string
   // Void any existing unsigned draft/sent contract for this event
   await supabase
     .from('event_contracts')
-    .update({ status: 'voided', voided_at: new Date().toISOString(), void_reason: 'Superseded by new contract' })
+    .update({
+      status: 'voided',
+      voided_at: new Date().toISOString(),
+      void_reason: 'Superseded by new contract',
+    })
     .eq('event_id', eventId)
     .eq('chef_id', user.tenantId!)
     .in('status', ['draft', 'sent', 'viewed'])
@@ -332,11 +336,13 @@ export async function sendContractToClient(contractId: string) {
 
   const { data: contract, error } = await supabase
     .from('event_contracts')
-    .select(`
+    .select(
+      `
       id, event_id, status,
       clients (full_name, email),
       events (occasion, event_date)
-    `)
+    `
+    )
     .eq('id', contractId)
     .eq('chef_id', user.tenantId!)
     .single()
@@ -367,9 +373,7 @@ export async function sendContractToClient(contractId: string) {
       react: React.createElement(ContractSentEmail, {
         clientName: client.full_name ?? 'there',
         occasion: event?.occasion ?? 'your upcoming event',
-        eventDate: event?.event_date
-          ? format(new Date(event.event_date), 'MMMM d, yyyy')
-          : 'TBD',
+        eventDate: event?.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
         signingUrl,
       }),
     })

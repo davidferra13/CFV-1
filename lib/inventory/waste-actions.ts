@@ -87,7 +87,7 @@ export async function logWaste(input: LogWasteInput): Promise<WasteEntry> {
   const parsed = LogWasteSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('waste_logs')
     .insert({
       chef_id: user.tenantId!,
@@ -134,7 +134,7 @@ export async function getWasteDashboard(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('waste_logs')
     .select('reason, estimated_cost_cents, quantity')
     .eq('chef_id', user.tenantId!)
@@ -191,7 +191,7 @@ export async function getWasteTrend(months: number = 6): Promise<WasteTrendPoint
   const start = new Date(now.getFullYear(), now.getMonth() - months + 1, 1)
   const startDate = start.toISOString()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('waste_logs')
     .select('created_at, estimated_cost_cents')
     .eq('chef_id', user.tenantId!)
@@ -237,7 +237,7 @@ export async function getWasteByEvent(eventId: string): Promise<WasteEntry[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('waste_logs')
     .select('*')
     .eq('chef_id', user.tenantId!)

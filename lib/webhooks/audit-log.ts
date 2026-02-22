@@ -37,7 +37,7 @@ export async function logWebhookEvent({
 }): Promise<void> {
   try {
     const supabase = createServerClient({ admin: true })
-    const { error } = await (supabase as any).from('webhook_events').insert({
+    const { error } = await supabase.from('webhook_events').insert({
       provider,
       event_type: eventType,
       provider_event_id: providerEventId ?? null,

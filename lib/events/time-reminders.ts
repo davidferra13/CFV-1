@@ -32,10 +32,16 @@ function asRecord(value: Json | null): Record<string, unknown> {
 }
 
 function isEventTimeActivityType(value: unknown): value is EventTimeActivityType {
-  return typeof value === 'string' && EVENT_TIME_ACTIVITY_TYPES.includes(value as EventTimeActivityType)
+  return (
+    typeof value === 'string' && EVENT_TIME_ACTIVITY_TYPES.includes(value as EventTimeActivityType)
+  )
 }
 
-function makeRunningKey(recipientId: string, eventId: string, activity: EventTimeActivityType): string {
+function makeRunningKey(
+  recipientId: string,
+  eventId: string,
+  activity: EventTimeActivityType
+): string {
   return `${recipientId}:${eventId}:${activity}`
 }
 
@@ -60,7 +66,8 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
 
   const { data: events, error: eventsError } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, tenant_id, client_id, occasion, status, event_date, updated_at,
       time_shopping_minutes, time_prep_minutes, time_travel_minutes, time_service_minutes, time_reset_minutes,
       shopping_started_at, shopping_completed_at,
@@ -68,7 +75,8 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
       reset_started_at, reset_completed_at,
       travel_started_at, travel_completed_at,
       service_started_at, service_completed_at
-    `)
+    `
+    )
     .in('status', ['accepted', 'paid', 'confirmed', 'in_progress', 'completed'])
     .gte('event_date', lookbackDate)
 
@@ -109,11 +117,13 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
   // Missing row = enabled (opt-out model; matches all other built-in automations).
   const disabledTenants = new Set<string>()
   if (tenantIds.length > 0) {
-    const { data: disabledSettings } = await (supabase as any)
+    const { data: disabledSettings } = (await supabase
       .from('chef_automation_settings')
       .select('tenant_id')
       .in('tenant_id', tenantIds)
-      .eq('time_tracking_reminders_enabled', false) as { data: Array<{ tenant_id: string }> | null }
+      .eq('time_tracking_reminders_enabled', false)) as {
+      data: Array<{ tenant_id: string }> | null
+    }
     for (const row of disabledSettings || []) {
       disabledTenants.add(row.tenant_id)
     }
@@ -142,7 +152,11 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
         const sentAtMs = new Date(notification.created_at).getTime()
 
         if (kind === 'time_tracking_running' && isEventTimeActivityType(metadata.activity)) {
-          const key = makeRunningKey(notification.recipient_id, notification.event_id, metadata.activity)
+          const key = makeRunningKey(
+            notification.recipient_id,
+            notification.event_id,
+            metadata.activity
+          )
           const previous = runningHistory.get(key) || { count: 0, lastSentAtMs: 0 }
           runningHistory.set(key, {
             count: previous.count + 1,
@@ -260,7 +274,9 @@ export async function runTimeTrackingReminderSweep(): Promise<ReminderRunResult>
     })
 
     if (completionError) {
-      result.errors.push(`time_tracking_completion_reminder_${event.id}: ${completionError.message}`)
+      result.errors.push(
+        `time_tracking_completion_reminder_${event.id}: ${completionError.message}`
+      )
       continue
     }
 

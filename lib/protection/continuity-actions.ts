@@ -10,7 +10,7 @@ export async function saveContinuityPlan(plan: Record<string, unknown>) {
 
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('chefs')
     .update({ business_continuity_plan: plan })
     .eq('id', tenantId)
@@ -26,7 +26,7 @@ export async function getContinuityPlan() {
 
   const supabase = createServerClient()
 
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chefs')
     .select('business_continuity_plan')
     .eq('id', tenantId)

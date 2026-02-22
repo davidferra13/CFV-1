@@ -12,7 +12,7 @@ import { revalidatePath } from 'next/cache'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const BUCKET = 'dish-photos'
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024  // 10 MB
+const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024 // 10 MB
 
 const ALLOWED_MIME_TYPES = [
   'image/jpeg',
@@ -25,7 +25,7 @@ const ALLOWED_MIME_TYPES = [
 // Extension derived from MIME type only — never from filename (security)
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
-  'image/png':  'png',
+  'image/png': 'png',
   'image/heic': 'heic',
   'image/heif': 'heif',
   'image/webp': 'webp',
@@ -42,12 +42,17 @@ function extractStoragePath(publicUrl: string | null): string | null {
   const marker = `/storage/v1/object/public/${BUCKET}/`
   const idx = publicUrl.indexOf(marker)
   if (idx === -1) return null
-  return decodeURIComponent(publicUrl.slice(idx + marker.length).split('?')[0].split('#')[0])
+  return decodeURIComponent(
+    publicUrl
+      .slice(idx + marker.length)
+      .split('?')[0]
+      .split('#')[0]
+  )
 }
 
 function validateFile(file: File | null): string | null {
   if (!file || file.size === 0) return 'No file provided'
-  if (!ALLOWED_MIME_TYPES.includes(file.type as typeof ALLOWED_MIME_TYPES[number])) {
+  if (!ALLOWED_MIME_TYPES.includes(file.type as (typeof ALLOWED_MIME_TYPES)[number])) {
     return 'Invalid file type. Accepted: JPEG, PNG, HEIC, WebP'
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
@@ -67,7 +72,7 @@ function validateFile(file: File | null): string | null {
  */
 export async function uploadRecipePhoto(
   recipeId: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<{ success: true; photoUrl: string } | { success: false; error: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -104,7 +109,9 @@ export async function uploadRecipePhoto(
     return { success: false, error: `Upload failed: ${uploadError.message}` }
   }
 
-  const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
 
   const { error: updateError } = await supabase
     .from('recipes')
@@ -125,7 +132,7 @@ export async function uploadRecipePhoto(
 // ─── removeRecipePhoto ────────────────────────────────────────────────────────
 
 export async function removeRecipePhoto(
-  recipeId: string,
+  recipeId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
@@ -166,12 +173,12 @@ export async function removeRecipePhoto(
  */
 export async function uploadDishPhoto(
   dishId: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<{ success: true; photoUrl: string } | { success: false; error: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: dish } = await (supabase as any)
+  const { data: dish } = await supabase
     .from('dishes')
     .select('id, photo_url')
     .eq('id', dishId)
@@ -201,9 +208,11 @@ export async function uploadDishPhoto(
     return { success: false, error: `Upload failed: ${uploadError.message}` }
   }
 
-  const { data: { publicUrl } } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from(BUCKET).getPublicUrl(storagePath)
 
-  const { error: updateError } = await (supabase as any)
+  const { error: updateError } = await supabase
     .from('dishes')
     .update({ photo_url: publicUrl })
     .eq('id', dishId)
@@ -221,12 +230,12 @@ export async function uploadDishPhoto(
 // ─── removeDishPhoto ──────────────────────────────────────────────────────────
 
 export async function removeDishPhoto(
-  dishId: string,
+  dishId: string
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data: dish } = await (supabase as any)
+  const { data: dish } = await supabase
     .from('dishes')
     .select('id, photo_url')
     .eq('id', dishId)
@@ -240,7 +249,7 @@ export async function removeDishPhoto(
     await supabase.storage.from(BUCKET).remove([oldPath])
   }
 
-  await (supabase as any)
+  await supabase
     .from('dishes')
     .update({ photo_url: null })
     .eq('id', dishId)

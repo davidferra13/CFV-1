@@ -29,7 +29,7 @@ async function handleEmailHistoryScan(request: NextRequest): Promise<NextRespons
 
   // Find chefs with active historical scans
   // Status must NOT be completed or paused — idle and in_progress are eligible
-  const { data: connections, error } = await (supabase as any)
+  const { data: connections, error } = await supabase
     .from('google_connections')
     .select('chef_id, tenant_id, historical_scan_status')
     .eq('historical_scan_enabled', true)
@@ -47,7 +47,11 @@ async function handleEmailHistoryScan(request: NextRequest): Promise<NextRespons
 
   const results = []
 
-  for (const conn of connections as Array<{ chef_id: string; tenant_id: string; historical_scan_status: string }>) {
+  for (const conn of connections as Array<{
+    chef_id: string
+    tenant_id: string
+    historical_scan_status: string
+  }>) {
     try {
       const batchResult = await runHistoricalScanBatch(conn.chef_id, conn.tenant_id)
       results.push(batchResult)

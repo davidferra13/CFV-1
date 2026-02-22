@@ -4,8 +4,16 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
+import { NoRecipesIllustration } from '@/components/ui/branded-illustrations'
 
 export const metadata: Metadata = { title: 'Recipe Bible - ChefFlow' }
 
@@ -49,10 +57,17 @@ export default async function ChefRecipesPage() {
 
       {recipes.length === 0 ? (
         <Card className="p-12 text-center">
+          <div className="flex justify-center mb-4">
+            <NoRecipesIllustration className="h-24 w-24" />
+          </div>
           <p className="text-stone-600 font-medium mb-1">No recipes yet</p>
-          <p className="text-stone-400 text-sm mb-4">Build your library by documenting dishes from past events</p>
+          <p className="text-stone-400 text-sm mb-4">
+            Build your library by documenting dishes from past events
+          </p>
           <Link href="/culinary/recipes/new">
-            <Button variant="secondary" size="sm">Add First Recipe</Button>
+            <Button variant="secondary" size="sm">
+              Add First Recipe
+            </Button>
           </Link>
         </Card>
       ) : (
@@ -71,7 +86,7 @@ export default async function ChefRecipesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {recipes.map(recipe => (
+              {recipes.map((recipe) => (
                 <TableRow key={recipe.id}>
                   <TableCell className="font-medium">
                     <Link
@@ -82,7 +97,9 @@ export default async function ChefRecipesPage() {
                     </Link>
                   </TableCell>
                   <TableCell>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[recipe.category] ?? 'bg-stone-100 text-stone-600'}`}>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[recipe.category] ?? 'bg-stone-100 text-stone-600'}`}
+                    >
                       {recipe.category}
                     </span>
                   </TableCell>
@@ -103,14 +120,16 @@ export default async function ChefRecipesPage() {
                         {formatCurrency(recipe.total_cost_cents)}
                         {!recipe.has_all_prices && <span className="text-xs ml-1">est.</span>}
                       </span>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
-                    {recipe.times_cooked}
-                  </TableCell>
+                  <TableCell className="text-stone-600 text-sm">{recipe.times_cooked}</TableCell>
                   <TableCell>
                     <Link href={`/culinary/recipes/${recipe.id}`}>
-                      <Button size="sm" variant="secondary">View</Button>
+                      <Button size="sm" variant="secondary">
+                        View
+                      </Button>
                     </Link>
                   </TableCell>
                 </TableRow>

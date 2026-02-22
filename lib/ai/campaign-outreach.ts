@@ -33,15 +33,15 @@ const getGeminiClient = () => {
 // ============================================================
 
 export interface CampaignConceptDraft {
-  hook: string         // 1-sentence attention-grabbing opener
-  description: string  // 2-3 sentences describing the dinner
+  hook: string // 1-sentence attention-grabbing opener
+  description: string // 2-3 sentences describing the dinner
   callToAction: string // e.g. "Reserve your seat before it fills up."
   generatedAt: string
 }
 
 export async function draftCampaignConcept(input: {
   occasion: string
-  proposed_date?: string    // ISO date YYYY-MM-DD
+  proposed_date?: string // ISO date YYYY-MM-DD
   price_per_person_cents?: number
   guest_count_max?: number
   chef_name: string
@@ -101,7 +101,7 @@ Return ONLY valid JSON: { "hook": "...", "description": "...", "callToAction": "
 
 const OutreachSchema = z.object({
   subject: z.string().min(1),
-  body:    z.string().min(10),
+  body: z.string().min(10),
 })
 
 export interface PersonalizedDraft {
@@ -121,7 +121,7 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
   const supabase = await createServerClient()
 
   // 1. Load recipient → client → campaign
-  const { data: recipient } = await (supabase as any)
+  const { data: recipient } = await supabase
     .from('campaign_recipients')
     .select('id, client_id, campaign_id')
     .eq('id', recipientId)
@@ -131,31 +131,31 @@ export async function draftPersonalizedOutreach(recipientId: string): Promise<Pe
   if (!recipient) throw new Error('Recipient not found')
 
   const [clientResult, campaignResult, chefResult] = await Promise.all([
-    (supabase as any)
+    supabase
       .from('clients')
-      .select('full_name, dietary_restrictions, allergies, vibe_notes, last_event_date, favorite_cuisines, dislikes')
+      .select(
+        'full_name, dietary_restrictions, allergies, vibe_notes, last_event_date, favorite_cuisines, dislikes'
+      )
       .eq('id', recipient.client_id)
       .single(),
-    (supabase as any)
+    supabase
       .from('marketing_campaigns')
-      .select('name, occasion, proposed_date, proposed_time, price_per_person_cents, concept_description, guest_count_max')
+      .select(
+        'name, occasion, proposed_date, proposed_time, price_per_person_cents, concept_description, guest_count_max'
+      )
       .eq('id', recipient.campaign_id)
       .single(),
-    (supabase as any)
-      .from('chefs')
-      .select('full_name, business_name')
-      .eq('id', chef.entityId)
-      .single(),
+    supabase.from('chefs').select('full_name, business_name').eq('id', chef.entityId).single(),
   ])
 
-  const client   = clientResult.data
+  const client = clientResult.data
   const campaign = campaignResult.data
   const chefData = chefResult.data
 
   if (!client || !campaign) throw new Error('Data not found')
 
   // Fetch last event for context
-  const { data: lastEvent } = await (supabase as any)
+  const { data: lastEvent } = await supabase
     .from('events')
     .select('occasion, event_date, service_style')
     .eq('chef_id', chef.entityId)
@@ -185,9 +185,15 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
   const userContent = [
     `Chef name: ${chefName}`,
     `Client first name: ${clientFirstName}`,
-    lastEvent ? `Last event I cooked for them: ${lastEvent.occasion} on ${lastEvent.event_date}` : 'This is a new client.',
-    client.dietary_restrictions?.length ? `Their dietary restrictions: ${client.dietary_restrictions.join(', ')}` : '',
-    client.favorite_cuisines?.length ? `Their favorite cuisines: ${client.favorite_cuisines.join(', ')}` : '',
+    lastEvent
+      ? `Last event I cooked for them: ${lastEvent.occasion} on ${lastEvent.event_date}`
+      : 'This is a new client.',
+    client.dietary_restrictions?.length
+      ? `Their dietary restrictions: ${client.dietary_restrictions.join(', ')}`
+      : '',
+    client.favorite_cuisines?.length
+      ? `Their favorite cuisines: ${client.favorite_cuisines.join(', ')}`
+      : '',
     client.vibe_notes ? `Notes on their personality: ${client.vibe_notes}` : '',
     '',
     `DINNER DETAILS:`,
@@ -201,18 +207,22 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
     'Write a subject line and personal email body inviting this specific client to this dinner.',
     'Reference the past event if there was one. Make it feel genuine and personal.',
     'Do NOT say "I am writing to invite you" — just dive in naturally.',
-  ].filter(Boolean).join('\n')
+  ]
+    .filter(Boolean)
+    .join('\n')
 
   let draft: PersonalizedDraft
   try {
     draft = await parseWithOllama(systemPrompt, userContent, OutreachSchema)
   } catch (err) {
     if (err instanceof OllamaOfflineError) throw err
-    throw new OllamaOfflineError(`Outreach draft failed: ${err instanceof Error ? err.message : String(err)}`)
+    throw new OllamaOfflineError(
+      `Outreach draft failed: ${err instanceof Error ? err.message : String(err)}`
+    )
   }
 
   // Store draft in campaign_recipients
-  await (supabase as any)
+  await supabase
     .from('campaign_recipients')
     .update({ draft_subject: draft.subject, draft_body: draft.body })
     .eq('id', recipientId)
@@ -225,9 +235,9 @@ Return ONLY valid JSON: { "subject": "...", "body": "..." }`
 // ============================================================
 
 export type GenerateAllResult = {
-  generated:      number
-  failed:         number
-  ollamaOffline:  boolean
+  generated: number
+  failed: number
+  ollamaOffline: boolean
 }
 
 export async function generateAllDrafts(campaignId: string): Promise<GenerateAllResult> {
@@ -235,7 +245,7 @@ export async function generateAllDrafts(campaignId: string): Promise<GenerateAll
   const supabase = await createServerClient()
 
   // Fetch recipients that don't have a draft yet
-  const { data: recipients } = await (supabase as any)
+  const { data: recipients } = await supabase
     .from('campaign_recipients')
     .select('id')
     .eq('campaign_id', campaignId)

@@ -571,7 +571,7 @@ export async function writeGoalSnapshot(
   const monthStr = dateStr.slice(0, 7)
   const { progress, enrichment, pricingScenarios, clientSuggestions } = goalView
 
-  await (supabase as any).from('goal_snapshots').upsert(
+  await supabase.from('goal_snapshots').upsert(
     {
       tenant_id: tenantId,
       goal_id: goalId,

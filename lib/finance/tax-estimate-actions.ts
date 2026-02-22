@@ -84,7 +84,7 @@ export async function getQuarterlyEstimate(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('tax_quarterly_estimates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -105,7 +105,7 @@ export async function saveQuarterlyEstimate(
   const parsed = SaveEstimateSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('tax_quarterly_estimates')
     .upsert(
       {
@@ -136,7 +136,7 @@ export async function recordQuarterlyPayment(
   const parsed = RecordPaymentSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('tax_quarterly_estimates')
     .update({
       amount_paid_cents: parsed.amountPaidCents,
@@ -158,7 +158,7 @@ export async function getTaxSummaryForYear(taxYear: number): Promise<TaxYearSumm
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('tax_quarterly_estimates')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -169,11 +169,26 @@ export async function getTaxSummaryForYear(taxYear: number): Promise<TaxYearSumm
 
   const quarters = (data || []).map(mapRow)
 
-  const totalIncomeCents = quarters.reduce((s: number, q: QuarterlyEstimate) => s + q.estimatedIncomeCents, 0)
-  const totalSeTaxCents = quarters.reduce((s: number, q: QuarterlyEstimate) => s + q.estimatedSeTaxCents, 0)
-  const totalFederalCents = quarters.reduce((s: number, q: QuarterlyEstimate) => s + q.estimatedFederalCents, 0)
-  const totalStateCents = quarters.reduce((s: number, q: QuarterlyEstimate) => s + q.estimatedStateCents, 0)
-  const totalPaidCents = quarters.reduce((s: number, q: QuarterlyEstimate) => s + q.amountPaidCents, 0)
+  const totalIncomeCents = quarters.reduce(
+    (s: number, q: QuarterlyEstimate) => s + q.estimatedIncomeCents,
+    0
+  )
+  const totalSeTaxCents = quarters.reduce(
+    (s: number, q: QuarterlyEstimate) => s + q.estimatedSeTaxCents,
+    0
+  )
+  const totalFederalCents = quarters.reduce(
+    (s: number, q: QuarterlyEstimate) => s + q.estimatedFederalCents,
+    0
+  )
+  const totalStateCents = quarters.reduce(
+    (s: number, q: QuarterlyEstimate) => s + q.estimatedStateCents,
+    0
+  )
+  const totalPaidCents = quarters.reduce(
+    (s: number, q: QuarterlyEstimate) => s + q.amountPaidCents,
+    0
+  )
   const totalOwedCents = totalSeTaxCents + totalFederalCents + totalStateCents - totalPaidCents
 
   return {
@@ -200,7 +215,7 @@ export async function exportTaxPackage(taxYear: number): Promise<{
   const summary = await getTaxSummaryForYear(taxYear)
 
   // Contractor payments for 1099s
-  const { data: contractors } = await (supabase as any)
+  const { data: contractors } = await supabase
     .from('contractor_payments')
     .select('*')
     .eq('chef_id', user.tenantId!)

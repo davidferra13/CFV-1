@@ -11,9 +11,9 @@ import { createServerClient } from '@/lib/supabase/server'
 export type LTVDataPoint = {
   eventId: string
   occasion: string | null
-  eventDate: string          // ISO date string
-  revenueCents: number       // revenue for this single event
-  cumulativeCents: number    // running total up to and including this event
+  eventDate: string // ISO date string
+  revenueCents: number // revenue for this single event
+  cumulativeCents: number // running total up to and including this event
 }
 
 export type ClientLTVTrajectory = {
@@ -26,9 +26,7 @@ export type ClientLTVTrajectory = {
  * Get the event-by-event LTV trajectory for a client.
  * Returns data points ordered chronologically with running cumulative total.
  */
-export async function getClientLTVTrajectory(
-  clientId: string
-): Promise<ClientLTVTrajectory> {
+export async function getClientLTVTrajectory(clientId: string): Promise<ClientLTVTrajectory> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -45,10 +43,10 @@ export async function getClientLTVTrajectory(
     return { points: [], totalLifetimeValueCents: 0, eventCount: 0 }
   }
 
-  const eventIds = events.map(e => e.id)
+  const eventIds = events.map((e) => e.id)
 
   // Fetch payment totals from the financial summary view
-  const { data: summaries } = await (supabase as any)
+  const { data: summaries } = await supabase
     .from('event_financial_summary')
     .select('event_id, total_paid_cents')
     .eq('tenant_id', user.tenantId!)

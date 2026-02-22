@@ -63,15 +63,15 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
     .lte('event_date', endDate)
 
   // Get proposed/accepted events as projected income
-  const confirmedEvents = (events || []).filter(
-    (e: any) => ['paid', 'confirmed', 'in_progress'].includes(e.status)
+  const confirmedEvents = (events || []).filter((e: any) =>
+    ['paid', 'confirmed', 'in_progress'].includes(e.status)
   )
-  const projectedEvents = (events || []).filter(
-    (e: any) => ['proposed', 'accepted'].includes(e.status)
+  const projectedEvents = (events || []).filter((e: any) =>
+    ['proposed', 'accepted'].includes(e.status)
   )
 
   // Get recurring invoices
-  const { data: recurring } = await (supabase as any)
+  const { data: recurring } = await supabase
     .from('recurring_invoices')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -92,9 +92,8 @@ export async function getCashFlowForecast(days: 30 | 60 | 90 = 30): Promise<Cash
   let cursor = today
 
   while (cursor < endDate) {
-    const periodEnd = addDays(cursor, periodDays - 1) < endDate
-      ? addDays(cursor, periodDays - 1)
-      : endDate
+    const periodEnd =
+      addDays(cursor, periodDays - 1) < endDate ? addDays(cursor, periodDays - 1) : endDate
 
     const periodConfirmedIncome = confirmedEvents
       .filter((e: any) => e.event_date >= cursor && e.event_date <= periodEnd)

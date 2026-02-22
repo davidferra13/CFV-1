@@ -15,7 +15,7 @@ export default async function FoodCostAnalysisPage() {
   const supabase = createServerClient()
 
   // Fetch recent completed events (last 20) to compute variance
-  const { data: recentEvents } = await (supabase as any)
+  const { data: recentEvents } = await supabase
     .from('events')
     .select('id, occasion, event_date')
     .eq('tenant_id', user.tenantId!)
@@ -26,9 +26,7 @@ export default async function FoodCostAnalysisPage() {
   // Fetch financial summaries for each event in parallel
   const eventIds = (recentEvents || []).map((e: any) => e.id)
   const summaries = await Promise.all(
-    eventIds.map((id: string) =>
-      getEventFinancialSummaryFull(id).catch(() => null)
-    )
+    eventIds.map((id: string) => getEventFinancialSummaryFull(id).catch(() => null))
   )
 
   // Build variance data for events that have both projected and actual costs
@@ -44,9 +42,7 @@ export default async function FoodCostAnalysisPage() {
       const theoretical = s.costs.projectedFoodCostCents!
       const actual = s.costs.actualGrocerySpendCents
       const varianceCents = actual - theoretical
-      const variancePct = theoretical > 0
-        ? ((actual - theoretical) / theoretical) * 100
-        : 0
+      const variancePct = theoretical > 0 ? ((actual - theoretical) / theoretical) * 100 : 0
 
       return {
         eventId: s.event.id,
@@ -74,9 +70,9 @@ export default async function FoodCostAnalysisPage() {
       {varianceEvents.length === 0 ? (
         <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
           <p className="text-stone-500 text-sm">
-            No food cost variance data available yet. This page requires completed events
-            with both recipe-based cost projections and actual grocery receipts.
-            Complete a few events with recipes and expense tracking to see variance analysis.
+            No food cost variance data available yet. This page requires completed events with both
+            recipe-based cost projections and actual grocery receipts. Complete a few events with
+            recipes and expense tracking to see variance analysis.
           </p>
         </div>
       ) : (

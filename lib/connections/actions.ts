@@ -56,7 +56,7 @@ export async function getClientConnections(clientId: string): Promise<ClientConn
   const supabase = createServerClient()
 
   // Get connections where this client is on either side
-  const { data: connections, error } = await (supabase as any)
+  const { data: connections, error } = await supabase
     .from('client_connections' as any)
     .select('*')
     .eq('tenant_id', user.tenantId!)
@@ -178,7 +178,8 @@ export async function updateConnection(
 
   // Build update object
   const updates: Record<string, unknown> = {}
-  if (validated.relationship_type !== undefined) updates.relationship_type = validated.relationship_type
+  if (validated.relationship_type !== undefined)
+    updates.relationship_type = validated.relationship_type
   if (validated.notes !== undefined) updates.notes = validated.notes
 
   if (Object.keys(updates).length === 0) {

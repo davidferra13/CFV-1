@@ -58,7 +58,7 @@ export async function getDisputes(status?: string): Promise<PaymentDispute[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('payment_disputes')
     .select('*')
     .eq('chef_id', user.tenantId!)
@@ -79,7 +79,7 @@ export async function createDispute(
   const parsed = CreateDisputeSchema.parse(input)
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('payment_disputes')
     .insert({
       chef_id: user.tenantId!,
@@ -114,7 +114,7 @@ export async function updateDisputeEvidence(
   // Move to under_review when evidence is added
   updates.status = 'under_review'
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('payment_disputes')
     .update(updates)
     .eq('id', parsed.disputeId)
@@ -135,7 +135,7 @@ export async function resolveDispute(
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('payment_disputes')
     .update({
       status: outcome,

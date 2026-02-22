@@ -39,7 +39,7 @@ export async function createRemovalRequest(input: { client_id?: string; reason?:
       completed_at: null,
     },
   ]
-  const { error } = await (supabase as any).from('chef_portfolio_removal_requests').insert({
+  const { error } = await supabase.from('chef_portfolio_removal_requests').insert({
     tenant_id: chef.tenantId!,
     client_id: input.client_id ?? null,
     reason: input.reason ?? null,
@@ -53,7 +53,7 @@ export async function createRemovalRequest(input: { client_id?: string; reason?:
 export async function toggleRemovalTask(requestId: string, taskId: string) {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_portfolio_removal_requests')
     .select('tasks')
     .eq('id', requestId)
@@ -69,17 +69,14 @@ export async function toggleRemovalTask(requestId: string, taskId: string) {
         }
       : t
   )
-  await (supabase as any)
-    .from('chef_portfolio_removal_requests')
-    .update({ tasks })
-    .eq('id', requestId)
+  await supabase.from('chef_portfolio_removal_requests').update({ tasks }).eq('id', requestId)
   revalidatePath('/settings/protection/portfolio-removal')
 }
 
 export async function completeRemovalRequest(requestId: string) {
   const chef = await requireChef()
   const supabase = createServerClient()
-  await (supabase as any)
+  await supabase
     .from('chef_portfolio_removal_requests')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', requestId)
@@ -90,7 +87,7 @@ export async function completeRemovalRequest(requestId: string) {
 export async function getRemovalRequests() {
   const chef = await requireChef()
   const supabase = createServerClient()
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from('chef_portfolio_removal_requests')
     .select('*, clients(full_name)')
     .eq('tenant_id', chef.tenantId!)

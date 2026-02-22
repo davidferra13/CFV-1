@@ -53,7 +53,7 @@ export async function updateNDA(clientId: string, input: NDAUpdateInput) {
 
   if (!existing) throw new Error('Client not found or access denied')
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('clients')
     .update(validated)
     .eq('id', clientId)
@@ -79,7 +79,7 @@ export async function getNDAStatus(clientId: string): Promise<NDAStatus> {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('clients')
     .select(
       'nda_active, nda_coverage, nda_effective_date, nda_expiry_date, nda_document_url, photo_permission'
@@ -123,7 +123,7 @@ export async function getClientsRequiringNDA() {
   if (clientIdsWithEvents.length === 0) return []
 
   // Fetch those clients that have nda_active = false or null
-  const { data: clients, error: clientsError } = await (supabase as any)
+  const { data: clients, error: clientsError } = await supabase
     .from('clients')
     .select('id, full_name, email, nda_active, photo_permission')
     .eq('tenant_id', tenantId)

@@ -34,7 +34,7 @@ export async function updateHealthItem(
 
   const completedAt = status === 'complete' ? new Date().toISOString() : null
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_business_health_items')
     .upsert(
       {
@@ -66,7 +66,7 @@ export async function getHealthChecklist(): Promise<HealthChecklistItem[]> {
 
   const supabase = createServerClient()
 
-  const { data, error } = await (supabase as any)
+  const { data, error } = await supabase
     .from('chef_business_health_items')
     .select('item_key, status, notes, document_url, completed_at')
     .eq('tenant_id', tenantId)
