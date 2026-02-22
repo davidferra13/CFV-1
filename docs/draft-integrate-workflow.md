@@ -53,6 +53,20 @@ Do not touch lib/events/transitions.ts or lib/ledger/append.ts.
 
 ### 4. Save the output
 
+**Option A — One command (recommended):**
+
+1. Select and copy the model's entire response (`Ctrl+A` in the chat, then `Ctrl+C`)
+2. Run in your terminal:
+
+   ```bash
+   npm run save:ticket -- "short description of the change"
+   ```
+
+   Example: `npm run save:ticket -- "add-travel-panel"`
+
+   The script reads your clipboard, auto-numbers the file, and saves it to `.patches/queue/`.
+
+**Option B — Manual:**
 Copy the model's output and save it as `.patches/queue/NNNN-description.md`. Number sequentially (0001, 0002, etc.).
 
 ### 5. Repeat for more tickets
