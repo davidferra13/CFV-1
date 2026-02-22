@@ -16,7 +16,15 @@ import {
   REMY_PERSONALITY,
   REMY_DRAFT_INSTRUCTIONS,
   REMY_PRIVACY_NOTE,
+  REMY_TOPIC_GUARDRAILS,
+  REMY_ANTI_INJECTION,
 } from '@/lib/ai/remy-personality'
+import {
+  validateRemyInput,
+  validateMemoryContent,
+  checkRemyRateLimit,
+} from '@/lib/ai/remy-guardrails'
+import { logRemyAbuse, isRemyBlocked, isRemyAdmin } from '@/lib/ai/remy-abuse-actions'
 import {
   loadRelevantMemories,
   listRemyMemories,
@@ -116,6 +124,8 @@ function buildRemySystemPrompt(
   parts.push(REMY_PERSONALITY)
   parts.push(REMY_DRAFT_INSTRUCTIONS)
   parts.push(REMY_PRIVACY_NOTE)
+  parts.push(REMY_TOPIC_GUARDRAILS)
+  parts.push(REMY_ANTI_INJECTION)
 
   // Business context
   parts.push(`\nBUSINESS CONTEXT:
@@ -384,6 +394,15 @@ async function handleMemoryAdd(message: string): Promise<RemyResponse> {
     }
   }
 
+  // Validate memory content (length, URLs, code, business relevance)
+  const memoryCheck = validateMemoryContent(fact)
+  if (!memoryCheck.allowed) {
+    return {
+      text: memoryCheck.refusal!,
+      intent: 'memory',
+    }
+  }
+
   // Simple category detection from the fact
   let category: MemoryCategory = 'chef_preference'
   const lower = fact.toLowerCase()
@@ -430,7 +449,44 @@ export async function sendRemyMessage(
   conversationHistory: RemyMessage[],
   currentPage?: string
 ): Promise<RemyResponse> {
-  await requireChef()
+  const user = await requireChef()
+
+  // ─── GUARDRAILS (before any LLM call) ──────────────────────────
+  // Admins bypass ALL guardrails — they can do whatever they want
+  const admin = await isRemyAdmin()
+
+  if (!admin) {
+    // Block check (auto-blocked from prior violations?)
+    const blockStatus = await isRemyBlocked()
+    if (blockStatus.blocked) {
+      return {
+        text: 'Your access to Remy has been temporarily suspended due to repeated policy violations. Contact your administrator if you believe this is an error.',
+        intent: 'question',
+      }
+    }
+
+    // Rate limit (12 msgs/min)
+    const rateCheck = checkRemyRateLimit(user.tenantId!)
+    if (!rateCheck.allowed) {
+      return { text: rateCheck.refusal!, intent: 'question' }
+    }
+
+    // Input validation (length, dangerous content, abuse, injection)
+    const inputCheck = validateRemyInput(userMessage)
+    if (!inputCheck.allowed) {
+      // Log the violation (non-blocking side effect)
+      if (inputCheck.severity) {
+        logRemyAbuse({
+          severity: inputCheck.severity,
+          category: inputCheck.category ?? 'unknown',
+          blockedMessage: userMessage,
+          guardrailMatched: inputCheck.matchedPattern,
+        }).catch((err) => console.error('[non-blocking] Abuse logging failed', err))
+      }
+      return { text: inputCheck.refusal!, intent: 'question' }
+    }
+  }
+  // ─── END GUARDRAILS ────────────────────────────────────────────
 
   try {
     // ─── MEMORY path (regex-only, no LLM call needed) ─────────────

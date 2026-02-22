@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { createHash } from 'crypto'
+import { validateMemoryContent } from '@/lib/ai/remy-guardrails'
 import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 
 // ─── Extraction Schema ─────────────────────────────────────────────────────
@@ -95,6 +96,13 @@ export async function extractAndSaveMemories(
     const supabase = createServerClient()
 
     for (const mem of result.memories) {
+      // Validate extracted memory content before saving
+      const memCheck = validateMemoryContent(mem.content)
+      if (!memCheck.allowed) {
+        console.warn(`[remy-memory] Skipping invalid extracted memory: ${mem.content.slice(0, 80)}`)
+        continue
+      }
+
       const contentHash = hashContent(mem.content)
 
       // Check for existing duplicate

@@ -36,6 +36,7 @@ import {
 } from '@/lib/ai/remy-conversation-actions'
 import { extractAndSaveMemories, deleteRemyMemory } from '@/lib/ai/remy-memory-actions'
 import { toast } from 'sonner'
+import { REMY_MAX_MESSAGE_LENGTH } from '@/lib/ai/remy-guardrails'
 import type { RemyMessage, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { RemyConversation } from '@/lib/ai/remy-conversation-actions'
 
@@ -681,30 +682,50 @@ export function RemyDrawer() {
                     <textarea
                       ref={textareaRef}
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={(e) => {
+                        if (e.target.value.length <= REMY_MAX_MESSAGE_LENGTH) {
+                          setInput(e.target.value)
+                        }
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault()
                           handleSend()
                         }
                       }}
+                      maxLength={REMY_MAX_MESSAGE_LENGTH}
                       placeholder="Ask Remy anything..."
                       className="flex-1 resize-none rounded-lg border border-stone-300 dark:border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
                       rows={1}
                     />
                     <Button
                       onClick={() => handleSend()}
-                      disabled={!input.trim() || loading}
+                      disabled={!input.trim() || loading || input.length > REMY_MAX_MESSAGE_LENGTH}
                       variant="primary"
                       size="sm"
                     >
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>
-                  <p className="text-xs text-stone-400 mt-1.5 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3" />
-                    Powered by local AI — your data never leaves this machine
-                  </p>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <p className="text-xs text-stone-400 flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      Powered by local AI — your data never leaves this machine
+                    </p>
+                    {input.length > REMY_MAX_MESSAGE_LENGTH * 0.8 && (
+                      <span
+                        className={`text-xs font-mono ${
+                          input.length > REMY_MAX_MESSAGE_LENGTH * 0.95
+                            ? 'text-red-500'
+                            : input.length > REMY_MAX_MESSAGE_LENGTH * 0.9
+                              ? 'text-amber-500'
+                              : 'text-stone-400'
+                        }`}
+                      >
+                        {input.length}/{REMY_MAX_MESSAGE_LENGTH}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </>
             )}
