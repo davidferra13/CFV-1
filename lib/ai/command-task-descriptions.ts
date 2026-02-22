@@ -141,6 +141,26 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     inputSchema:
       '{ "startDate": "string — optional, YYYY-MM-DD to start searching from, defaults to today" }',
   },
+
+  // ─── Web / Internet tasks ────────────────────────────────────────────────────
+
+  {
+    type: 'web.search',
+    tier: 1,
+    name: 'Web Search',
+    description:
+      'Search the internet for information. Use this for food trends, recipes online, supplier info, industry news, competitor research, catering ideas, or any question that needs current web data.',
+    inputSchema:
+      '{ "query": "string — search query", "limit": "number — optional, max results, defaults to 5" }',
+  },
+  {
+    type: 'web.read',
+    tier: 1,
+    name: 'Read Web Page',
+    description:
+      'Fetch and read the content of a specific URL. Use when the chef shares a link or when a web search result needs deeper reading.',
+    inputSchema: '{ "url": "string — full URL to fetch and read" }',
+  },
 ]
 
 export function buildTaskListForPrompt(): string {

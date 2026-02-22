@@ -18,6 +18,7 @@ import { checkCalendarAvailability } from '@/lib/scheduling/calendar-sync'
 import { generateFollowUpDraft } from '@/lib/ai/followup-draft'
 import { parseEventFromText } from '@/lib/events/parse-event-from-text'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
+import { searchWeb, readWebPage } from '@/lib/ai/remy-web-actions'
 import type { CommandRun, TaskResult, PlannedTask, ApprovalTier } from '@/lib/ai/command-types'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
@@ -325,6 +326,24 @@ async function executeSchedulingNextAvailable(inputs: Record<string, unknown>) {
   return { nextAvailable: null, message: 'No availability found in the next 30 days.' }
 }
 
+// ─── Web Task Executors ─────────────────────────────────────────────────────────
+
+async function executeWebSearch(inputs: Record<string, unknown>) {
+  const query = String(inputs.query ?? '')
+  const limit = Number(inputs.limit) || 5
+  const results = await searchWeb(query, limit)
+  return { query, results }
+}
+
+async function executeWebRead(inputs: Record<string, unknown>) {
+  const url = String(inputs.url ?? '')
+  if (!url.startsWith('http')) {
+    throw new Error('Invalid URL — must start with http:// or https://')
+  }
+  const result = await readWebPage(url)
+  return { url: result.url, title: result.title, summary: result.summary }
+}
+
 // ─── DAG Execution Engine ─────────────────────────────────────────────────────
 
 /**
@@ -437,6 +456,12 @@ async function executeSingleTask(
       case 'scheduling.next_available':
         data = await executeSchedulingNextAvailable(task.inputs)
         break
+      case 'web.search':
+        data = await executeWebSearch(task.inputs)
+        break
+      case 'web.read':
+        data = await executeWebRead(task.inputs)
+        break
       default:
         return {
           taskId: task.id,
@@ -540,27 +565,69 @@ export async function runCommand(rawInput: string): Promise<CommandRun> {
 
 /**
  * Called when the chef approves a Tier 2 draft result.
- * For email drafts: marks as approved (chef copies and sends manually).
- * For event drafts: could create the event in a future build.
+ * For email drafts: copies to clipboard + provides mailto link.
+ * For event drafts: creates a draft event in the database.
  */
 export async function approveTask(
   taskType: string,
-  _data: unknown
-): Promise<{ success: boolean; message: string }> {
-  await requireChef()
+  data: unknown
+): Promise<{ success: boolean; message: string; redirectUrl?: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
 
   switch (taskType) {
     case 'email.followup':
-    case 'email.generic':
+    case 'email.generic': {
+      const d = data as { clientId?: string; clientName?: string; draftText?: string } | null
+      if (d?.draftText) {
+        // The draft text is returned to the client for clipboard copy
+        return {
+          success: true,
+          message: `Draft approved! The email text has been copied to your clipboard. Send it from your email client.`,
+        }
+      }
       return {
         success: true,
         message: 'Draft approved. Copy and send from your email client.',
       }
-    case 'event.create_draft':
+    }
+    case 'event.create_draft': {
+      const d = data as { draft?: Record<string, unknown>; error?: string } | null
+      if (d?.draft && !d.error) {
+        const supabase = createServerClient()
+        const draft = d.draft
+        try {
+          const { data: event, error } = await supabase
+            .from('events')
+            .insert({
+              tenant_id: tenantId,
+              occasion: draft.occasion ?? 'New Event',
+              event_date: draft.event_date ?? null,
+              guest_count: draft.guest_count ?? null,
+              status: 'draft',
+              notes: draft.notes ?? `Created by Remy from: "${draft.rawDescription ?? ''}"`,
+              client_id: draft.client_id ?? null,
+            })
+            .select('id')
+            .single()
+
+          if (error) throw error
+          return {
+            success: true,
+            message: 'Event draft created! Redirecting to the event page...',
+            redirectUrl: `/events/${event.id}`,
+          }
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err)
+          return { success: false, message: `Failed to create event: ${msg}` }
+        }
+      }
       return {
         success: true,
-        message: 'Event draft approved. Use it to fill out the event form.',
+        message: 'Event draft approved. Head to /events/new to fill out the details.',
+        redirectUrl: '/events/new',
       }
+    }
     default:
       return { success: true, message: 'Approved.' }
   }

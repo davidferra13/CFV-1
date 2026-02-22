@@ -51,22 +51,20 @@ export async function markIntentionallyInactive(clientId: string): Promise<void>
   const tenantId = chef.tenantId!
   const supabase = createServerClient()
 
-  // TODO: When a dedicated intentionally_inactive column is added to the clients
-  // table, update it here. For now, we record the intent in the client notes field.
   const { data: existing } = await supabase
     .from('clients')
-    .select('notes')
+    .select('vibe_notes')
     .eq('id', clientId)
     .eq('tenant_id', tenantId)
     .single()
 
-  const currentNotes = (existing as any)?.notes ?? ''
+  const currentNotes = existing?.vibe_notes ?? ''
   const marker = '[INTENTIONALLY_INACTIVE]'
   if (currentNotes.includes(marker)) return // already marked
 
   await supabase
     .from('clients')
-    .update({ notes: `${currentNotes}\n${marker}`.trim() })
+    .update({ vibe_notes: `${currentNotes}\n${marker}`.trim() })
     .eq('id', clientId)
     .eq('tenant_id', tenantId)
 }

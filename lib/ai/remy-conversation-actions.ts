@@ -191,6 +191,116 @@ export async function autoTitleConversation(
   }
 }
 
+// ─── Delete Message ────────────────────────────────────────────────────────
+
+export async function deleteConversationMessage(messageId: string): Promise<void> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('remy_messages')
+    .delete()
+    .eq('id', messageId)
+    .eq('tenant_id', tenantId)
+
+  if (error) throw new Error(`Failed to delete message: ${error.message}`)
+}
+
+// ─── Summarize Conversation (for long threads) ────────────────────────────────
+
+/**
+ * Summarize older messages in a conversation to compress context.
+ * Keeps the last `keepRecent` messages intact and summarizes the rest.
+ */
+export async function summarizeConversationHistory(
+  messages: RemyMessage[],
+  keepRecent = 10
+): Promise<{ summary: string; recentMessages: RemyMessage[] }> {
+  if (messages.length <= keepRecent) {
+    return { summary: '', recentMessages: messages }
+  }
+
+  const olderMessages = messages.slice(0, -keepRecent)
+  const recentMessages = messages.slice(-keepRecent)
+
+  const condensed = olderMessages
+    .map((m) => {
+      const role = m.role === 'user' ? 'Chef' : 'Remy'
+      const content = m.content.length > 200 ? m.content.slice(0, 197) + '...' : m.content
+      return `${role}: ${content}`
+    })
+    .join('\n')
+
+  try {
+    const SummarySchema = z.object({
+      summary: z
+        .string()
+        .describe(
+          'A concise 2-4 sentence summary of the earlier conversation, highlighting key topics discussed and any decisions or facts established'
+        ),
+    })
+
+    const result = await parseWithOllama(
+      'Summarize this earlier conversation between a chef and their AI assistant Remy. Keep it concise — 2-4 sentences capturing the key topics, decisions, and facts.',
+      condensed,
+      SummarySchema,
+      { modelTier: 'fast', cache: false }
+    )
+
+    return { summary: result.summary, recentMessages }
+  } catch {
+    const manualSummary = `Earlier in this conversation (${olderMessages.length} messages), the chef and Remy discussed: ${olderMessages
+      .slice(0, 3)
+      .map((m) => m.content.slice(0, 50))
+      .join(', ')}...`
+    return { summary: manualSummary, recentMessages }
+  }
+}
+
+// ─── Export Conversation ──────────────────────────────────────────────────────
+
+export async function exportConversation(
+  conversationId: string,
+  format: 'text' | 'markdown' = 'markdown'
+): Promise<{ title: string; content: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const supabase = createServerClient()
+
+  const { data: conv } = await supabase
+    .from('remy_conversations')
+    .select('title')
+    .eq('id', conversationId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  const title = (conv?.title as string) ?? 'Remy Conversation'
+  const messages = await loadConversationMessages(conversationId)
+
+  if (format === 'markdown') {
+    const lines = [`# ${title}`, `_Exported from ChefFlow Remy_\n`]
+    for (const msg of messages) {
+      const role = msg.role === 'user' ? '**Chef**' : '**Remy**'
+      const time = new Date(msg.timestamp).toLocaleString()
+      lines.push(`${role} _(${time})_`)
+      lines.push(msg.content)
+      lines.push('')
+    }
+    return { title, content: lines.join('\n') }
+  }
+
+  const lines = [`${title}\n${'='.repeat(title.length)}\n`]
+  for (const msg of messages) {
+    const role = msg.role === 'user' ? 'Chef' : 'Remy'
+    const time = new Date(msg.timestamp).toLocaleString()
+    lines.push(`[${time}] ${role}:`)
+    lines.push(msg.content)
+    lines.push('')
+  }
+  return { title, content: lines.join('\n') }
+}
+
 // ─── Delete Conversation (soft) ────────────────────────────────────────────
 
 export async function deleteConversation(conversationId: string): Promise<void> {

@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
-import { usePathname } from 'next/navigation'
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import {
   Bot,
   X,
@@ -20,10 +22,18 @@ import {
   ChevronLeft,
   Trash2,
   Brain,
+  Copy,
+  Check,
+  Download,
+  Globe,
+  Paperclip,
+  Search,
+  Volume2,
+  VolumeX,
+  ChefHat,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
-import { sendRemyMessage } from '@/lib/ai/remy-actions'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
 import {
@@ -33,11 +43,21 @@ import {
   saveConversationMessage,
   autoTitleConversation,
   deleteConversation,
+  deleteConversationMessage,
+  exportConversation,
 } from '@/lib/ai/remy-conversation-actions'
-import { extractAndSaveMemories, deleteRemyMemory } from '@/lib/ai/remy-memory-actions'
+import {
+  extractAndSaveMemories,
+  deleteRemyMemory,
+  decayStaleMemories,
+} from '@/lib/ai/remy-memory-actions'
 import { toast } from 'sonner'
-import { REMY_MAX_MESSAGE_LENGTH } from '@/lib/ai/remy-guardrails'
-import type { RemyMessage, RemyMemoryItem } from '@/lib/ai/remy-types'
+import type {
+  RemyMessage,
+  RemyMemoryItem,
+  RemyTaskResult,
+  NavigationSuggestion,
+} from '@/lib/ai/remy-types'
 import type { RemyConversation } from '@/lib/ai/remy-conversation-actions'
 
 function generateId(): string {
@@ -52,22 +72,160 @@ function generateId(): string {
   return 'id_' + Math.random().toString(36).slice(2) + Date.now().toString(36)
 }
 
-const REMY_STARTERS = [
-  { text: "What's on my plate this week?", icon: CalendarDays },
-  { text: "How's business looking this month?", icon: TrendingUp },
-  { text: 'Draft a follow-up for my last event', icon: Mail },
-  { text: 'Show my memories', icon: Brain },
-]
+// ─── Context-Aware Starter Prompts ────────────────────────────────────────────
+
+function getStartersForPage(pathname: string) {
+  const starters = [
+    { text: "What's on my plate this week?", icon: CalendarDays },
+    { text: "How's business looking this month?", icon: TrendingUp },
+    { text: 'Draft a follow-up for my last event', icon: Mail },
+    { text: 'Show my memories', icon: Brain },
+  ]
+
+  if (pathname.startsWith('/events/') && pathname !== '/events/new') {
+    return [
+      { text: 'Tell me about this event', icon: CalendarDays },
+      { text: 'Draft a follow-up email for this client', icon: Mail },
+      { text: 'What should I prep for this event?', icon: ChefHat },
+      { text: 'Search the web for menu inspiration', icon: Globe },
+    ]
+  }
+  if (pathname === '/events' || pathname === '/events/upcoming') {
+    return [
+      { text: "What's on my plate this week?", icon: CalendarDays },
+      { text: 'Show my upcoming events', icon: CalendarDays },
+      { text: 'Find my next available date', icon: Search },
+      { text: 'Search for trending catering ideas online', icon: Globe },
+    ]
+  }
+  if (pathname.startsWith('/clients')) {
+    return [
+      { text: 'Show my recent clients', icon: Users },
+      { text: 'Draft a follow-up for my last client', icon: Mail },
+      { text: 'What do you remember about my clients?', icon: Brain },
+      { text: 'Search online for client engagement tips', icon: Globe },
+    ]
+  }
+  if (pathname.startsWith('/financials') || pathname.startsWith('/expenses')) {
+    return [
+      { text: "How's revenue this month?", icon: TrendingUp },
+      { text: 'Give me a monthly financial snapshot', icon: TrendingUp },
+      { text: 'Search for private chef pricing benchmarks', icon: Globe },
+      { text: 'Show my memories about pricing', icon: Brain },
+    ]
+  }
+  if (pathname.startsWith('/recipes') || pathname.startsWith('/menus')) {
+    return [
+      { text: 'Search my recipes', icon: Search },
+      { text: 'List my menus', icon: ChefHat },
+      { text: 'Search the web for seasonal menu ideas', icon: Globe },
+      { text: 'What culinary notes do you remember?', icon: Brain },
+    ]
+  }
+  if (pathname.startsWith('/inquiries')) {
+    return [
+      { text: 'Show my open inquiries', icon: Mail },
+      { text: 'Check my availability this week', icon: CalendarDays },
+      { text: 'Draft a response to the latest inquiry', icon: Mail },
+      { text: 'Search online for inquiry response templates', icon: Globe },
+    ]
+  }
+
+  return starters
+}
+
+// ─── Thinking Time Estimate ───────────────────────────────────────────────────
+
+function getThinkingMessage(elapsed: number, intent?: string): string {
+  if (intent === 'command') {
+    if (elapsed > 10) return "Running your tasks — this one's taking a bit..."
+    return 'Running your tasks...'
+  }
+  if (intent === 'mixed') {
+    if (elapsed > 15) return 'Working on both parts — hang tight, almost there...'
+    return 'Working on your question and tasks...'
+  }
+  // Default question intent
+  if (elapsed > 20) return 'Still thinking — complex question, give me another moment...'
+  if (elapsed > 10) return 'Thinking hard on this one...'
+  if (elapsed > 5) return 'Remy is thinking...'
+  return 'Remy is thinking...'
+}
+
+// ─── Markdown Components ──────────────────────────────────────────────────────
+
+const markdownComponents = {
+  p: ({ children }: { children?: React.ReactNode }) => <p className="mb-2 last:mb-0">{children}</p>,
+  ul: ({ children }: { children?: React.ReactNode }) => (
+    <ul className="list-disc list-inside mb-2 space-y-0.5">{children}</ul>
+  ),
+  ol: ({ children }: { children?: React.ReactNode }) => (
+    <ol className="list-decimal list-inside mb-2 space-y-0.5">{children}</ol>
+  ),
+  li: ({ children }: { children?: React.ReactNode }) => <li className="text-sm">{children}</li>,
+  strong: ({ children }: { children?: React.ReactNode }) => (
+    <strong className="font-semibold">{children}</strong>
+  ),
+  em: ({ children }: { children?: React.ReactNode }) => <em className="italic">{children}</em>,
+  code: ({ children, className }: { children?: React.ReactNode; className?: string }) => {
+    const isBlock = className?.includes('language-')
+    if (isBlock) {
+      return (
+        <code className="block bg-stone-200 dark:bg-stone-700 rounded px-2 py-1 text-xs font-mono my-1 overflow-x-auto">
+          {children}
+        </code>
+      )
+    }
+    return (
+      <code className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-xs font-mono">
+        {children}
+      </code>
+    )
+  },
+  a: ({ href, children }: { href?: string; children?: React.ReactNode }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-brand-600 dark:text-brand-400 underline hover:text-brand-700"
+    >
+      {children}
+    </a>
+  ),
+  h1: ({ children }: { children?: React.ReactNode }) => (
+    <h1 className="text-base font-bold mb-1">{children}</h1>
+  ),
+  h2: ({ children }: { children?: React.ReactNode }) => (
+    <h2 className="text-sm font-bold mb-1">{children}</h2>
+  ),
+  h3: ({ children }: { children?: React.ReactNode }) => (
+    <h3 className="text-sm font-semibold mb-1">{children}</h3>
+  ),
+  blockquote: ({ children }: { children?: React.ReactNode }) => (
+    <blockquote className="border-l-2 border-brand-400 pl-2 italic text-stone-600 dark:text-stone-400 my-1">
+      {children}
+    </blockquote>
+  ),
+  hr: () => <hr className="border-stone-300 dark:border-stone-600 my-2" />,
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export function RemyDrawer() {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<RemyMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [streamingContent, setStreamingContent] = useState('')
+  const [streamingIntent, setStreamingIntent] = useState<string | undefined>()
   const [elapsedSec, setElapsedSec] = useState(0)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [soundEnabled, setSoundEnabled] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const pathname = usePathname()
+  const router = useRouter()
 
   // Conversation threading state
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
@@ -75,10 +233,14 @@ export function RemyDrawer() {
   const [showConversationList, setShowConversationList] = useState(false)
   const [conversationsLoaded, setConversationsLoaded] = useState(false)
   const [isFirstExchange, setIsFirstExchange] = useState(true)
+  const [hasDecayedThisSession, setHasDecayedThisSession] = useState(false)
+
+  // Context-aware starters
+  const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages, streamingContent])
 
   // Auto-focus textarea when drawer opens
   useEffect(() => {
@@ -97,6 +259,35 @@ export function RemyDrawer() {
     return () => clearInterval(interval)
   }, [loading])
 
+  // Keyboard shortcut: Ctrl+K / Cmd+K to toggle Remy
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault()
+        setOpen((prev) => !prev)
+      }
+      if (e.key === 'Escape' && open) {
+        setOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open])
+
+  // Memory decay — run once per session when drawer first opens
+  useEffect(() => {
+    if (open && !hasDecayedThisSession) {
+      setHasDecayedThisSession(true)
+      decayStaleMemories()
+        .then((result) => {
+          if (result.deactivated > 0) {
+            console.log(`[remy] Decayed ${result.deactivated} stale memories`)
+          }
+        })
+        .catch((err) => console.error('[non-blocking] Memory decay failed:', err))
+    }
+  }, [open, hasDecayedThisSession])
+
   // Load conversations when drawer opens for the first time
   useEffect(() => {
     if (open && !conversationsLoaded) {
@@ -110,7 +301,6 @@ export function RemyDrawer() {
       setConversations(result.conversations)
       setConversationsLoaded(true)
 
-      // Auto-load the most recent conversation if one exists
       if (result.conversations.length > 0 && !currentConversationId) {
         const latest = result.conversations[0]
         setCurrentConversationId(latest.id)
@@ -143,7 +333,6 @@ export function RemyDrawer() {
       setMessages([])
       setShowConversationList(false)
       setIsFirstExchange(true)
-      // Add to local list
       setConversations((prev) => [
         {
           id,
@@ -179,15 +368,17 @@ export function RemyDrawer() {
     [currentConversationId]
   )
 
-  const handleDeleteMessage = useCallback((msgId: string) => {
+  const handleDeleteMessage = useCallback(async (msgId: string) => {
     setMessages((prev) => prev.filter((m) => m.id !== msgId))
+    deleteConversationMessage(msgId).catch((err) =>
+      console.error('[non-blocking] Server message delete failed:', err)
+    )
     toast.success('Message removed')
   }, [])
 
   const handleDeleteMemory = useCallback(async (memoryId: string) => {
     try {
       await deleteRemyMemory(memoryId)
-      // Remove the memory item from the message that contains it
       setMessages((prev) =>
         prev.map((msg) => {
           if (!msg.memoryItems) return msg
@@ -204,16 +395,90 @@ export function RemyDrawer() {
     }
   }, [])
 
-  // Non-blocking auto-save: persist to artifacts + extract memories
+  const handleCopy = useCallback((msgId: string, content: string) => {
+    navigator.clipboard.writeText(content).then(() => {
+      setCopiedId(msgId)
+      toast.success('Copied to clipboard')
+      setTimeout(() => setCopiedId(null), 2000)
+    })
+  }, [])
+
+  const handleExport = useCallback(async () => {
+    if (!currentConversationId) return
+    try {
+      const { title, content } = await exportConversation(currentConversationId, 'markdown')
+      const blob = new Blob([content], { type: 'text/markdown' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.md`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Conversation exported')
+    } catch (err) {
+      console.error('[remy] Export failed:', err)
+      toast.error('Failed to export conversation')
+    }
+  }, [currentConversationId])
+
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (
+      file.type.startsWith('text/') ||
+      file.name.endsWith('.md') ||
+      file.name.endsWith('.csv') ||
+      file.name.endsWith('.json')
+    ) {
+      const reader = new FileReader()
+      reader.onload = (ev) => {
+        const content = ev.target?.result as string
+        const truncated =
+          content.length > 1500 ? content.slice(0, 1500) + '\n...(truncated)' : content
+        setInput((prev) => `${prev ? prev + '\n\n' : ''}[Attached: ${file.name}]\n${truncated}`)
+        toast.success(`Attached ${file.name}`)
+      }
+      reader.readAsText(file)
+    } else if (file.type.startsWith('image/')) {
+      setInput(
+        (prev) =>
+          `${prev ? prev + '\n\n' : ''}[Attached image: ${file.name} (${(file.size / 1024).toFixed(1)}KB) — describe what you need to know about this image]`
+      )
+      toast.success(`Attached ${file.name}`)
+    } else {
+      toast.error('Unsupported file type. Try text, markdown, CSV, JSON, or image files.')
+    }
+
+    e.target.value = ''
+  }, [])
+
+  const playNotificationSound = useCallback(() => {
+    if (!soundEnabled) return
+    try {
+      const ctx = new AudioContext()
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.value = 800
+      osc.type = 'sine'
+      gain.gain.setValueAtTime(0.1, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+      osc.start(ctx.currentTime)
+      osc.stop(ctx.currentTime + 0.3)
+    } catch {
+      // AudioContext not available
+    }
+  }, [soundEnabled])
+
   const autoSave = useCallback((userMessage: string, remyMsg: RemyMessage) => {
-    // Save the conversational text to artifacts (non-blocking side effect)
     const title =
       remyMsg.content.length > 60 ? remyMsg.content.slice(0, 57) + '...' : remyMsg.content
     saveRemyMessage({ title, content: remyMsg.content, sourceMessage: userMessage }).catch((err) =>
       console.error('[non-blocking] Auto-save message failed', err)
     )
 
-    // Save each task result individually (non-blocking)
     if (remyMsg.tasks?.length) {
       for (const task of remyMsg.tasks) {
         if (task.status === 'error') continue
@@ -226,11 +491,12 @@ export function RemyDrawer() {
       }
     }
 
-    // Extract and save memories (non-blocking, background)
     extractAndSaveMemories(userMessage, remyMsg.content).catch((err) =>
       console.error('[non-blocking] Memory extraction failed', err)
     )
   }, [])
+
+  // ─── Streaming Send ─────────────────────────────────────────────────────────
 
   const handleSend = useCallback(
     async (text?: string) => {
@@ -238,7 +504,6 @@ export function RemyDrawer() {
       if (!message || loading) return
       setInput('')
 
-      // Ensure we have a conversation
       let convId = currentConversationId
       if (!convId) {
         try {
@@ -270,8 +535,9 @@ export function RemyDrawer() {
       }
       setMessages((prev) => [...prev, userMsg])
       setLoading(true)
+      setStreamingContent('')
+      setStreamingIntent(undefined)
 
-      // Save user message to DB (non-blocking)
       saveConversationMessage({
         conversationId: convId,
         role: 'user',
@@ -279,36 +545,103 @@ export function RemyDrawer() {
       }).catch((err) => console.error('[non-blocking] Save user msg failed', err))
 
       try {
-        const response = await sendRemyMessage(message, messages, pathname ?? undefined)
+        const response = await fetch('/api/remy/stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message,
+            history: messages,
+            currentPage: pathname,
+          }),
+        })
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+
+        const reader = response.body?.getReader()
+        if (!reader) throw new Error('No response body')
+
+        const decoder = new TextDecoder()
+        let fullContent = ''
+        let tasks: RemyTaskResult[] | undefined
+        let navSuggestions: NavigationSuggestion[] | undefined
+        let memoryItems: RemyMemoryItem[] | undefined
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n\n')
+          buffer = lines.pop() ?? ''
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue
+            try {
+              const event = JSON.parse(line.slice(6)) as { type: string; data: unknown }
+
+              switch (event.type) {
+                case 'token':
+                  fullContent += event.data as string
+                  setStreamingContent(fullContent)
+                  break
+                case 'tasks':
+                  tasks = event.data as RemyTaskResult[]
+                  break
+                case 'nav':
+                  navSuggestions = event.data as NavigationSuggestion[]
+                  break
+                case 'memories':
+                  memoryItems = event.data as RemyMemoryItem[]
+                  break
+                case 'intent':
+                  setStreamingIntent(event.data as string)
+                  break
+                case 'error':
+                  fullContent = event.data as string
+                  setStreamingContent('')
+                  break
+                case 'done':
+                  break
+              }
+            } catch {
+              // Skip malformed SSE lines
+            }
+          }
+        }
+
+        const cleanContent = fullContent.replace(/\nNAV_SUGGESTIONS:\s*\[.*\]/s, '').trim()
+
         const remyMsg: RemyMessage = {
           id: generateId(),
           role: 'remy',
-          content: response.text,
+          content: cleanContent,
           timestamp: new Date().toISOString(),
-          tasks: response.tasks,
-          navSuggestions: response.navSuggestions,
-          memoryItems: response.memoryItems,
+          tasks,
+          navSuggestions,
+          memoryItems,
         }
         setMessages((prev) => [...prev, remyMsg])
+        setStreamingContent('')
+        setStreamingIntent(undefined)
 
-        // Save Remy's response to DB (non-blocking)
+        playNotificationSound()
+
         saveConversationMessage({
           conversationId: convId,
           role: 'remy',
-          content: response.text,
-          tasks: response.tasks,
-          navSuggestions: response.navSuggestions,
+          content: cleanContent,
+          tasks,
+          navSuggestions,
         }).catch((err) => console.error('[non-blocking] Save remy msg failed', err))
 
-        // Auto-title after first exchange
         if (isFirstExchange) {
           setIsFirstExchange(false)
-          autoTitleConversation(convId, message, response.text)
+          autoTitleConversation(convId, message, cleanContent)
             .then(() => loadConversationList())
             .catch((err) => console.error('[non-blocking] Auto-title failed', err))
         }
 
-        // Auto-save to artifacts + extract memories
         autoSave(message, remyMsg)
       } catch (err: unknown) {
         const errMsg = err instanceof Error ? err.message : 'Remy is having trouble. Try again.'
@@ -322,9 +655,9 @@ export function RemyDrawer() {
           timestamp: new Date().toISOString(),
         }
         setMessages((prev) => [...prev, remyErrorMsg])
-        if (!isOllamaOffline) {
-          toast.error(errMsg)
-        }
+        setStreamingContent('')
+        setStreamingIntent(undefined)
+        if (!isOllamaOffline) toast.error(errMsg)
       } finally {
         setLoading(false)
       }
@@ -338,28 +671,49 @@ export function RemyDrawer() {
       currentConversationId,
       isFirstExchange,
       loadConversationList,
+      playNotificationSound,
     ]
   )
 
-  const handleApproveTask = useCallback(async (taskId: string, taskType: string, data: unknown) => {
-    try {
-      const result = await approveTask(taskType, data)
-      toast.success(result.message)
-      setMessages((prev) =>
-        prev.map((msg) => {
-          if (!msg.tasks) return msg
-          return {
-            ...msg,
-            tasks: msg.tasks.map((t) =>
-              t.taskId === taskId ? { ...t, status: 'done' as const } : t
-            ),
-          }
-        })
-      )
-    } catch {
-      toast.error('Failed to approve task')
-    }
-  }, [])
+  const handleApproveTask = useCallback(
+    async (taskId: string, taskType: string, data: unknown) => {
+      try {
+        const result = await approveTask(taskType, data)
+
+        if (
+          (taskType === 'email.followup' || taskType === 'email.generic') &&
+          data &&
+          (data as { draftText?: string }).draftText
+        ) {
+          await navigator.clipboard.writeText((data as { draftText: string }).draftText)
+        }
+
+        toast.success(result.message)
+
+        if (result.redirectUrl) {
+          setTimeout(() => {
+            setOpen(false)
+            router.push(result.redirectUrl!)
+          }, 1000)
+        }
+
+        setMessages((prev) =>
+          prev.map((msg) => {
+            if (!msg.tasks) return msg
+            return {
+              ...msg,
+              tasks: msg.tasks.map((t) =>
+                t.taskId === taskId ? { ...t, status: 'done' as const } : t
+              ),
+            }
+          })
+        )
+      } catch {
+        toast.error('Failed to approve task')
+      }
+    },
+    [router]
+  )
 
   const handleRejectTask = useCallback((taskId: string) => {
     setMessages((prev) =>
@@ -374,7 +728,6 @@ export function RemyDrawer() {
     toast.success('Task dismissed')
   }, [])
 
-  // Find current conversation title
   const currentConvTitle = conversations.find((c) => c.id === currentConversationId)?.title
 
   return (
@@ -383,11 +736,22 @@ export function RemyDrawer() {
       <button
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
-        aria-label="Open Remy"
+        aria-label="Open Remy (Ctrl+K)"
+        title="Open Remy (Ctrl+K)"
       >
         <Bot className="h-5 w-5" />
         <span className="text-sm font-medium hidden sm:inline">Remy</span>
       </button>
+
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        className="hidden"
+        accept=".txt,.md,.csv,.json,.png,.jpg,.jpeg,.webp"
+        onChange={handleFileSelect}
+        aria-label="Attach file to Remy"
+      />
 
       {/* Drawer overlay */}
       {open && (
@@ -427,6 +791,26 @@ export function RemyDrawer() {
                 {!showConversationList && (
                   <>
                     <button
+                      onClick={() => setSoundEnabled((prev) => !prev)}
+                      className="text-white/80 hover:text-white transition-colors p-1"
+                      title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
+                    >
+                      {soundEnabled ? (
+                        <Volume2 className="h-4 w-4" />
+                      ) : (
+                        <VolumeX className="h-4 w-4" />
+                      )}
+                    </button>
+                    {currentConversationId && (
+                      <button
+                        onClick={handleExport}
+                        className="text-white/80 hover:text-white transition-colors p-1"
+                        title="Export conversation"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                    )}
+                    <button
                       onClick={handleNewConversation}
                       className="text-white/80 hover:text-white transition-colors p-1"
                       title="New conversation"
@@ -453,7 +837,7 @@ export function RemyDrawer() {
                 <button
                   onClick={() => setOpen(false)}
                   className="text-white/80 hover:text-white transition-colors p-1"
-                  aria-label="Close Remy"
+                  aria-label="Close Remy (Esc)"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -519,22 +903,27 @@ export function RemyDrawer() {
                 {/* Messages */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
                   {/* Welcome message */}
-                  {messages.length === 0 && (
+                  {messages.length === 0 && !streamingContent && (
                     <div className="space-y-4">
                       <div className="bg-stone-50 dark:bg-stone-800 rounded-xl p-4">
                         <p className="text-sm text-stone-700 dark:text-stone-300">
                           Hey chef! I&apos;m <span className="font-semibold">Remy</span>, your
                           kitchen companion. I can check your schedule, look up clients, draft
-                          messages, crunch numbers — whatever you need.
+                          messages, crunch numbers, <strong>search the web</strong> — whatever you
+                          need.
                         </p>
-                        <p className="text-xs text-stone-400 mt-2">
-                          Everything stays on this machine. I remember our past conversations and
-                          learn your preferences over time.
+                        <p className="text-xs text-stone-400 mt-2 flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          Web search enabled. Local AI for private data. Press{' '}
+                          <kbd className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
+                            Ctrl+K
+                          </kbd>{' '}
+                          anytime.
                         </p>
                       </div>
 
                       <div className="grid grid-cols-1 gap-2">
-                        {REMY_STARTERS.map((starter) => {
+                        {starters.map((starter) => {
                           const Icon = starter.icon
                           return (
                             <button
@@ -558,14 +947,29 @@ export function RemyDrawer() {
                       className={`group flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                       <div className={`max-w-[85%] space-y-2 relative`}>
-                        {/* Delete button on hover */}
-                        <button
-                          onClick={() => handleDeleteMessage(msg.id)}
-                          className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-all z-10"
-                          title="Remove message"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                        {/* Action buttons on hover */}
+                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 z-10 transition-all">
+                          {msg.role === 'remy' && (
+                            <button
+                              onClick={() => handleCopy(msg.id, msg.content)}
+                              className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
+                              title="Copy message"
+                            >
+                              {copiedId === msg.id ? (
+                                <Check className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </button>
+                          )}
+                          <button
+                            onClick={() => handleDeleteMessage(msg.id)}
+                            className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
+                            title="Remove message"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
 
                         {/* Message bubble */}
                         <div
@@ -575,10 +979,21 @@ export function RemyDrawer() {
                               : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
                           }`}
                         >
-                          <pre className="whitespace-pre-wrap font-sans">{msg.content}</pre>
+                          {msg.role === 'user' ? (
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                          ) : (
+                            <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                              <ReactMarkdown
+                                remarkPlugins={[remarkGfm]}
+                                components={markdownComponents as any}
+                              >
+                                {msg.content}
+                              </ReactMarkdown>
+                            </div>
+                          )}
                         </div>
 
-                        {/* Task result cards (Remy messages only) */}
+                        {/* Task result cards */}
                         {msg.role === 'remy' && msg.tasks && msg.tasks.length > 0 && (
                           <div className="space-y-2">
                             {msg.tasks.map((task) => (
@@ -592,7 +1007,7 @@ export function RemyDrawer() {
                           </div>
                         )}
 
-                        {/* Navigation suggestions (Remy messages only) */}
+                        {/* Navigation suggestions */}
                         {msg.role === 'remy' &&
                           msg.navSuggestions &&
                           msg.navSuggestions.length > 0 && (
@@ -615,7 +1030,6 @@ export function RemyDrawer() {
                         {msg.role === 'remy' && msg.memoryItems && msg.memoryItems.length > 0 && (
                           <div className="mt-2 space-y-1 max-h-80 overflow-y-auto">
                             {(() => {
-                              // Group by category
                               const grouped = new Map<string, RemyMemoryItem[]>()
                               for (const item of msg.memoryItems) {
                                 const cat = item.category
@@ -661,13 +1075,31 @@ export function RemyDrawer() {
                     </div>
                   ))}
 
-                  {/* Loading indicator */}
-                  {loading && (
+                  {/* Streaming indicator */}
+                  {loading && streamingContent && (
+                    <div className="flex justify-start">
+                      <div className="max-w-[85%] bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100">
+                        <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={markdownComponents as any}
+                          >
+                            {streamingContent}
+                          </ReactMarkdown>
+                        </div>
+                        <span className="inline-block w-1.5 h-4 bg-brand-600 animate-pulse ml-0.5 align-text-bottom" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Loading indicator (before streaming starts) */}
+                  {loading && !streamingContent && (
                     <div className="flex justify-start">
                       <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-3 flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
                         <span className="text-xs text-stone-500">
-                          Remy is thinking{elapsedSec > 0 ? `... ${elapsedSec}s` : '...'}
+                          {getThinkingMessage(elapsedSec, streamingIntent)}
+                          {elapsedSec > 0 ? ` ${elapsedSec}s` : ''}
                         </span>
                       </div>
                     </div>
@@ -679,53 +1111,42 @@ export function RemyDrawer() {
                 {/* Input */}
                 <div className="p-4 border-t border-stone-200 dark:border-stone-700">
                   <div className="flex gap-2">
-                    <textarea
-                      ref={textareaRef}
-                      value={input}
-                      onChange={(e) => {
-                        if (e.target.value.length <= REMY_MAX_MESSAGE_LENGTH) {
-                          setInput(e.target.value)
-                        }
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          handleSend()
-                        }
-                      }}
-                      maxLength={REMY_MAX_MESSAGE_LENGTH}
-                      placeholder="Ask Remy anything..."
-                      className="flex-1 resize-none rounded-lg border border-stone-300 dark:border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
-                      rows={1}
-                    />
+                    <div className="flex-1 relative">
+                      <textarea
+                        ref={textareaRef}
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault()
+                            handleSend()
+                          }
+                        }}
+                        placeholder="Ask Remy anything..."
+                        className="w-full resize-none rounded-lg border border-stone-300 dark:border-stone-600 px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
+                        rows={1}
+                      />
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute right-2 bottom-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                        title="Attach file (.txt, .md, .csv, .json, images)"
+                      >
+                        <Paperclip className="h-4 w-4" />
+                      </button>
+                    </div>
                     <Button
                       onClick={() => handleSend()}
-                      disabled={!input.trim() || loading || input.length > REMY_MAX_MESSAGE_LENGTH}
+                      disabled={!input.trim() || loading}
                       variant="primary"
                       size="sm"
                     >
                       <Send className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="flex items-center justify-between mt-1.5">
-                    <p className="text-xs text-stone-400 flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3" />
-                      Powered by local AI — your data never leaves this machine
-                    </p>
-                    {input.length > REMY_MAX_MESSAGE_LENGTH * 0.8 && (
-                      <span
-                        className={`text-xs font-mono ${
-                          input.length > REMY_MAX_MESSAGE_LENGTH * 0.95
-                            ? 'text-red-500'
-                            : input.length > REMY_MAX_MESSAGE_LENGTH * 0.9
-                              ? 'text-amber-500'
-                              : 'text-stone-400'
-                        }`}
-                      >
-                        {input.length}/{REMY_MAX_MESSAGE_LENGTH}
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-xs text-stone-400 mt-1.5 flex items-center gap-1">
+                    <Globe className="h-3 w-3" />
+                    Local AI + web search. Ctrl+K to toggle.
+                  </p>
                 </div>
               </>
             )}
