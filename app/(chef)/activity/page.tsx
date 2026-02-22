@@ -6,6 +6,7 @@ import type { ChefActivityDomain } from '@/lib/activity/chef-types'
 import { getResumeItems } from '@/lib/activity/resume'
 import { getActivityCountsByDomain, getChefActivityFeed } from '@/lib/activity/chef-actions'
 import { getRecentClientActivity } from '@/lib/activity/actions'
+import { getActivityLogEnabled } from '@/lib/activity/preference-actions'
 import { ActivityPageClient } from './activity-page-client'
 
 export const metadata: Metadata = { title: 'Activity - ChefFlow' }
@@ -13,18 +14,32 @@ export const metadata: Metadata = { title: 'Activity - ChefFlow' }
 export default async function ActivityPage() {
   // Fetch initial state for default filters:
   // tab=my, timeRange=7, actor=all, no domain filter.
-  const [resumeItems, chefActivityResult, clientActivityResult, domainCounts] = await Promise.all([
-    safe('resumeItems', () => getResumeItems(), []),
-    safe('chefActivity', () => getChefActivityFeed({ limit: 25, daysBack: 7 }), { items: [], nextCursor: null }),
-    safe('clientActivity', () => getRecentClientActivity({ limit: 25, daysBack: 7 }), { items: [], nextCursor: null }),
-    safe('domainCounts', () => getActivityCountsByDomain(7), {} as Partial<Record<ChefActivityDomain, number>>),
-  ])
+  const [resumeItems, chefActivityResult, clientActivityResult, domainCounts, activityLogEnabled] =
+    await Promise.all([
+      safe('resumeItems', () => getResumeItems(), []),
+      safe('chefActivity', () => getChefActivityFeed({ limit: 25, daysBack: 7 }), {
+        items: [],
+        nextCursor: null,
+      }),
+      safe('clientActivity', () => getRecentClientActivity({ limit: 25, daysBack: 7 }), {
+        items: [],
+        nextCursor: null,
+      }),
+      safe(
+        'domainCounts',
+        () => getActivityCountsByDomain(7),
+        {} as Partial<Record<ChefActivityDomain, number>>
+      ),
+      safe('activityLogEnabled', () => getActivityLogEnabled(), true),
+    ])
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       <div>
         <h1 className="text-xl font-bold text-stone-800">Activity Log</h1>
-        <p className="text-sm text-stone-500 mt-0.5">Everything you&apos;ve been working on, all in one place.</p>
+        <p className="text-sm text-stone-500 mt-0.5">
+          Everything you&apos;ve been working on, all in one place.
+        </p>
       </div>
 
       <ActivityPageClient
@@ -34,6 +49,7 @@ export default async function ActivityPage() {
         initialClientActivity={clientActivityResult.items}
         initialClientCursor={clientActivityResult.nextCursor}
         domainCounts={domainCounts}
+        activityLogEnabled={activityLogEnabled}
       />
     </div>
   )

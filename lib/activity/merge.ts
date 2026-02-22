@@ -14,14 +14,14 @@ export function mergeActivityByCreatedAt(
   clientItems: ActivityEvent[]
 ): MergedActivityItem[] {
   const merged: MergedActivityItem[] = [
-    ...chefItems.map(item => ({
+    ...chefItems.map((item) => ({
       id: `chef:${item.id}`,
       created_at: item.created_at,
       source: 'chef' as const,
       chef: item,
       client: null,
     })),
-    ...clientItems.map(item => ({
+    ...clientItems.map((item) => ({
       id: `client:${item.id}`,
       created_at: item.created_at,
       source: 'client' as const,
@@ -34,6 +34,7 @@ export function mergeActivityByCreatedAt(
   return merged
 }
 
-export function parseTimeRangeDays(range: '1' | '7' | '30' | '90'): number {
+export function parseTimeRangeDays(range: '1' | '7' | '30' | '90' | '180' | '365' | 'all'): number {
+  if (range === 'all') return 0 // Sentinel: no date filter
   return Number.parseInt(range, 10)
 }

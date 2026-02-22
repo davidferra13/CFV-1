@@ -11,6 +11,7 @@ import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { LiveIndicator } from '@/components/realtime/live-indicator'
+import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 
 import { LogOut, Menu, X, ChevronLeft, ChevronRight, ChevronDown, Leaf } from 'lucide-react'
@@ -430,9 +431,11 @@ function NavGroupSection({
 export function ChefSidebar({
   primaryNavHrefs,
   hasCannabisTier,
+  enabledModules,
 }: {
   primaryNavHrefs?: string[]
   hasCannabisTier?: boolean
+  enabledModules?: string[]
 }) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useSidebar()
@@ -440,9 +443,15 @@ export function ChefSidebar({
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
+  // Filter nav groups by enabled modules (progressive disclosure)
+  const enabledSet = enabledModules ? new Set(enabledModules) : null
+  const visibleGroups = enabledSet
+    ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
+    : navGroups
+
   // Auto-expand group containing active route
   useEffect(() => {
-    for (const group of navGroups) {
+    for (const group of visibleGroups) {
       if (isGroupActive(pathname, group)) {
         setOpenGroups((prev) => {
           if (prev.has(group.id)) return prev
@@ -452,10 +461,10 @@ export function ChefSidebar({
         })
       }
     }
-  }, [pathname])
+  }, [pathname, visibleGroups])
 
   useEffect(() => {
-    for (const group of navGroups) {
+    for (const group of visibleGroups) {
       for (const item of group.items) {
         if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
           setOpenItems((prev) => {
@@ -467,7 +476,7 @@ export function ChefSidebar({
         }
       }
     }
-  }, [pathname])
+  }, [pathname, visibleGroups])
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => {
@@ -504,6 +513,7 @@ export function ChefSidebar({
         {!collapsed ? (
           <div className="flex items-center gap-1">
             <LiveIndicator />
+            <ActivityDot />
             <GlobalSearch />
             <NotificationBell />
             <button
@@ -537,6 +547,7 @@ export function ChefSidebar({
             <NotificationBell collapsed />
             <GlobalSearch />
             <LiveIndicator />
+            <ActivityDot collapsed />
 
             {/* Dashboard */}
             {primaryItems.map((item) => {
@@ -561,7 +572,7 @@ export function ChefSidebar({
             <div className="w-6 border-t border-stone-100 my-1.5" />
 
             {/* Groups as flyouts */}
-            {navGroups.map((group) => (
+            {visibleGroups.map((group) => (
               <RailFlyout key={group.id} group={group} pathname={pathname} />
             ))}
 
@@ -615,7 +626,7 @@ export function ChefSidebar({
             <div className="border-t border-stone-100 my-2" />
 
             {/* Grouped nav */}
-            {navGroups.map((group) => (
+            {visibleGroups.map((group) => (
               <NavGroupSection
                 key={group.id}
                 group={group}
@@ -884,9 +895,11 @@ function MobileGroupSection({
 export function ChefMobileNav({
   primaryNavHrefs,
   hasCannabisTier,
+  enabledModules,
 }: {
   primaryNavHrefs?: string[]
   hasCannabisTier?: boolean
+  enabledModules?: string[]
 }) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
@@ -894,10 +907,16 @@ export function ChefMobileNav({
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
+  // Filter nav groups by enabled modules (progressive disclosure)
+  const enabledSet = enabledModules ? new Set(enabledModules) : null
+  const visibleGroups = enabledSet
+    ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
+    : navGroups
+
   // Auto-expand group containing active route in mobile menu
   useEffect(() => {
     if (!menuOpen) return
-    for (const group of navGroups) {
+    for (const group of visibleGroups) {
       if (isGroupActive(pathname, group)) {
         setOpenGroups((prev) => {
           if (prev.has(group.id)) return prev
@@ -907,11 +926,11 @@ export function ChefMobileNav({
         })
       }
     }
-  }, [pathname, menuOpen])
+  }, [pathname, menuOpen, visibleGroups])
 
   useEffect(() => {
     if (!menuOpen) return
-    for (const group of navGroups) {
+    for (const group of visibleGroups) {
       for (const item of group.items) {
         if (item.children?.length && isCollapsibleItemActive(pathname, item)) {
           setOpenItems((prev) => {
@@ -923,7 +942,7 @@ export function ChefMobileNav({
         }
       }
     }
-  }, [pathname, menuOpen])
+  }, [pathname, menuOpen, visibleGroups])
 
   const toggleGroup = (id: string) => {
     setOpenGroups((prev) => {
@@ -956,6 +975,7 @@ export function ChefMobileNav({
           </Link>
           <div className="flex items-center gap-1">
             <LiveIndicator />
+            <ActivityDot />
             <GlobalSearch />
             <NotificationBell />
             <button
@@ -1012,7 +1032,7 @@ export function ChefMobileNav({
 
               {/* Grouped nav */}
               <div className="space-y-0.5">
-                {navGroups.map((group) => (
+                {visibleGroups.map((group) => (
                   <MobileGroupSection
                     key={group.id}
                     group={group}

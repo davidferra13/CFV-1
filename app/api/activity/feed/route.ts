@@ -6,7 +6,7 @@ import type { ActivityActorFilter } from '@/lib/activity/types'
 import type { ChefActivityDomain } from '@/lib/activity/chef-types'
 
 const tabSchema = z.enum(['my', 'client', 'all']).default('my')
-const timeRangeSchema = z.enum(['1', '7', '30', '90']).default('7')
+const timeRangeSchema = z.enum(['1', '7', '30', '90', '180', '365', 'all']).default('7')
 const actorSchema = z.enum(['all', 'client', 'chef', 'system']).default('all')
 const domainSchema = z.enum([
   'event',
@@ -26,14 +26,24 @@ export async function GET(request: NextRequest) {
   const tabParsed = tabSchema.safeParse(searchParams.get('tab') || undefined)
   const timeRangeParsed = timeRangeSchema.safeParse(searchParams.get('timeRange') || undefined)
   const actorParsed = actorSchema.safeParse(searchParams.get('actor') || undefined)
-  const limitParsed = z.coerce.number().int().min(1).max(100).safeParse(searchParams.get('limit') || 25)
+  const limitParsed = z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(100)
+    .safeParse(searchParams.get('limit') || 25)
 
-  if (!tabParsed.success || !timeRangeParsed.success || !actorParsed.success || !limitParsed.success) {
+  if (
+    !tabParsed.success ||
+    !timeRangeParsed.success ||
+    !actorParsed.success ||
+    !limitParsed.success
+  ) {
     return NextResponse.json({ error: 'Invalid query params' }, { status: 400 })
   }
 
   const tab = tabParsed.data
-  const daysBack = Number(timeRangeParsed.data)
+  const daysBack = timeRangeParsed.data === 'all' ? 0 : Number(timeRangeParsed.data)
   const actorFilter = actorParsed.data as ActivityActorFilter
   const limit = limitParsed.data
   const domainRaw = searchParams.get('domain')

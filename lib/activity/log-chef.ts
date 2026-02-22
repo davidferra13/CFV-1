@@ -20,6 +20,22 @@ export async function logChefActivity(input: {
   try {
     const supabase = createServerClient({ admin: true })
 
+    // Check if chef has opted out of activity logging.
+    // Default to logging (true) if preference row missing or query fails.
+    try {
+      const { data: prefs } = await supabase
+        .from('chef_preferences')
+        .select('activity_log_enabled')
+        .eq('tenant_id', input.tenantId)
+        .single()
+
+      if (prefs && (prefs as Record<string, unknown>).activity_log_enabled === false) {
+        return // Chef has explicitly opted out
+      }
+    } catch {
+      // Preference check failed — default to logging (safe default)
+    }
+
     const payload: TablesInsert<'chef_activity_log'> = {
       tenant_id: input.tenantId,
       actor_id: input.actorId,
@@ -35,7 +51,10 @@ export async function logChefActivity(input: {
     const { error } = await supabase.from('chef_activity_log').insert(payload)
 
     if (error) {
-      logActivityEvent('error', 'logChefActivity insert failed', { error: error.message, action: input.action })
+      logActivityEvent('error', 'logChefActivity insert failed', {
+        error: error.message,
+        action: input.action,
+      })
     }
   } catch (err) {
     logActivityEvent('error', 'logChefActivity failed (non-fatal)', {

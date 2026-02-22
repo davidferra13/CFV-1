@@ -4,7 +4,14 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import type { ActivityEvent, ActivityQueryOptions, ActivityQueryResult, ActiveClient, ActiveClientWithContext, ActivityEventRow } from './types'
+import type {
+  ActivityEvent,
+  ActivityQueryOptions,
+  ActivityQueryResult,
+  ActiveClient,
+  ActiveClientWithContext,
+  ActivityEventRow,
+} from './types'
 import { incrementMetric, logActivityEvent } from './observability'
 import { computeEngagementScore } from './engagement'
 
@@ -23,7 +30,8 @@ function normalizeActivityEvent(row: ActivityEventRow): ActivityEvent {
 }
 
 function parseDaysBack(daysBack?: number): number {
-  const parsed = Math.max(1, Math.min(365, daysBack ?? 7))
+  if (daysBack === 0) return 0 // "all time" sentinel
+  const parsed = Math.max(1, Math.min(3650, daysBack ?? 7))
   return Number.isFinite(parsed) ? parsed : 7
 }
 
@@ -34,7 +42,8 @@ export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient
 
   const { data, error } = await supabase
     .from('activity_events')
-    .select(`
+    .select(
+      `
       client_id,
       event_type,
       entity_type,
@@ -42,7 +51,8 @@ export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient
       metadata,
       created_at,
       clients:client_id(full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('actor_type', 'client')
     .not('client_id', 'is', null)
@@ -73,22 +83,27 @@ export async function getActiveClients(minutesWindow = 15): Promise<ActiveClient
   return Array.from(clientMap.values())
 }
 
-export async function getActivityFeed(options: ActivityQueryOptions = {}): Promise<ActivityQueryResult> {
+export async function getActivityFeed(
+  options: ActivityQueryOptions = {}
+): Promise<ActivityQueryResult> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   const limit = Math.max(1, Math.min(100, options.limit ?? 25))
   const daysBack = parseDaysBack(options.daysBack)
-  const since = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString()
 
   let query = supabase
     .from('activity_events')
     .select('*')
     .eq('tenant_id', user.tenantId!)
-    .gte('created_at', since)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .limit(limit + 1)
+
+  if (daysBack > 0) {
+    const since = new Date(Date.now() - daysBack * 24 * 60 * 60 * 1000).toISOString()
+    query = query.gte('created_at', since)
+  }
 
   if (options.actorType) {
     query = query.eq('actor_type', options.actorType)
@@ -185,7 +200,7 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', todayStart.toISOString())
 
-  const uniqueToday = new Set((todayData || []).map(r => r.client_id).filter(Boolean))
+  const uniqueToday = new Set((todayData || []).map((r) => r.client_id).filter(Boolean))
 
   const { data: weekData } = await supabase
     .from('activity_events')
@@ -195,7 +210,7 @@ export async function getEngagementStats(): Promise<{
     .not('client_id', 'is', null)
     .gte('created_at', weekAgo.toISOString())
 
-  const uniqueWeek = new Set((weekData || []).map(r => r.client_id).filter(Boolean))
+  const uniqueWeek = new Set((weekData || []).map((r) => r.client_id).filter(Boolean))
 
   const { count } = await supabase
     .from('activity_events')
@@ -215,20 +230,22 @@ export async function getEngagementStats(): Promise<{
  * Returns active clients enriched with engagement scores and entity context (event occasion).
  * Used by the dedicated /clients/presence monitoring page.
  */
-export async function getActiveClientsWithContext(minutesWindow = 60): Promise<ActiveClientWithContext[]> {
+export async function getActiveClientsWithContext(
+  minutesWindow = 60
+): Promise<ActiveClientWithContext[]> {
   const user = await requireChef()
   const supabase = createServerClient()
 
   const activeClients = await getActiveClients(minutesWindow)
   if (activeClients.length === 0) return []
 
-  const clientIds = activeClients.map(c => c.client_id)
+  const clientIds = activeClients.map((c) => c.client_id)
   const since14d = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString()
 
   // Fetch all recent events for active clients in one query (for engagement scoring)
   const eventEntityIds = activeClients
-    .filter(c => c.entity_type === 'event' && c.last_entity_id)
-    .map(c => c.last_entity_id!)
+    .filter((c) => c.entity_type === 'event' && c.last_entity_id)
+    .map((c) => c.last_entity_id!)
 
   const [recentEventsResult, eventTitlesResult] = await Promise.all([
     supabase
@@ -239,10 +256,7 @@ export async function getActiveClientsWithContext(minutesWindow = 60): Promise<A
       .gte('created_at', since14d)
       .order('created_at', { ascending: false }),
     eventEntityIds.length > 0
-      ? supabase
-          .from('events')
-          .select('id, occasion')
-          .in('id', eventEntityIds)
+      ? supabase.from('events').select('id, occasion').in('id', eventEntityIds)
       : Promise.resolve({ data: [] as { id: string; occasion: string | null }[], error: null }),
   ])
 
@@ -260,9 +274,10 @@ export async function getActiveClientsWithContext(minutesWindow = 60): Promise<A
       event_type: row.event_type as ActivityEvent['event_type'],
       entity_type: null,
       entity_id: null,
-      metadata: (row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata))
-        ? row.metadata as Record<string, unknown>
-        : {},
+      metadata:
+        row.metadata && typeof row.metadata === 'object' && !Array.isArray(row.metadata)
+          ? (row.metadata as Record<string, unknown>)
+          : {},
       created_at: row.created_at,
     })
     eventsByClient.set(row.client_id, list)
@@ -274,12 +289,12 @@ export async function getActiveClientsWithContext(minutesWindow = 60): Promise<A
     if (event.occasion) entityTitles.set(event.id, event.occasion)
   }
 
-  return activeClients.map(client => {
+  return activeClients.map((client) => {
     const clientEvents = eventsByClient.get(client.client_id) || []
     const engagement = computeEngagementScore(clientEvents)
     const entityTitle =
       client.entity_type === 'event' && client.last_entity_id
-        ? entityTitles.get(client.last_entity_id) ?? null
+        ? (entityTitles.get(client.last_entity_id) ?? null)
         : null
 
     return {

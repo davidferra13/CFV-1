@@ -5,7 +5,7 @@ import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import type { ActivityActorFilter } from '@/lib/activity/types'
 
 type ActivityTab = 'my' | 'client' | 'all'
-type TimeRange = '1' | '7' | '30' | '90'
+type TimeRange = '1' | '7' | '30' | '90' | '180' | '365' | 'all'
 
 interface ActivityFiltersProps {
   activeTab: ActivityTab
@@ -30,6 +30,9 @@ const TIME_OPTIONS: { value: TimeRange; label: string }[] = [
   { value: '7', label: 'This Week' },
   { value: '30', label: 'This Month' },
   { value: '90', label: '3 Months' },
+  { value: '180', label: '6 Months' },
+  { value: '365', label: '1 Year' },
+  { value: 'all', label: 'All Time' },
 ]
 
 const ACTOR_OPTIONS: { value: ActivityActorFilter; label: string }[] = [
@@ -40,7 +43,15 @@ const ACTOR_OPTIONS: { value: ActivityActorFilter; label: string }[] = [
 ]
 
 const DOMAIN_ORDER: ChefActivityDomain[] = [
-  'event', 'inquiry', 'quote', 'menu', 'recipe', 'client', 'financial', 'communication', 'operational',
+  'event',
+  'inquiry',
+  'quote',
+  'menu',
+  'recipe',
+  'client',
+  'financial',
+  'communication',
+  'operational',
 ]
 
 export function ActivityFilters({
@@ -61,7 +72,7 @@ export function ActivityFilters({
     <div className="space-y-3">
       {/* Tabs */}
       <div className="flex gap-1 bg-stone-100 rounded-lg p-1">
-        {TAB_OPTIONS.map(tab => (
+        {TAB_OPTIONS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => onTabChange(tab.value)}
@@ -91,7 +102,7 @@ export function ActivityFilters({
               >
                 All
               </button>
-              {DOMAIN_ORDER.map(domain => {
+              {DOMAIN_ORDER.map((domain) => {
                 const config = DOMAIN_CONFIG[domain]
                 const count = domainCounts[domain] || 0
                 return (
@@ -117,21 +128,25 @@ export function ActivityFilters({
           {showActor && (
             <select
               value={actorFilter}
-              onChange={e => onActorFilterChange(e.target.value as ActivityActorFilter)}
+              onChange={(e) => onActorFilterChange(e.target.value as ActivityActorFilter)}
               className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white"
             >
-              {ACTOR_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              {ACTOR_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </select>
           )}
           <select
             value={timeRange}
-            onChange={e => onTimeRangeChange(e.target.value as TimeRange)}
+            onChange={(e) => onTimeRangeChange(e.target.value as TimeRange)}
             className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white shrink-0"
           >
-            {TIME_OPTIONS.map(opt => (
-              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            {TIME_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
             ))}
           </select>
         </div>
