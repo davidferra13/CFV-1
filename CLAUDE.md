@@ -157,6 +157,22 @@ Balances, profit, payment status = **computed from ledger entries** via `event_f
 
 No `outline`, no `default` (Button), no `warning`/`success`/`error` (Button).
 
+### 5. Typography
+
+- **Body text:** Inter (sans-serif) — `font-sans` class, loaded via `next/font/google`
+- **Page headings (h1):** DM Serif Display (serif) — applied globally via `globals.css`, also available as `font-display` Tailwind class
+- **Brand name "ChefFlow":** Always `font-display` (serif) in nav, headers, footers
+- **Never** use `font-display` on body text, form labels, nav items, table data, or badges
+
+### 6. Brand Color Tokens
+
+CSS custom properties exist in `:root` for non-Tailwind contexts (FullCalendar, etc.):
+`--brand-50`, `--brand-400`, `--brand-500`, `--brand-600`
+
+Motion tokens: `--ease-spring`, `--ease-bounce`, `--duration-fast/normal/slow/enter/exit`
+
+Favicon/PWA icons use gradient `#eda86b` → `#d47530` (brand-400 → brand-600). Never navy/dark backgrounds.
+
 ---
 
 ## ARCHITECTURE
