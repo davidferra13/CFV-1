@@ -47,29 +47,32 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
       redirect('/onboarding')
     }
   }
-  // Cached for 60s — slug and nav prefs change rarely, and the cache is keyed
-  // per chef so one tenant's update never bleeds into another.
-  const layoutData = await getChefLayoutData(user.entityId)
-  // Platform announcement (non-fatal — fail open so a bad settings table never breaks the chef portal)
-  const announcement = await getAnnouncement().catch(() => null)
+  // Parallelized — all four calls are independent of each other and of layoutData.
+  // Running them concurrently saves ~3 sequential DB round-trips on every page load.
+  const [layoutData, announcement, tierStatus, hasCannabisTier, userIsAdmin] = await Promise.all([
+    // Cached for 60s — slug and nav prefs change rarely, keyed per chef
+    getChefLayoutData(user.entityId),
+    // Platform announcement (non-fatal — fail open)
+    getAnnouncement().catch(() => null),
+    // Tier check — non-fatal, defaults to pro (fail open so billing never breaks the portal)
+    getTierForChef(user.entityId).catch(() => ({
+      tier: 'pro' as const,
+      isGrandfathered: true,
+      subscriptionStatus: 'grandfathered',
+    })),
+    // Cannabis tier check — non-fatal, fails closed
+    hasCannabisAccess(user.id).catch(() => false),
+    // Admin check — admins bypass all tier restrictions
+    isAdmin().catch(() => false),
+  ])
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
   const enabledModules =
     layoutData.enabled_modules.length > 0 ? layoutData.enabled_modules : DEFAULT_ENABLED_MODULES
-  // Tier check — non-fatal, defaults to pro (fail open so billing never breaks the portal)
-  const tierStatus = await getTierForChef(user.entityId).catch(() => ({
-    tier: 'pro' as const,
-    isGrandfathered: true,
-    subscriptionStatus: 'grandfathered',
-  }))
   const daysSinceCreation = layoutData.created_at
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
-  // Cannabis tier check — non-fatal, fails closed (no access shown if DB unavailable)
-  const hasCannabisTier = await hasCannabisAccess(user.id).catch(() => false)
-  // Admin check — admins bypass all tier restrictions
-  const userIsAdmin = await isAdmin().catch(() => false)
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>

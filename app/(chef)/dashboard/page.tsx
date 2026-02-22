@@ -464,23 +464,15 @@ export default async function ChefDashboard() {
     safe('multiEventDays', () => getMultiEventDays(90), emptyMultiEventDays),
   ])
 
-  // Fetched separately — TypeScript's Promise.all tuple inference caps at 44 elements
-  const onboardingProgress = await safe(
-    'onboardingProgress',
-    getOnboardingProgress,
-    emptyOnboardingProgress
-  )
-  const nextBestActions = await safe(
-    'nextBestActions',
-    () => getNextBestActions(5),
-    emptyNextBestActions
-  )
-  const holidayOutreachSuggestions = await safe(
-    'holidayOutreach',
-    getHolidayOutreachSuggestions,
-    [] as HolidayOutreachSuggestion[]
-  )
-  const dailyPlanStats = await safe('dailyPlanStats', getDailyPlanStats, null)
+  // Fetched separately — TypeScript's Promise.all tuple inference caps at 44 elements.
+  // Still parallelized via their own Promise.all to avoid sequential round-trips.
+  const [onboardingProgress, nextBestActions, holidayOutreachSuggestions, dailyPlanStats] =
+    await Promise.all([
+      safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
+      safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions),
+      safe('holidayOutreach', getHolidayOutreachSuggestions, [] as HolidayOutreachSuggestion[]),
+      safe('dailyPlanStats', getDailyPlanStats, null),
+    ])
 
   const activeInquiryCount =
     inquiryStats.new +

@@ -22,6 +22,7 @@ export type CallType =
   | 'vendor_supplier'
   | 'partner'
   | 'general'
+  | 'prospecting'
 
 export type CallStatus = 'scheduled' | 'confirmed' | 'completed' | 'no_show' | 'cancelled'
 
@@ -62,6 +63,7 @@ export interface ScheduledCall {
   updated_at: string
   completed_at: string | null
   cancelled_at: string | null
+  prospect_id: string | null
   // Joined fields (optional)
   client?: { id: string; full_name: string; email: string | null } | null
   inquiry?: { id: string; confirmed_occasion: string | null } | null
@@ -89,6 +91,7 @@ const CALL_TYPES = [
   'vendor_supplier',
   'partner',
   'general',
+  'prospecting',
 ] as const
 
 const CALL_STATUSES = ['scheduled', 'confirmed', 'completed', 'no_show', 'cancelled'] as const
@@ -107,6 +110,7 @@ const CreateCallSchema = z.object({
   // Links
   inquiry_id: z.string().uuid().nullable().optional(),
   event_id: z.string().uuid().nullable().optional(),
+  prospect_id: z.string().uuid().nullable().optional(),
   // Prep
   prep_notes: z.string().max(5000).nullable().optional(),
   // Notification

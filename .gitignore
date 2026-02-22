@@ -131,3 +131,6 @@ null
 
 # Claude Code personal settings (machine-specific)
 .claude/settings.json
+
+# Remy local AI stats (machine-specific, no PII, regenerated automatically)
+/data/remy-stats/
