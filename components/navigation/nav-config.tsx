@@ -38,6 +38,7 @@ import {
   TrendingUp,
   Users,
   UtensilsCrossed,
+  Palette,
   Warehouse,
 } from 'lucide-react'
 
@@ -227,6 +228,12 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/costing', label: 'Costing', visibility: 'advanced' },
           { href: '/culinary/vendors', label: 'Vendor Directory', visibility: 'advanced' },
           { href: '/culinary/my-kitchen', label: 'My Kitchen', visibility: 'advanced' },
+          {
+            href: '/culinary-board',
+            label: 'Culinary Board',
+            icon: Palette,
+            visibility: 'advanced',
+          },
         ],
       },
       {

@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Culinary Composition Cheat Sheet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Permanent+Marker&family=Patrick+Hand&family=Indie+Flower&family=Rock+Salt&family=Shadows+Into+Light+Two&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #1a1a2e;
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(30, 30, 60, 0.8) 0%, transparent 70%),
+      radial-gradient(ellipse at 80% 20%, rgba(25, 25, 50, 0.6) 0%, transparent 60%),
+      linear-gradient(180deg, #16162a 0%, #1a1a2e 30%, #1e1e3a 70%, #141428 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Subtle chalk dust texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .board {
+    position: relative;
+    width: 100%;
+    max-width: 1800px;
+    margin: 0 auto;
+    padding: 60px 40px 80px;
+    z-index: 1;
+  }
+
+  /* Chalkboard frame lines */
+  .board::before {
+    content: '';
+    position: absolute;
+    top: 20px; left: 20px; right: 20px; bottom: 20px;
+    border: 2px solid rgba(255,255,255,0.04);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  .title-area {
+    text-align: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .title-area h1 {
+    font-family: 'Rock Salt', cursive;
+    font-size: 1.4rem;
+    color: rgba(255,255,255,0.15);
+    letter-spacing: 6px;
+    text-transform: uppercase;
+  }
+
+  .cloud {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 0;
+    padding: 20px;
+    line-height: 1.1;
+  }
+
+  .word {
+    display: inline-block;
+    padding: 4px 10px;
+    cursor: default;
+    transition: transform 0.2s ease, text-shadow 0.2s ease;
+    text-shadow: 0 0 8px currentColor;
+    opacity: 0.92;
+  }
+
+  .word:hover {
+    transform: scale(1.15) !important;
+    opacity: 1;
+    text-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+  }
+
+  /* ---- SIZE TIERS ---- */
+  .t1 { font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 700; padding: 6px 14px; }
+  .t2 { font-size: clamp(1.8rem, 3.5vw, 3.2rem); font-weight: 700; padding: 5px 12px; }
+  .t3 { font-size: clamp(1.1rem, 2vw, 1.8rem); padding: 3px 8px; }
+  .t4 { font-size: clamp(0.75rem, 1.2vw, 1.1rem); padding: 2px 6px; letter-spacing: 1px; }
+
+  /* ---- FONTS ---- */
+  .f1 { font-family: 'Permanent Marker', cursive; }
+  .f2 { font-family: 'Caveat', cursive; }
+  .f3 { font-family: 'Patrick Hand', cursive; }
+  .f4 { font-family: 'Indie Flower', cursive; }
+  .f5 { font-family: 'Shadows Into Light Two', cursive; }
+  .f6 { font-family: 'Rock Salt', cursive; }
+
+  /* ---- MARKER COLORS (chalk on dark board) ---- */
+  .c-white   { color: #f0ece4; }
+  .c-red     { color: #ff6b6b; }
+  .c-orange  { color: #ffa94d; }
+  .c-yellow  { color: #ffd43b; }
+  .c-green   { color: #69db7c; }
+  .c-teal    { color: #63e6be; }
+  .c-blue    { color: #74c0fc; }
+  .c-pink    { color: #f783ac; }
+  .c-purple  { color: #b197fc; }
+  .c-coral   { color: #ff8787; }
+
+  /* ---- ROTATIONS ---- */
+  .r-n3 { transform: rotate(-3deg); }
+  .r-n2 { transform: rotate(-2deg); }
+  .r-n1 { transform: rotate(-1deg); }
+  .r-0  { transform: rotate(0deg); }
+  .r-1  { transform: rotate(1deg); }
+  .r-2  { transform: rotate(2deg); }
+  .r-3  { transform: rotate(3deg); }
+  .r-n5 { transform: rotate(-5deg); }
+  .r-5  { transform: rotate(5deg); }
+  .r-n7 { transform: rotate(-7deg); }
+  .r-7  { transform: rotate(7deg); }
+
+  /* ---- SPECIAL STYLES ---- */
+  .underline { text-decoration: underline; text-decoration-style: wavy; text-underline-offset: 6px; }
+  .caps { text-transform: uppercase; letter-spacing: 3px; }
+  .italic { font-style: italic; }
+  .circled {
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    padding: 8px 16px;
+  }
+  .boxed {
+    border: 2px solid currentColor;
+    padding: 4px 12px;
+  }
+  .struck { text-decoration: line-through; opacity: 0.4; }
+  .arrow-right::after { content: ' →'; }
+  .arrow-left::before { content: '← '; }
+  .star::before { content: '★ '; font-size: 0.6em; }
+  .exclaim::after { content: '!'; }
+  .question::after { content: '?'; font-size: 0.8em; }
+  .double { text-decoration: underline double; text-underline-offset: 4px; }
+
+  /* Divider doodles between sections */
+  .doodle {
+    display: inline-block;
+    color: rgba(255,255,255,0.08);
+    font-size: 1.5rem;
+    padding: 0 8px;
+    font-family: 'Caveat', cursive;
+    user-select: none;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .board { padding: 30px 15px 50px; }
+    .cloud { padding: 10px; }
+    .t1 { font-size: clamp(2rem, 8vw, 3.5rem); }
+    .t2 { font-size: clamp(1.4rem, 5vw, 2.2rem); }
+    .t3 { font-size: clamp(0.9rem, 3vw, 1.4rem); }
+    .t4 { font-size: clamp(0.65rem, 2vw, 0.9rem); }
+  }
+
+  /* Print styles */
+  @media print {
+    body { background: #1a1a2e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .word { text-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="board">
+  <div class="title-area">
+    <h1>Compose Your Dish</h1>
+  </div>
+
+  <div class="cloud">
+
+    <!-- === TIER 1 — THE PILLARS === -->
+    <span class="word t1 f1 c-yellow r-n3 caps">Crunchy</span>
+    <span class="word t1 f1 c-red r-2 caps exclaim">Umami</span>
+    <span class="word t1 f2 c-orange r-n2 caps double">Fat</span>
+    <span class="word t1 f1 c-green r-3 caps">Acid</span>
+    <span class="word t1 f6 c-white r-n1 caps">Salt</span>
+    <span class="word t1 f1 c-pink r-2 caps">Sweet</span>
+    <span class="word t1 f1 c-teal r-n5 caps underline">Contrast</span>
+    <span class="word t1 f2 c-blue r-1 caps">Texture</span>
+    <span class="word t1 f1 c-coral r-n3 caps">Crispy</span>
+    <span class="word t1 f1 c-yellow r-5 caps star">Smoky</span>
+    <span class="word t1 f6 c-purple r-n2 caps">Balance</span>
+
+    <!-- === TIER 2 — STRONG SUPPORTING WORDS === -->
+    <span class="word t2 f2 c-white r-1">Creamy</span>
+    <span class="word t2 f3 c-yellow r-n2 underline">Bright</span>
+    <span class="word t2 f1 c-red r-3 circled">Heat</span>
+    <span class="word t2 f4 c-green r-n1">Earthy</span>
+    <span class="word t2 f1 c-orange r-2">Charred</span>
+    <span class="word t2 f5 c-teal r-n3">Foam</span>
+    <span class="word t2 f2 c-coral r-1 caps">Rich</span>
+    <span class="word t2 f3 c-purple r-n2">Bitter</span>
+    <span class="word t2 f1 c-green r-3">Herbaceous</span>
+    <span class="word t2 f4 c-orange r-n1">Tangy</span>
+    <span class="word t2 f2 c-red r-2 exclaim">Sour</span>
+    <span class="word t2 f5 c-blue r-n3">Airy</span>
+    <span class="word t2 f1 c-pink r-1">Silky</span>
+    <span class="word t2 f3 c-white r-n2">Fresh</span>
+    <span class="word t2 f2 c-yellow r-3 boxed">Savory</span>
+    <span class="word t2 f4 c-teal r-n1">Depth</span>
+    <span class="word t2 f1 c-coral r-2">Spicy</span>
+    <span class="word t2 f5 c-purple r-n3 underline">Layers</span>
+
+    <span class="doodle">~ ~ ~</span>
+
+    <!-- === TIER 3 — THE BULK (Textures) === -->
+    <span class="word t3 f3 c-white r-1">Smooth</span>
+    <span class="word t3 f4 c-yellow r-n2">Velvety</span>
+    <span class="word t3 f2 c-orange r-3">Chewy</span>
+    <span class="word t3 f5 c-green r-n1">Tender</span>
+    <span class="word t3 f3 c-blue r-2">Flaky</span>
+    <span class="word t3 f1 c-pink r-n3">Crumbly</span>
+    <span class="word t3 f4 c-teal r-1">Brittle</span>
+    <span class="word t3 f2 c-red r-n2">Snappy</span>
+    <span class="word t3 f5 c-purple r-3">Light</span>
+    <span class="word t3 f3 c-white r-n1">Dense</span>
+    <span class="word t3 f1 c-coral r-2">Fluffy</span>
+    <span class="word t3 f4 c-yellow r-n3 italic">Foamy</span>
+    <span class="word t3 f2 c-green r-1">Gelatinous</span>
+    <span class="word t3 f5 c-orange r-n2">Sticky</span>
+    <span class="word t3 f3 c-blue r-3">Gooey</span>
+    <span class="word t3 f1 c-pink r-n1">Firm</span>
+    <span class="word t3 f4 c-teal r-2">Soft</span>
+    <span class="word t3 f2 c-red r-n3">Craggy</span>
+    <span class="word t3 f5 c-white r-1">Toothy</span>
+    <span class="word t3 f3 c-purple r-n2 italic">Al Dente</span>
+    <span class="word t3 f1 c-yellow r-3">Supple</span>
+    <span class="word t3 f4 c-coral r-n1">Yielding</span>
+    <span class="word t3 f2 c-green r-2">Melting</span>
+    <span class="word t3 f5 c-orange r-n3 underline">Unctuous</span>
+    <span class="word t3 f3 c-blue r-1">Meaty</span>
+    <span class="word t3 f1 c-pink r-n2">Succulent</span>
+    <span class="word t3 f4 c-teal r-3 exclaim">Juicy</span>
+    <span class="word t3 f2 c-red r-n1">Buttery</span>
+    <span class="word t3 f5 c-white r-2">Delicate</span>
+    <span class="word t3 f3 c-purple r-n3">Rustic</span>
+    <span class="word t3 f1 c-yellow r-1">Crackly</span>
+    <span class="word t3 f4 c-coral r-n2">Shards</span>
+    <span class="word t3 f2 c-green r-3 italic">Snap</span>
+    <span class="word t3 f5 c-orange r-n1">Shatteringly Crisp</span>
+
+    <span class="doodle">• • •</span>
+
+    <!-- === TIER 3 — Flavors & Taste === -->
+    <span class="word t3 f1 c-white r-2">Salty</span>
+    <span class="word t3 f3 c-red r-n3">Tart</span>
+    <span class="word t3 f4 c-yellow r-1 underline">Acidic</span>
+    <span class="word t3 f2 c-blue r-n2">Briny</span>
+    <span class="word t3 f5 c-green r-3">Nutty</span>
+    <span class="word t3 f1 c-pink r-n1 italic">Floral</span>
+    <span class="word t3 f3 c-teal r-2">Fruity</span>
+    <span class="word t3 f4 c-orange r-n3">Peppery</span>
+    <span class="word t3 f2 c-purple r-1 exclaim">Pungent</span>
+    <span class="word t3 f5 c-coral r-n2">Funky</span>
+    <span class="word t3 f1 c-white r-3">Fermented</span>
+    <span class="word t3 f3 c-yellow r-n1 star">Caramelized</span>
+    <span class="word t3 f4 c-red r-2">Toasted</span>
+    <span class="word t3 f2 c-green r-n3">Malty</span>
+    <span class="word t3 f5 c-blue r-1 italic">Honeyed</span>
+    <span class="word t3 f1 c-pink r-n2">Mineral</span>
+    <span class="word t3 f3 c-teal r-3">Grassy</span>
+    <span class="word t3 f4 c-orange r-n1">Vegetal</span>
+    <span class="word t3 f2 c-purple r-2">Woody</span>
+    <span class="word t3 f5 c-coral r-n3 underline">Citrusy</span>
+    <span class="word t3 f1 c-white r-1">Vinegary</span>
+    <span class="word t3 f3 c-yellow r-n2">Sharp</span>
+    <span class="word t3 f4 c-red r-3 italic">Resinous</span>
+
+    <span class="doodle">/ / /</span>
+
+    <!-- === TIER 3 — Temperature & State === -->
+    <span class="word t3 f1 c-red r-n1 boxed">Hot</span>
+    <span class="word t3 f2 c-orange r-2">Warm</span>
+    <span class="word t3 f3 c-blue r-n3 italic">Cool</span>
+    <span class="word t3 f4 c-teal r-1">Cold</span>
+    <span class="word t3 f5 c-blue r-n2">Frozen</span>
+    <span class="word t3 f1 c-teal r-3">Chilled</span>
+    <span class="word t3 f2 c-blue r-n1 exclaim">Icy</span>
+    <span class="word t3 f3 c-red r-2 underline">Molten</span>
+    <span class="word t3 f4 c-white r-n3">Steaming</span>
+
+    <!-- === TIER 3 — Mouthfeel & Sensation === -->
+    <span class="word t3 f5 c-orange r-1 caps">Fatty</span>
+    <span class="word t3 f1 c-green r-n2">Lean</span>
+    <span class="word t3 f2 c-teal r-3 underline">Clean</span>
+    <span class="word t3 f3 c-yellow r-n1 exclaim">Zingy</span>
+    <span class="word t3 f4 c-purple r-2 italic">Numbing</span>
+    <span class="word t3 f5 c-blue r-n3">Cooling</span>
+    <span class="word t3 f1 c-red r-1">Warming</span>
+    <span class="word t3 f2 c-coral r-n2 star">Fiery</span>
+    <span class="word t3 f3 c-white r-3">Mouth-Coating</span>
+    <span class="word t3 f4 c-green r-n1">Astringent</span>
+    <span class="word t3 f5 c-teal r-2 underline">Refreshing</span>
+    <span class="word t3 f1 c-purple r-n3 italic">Lingering</span>
+    <span class="word t3 f2 c-yellow r-1">Tingly</span>
+    <span class="word t3 f3 c-pink r-n2 exclaim">Electric</span>
+    <span class="word t3 f4 c-blue r-3">Bracing</span>
+    <span class="word t3 f5 c-orange r-n1">Coating</span>
+    <span class="word t3 f1 c-white r-2">Drying</span>
+    <span class="word t3 f2 c-coral r-n3">Slippery</span>
+    <span class="word t3 f3 c-green r-1 italic">Round</span>
+
+    <span class="doodle">~ * ~</span>
+
+    <!-- === TIER 3 — Aroma === -->
+    <span class="word t3 f4 c-pink r-n2 star italic">Fragrant</span>
+    <span class="word t3 f5 c-purple r-3">Aromatic</span>
+    <span class="word t3 f1 c-pink r-n1 italic">Perfumed</span>
+    <span class="word t3 f2 c-white r-2">Heady</span>
+    <span class="word t3 f3 c-green r-n3 underline">Subtle</span>
+    <span class="word t3 f4 c-orange r-1">Roasted</span>
+    <span class="word t3 f5 c-yellow r-n2">Toasty</span>
+    <span class="word t3 f1 c-coral r-3">Browned</span>
+    <span class="word t3 f2 c-teal r-n1 italic">Yeasty</span>
+    <span class="word t3 f3 c-purple r-2">Winy</span>
+    <span class="word t3 f4 c-green r-n3">Anise</span>
+    <span class="word t3 f5 c-orange r-1">Musky</span>
+    <span class="word t3 f1 c-teal r-n2 italic">Piney</span>
+    <span class="word t3 f2 c-yellow r-3 underline">Tropical</span>
+
+    <!-- === TIER 3 — Visual & Plating === -->
+    <span class="word t3 f3 c-yellow r-n1 exclaim">Vibrant</span>
+    <span class="word t3 f4 c-orange r-2 star">Golden</span>
+    <span class="word t3 f5 c-white r-n3 caps">Height</span>
+    <span class="word t3 f1 c-teal r-1 boxed">Negative Space</span>
+    <span class="word t3 f2 c-green r-n2">Color</span>
+    <span class="word t3 f3 c-pink r-3 italic">Garnish</span>
+    <span class="word t3 f4 c-purple r-n1">Swoosh</span>
+    <span class="word t3 f5 c-coral r-2">Dots</span>
+    <span class="word t3 f1 c-white r-n3 italic">Quenelle</span>
+    <span class="word t3 f2 c-blue r-1">Shaved</span>
+    <span class="word t3 f3 c-yellow r-n2">Ribboned</span>
+
+    <span class="doodle">✦ ✦ ✦</span>
+
+    <!-- === TIER 3 — Composition Principles === -->
+    <span class="word t3 f4 c-white r-3 circled">Harmony</span>
+    <span class="word t3 f5 c-pink r-n1 caps exclaim">Surprise</span>
+    <span class="word t3 f1 c-yellow r-2 italic">Nostalgia</span>
+    <span class="word t3 f2 c-green r-n3 underline">Season</span>
+    <span class="word t3 f3 c-teal r-1">Complexity</span>
+    <span class="word t3 f4 c-purple r-n2 boxed">Restraint</span>
+
+    <!-- === TIER 3 — Emotion & Experience === -->
+    <span class="word t3 f5 c-orange r-3 star">Comfort</span>
+    <span class="word t3 f1 c-blue r-n1 italic">Memory</span>
+    <span class="word t3 f2 c-pink r-2 exclaim">Playful</span>
+    <span class="word t3 f3 c-white r-n3">Elegant</span>
+    <span class="word t3 f4 c-coral r-1 caps">Bold</span>
+    <span class="word t3 f5 c-purple r-n2 italic">Whimsical</span>
+    <span class="word t3 f1 c-yellow r-3">Provocative</span>
+    <span class="word t3 f2 c-teal r-n1 underline">Soulful</span>
+    <span class="word t3 f3 c-red r-2 star">Unexpected</span>
+
+    <span class="doodle">— — —</span>
+
+    <!-- === TIER 4 — ADVANCED / NICHE === -->
+    <span class="word t4 f4 c-teal r-1 italic">Spherification</span>
+    <span class="word t4 f5 c-purple r-n2">Gelification</span>
+    <span class="word t4 f3 c-blue r-3">Emulsification</span>
+    <span class="word t4 f4 c-orange r-n1">Dehydrated</span>
+    <span class="word t4 f1 c-teal r-2">Freeze-Dried</span>
+    <span class="word t4 f2 c-green r-n3">Sous Vide</span>
+    <span class="word t4 f5 c-white r-1">Smoked</span>
+    <span class="word t4 f3 c-yellow r-n2 underline">Pickled</span>
+    <span class="word t4 f4 c-pink r-3">Compressed</span>
+    <span class="word t4 f1 c-blue r-n1">Infused</span>
+    <span class="word t4 f2 c-coral r-2 italic">Gel</span>
+    <span class="word t4 f5 c-teal r-n3">Powder</span>
+    <span class="word t4 f3 c-orange r-1">Soil</span>
+    <span class="word t4 f4 c-white r-n2">Dust</span>
+    <span class="word t4 f1 c-purple r-3 italic">Air</span>
+    <span class="word t4 f2 c-green r-n1">Espuma</span>
+    <span class="word t4 f5 c-yellow r-2">Fluid Gel</span>
+    <span class="word t4 f3 c-pink r-n3">Cryo</span>
+    <span class="word t4 f4 c-blue r-1">Encapsulated</span>
+    <span class="word t4 f1 c-teal r-n2 italic">Terroir</span>
+    <span class="word t4 f2 c-white r-3">Tuile</span>
+    <span class="word t4 f5 c-coral r-n1">Microgreens</span>
+    <span class="word t4 f3 c-green r-2 italic">Edible Flowers</span>
+    <span class="word t4 f4 c-purple r-n3">Room Temp</span>
+    <span class="word t4 f1 c-orange r-1">Tepid</span>
+    <span class="word t4 f2 c-blue r-n2">Flash-Chilled</span>
+    <span class="word t4 f5 c-white r-3 italic">Balsamic</span>
+
+    <!-- === BONUS SCATTERED EXTRAS === -->
+    <span class="word t3 f1 c-red r-n5 caps underline">Crunch</span>
+    <span class="word t2 f6 c-yellow r-7 italic">Acidity</span>
+    <span class="word t3 f2 c-teal r-n7 exclaim">Pop</span>
+    <span class="word t3 f5 c-pink r-5 italic">Silken</span>
+    <span class="word t3 f3 c-orange r-n5">Burnished</span>
+    <span class="word t3 f4 c-green r-7">Verdant</span>
+    <span class="word t3 f1 c-purple r-n7 underline">Reduction</span>
+    <span class="word t3 f2 c-white r-5">Glaze</span>
+    <span class="word t3 f5 c-coral r-n5 exclaim">Burst</span>
+    <span class="word t3 f3 c-blue r-7 italic">Essence</span>
+    <span class="word t3 f4 c-yellow r-n7">Concentrate</span>
+    <span class="word t3 f1 c-red r-5 caps">Raw</span>
+    <span class="word t3 f2 c-teal r-n5">Cured</span>
+    <span class="word t3 f5 c-green r-7 underline">Brûléed</span>
+    <span class="word t3 f3 c-orange r-n7 italic">Torched</span>
+    <span class="word t3 f4 c-pink r-5">Bloomed</span>
+    <span class="word t3 f1 c-white r-n5">Steeped</span>
+    <span class="word t3 f2 c-purple r-7 exclaim">Punch</span>
+    <span class="word t3 f5 c-yellow r-n5 italic">Whisper</span>
+    <span class="word t3 f3 c-coral r-5">Crumble</span>
+    <span class="word t3 f4 c-blue r-n7 underline">Tempura</span>
+    <span class="word t3 f1 c-teal r-7 caps">Brine</span>
+    <span class="word t3 f2 c-red r-n5">Confit</span>
+    <span class="word t3 f5 c-white r-5 italic">Emulsion</span>
+    <span class="word t3 f3 c-green r-n7 star">Umami Bomb</span>
+    <span class="word t3 f4 c-orange r-7">Veloutéd</span>
+    <span class="word t2 f1 c-pink r-n5 caps exclaim">Mouth Feel</span>
+    <span class="word t3 f2 c-purple r-5">Sauce</span>
+    <span class="word t3 f5 c-yellow r-n7 italic">Jus</span>
+    <span class="word t3 f3 c-coral r-7 underline">Nappé</span>
+    <span class="word t3 f4 c-blue r-n5">Coulis</span>
+    <span class="word t3 f1 c-white r-5 italic">Purée</span>
+    <span class="word t3 f2 c-teal r-n7">Brunoise</span>
+    <span class="word t3 f5 c-red r-7">Chiffonade</span>
+    <span class="word t3 f3 c-green r-n5 caps">Sear</span>
+    <span class="word t3 f4 c-orange r-5 exclaim">Caramelize</span>
+    <span class="word t3 f1 c-purple r-n7 italic">Deglaze</span>
+    <span class="word t3 f2 c-yellow r-7">Mount</span>
+    <span class="word t3 f5 c-pink r-n5 underline">Finish</span>
+    <span class="word t3 f3 c-white r-5">Season</span>
+    <span class="word t3 f4 c-coral r-n7 italic">Bloom</span>
+    <span class="word t3 f1 c-blue r-7 caps">Baste</span>
+    <span class="word t3 f2 c-teal r-n5 star">Fold</span>
+
+  </div>
+</div>
+
+</body>
+</html>
