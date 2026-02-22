@@ -1038,6 +1038,7 @@ export async function POST(req: NextRequest) {
                 num_predict: OLLAMA_STREAM_MAX_TOKENS,
                 num_ctx: getOllamaContextSize('chef'),
               },
+              keep_alive: '5m',
             })
 
             let fullResponse = ''
@@ -1124,6 +1125,7 @@ export async function POST(req: NextRequest) {
               num_predict: OLLAMA_STREAM_MAX_TOKENS,
               num_ctx: getOllamaContextSize('chef'),
             },
+            keep_alive: '5m',
           })
 
           let fullResponse = ''

@@ -27,7 +27,9 @@ export interface OllamaEndpoint {
 interface RouterState {
   endpoints: OllamaEndpoint[]
   lastHealthCheck: Date | null
-  /** Don't hammer health checks — minimum 30s between checks */
+  /** Don't hammer health checks — minimum 60s between checks.
+   *  The badge also polls /api/tags separately, so keep this relaxed
+   *  to avoid double-polling Ollama every few seconds. */
   healthCheckCooldownMs: number
 }
 
@@ -38,7 +40,7 @@ interface RouterState {
 const state: RouterState = {
   endpoints: [],
   lastHealthCheck: null,
-  healthCheckCooldownMs: 30_000,
+  healthCheckCooldownMs: 60_000,
 }
 
 // ============================================

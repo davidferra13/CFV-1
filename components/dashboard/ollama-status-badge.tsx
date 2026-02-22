@@ -37,7 +37,7 @@ export function OllamaStatusBadge() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const getInterval = useCallback(() => {
-    if (!status) return 30_000 // initial
+    if (!status) return POLL_ONLINE // initial — no need to poll aggressively before first result
     if (status.online) {
       failCountRef.current = 0
       return POLL_ONLINE
@@ -93,11 +93,8 @@ export function OllamaStatusBadge() {
   // Online + model ready
   if (status.online && status.modelReady !== false) {
     const sourceLabel = status.isRemote ? 'Pi' : 'Local'
-    const gpuLabel = status.gpuLayers && status.gpuLayers > 0 ? ' · GPU' : ''
     const latencyLabel =
-      status.latencyMs !== null
-        ? `${sourceLabel} · ${status.latencyMs}ms${gpuLabel}`
-        : `${sourceLabel} Mode`
+      status.latencyMs !== null ? `${sourceLabel} · ${status.latencyMs}ms` : `${sourceLabel} Mode`
     const tooltip = status.isRemote
       ? 'Running on your Raspberry Pi — data stays private'
       : 'Private AI — data stays within ChefFlow'

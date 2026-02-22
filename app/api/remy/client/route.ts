@@ -151,6 +151,7 @@ export async function POST(req: NextRequest) {
               num_predict: 800, // Moderate length for client responses
               num_ctx: getOllamaContextSize('client'),
             },
+            keep_alive: '5m',
           })
 
           for await (const chunk of ollamaStream) {

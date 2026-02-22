@@ -57,30 +57,10 @@ export async function checkOllamaHealth(): Promise<OllamaHealthStatus> {
     const modelBase = config.model.split(':')[0]
     const modelReady = models.some((m) => m === config.model || m.startsWith(modelBase + ':'))
 
-    // Attempt GPU detection via /api/show (non-blocking, best-effort)
-    let gpuLayers: number | null = null
-    let totalLayers: number | null = null
-
-    if (modelReady) {
-      try {
-        const showRes = await fetch(`${config.baseUrl}/api/show`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: config.model }),
-          signal: AbortSignal.timeout(3000),
-          cache: 'no-store',
-        })
-        if (showRes.ok) {
-          const showData = await showRes.json()
-          const details = showData.model_info ?? showData.details ?? {}
-          // Ollama reports gpu_layers in different places depending on version
-          gpuLayers = details['general.gpu_layers'] ?? details.gpu_layers ?? null
-          totalLayers = details['general.block_count'] ?? details.total_layers ?? null
-        }
-      } catch {
-        // GPU detection is best-effort — don't fail the health check
-      }
-    }
+    // NOTE: GPU detection via /api/show was removed (2026-02-22).
+    // The POST /api/show endpoint may reset Ollama's keep_alive timer,
+    // preventing the model from unloading after idle timeout.
+    // Polling this every 30-60s kept ~16 GB of RAM pinned indefinitely.
 
     return {
       online: true,
@@ -88,8 +68,8 @@ export async function checkOllamaHealth(): Promise<OllamaHealthStatus> {
       modelReady,
       latencyMs,
       models,
-      gpuLayers,
-      totalLayers,
+      gpuLayers: null,
+      totalLayers: null,
       error: null,
     }
   } catch (err) {

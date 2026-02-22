@@ -59,6 +59,7 @@ async function generateText(
           num_predict: 2048, // Email drafts can be longer than JSON
           temperature,
         },
+        keep_alive: '5m',
       }),
       DEFAULT_TIMEOUT_MS,
       'ace-draft'
