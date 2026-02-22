@@ -455,12 +455,35 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
 ]
 
 export function buildTaskListForPrompt(): string {
-  return TASK_DESCRIPTIONS.map(
+  // Import agent actions dynamically to avoid circular deps in this non-server file
+  let agentSection = ''
+  try {
+    const { ensureAgentActionsRegistered } = require('@/lib/ai/agent-actions')
+    const { buildAgentTaskListForPrompt } = require('@/lib/ai/agent-registry')
+    ensureAgentActionsRegistered()
+    agentSection = buildAgentTaskListForPrompt()
+  } catch {
+    // Agent actions not available — skip
+  }
+
+  const legacySection = TASK_DESCRIPTIONS.map(
     (t) =>
       `- ${t.type} (Tier ${t.tier}, "${t.name}"): ${t.description}\n  Inputs: ${t.inputSchema}${t.tierNote ? `\n  IMPORTANT: ${t.tierNote}` : ''}`
   ).join('\n\n')
+
+  return legacySection + agentSection
 }
 
 export function getTaskName(taskType: string): string {
+  // Check agent registry first
+  try {
+    const { getAgentAction } = require('@/lib/ai/agent-registry')
+    const { ensureAgentActionsRegistered } = require('@/lib/ai/agent-actions')
+    ensureAgentActionsRegistered()
+    const action = getAgentAction(taskType)
+    if (action) return action.name
+  } catch {
+    // Agent registry not available — fall through
+  }
   return TASK_DESCRIPTIONS.find((t) => t.type === taskType)?.name ?? taskType
 }

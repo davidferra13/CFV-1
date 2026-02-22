@@ -8,6 +8,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { parseCommandIntent } from '@/lib/ai/command-intent-parser'
+import { getAgentAction, isAgentAction } from '@/lib/ai/agent-registry'
+import { ensureAgentActionsRegistered } from '@/lib/ai/agent-actions'
 import { searchClientsByName, getClients, getClientById } from '@/lib/clients/actions'
 import { getEvents, getEventById } from '@/lib/events/actions'
 import { getInquiries, getInquiryById } from '@/lib/inquiries/actions'
@@ -741,6 +743,42 @@ async function executeSingleTask(
   try {
     let data: unknown
 
+    // ─── Agent Action Registry (write actions) ──────────────────────────
+    ensureAgentActionsRegistered()
+    const agentAction = getAgentAction(task.taskType)
+    if (agentAction) {
+      const user = await requireChef()
+      const ctx = { tenantId, userId: user.id }
+
+      // Restricted actions → always held
+      if (agentAction.safety === 'restricted') {
+        const { preview } = await agentAction.executor(task.inputs, ctx)
+        return {
+          taskId: task.id,
+          taskType: task.taskType,
+          tier: 3,
+          name: agentAction.name,
+          status: 'held',
+          holdReason:
+            preview.fields.find((f) => f.label === 'Why')?.value ?? 'This action is restricted.',
+          preview,
+        }
+      }
+
+      // Reversible/significant actions → execute to build preview, return pending
+      const { preview, commitPayload } = await agentAction.executor(task.inputs, ctx)
+      return {
+        taskId: task.id,
+        taskType: task.taskType,
+        tier: 2,
+        name: agentAction.name,
+        status: 'pending',
+        data: commitPayload,
+        preview: { ...preview, commitPayload },
+      }
+    }
+
+    // ─── Legacy task types (read-only + existing drafts) ────────────────
     // Fail-fast: If taskType is not explicitly supported, return error immediately
     const supportedTaskTypes = new Set([
       'client.search',
@@ -1073,6 +1111,25 @@ export async function approveTask(
   const user = await requireChef()
   const tenantId = user.tenantId!
 
+  // ─── Agent Action Registry (write actions) ──────────────────────────
+  ensureAgentActionsRegistered()
+  const agentAction = getAgentAction(taskType)
+  if (agentAction) {
+    if (agentAction.safety === 'restricted') {
+      return {
+        success: false,
+        message: 'This action is restricted and cannot be performed by Remy.',
+      }
+    }
+    const payload = (data as Record<string, unknown>) ?? {}
+    // Check for error payloads (entity not found, etc.)
+    if (payload._error || payload._restricted) {
+      return { success: false, message: 'Cannot proceed — see the error in the preview.' }
+    }
+    return agentAction.commitAction(payload, { tenantId, userId: user.id })
+  }
+
+  // ─── Legacy task types ────────────────────────────────────────────────
   switch (taskType) {
     case 'email.followup':
     case 'email.generic':

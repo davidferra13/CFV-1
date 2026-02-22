@@ -48,6 +48,11 @@ RULES:
 6. If you cannot match part of the command to a known task, create a tier 3 entry with a clear holdReason.
 7. Ambiguous entity (e.g. chef says "Sarah" but there are multiple clients named Sarah) → tier 3.
 8. overallConfidence is your confidence in the full decomposition.
+9. agent.* tasks are ALWAYS tier 2 — they modify data and require chef approval. No exceptions.
+10. agent.ledger_write, agent.modify_roles, agent.delete_data, agent.send_email, agent.refund are ALWAYS tier 3.
+11. When the chef says "create", "add", "make", "set up", "update", "change", "edit", "move", "transition", "log", "schedule", "record" — use agent.* write tasks.
+12. For agent.* tasks, include all available info in the inputs even if incomplete — the executor handles missing fields.
+13. Prefer agent.create_event over event.create_draft — it is more capable.
 
 OUTPUT FORMAT — return ONLY valid JSON, no markdown:
 {

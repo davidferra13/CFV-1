@@ -4,6 +4,7 @@ import { Check, X, AlertTriangle, Clock, ChevronDown, ChevronUp } from 'lucide-r
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { RemyTaskResult } from '@/lib/ai/remy-types'
+import { AgentConfirmationCard } from '@/components/ai/agent-confirmation-card'
 
 interface RemyTaskCardProps {
   task: RemyTaskResult
@@ -60,40 +61,56 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
         <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{holdText}</p>
       ) : null}
 
-      {/* Data preview */}
-      {task.data !== undefined && task.status !== 'error' && (
+      {/* Agent action confirmation card */}
+      {task.preview && (task.status === 'pending' || task.status === 'held') ? (
+        <div className="mt-2">
+          <AgentConfirmationCard
+            preview={task.preview}
+            taskId={task.taskId}
+            taskType={task.taskType}
+            data={task.data}
+            onApprove={onApprove}
+            onReject={onReject}
+          />
+        </div>
+      ) : (
         <>
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="mt-2 flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
-          >
-            {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-            {expanded ? 'Hide details' : 'Show details'}
-          </button>
-          {expanded && (
-            <div className="mt-2 rounded bg-white/60 dark:bg-stone-800/60 p-2">
-              <TaskDataRenderer taskType={task.taskType} data={task.data} />
+          {/* Legacy data preview */}
+          {task.data !== undefined && task.status !== 'error' && (
+            <>
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-2 flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+              >
+                {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                {expanded ? 'Hide details' : 'Show details'}
+              </button>
+              {expanded && (
+                <div className="mt-2 rounded bg-white/60 dark:bg-stone-800/60 p-2">
+                  <TaskDataRenderer taskType={task.taskType} data={task.data} />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Legacy approve / reject buttons for tier 2 (pending) without preview */}
+          {task.status === 'pending' && !task.preview && (
+            <div className="mt-2 flex gap-2">
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => onApprove?.(task.taskId, task.taskType, task.data)}
+              >
+                <Check className="h-3 w-3 mr-1" />
+                Approve
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => onReject?.(task.taskId)}>
+                <X className="h-3 w-3 mr-1" />
+                Dismiss
+              </Button>
             </div>
           )}
         </>
-      )}
-
-      {/* Approve / Reject buttons for tier 2 (pending) */}
-      {task.status === 'pending' && (
-        <div className="mt-2 flex gap-2">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => onApprove?.(task.taskId, task.taskType, task.data)}
-          >
-            <Check className="h-3 w-3 mr-1" />
-            Approve
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => onReject?.(task.taskId)}>
-            <X className="h-3 w-3 mr-1" />
-            Dismiss
-          </Button>
-        </div>
       )}
     </div>
   )

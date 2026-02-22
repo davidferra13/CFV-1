@@ -966,6 +966,7 @@ export async function POST(req: NextRequest) {
         data: r.data,
         error: r.error,
         holdReason: r.holdReason,
+        preview: r.preview,
       }))
 
       const text = summarizeTaskResults(tasks)
@@ -1000,6 +1001,7 @@ export async function POST(req: NextRequest) {
         data: r.data,
         error: r.error,
         holdReason: r.holdReason,
+        preview: r.preview,
       }))
 
       const taskSummary = summarizeTaskResults(tasks)

@@ -35,9 +35,11 @@ import {
   Mic,
   MicOff,
   Settings2,
+  Info,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
+import { RemyCapabilitiesPanel } from '@/components/ai/remy-capabilities-panel'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
 import {
@@ -280,6 +282,7 @@ export function RemyDrawer() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
   const [conversations, setConversations] = useState<RemyConversation[]>([])
   const [showConversationList, setShowConversationList] = useState(false)
+  const [showCapabilities, setShowCapabilities] = useState(false)
   const [conversationsLoaded, setConversationsLoaded] = useState(false)
   const [isFirstExchange, setIsFirstExchange] = useState(true)
   const [hasDecayedThisSession, setHasDecayedThisSession] = useState(false)
@@ -1111,6 +1114,13 @@ export function RemyDrawer() {
                   </button>
                 </>
               )}
+              <button
+                onClick={() => setShowCapabilities(!showCapabilities)}
+                className={`transition-colors p-1 ${showCapabilities ? 'text-white' : 'text-white/80 hover:text-white'}`}
+                title="What can Remy do?"
+              >
+                <Info className="h-4.5 w-4.5" />
+              </button>
               <Link
                 href="/remy"
                 onClick={() => setOpen(false)}
@@ -1271,8 +1281,12 @@ export function RemyDrawer() {
             </div>
           )}
 
-          {/* Conversation list view */}
-          {showConversationList ? (
+          {/* Capabilities info panel */}
+          {showCapabilities ? (
+            <div className="flex-1 overflow-hidden">
+              <RemyCapabilitiesPanel onClose={() => setShowCapabilities(false)} />
+            </div>
+          ) : showConversationList ? (
             <div className="flex-1 overflow-y-auto">
               <div className="p-3">
                 <button
