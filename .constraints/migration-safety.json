@@ -1,0 +1,29 @@
+{
+  "id": "migration-safety",
+  "version": 1,
+  "description": "All migrations must be additive. Destructive operations require explicit user approval.",
+  "rules": [
+    {
+      "id": "ms-no-drop",
+      "severity": "error",
+      "description": "DROP TABLE, DROP COLUMN, DELETE FROM, TRUNCATE are forbidden in migration files without explicit approval",
+      "check": "grep-absence",
+      "forbiddenPatterns": ["DROP TABLE", "DROP COLUMN", "DELETE FROM", "TRUNCATE"],
+      "inFiles": ["supabase/migrations/**/*.sql"]
+    },
+    {
+      "id": "ms-timestamp-unique",
+      "severity": "error",
+      "description": "Migration file timestamps must be strictly ascending with no duplicates",
+      "check": "script",
+      "guidance": "Glob supabase/migrations/*.sql, extract timestamps from filenames, verify strictly ascending order"
+    },
+    {
+      "id": "ms-additive-only",
+      "severity": "warning",
+      "description": "Migrations should add tables, columns, indexes, constraints — not alter or remove existing structures",
+      "check": "manual",
+      "guidance": "ALTER COLUMN type changes and RENAME operations require explicit approval. Only ADD COLUMN is safe by default."
+    }
+  ]
+}

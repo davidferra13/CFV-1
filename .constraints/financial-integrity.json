@@ -1,0 +1,44 @@
+{
+  "id": "financial-integrity",
+  "version": 1,
+  "description": "Immutable ledger, derived balances, integer cents. Financial state is computed, never stored.",
+  "rules": [
+    {
+      "id": "fi-cents-only",
+      "severity": "error",
+      "description": "All monetary values must be integers in cents (minor units). Column and variable names for money should end in _cents.",
+      "check": "manual",
+      "guidance": "Use CentsSchema from lib/validation/schemas.ts for validation. Never use floats for money."
+    },
+    {
+      "id": "fi-no-direct-balance",
+      "severity": "error",
+      "description": "Balances are derived from ledger views, never stored directly in a column",
+      "check": "grep-absence",
+      "forbiddenPatterns": [".update.*balance", "SET balance", "INSERT.*balance.*INTO"],
+      "guidance": "Use event_financial_summary view or getTenantFinancialSummary() from lib/ledger/compute.ts"
+    },
+    {
+      "id": "fi-immutable-ledger",
+      "severity": "error",
+      "description": "ledger_entries table is append-only — never UPDATE or DELETE rows",
+      "check": "grep-absence",
+      "forbiddenPatterns": [
+        ".update(.*ledger_entries",
+        ".delete(.*ledger_entries",
+        "UPDATE ledger_entries",
+        "DELETE FROM ledger_entries"
+      ],
+      "note": "Immutability is also enforced by database triggers, but code should never attempt it"
+    },
+    {
+      "id": "fi-no-ai-ledger-writes",
+      "severity": "error",
+      "description": "AI cannot create, modify, or delete ledger entries (AI_POLICY.md hard limit #2)",
+      "check": "grep-absence",
+      "forbiddenPatterns": ["appendLedgerEntry"],
+      "inFiles": ["lib/ai/**/*.ts"],
+      "note": "Ledger writes must originate from explicit user actions, never from AI code"
+    }
+  ]
+}

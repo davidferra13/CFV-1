@@ -1,0 +1,62 @@
+{
+  "id": "server-actions",
+  "version": 1,
+  "description": "Rules for all files containing 'use server' directive",
+  "scope": {
+    "filePattern": "lib/**/*.ts",
+    "directive": "'use server'"
+  },
+  "rules": [
+    {
+      "id": "sa-auth-guard",
+      "severity": "error",
+      "description": "Every exported async function must call requireChef(), requireClient(), requireAuth(), requireAdmin(), or requirePartner() before any database query",
+      "check": "function-has-auth",
+      "authFunctions": [
+        "requireChef",
+        "requireClient",
+        "requireAuth",
+        "requireAdmin",
+        "requirePartner",
+        "getCurrentUser"
+      ]
+    },
+    {
+      "id": "sa-tenant-scoping",
+      "severity": "error",
+      "description": "Every .from() query must include .eq('tenant_id', ...) derived from session, not request body",
+      "check": "query-has-tenant-filter",
+      "queryPattern": ".from(",
+      "requiredFilter": ".eq('tenant_id'",
+      "exceptions": ["user_roles", "auth.getUser"]
+    },
+    {
+      "id": "sa-no-export-const",
+      "severity": "error",
+      "description": "'use server' files can only export async functions — never export const/let/var/class",
+      "check": "no-forbidden-exports",
+      "forbiddenPatterns": [
+        "export const ",
+        "export let ",
+        "export var ",
+        "export class ",
+        "export enum "
+      ],
+      "note": "export type and export interface are allowed (erased at compile time)"
+    },
+    {
+      "id": "sa-non-blocking-side-effects",
+      "severity": "warning",
+      "description": "Notifications, emails, activity logs must be wrapped in try/catch and never throw",
+      "check": "manual",
+      "sideEffectFunctions": [
+        "sendNotification",
+        "sendEmail",
+        "logChefActivity",
+        "createNotification",
+        "evaluateAutomations",
+        "logActivity"
+      ]
+    }
+  ]
+}

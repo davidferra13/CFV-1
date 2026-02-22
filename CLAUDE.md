@@ -327,6 +327,86 @@ Only run `npx tsc --noEmit --skipLibCheck` or `npx next build --no-lint` if:
 
 ---
 
+## MODEL TIER HANDOFF (Draft → Integrate Workflow)
+
+This system enables **architectural continuity across model tiers**. When the paid cloud model (Claude) is rate-limited, local models (Ollama) continue producing work — but they never touch the codebase directly. They write **structured patch tickets** into a queue. When the paid model returns, it acts as the **integrator**: reviewing, applying, verifying, and committing.
+
+### Core Principle
+
+**Local models draft. The paid model integrates. Standards never decay.**
+
+### The Patch Queue
+
+```
+.patches/
+  queue/       ← Local model writes tickets here
+  applied/     ← Integrator moves processed tickets here
+  rejected/    ← Integrator moves rejected tickets here
+  handoff.md   ← Context document for session continuity
+```
+
+### What Local Models Do
+
+1. Read `.patches/handoff.md` — context from the previous paid-model session
+2. Read `.constraints/*.json` — machine-readable architectural rules
+3. Write **patch tickets** to `.patches/queue/NNNN-description.md` containing:
+   - Meta (model, branch, parent commit)
+   - Intent (what this change does and why)
+   - Constraints referenced (which `.constraints/` rules apply)
+   - Files NOT to touch
+   - Unified diffs for each file (standard `diff -u` format)
+   - Self-assessment checklist (what was and wasn't verified)
+   - Verification steps (how the integrator proves correctness)
+4. **NEVER** edit source files, commit, or push
+
+### What the Paid Model (Integrator) Does
+
+1. Read `.patches/handoff.md` and list `.patches/queue/`
+2. For each ticket: review diffs, check constraint compliance, decide accept/reject
+3. Apply accepted patches via Write/Edit tools (never `git apply` blindly)
+4. Run `npm run check:constraints` — catches mechanical violations
+5. Run `npx tsc --noEmit --skipLibCheck` — catches type errors
+6. Fix any issues, commit, move tickets to `.patches/applied/` or `.patches/rejected/`
+7. Update `.patches/handoff.md` for the next session
+
+### Constraint Files
+
+Machine-readable JSON rules in `.constraints/` — referenced by local models, verified by `scripts/check-constraints.cjs`:
+
+| File                       | What it enforces                                                       |
+| -------------------------- | ---------------------------------------------------------------------- |
+| `server-actions.json`      | Auth guards, tenant scoping, no `export const` in `'use server'` files |
+| `privacy-boundary.json`    | No `parseWithAI` in private-data files, explicit file list             |
+| `financial-integrity.json` | Cents-only, immutable ledger, derived balances                         |
+| `event-fsm.json`           | 8-state machine, no AI transitions, no direct status mutations         |
+| `migration-safety.json`    | No destructive SQL, timestamps strictly ascending                      |
+| `tier-gating.json`         | Pro features must be registered and gated                              |
+
+### Automated Constraint Checker
+
+```bash
+npm run check:constraints          # Check all files
+npm run check:constraints:staged   # Only check git-staged files
+```
+
+Zero-dependency Node.js script. No LLM required. Run after applying patches or before committing.
+
+### Session Handoff
+
+The paid model writes `.patches/handoff.md` before every session ends. It contains:
+
+- Active branch and what's in progress
+- Prioritized list of tickets to draft
+- Which constraints apply to the current work
+- Files NOT to touch
+- Risk level and open questions
+
+### Full Reference
+
+See `docs/draft-integrate-workflow.md` for the complete workflow with ticket templates, day-to-day commands, and Continue configuration.
+
+---
+
 ## IMPLEMENTATION PATTERNS
 
 These are the four patterns Claude will get wrong without explicit rules.
