@@ -13,6 +13,7 @@ export type NotificationCategory =
   | 'lead'
   | 'protection'
   | 'wellbeing'
+  | 'review'
   | 'system'
 
 export type NotificationAction =
@@ -209,5 +210,6 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   lead: 'Leads',
   protection: 'Business Protection',
   wellbeing: 'Wellbeing & Momentum',
+  review: 'Reviews & Testimonials',
   system: 'System',
 }

@@ -16,7 +16,7 @@ import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
 import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
-import { CopilotDrawer } from '@/components/ai/copilot-drawer'
+import { RemyDrawer } from '@/components/ai/remy-drawer'
 import { OfflineBanner } from '@/components/ui/offline-banner'
 import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
 import { QuickCapture } from '@/components/mobile/quick-capture'
@@ -98,8 +98,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               {/* Offline connectivity banner — renders nothing when online */}
               <OfflineBanner />
 
-              {/* AI Co-Pilot floating drawer — available on all chef pages */}
-              <CopilotDrawer />
+              {/* Remy — AI companion chatbot, available on all chef pages */}
+              <RemyDrawer />
 
               {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
               <QuickCapture />

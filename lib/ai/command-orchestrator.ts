@@ -187,7 +187,15 @@ async function executeEventDetails(inputs: Record<string, unknown>, tenantId: st
 }
 
 async function executeEventListByStatus(inputs: Record<string, unknown>, tenantId: string) {
-  const status = String(inputs.status ?? 'confirmed')
+  const status = String(inputs.status ?? 'confirmed') as
+    | 'draft'
+    | 'proposed'
+    | 'accepted'
+    | 'paid'
+    | 'confirmed'
+    | 'in_progress'
+    | 'completed'
+    | 'cancelled'
   const supabase = createServerClient()
 
   const { data } = await supabase

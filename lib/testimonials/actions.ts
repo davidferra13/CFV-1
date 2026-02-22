@@ -37,7 +37,7 @@ export async function submitTestimonial(input: {
   const supabase = createServerClient({ admin: true })
 
   // Resolve share token → event + tenant
-  const { data: share } = await (supabase as any)
+  const { data: share } = await supabase
     .from('event_shares')
     .select('event_id, tenant_id')
     .eq('token', validated.shareToken)
@@ -51,7 +51,7 @@ export async function submitTestimonial(input: {
   // Link to guest record if token provided
   let guestId: string | null = null
   if (validated.guestToken) {
-    const { data: guest } = await (supabase as any)
+    const { data: guest } = await supabase
       .from('event_guests')
       .select('id')
       .eq('guest_token', validated.guestToken)
@@ -67,7 +67,7 @@ export async function submitTestimonial(input: {
       : validated.foodRating || validated.chefRating || null
 
   // Deduplicate: one testimonial per guest name per event
-  const { data: existing } = await (supabase as any)
+  const { data: existing } = await supabase
     .from('guest_testimonials')
     .select('id')
     .eq('event_id', share.event_id)
@@ -75,7 +75,7 @@ export async function submitTestimonial(input: {
     .single()
 
   if (existing) {
-    await (supabase as any)
+    await supabase
       .from('guest_testimonials')
       .update({
         testimonial: validated.testimonial.trim(),
@@ -90,7 +90,7 @@ export async function submitTestimonial(input: {
     return { success: true, updated: true }
   }
 
-  const { error } = await (supabase as any).from('guest_testimonials').insert({
+  const { error } = await supabase.from('guest_testimonials').insert({
     tenant_id: share.tenant_id,
     event_id: share.event_id,
     guest_id: guestId,
@@ -115,7 +115,9 @@ export async function submitTestimonial(input: {
     const { createNotification } = await import('@/lib/notifications/actions')
     await createNotification({
       tenantId: share.tenant_id,
+      recipientId: share.tenant_id,
       category: 'review',
+      action: 'review_submitted',
       title: 'New guest testimonial',
       body: `${validated.guestName.trim()} left a testimonial for your event.`,
       actionUrl: '/testimonials',
@@ -138,7 +140,7 @@ export async function getTestimonials(filters?: { approved?: boolean; eventId?: 
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = (supabase as any)
+  let query = supabase
     .from('guest_testimonials')
     .select(
       'id, event_id, guest_name, testimonial, rating, food_rating, chef_rating, food_highlight, would_recommend, is_approved, is_featured, created_at'
@@ -171,7 +173,7 @@ export async function setTestimonialApproval(testimonialId: string, approved: bo
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('guest_testimonials')
     .update({ is_approved: approved })
     .eq('id', testimonialId)
@@ -190,7 +192,7 @@ export async function setTestimonialFeatured(testimonialId: string, featured: bo
   const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await (supabase as any)
+  const { error } = await supabase
     .from('guest_testimonials')
     .update({ is_featured: featured })
     .eq('id', testimonialId)
