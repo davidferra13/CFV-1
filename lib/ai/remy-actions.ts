@@ -12,7 +12,14 @@ import { loadRemyContext } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
+import {
+  REMY_PERSONALITY,
+  REMY_DRAFT_INSTRUCTIONS,
+  REMY_PRIVACY_NOTE,
+} from '@/lib/ai/remy-personality'
+import { loadRelevantMemories } from '@/lib/ai/remy-memory-actions'
 import type { RemyMessage, RemyResponse, RemyTaskResult } from '@/lib/ai/remy-types'
+import type { RemyMemory } from '@/lib/ai/remy-memory-types'
 
 // ─── Response Schema ────────────────────────────────────────────────────────
 
@@ -69,20 +76,41 @@ AVAILABLE PAGES (suggest these when relevant):
 
 // ─── System Prompt Builder ──────────────────────────────────────────────────
 
-function buildRemySystemPrompt(context: Awaited<ReturnType<typeof loadRemyContext>>): string {
+function formatMemoriesForPrompt(memories: RemyMemory[]): string {
+  if (memories.length === 0) return ''
+
+  const grouped = new Map<string, string[]>()
+  for (const mem of memories) {
+    const cat = mem.category.replace(/_/g, ' ')
+    if (!grouped.has(cat)) grouped.set(cat, [])
+    grouped.get(cat)!.push(mem.content)
+  }
+
+  const sections: string[] = ['\nWHAT YOU REMEMBER ABOUT THIS CHEF:']
+  for (const [category, items] of grouped) {
+    sections.push(`${category}:`)
+    for (const item of items) {
+      sections.push(`- ${item}`)
+    }
+  }
+
+  sections.push(
+    "\nUse these memories naturally — reference them when relevant, but don't recite them mechanically."
+  )
+
+  return sections.join('\n')
+}
+
+function buildRemySystemPrompt(
+  context: Awaited<ReturnType<typeof loadRemyContext>>,
+  memories: RemyMemory[] = []
+): string {
   const parts: string[] = []
 
-  // Personality
-  parts.push(`You are Remy, a friendly and knowledgeable AI companion for private chefs using ChefFlow.
-Think of yourself as a sous chef who also knows the business side — you're here to help, not to take over.
-
-Personality:
-- Warm but concise. You respect the chef's time.
-- Speak like a teammate, not a robot. "Hey, looks like..." not "I have detected that..."
-- When you don't know something, say so honestly.
-- Everything you suggest is a draft. The chef always has final say.
-- Keep responses under 3 paragraphs unless the chef asks for more detail.
-- Use plain language, not corporate speak.`)
+  // Full personality guide
+  parts.push(REMY_PERSONALITY)
+  parts.push(REMY_DRAFT_INSTRUCTIONS)
+  parts.push(REMY_PRIVACY_NOTE)
 
   // Business context
   parts.push(`\nBUSINESS CONTEXT:
@@ -107,6 +135,12 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
     parts.push(
       `\nThe chef is currently on the ${context.currentPage} page. Consider this when making suggestions.`
     )
+  }
+
+  // Persistent memories
+  const memoryBlock = formatMemoriesForPrompt(memories)
+  if (memoryBlock) {
+    parts.push(memoryBlock)
   }
 
   // Navigation routes
@@ -221,10 +255,11 @@ export async function sendRemyMessage(
   await requireChef()
 
   try {
-    // Run context loading and intent classification in parallel
-    const [context, classification] = await Promise.all([
+    // Run context loading, intent classification, and memory loading in parallel
+    const [context, classification, memories] = await Promise.all([
       loadRemyContext(currentPage),
       classifyIntent(userMessage),
+      loadRelevantMemories(userMessage, undefined, undefined),
     ])
 
     // ─── COMMAND path ─────────────────────────────────────────────────
@@ -260,7 +295,7 @@ export async function sendRemyMessage(
       const [commandRun, conversationalResult] = await Promise.all([
         runCommand(commandInput),
         (async () => {
-          const systemPrompt = buildRemySystemPrompt(context)
+          const systemPrompt = buildRemySystemPrompt(context, memories)
           const history = formatConversationHistory(conversationHistory)
           return parseWithOllama(
             systemPrompt,
@@ -293,7 +328,7 @@ export async function sendRemyMessage(
     }
 
     // ─── QUESTION path (default) ──────────────────────────────────────
-    const systemPrompt = buildRemySystemPrompt(context)
+    const systemPrompt = buildRemySystemPrompt(context, memories)
     const history = formatConversationHistory(conversationHistory)
     const result = await parseWithOllama(
       systemPrompt,
