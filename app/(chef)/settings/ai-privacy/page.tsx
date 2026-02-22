@@ -104,10 +104,11 @@ export default function AiPrivacyPage() {
           <Bot className="h-5 w-5 text-emerald-600 shrink-0" />
           <div>
             <p className="text-sm font-medium text-emerald-900">
-              Remy is active and running locally on your machine.
+              Remy is active and running on ChefFlow&apos;s private infrastructure.
             </p>
             <p className="text-xs text-emerald-700 mt-0.5">
-              All AI processing happens on your device. No data is sent to external servers.
+              Your data stays within ChefFlow. Nothing is sent to third-party AI services like
+              OpenAI or Google.
             </p>
           </div>
         </div>
@@ -152,14 +153,14 @@ export default function AiPrivacyPage() {
             delete your data.
           </p>
           <p>
-            <strong>We will always:</strong> Run AI processing locally on your device, give you
-            complete visibility into what Remy knows, let you delete any or all data instantly, and
-            respect your choice to opt out entirely.
+            <strong>We will always:</strong> Process AI on ChefFlow&apos;s own servers (never
+            third-party AI), give you complete visibility into what Remy knows, let you delete any
+            or all data instantly, and respect your choice to opt out entirely.
           </p>
           <p>
-            <strong>How to verify:</strong> Remy uses Ollama, an open-source local AI engine. You
-            can monitor your network traffic while using Remy — you&apos;ll see zero outbound
-            requests to AI services. The code is the proof.
+            <strong>How to verify:</strong> Remy uses Ollama, a private AI engine that runs on
+            ChefFlow&apos;s infrastructure — not OpenAI, not Google, not any third-party service.
+            Your data never leaves ChefFlow&apos;s systems.
           </p>
         </div>
       </div>

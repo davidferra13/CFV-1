@@ -885,10 +885,10 @@ export default function TermsPage() {
               human approval.
             </li>
             <li>
-              <strong>Private data stays on your device.</strong> AI features that process private
-              data (client PII, financials, messages, allergen records) use Local AI (Ollama) only,
-              running on the Chef&apos;s machine. This data is never sent to any external AI
-              service.
+              <strong>Private data stays within ChefFlow.</strong> AI features that process private
+              data (client PII, financials, messages, allergen records) use ChefFlow&apos;s own AI
+              (Ollama) — never third-party services like OpenAI or Google. This data is never sent
+              to any external AI provider.
             </li>
             <li>
               <strong>General AI features may use external APIs.</strong> Features like recipe

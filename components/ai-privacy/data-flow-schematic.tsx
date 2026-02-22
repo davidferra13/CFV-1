@@ -28,7 +28,7 @@ export function DataFlowSchematic() {
             </div>
             <div>
               <h3 className="font-semibold text-red-900">Other AI Apps</h3>
-              <p className="text-xs text-red-600">Your data leaves your device</p>
+              <p className="text-xs text-red-600">Your data gets sent to third parties</p>
             </div>
           </div>
 
@@ -39,7 +39,7 @@ export function DataFlowSchematic() {
               className="w-full"
               aria-label="Diagram showing how other AI apps send your data to remote servers"
             >
-              {/* Your Device */}
+              {/* You (the user) */}
               <rect
                 x="10"
                 y="10"
@@ -56,7 +56,7 @@ export function DataFlowSchematic() {
                 textAnchor="middle"
                 className="fill-red-800 text-[11px] font-semibold"
               >
-                Your Device
+                You
               </text>
               <text x="70" y="45" textAnchor="middle" className="fill-red-500 text-[9px]">
                 Client names, budgets...
@@ -202,7 +202,7 @@ export function DataFlowSchematic() {
             </div>
             <div>
               <h3 className="font-semibold text-emerald-900">ChefFlow + Remy</h3>
-              <p className="text-xs text-emerald-600">Your data never leaves your device</p>
+              <p className="text-xs text-emerald-600">Your data never leaves ChefFlow</p>
             </div>
           </div>
 
@@ -211,9 +211,9 @@ export function DataFlowSchematic() {
             <svg
               viewBox="0 0 280 220"
               className="w-full"
-              aria-label="Diagram showing how ChefFlow keeps all data on your device"
+              aria-label="Diagram showing how ChefFlow keeps all data private"
             >
-              {/* Your Device — big encompassing box */}
+              {/* ChefFlow — big encompassing box */}
               <rect
                 x="10"
                 y="10"
@@ -231,7 +231,7 @@ export function DataFlowSchematic() {
                 textAnchor="middle"
                 className="fill-emerald-800 text-[11px] font-semibold"
               >
-                Your Device (everything stays here)
+                ChefFlow (everything stays here)
               </text>
 
               {/* Your Data box */}
@@ -291,10 +291,10 @@ export function DataFlowSchematic() {
                 textAnchor="middle"
                 className="fill-emerald-800 text-[10px] font-semibold"
               >
-                Remy (Local AI)
+                Remy (Private AI)
               </text>
               <text x="202" y="72" textAnchor="middle" className="fill-emerald-600 text-[8px]">
-                Runs on your machine
+                ChefFlow&apos;s own servers
               </text>
 
               {/* Lock icon area */}
@@ -314,10 +314,10 @@ export function DataFlowSchematic() {
                 textAnchor="middle"
                 className="fill-emerald-800 text-[9px] font-bold"
               >
-                No Internet
+                No Third-Party
               </text>
               <text x="140" y="120" textAnchor="middle" className="fill-emerald-700 text-[8px]">
-                Required
+                AI Services Used
               </text>
 
               {/* Success items */}
@@ -332,7 +332,7 @@ export function DataFlowSchematic() {
                   &#x2713;
                 </text>
                 <text x="22" y="12" className="fill-emerald-800 text-[9px]">
-                  AI runs 100% on your machine
+                  AI runs on ChefFlow&apos;s own servers
                 </text>
               </g>
               <g transform="translate(10, 175)">

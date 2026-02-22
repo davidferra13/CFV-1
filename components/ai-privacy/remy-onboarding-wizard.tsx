@@ -8,7 +8,7 @@
  *
  * Steps:
  * 1. "Meet Remy" — what it is, what it does
- * 2. "Your Data, Your Device" — the schematic
+ * 2. "Your Data Stays in ChefFlow" — the schematic
  * 3. "You're in Control" — show the delete/toggle controls
  * 4. "Best Practices" — how to use AI safely
  * 5. "Ready?" — explicit opt-in with a big toggle
@@ -53,7 +53,7 @@ const STEPS: OnboardingStep[] = [
   {
     id: 'data',
     icon: <Shield className="h-5 w-5" />,
-    title: 'Your Data, Your Device',
+    title: 'Your Data Stays in ChefFlow',
     subtitle: 'See exactly where data goes',
   },
   {
@@ -160,13 +160,13 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 {[
                   {
                     icon: <HardDrive className="h-5 w-5 text-brand-500" />,
-                    title: 'Runs Locally',
-                    desc: 'Remy runs on your own machine using a technology called Ollama. No cloud servers involved.',
+                    title: 'Private AI',
+                    desc: 'Remy runs on ChefFlow\u2019s own servers using Ollama. Your data is never sent to OpenAI, Google, or any third party.',
                   },
                   {
                     icon: <Lock className="h-5 w-5 text-brand-500" />,
                     title: '100% Private',
-                    desc: 'Your client names, budgets, recipes, and conversations never leave your device.',
+                    desc: 'Your client names, budgets, recipes, and conversations stay within ChefFlow \u2014 never shared externally.',
                   },
                   {
                     icon: <Eye className="h-5 w-5 text-brand-500" />,
@@ -187,18 +187,17 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
 
               <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
                 <p className="text-sm text-amber-800">
-                  <strong>Why &ldquo;local&rdquo; matters:</strong> Most AI services (ChatGPT,
-                  Google Gemini, etc.) send your data to their servers where it can be stored,
-                  analyzed, or used to train their models. Remy is different — it uses a local AI
-                  engine called Ollama that runs entirely on your computer. Your data physically
-                  cannot leave because the AI never connects to the internet to process your
-                  requests.
+                  <strong>Why this matters:</strong> Most AI services (ChatGPT, Google Gemini, etc.)
+                  send your data to their servers where it can be stored, analyzed, or used to train
+                  their models. Remy is different — it uses a private AI engine called Ollama that
+                  runs on ChefFlow&apos;s own infrastructure. Your data is never sent to any
+                  third-party AI provider. It stays within ChefFlow, period.
                 </p>
               </div>
             </div>
           )}
 
-          {/* ─── Step 2: Your Data, Your Device (The Schematic) ─── */}
+          {/* ─── Step 2: Your Data Stays in ChefFlow (The Schematic) ─── */}
           {step === 1 && <DataFlowSchematic />}
 
           {/* ─── Step 3: You're in Control ──────────────────── */}
@@ -393,8 +392,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 space-y-3">
                 <h3 className="font-semibold text-emerald-900">What you&apos;ve learned:</h3>
                 {[
-                  'Remy runs locally on your machine — no cloud servers',
-                  'Your data never leaves your device',
+                  'Remy runs on ChefFlow\u2019s private servers — not OpenAI, not Google',
+                  'Your data never leaves ChefFlow',
                   'You can delete any or all AI data at any time',
                   'Every Remy feature can be individually toggled',
                   'Remy assists only — it never acts without your approval',

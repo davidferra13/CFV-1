@@ -1340,7 +1340,7 @@ export function RemyDrawer() {
                       </p>
                       <p className="text-xs text-stone-400 mt-2 flex items-center gap-1">
                         <Globe className="h-3 w-3" />
-                        Web search enabled. Local AI for private data. Press{' '}
+                        Web search enabled. Private AI — your data stays in ChefFlow. Press{' '}
                         <kbd className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
                           Ctrl+K
                         </kbd>{' '}
@@ -1617,7 +1617,7 @@ export function RemyDrawer() {
                 </div>
                 <p className="text-xs text-stone-400 mt-1.5 flex items-center gap-1">
                   <Globe className="h-3 w-3" />
-                  Local AI + web search. Ctrl+K to toggle.
+                  Private AI + web search. Ctrl+K to toggle.
                 </p>
               </div>
             </>

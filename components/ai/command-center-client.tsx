@@ -171,7 +171,7 @@ export function CommandCenterClient() {
       {currentRun?.ollamaOffline && (
         <div className="rounded-lg border border-red-800 bg-red-950/50 p-4 text-sm text-red-300">
           <span className="font-medium">Ollama is offline.</span> Start Ollama to use the Command
-          Center — your data never leaves your machine.
+          Center — your data stays private within ChefFlow.
         </div>
       )}
 

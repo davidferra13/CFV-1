@@ -62,11 +62,11 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
         <ul className="text-sm text-stone-600 space-y-1.5">
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            How Remy runs privately on your own device
+            How Remy keeps your data private within ChefFlow
           </li>
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            Why your data never leaves your machine
+            Why your data is never sent to third-party AI services
           </li>
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
