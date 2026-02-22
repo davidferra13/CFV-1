@@ -95,6 +95,7 @@ export default function TriviaGame() {
   const [highScore, setHighScore] = useState(0)
   const previousIdsRef = useRef<string[]>([])
   const timerRef = useRef<ReturnType<typeof setInterval>>()
+  const cancelledRef = useRef(false)
 
   useEffect(() => {
     const saved = localStorage.getItem('chefflow-trivia-hi')
@@ -106,6 +107,7 @@ export default function TriviaGame() {
   const startGame = useCallback(async () => {
     const chosenTopic = topic || customTopic
     if (!chosenTopic.trim()) return
+    cancelledRef.current = false
     setPhase('loading')
     setScore(0)
     setStreak(0)
@@ -116,6 +118,9 @@ export default function TriviaGame() {
 
     try {
       const result = await generateTriviaQuestions(chosenTopic, difficulty, previousIdsRef.current)
+
+      // User cancelled while Ollama was thinking — discard the result
+      if (cancelledRef.current) return
 
       if (result.error === 'ollama-offline') {
         setErrorMsg('Remy needs Ollama to generate trivia. Start Ollama and try again!')
@@ -137,6 +142,8 @@ export default function TriviaGame() {
       setTimeLeft(TIME_PER_QUESTION)
       setPhase('playing')
     } catch (err) {
+      // User cancelled while Ollama was thinking — swallow the error
+      if (cancelledRef.current) return
       console.error('[trivia] Failed to call server action:', err)
       const msg = err instanceof Error ? err.message : String(err)
       if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
@@ -290,7 +297,14 @@ export default function TriviaGame() {
       )}
 
       {/* LOADING */}
-      {phase === 'loading' && <LoadingState onCancel={() => setPhase('setup')} />}
+      {phase === 'loading' && (
+        <LoadingState
+          onCancel={() => {
+            cancelledRef.current = true
+            setPhase('setup')
+          }}
+        />
+      )}
 
       {/* ERROR */}
       {phase === 'error' && (
