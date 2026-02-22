@@ -1,4 +1,4 @@
-// AAR History Page — Shows all After Action Reviews with trends
+// AAR History Page — Shows all Event Reviews with trends
 // Lets the chef see improvement over time
 
 import type { Metadata } from 'next'
@@ -11,7 +11,7 @@ import { FileAARButton } from '@/components/aar/file-aar-button'
 import { format } from 'date-fns'
 import { NoReviewsIllustration } from '@/components/ui/branded-illustrations'
 
-export const metadata: Metadata = { title: 'After Action Reviews - ChefFlow' }
+export const metadata: Metadata = { title: 'Event Reviews - ChefFlow' }
 
 export default async function AARHistoryPage() {
   await requireChef()
@@ -23,7 +23,7 @@ export default async function AARHistoryPage() {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">After Action Reviews</h1>
+          <h1 className="text-3xl font-bold text-stone-900">Event Reviews</h1>
           <p className="text-stone-600 mt-1">Track your improvement over time</p>
         </div>
         <div className="flex gap-2">
@@ -140,7 +140,7 @@ export default async function AARHistoryPage() {
           </div>
           <h2 className="text-lg font-semibold text-stone-900">No reviews yet</h2>
           <p className="text-stone-500 mt-2">
-            After Action Reviews will appear here after you complete events and file reviews.
+            Event Reviews will appear here after you complete events and file reviews.
           </p>
           <div className="flex justify-center gap-3 mt-4">
             <FileAARButton />

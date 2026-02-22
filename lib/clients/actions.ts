@@ -1167,7 +1167,7 @@ export async function createClientDirect(input: {
 
 /**
  * Search clients by name (case-insensitive partial match).
- * Used by the Command Center orchestrator for client lookup tasks.
+ * Used by the Ask Remy orchestrator for client lookup tasks.
  */
 export async function searchClientsByName(
   query: string

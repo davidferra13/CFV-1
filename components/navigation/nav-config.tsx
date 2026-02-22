@@ -10,6 +10,7 @@ import {
   ClipboardCheck,
   Clock,
   Compass,
+  Crosshair,
   DollarSign,
   FileText,
   Gift,
@@ -64,7 +65,7 @@ type PrimaryShortcutOption = NavItem & { context: string }
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks },
-  { href: '/commands', label: 'Command Center', icon: Bot },
+  { href: '/commands', label: 'Ask Remy', icon: Bot },
   { href: '/remy', label: 'Remy History', icon: Bot },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/clients', label: 'Clients', icon: Users },
@@ -75,6 +76,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/travel', label: 'Travel', icon: MapPin },
   { href: '/activity', label: 'Activity', icon: Activity },
   { href: '/goals', label: 'Goals', icon: Target },
+  { href: '/prospecting', label: 'Prospecting', icon: Crosshair },
 ]
 
 // Main domains
@@ -232,7 +234,7 @@ export const navGroups: NavGroup[] = [
         label: 'Operations Tools',
         icon: ClipboardCheck,
         children: [
-          { href: '/aar', label: 'After Action Reviews' },
+          { href: '/aar', label: 'Event Reviews' },
           { href: '/reviews', label: 'Reviews' },
           { href: '/import', label: 'Smart Import' },
           {
@@ -534,7 +536,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/insights',
-        label: 'Intelligence',
+        label: 'Insights',
         icon: BarChart3,
         children: [
           { href: '/analytics', label: 'Source Analytics' },
@@ -590,9 +592,7 @@ export const navGroups: NavGroup[] = [
         href: '/inbox/history-scan',
         label: 'Inbox Tools',
         icon: MessageCircle,
-        children: [
-          { href: '/inbox/triage', label: 'Communication Triage', visibility: 'advanced' },
-        ],
+        children: [{ href: '/inbox/triage', label: 'Sort Messages', visibility: 'advanced' }],
       },
       {
         href: '/proposals',

@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use server'
 
-// Command Center — Intent Parser
+// Ask Remy — Intent Parser
 // PRIVACY: Chef commands may contain client names, financial details — must stay local.
 // Parses freeform chef input into a structured task plan using local Ollama only.
 

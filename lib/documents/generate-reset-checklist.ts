@@ -51,11 +51,13 @@ export async function fetchResetChecklistData(eventId: string): Promise<ResetChe
 
   const { data: event } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       event_date, payment_status, quoted_price_cents,
       service_style, special_requests,
       client:clients(full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -139,7 +141,8 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   pdf.doc.setTextColor(204, 0, 0)
   pdf.doc.text(
     'Complete tonight or by noon tomorrow. Event cannot close until every box is checked.',
-    MARGIN_X, pdf.y
+    MARGIN_X,
+    pdf.y
   )
   pdf.doc.setTextColor(0, 0, 0)
   pdf.y += 5
@@ -249,12 +252,16 @@ export function renderResetChecklist(pdf: PDFLayout, data: ResetChecklistData) {
   pdf.doc.text('F — NEXT DAY', MARGIN_X + 2, pdf.y + 3.5)
   pdf.doc.setFont('helvetica', 'italic')
   pdf.doc.setFontSize(7.5)
-  pdf.doc.text('(complete by noon tomorrow)', MARGIN_X + 2 + pdf.doc.getTextWidth('F — NEXT DAY') + 3, pdf.y + 3.5)
+  pdf.doc.text(
+    '(complete by noon tomorrow)',
+    MARGIN_X + 2 + pdf.doc.getTextWidth('F — NEXT DAY') + 3,
+    pdf.y + 3.5
+  )
   pdf.y += nextDayBarH + 1
 
   item('Laundry moved to dryer or hung')
   item('Follow-up / thank you message sent to client')
-  item('After Action Review completed')
+  item('Event Review completed')
   item('Unused ingredients flagged (kept / tossed / returned)')
   pdf.space(1.5)
 

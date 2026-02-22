@@ -25,15 +25,15 @@ export type InteractiveItem = {
   id: string
   label: string
   sublabel?: string
-  checkable: boolean      // false = rendered as text/info, no tap target
-  initialState?: ItemState  // used for pre-crossed items (e.g. pre-sourced groceries)
+  checkable: boolean // false = rendered as text/info, no tap target
+  initialState?: ItemState // used for pre-crossed items (e.g. pre-sourced groceries)
 }
 
 export type InteractiveSection = {
   id: string
   title: string
   subtitle?: string
-  warning?: string        // amber/red warning box shown above items
+  warning?: string // amber/red warning box shown above items
   items: InteractiveItem[]
 }
 
@@ -41,14 +41,18 @@ export type InteractiveDocSpec = {
   title: string
   subtitle?: string
   headerPills: { label: string; value: string }[]
-  alerts: string[]        // red safety/allergy banners above all sections
+  alerts: string[] // red safety/allergy banners above all sections
   sections: InteractiveSection[]
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function fmtDate(dateStr: string): string {
-  try { return format(parseISO(dateStr), 'EEE, MMM d, yyyy') } catch { return dateStr }
+  try {
+    return format(parseISO(dateStr), 'EEE, MMM d, yyyy')
+  } catch {
+    return dateStr
+  }
 }
 
 function fmtQty(qty: number, unit: string): string {
@@ -59,8 +63,17 @@ function fmtQty(qty: number, unit: string): string {
 // ─── Grocery List ─────────────────────────────────────────────────────────────
 
 export function groceryListToSpec(data: GroceryListData): InteractiveDocSpec {
-  const { event, clientName, groceryStoreName, liquorStoreName,
-    stop1Sections, stop2Items, presourcedItems, unrecipedComponents, budget } = data
+  const {
+    event,
+    clientName,
+    groceryStoreName,
+    liquorStoreName,
+    stop1Sections,
+    stop2Items,
+    presourcedItems,
+    unrecipedComponents,
+    budget,
+  } = data
 
   const headerPills: { label: string; value: string }[] = [
     { label: 'Client', value: clientName },
@@ -92,7 +105,13 @@ export function groceryListToSpec(data: GroceryListData): InteractiveDocSpec {
     sections.push({
       id: 's1-empty',
       title: `${groceryStoreName}`,
-      items: [{ id: 's1-empty-0', label: 'No ingredients with linked recipes — see Verify Manually below.', checkable: false }],
+      items: [
+        {
+          id: 's1-empty-0',
+          label: 'No ingredients with linked recipes — see Verify Manually below.',
+          checkable: false,
+        },
+      ],
     })
   }
 
@@ -153,9 +172,9 @@ type PrepDish = PrepSheetData['dishes'][0]
 
 function classifyDep(comp: PrepComp): 'prep_now' | 'prep_after_shopping' {
   if (!comp.recipe) return 'prep_after_shopping'
-  const required = comp.recipe.recipe_ingredients.filter(ri => !ri.is_optional)
+  const required = comp.recipe.recipe_ingredients.filter((ri) => !ri.is_optional)
   if (required.length === 0) return 'prep_now'
-  return required.every(ri => ri.ingredient.is_staple) ? 'prep_now' : 'prep_after_shopping'
+  return required.every((ri) => ri.ingredient.is_staple) ? 'prep_now' : 'prep_after_shopping'
 }
 
 function groupByCourse(
@@ -199,15 +218,13 @@ function prepItemsFromGroups(
 
 export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
   const { event, clientName, dishes, components } = data
-  const dishById = new Map(dishes.map(d => [d.id, d]))
-  const atHome = components.filter(c => c.is_make_ahead)
-  const onSite = components.filter(c => !c.is_make_ahead)
-  const makeAheadNow = atHome.filter(c => classifyDep(c) === 'prep_now')
-  const makeAheadShopping = atHome.filter(c => classifyDep(c) === 'prep_after_shopping')
+  const dishById = new Map(dishes.map((d) => [d.id, d]))
+  const atHome = components.filter((c) => c.is_make_ahead)
+  const onSite = components.filter((c) => !c.is_make_ahead)
+  const makeAheadNow = atHome.filter((c) => classifyDep(c) === 'prep_now')
+  const makeAheadShopping = atHome.filter((c) => classifyDep(c) === 'prep_after_shopping')
 
-  const leaveBy = event.departure_time
-    ? format(new Date(event.departure_time), 'h:mm a')
-    : 'TBD'
+  const leaveBy = event.departure_time ? format(new Date(event.departure_time), 'h:mm a') : 'TBD'
 
   const sections: InteractiveSection[] = []
 
@@ -216,7 +233,12 @@ export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
       id: 'prep-now',
       title: 'AT HOME — Prep Now',
       subtitle: 'All required ingredients are on hand — start immediately',
-      items: prepItemsFromGroups(groupByCourse(makeAheadNow, dishById), dishById, 'prep-now', false),
+      items: prepItemsFromGroups(
+        groupByCourse(makeAheadNow, dishById),
+        dishById,
+        'prep-now',
+        false
+      ),
     })
   }
 
@@ -225,7 +247,12 @@ export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
       id: 'prep-shop',
       title: 'AT HOME — Prep After Shopping',
       subtitle: 'Blocked until groceries arrive',
-      items: prepItemsFromGroups(groupByCourse(makeAheadShopping, dishById), dishById, 'prep-shop', false),
+      items: prepItemsFromGroups(
+        groupByCourse(makeAheadShopping, dishById),
+        dishById,
+        'prep-shop',
+        false
+      ),
     })
   }
 
@@ -266,9 +293,7 @@ export function prepSheetToSpec(data: PrepSheetData): InteractiveDocSpec {
 
 export function checklistToSpec(data: ChecklistData): InteractiveDocSpec {
   const { event, clientName, permanentItems, eventSpecificItems, learnedItems } = data
-  const leaveBy = event.departure_time
-    ? format(new Date(event.departure_time), 'h:mm a')
-    : null
+  const leaveBy = event.departure_time ? format(new Date(event.departure_time), 'h:mm a') : null
 
   const sections: InteractiveSection[] = [
     {
@@ -329,9 +354,10 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
     ? `Payment received — $${Math.round(paymentAmountCents / 100)}`
     : 'Payment collected or Venmo / payment request sent'
 
-  const specialtyC = specialtyEquipment.length > 0
-    ? `Specialty items returned to place (${specialtyEquipment.join(', ')})`
-    : 'Specialty items returned to place (ice cream machine, sous vide, etc.)'
+  const specialtyC =
+    specialtyEquipment.length > 0
+      ? `Specialty items returned to place (${specialtyEquipment.join(', ')})`
+      : 'Specialty items returned to place (ice cream machine, sous vide, etc.)'
 
   const sections: InteractiveSection[] = [
     {
@@ -357,7 +383,11 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
         { id: 'b-1', label: 'Cooler wiped down and dried', checkable: true },
         { id: 'b-2', label: 'Cooler lid left open to air out', checkable: true },
         { id: 'b-3', label: 'Leftover food sorted: keep vs toss', checkable: true },
-        { id: 'b-4', label: 'Kept leftovers stored in fridge with labels (item + date)', checkable: true },
+        {
+          id: 'b-4',
+          label: 'Kept leftovers stored in fridge with labels (item + date)',
+          checkable: true,
+        },
         { id: 'b-5', label: 'Fridge has space — cleared out old items if needed', checkable: true },
       ],
     },
@@ -392,7 +422,7 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
           id: 'e-0',
           label: paymentLabel,
           checkable: true,
-          initialState: paymentReceived ? 2 as ItemState : 0 as ItemState,
+          initialState: paymentReceived ? (2 as ItemState) : (0 as ItemState),
         },
         { id: 'e-1', label: 'All receipts photographed and uploaded', checkable: true },
         { id: 'e-2', label: 'Tip recorded (if applicable)', checkable: true },
@@ -404,8 +434,12 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
       items: [
         { id: 'f-0', label: 'Laundry moved to dryer or hung', checkable: true },
         { id: 'f-1', label: 'Follow-up / thank you message sent to client', checkable: true },
-        { id: 'f-2', label: 'After Action Review completed', checkable: true },
-        { id: 'f-3', label: 'Unused ingredients flagged (kept / tossed / returned)', checkable: true },
+        { id: 'f-2', label: 'Event Review completed', checkable: true },
+        {
+          id: 'f-3',
+          label: 'Unused ingredients flagged (kept / tossed / returned)',
+          checkable: true,
+        },
       ],
     },
   ]
@@ -416,7 +450,9 @@ export function resetChecklistToSpec(data: ResetChecklistData): InteractiveDocSp
       { label: 'Client', value: clientName },
       { label: 'Date', value: fmtDate(event.event_date) },
     ],
-    alerts: ['Complete tonight or by noon tomorrow. Event cannot close until every box is checked.'],
+    alerts: [
+      'Complete tonight or by noon tomorrow. Event cannot close until every box is checked.',
+    ],
     sections,
   }
 }
@@ -429,42 +465,124 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
       id: 'pre-event',
       title: 'Pre-Event — Grocery & Prep',
       items: [
-        { id: 'pre-0', label: 'Grocery haul flat lay — overhead, all ingredients spread out, vertical 9:16', checkable: true },
-        { id: 'pre-1', label: 'Hero ingredient close-up — primary protein, specialty produce, or imported item', sublabel: 'macro', checkable: true },
-        { id: 'pre-2', label: 'Knife roll / tools laid out — overhead or 45° before cooking begins', checkable: true },
-        { id: 'pre-3', label: 'Mise en place spread — everything prepped, portioned, and arranged', sublabel: 'overhead', checkable: true },
+        {
+          id: 'pre-0',
+          label: 'Grocery haul flat lay — overhead, all ingredients spread out, vertical 9:16',
+          checkable: true,
+        },
+        {
+          id: 'pre-1',
+          label: 'Hero ingredient close-up — primary protein, specialty produce, or imported item',
+          sublabel: 'macro',
+          checkable: true,
+        },
+        {
+          id: 'pre-2',
+          label: 'Knife roll / tools laid out — overhead or 45° before cooking begins',
+          checkable: true,
+        },
+        {
+          id: 'pre-3',
+          label: 'Mise en place spread — everything prepped, portioned, and arranged',
+          sublabel: 'overhead',
+          checkable: true,
+        },
       ],
     },
     {
       id: 'cooking',
       title: 'Active Cooking',
       items: [
-        { id: 'cook-0', label: 'Knife work — overhead phone mount, clean board, 10–15 sec', sublabel: 'pre-mount before service starts', checkable: true },
-        { id: 'cook-1', label: 'Pan sizzle / sear — side angle at counter height, 8–10 sec', sublabel: 'do not narrate, let the sound carry', checkable: true },
-        { id: 'cook-2', label: 'Sauce or reduction — overhead close-up, glossy spoon, 5–8 sec', checkable: true },
-        { id: 'cook-3', label: 'Hands seasoning or finishing touch — pinch of salt, torn herb, 3–5 sec slow-mo', checkable: true },
-        { id: 'cook-4', label: 'Raw → finished time-lapse — fixed mount, 10+ frames, strong caramelization or sear', checkable: true },
+        {
+          id: 'cook-0',
+          label: 'Knife work — overhead phone mount, clean board, 10–15 sec',
+          sublabel: 'pre-mount before service starts',
+          checkable: true,
+        },
+        {
+          id: 'cook-1',
+          label: 'Pan sizzle / sear — side angle at counter height, 8–10 sec',
+          sublabel: 'do not narrate, let the sound carry',
+          checkable: true,
+        },
+        {
+          id: 'cook-2',
+          label: 'Sauce or reduction — overhead close-up, glossy spoon, 5–8 sec',
+          checkable: true,
+        },
+        {
+          id: 'cook-3',
+          label: 'Hands seasoning or finishing touch — pinch of salt, torn herb, 3–5 sec slow-mo',
+          checkable: true,
+        },
+        {
+          id: 'cook-4',
+          label:
+            'Raw → finished time-lapse — fixed mount, 10+ frames, strong caramelization or sear',
+          checkable: true,
+        },
       ],
     },
     {
       id: 'plating',
       title: 'Plating — plate one dish for camera before service plates leave the pass',
       items: [
-        { id: 'plate-0', label: 'Hero plate — overhead flat lay', sublabel: 'shoot vertical 9:16 then crop to 1:1 square for feed', checkable: true },
-        { id: 'plate-1', label: 'Hero plate — low 30° restaurant angle', sublabel: 'shows height, sauce work, and garnish depth', checkable: true },
-        { id: 'plate-2', label: 'Hands placing final garnish — the last touch, 3–5 sec', sublabel: 'slow-mo if phone supports', checkable: true },
-        { id: 'plate-3', label: 'Full table at service — all courses set, candlelight if present, wide horizontal', checkable: true },
-        { id: 'plate-4', label: 'Texture detail / close-up cross-section — demonstrates technique at macro level', checkable: true },
+        {
+          id: 'plate-0',
+          label: 'Hero plate — overhead flat lay',
+          sublabel: 'shoot vertical 9:16 then crop to 1:1 square for feed',
+          checkable: true,
+        },
+        {
+          id: 'plate-1',
+          label: 'Hero plate — low 30° restaurant angle',
+          sublabel: 'shows height, sauce work, and garnish depth',
+          checkable: true,
+        },
+        {
+          id: 'plate-2',
+          label: 'Hands placing final garnish — the last touch, 3–5 sec',
+          sublabel: 'slow-mo if phone supports',
+          checkable: true,
+        },
+        {
+          id: 'plate-3',
+          label: 'Full table at service — all courses set, candlelight if present, wide horizontal',
+          checkable: true,
+        },
+        {
+          id: 'plate-4',
+          label: 'Texture detail / close-up cross-section — demonstrates technique at macro level',
+          checkable: true,
+        },
       ],
     },
     {
       id: 'service',
       title: 'Service & Wrap',
       items: [
-        { id: 'svc-0', label: 'Empty plate after course — overhead, social proof without showing client faces', checkable: true },
-        { id: 'svc-1', label: 'Client reaction — candid only, faces optional', sublabel: 'GET PERMISSION before posting · 3–5 sec', checkable: true },
-        { id: 'svc-2', label: 'Chef self-capture at the pass — builds face recognition and brand identity', sublabel: 'optional', checkable: true },
-        { id: 'svc-3', label: 'Clean kitchen at wrap — wide shot, proves you left it better than you found it', checkable: true },
+        {
+          id: 'svc-0',
+          label: 'Empty plate after course — overhead, social proof without showing client faces',
+          checkable: true,
+        },
+        {
+          id: 'svc-1',
+          label: 'Client reaction — candid only, faces optional',
+          sublabel: 'GET PERMISSION before posting · 3–5 sec',
+          checkable: true,
+        },
+        {
+          id: 'svc-2',
+          label: 'Chef self-capture at the pass — builds face recognition and brand identity',
+          sublabel: 'optional',
+          checkable: true,
+        },
+        {
+          id: 'svc-3',
+          label: 'Clean kitchen at wrap — wide shot, proves you left it better than you found it',
+          checkable: true,
+        },
       ],
     },
     {
@@ -472,10 +590,30 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
       title: 'Brand Consistency',
       subtitle: 'Repeat these decisions at every event',
       items: [
-        { id: 'brand-0', label: 'Same plate angle every event — choose ONE: overhead OR low 30° — commit to it forever', checkable: true },
-        { id: 'brand-1', label: 'Same 2–3 surface props in every photo: cutting board, linen napkin, slate tile — bring them', checkable: true },
-        { id: 'brand-2', label: 'Same editing preset applied to every photo before posting — one preset = one visual identity', checkable: true },
-        { id: 'brand-3', label: 'Same opening shot type to start every Reel/TikTok — your audience will learn to recognize it', checkable: true },
+        {
+          id: 'brand-0',
+          label:
+            'Same plate angle every event — choose ONE: overhead OR low 30° — commit to it forever',
+          checkable: true,
+        },
+        {
+          id: 'brand-1',
+          label:
+            'Same 2–3 surface props in every photo: cutting board, linen napkin, slate tile — bring them',
+          checkable: true,
+        },
+        {
+          id: 'brand-2',
+          label:
+            'Same editing preset applied to every photo before posting — one preset = one visual identity',
+          checkable: true,
+        },
+        {
+          id: 'brand-3',
+          label:
+            'Same opening shot type to start every Reel/TikTok — your audience will learn to recognize it',
+          checkable: true,
+        },
       ],
     },
     {
@@ -483,18 +621,47 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
       title: 'Platform Specs',
       subtitle: 'Shoot everything vertical 9:16 first — crop down from there',
       items: [
-        { id: 'plat-0', label: 'TikTok + Instagram Reels: 9:16 vertical (1080×1920) | 15–60 sec | Hook in first 3 sec | Let sizzle audio play', checkable: false },
-        { id: 'plat-1', label: 'Instagram Feed: 4:5 portrait or 1:1 square | Bright clean plates | Same edit preset on every post', checkable: false },
-        { id: 'plat-2', label: 'Instagram Stories: 9:16 vertical | Keep text out of top/bottom 14% | Add poll or sticker', checkable: false },
-        { id: 'plat-3', label: 'Facebook: 1:1 square or 4:5 portrait | Photos and behind-the-scenes video', checkable: false },
+        {
+          id: 'plat-0',
+          label:
+            'TikTok + Instagram Reels: 9:16 vertical (1080×1920) | 15–60 sec | Hook in first 3 sec | Let sizzle audio play',
+          checkable: false,
+        },
+        {
+          id: 'plat-1',
+          label:
+            'Instagram Feed: 4:5 portrait or 1:1 square | Bright clean plates | Same edit preset on every post',
+          checkable: false,
+        },
+        {
+          id: 'plat-2',
+          label:
+            'Instagram Stories: 9:16 vertical | Keep text out of top/bottom 14% | Add poll or sticker',
+          checkable: false,
+        },
+        {
+          id: 'plat-3',
+          label: 'Facebook: 1:1 square or 4:5 portrait | Photos and behind-the-scenes video',
+          checkable: false,
+        },
       ],
     },
     {
       id: 'solo',
       title: 'Solo Setup — mount phone before service starts, never during it',
       items: [
-        { id: 'solo-0', label: '3 positions: (1) Overhead arm above cutting board  (2) Side mount beside stove  (3) Tabletop stand for plating — rotate between these', checkable: false },
-        { id: 'solo-1', label: 'Gear: overhead boom arm + flexible Gorilla Pod + bluetooth remote shutter (~$50 total) — film first, review after guests leave', checkable: false },
+        {
+          id: 'solo-0',
+          label:
+            '3 positions: (1) Overhead arm above cutting board  (2) Side mount beside stove  (3) Tabletop stand for plating — rotate between these',
+          checkable: false,
+        },
+        {
+          id: 'solo-1',
+          label:
+            'Gear: overhead boom arm + flexible Gorilla Pod + bluetooth remote shutter (~$50 total) — film first, review after guests leave',
+          checkable: false,
+        },
       ],
     },
   ]
@@ -515,7 +682,12 @@ export function contentShotListToSpec(data: ContentShotListData): InteractiveDoc
 // ─── Travel Route ─────────────────────────────────────────────────────────────
 
 type TravelRouteDataShape = {
-  event: { occasion: string | null; event_date: string; location_address: string | null; location_city: string | null }
+  event: {
+    occasion: string | null
+    event_date: string
+    location_address: string | null
+    location_city: string | null
+  }
   clientName: string
   chefName: string
   legs: TravelLegWithIngredients[]
@@ -530,13 +702,21 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
     sections.push({
       id: 'empty',
       title: 'No travel legs planned',
-      items: [{ id: 'empty-0', label: 'Open the Travel Plan tab on the event page to start planning your routes.', checkable: false }],
+      items: [
+        {
+          id: 'empty-0',
+          label: 'Open the Travel Plan tab on the event page to start planning your routes.',
+          checkable: false,
+        },
+      ],
     })
   }
 
   for (let li = 0; li < legs.length; li++) {
     const leg = legs[li]
-    const typeLabel = (leg.leg_type as string).replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+    const typeLabel = (leg.leg_type as string)
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (c) => c.toUpperCase())
     const legId = `leg-${li}`
     const legItems: InteractiveItem[] = []
 
@@ -550,13 +730,25 @@ export function travelRouteToSpec(data: TravelRouteDataShape): InteractiveDocSpe
       })
     }
 
-    const sortedStops = [...((leg.stops as { order: number; name: string; address?: string; purpose?: string; estimated_minutes?: number; notes?: string }[]) || [])].sort((a, b) => a.order - b.order)
+    const sortedStops = [
+      ...((leg.stops as {
+        order: number
+        name: string
+        address?: string
+        purpose?: string
+        estimated_minutes?: number
+        notes?: string
+      }[]) || []),
+    ].sort((a, b) => a.order - b.order)
     for (let si = 0; si < sortedStops.length; si++) {
       const stop = sortedStops[si]
       legItems.push({
         id: `${legId}-stop-${si}`,
         label: `${si + 1}. ${stop.name}${stop.purpose ? ` — ${stop.purpose}` : ''}`,
-        sublabel: [stop.address, stop.estimated_minutes ? `~${stop.estimated_minutes} min` : null].filter(Boolean).join(' · ') || undefined,
+        sublabel:
+          [stop.address, stop.estimated_minutes ? `~${stop.estimated_minutes} min` : null]
+            .filter(Boolean)
+            .join(' · ') || undefined,
         checkable: false,
       })
     }
@@ -622,14 +814,31 @@ export function eventSummaryToSpec(data: EventSummaryData): InteractiveDocSpec {
     id: 'client',
     title: 'Client',
     items: [
-      { id: 'client-name', label: client.full_name, sublabel: client.preferred_name ? `Prefers: ${client.preferred_name}` : undefined, checkable: false },
-      ...(client.house_rules ? [{ id: 'client-rules', label: `House rules: ${client.house_rules}`, checkable: false as const }] : []),
-      ...(client.vibe_notes ? [{ id: 'client-vibe', label: `Vibe: ${client.vibe_notes}`, checkable: false as const }] : []),
+      {
+        id: 'client-name',
+        label: client.full_name,
+        sublabel: client.preferred_name ? `Prefers: ${client.preferred_name}` : undefined,
+        checkable: false,
+      },
+      ...(client.house_rules
+        ? [
+            {
+              id: 'client-rules',
+              label: `House rules: ${client.house_rules}`,
+              checkable: false as const,
+            },
+          ]
+        : []),
+      ...(client.vibe_notes
+        ? [{ id: 'client-vibe', label: `Vibe: ${client.vibe_notes}`, checkable: false as const }]
+        : []),
     ],
   })
 
   // Event
-  const location = [event.location_address, event.location_city, event.location_state].filter(Boolean).join(', ')
+  const location = [event.location_address, event.location_city, event.location_state]
+    .filter(Boolean)
+    .join(', ')
   sections.push({
     id: 'event',
     title: 'Event Details',
@@ -637,9 +846,19 @@ export function eventSummaryToSpec(data: EventSummaryData): InteractiveDocSpec {
       { id: 'ev-date', label: `Date: ${fmtDate(event.event_date)}`, checkable: false },
       { id: 'ev-guests', label: `Guests: ${event.guest_count}`, checkable: false },
       { id: 'ev-serve', label: `Serve time: ${event.serve_time ?? 'TBD'}`, checkable: false },
-      ...(location ? [{ id: 'ev-location', label: `Location: ${location}`, checkable: false as const }] : []),
+      ...(location
+        ? [{ id: 'ev-location', label: `Location: ${location}`, checkable: false as const }]
+        : []),
       { id: 'ev-status', label: `Status: ${event.status}`, checkable: false },
-      ...(event.payment_status ? [{ id: 'ev-payment', label: `Payment: ${event.payment_status}`, checkable: false as const }] : []),
+      ...(event.payment_status
+        ? [
+            {
+              id: 'ev-payment',
+              label: `Payment: ${event.payment_status}`,
+              checkable: false as const,
+            },
+          ]
+        : []),
     ],
   })
 
@@ -647,11 +866,23 @@ export function eventSummaryToSpec(data: EventSummaryData): InteractiveDocSpec {
   for (const course of courses) {
     const items: InteractiveItem[] = []
     if (course.dishDescription) {
-      items.push({ id: `c${course.courseNumber}-desc`, label: course.dishDescription, checkable: false })
+      items.push({
+        id: `c${course.courseNumber}-desc`,
+        label: course.dishDescription,
+        checkable: false,
+      })
     }
-    items.push({ id: `c${course.courseNumber}-comps`, label: `${course.componentCount} component${course.componentCount !== 1 ? 's' : ''}`, checkable: false })
+    items.push({
+      id: `c${course.courseNumber}-comps`,
+      label: `${course.componentCount} component${course.componentCount !== 1 ? 's' : ''}`,
+      checkable: false,
+    })
     if (course.dishAllergenFlags.length > 0) {
-      items.push({ id: `c${course.courseNumber}-allergen`, label: `Allergens: ${course.dishAllergenFlags.join(', ')}`, checkable: false })
+      items.push({
+        id: `c${course.courseNumber}-allergen`,
+        label: `Allergens: ${course.dishAllergenFlags.join(', ')}`,
+        checkable: false,
+      })
     }
     sections.push({
       id: `course-${course.courseNumber}`,
@@ -679,7 +910,9 @@ export function executionSheetToSpec(data: ExecutionSheetData): InteractiveDocSp
   const { event, client, courses, arrivalTasks } = data
 
   const allAllergens = [...new Set([...(event.allergies ?? []), ...(client.allergies ?? [])])]
-  const allDietary = [...new Set([...(event.dietary_restrictions ?? []), ...(client.dietary_restrictions ?? [])])]
+  const allDietary = [
+    ...new Set([...(event.dietary_restrictions ?? []), ...(client.dietary_restrictions ?? [])]),
+  ]
 
   const alerts: string[] = []
   if (allAllergens.length > 0) alerts.push(`ALLERGENS: ${allAllergens.join(', ')}`)
@@ -710,7 +943,10 @@ export function executionSheetToSpec(data: ExecutionSheetData): InteractiveDocSp
       items: course.components.map((comp, i) => ({
         id: `course-${course.courseNumber}-${i}`,
         label: comp.name,
-        sublabel: [comp.execution_notes, comp.is_make_ahead ? 'pre-made' : null].filter(Boolean).join(' · ') || undefined,
+        sublabel:
+          [comp.execution_notes, comp.is_make_ahead ? 'pre-made' : null]
+            .filter(Boolean)
+            .join(' · ') || undefined,
         checkable: false,
       })),
     })
@@ -743,13 +979,37 @@ export function fohMenuToSpec(data: FrontOfHouseMenuData): InteractiveDocSpec {
       { label: 'Guests', value: String(event.guest_count) },
     ],
     alerts: [],
-    sections: courses.map(course => ({
+    sections: courses.map((course) => ({
       id: `course-${course.courseNumber}`,
       title: course.courseName,
       items: [
-        ...(course.dishDescription ? [{ id: `foh-${course.courseNumber}-desc`, label: course.dishDescription, checkable: false as const }] : []),
-        ...(course.dietaryTags.length > 0 ? [{ id: `foh-${course.courseNumber}-dietary`, label: course.dietaryTags.join(', '), checkable: false as const }] : []),
-        ...(course.allergenFlags.length > 0 ? [{ id: `foh-${course.courseNumber}-allergen`, label: `Contains: ${course.allergenFlags.join(', ')}`, checkable: false as const }] : []),
+        ...(course.dishDescription
+          ? [
+              {
+                id: `foh-${course.courseNumber}-desc`,
+                label: course.dishDescription,
+                checkable: false as const,
+              },
+            ]
+          : []),
+        ...(course.dietaryTags.length > 0
+          ? [
+              {
+                id: `foh-${course.courseNumber}-dietary`,
+                label: course.dietaryTags.join(', '),
+                checkable: false as const,
+              },
+            ]
+          : []),
+        ...(course.allergenFlags.length > 0
+          ? [
+              {
+                id: `foh-${course.courseNumber}-allergen`,
+                label: `Contains: ${course.allergenFlags.join(', ')}`,
+                checkable: false as const,
+              },
+            ]
+          : []),
       ],
     })),
   }

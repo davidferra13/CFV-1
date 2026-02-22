@@ -53,7 +53,9 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
         <span className="text-emerald-600 text-lg">✅</span>
         <div>
           <p className="text-sm font-semibold text-emerald-900">Debrief saved!</p>
-          <p className="text-xs text-emerald-700">File a full After Action Review when you have a moment.</p>
+          <p className="text-xs text-emerald-700">
+            File a full Event Review when you have a moment.
+          </p>
         </div>
       </div>
     )
@@ -82,10 +84,12 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
             How was your energy / calm level during service?
           </label>
           <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map(n => (
+            {[1, 2, 3, 4, 5].map((n) => (
               <label key={n} className="flex flex-col items-center gap-0.5 cursor-pointer">
                 <input type="radio" name="energy" value={n} required className="sr-only peer" />
-                <span className="text-lg peer-checked:scale-125 transition-transform">{['😓', '😐', '🙂', '😊', '🤩'][n - 1]}</span>
+                <span className="text-lg peer-checked:scale-125 transition-transform">
+                  {['😓', '😐', '🙂', '😊', '🤩'][n - 1]}
+                </span>
                 <span className="text-[10px] text-amber-700">{n}</span>
               </label>
             ))}

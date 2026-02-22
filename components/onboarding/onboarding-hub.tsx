@@ -29,7 +29,7 @@ const PHASES: Phase[] = [
   },
   {
     key: 'clients',
-    label: 'Client Ledger',
+    label: 'Client List',
     description:
       'Import every existing client — their contact info, dietary restrictions, allergies, and service history.',
     icon: Users,

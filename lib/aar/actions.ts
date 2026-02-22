@@ -1,4 +1,4 @@
-// After Action Review (AAR) Server Actions
+// Event Review (AAR) Server Actions
 // Post-event feedback loop: ratings, forgotten items, notes
 // Feeds the Non-Negotiables learning system
 
@@ -46,7 +46,7 @@ export type CreateAARInput = z.infer<typeof CreateAARSchema>
 export type UpdateAARInput = z.infer<typeof UpdateAARSchema>
 
 /**
- * Create an After Action Review for a completed event
+ * Create an Event Review for a completed event
  * Sets aar_filed = true on the linked event
  */
 export async function createAAR(input: CreateAARInput) {
@@ -126,7 +126,12 @@ export async function createAAR(input: CreateAARInput) {
       entityType: 'after_action_review',
       entityId: aar.id,
       summary: `Filed after-action review — calm: ${validated.calm_rating}/5, prep: ${validated.preparation_rating}/5`,
-      context: { event_id: validated.event_id, calm_rating: validated.calm_rating, preparation_rating: validated.preparation_rating, execution_rating: validated.execution_rating },
+      context: {
+        event_id: validated.event_id,
+        calm_rating: validated.calm_rating,
+        preparation_rating: validated.preparation_rating,
+        execution_rating: validated.execution_rating,
+      },
     })
   } catch (err) {
     console.error('[createAAR] Activity log failed (non-blocking):', err)
@@ -166,10 +171,12 @@ export async function getAAR(id: string) {
 
   const { data: aar, error } = await supabase
     .from('after_action_reviews')
-    .select(`
+    .select(
+      `
       *,
       event:events(id, occasion, event_date, guest_count, status, client:clients(id, full_name, email))
-    `)
+    `
+    )
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -235,10 +242,12 @@ export async function getEventsWithoutAAR() {
 
   const { data: events, error } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, guest_count,
       client:clients(id, full_name)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
     .eq('aar_filed', false)
@@ -261,10 +270,12 @@ export async function getRecentAARs(limit = 10) {
 
   const { data: aars, error } = await supabase
     .from('after_action_reviews')
-    .select(`
+    .select(
+      `
       *,
       event:events(id, occasion, event_date, guest_count, status, client:clients(id, full_name))
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
     .limit(limit)
@@ -287,13 +298,15 @@ export async function getAARStats() {
   // Fetch all AARs ordered by event date for trend analysis
   const { data: aars, error } = await supabase
     .from('after_action_reviews')
-    .select(`
+    .select(
+      `
       calm_rating,
       preparation_rating,
       forgotten_items,
       created_at,
       event:events(event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 

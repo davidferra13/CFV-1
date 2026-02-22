@@ -65,7 +65,7 @@ export async function disconnectGoogleCalendar() {
 /**
  * Check if a date is available by querying ChefFlow's own events table.
  * Returns available=true if no confirmed/in-progress events exist on that date.
- * Used by the Command Center orchestrator for calendar.availability tasks.
+ * Used by the Ask Remy orchestrator for calendar.availability tasks.
  */
 export async function checkCalendarAvailability(date: string): Promise<{
   available: boolean

@@ -27,7 +27,7 @@ You can also open the mobile DOP view for a full-screen step-by-step experience:
 After service, use the Close-Out Wizard (16-item checklist). All items must be green to mark the event as Completed.
 
 ## After-Action Review
-Once closed, file your After Action Review from the event detail page. Rate your calm and preparation, and note what went well and what to improve.`,
+Once closed, file your Event Review from the event detail page. Rate your calm and preparation, and note what went well and what to improve.`,
   },
   clients: {
     title: 'Clients & CRM',
@@ -145,7 +145,8 @@ export default async function HelpArticlePage({ params }: Props) {
 
   const article = HELP_CONTENT[params.slug] ?? {
     title: 'Article Not Found',
-    content: 'This help article does not exist yet. Try searching for what you need, or contact support.',
+    content:
+      'This help article does not exist yet. Try searching for what you need, or contact support.',
   }
 
   return (
@@ -172,7 +173,10 @@ export default async function HelpArticlePage({ params }: Props) {
         <CardContent className="py-4 text-center">
           <p className="text-sm text-stone-500">
             Still have questions?{' '}
-            <a href="mailto:support@cheflowhq.com" className="text-stone-900 font-medium hover:underline">
+            <a
+              href="mailto:support@cheflowhq.com"
+              className="text-stone-900 font-medium hover:underline"
+            >
               Contact support
             </a>
           </p>

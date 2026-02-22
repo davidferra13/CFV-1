@@ -14,18 +14,22 @@ export async function getPostEventQueueItems(
 
   const { data: events } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date,
       aar_filed, follow_up_sent, review_link_sent, reset_complete,
       client:clients(id, full_name)
-    `)
+    `
+    )
     .eq('tenant_id', tenantId)
     .eq('status', 'completed')
-    .or('aar_filed.eq.false,follow_up_sent.eq.false,review_link_sent.eq.false,reset_complete.eq.false')
+    .or(
+      'aar_filed.eq.false,follow_up_sent.eq.false,review_link_sent.eq.false,reset_complete.eq.false'
+    )
     .order('event_date', { ascending: false })
     .limit(15)
 
-  for (const event of (events || [])) {
+  for (const event of events || []) {
     const clientName = (event.client as any)?.full_name ?? 'Unknown'
     const hoursSinceEvent = (now.getTime() - new Date(event.event_date).getTime()) / 3600000
     const occasion = event.occasion || 'Event'
@@ -46,7 +50,7 @@ export async function getPostEventQueueItems(
         domain: 'post_event',
         urgency: urgencyFromScore(score),
         score,
-        title: 'File After Action Review',
+        title: 'File Event Review',
         description: `AAR for ${occasion} (${clientName}) \u2014 capture insights while fresh.`,
         href: `/events/${event.id}`,
         icon: 'ClipboardList',

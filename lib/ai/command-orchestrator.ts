@@ -1,6 +1,6 @@
 'use server'
 
-// Command Center — Orchestrator
+// Ask Remy — Orchestrator
 // PRIVACY: Chef commands may contain client PII — all processing via local Ollama only.
 // DRAFT-FIRST: Tier 2 results are drafts. Nothing is sent or saved until chef approves.
 
@@ -406,6 +406,38 @@ async function executeSingleTask(
 
   try {
     let data: unknown
+
+    // Fail-fast: If taskType is not explicitly supported, return error immediately
+    const supportedTaskTypes = new Set([
+      'client.search',
+      'calendar.availability',
+      'event.list_upcoming',
+      'finance.summary',
+      'email.followup',
+      'event.create_draft',
+      'client.list_recent',
+      'client.details',
+      'event.details',
+      'event.list_by_status',
+      'inquiry.list_open',
+      'inquiry.details',
+      'finance.monthly_snapshot',
+      'recipe.search',
+      'menu.list',
+      'scheduling.next_available',
+      'web.search',
+      'web.read',
+    ])
+    if (!supportedTaskTypes.has(task.taskType)) {
+      return {
+        taskId: task.id,
+        taskType: task.taskType,
+        tier: 3,
+        name: task.taskType,
+        status: 'error',
+        error: `Task type "${task.taskType}" is not supported. No further attempts will be made.`,
+      }
+    }
 
     switch (task.taskType) {
       case 'client.search':

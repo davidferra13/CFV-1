@@ -1317,7 +1317,7 @@ export default async function EventDetailPage({
             <div className="flex flex-wrap gap-2">
               {!closureStatus.aarFiled && (
                 <Link href={`/events/${event.id}/aar`}>
-                  <Button size="sm">File After Action Review</Button>
+                  <Button size="sm">File Event Review</Button>
                 </Link>
               )}
               <EventClosureActions
@@ -1340,7 +1340,7 @@ export default async function EventDetailPage({
         {aar && (
           <Card className="p-6">
             <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-semibold">After Action Review</h2>
+              <h2 className="text-xl font-semibold">Event Review</h2>
               <div className="flex gap-2">
                 <Link href={`/events/${event.id}/aar`}>
                   <Button variant="ghost" size="sm">
@@ -1431,11 +1431,11 @@ export default async function EventDetailPage({
               <div>
                 <h2 className="font-semibold text-brand-900">Ready to review this dinner?</h2>
                 <p className="text-sm text-brand-700 mt-1">
-                  File your After Action Review to track what went well and what to improve.
+                  File your Event Review to track what went well and what to improve.
                 </p>
               </div>
               <Link href={`/events/${event.id}/aar`}>
-                <Button>File After Action Review</Button>
+                <Button>File Event Review</Button>
               </Link>
             </div>
           </Card>

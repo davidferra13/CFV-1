@@ -1,4 +1,4 @@
-// Command Center — Shared Types
+// Ask Remy — Shared Types
 // No 'use server' — safe to import from any context (client, server, tests)
 
 export type ApprovalTier = 1 | 2 | 3

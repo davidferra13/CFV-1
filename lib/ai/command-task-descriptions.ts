@@ -1,4 +1,4 @@
-// Command Center — Task Descriptions
+// Ask Remy — Task Descriptions
 // No 'use server' — imported by both intent parser (for system prompt) and UI (for labels)
 
 export interface TaskDescription {

@@ -46,9 +46,7 @@ export function FileAARButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
-        + File AAR
-      </Button>
+      <Button onClick={() => setOpen(true)}>+ File AAR</Button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -58,7 +56,7 @@ export function FileAARButton() {
           {/* Modal */}
           <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-stone-900">File After Action Review</h3>
+              <h3 className="text-lg font-semibold text-stone-900">File Event Review</h3>
               <button
                 onClick={handleClose}
                 className="text-stone-400 hover:text-stone-600 text-xl leading-none"
@@ -68,7 +66,7 @@ export function FileAARButton() {
             </div>
 
             <p className="text-sm text-stone-500">
-              Select a completed event to file an After Action Review.
+              Select a completed event to file an Event Review.
             </p>
 
             {error && <Alert variant="error">{error}</Alert>}

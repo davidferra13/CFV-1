@@ -1,4 +1,4 @@
-// Clientele Intelligence Page
+// Clientele Insights Page
 // Comprehensive statistics about the chef's events, clients, and business patterns
 
 import type { Metadata } from 'next'
@@ -22,7 +22,7 @@ import {
 } from '@/lib/analytics/insights-actions'
 import { InsightsClient } from '@/components/analytics/insights-client'
 
-export const metadata: Metadata = { title: 'Clientele Intelligence - ChefFlow' }
+export const metadata: Metadata = { title: 'Clientele Insights - ChefFlow' }
 
 export default async function InsightsPage() {
   await requireChef()
@@ -64,7 +64,7 @@ export default async function InsightsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Clientele Intelligence</h1>
+        <h1 className="text-3xl font-bold text-stone-900">Clientele Insights</h1>
         <p className="text-stone-600 mt-1">
           Patterns from your events, clients, and history — so you can work smarter
         </p>

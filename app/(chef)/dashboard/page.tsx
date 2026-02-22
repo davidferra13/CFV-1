@@ -1,4 +1,4 @@
-// Chef Dashboard — Complete Command Center
+// Chef Dashboard — Complete Ask Remy
 // Answers: "What should I do right now?"
 // Sections: Today → Next Action → Week → Queue → Prep → Quality → Business
 // Protected by layout via requireChef()
