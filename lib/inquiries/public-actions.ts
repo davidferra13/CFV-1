@@ -191,5 +191,19 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
   // 6. Link inquiry to the created event
   await supabase.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
+  // 7. Enqueue Remy reactive AI task — auto-score lead (non-blocking)
+  try {
+    const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
+    await onInquiryCreated(tenantId, inquiry.id, client.id, {
+      channel: 'website',
+      clientName: validated.full_name,
+      occasion: validated.occasion ?? undefined,
+      budgetCents: validated.budget_cents ?? undefined,
+      guestCount: validated.guest_count ?? undefined,
+    })
+  } catch (err) {
+    console.error('[submitPublicInquiry] Remy reactive enqueue failed (non-blocking):', err)
+  }
+
   return { success: true, inquiryCreated: true, eventCreated: true }
 }

@@ -647,6 +647,17 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         )
       }
     }
+
+    // Enqueue Remy reactive AI task — payment confirmation (non-blocking)
+    try {
+      const { onPaymentReceived } = await import('@/lib/ai/reactive/hooks')
+      await onPaymentReceived(tenant_id, event_id, client_id, paymentIntent.amount)
+    } catch (remyErr) {
+      console.error(
+        '[handlePaymentSucceeded] Remy reactive enqueue failed (non-blocking):',
+        remyErr
+      )
+    }
   } catch (transitionError) {
     // Log but don't throw - ledger entry is what matters
     console.error('[handlePaymentSucceeded] Transition failed:', transitionError)

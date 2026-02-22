@@ -551,6 +551,22 @@ export async function transitionEvent({
     log.events.warn('Automation evaluation failed (non-blocking)', { error: err })
   }
 
+  // Enqueue Remy reactive AI tasks (non-blocking)
+  try {
+    if (toStatus === 'confirmed') {
+      const { onEventConfirmed } = await import('@/lib/ai/reactive/hooks')
+      await onEventConfirmed(event.tenant_id, eventId, event.client_id)
+    } else if (toStatus === 'completed') {
+      const { onEventCompleted } = await import('@/lib/ai/reactive/hooks')
+      await onEventCompleted(event.tenant_id, eventId, event.client_id)
+    } else if (toStatus === 'cancelled') {
+      const { onEventCancelled } = await import('@/lib/ai/reactive/hooks')
+      await onEventCancelled(event.tenant_id, eventId, event.client_id)
+    }
+  } catch (err) {
+    log.events.warn('Remy reactive enqueue failed (non-blocking)', { error: err })
+  }
+
   return {
     success: true,
     fromStatus,

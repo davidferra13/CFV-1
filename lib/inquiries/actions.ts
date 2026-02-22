@@ -21,7 +21,7 @@ const VALID_TRANSITIONS: Record<InquiryStatus, InquiryStatus[]> = {
   quoted: ['confirmed', 'declined', 'expired'],
   confirmed: [], // terminal — converts to event
   declined: [], // terminal
-  expired: ['new'] // can be reopened
+  expired: ['new'], // can be reopened
 }
 
 // ============================================
@@ -29,7 +29,17 @@ const VALID_TRANSITIONS: Record<InquiryStatus, InquiryStatus[]> = {
 // ============================================
 
 const CreateInquirySchema = z.object({
-  channel: z.enum(['text', 'email', 'instagram', 'take_a_chef', 'phone', 'website', 'referral', 'walk_in', 'other']),
+  channel: z.enum([
+    'text',
+    'email',
+    'instagram',
+    'take_a_chef',
+    'phone',
+    'website',
+    'referral',
+    'walk_in',
+    'other',
+  ]),
   client_id: z.string().uuid().nullable().optional(),
   client_name: z.string().min(1, 'Client name required'),
   client_email: z.string().email().optional().or(z.literal('')),
@@ -130,7 +140,8 @@ export async function createInquiry(input: CreateInquiryInput) {
       confirmed_service_expectations: validated.confirmed_service_expectations || null,
       confirmed_cannabis_preference: validated.confirmed_cannabis_preference || null,
       source_message: validated.source_message || null,
-      unknown_fields: Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
+      unknown_fields:
+        Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
     })
     .select()
     .single()
@@ -153,7 +164,11 @@ export async function createInquiry(input: CreateInquiryInput) {
       entityType: 'inquiry',
       entityId: inquiry.id,
       summary: `Created inquiry from ${validated.client_name} via ${validated.channel}`,
-      context: { client_name: validated.client_name, channel: validated.channel, occasion: validated.confirmed_occasion },
+      context: {
+        client_name: validated.client_name,
+        channel: validated.channel,
+        occasion: validated.confirmed_occasion,
+      },
       clientId: clientId || undefined,
     })
   } catch (err) {
@@ -178,6 +193,20 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Automation evaluation failed (non-blocking):', err)
   }
 
+  // Enqueue Remy reactive AI task — auto-score lead (non-blocking)
+  try {
+    const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
+    await onInquiryCreated(user.tenantId!, inquiry.id, clientId ?? null, {
+      channel: validated.channel,
+      clientName: validated.client_name,
+      occasion: validated.confirmed_occasion ?? undefined,
+      budgetCents: validated.confirmed_budget_cents ?? undefined,
+      guestCount: validated.confirmed_guest_count ?? undefined,
+    })
+  } catch (err) {
+    console.error('[createInquiry] Remy reactive enqueue failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry }
 }
 
@@ -200,10 +229,12 @@ export async function getInquiries(filters?: {
 
   let query = supabase
     .from('inquiries')
-    .select(`
+    .select(
+      `
       *,
       client:clients(id, full_name, email, phone)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
 
   if (filters?.status) {
@@ -249,10 +280,12 @@ export async function getInquiryById(id: string) {
 
   const { data: inquiry, error } = await supabase
     .from('inquiries')
-    .select(`
+    .select(
+      `
       *,
       client:clients(id, full_name, email, phone)
-    `)
+    `
+    )
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -317,7 +350,8 @@ export async function updateInquiry(id: string, input: UpdateInquiryInput) {
     .from('inquiries')
     .update({
       ...dbFields,
-      unknown_fields: Object.keys(cleanedUnknown).length > 0 ? (cleanedUnknown as unknown as Json) : null,
+      unknown_fields:
+        Object.keys(cleanedUnknown).length > 0 ? (cleanedUnknown as unknown as Json) : null,
     })
     .eq('id', id)
     .eq('tenant_id', user.tenantId!)
@@ -365,7 +399,7 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
   if (!allowed || !allowed.includes(newStatus)) {
     throw new Error(
       `Cannot transition from "${currentStatus}" to "${newStatus}". ` +
-      `Allowed: ${allowed?.join(', ') || 'none (terminal state)'}`
+        `Allowed: ${allowed?.join(', ') || 'none (terminal state)'}`
     )
   }
 
@@ -475,13 +509,15 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   // Validate pricing exists before creating event
   if (!quotedPriceCents || quotedPriceCents <= 0) {
-    throw new Error('Cannot convert inquiry to event without a confirmed price. Please attach a quote first.')
+    throw new Error(
+      'Cannot convert inquiry to event without a confirmed price. Please attach a quote first.'
+    )
   }
 
   // Map cannabis_preference string → boolean
   const cannabisPref = inquiry.confirmed_cannabis_preference
   const cannabisBoolean = cannabisPref
-    ? ['yes', 'true', 'open'].some(v => cannabisPref.toLowerCase().includes(v))
+    ? ['yes', 'true', 'open'].some((v) => cannabisPref.toLowerCase().includes(v))
     : null
 
   // Create draft event from confirmed inquiry facts + accepted quote pricing
@@ -524,7 +560,7 @@ export async function convertInquiryToEvent(inquiryId: string) {
     from_status: null,
     to_status: 'draft',
     transitioned_by: user.id,
-    metadata: { action: 'converted_from_inquiry', inquiry_id: inquiry.id }
+    metadata: { action: 'converted_from_inquiry', inquiry_id: inquiry.id },
   })
 
   // Link inquiry to the created event
@@ -685,9 +721,16 @@ export async function declineInquiry(id: string, reason?: string) {
     await evaluateAutomations(user.tenantId!, 'inquiry_status_changed', {
       entityId: id,
       entityType: 'inquiry',
-      fields: { status: 'declined', from_status: currentStatus, to_status: 'declined', decline_reason: reason },
+      fields: {
+        status: 'declined',
+        from_status: currentStatus,
+        to_status: 'declined',
+        decline_reason: reason,
+      },
     })
-  } catch { /* non-blocking */ }
+  } catch {
+    /* non-blocking */
+  }
 
   return { success: true }
 }

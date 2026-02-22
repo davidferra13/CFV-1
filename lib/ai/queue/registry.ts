@@ -8,6 +8,22 @@
 import type { AiTaskDefinition } from './types'
 import { AI_PRIORITY } from './types'
 import { handleDraftTask } from '@/lib/ai/draft-actions'
+import {
+  handleInquiryCreated,
+  handleInquiryStale,
+  handleEventConfirmed,
+  handleEventCompleted,
+  handleEventCancelled,
+  handleMenuApproved,
+  handlePaymentReceived,
+  handleClientDormant,
+  handleClientBirthday,
+  handleClientComplaint,
+  handleTempOutOfRange,
+  handleFoodRecall,
+  handleGuestListUpdated,
+  handleStaffNoShow,
+} from '@/lib/ai/reactive/handlers'
 
 // ============================================
 // REGISTRY STORAGE
@@ -102,77 +118,9 @@ const placeholderTasks: Array<Omit<AiTaskDefinition, 'handler'>> = [
 
   // PHASE B — Communication Drafts (placeholders — real handlers registered below)
 
-  // PHASE C — Reactive triggers
-  {
-    taskType: 'reactive.inquiry_created',
-    name: 'New Inquiry Auto-Score',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'fast',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.inquiry_stale',
-    name: 'Stale Inquiry Follow-Up',
-    approvalTier: 'draft',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.event_confirmed',
-    name: 'Event Confirmed Auto-Gen',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.event_completed',
-    name: 'Post-Event Drafts',
-    approvalTier: 'draft',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.event_cancelled',
-    name: 'Cancellation Response',
-    approvalTier: 'draft',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.menu_approved',
-    name: 'Menu Allergen Check',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.payment_received',
-    name: 'Payment Confirmation',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'fast',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
+  // PHASE C — Reactive triggers (placeholders — real handlers registered below)
+
+  // payment_overdue has no reactive hook — triggered by scheduled job
   {
     taskType: 'reactive.payment_overdue',
     name: 'Payment Reminder Draft',
@@ -181,76 +129,6 @@ const placeholderTasks: Array<Omit<AiTaskDefinition, 'handler'>> = [
     modelTier: 'standard',
     preferredEndpoint: 'auto',
     maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.client_dormant',
-    name: 'Re-Engage Dormant Client',
-    approvalTier: 'draft',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.client_birthday',
-    name: 'Client Birthday Draft',
-    approvalTier: 'draft',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.client_complaint',
-    name: 'Client Complaint Alert',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'fast',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.temp_out_of_range',
-    name: 'Temperature Alert',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'fast',
-    preferredEndpoint: 'auto',
-    maxAttempts: 1,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.food_recall',
-    name: 'Food Recall Alert',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.guest_list_updated',
-    name: 'Guest List Allergen Re-Check',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-  {
-    taskType: 'reactive.staff_no_show',
-    name: 'Staff No-Show Alert',
-    approvalTier: 'auto',
-    defaultPriority: AI_PRIORITY.REACTIVE,
-    modelTier: 'fast',
-    preferredEndpoint: 'auto',
-    maxAttempts: 1,
     recurrence: null,
   },
 
@@ -412,5 +290,146 @@ for (const dt of DRAFT_TYPES) {
       const result = await handleDraftTask(dt.taskType, payload)
       return result as unknown as Record<string, unknown>
     },
+  })
+}
+
+// ── Reactive Triggers (real handlers) ─────────────────────────────────────────
+
+const REACTIVE_HANDLER_MAP: Record<
+  string,
+  {
+    name: string
+    tier: 'auto' | 'draft'
+    priority: number
+    model: 'fast' | 'standard'
+    maxAttempts: number
+    handler: (p: Record<string, unknown>, t: string) => Promise<Record<string, unknown>>
+  }
+> = {
+  'reactive.inquiry_created': {
+    name: 'New Inquiry Auto-Score',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'fast',
+    maxAttempts: 2,
+    handler: handleInquiryCreated,
+  },
+  'reactive.inquiry_stale': {
+    name: 'Stale Inquiry Follow-Up',
+    tier: 'draft',
+    priority: AI_PRIORITY.SCHEDULED,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleInquiryStale,
+  },
+  'reactive.event_confirmed': {
+    name: 'Event Confirmed Auto-Gen',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleEventConfirmed,
+  },
+  'reactive.event_completed': {
+    name: 'Post-Event Drafts',
+    tier: 'draft',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleEventCompleted,
+  },
+  'reactive.event_cancelled': {
+    name: 'Cancellation Response',
+    tier: 'draft',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleEventCancelled,
+  },
+  'reactive.menu_approved': {
+    name: 'Menu Allergen Check',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleMenuApproved,
+  },
+  'reactive.payment_received': {
+    name: 'Payment Confirmation',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'fast',
+    maxAttempts: 2,
+    handler: handlePaymentReceived,
+  },
+  'reactive.client_dormant': {
+    name: 'Re-Engage Dormant Client',
+    tier: 'draft',
+    priority: AI_PRIORITY.SCHEDULED,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleClientDormant,
+  },
+  'reactive.client_birthday': {
+    name: 'Client Birthday Draft',
+    tier: 'draft',
+    priority: AI_PRIORITY.SCHEDULED,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleClientBirthday,
+  },
+  'reactive.client_complaint': {
+    name: 'Client Complaint Alert',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'fast',
+    maxAttempts: 2,
+    handler: handleClientComplaint,
+  },
+  'reactive.temp_out_of_range': {
+    name: 'Temperature Alert',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'fast',
+    maxAttempts: 1,
+    handler: handleTempOutOfRange,
+  },
+  'reactive.food_recall': {
+    name: 'Food Recall Alert',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleFoodRecall,
+  },
+  'reactive.guest_list_updated': {
+    name: 'Guest List Allergen Re-Check',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handleGuestListUpdated,
+  },
+  'reactive.staff_no_show': {
+    name: 'Staff No-Show Alert',
+    tier: 'auto',
+    priority: AI_PRIORITY.REACTIVE,
+    model: 'fast',
+    maxAttempts: 1,
+    handler: handleStaffNoShow,
+  },
+}
+
+for (const [taskType, def] of Object.entries(REACTIVE_HANDLER_MAP)) {
+  registerTask({
+    taskType,
+    name: def.name,
+    approvalTier: def.tier,
+    defaultPriority: def.priority as import('./types').AiPriorityLevel,
+    modelTier: def.model,
+    preferredEndpoint: 'auto',
+    maxAttempts: def.maxAttempts,
+    recurrence: null,
+    handler: def.handler,
   })
 }
