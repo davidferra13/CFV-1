@@ -58,7 +58,7 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown:
       "taskType": "client.search",
       "tier": 1,
       "confidence": 0.95,
-      "inputs": { "query": "Sarah Johnson" },
+      "inputs": { "query": "<client name from chef's message>" },
       "dependsOn": []
     },
     {
@@ -66,7 +66,7 @@ OUTPUT FORMAT — return ONLY valid JSON, no markdown:
       "taskType": "email.followup",
       "tier": 2,
       "confidence": 0.90,
-      "inputs": { "clientName": "Sarah Johnson" },
+      "inputs": { "clientName": "<client name from chef's message>" },
       "dependsOn": ["t1"]
     }
   ]

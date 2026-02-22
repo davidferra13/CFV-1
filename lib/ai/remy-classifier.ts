@@ -28,14 +28,14 @@ Examples:
 
 COMMAND: Requesting a specific action to be performed — finding someone, checking availability, drafting something, creating something.
 Examples:
-- "Find Sarah Johnson"
+- "Find my client"
 - "Check if March 15th is free"
 - "Draft a follow-up for my last client"
 - "Create an event for next Saturday"
 - "Search for pasta recipes"
 
 MIXED: Contains BOTH a question and an actionable request in the same message.
-Example: "What's my revenue this month, and draft a follow-up for Sarah"
+Example: "What's my revenue this month, and draft a follow-up for my last client"
 
 If unsure, classify as QUESTION — it's the safest option (no side effects).
 

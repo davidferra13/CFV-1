@@ -17,9 +17,14 @@ import {
   REMY_DRAFT_INSTRUCTIONS,
   REMY_PRIVACY_NOTE,
 } from '@/lib/ai/remy-personality'
-import { loadRelevantMemories } from '@/lib/ai/remy-memory-actions'
-import type { RemyMessage, RemyResponse, RemyTaskResult } from '@/lib/ai/remy-types'
-import type { RemyMemory } from '@/lib/ai/remy-memory-types'
+import {
+  loadRelevantMemories,
+  listRemyMemories,
+  deleteRemyMemory,
+  addRemyMemoryManual,
+} from '@/lib/ai/remy-memory-actions'
+import type { RemyMessage, RemyResponse, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
+import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 
 // ─── Response Schema ────────────────────────────────────────────────────────
 
@@ -146,6 +151,13 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
   // Navigation routes
   parts.push(`\n${NAV_ROUTE_MAP}`)
 
+  // Grounding rule — critical for preventing hallucinations
+  parts.push(`\nGROUNDING RULE (CRITICAL):
+You may ONLY reference clients, events, inquiries, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, or WHAT YOU REMEMBER sections above.
+If a section says "0" or is empty, that means there are NONE — do not invent any.
+If you have no data to work with, be honest: "Looks like you're just getting started" or "I don't see any events yet."
+NEVER fabricate names, dates, or details to sound helpful.`)
+
   // Response instructions
   parts.push(`\nRESPONSE FORMAT:
 Return JSON: { "response": "your text reply", "navSuggestions": [{ "label": "Page Name", "href": "/route", "description": "optional" }] }
@@ -245,6 +257,172 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
   return summaries.join('\n\n')
 }
 
+// ─── Memory Intent Detection (regex — no LLM needed) ───────────────────────
+
+const MEMORY_LIST_PATTERNS = [
+  /\b(what|show|list|see|view|display)\b.*(you\s+)?remember/i,
+  /\b(your|my)\s+memor(y|ies)/i,
+  /\bmemory\s+(list|log|bank|store)/i,
+  /\bshow\s+.*memor(y|ies)/i,
+  /\blist\s+.*memor(y|ies)/i,
+  /\bwhat\s+(have\s+you|do\s+you)\s+(learned|know|remember)/i,
+  /\bmemories\b/i,
+]
+
+const MEMORY_DELETE_PATTERNS = [
+  /\b(forget|delete|remove|erase|drop)\b.*(memory|that|this|about)/i,
+  /\bstop\s+remember/i,
+  /\bdon'?t\s+remember/i,
+]
+
+const MEMORY_ADD_PATTERNS = [
+  /\bremember\s+that\b/i,
+  /\bremember\s*:/i,
+  /\bkeep\s+in\s+mind\b/i,
+  /\bdon'?t\s+forget\b/i,
+  /\bnote\s+that\b/i,
+  /\badd\s+(a\s+)?memory\b/i,
+  /\bsave\s+that\b/i,
+]
+
+type MemoryIntent = 'list' | 'delete' | 'add' | null
+
+function detectMemoryIntent(message: string): MemoryIntent {
+  // Check delete first (more specific)
+  for (const p of MEMORY_DELETE_PATTERNS) {
+    if (p.test(message)) return 'delete'
+  }
+  // Check add
+  for (const p of MEMORY_ADD_PATTERNS) {
+    if (p.test(message)) return 'add'
+  }
+  // Check list
+  for (const p of MEMORY_LIST_PATTERNS) {
+    if (p.test(message)) return 'list'
+  }
+  return null
+}
+
+function formatCategoryLabel(cat: string): string {
+  return cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+async function handleMemoryList(): Promise<RemyResponse> {
+  const memories = await listRemyMemories({ limit: 200 })
+
+  if (memories.length === 0) {
+    return {
+      text: 'I don\'t have any memories saved yet. As we chat, I\'ll pick up on your preferences, client details, and business rules — or you can tell me directly. Try saying "remember that I prefer organic produce" to add one.',
+      intent: 'memory',
+      memoryItems: [],
+    }
+  }
+
+  // Group by category
+  const grouped = new Map<string, typeof memories>()
+  for (const mem of memories) {
+    const cat = mem.category
+    if (!grouped.has(cat)) grouped.set(cat, [])
+    grouped.get(cat)!.push(mem)
+  }
+
+  const lines: string[] = [
+    `Here's everything I remember (${memories.length} memories). You can delete any of these — just tap the X next to it.\n`,
+  ]
+
+  for (const [category, items] of grouped) {
+    lines.push(`**${formatCategoryLabel(category)}**`)
+    for (const item of items) {
+      const stars = item.importance >= 8 ? ' ⚠️' : ''
+      lines.push(`• ${item.content}${stars}`)
+    }
+    lines.push('')
+  }
+
+  lines.push(
+    '_To add a memory, say "remember that..." followed by the fact. To delete, tap the X next to any memory above._'
+  )
+
+  const memoryItems: RemyMemoryItem[] = memories.map((m) => ({
+    id: m.id,
+    category: m.category,
+    content: m.content,
+    importance: m.importance,
+    accessCount: m.accessCount,
+    relatedClientId: m.relatedClientId,
+    createdAt: m.createdAt,
+  }))
+
+  return {
+    text: lines.join('\n'),
+    intent: 'memory',
+    memoryItems,
+  }
+}
+
+async function handleMemoryAdd(message: string): Promise<RemyResponse> {
+  // Extract the fact after trigger phrases
+  let fact = message
+  const triggers = [
+    /remember\s+that\s+/i,
+    /remember\s*:\s*/i,
+    /keep\s+in\s+mind\s+(that\s+)?/i,
+    /don'?t\s+forget\s+(that\s+)?/i,
+    /note\s+that\s+/i,
+    /add\s+(a\s+)?memory\s*:?\s*/i,
+    /save\s+that\s+/i,
+  ]
+  for (const t of triggers) {
+    fact = fact.replace(t, '')
+  }
+  fact = fact.trim()
+
+  if (!fact || fact.length < 3) {
+    return {
+      text: 'What should I remember? Try something like "remember that my client is vegetarian" or "remember that I charge $150/person for tasting menus."',
+      intent: 'memory',
+    }
+  }
+
+  // Simple category detection from the fact
+  let category: MemoryCategory = 'chef_preference'
+  const lower = fact.toLowerCase()
+  if (
+    /\b(client|customer|they|their|he|she|his|her|allergic|allergy|vegetarian|vegan|gluten)\b/i.test(
+      lower
+    )
+  ) {
+    category = 'client_insight'
+  } else if (/\b(price|charge|cost|rate|per\s+person|margin|quote)\b/i.test(lower)) {
+    category = 'pricing_pattern'
+  } else if (
+    /\b(schedule|book|saturday|sunday|monday|tuesday|wednesday|thursday|friday|morning|evening|day\s+before)\b/i.test(
+      lower
+    )
+  ) {
+    category = 'scheduling_pattern'
+  } else if (/\b(email|draft|message|write|tone|formal|casual)\b/i.test(lower)) {
+    category = 'communication_style'
+  } else if (/\b(never|always|rule|policy|require)\b/i.test(lower)) {
+    category = 'business_rule'
+  } else if (/\b(recipe|cook|dish|ingredient|organic|sauce|braise|sear|menu)\b/i.test(lower)) {
+    category = 'culinary_note'
+  } else if (/\b(workflow|prep|shop|process|order|system)\b/i.test(lower)) {
+    category = 'workflow_preference'
+  }
+
+  const { id } = await addRemyMemoryManual({
+    content: fact,
+    category,
+    importance: 5,
+  })
+
+  return {
+    text: `Got it — I'll remember that. Saved under **${formatCategoryLabel(category)}**.\n\n• ${fact}\n\nYou can say "show my memories" anytime to review or clean up what I know.`,
+    intent: 'memory',
+  }
+}
+
 // ─── Main Entry Point ───────────────────────────────────────────────────────
 
 export async function sendRemyMessage(
@@ -255,6 +433,17 @@ export async function sendRemyMessage(
   await requireChef()
 
   try {
+    // ─── MEMORY path (regex-only, no LLM call needed) ─────────────
+    const memoryIntent = detectMemoryIntent(userMessage)
+    if (memoryIntent === 'list') {
+      return handleMemoryList()
+    }
+    if (memoryIntent === 'add') {
+      return handleMemoryAdd(userMessage)
+    }
+    // 'delete' intent is handled client-side via deleteRemyMemory() directly
+    // (the user taps the X button next to a specific memory)
+
     // Run context loading, intent classification, and memory loading in parallel
     const [context, classification, memories] = await Promise.all([
       loadRemyContext(currentPage),

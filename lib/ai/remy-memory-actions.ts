@@ -45,7 +45,7 @@ Given a conversation between a chef and their AI assistant, extract any NEW fact
 
 EXTRACT memories when:
 - The chef states a preference ("I always use organic produce")
-- A client insight is revealed ("The Patels are vegetarian")
+- A client insight is revealed ("they're vegetarian", "she has a nut allergy")
 - A business rule is established ("Never double-book Saturdays")
 - A pricing decision is made ("I charge $150/person for tasting menus")
 - A scheduling pattern emerges ("I prefer shopping the day before")
@@ -71,16 +71,21 @@ If there are NO new memories to extract, return: { "memories": [] }`
 
 export async function extractAndSaveMemories(
   userMessage: string,
-  remyResponse: string,
+  _remyResponse?: string,
   sourceArtifactId?: string
 ): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
 
+  // SAFETY: Only extract from the chef's message — never from Remy's response.
+  // If Remy hallucinates, we must not save that hallucination as a "real" memory.
+  // The extraction prompt says "only extract what the CHEF said" but LLMs aren't
+  // perfect — the safest approach is to never show them Remy's text at all.
+
   try {
     const result = await parseWithOllama(
       EXTRACTION_PROMPT,
-      `CHEF: ${userMessage}\n\nREMY: ${remyResponse}`,
+      `CHEF: ${userMessage}`,
       ExtractedMemorySchema,
       { modelTier: 'fast', cache: false }
     )
@@ -124,6 +129,15 @@ export async function extractAndSaveMemories(
           .ilike('full_name', `%${mem.relatedClientName}%`)
           .limit(1)
         relatedClientId = (clients?.[0]?.id as string) ?? null
+
+        // GUARD: If this is a client_insight but the client doesn't exist in DB,
+        // skip saving — it's likely a hallucinated or misheard name.
+        if (mem.category === 'client_insight' && !relatedClientId) {
+          console.warn(
+            `[remy-memory] Skipping client_insight for unknown client "${mem.relatedClientName}"`
+          )
+          continue
+        }
       }
 
       // Insert new memory
@@ -339,6 +353,49 @@ export async function decayStaleMemories(): Promise<{ deactivated: number }> {
   }
 
   return { deactivated: data?.length ?? 0 }
+}
+
+// ─── Add Memory Manually ──────────────────────────────────────────────────
+
+export async function addRemyMemoryManual(input: {
+  content: string
+  category: MemoryCategory
+  importance?: number
+}): Promise<{ id: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const supabase = createServerClient()
+
+  const contentHash = hashContent(input.content)
+
+  // Check for duplicates
+  const { data: existing } = await supabase
+    .from('remy_memories')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('content_hash', contentHash)
+    .eq('is_active', true)
+    .maybeSingle()
+
+  if (existing) {
+    return { id: existing.id as string }
+  }
+
+  const { data, error } = await supabase
+    .from('remy_memories')
+    .insert({
+      tenant_id: tenantId,
+      category: input.category,
+      content: input.content,
+      importance: input.importance ?? 5,
+      content_hash: contentHash,
+      source_message: 'Manually added by chef',
+    })
+    .select('id')
+    .single()
+
+  if (error) throw new Error(`Failed to add memory: ${error.message}`)
+  return { id: data.id }
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
