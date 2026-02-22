@@ -60,7 +60,7 @@ export default async function ClientsPage() {
       </Card>
 
       {/* Clients List */}
-      <Card>
+      <Card data-info="client-table">
         <CardHeader>
           <CardTitle>Your Clients</CardTitle>
         </CardHeader>

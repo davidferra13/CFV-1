@@ -152,7 +152,10 @@ export default async function EventsPage({
         </div>
         <div className="flex items-center gap-2">
           {/* View toggle */}
-          <div className="flex border border-stone-200 rounded-lg overflow-hidden">
+          <div
+            data-info="view-toggle"
+            className="flex border border-stone-200 rounded-lg overflow-hidden"
+          >
             <Link
               href={`/events?status=${status}&view=list`}
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
@@ -174,7 +177,7 @@ export default async function EventsPage({
               Board
             </Link>
           </div>
-          <Link href="/events/new">
+          <Link data-info="new-event" href="/events/new">
             <Button>+ New Event</Button>
           </Link>
         </div>

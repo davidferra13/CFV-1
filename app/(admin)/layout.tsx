@@ -5,16 +5,13 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { redirect } from 'next/navigation'
 import { AdminSidebar } from '@/components/admin/admin-sidebar'
+import { PageInfoButton } from '@/components/ui/page-info'
 
 export const metadata = {
   title: 'Admin — ChefFlow',
 }
 
-export default async function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   let admin
   try {
     admin = await requireAdmin()
@@ -29,6 +26,7 @@ export default async function AdminLayout({
       <main className="ml-52 min-h-screen">
         <div className="p-6">{children}</div>
       </main>
+      <PageInfoButton />
     </div>
   )
 }

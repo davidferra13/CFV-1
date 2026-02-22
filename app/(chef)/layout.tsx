@@ -22,6 +22,7 @@ import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
 import { BreadcrumbTracker } from '@/components/activity/breadcrumb-tracker'
 import { QuickCapture } from '@/components/mobile/quick-capture'
 import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
+import { PageInfoButton } from '@/components/ui/page-info'
 import { ThemeProvider } from '@/components/ui/theme-provider'
 import { getTierForChef } from '@/lib/billing/tier'
 import { isAdmin } from '@/lib/auth/admin'
@@ -134,6 +135,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
               {/* Business milestone celebrations — fires once per threshold, replayable */}
               <MilestoneOverlay />
+
+              {/* Page info — contextual help overlay */}
+              <PageInfoButton />
             </div>
           </KeyboardShortcutsWrapper>
         </NotificationProvider>

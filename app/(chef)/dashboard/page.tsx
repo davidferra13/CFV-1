@@ -540,7 +540,7 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {/* PRIORITY BANNER — always visible, not hideable */}
       {/* ============================================ */}
-      <section>
+      <section data-info="next-action">
         {queue.nextAction ? (
           <Link href={queue.nextAction.href} className="block">
             <div
@@ -812,7 +812,7 @@ export default async function ChefDashboard() {
       {/* SECTION 3: WEEK AT A GLANCE                   */}
       {/* ============================================ */}
       {isWidgetEnabled('week_strip') && weekSchedule.days.length > 0 && (
-        <section style={{ order: getWidgetOrder('week_strip') }}>
+        <section data-info="week-strip" style={{ order: getWidgetOrder('week_strip') }}>
           <WeekStrip schedule={weekSchedule} />
         </section>
       )}
@@ -821,7 +821,7 @@ export default async function ChefDashboard() {
       {/* SECTION 4: PRIORITY QUEUE                     */}
       {/* ============================================ */}
       {isWidgetEnabled('priority_queue') && (
-        <section style={{ order: getWidgetOrder('priority_queue') }}>
+        <section data-info="queue" style={{ order: getWidgetOrder('priority_queue') }}>
           {queue.summary.allCaughtUp ? (
             <QueueEmpty />
           ) : (
@@ -1014,7 +1014,11 @@ export default async function ChefDashboard() {
         {/* SECTION 7: BUSINESS SNAPSHOT                  */}
         {/* ============================================ */}
         {isWidgetEnabled('business_snapshot') && (
-          <section className="space-y-3" style={{ order: getWidgetOrder('business_snapshot') }}>
+          <section
+            data-info="financials"
+            className="space-y-3"
+            style={{ order: getWidgetOrder('business_snapshot') }}
+          >
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide">
                 Business Snapshot
