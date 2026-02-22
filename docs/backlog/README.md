@@ -27,9 +27,10 @@ When you complete a backlog item, move the file to `docs/` (or delete it) and no
 
 ## Current Items
 
-| File                                  | Topic                                                                                                                                  | Priority         | Added      |
-| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------- |
-| `ux-scenarios-and-onboarding-gaps.md` | Full UX scenario map + 7 onboarding gaps                                                                                               | CRITICAL (Gap 1) | 2026-02-21 |
-| `remy-features-phase2-master.md`      | 8 Remy features: voice input, dietary check, prep timeline, nudges, quick-add, Q&A profile, doc management, favorite chefs integration | HIGH             | 2026-02-21 |
-| `remy-public-client-layers.md`        | Extend Remy to public pages (visitor-facing) and client portal (authenticated clients)                                                 | HIGH             | 2026-02-21 |
-| `culinary-board-animation-polish.md`  | Polish word-feel animations: tune timing, haptics, sound FX, particles, chain reactions, combo mode                                    | LOW              | 2026-02-22 |
+| File                                    | Topic                                                                                                                                  | Priority         | Added      |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------- |
+| `ux-scenarios-and-onboarding-gaps.md`   | Full UX scenario map + 7 onboarding gaps                                                                                               | CRITICAL (Gap 1) | 2026-02-21 |
+| `remy-features-phase2-master.md`        | 8 Remy features: voice input, dietary check, prep timeline, nudges, quick-add, Q&A profile, doc management, favorite chefs integration | HIGH             | 2026-02-21 |
+| `remy-public-client-layers.md`          | Extend Remy to public pages (visitor-facing) and client portal (authenticated clients)                                                 | HIGH             | 2026-02-21 |
+| `culinary-board-animation-polish.md`    | Polish word-feel animations: tune timing, haptics, sound FX, particles, chain reactions, combo mode                                    | LOW              | 2026-02-22 |
+| `activity-breadcrumbs-full-coverage.md` | Instrument ~150 action files with logChefActivity() calls — infrastructure done, batches 1-10 pending                                  | HIGH             | 2026-02-22 |
