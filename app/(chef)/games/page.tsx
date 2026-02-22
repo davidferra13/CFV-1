@@ -1,6 +1,22 @@
 import Link from 'next/link'
 
-const games = [
+const games: {
+  href: string
+  emoji: string
+  title: string
+  description: string
+  color: string
+  cta?: string
+}[] = [
+  {
+    href: '/games/menu-muse',
+    emoji: '\u{1F4A1}',
+    title: 'Menu Muse',
+    description:
+      "Break through writer's block. Your recipes, your heroes, your season, your spark — all in one place to fuel your next menu.",
+    color: 'from-brand-500/20 to-amber-500/20',
+    cta: 'Get inspired',
+  },
   {
     href: '/games/the-line',
     emoji: '🔥',
@@ -68,7 +84,7 @@ export default function GamesPage() {
               <h2 className="mb-2 text-xl font-semibold">{game.title}</h2>
               <p className="text-sm text-muted-foreground">{game.description}</p>
               <div className="mt-4 inline-flex items-center text-sm font-medium text-brand-500">
-                Play now
+                {game.cta || 'Play now'}
                 <span className="ml-1 transition-transform group-hover:translate-x-1">&rarr;</span>
               </div>
             </div>
