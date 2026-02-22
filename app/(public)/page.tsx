@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CheckCircle2, CalendarDays, CreditCard, UsersRound } from 'lucide-react'
+import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
+import { ProductExplainerPlayer } from '@/components/public/product-explainer-player'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
 
@@ -37,12 +38,6 @@ const FEATURES = [
     title: 'Built-In Payments',
     description: 'Send invoices and collect payments with Stripe-backed workflows.',
   },
-]
-
-const STEPS = [
-  'Create an event and structure your menu + pricing.',
-  'Send the proposal link to your client in seconds.',
-  'Collect payment and move straight into service prep.',
 ]
 
 export default function Home() {
@@ -98,23 +93,18 @@ export default function Home() {
       </section>
 
       <section className="border-y border-stone-200 bg-surface-muted">
-        <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20 lg:px-8">
-          <div>
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+          <div className="mb-10 text-center">
             <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
               From inquiry to payout in one flow.
             </h2>
-            <p className="mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
               Keep the full client lifecycle in one system, with less back-and-forth and no
               fragmented spreadsheets.
             </p>
           </div>
-          <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-6 shadow-[var(--shadow-card)]">
-            {STEPS.map((step) => (
-              <div key={step} className="flex items-start gap-3">
-                <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
-                <p className="text-sm leading-relaxed text-stone-700">{step}</p>
-              </div>
-            ))}
+          <div className="mx-auto max-w-2xl">
+            <ProductExplainerPlayer />
           </div>
         </div>
       </section>

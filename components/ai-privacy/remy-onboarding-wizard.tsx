@@ -33,7 +33,7 @@ import {
   ToggleLeft,
   ToggleRight,
 } from 'lucide-react'
-import { DataFlowSchematic } from './data-flow-schematic'
+import { DataFlowAnimated } from './data-flow-animated'
 import { completeOnboarding } from '@/lib/ai/privacy-actions'
 
 type OnboardingStep = {
@@ -198,7 +198,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
           )}
 
           {/* ─── Step 2: Your Data Stays in ChefFlow (The Schematic) ─── */}
-          {step === 1 && <DataFlowSchematic />}
+          {step === 1 && <DataFlowAnimated />}
 
           {/* ─── Step 3: You're in Control ──────────────────── */}
           {step === 2 && (

@@ -5,7 +5,7 @@ import { Bot, MessageSquare, Brain, ShieldCheck, Trash2, Sparkles } from 'lucide
 import { CommandCenterClient } from '@/components/ai/command-center-client'
 import { RemyHistoryList } from '@/components/ai/remy-history-list'
 import { DataControls } from '@/components/ai-privacy/data-controls'
-import { DataFlowSchematic } from '@/components/ai-privacy/data-flow-schematic'
+import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import {
   getAiPreferences,
   getAiDataSummary,
@@ -216,7 +216,7 @@ function SettingsTab() {
           </span>
         </summary>
         <div className="border-t border-stone-200 p-5">
-          <DataFlowSchematic />
+          <DataFlowAnimated />
         </div>
       </details>
 

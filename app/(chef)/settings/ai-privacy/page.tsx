@@ -11,7 +11,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Shield, Bot, Eye, RefreshCw } from 'lucide-react'
 import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wizard'
-import { DataFlowSchematic } from '@/components/ai-privacy/data-flow-schematic'
+import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import { DataControls } from '@/components/ai-privacy/data-controls'
 import {
   getAiPreferences,
@@ -136,7 +136,7 @@ export default function AiPrivacyPage() {
           </p>
         </summary>
         <div className="border-t border-stone-200 p-5">
-          <DataFlowSchematic />
+          <DataFlowAnimated />
         </div>
       </details>
 
