@@ -227,20 +227,104 @@ async function loadEventEntity(
   tenantId: string,
   eventId: string
 ): Promise<PageEntityContext | undefined> {
-  const { data } = await supabase
-    .from('events')
-    .select(
-      `id, occasion, event_date, serve_time, guest_count, status, service_style,
-       location_address, location_city, location_state,
-       dietary_restrictions, allergies, special_requests,
-       quoted_price_cents, payment_status, kitchen_notes,
-       prep_list_ready, grocery_list_ready, timeline_ready,
-       client:clients(full_name, email, phone, dietary_restrictions, allergies, vibe_notes)`
-    )
-    .eq('id', eventId)
-    .eq('tenant_id', tenantId)
-    .single()
+  // Primary event data + 8 parallel sub-queries for full context
+  const [
+    eventResult,
+    ledgerResult,
+    expensesResult,
+    staffResult,
+    tempLogsResult,
+    quotesResult,
+    transitionsResult,
+    approvalResult,
+    groceryResult,
+  ] = await Promise.all([
+    supabase
+      .from('events')
+      .select(
+        `id, occasion, event_date, serve_time, guest_count, status, service_style,
+         location_address, location_city, location_state,
+         dietary_restrictions, allergies, special_requests,
+         quoted_price_cents, payment_status, kitchen_notes,
+         prep_list_ready, grocery_list_ready, timeline_ready,
+         menu_approval_status, menu_sent_at, menu_approved_at, menu_revision_notes,
+         client:clients(full_name, email, phone, dietary_restrictions, allergies, vibe_notes)`
+      )
+      .eq('id', eventId)
+      .eq('tenant_id', tenantId)
+      .single(),
+    // Ledger entries (payments, deposits, refunds)
+    supabase
+      .from('ledger_entries')
+      .select('entry_type, amount_cents, description, payment_method, received_at, is_refund')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: true })
+      .limit(20),
+    // Expenses linked to this event
+    supabase
+      .from('expenses')
+      .select('category, amount_cents, vendor_name, description, expense_date')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('expense_date', { ascending: true })
+      .limit(20),
+    // Staff assignments
+    supabase
+      .from('event_staff_assignments')
+      .select(
+        'role_override, scheduled_hours, actual_hours, pay_amount_cents, status, notes, staff_member:staff_members(full_name)'
+      )
+      .eq('event_id', eventId)
+      .eq('chef_id', tenantId)
+      .limit(10),
+    // Temperature logs
+    supabase
+      .from('event_temp_logs')
+      .select('item_description, temp_fahrenheit, phase, is_safe, logged_at, notes')
+      .eq('event_id', eventId)
+      .eq('chef_id', tenantId)
+      .order('logged_at', { ascending: true })
+      .limit(20),
+    // Quotes for this event
+    supabase
+      .from('quotes')
+      .select(
+        'quote_name, status, total_quoted_cents, pricing_model, deposit_amount_cents, sent_at, accepted_at, pricing_notes'
+      )
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    // Event transitions (audit trail)
+    supabase
+      .from('event_transitions')
+      .select('from_status, to_status, transitioned_at, reason')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('transitioned_at', { ascending: true })
+      .limit(15),
+    // Menu approval requests
+    supabase
+      .from('menu_approval_requests')
+      .select('status, sent_at, responded_at, revision_notes')
+      .eq('event_id', eventId)
+      .eq('chef_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(5),
+    // Grocery price quotes
+    supabase
+      .from('grocery_price_quotes')
+      .select(
+        'status, ingredient_count, spoonacular_total_cents, kroger_total_cents, average_total_cents, instacart_link, created_at'
+      )
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(3),
+  ])
 
+  const data = eventResult.data
   if (!data) return undefined
 
   const client = data.client as Record<string, unknown> | null
@@ -274,6 +358,25 @@ async function loadEventEntity(
   if (!data.timeline_ready) notReady.push('timeline')
   if (notReady.length > 0) lines.push(`Not ready: ${notReady.join(', ')}`)
 
+  // Menu approval status
+  if (data.menu_approval_status && data.menu_approval_status !== 'not_sent') {
+    lines.push(`\nMENU APPROVAL: ${data.menu_approval_status.replace(/_/g, ' ')}`)
+    if (data.menu_sent_at) lines.push(`Sent: ${new Date(data.menu_sent_at).toLocaleDateString()}`)
+    if (data.menu_approved_at)
+      lines.push(`Approved: ${new Date(data.menu_approved_at).toLocaleDateString()}`)
+    if (data.menu_revision_notes) lines.push(`Client feedback: ${data.menu_revision_notes}`)
+  }
+  // Approval request history
+  const approvals = approvalResult.data ?? []
+  if (approvals.length > 0 && !data.menu_approval_status) {
+    lines.push(`\nMENU APPROVAL HISTORY (${approvals.length} rounds):`)
+    for (const a of approvals as Array<Record<string, unknown>>) {
+      const status = (a.status as string).replace(/_/g, ' ')
+      const sent = a.sent_at ? new Date(a.sent_at as string).toLocaleDateString() : 'not sent'
+      lines.push(`- ${status} (sent ${sent})${a.revision_notes ? `: ${a.revision_notes}` : ''}`)
+    }
+  }
+
   if (client) {
     lines.push(`\nCLIENT: ${client.full_name ?? 'Unknown'}`)
     if (client.email) lines.push(`Email: ${client.email}`)
@@ -285,6 +388,132 @@ async function loadEventEntity(
     if (client.vibe_notes) lines.push(`Vibe: ${client.vibe_notes}`)
   }
 
+  // Ledger entries (financial breakdown)
+  const ledger = ledgerResult.data ?? []
+  if (ledger.length > 0) {
+    const totalPaid = ledger.reduce(
+      (s, e) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+      0
+    )
+    lines.push(
+      `\nFINANCIALS (${ledger.length} ledger entries, total: $${(totalPaid / 100).toFixed(2)}):`
+    )
+    for (const entry of ledger as Array<Record<string, unknown>>) {
+      const type = (entry.entry_type as string).replace(/_/g, ' ')
+      const amt = `$${(Math.abs(entry.amount_cents as number) / 100).toFixed(2)}`
+      const method = entry.payment_method
+        ? ` via ${(entry.payment_method as string).replace(/_/g, ' ')}`
+        : ''
+      const desc = entry.description ? ` — ${entry.description}` : ''
+      const refund = entry.is_refund ? ' (REFUND)' : ''
+      lines.push(`- ${type}: ${amt}${method}${refund}${desc}`)
+    }
+  }
+
+  // Expenses
+  const expenses = expensesResult.data ?? []
+  if (expenses.length > 0) {
+    const totalExpenses = expenses.reduce(
+      (s, e) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+      0
+    )
+    lines.push(
+      `\nEXPENSES (${expenses.length} entries, total: $${(totalExpenses / 100).toFixed(2)}):`
+    )
+    for (const exp of expenses as Array<Record<string, unknown>>) {
+      const cat = (exp.category as string).replace(/_/g, ' ')
+      const amt = `$${((exp.amount_cents as number) / 100).toFixed(2)}`
+      const vendor = exp.vendor_name ? ` at ${exp.vendor_name}` : ''
+      const desc = exp.description ? ` — ${exp.description}` : ''
+      lines.push(`- ${cat}: ${amt}${vendor}${desc}`)
+    }
+  }
+
+  // Staff assignments
+  const staff = staffResult.data ?? []
+  if (staff.length > 0) {
+    lines.push(`\nSTAFF (${staff.length} assigned):`)
+    for (const s of staff as Array<Record<string, unknown>>) {
+      const member = s.staff_member as Record<string, unknown> | null
+      const name = (member?.full_name as string) ?? 'Unknown'
+      const role = s.role_override ? ` (${(s.role_override as string).replace(/_/g, ' ')})` : ''
+      const hours = s.scheduled_hours ? ` ${s.scheduled_hours}h scheduled` : ''
+      const actual = s.actual_hours ? `, ${s.actual_hours}h worked` : ''
+      const pay = s.pay_amount_cents
+        ? ` — $${((s.pay_amount_cents as number) / 100).toFixed(2)}`
+        : ''
+      const status = s.status ? ` [${s.status as string}]` : ''
+      lines.push(`- ${name}${role}${hours}${actual}${pay}${status}`)
+    }
+  }
+
+  // Temperature logs
+  const temps = tempLogsResult.data ?? []
+  if (temps.length > 0) {
+    const unsafe = temps.filter((t) => !(t as Record<string, unknown>).is_safe)
+    lines.push(`\nTEMP LOGS (${temps.length} readings, ${unsafe.length} flagged unsafe):`)
+    for (const t of temps as Array<Record<string, unknown>>) {
+      const safe = t.is_safe ? '' : ' ⚠ UNSAFE'
+      const phase = (t.phase as string).replace(/_/g, ' ')
+      lines.push(`- ${t.item_description}: ${t.temp_fahrenheit}°F (${phase})${safe}`)
+    }
+  }
+
+  // Quotes
+  const quotes = quotesResult.data ?? []
+  if (quotes.length > 0) {
+    lines.push(`\nQUOTES (${quotes.length}):`)
+    for (const q of quotes as Array<Record<string, unknown>>) {
+      const name = (q.quote_name as string) ?? 'Untitled'
+      const status = q.status as string
+      const total = q.total_quoted_cents
+        ? `$${((q.total_quoted_cents as number) / 100).toFixed(2)}`
+        : '?'
+      const deposit = q.deposit_amount_cents
+        ? ` (deposit: $${((q.deposit_amount_cents as number) / 100).toFixed(2)})`
+        : ''
+      const notes = q.pricing_notes ? ` — ${q.pricing_notes}` : ''
+      lines.push(`- ${name}: ${total} [${status}]${deposit}${notes}`)
+    }
+  }
+
+  // Event transitions (audit trail)
+  const transitions = transitionsResult.data ?? []
+  if (transitions.length > 0) {
+    lines.push(`\nSTATUS HISTORY (${transitions.length} transitions):`)
+    for (const t of transitions as Array<Record<string, unknown>>) {
+      const from = (t.from_status as string) ?? 'new'
+      const to = t.to_status as string
+      const when = new Date(t.transitioned_at as string).toLocaleDateString()
+      const reason = t.reason ? ` — ${t.reason}` : ''
+      lines.push(`- ${from} → ${to} (${when})${reason}`)
+    }
+  }
+
+  // Grocery price quotes
+  const grocery = groceryResult.data ?? []
+  if (grocery.length > 0) {
+    lines.push(`\nGROCERY QUOTES (${grocery.length}):`)
+    for (const g of grocery as Array<Record<string, unknown>>) {
+      const status = g.status as string
+      const count = g.ingredient_count ?? 0
+      const avg = g.average_total_cents
+        ? `$${((g.average_total_cents as number) / 100).toFixed(2)}`
+        : 'N/A'
+      const spoon = g.spoonacular_total_cents
+        ? `Spoonacular: $${((g.spoonacular_total_cents as number) / 100).toFixed(2)}`
+        : ''
+      const kroger = g.kroger_total_cents
+        ? `Kroger: $${((g.kroger_total_cents as number) / 100).toFixed(2)}`
+        : ''
+      const sources = [spoon, kroger].filter(Boolean).join(', ')
+      const link = g.instacart_link ? ' [Instacart cart available]' : ''
+      lines.push(
+        `- ${count} ingredients, avg ${avg} [${status}]${sources ? ` (${sources})` : ''}${link}`
+      )
+    }
+  }
+
   return { type: 'event', summary: lines.join('\n') }
 }
 
@@ -293,19 +522,32 @@ async function loadClientEntity(
   tenantId: string,
   clientId: string
 ): Promise<PageEntityContext | undefined> {
-  const { data } = await supabase
-    .from('clients')
-    .select(
-      `id, full_name, email, phone, preferred_contact_method, referral_source,
-       partner_name, dietary_restrictions, allergies, dislikes, spice_tolerance,
-       favorite_cuisines, favorite_dishes, vibe_notes, payment_behavior,
-       tipping_pattern, what_they_care_about, kitchen_size, kitchen_constraints,
-       lifetime_value_cents, total_events_count, average_spend_cents, status`
-    )
-    .eq('id', clientId)
-    .eq('tenant_id', tenantId)
-    .single()
+  const [clientResult, eventsResult] = await Promise.all([
+    supabase
+      .from('clients')
+      .select(
+        `id, full_name, email, phone, preferred_contact_method, referral_source,
+         partner_name, dietary_restrictions, allergies, dislikes, spice_tolerance,
+         favorite_cuisines, favorite_dishes, vibe_notes, payment_behavior,
+         tipping_pattern, what_they_care_about, kitchen_size, kitchen_constraints,
+         lifetime_value_cents, total_events_count, average_spend_cents, status`
+      )
+      .eq('id', clientId)
+      .eq('tenant_id', tenantId)
+      .single(),
+    // Event history for this client
+    supabase
+      .from('events')
+      .select(
+        'id, occasion, event_date, status, guest_count, quoted_price_cents, payment_status, service_style'
+      )
+      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
+      .order('event_date', { ascending: false })
+      .limit(15),
+  ])
 
+  const data = clientResult.data
   if (!data) return undefined
 
   const lines: string[] = []
@@ -336,6 +578,35 @@ async function loadClientEntity(
     lines.push(`Lifetime value: $${(data.lifetime_value_cents / 100).toFixed(2)}`)
   if (data.average_spend_cents)
     lines.push(`Avg spend: $${(data.average_spend_cents / 100).toFixed(2)}`)
+
+  // Event history
+  const events = eventsResult.data ?? []
+  if (events.length > 0) {
+    const completed = events.filter(
+      (e) => (e as Record<string, unknown>).status === 'completed'
+    ).length
+    const upcoming = events.filter((e) => {
+      const s = (e as Record<string, unknown>).status as string
+      return s !== 'completed' && s !== 'cancelled'
+    }).length
+    lines.push(
+      `\nEVENT HISTORY (${events.length} total, ${completed} completed, ${upcoming} active):`
+    )
+    for (const ev of events as Array<Record<string, unknown>>) {
+      const occasion = (ev.occasion as string) ?? 'Event'
+      const date = (ev.event_date as string) ?? 'no date'
+      const status = ev.status as string
+      const guests = ev.guest_count ? `${ev.guest_count} guests` : ''
+      const price = ev.quoted_price_cents
+        ? `$${((ev.quoted_price_cents as number) / 100).toFixed(2)}`
+        : ''
+      const payment = ev.payment_status
+        ? `[${(ev.payment_status as string).replace(/_/g, ' ')}]`
+        : ''
+      const details = [guests, price, payment].filter(Boolean).join(', ')
+      lines.push(`- ${occasion} (${date}) — ${status}${details ? ` | ${details}` : ''}`)
+    }
+  }
 
   return { type: 'client', summary: lines.join('\n') }
 }
@@ -403,20 +674,31 @@ async function loadInquiryEntity(
   tenantId: string,
   inquiryId: string
 ): Promise<PageEntityContext | undefined> {
-  const { data } = await supabase
-    .from('inquiries')
-    .select(
-      `id, channel, status, source_message,
-       confirmed_date, confirmed_guest_count, confirmed_location,
-       confirmed_occasion, confirmed_budget_cents, confirmed_dietary_restrictions,
-       unknown_fields, next_action_required, next_action_by,
-       follow_up_due_at, first_contact_at,
-       client:clients(full_name, email, phone)`
-    )
-    .eq('id', inquiryId)
-    .eq('tenant_id', tenantId)
-    .single()
+  const [inquiryResult, messagesResult] = await Promise.all([
+    supabase
+      .from('inquiries')
+      .select(
+        `id, channel, status, source_message,
+         confirmed_date, confirmed_guest_count, confirmed_location,
+         confirmed_occasion, confirmed_budget_cents, confirmed_dietary_restrictions,
+         unknown_fields, next_action_required, next_action_by,
+         follow_up_due_at, first_contact_at,
+         client:clients(full_name, email, phone)`
+      )
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+      .single(),
+    // Message thread for this inquiry
+    supabase
+      .from('inquiry_messages')
+      .select('channel, direction, status, subject, body, sent_at, created_at')
+      .eq('inquiry_id', inquiryId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: true })
+      .limit(15),
+  ])
 
+  const data = inquiryResult.data
   if (!data) return undefined
 
   const client = data.client as Record<string, unknown> | null
@@ -446,6 +728,37 @@ async function loadInquiryEntity(
   if (data.next_action_required)
     lines.push(`Next action: ${data.next_action_required} (by ${data.next_action_by ?? '?'})`)
   if (data.follow_up_due_at) lines.push(`Follow-up due: ${data.follow_up_due_at}`)
+
+  // Message thread
+  const messages = messagesResult.data ?? []
+  if (messages.length > 0) {
+    const inbound = messages.filter(
+      (m) => (m as Record<string, unknown>).direction === 'inbound'
+    ).length
+    const outbound = messages.filter(
+      (m) => (m as Record<string, unknown>).direction === 'outbound'
+    ).length
+    lines.push(
+      `\nMESSAGE THREAD (${messages.length} messages — ${inbound} from client, ${outbound} from chef):`
+    )
+    for (const msg of messages as Array<Record<string, unknown>>) {
+      const dir = msg.direction === 'inbound' ? '← Client' : '→ Chef'
+      const ch = msg.channel ? ` [${msg.channel}]` : ''
+      const date = msg.sent_at
+        ? new Date(msg.sent_at as string).toLocaleDateString()
+        : msg.created_at
+          ? new Date(msg.created_at as string).toLocaleDateString()
+          : ''
+      const subj = msg.subject ? ` "${msg.subject}"` : ''
+      const body = msg.body
+        ? (msg.body as string).length > 200
+          ? ` ${(msg.body as string).slice(0, 200)}...`
+          : ` ${msg.body}`
+        : ''
+      const status = msg.status === 'draft' ? ' (DRAFT)' : ''
+      lines.push(`- ${dir}${ch} ${date}${subj}${status}:${body}`)
+    }
+  }
 
   return { type: 'inquiry', summary: lines.join('\n') }
 }
@@ -530,10 +843,11 @@ export async function resolveMessageEntities(message: string): Promise<PageEntit
   const msgLower = message.toLowerCase()
 
   // Run all searches in parallel — each is cheap (indexed ilike, limit 3)
-  const [clientHits, eventHits, recipeHits] = await Promise.all([
+  const [clientHits, eventHits, recipeHits, inquiryHits] = await Promise.all([
     findMentionedClients(supabase, tenantId, msgLower),
     findMentionedEvents(supabase, tenantId, msgLower),
     findMentionedRecipes(supabase, tenantId, msgLower),
+    findMentionedInquiries(supabase, tenantId, msgLower),
   ])
 
   const results: PageEntityContext[] = []
@@ -549,6 +863,10 @@ export async function resolveMessageEntities(message: string): Promise<PageEntit
   }
   for (const recipe of recipeHits.slice(0, 1)) {
     const ctx = await loadRecipeEntity(supabase, tenantId, recipe.id)
+    if (ctx) results.push(ctx)
+  }
+  for (const inquiry of inquiryHits.slice(0, 1)) {
+    const ctx = await loadInquiryEntity(supabase, tenantId, inquiry.id)
     if (ctx) results.push(ctx)
   }
 
@@ -609,7 +927,31 @@ async function findMentionedEvents(
     const client = e.client as Record<string, unknown> | null
     if (client?.full_name) {
       const clientLower = (client.full_name as string).toLowerCase()
-      const eventKeywords = ['event', 'dinner', 'party', 'booking', 'gig', 'service', 'cook']
+      const eventKeywords = [
+        'event',
+        'dinner',
+        'party',
+        'booking',
+        'gig',
+        'service',
+        'cook',
+        'paid',
+        'payment',
+        'owe',
+        'owed',
+        'invoice',
+        'quote',
+        'expense',
+        'staff',
+        'temp',
+        'temperature',
+        'menu',
+        'grocery',
+        'groceries',
+        'prep',
+        'timeline',
+        'schedule',
+      ]
       if (msgLower.includes(clientLower) && eventKeywords.some((k) => msgLower.includes(k))) {
         return true
       }
@@ -635,5 +977,38 @@ async function findMentionedRecipes(
   return data.filter((r) => {
     if (!r.name) return false
     return msgLower.includes(r.name.toLowerCase())
+  })
+}
+
+async function findMentionedInquiries(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  msgLower: string
+): Promise<Array<{ id: string }>> {
+  // Only search if inquiry-related keywords are in the message
+  const inquiryKeywords = ['inquiry', 'enquiry', 'lead', 'prospect', 'follow up', 'follow-up']
+  if (!inquiryKeywords.some((k) => msgLower.includes(k))) return []
+
+  const { data } = await supabase
+    .from('inquiries')
+    .select('id, confirmed_occasion, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .not('status', 'eq', 'closed')
+    .order('created_at', { ascending: false })
+    .limit(30)
+
+  if (!data) return []
+
+  return data.filter((inq) => {
+    // Match by occasion
+    if (inq.confirmed_occasion && msgLower.includes(inq.confirmed_occasion.toLowerCase()))
+      return true
+    // Match by client name + inquiry keyword
+    const client = inq.client as Record<string, unknown> | null
+    if (client?.full_name) {
+      const clientLower = (client.full_name as string).toLowerCase()
+      if (msgLower.includes(clientLower)) return true
+    }
+    return false
   })
 }

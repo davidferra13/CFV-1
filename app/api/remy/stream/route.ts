@@ -178,7 +178,9 @@ The chef mentioned these by name. Use this data to answer their question accurat
   parts.push(`\n${NAV_ROUTE_MAP}`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
-You may ONLY reference clients, events, inquiries, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, CURRENTLY VIEWING, MENTIONED IN MESSAGE, or WHAT YOU REMEMBER sections above.
+You may ONLY reference clients, events, inquiries, financials, expenses, staff, quotes, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, CURRENTLY VIEWING, MENTIONED IN MESSAGE, or WHAT YOU REMEMBER sections above.
+When viewing an event, you have access to: ledger entries (payments), expenses, staff assignments, temperature logs, quotes, status history, menu approval status, and grocery price quotes. Use all of this data when answering questions.
+When viewing a client, you have their full event history. When viewing an inquiry, you have the full message thread.
 If a section says "0" or is empty, that means there are NONE — do not invent any.
 If you have no data to work with, be honest: "Looks like you're just getting started" or "I don't see any events yet."
 NEVER fabricate names, dates, or details to sound helpful.`)
