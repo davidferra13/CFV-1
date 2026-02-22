@@ -993,14 +993,14 @@ export function ChefMobileNav({
             <AppLogo size={28} className="rounded-md flex-shrink-0" />
             <span className="font-display text-stone-900 whitespace-nowrap">ChefFlow</span>
           </Link>
-          <div className="flex items-center flex-shrink-0">
+          <div className="flex items-center flex-shrink-0 gap-0.5">
             <LiveIndicator />
             <ActivityDot />
             <GlobalSearch />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-              className="flex items-center justify-center w-9 h-9 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
               aria-label="Open Remy"
               title="Open Remy"
             >
@@ -1010,7 +1010,7 @@ export function ChefMobileNav({
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center justify-center w-9 h-9 flex-shrink-0 rounded-lg text-stone-500 hover:bg-stone-100"
+              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-500 hover:bg-stone-100"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
