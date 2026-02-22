@@ -27,6 +27,7 @@ When you complete a backlog item, move the file to `docs/` (or delete it) and no
 
 ## Current Items
 
-| File                                  | Topic                                    | Priority         | Added      |
-| ------------------------------------- | ---------------------------------------- | ---------------- | ---------- |
-| `ux-scenarios-and-onboarding-gaps.md` | Full UX scenario map + 7 onboarding gaps | CRITICAL (Gap 1) | 2026-02-21 |
+| File                                  | Topic                                                                                                                                  | Priority         | Added      |
+| ------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | ---------- |
+| `ux-scenarios-and-onboarding-gaps.md` | Full UX scenario map + 7 onboarding gaps                                                                                               | CRITICAL (Gap 1) | 2026-02-21 |
+| `remy-features-phase2-master.md`      | 8 Remy features: voice input, dietary check, prep timeline, nudges, quick-add, Q&A profile, doc management, favorite chefs integration | HIGH             | 2026-02-21 |
