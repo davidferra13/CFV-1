@@ -88,8 +88,18 @@ export const navGroups: NavGroup[] = [
     label: 'Remy',
     icon: Bot,
     items: [
-      { href: '/commands', label: 'Ask Remy', icon: Bot },
-      { href: '/remy', label: 'Remy History', icon: Bot },
+      {
+        href: '/commands',
+        label: 'Ask Remy',
+        icon: Bot,
+        children: [{ href: '/remy', label: 'Conversation History' }],
+      },
+      {
+        href: '/settings/ai-privacy',
+        label: 'Settings & Privacy',
+        icon: ShieldCheck,
+        children: [{ href: '/settings/ai-privacy', label: 'Trust Center & Onboarding' }],
+      },
     ],
   },
   {
