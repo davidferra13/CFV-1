@@ -19,6 +19,7 @@ import { TrialBanner } from '@/components/billing/trial-banner'
 import { RemyDrawer } from '@/components/ai/remy-drawer'
 import { OfflineBanner } from '@/components/ui/offline-banner'
 import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
+import { BreadcrumbTracker } from '@/components/activity/breadcrumb-tracker'
 import { QuickCapture } from '@/components/mobile/quick-capture'
 import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
 import { ThemeProvider } from '@/components/ui/theme-provider'
@@ -124,6 +125,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
               {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
               <QuickCapture />
+
+              {/* Breadcrumb tracker — silent navigation tracking for retrace mode */}
+              <BreadcrumbTracker />
 
               {/* Business milestone celebrations — fires once per threshold, replayable */}
               <MilestoneOverlay />

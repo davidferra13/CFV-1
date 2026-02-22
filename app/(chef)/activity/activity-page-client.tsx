@@ -4,16 +4,19 @@ import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
 import type { ChefActivityDomain, ChefActivityEntry, ResumeItem } from '@/lib/activity/chef-types'
 import { DOMAIN_CONFIG } from '@/lib/activity/chef-types'
 import type { ActivityActorFilter, ActivityEvent } from '@/lib/activity/types'
+import type { BreadcrumbSession } from '@/lib/activity/breadcrumb-types'
 import { createClient } from '@/lib/supabase/client'
 import { mergeActivityByCreatedAt, parseTimeRangeDays } from '@/lib/activity/merge'
 import { ResumeSection } from '@/components/activity/resume-section'
 import { ChefActivityFeed } from '@/components/activity/chef-activity-feed'
 import { ActivityFilters } from '@/components/activity/activity-filters'
 import { ClientActivityFeed } from '@/components/activity/client-activity-feed'
+import { RetraceTimeline } from '@/components/activity/retrace-timeline'
 import Link from 'next/link'
 
 type ActivityTab = 'my' | 'client' | 'all'
 type TimeRange = '1' | '7' | '30' | '90' | '180' | '365' | 'all'
+type ViewMode = 'summary' | 'retrace'
 
 interface ActivityPageClientProps {
   resumeItems: ResumeItem[]
@@ -23,6 +26,8 @@ interface ActivityPageClientProps {
   initialClientCursor: string | null
   domainCounts: Partial<Record<ChefActivityDomain, number>>
   activityLogEnabled: boolean
+  initialBreadcrumbSessions?: BreadcrumbSession[]
+  initialBreadcrumbCursor?: string | null
 }
 
 type FeedResponse = {
@@ -87,7 +92,10 @@ export function ActivityPageClient({
   initialClientCursor,
   domainCounts,
   activityLogEnabled,
+  initialBreadcrumbSessions = [],
+  initialBreadcrumbCursor = null,
 }: ActivityPageClientProps) {
+  const [viewMode, setViewMode] = useState<ViewMode>('summary')
   const [activeTab, setActiveTab] = useState<ActivityTab>('my')
   const [activeDomain, setActiveDomain] = useState<ChefActivityDomain | null>(null)
   const [actorFilter, setActorFilter] = useState<ActivityActorFilter>('all')
@@ -99,6 +107,13 @@ export function ActivityPageClient({
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Retrace state
+  const [breadcrumbSessions, setBreadcrumbSessions] =
+    useState<BreadcrumbSession[]>(initialBreadcrumbSessions)
+  const [breadcrumbCursor, setBreadcrumbCursor] = useState<string | null>(initialBreadcrumbCursor)
+  const [retraceLoading, setRetraceLoading] = useState(false)
+  const [retraceLoadingMore, setRetraceLoadingMore] = useState(false)
 
   const loadFeed = useCallback(
     async (opts?: { append?: boolean }) => {
@@ -150,15 +165,58 @@ export function ActivityPageClient({
     [activeTab, timeRange, actorFilter, activeDomain, chefCursor, clientCursor]
   )
 
+  const loadRetraceSessions = useCallback(
+    async (opts?: { append?: boolean }) => {
+      const append = opts?.append ?? false
+      if (append) setRetraceLoadingMore(true)
+      else setRetraceLoading(true)
+
+      try {
+        const { getBreadcrumbSessions } = await import('@/lib/activity/breadcrumb-actions')
+        const daysBack = timeRange === 'all' ? 0 : parseInt(timeRange, 10) || 7
+        const result = await getBreadcrumbSessions({
+          limit: 200,
+          daysBack,
+          cursor: append ? breadcrumbCursor : null,
+        })
+
+        if (append) {
+          setBreadcrumbSessions((prev) => [...prev, ...result.sessions])
+        } else {
+          setBreadcrumbSessions(result.sessions)
+        }
+        setBreadcrumbCursor(result.nextCursor)
+      } catch {
+        // Non-blocking
+      } finally {
+        setRetraceLoading(false)
+        setRetraceLoadingMore(false)
+      }
+    },
+    [timeRange, breadcrumbCursor]
+  )
+
   useEffect(() => {
-    const defaultsMatchInitial =
-      activeTab === 'my' && timeRange === '7' && activeDomain === null && actorFilter === 'all'
-    if (defaultsMatchInitial) return
-    void loadFeed({ append: false })
-  }, [activeTab, timeRange, activeDomain, actorFilter, loadFeed])
+    if (viewMode === 'summary') {
+      const defaultsMatchInitial =
+        activeTab === 'my' && timeRange === '7' && activeDomain === null && actorFilter === 'all'
+      if (defaultsMatchInitial) return
+      void loadFeed({ append: false })
+    }
+  }, [activeTab, timeRange, activeDomain, actorFilter, loadFeed, viewMode])
+
+  // When switching to retrace or changing time range in retrace mode, reload sessions
+  useEffect(() => {
+    if (viewMode !== 'retrace') return
+    // Only reload if timeRange changed (initial load handled by SSR)
+    const isDefault = timeRange === '7'
+    if (isDefault && initialBreadcrumbSessions.length > 0) return
+    void loadRetraceSessions({ append: false })
+  }, [viewMode, timeRange, loadRetraceSessions, initialBreadcrumbSessions.length])
 
   // Realtime refresh: prepend latest events by refreshing current filters.
   useEffect(() => {
+    if (viewMode !== 'summary') return
     const supabase = createClient()
     const channel = supabase
       .channel('activity-page-live')
@@ -181,7 +239,7 @@ export function ActivityPageClient({
     return () => {
       void supabase.removeChannel(channel)
     }
-  }, [loadFeed])
+  }, [loadFeed, viewMode])
 
   const hasMore = useMemo(() => {
     if (activeTab === 'my') return Boolean(chefCursor)
@@ -227,113 +285,179 @@ export function ActivityPageClient({
 
       <ResumeSection items={resumeItems} />
 
-      <ActivityFilters
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        activeDomain={activeDomain}
-        onDomainChange={setActiveDomain}
-        actorFilter={actorFilter}
-        onActorFilterChange={setActorFilter}
-        timeRange={timeRange}
-        onTimeRangeChange={setTimeRange}
-        domainCounts={domainCounts}
-      />
-
-      {/* Activity Heat Map */}
-      {activeTab === 'my' && chefActivity.length > 0 && (
-        <div className="border border-stone-200 rounded-lg p-4 bg-white">
-          <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">
-            When you&apos;re most active
-          </p>
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr>
-                  <th className="w-10">
-                    <span className="sr-only">Day</span>
-                  </th>
-                  {HOUR_LABELS.map((h) => (
-                    <th
-                      key={h}
-                      className="text-[9px] text-stone-400 font-normal px-0 py-0.5 text-center"
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {DAY_LABELS.map((day, dayIdx) => (
-                  <tr key={day}>
-                    <td className="text-[10px] text-stone-500 font-medium pr-2 text-right">
-                      {day}
-                    </td>
-                    {heatMapData[dayIdx].map((count, hourIdx) => (
-                      <td key={hourIdx} className="p-[1px]">
-                        <div
-                          className="w-full aspect-square rounded-sm"
-                          style={{
-                            backgroundColor:
-                              count === 0
-                                ? '#f5f5f4'
-                                : `rgba(232, 143, 71, ${0.2 + (count / Math.max(heatMapMax, 1)) * 0.8})`,
-                          }}
-                          title={`${day} ${HOUR_LABELS[hourIdx]}: ${count} action${count === 1 ? '' : 's'}`}
-                        />
-                      </td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="flex items-center justify-end gap-1 mt-2">
-            <span className="text-[9px] text-stone-400">Less</span>
-            {[0, 0.2, 0.4, 0.6, 0.8, 1].map((level) => (
-              <div
-                key={level}
-                className="w-2.5 h-2.5 rounded-sm"
-                style={{
-                  backgroundColor:
-                    level === 0 ? '#f5f5f4' : `rgba(232, 143, 71, ${0.2 + level * 0.8})`,
-                }}
-              />
-            ))}
-            <span className="text-[9px] text-stone-400">More</span>
-          </div>
-        </div>
-      )}
-
-      <div className="border border-stone-200 rounded-lg overflow-hidden">
-        <div className="max-h-[600px] overflow-y-auto p-3">
-          {error && (
-            <div className="mb-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1.5">
-              {error}
-            </div>
-          )}
-          {loading && <div className="text-xs text-stone-400 px-1 py-4">{loadingText}</div>}
-          {!loading && activeTab === 'my' && <ChefActivityFeed entries={chefActivity} />}
-          {!loading && activeTab === 'client' && <ClientActivityFeed events={clientActivity} />}
-          {!loading && activeTab === 'all' && (
-            <div className="space-y-4">
-              <div className="text-xs text-stone-400 px-1">{clientCountLabel}</div>
-              <AllActivityTimeline items={mergedAllItems} />
-            </div>
-          )}
-        </div>
-      </div>
-
-      {hasMore && (
-        <div className="flex justify-center">
+      {/* View Mode Toggle — Summary vs Retrace */}
+      <div className="flex items-center gap-2">
+        <div className="flex gap-1 bg-stone-100 rounded-lg p-1">
           <button
             type="button"
-            onClick={() => void loadFeed({ append: true })}
-            disabled={loadingMore}
-            className="text-xs font-medium border border-stone-200 rounded-md px-3 py-1.5 text-stone-600 bg-white hover:bg-stone-50 disabled:opacity-50"
+            onClick={() => setViewMode('summary')}
+            className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
+              viewMode === 'summary'
+                ? 'bg-white text-stone-800 shadow-sm'
+                : 'text-stone-500 hover:text-stone-700'
+            }`}
           >
-            {loadingMore ? 'Loading...' : 'Load more'}
+            Summary
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('retrace')}
+            className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
+              viewMode === 'retrace'
+                ? 'bg-white text-stone-800 shadow-sm'
+                : 'text-stone-500 hover:text-stone-700'
+            }`}
+          >
+            Retrace My Steps
           </button>
         </div>
+        <p className="text-[10px] text-stone-400">
+          {viewMode === 'summary'
+            ? 'Key actions and decisions'
+            : 'Every page and click, step by step'}
+        </p>
+      </div>
+
+      {/* Summary mode: existing activity feed */}
+      {viewMode === 'summary' && (
+        <>
+          <ActivityFilters
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            activeDomain={activeDomain}
+            onDomainChange={setActiveDomain}
+            actorFilter={actorFilter}
+            onActorFilterChange={setActorFilter}
+            timeRange={timeRange}
+            onTimeRangeChange={setTimeRange}
+            domainCounts={domainCounts}
+          />
+
+          {/* Activity Heat Map */}
+          {activeTab === 'my' && chefActivity.length > 0 && (
+            <div className="border border-stone-200 rounded-lg p-4 bg-white">
+              <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">
+                When you&apos;re most active
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr>
+                      <th className="w-10">
+                        <span className="sr-only">Day</span>
+                      </th>
+                      {HOUR_LABELS.map((h) => (
+                        <th
+                          key={h}
+                          className="text-[9px] text-stone-400 font-normal px-0 py-0.5 text-center"
+                        >
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {DAY_LABELS.map((day, dayIdx) => (
+                      <tr key={day}>
+                        <td className="text-[10px] text-stone-500 font-medium pr-2 text-right">
+                          {day}
+                        </td>
+                        {heatMapData[dayIdx].map((count, hourIdx) => (
+                          <td key={hourIdx} className="p-[1px]">
+                            <div
+                              className="w-full aspect-square rounded-sm"
+                              style={{
+                                backgroundColor:
+                                  count === 0
+                                    ? '#f5f5f4'
+                                    : `rgba(232, 143, 71, ${0.2 + (count / Math.max(heatMapMax, 1)) * 0.8})`,
+                              }}
+                              title={`${day} ${HOUR_LABELS[hourIdx]}: ${count} action${count === 1 ? '' : 's'}`}
+                            />
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex items-center justify-end gap-1 mt-2">
+                <span className="text-[9px] text-stone-400">Less</span>
+                {[0, 0.2, 0.4, 0.6, 0.8, 1].map((level) => (
+                  <div
+                    key={level}
+                    className="w-2.5 h-2.5 rounded-sm"
+                    style={{
+                      backgroundColor:
+                        level === 0 ? '#f5f5f4' : `rgba(232, 143, 71, ${0.2 + level * 0.8})`,
+                    }}
+                  />
+                ))}
+                <span className="text-[9px] text-stone-400">More</span>
+              </div>
+            </div>
+          )}
+
+          <div className="border border-stone-200 rounded-lg overflow-hidden">
+            <div className="max-h-[600px] overflow-y-auto p-3">
+              {error && (
+                <div className="mb-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1.5">
+                  {error}
+                </div>
+              )}
+              {loading && <div className="text-xs text-stone-400 px-1 py-4">{loadingText}</div>}
+              {!loading && activeTab === 'my' && <ChefActivityFeed entries={chefActivity} />}
+              {!loading && activeTab === 'client' && <ClientActivityFeed events={clientActivity} />}
+              {!loading && activeTab === 'all' && (
+                <div className="space-y-4">
+                  <div className="text-xs text-stone-400 px-1">{clientCountLabel}</div>
+                  <AllActivityTimeline items={mergedAllItems} />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {hasMore && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => void loadFeed({ append: true })}
+                disabled={loadingMore}
+                className="text-xs font-medium border border-stone-200 rounded-md px-3 py-1.5 text-stone-600 bg-white hover:bg-stone-50 disabled:opacity-50"
+              >
+                {loadingMore ? 'Loading...' : 'Load more'}
+              </button>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Retrace mode: step-by-step navigation history */}
+      {viewMode === 'retrace' && (
+        <>
+          {/* Time range selector for retrace */}
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-stone-500">Show:</span>
+            <select
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value as TimeRange)}
+              aria-label="Time range for retrace view"
+              className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white"
+            >
+              <option value="1">Today</option>
+              <option value="7">This Week</option>
+              <option value="30">This Month</option>
+            </select>
+          </div>
+
+          <RetraceTimeline
+            sessions={breadcrumbSessions}
+            loading={retraceLoading}
+            hasMore={Boolean(breadcrumbCursor)}
+            onLoadMore={() => void loadRetraceSessions({ append: true })}
+            loadingMore={retraceLoadingMore}
+          />
+        </>
       )}
     </div>
   )
