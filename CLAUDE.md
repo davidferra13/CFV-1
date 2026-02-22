@@ -7,6 +7,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 > **🚨 STOP — Pushing to `main` = deploying to Vercel = spending real money.**
 > **NEVER push to `main`, merge to `main`, or trigger a Vercel deployment** unless the developer explicitly says "push everything" / "merge to main" / "deploy."
 > Feature branch pushes (`git push origin feature/...`) are always safe — Vercel ignores them, $0.
+> **If you are unsure whether you should push to main: you should not.**
 
 ---
 
@@ -65,7 +66,7 @@ Developer uses **voice-to-text for almost all input.** Messages will have run-on
 
 ## SELF-MAINTAINING DOCUMENT
 
-Update `CLAUDE.md` immediately when: a pattern/rule gets established, developer asks for the same thing twice, new architectural decision made, bug traced to missing rule. Do not wait to be asked.
+Update `CLAUDE.md` immediately when: a pattern/rule gets established, developer asks for the same thing twice, new architectural decision made, bug traced to missing rule, new file/migration/component added that agents need to know about. Also update `memory/MEMORY.md` if the rule belongs in persistent memory. Commit both. Do not wait to be asked.
 
 ---
 
@@ -81,21 +82,31 @@ Update `CLAUDE.md` immediately when: a pattern/rule gets established, developer 
 
 ## DEVELOPMENT WORKFLOW
 
-- Explain what you're about to do before making changes to database, auth, or financial logic
+- Explain what you're about to do before making changes to database, auth, or financial logic. When in doubt, ask — don't assume.
 - **Always create a follow-up `.md` doc** for every code change — no code-only changes
 - Feature branches for new work. Branch naming: `feature/description` or `fix/description`
 - **NEVER** merge to `main` without explicit user approval
 
 ### Feature Close-Out
 
+Run in order — stop and report any failure before continuing:
+
 1. `npx tsc --noEmit --skipLibCheck` → must exit 0
 2. `npx next build --no-lint` → must exit 0
 3. Commit + push feature branch
 4. Do **NOT** merge to `main`
 
+### Health Checks (before merging to main)
+
+- `npx tsc --noEmit --skipLibCheck` → zero errors
+- `npx next build --no-lint` → exit 0
+- All work committed and pushed
+- `types/database.ts` current with remote schema
+- Only after all above: merge to `main` with explicit user approval
+
 ### Agent Testing Account
 
-Credentials in `.auth/agent.json` (or `.env.local`: `AGENT_EMAIL`/`AGENT_PASSWORD`). Sign in via `POST http://localhost:3100/api/e2e/auth`. Chef role + admin access. Use proactively to verify UI changes, debug auth/redirects, reproduce bugs — don't ask developer to manually test what you can verify yourself.
+Credentials in `.auth/agent.json` (or `.env.local`: `AGENT_EMAIL`/`AGENT_PASSWORD`). If missing, run `npm run agent:setup`. Sign in via `POST http://localhost:3100/api/e2e/auth`. Chef role + admin access. Use proactively to verify UI changes, debug auth/redirects, reproduce bugs. Do NOT sign out (preserves session). Don't ask developer to manually test what you can verify yourself.
 
 ### Reference Docs
 
@@ -161,7 +172,9 @@ No `outline`, no `default` (Button), no `warning`/`success`/`error` (Button).
 
 ### Private AI — Local Only (NO Exceptions)
 
-`parseWithOllama` = local Ollama only. Never falls back to Gemini. If offline → throws `OllamaOfflineError` (from `lib/ai/ollama-errors.ts`). Callers must re-throw: `if (err instanceof OllamaOfflineError) throw err`. Heuristic/regex fallbacks OK.
+**Private data must never leave the local machine.** `parseWithOllama` = local Ollama only. Never falls back to Gemini. **Never** add `parseWithAI` as a fallback in any file that calls `parseWithOllama`. If offline → throws `OllamaOfflineError` (from `lib/ai/ollama-errors.ts` — no `'use server'`, class exports not allowed in server action files). Import: `import { OllamaOfflineError } from '@/lib/ai/ollama-errors'`. Callers must re-throw: `if (err instanceof OllamaOfflineError) throw err`. Heuristic/regex fallbacks OK.
+
+Private data categories (must stay local): client PII, dietary restrictions, allergies, messages, budget/quotes/payment history, business analytics, lead scores, pricing history, temp logs, staff data, event operational details.
 
 ---
 
