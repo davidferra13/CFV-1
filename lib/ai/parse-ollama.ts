@@ -28,7 +28,12 @@ export interface ParseOllamaOptions {
   cache?: boolean
   /** Hard timeout in ms for the entire Ollama call. Default: 30000 (30s). */
   timeoutMs?: number
+  /** Max tokens Ollama can generate. Default: 512 (JSON responses are short). */
+  maxTokens?: number
 }
+
+/** Default max tokens for structured JSON responses — keeps Ollama from running away */
+const DEFAULT_MAX_TOKENS = 512
 
 /** Default hard timeout for any Ollama call — prevents infinite hangs */
 const DEFAULT_OLLAMA_TIMEOUT_MS = 30_000
@@ -110,6 +115,7 @@ export async function parseWithOllama<T>(
               { role: 'user', content: userContent },
             ],
             format: 'json',
+            options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
           }),
           timeoutMs,
           'chat'
@@ -194,6 +200,7 @@ export async function parseWithOllama<T>(
             },
           ],
           format: 'json',
+          options: { num_predict: options?.maxTokens ?? DEFAULT_MAX_TOKENS },
         }),
         timeoutMs,
         'repair'

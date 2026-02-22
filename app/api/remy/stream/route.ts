@@ -604,6 +604,7 @@ export async function POST(req: NextRequest) {
                 { role: 'user', content: `${historyStr}Chef: ${questionInput}` },
               ],
               stream: true,
+              options: { num_predict: OLLAMA_STREAM_MAX_TOKENS },
             })
 
             let fullResponse = ''
@@ -686,6 +687,7 @@ export async function POST(req: NextRequest) {
               { role: 'user', content: `${historyStr}Chef: ${message}` },
             ],
             stream: true,
+            options: { num_predict: OLLAMA_STREAM_MAX_TOKENS },
           })
 
           let fullResponse = ''
@@ -759,6 +761,13 @@ function sseHeaders(): HeadersInit {
  * Prevents runaway memory/CPU that freezes the whole machine.
  */
 const OLLAMA_STREAM_TIMEOUT_MS = 45_000
+
+/**
+ * Max tokens for streaming conversational responses.
+ * Prevents Ollama from generating megabytes of output and ballooning memory.
+ * 2048 tokens ≈ ~1500 words — more than enough for a chat reply.
+ */
+const OLLAMA_STREAM_MAX_TOKENS = 2048
 
 function extractNavSuggestions(
   text: string
