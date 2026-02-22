@@ -22,11 +22,11 @@ export function PublicFooter() {
         <div className="lg:col-span-2">
           <Link href="/" className="inline-flex items-center gap-2.5">
             <AppLogo />
-            <span className="text-base font-semibold tracking-tight text-stone-900">ChefFlow</span>
+            <span className="text-base font-display tracking-tight text-stone-900">ChefFlow</span>
           </Link>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-stone-600">
-            A focused operations system for private chefs who want cleaner workflows,
-            faster client response, and predictable revenue.
+            A focused operations system for private chefs who want cleaner workflows, faster client
+            response, and predictable revenue.
           </p>
         </div>
 

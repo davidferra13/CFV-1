@@ -38,7 +38,7 @@ export function PublicHeader() {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <AppLogo size={36} className="shadow-sm" />
-            <span className="text-base font-semibold tracking-tight text-stone-900">ChefFlow</span>
+            <span className="text-base font-display tracking-tight text-stone-900">ChefFlow</span>
           </Link>
 
           <div className="hidden items-center gap-1 md:flex">
@@ -63,10 +63,14 @@ export function PublicHeader() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Link href="/auth/signin">
-            <Button variant="ghost" size="sm">Sign In</Button>
+            <Button variant="ghost" size="sm">
+              Sign In
+            </Button>
           </Link>
           <Link href="/auth/signup">
-            <Button variant="primary" size="sm">Sign up</Button>
+            <Button variant="primary" size="sm">
+              Sign up
+            </Button>
           </Link>
         </div>
 
@@ -101,10 +105,14 @@ export function PublicHeader() {
           </div>
           <div className="mx-auto flex max-w-6xl gap-2 px-4 pb-4 sm:px-6 lg:px-8">
             <Link href="/auth/signin" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="secondary" size="sm" className="w-full">Sign In</Button>
+              <Button variant="secondary" size="sm" className="w-full">
+                Sign In
+              </Button>
             </Link>
             <Link href="/auth/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="primary" size="sm" className="w-full">Sign up</Button>
+              <Button variant="primary" size="sm" className="w-full">
+                Sign up
+              </Button>
             </Link>
           </div>
         </div>

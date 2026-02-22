@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, DM_Serif_Display } from 'next/font/google'
 import { CookieConsent } from '@/components/ui/cookie-consent'
 import { PresenceBeacon } from '@/components/admin/presence-beacon'
 import { SwRegister } from '@/components/pwa/sw-register'
@@ -9,6 +9,13 @@ import './globals.css'
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+const dmSerif = DM_Serif_Display({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-display',
   display: 'swap',
 })
 
@@ -38,14 +45,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'ChefFlow',
     description: 'Ops for Artists - Private chef business operating system',
-    images: [{ url: '/og-image.svg', width: 1200, height: 630 }],
   },
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${dmSerif.variable}`} suppressHydrationWarning>
       <body className="font-sans">
         {children}
         <CookieConsent />

@@ -104,7 +104,7 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
       >
         <Link href="/my-events" className="flex items-center gap-2">
           <AppLogo />
-          {!collapsed && <span className="text-lg font-semibold text-stone-900">ChefFlow</span>}
+          {!collapsed && <span className="text-lg font-display text-stone-900">ChefFlow</span>}
         </Link>
         {!collapsed ? (
           <button
@@ -266,7 +266,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
         <div className="flex items-center justify-between h-14 px-4">
           <Link href="/my-events" className="flex items-center gap-2">
             <AppLogo size={28} className="rounded-md" />
-            <span className="font-semibold text-stone-900">ChefFlow</span>
+            <span className="font-display text-stone-900">ChefFlow</span>
           </Link>
           <div className="flex items-center gap-2">
             <Link

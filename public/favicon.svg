@@ -1,5 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-    <rect width="24" height="24" rx="4" fill="#111827" />
-    <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Inter, sans-serif" font-size="10"
-        fill="#fff">CF</text>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#eda86b"/>
+      <stop offset="1" stop-color="#d47530"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="8" fill="url(#bg)"/>
+  <text x="50%" y="53%" dominant-baseline="middle" text-anchor="middle"
+    font-family="Inter, system-ui, sans-serif" font-weight="700" font-size="19"
+    fill="#ffffff" letter-spacing="-0.02em">CF</text>
 </svg>

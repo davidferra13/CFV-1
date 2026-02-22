@@ -509,7 +509,7 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-display text-stone-900">Dashboard</h1>
           <p className="text-sm text-stone-400 mt-0.5">
             Good {timeOfDay}
             {firstName ? `, ${firstName}` : ''}.

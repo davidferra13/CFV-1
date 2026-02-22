@@ -54,12 +54,12 @@ export default function Home() {
           <p className="mb-5 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
             Private Chef Operating System
           </p>
-          <h1 className="max-w-4xl text-4xl font-bold tracking-tight text-stone-900 md:text-6xl">
+          <h1 className="max-w-4xl text-4xl font-display tracking-tight text-stone-900 md:text-6xl">
             Clean operations for chefs who are done juggling tools.
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-600 md:text-lg">
-            ChefFlow centralizes events, client communication, and payments so you can spend
-            less time in admin and more time creating standout experiences.
+            ChefFlow centralizes events, client communication, and payments so you can spend less
+            time in admin and more time creating standout experiences.
           </p>
           <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
             <Link
@@ -101,7 +101,7 @@ export default function Home() {
       <section className="border-y border-stone-200 bg-stone-50/70">
         <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20 lg:px-8">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight text-stone-900 md:text-4xl">
+            <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
               From inquiry to payout in one flow.
             </h2>
             <p className="mt-4 max-w-xl text-base leading-relaxed text-stone-600">
@@ -121,7 +121,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-        <h2 className="text-3xl font-bold tracking-tight text-stone-900 md:text-4xl">
+        <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
           Ready for a calmer workflow?
         </h2>
         <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
