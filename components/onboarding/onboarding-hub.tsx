@@ -30,7 +30,8 @@ const PHASES: Phase[] = [
   {
     key: 'clients',
     label: 'Client Ledger',
-    description: 'Import every existing client — their contact info, dietary restrictions, allergies, and service history.',
+    description:
+      'Import every existing client — their contact info, dietary restrictions, allergies, and service history.',
     icon: Users,
     href: '/onboarding/clients',
     ctaLabel: 'Import Clients',
@@ -40,7 +41,8 @@ const PHASES: Phase[] = [
   {
     key: 'loyalty',
     label: 'Loyalty Program',
-    description: 'Configure your tier thresholds and reward catalog, then seed every client\'s historical point balance.',
+    description:
+      "Configure your tier thresholds and reward catalog, then seed every client's historical point balance.",
     icon: Star,
     href: '/onboarding/loyalty',
     ctaLabel: 'Set Up Loyalty',
@@ -49,7 +51,8 @@ const PHASES: Phase[] = [
   {
     key: 'recipes',
     label: 'Recipe Library',
-    description: 'Build your recipe bible — methods, timing, dietary tags, and yield for every dish you cook.',
+    description:
+      'Build your recipe book — methods, timing, dietary tags, and yield for every dish you cook.',
     icon: BookOpen,
     href: '/onboarding/recipes',
     ctaLabel: 'Add Recipes',
@@ -59,7 +62,8 @@ const PHASES: Phase[] = [
   {
     key: 'staff',
     label: 'Staff Roster',
-    description: 'Add team members you work with — sous chefs, servers, assistants — and their rates.',
+    description:
+      'Add team members you work with — sous chefs, servers, assistants — and their rates.',
     icon: Users2,
     href: '/onboarding/staff',
     ctaLabel: 'Add Staff',
@@ -75,19 +79,21 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
   return (
     <div className="min-h-screen bg-stone-50">
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
-
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-stone-900">Set Up Your Business</h1>
           <p className="text-stone-600 mt-2">
-            Migrate your existing clients, recipes, and loyalty program so ChefFlow knows your business from day one.
+            Migrate your existing clients, recipes, and loyalty program so ChefFlow knows your
+            business from day one.
           </p>
         </div>
 
         {/* Progress bar */}
         <div>
           <div className="flex justify-between text-sm text-stone-600 mb-2">
-            <span>{progress.completedPhases} of {progress.totalPhases} phases complete</span>
+            <span>
+              {progress.completedPhases} of {progress.totalPhases} phases complete
+            </span>
             <span>{pct}%</span>
           </div>
           <div className="h-2 bg-stone-200 rounded-full overflow-hidden">
@@ -101,15 +107,16 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
         {/* Phase cards */}
         <div className="space-y-4">
           {PHASES.map((phase) => {
-            const isDone = phase.key === 'profile'
-              ? progress.profile
-              : phase.key === 'clients'
-              ? progress.clients.done
-              : phase.key === 'loyalty'
-              ? progress.loyalty.done
-              : phase.key === 'recipes'
-              ? progress.recipes.done
-              : progress.staff.done
+            const isDone =
+              phase.key === 'profile'
+                ? progress.profile
+                : phase.key === 'clients'
+                  ? progress.clients.done
+                  : phase.key === 'loyalty'
+                    ? progress.loyalty.done
+                    : phase.key === 'recipes'
+                      ? progress.recipes.done
+                      : progress.staff.done
 
             const Icon = phase.icon
 
@@ -144,7 +151,10 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
                     )}
                   </div>
                   <Link href={phase.href} className="flex-shrink-0">
-                    <Button variant={isDone ? 'secondary' : 'primary'} className="whitespace-nowrap">
+                    <Button
+                      variant={isDone ? 'secondary' : 'primary'}
+                      className="whitespace-nowrap"
+                    >
                       {isDone ? 'Edit' : phase.ctaLabel}
                       <ArrowRight className="h-4 w-4 ml-1" />
                     </Button>
@@ -161,12 +171,9 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
             You can return here any time from the Settings menu.
           </p>
           <Link href="/dashboard">
-            <Button variant="ghost">
-              Go to Dashboard →
-            </Button>
+            <Button variant="ghost">Go to Dashboard →</Button>
           </Link>
         </div>
-
       </div>
     </div>
   )

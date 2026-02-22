@@ -1,7 +1,7 @@
 'use server'
 
 // Standalone server action for bulk-updating ingredient prices.
-// Used by GroceryQuotePanel to save discovered prices back to the Recipe Bible.
+// Used by GroceryQuotePanel to save discovered prices back to the Recipe Book.
 // Separated from lib/recipes/actions.ts to keep the panel import path clean.
 
 import { requireChef } from '@/lib/auth/get-user'

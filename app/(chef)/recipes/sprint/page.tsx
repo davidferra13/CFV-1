@@ -34,7 +34,7 @@ export default async function RecipeSprintPage() {
           </p>
         </div>
         <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-700 font-medium">
-          View Recipe Bible
+          View Recipe Book
         </Link>
       </div>
 

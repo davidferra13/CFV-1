@@ -21,7 +21,7 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
       <div className="flex justify-between items-center mb-4">
         <h3 className="text-sm font-semibold text-stone-900">Recipe Suggestions</h3>
         <Link href="/recipes" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
-          Recipe Bible →
+          Recipe Book →
         </Link>
       </div>
 
@@ -29,9 +29,7 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
       {result.allergenWarning.length > 0 && (
         <div className="flex items-center gap-2 mb-3 flex-wrap">
           <Badge variant="error">Allergen filter active</Badge>
-          <span className="text-xs text-stone-500">
-            {result.allergenWarning.join(', ')}
-          </span>
+          <span className="text-xs text-stone-500">{result.allergenWarning.join(', ')}</span>
           {result.filteredOutCount > 0 && (
             <span className="text-xs text-stone-400">
               ({result.filteredOutCount} recipe{result.filteredOutCount !== 1 ? 's' : ''} excluded)
@@ -42,7 +40,7 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
 
       {result.status === 'insufficient_data' ? (
         <p className="text-sm text-stone-400 italic">
-          Add recipes to your Recipe Bible to see suggestions here.
+          Add recipes to your Recipe Book to see suggestions here.
         </p>
       ) : (
         <div className="space-y-4">
@@ -52,7 +50,7 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
                 {category.replace('_', ' ')}
               </p>
               <div className="space-y-1">
-                {hints.map(hint => (
+                {hints.map((hint) => (
                   <div key={hint.id} className="flex items-center justify-between">
                     <Link
                       href={`/recipes/${hint.id}`}

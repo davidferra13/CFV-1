@@ -11,7 +11,6 @@ export default async function OnboardingRecipesPage() {
   return (
     <div className="min-h-screen bg-stone-50">
       <div className="max-w-5xl mx-auto px-4 py-12">
-
         <div className="mb-8">
           <Link
             href="/onboarding"
@@ -22,13 +21,12 @@ export default async function OnboardingRecipesPage() {
           </Link>
           <h1 className="text-3xl font-bold text-stone-900">Recipe Library</h1>
           <p className="text-stone-600 mt-2 max-w-xl">
-            Build your recipe bible. Add as many as you want — you can always add more later
-            from the Culinary section.
+            Build your recipe book. Add as many as you want — you can always add more later from the
+            Culinary section.
           </p>
         </div>
 
         <RecipeEntryForm initialRecipes={recipes} />
-
       </div>
     </div>
   )

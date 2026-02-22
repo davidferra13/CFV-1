@@ -2,10 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { ChefHat, Link2, Unlink, Plus, Search, X } from 'lucide-react'
-import {
-  linkRecipeToInquiry,
-  unlinkRecipeFromInquiry,
-} from '@/lib/inquiries/note-actions'
+import { linkRecipeToInquiry, unlinkRecipeFromInquiry } from '@/lib/inquiries/note-actions'
 import type { InquiryRecipeLink } from '@/lib/inquiries/note-actions'
 
 // ============================================================
@@ -56,9 +53,7 @@ export function InquiryRecipeLinker({
 
   // Filter available recipes by search + exclude already linked
   const filteredRecipes = availableRecipes.filter(
-    (r) =>
-      !linkedIds.has(r.id) &&
-      r.name.toLowerCase().includes(search.toLowerCase())
+    (r) => !linkedIds.has(r.id) && r.name.toLowerCase().includes(search.toLowerCase())
   )
 
   // ---- Handlers ----
@@ -121,7 +116,12 @@ export function InquiryRecipeLinker({
         </div>
         <button
           type="button"
-          onClick={() => { setShowPicker(!showPicker); setSelectedRecipeId(null); setSearch(''); setPendingNote('') }}
+          onClick={() => {
+            setShowPicker(!showPicker)
+            setSelectedRecipeId(null)
+            setSearch('')
+            setPendingNote('')
+          }}
           className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
@@ -152,7 +152,7 @@ export function InquiryRecipeLinker({
                 {filteredRecipes.length === 0 ? (
                   <p className="text-xs text-stone-400 text-center py-4">
                     {availableRecipes.length === 0
-                      ? 'No recipes in your Recipe Bible yet.'
+                      ? 'No recipes in your Recipe Book yet.'
                       : 'No matches found.'}
                   </p>
                 ) : (
@@ -177,7 +177,9 @@ export function InquiryRecipeLinker({
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-stone-900 truncate">{recipe.name}</p>
-                        <p className="text-[10px] text-stone-400">{formatCategory(recipe.category)}</p>
+                        <p className="text-[10px] text-stone-400">
+                          {formatCategory(recipe.category)}
+                        </p>
                       </div>
                     </button>
                   ))
@@ -225,7 +227,10 @@ export function InquiryRecipeLinker({
                   <div className="flex justify-end gap-2">
                     <button
                       type="button"
-                      onClick={() => { setSelectedRecipeId(null); setError(null) }}
+                      onClick={() => {
+                        setSelectedRecipeId(null)
+                        setError(null)
+                      }}
                       className="text-xs text-stone-500 hover:text-stone-700"
                     >
                       Back
@@ -250,7 +255,8 @@ export function InquiryRecipeLinker({
       <div className="divide-y divide-stone-50">
         {links.length === 0 && !showPicker && (
           <div className="px-5 py-8 text-center text-sm text-stone-400">
-            No recipes linked yet. Click &quot;Link Recipe&quot; to connect one from your Recipe Bible.
+            No recipes linked yet. Click &quot;Link Recipe&quot; to connect one from your Recipe
+            Book.
           </div>
         )}
 
@@ -272,9 +278,7 @@ export function InquiryRecipeLinker({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-stone-900">{link.recipe.name}</p>
               <p className="text-[10px] text-stone-400">{formatCategory(link.recipe.category)}</p>
-              {link.note && (
-                <p className="text-xs text-stone-600 mt-0.5 italic">{link.note}</p>
-              )}
+              {link.note && <p className="text-xs text-stone-600 mt-0.5 italic">{link.note}</p>}
             </div>
 
             <button

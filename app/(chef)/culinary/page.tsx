@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: 'Culinary — ChefFlow' }
 const tiles = [
   {
     href: '/culinary/recipes',
-    label: 'Recipe Bible',
+    label: 'Recipe Book',
     description: 'Your full library of documented recipes with costing and yield',
     icon: '📖',
   },
@@ -79,7 +79,7 @@ export default async function CulinaryHubPage() {
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {stats.map(s => (
+        {stats.map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-4 pb-4">
               <p className="text-2xl font-bold text-stone-900">{s.value}</p>
@@ -91,7 +91,7 @@ export default async function CulinaryHubPage() {
 
       {/* Nav tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tiles.map(tile => (
+        {tiles.map((tile) => (
           <Link key={tile.href} href={tile.href}>
             <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
               <CardContent className="pt-5 pb-5">

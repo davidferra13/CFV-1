@@ -18,7 +18,8 @@ export function RecipeDebtWidget({ debt }: Props) {
         <BookOpen className="h-5 w-5 text-emerald-600 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-green-900">
-            Recipe Bible up to date — {debt.totalRecipes} recipe{debt.totalRecipes !== 1 ? 's' : ''} recorded
+            Recipe Book up to date — {debt.totalRecipes} recipe{debt.totalRecipes !== 1 ? 's' : ''}{' '}
+            recorded
           </p>
         </div>
         <Link
@@ -31,9 +32,8 @@ export function RecipeDebtWidget({ debt }: Props) {
     )
   }
 
-  const urgencyColor = debt.last7Days > 0
-    ? 'border-red-300 bg-red-50'
-    : 'border-amber-300 bg-amber-50'
+  const urgencyColor =
+    debt.last7Days > 0 ? 'border-red-300 bg-red-50' : 'border-amber-300 bg-amber-50'
 
   const urgencyTextColor = debt.last7Days > 0 ? 'text-red-900' : 'text-amber-900'
   const urgencySubColor = debt.last7Days > 0 ? 'text-red-700' : 'text-amber-700'
@@ -53,14 +53,10 @@ export function RecipeDebtWidget({ debt }: Props) {
             {debt.last7Days > 0 && (
               <span className="font-medium">{debt.last7Days} from the last 7 days</span>
             )}
-            {debt.last30Days > 0 && (
-              <span>{debt.last30Days} from the last 30 days</span>
-            )}
-            {debt.older > 0 && (
-              <span>{debt.older} older</span>
-            )}
+            {debt.last30Days > 0 && <span>{debt.last30Days} from the last 30 days</span>}
+            {debt.older > 0 && <span>{debt.older} older</span>}
             <span className="text-stone-500">
-              {debt.totalRecipes} recipe{debt.totalRecipes !== 1 ? 's' : ''} in your Bible
+              {debt.totalRecipes} recipe{debt.totalRecipes !== 1 ? 's' : ''} in your Book
             </span>
           </div>
         </div>
@@ -68,9 +64,10 @@ export function RecipeDebtWidget({ debt }: Props) {
         <Link
           href="/recipes/sprint"
           className={`inline-flex items-center gap-1 text-xs font-semibold whitespace-nowrap px-3 py-1.5 rounded-md
-            ${debt.last7Days > 0
-              ? 'bg-red-600 text-white hover:bg-red-700'
-              : 'bg-amber-600 text-white hover:bg-amber-700'
+            ${
+              debt.last7Days > 0
+                ? 'bg-red-600 text-white hover:bg-red-700'
+                : 'bg-amber-600 text-white hover:bg-amber-700'
             }`}
         >
           Capture Now <ArrowRight className="h-3 w-3" />

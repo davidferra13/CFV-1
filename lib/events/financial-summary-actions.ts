@@ -41,7 +41,7 @@ export type EventFinancialSummaryData = {
   }
   // Section 3: Costs
   costs: {
-    projectedFoodCostCents: number | null // from recipe bible before shopping
+    projectedFoodCostCents: number | null // from recipe book before shopping
     actualGrocerySpendCents: number // from approved receipt data
     leftoverCreditInCents: number | null // from prior event surplus
     leftoverCreditOutCents: number | null // surplus carried to future event
@@ -231,7 +231,7 @@ export async function getEventFinancialSummaryFull(
       varianceCents,
     },
     costs: {
-      projectedFoodCostCents: null, // future: derive from recipe bible
+      projectedFoodCostCents: null, // future: derive from recipe book
       actualGrocerySpendCents,
       leftoverCreditInCents,
       leftoverCreditOutCents,

@@ -15,7 +15,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { NoRecipesIllustration } from '@/components/ui/branded-illustrations'
 
-export const metadata: Metadata = { title: 'Recipe Bible - ChefFlow' }
+export const metadata: Metadata = { title: 'Recipe Book - ChefFlow' }
 
 const CATEGORY_STYLES: Record<string, string> = {
   sauce: 'bg-orange-100 text-orange-700',
@@ -43,7 +43,7 @@ export default async function ChefRecipesPage() {
       <div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Recipe Bible</h1>
+            <h1 className="text-3xl font-bold text-stone-900">Recipe Book</h1>
             <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
               {recipes.length}
             </span>

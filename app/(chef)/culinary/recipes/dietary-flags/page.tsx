@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 
 export const metadata: Metadata = { title: 'Dietary Flags - ChefFlow' }
 
@@ -23,8 +30,8 @@ export default async function DietaryFlagsPage() {
   await requireChef()
   const recipes = await getRecipes()
 
-  const flagged = recipes.filter(r => r.dietary_tags.length > 0)
-  const unflagged = recipes.filter(r => r.dietary_tags.length === 0)
+  const flagged = recipes.filter((r) => r.dietary_tags.length > 0)
+  const unflagged = recipes.filter((r) => r.dietary_tags.length === 0)
 
   // Count per dietary flag
   const flagCounts = new Map<string, number>()
@@ -37,12 +44,18 @@ export default async function DietaryFlagsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-700">← Recipe Bible</Link>
+        <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-700">
+          ← Recipe Book
+        </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-900">Dietary Flags</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">{flagged.length} flagged</span>
+          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+            {flagged.length} flagged
+          </span>
         </div>
-        <p className="text-stone-500 mt-1">Recipes with dietary labels — essential for client accommodation</p>
+        <p className="text-stone-500 mt-1">
+          Recipes with dietary labels — essential for client accommodation
+        </p>
       </div>
 
       {flagCounts.size > 0 && (
@@ -50,7 +63,10 @@ export default async function DietaryFlagsPage() {
           {Array.from(flagCounts.entries())
             .sort((a, b) => b[1] - a[1])
             .map(([flag, count]) => (
-              <span key={flag} className={`text-sm px-3 py-1 rounded-full font-medium ${DIETARY_COLORS[flag] ?? 'bg-stone-100 text-stone-600'}`}>
+              <span
+                key={flag}
+                className={`text-sm px-3 py-1 rounded-full font-medium ${DIETARY_COLORS[flag] ?? 'bg-stone-100 text-stone-600'}`}
+              >
                 {flag} ({count})
               </span>
             ))}
@@ -60,7 +76,9 @@ export default async function DietaryFlagsPage() {
       {flagged.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-stone-600 font-medium">No recipes with dietary flags</p>
-          <p className="text-stone-400 text-sm mt-1">Add dietary tags to recipes to track accommodations</p>
+          <p className="text-stone-400 text-sm mt-1">
+            Add dietary tags to recipes to track accommodations
+          </p>
         </Card>
       ) : (
         <Card>
@@ -73,10 +91,13 @@ export default async function DietaryFlagsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {flagged.map(recipe => (
+              {flagged.map((recipe) => (
                 <TableRow key={recipe.id}>
                   <TableCell className="font-medium">
-                    <Link href={`/culinary/recipes/${recipe.id}`} className="text-brand-600 hover:underline">
+                    <Link
+                      href={`/culinary/recipes/${recipe.id}`}
+                      className="text-brand-600 hover:underline"
+                    >
                       {recipe.name}
                     </Link>
                   </TableCell>
@@ -87,8 +108,11 @@ export default async function DietaryFlagsPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {recipe.dietary_tags.map(tag => (
-                        <span key={tag} className={`text-xs px-2 py-0.5 rounded-full ${DIETARY_COLORS[tag] ?? 'bg-stone-100 text-stone-600'}`}>
+                      {recipe.dietary_tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className={`text-xs px-2 py-0.5 rounded-full ${DIETARY_COLORS[tag] ?? 'bg-stone-100 text-stone-600'}`}
+                        >
                           {tag}
                         </span>
                       ))}
@@ -104,7 +128,9 @@ export default async function DietaryFlagsPage() {
       {unflagged.length > 0 && (
         <p className="text-xs text-stone-400">
           {unflagged.length} recipe{unflagged.length > 1 ? 's' : ''} without dietary flags —{' '}
-          <Link href="/culinary/recipes" className="text-brand-600 hover:underline">view all recipes</Link>
+          <Link href="/culinary/recipes" className="text-brand-600 hover:underline">
+            view all recipes
+          </Link>
         </p>
       )}
     </div>

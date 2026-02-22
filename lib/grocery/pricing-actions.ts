@@ -2,7 +2,7 @@
 
 // Grocery Price Quote — automated ingredient pricing via Spoonacular + Kroger + MealMe APIs.
 // Queries all configured services concurrently for each ingredient and stores the results.
-// Falls back to last_price_cents from the Recipe Bible if all APIs return nothing.
+// Falls back to last_price_cents from the Recipe Book if all APIs return nothing.
 //
 // MealMe covers 1M+ stores including: Market Basket, Hannaford, Shaw's, Stop & Shop,
 // Whole Foods, Walmart, and every other major NE chain. Requires MEALME_API_KEY.
@@ -22,13 +22,13 @@ export type IngredientPriceResult = {
   quantity: number
   unit: string
   category: string | null
-  spoonacularCents: number | null      // raw national API price
-  krogerCents: number | null           // raw national API price
-  usdaCents: number | null             // USDA NE average (already regional)
+  spoonacularCents: number | null // raw national API price
+  krogerCents: number | null // raw national API price
+  usdaCents: number | null // USDA NE average (already regional)
   mealMeCents: number | null
-  averageCents: number | null          // NE-adjusted average of all sources
-  recipeBibleCents: number | null
-  hasNoApiData: boolean                // true = fell back to Recipe Bible or null
+  averageCents: number | null // NE-adjusted average of all sources
+  recipeBookCents: number | null
+  hasNoApiData: boolean // true = fell back to Recipe Book or null
   isOptional: boolean
 }
 
@@ -64,10 +64,7 @@ type RawIngredient = {
   isOptional: boolean
 }
 
-async function getEventIngredients(
-  eventId: string,
-  tenantId: string
-): Promise<RawIngredient[]> {
+async function getEventIngredients(eventId: string, tenantId: string): Promise<RawIngredient[]> {
   const supabase = createServerClient()
 
   const { data: menus } = await supabase
@@ -91,7 +88,10 @@ async function getEventIngredients(
   const { data: components } = await supabase
     .from('components')
     .select('recipe_id, scale_factor')
-    .in('dish_id', dishes.map((d) => d.id))
+    .in(
+      'dish_id',
+      dishes.map((d) => d.id)
+    )
     .eq('tenant_id', tenantId)
     .not('recipe_id', 'is', null)
 
@@ -278,10 +278,7 @@ async function getKrogerPrice(name: string): Promise<number | null> {
 // Auth: Id-Token: mealme:{API_KEY}
 // Docs: https://docs.mealme.ai
 
-async function getMealMePrice(
-  name: string,
-  zipCode: string | null
-): Promise<number | null> {
+async function getMealMePrice(name: string, zipCode: string | null): Promise<number | null> {
   const apiKey = process.env.MEALME_API_KEY
   if (!apiKey) return null
 
@@ -292,9 +289,7 @@ async function getMealMePrice(
 
   try {
     // Step 1: find a nearby grocery store
-    const locationParam = zipCode
-      ? `&user_zipcode=${encodeURIComponent(zipCode)}`
-      : ''
+    const locationParam = zipCode ? `&user_zipcode=${encodeURIComponent(zipCode)}` : ''
 
     const storeRes = await fetch(
       `https://api.mealme.ai/search/store/v3?store_type=grocery&fetch_quotes=false${locationParam}&maximum_miles=15`,
@@ -358,9 +353,7 @@ function usdaUnitMatches(usdaUnit: string, recipeUnit: string): boolean {
 
 // ─── Main: run a quote ────────────────────────────────────────────────────────
 
-export async function runGroceryPriceQuote(
-  eventId: string
-): Promise<GroceryQuoteResult | null> {
+export async function runGroceryPriceQuote(eventId: string): Promise<GroceryQuoteResult | null> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -391,8 +384,7 @@ export async function runGroceryPriceQuote(
     .eq('tenant_id', user.tenantId!)
     .single()
 
-  const chefZip: string | null =
-    (prefs as any)?.zip_code ?? (prefs as any)?.zipcode ?? null
+  const chefZip: string | null = (prefs as any)?.zip_code ?? (prefs as any)?.zipcode ?? null
 
   const mealMeConfigured = !!process.env.MEALME_API_KEY
 
@@ -442,11 +434,9 @@ export async function runGroceryPriceQuote(
 
       let averageCents: number | null = null
       if (apiPrices.length > 0) {
-        averageCents = Math.round(
-          apiPrices.reduce((sum, p) => sum + p, 0) / apiPrices.length
-        )
+        averageCents = Math.round(apiPrices.reduce((sum, p) => sum + p, 0) / apiPrices.length)
       } else if (ing.lastPriceCents !== null) {
-        // Fall back to recipe bible price × quantity
+        // Fall back to recipe book price × quantity
         averageCents = Math.round(ing.lastPriceCents * ing.quantity)
       }
 
@@ -461,10 +451,8 @@ export async function runGroceryPriceQuote(
         usdaCents,
         mealMeCents,
         averageCents,
-        recipeBibleCents:
-          ing.lastPriceCents !== null
-            ? Math.round(ing.lastPriceCents * ing.quantity)
-            : null,
+        recipeBookCents:
+          ing.lastPriceCents !== null ? Math.round(ing.lastPriceCents * ing.quantity) : null,
         hasNoApiData,
         isOptional: ing.isOptional,
       }
@@ -551,9 +539,7 @@ export async function runGroceryPriceQuote(
 
 // ─── Get latest saved quote ───────────────────────────────────────────────────
 
-export async function getLatestGroceryQuote(
-  eventId: string
-): Promise<GroceryQuoteResult | null> {
+export async function getLatestGroceryQuote(eventId: string): Promise<GroceryQuoteResult | null> {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -584,11 +570,7 @@ async function getEventBudgetContext(
   supabase: ReturnType<typeof createServerClient>
 ): Promise<{ budgetCeilingCents: number | null; quotedPriceCents: number | null }> {
   const [{ data: event }, { data: prefs }] = await Promise.all([
-    supabase
-      .from('events')
-      .select('quoted_price_cents')
-      .eq('id', eventId)
-      .single(),
+    supabase.from('events').select('quoted_price_cents').eq('id', eventId).single(),
     supabase
       .from('chef_preferences')
       .select('target_margin_percent')
@@ -635,8 +617,7 @@ export async function logActualGroceryCost(
     quote.average_total_cents && quote.average_total_cents > 0
       ? parseFloat(
           (
-            ((actualCostCents - quote.average_total_cents) /
-              quote.average_total_cents) *
+            ((actualCostCents - quote.average_total_cents) / quote.average_total_cents) *
             100
           ).toFixed(2)
         )
@@ -659,23 +640,21 @@ async function buildResultFromRow(
   tenantId: string,
   isFromCache: boolean
 ): Promise<GroceryQuoteResult> {
-  const items: IngredientPriceResult[] = (row.grocery_price_quote_items ?? []).map(
-    (item: any) => ({
-      ingredientId: item.ingredient_id ?? '',
-      ingredientName: item.ingredient_name,
-      quantity: Number(item.quantity),
-      unit: item.unit ?? '',
-      category: null,          // not stored per-item in DB — null for cached results
-      spoonacularCents: item.spoonacular_price_cents,
-      krogerCents: item.kroger_price_cents,
-      usdaCents: null,         // not stored per-item in DB — null for cached results
-      mealMeCents: item.mealme_price_cents ?? null,
-      averageCents: item.average_price_cents,
-      recipeBibleCents: null,
-      hasNoApiData: false,     // can't determine from cache; default false
-      isOptional: false,
-    })
-  )
+  const items: IngredientPriceResult[] = (row.grocery_price_quote_items ?? []).map((item: any) => ({
+    ingredientId: item.ingredient_id ?? '',
+    ingredientName: item.ingredient_name,
+    quantity: Number(item.quantity),
+    unit: item.unit ?? '',
+    category: null, // not stored per-item in DB — null for cached results
+    spoonacularCents: item.spoonacular_price_cents,
+    krogerCents: item.kroger_price_cents,
+    usdaCents: null, // not stored per-item in DB — null for cached results
+    mealMeCents: item.mealme_price_cents ?? null,
+    averageCents: item.average_price_cents,
+    recipeBookCents: null,
+    hasNoApiData: false, // can't determine from cache; default false
+    isOptional: false,
+  }))
 
   const { budgetCeilingCents, quotedPriceCents } = await getEventBudgetContext(
     eventId,
@@ -689,7 +668,7 @@ async function buildResultFromRow(
     items,
     spoonacularTotalCents: row.spoonacular_total_cents,
     krogerTotalCents: row.kroger_total_cents,
-    usdaTotalCents: null,      // not stored in DB — null for cached results
+    usdaTotalCents: null, // not stored in DB — null for cached results
     mealMeTotalCents: row.mealme_total_cents ?? null,
     mealMeConfigured: !!process.env.MEALME_API_KEY,
     averageTotalCents: row.average_total_cents ?? 0,

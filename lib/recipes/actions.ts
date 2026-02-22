@@ -1,4 +1,4 @@
-// Recipe Bible Server Actions
+// Recipe Book Server Actions
 // Chef-only: Manage recipes, ingredients, and recipe-component linking
 // Enforces tenant scoping
 
@@ -18,15 +18,39 @@ type IngredientCategory = Database['public']['Enums']['ingredient_category']
 // ============================================
 
 const RECIPE_CATEGORIES: [string, ...string[]] = [
-  'sauce', 'protein', 'starch', 'vegetable', 'fruit', 'dessert',
-  'bread', 'pasta', 'soup', 'salad', 'appetizer', 'condiment',
-  'beverage', 'other'
+  'sauce',
+  'protein',
+  'starch',
+  'vegetable',
+  'fruit',
+  'dessert',
+  'bread',
+  'pasta',
+  'soup',
+  'salad',
+  'appetizer',
+  'condiment',
+  'beverage',
+  'other',
 ]
 
 const INGREDIENT_CATEGORIES: [string, ...string[]] = [
-  'protein', 'produce', 'dairy', 'pantry', 'spice', 'oil',
-  'alcohol', 'baking', 'frozen', 'canned', 'fresh_herb',
-  'dry_herb', 'condiment', 'beverage', 'specialty', 'other'
+  'protein',
+  'produce',
+  'dairy',
+  'pantry',
+  'spice',
+  'oil',
+  'alcohol',
+  'baking',
+  'frozen',
+  'canned',
+  'fresh_herb',
+  'dry_herb',
+  'condiment',
+  'beverage',
+  'specialty',
+  'other',
 ]
 
 const CreateRecipeSchema = z.object({
@@ -226,11 +250,9 @@ export async function getRecipes(filters?: {
     .select('recipe_id, ingredient_count, total_ingredient_cost_cents, has_all_prices')
     .eq('tenant_id', user.tenantId!)
 
-  const costMap = new Map(
-    (costData || []).map(c => [c.recipe_id, c])
-  )
+  const costMap = new Map((costData || []).map((c) => [c.recipe_id, c]))
 
-  const result: RecipeListItem[] = (recipes || []).map(r => {
+  const result: RecipeListItem[] = (recipes || []).map((r) => {
     const cost = costMap.get(r.id)
     return {
       id: r.id,
@@ -277,7 +299,8 @@ export async function getRecipeById(recipeId: string) {
   // Get ingredients for this recipe
   const { data: recipeIngredients } = await supabase
     .from('recipe_ingredients')
-    .select(`
+    .select(
+      `
       id,
       quantity,
       unit,
@@ -286,7 +309,8 @@ export async function getRecipeById(recipeId: string) {
       preparation_notes,
       substitution_notes,
       ingredient:ingredients(id, name, category, default_unit, average_price_cents)
-    `)
+    `
+    )
     .eq('recipe_id', recipeId)
     .order('sort_order', { ascending: true })
 
@@ -300,7 +324,8 @@ export async function getRecipeById(recipeId: string) {
   // Get event history: recipe → components → dishes → menus → events
   const { data: linkedComponents } = await supabase
     .from('components')
-    .select(`
+    .select(
+      `
       id,
       name,
       dish:dishes(
@@ -312,7 +337,8 @@ export async function getRecipeById(recipeId: string) {
           event:events(id, occasion, event_date, status, client:clients(full_name))
         )
       )
-    `)
+    `
+    )
     .eq('recipe_id', recipeId)
     .eq('tenant_id', user.tenantId!)
 
@@ -344,13 +370,13 @@ export async function getRecipeById(recipeId: string) {
   }
 
   // De-duplicate events (recipe may be used in multiple components of same event)
-  const uniqueEvents = Array.from(
-    new Map(eventHistory.map(e => [e.eventId, e])).values()
-  ).sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime())
+  const uniqueEvents = Array.from(new Map(eventHistory.map((e) => [e.eventId, e])).values()).sort(
+    (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+  )
 
   return {
     ...recipe,
-    ingredients: (recipeIngredients || []).map(ri => ({
+    ingredients: (recipeIngredients || []).map((ri) => ({
       id: ri.id,
       quantity: ri.quantity,
       unit: ri.unit,
@@ -366,12 +392,14 @@ export async function getRecipeById(recipeId: string) {
         average_price_cents: number | null
       },
     })),
-    costSummary: costSummary ? {
-      ingredientCount: costSummary.ingredient_count,
-      totalCostCents: costSummary.total_ingredient_cost_cents,
-      costPerPortionCents: costSummary.cost_per_portion_cents,
-      hasAllPrices: costSummary.has_all_prices,
-    } : null,
+    costSummary: costSummary
+      ? {
+          ingredientCount: costSummary.ingredient_count,
+          totalCostCents: costSummary.total_ingredient_cost_cents,
+          costPerPortionCents: costSummary.cost_per_portion_cents,
+          hasAllPrices: costSummary.has_all_prices,
+        }
+      : null,
     eventHistory: uniqueEvents,
   }
 }
@@ -389,16 +417,21 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   if (validated.name !== undefined) updateData.name = validated.name
   if (validated.category !== undefined) updateData.category = validated.category
   if (validated.method !== undefined) updateData.method = validated.method
-  if (validated.method_detailed !== undefined) updateData.method_detailed = validated.method_detailed
+  if (validated.method_detailed !== undefined)
+    updateData.method_detailed = validated.method_detailed
   if (validated.description !== undefined) updateData.description = validated.description
   if (validated.notes !== undefined) updateData.notes = validated.notes
   if (validated.adaptations !== undefined) updateData.adaptations = validated.adaptations
-  if (validated.prep_time_minutes !== undefined) updateData.prep_time_minutes = validated.prep_time_minutes
-  if (validated.cook_time_minutes !== undefined) updateData.cook_time_minutes = validated.cook_time_minutes
-  if (validated.total_time_minutes !== undefined) updateData.total_time_minutes = validated.total_time_minutes
+  if (validated.prep_time_minutes !== undefined)
+    updateData.prep_time_minutes = validated.prep_time_minutes
+  if (validated.cook_time_minutes !== undefined)
+    updateData.cook_time_minutes = validated.cook_time_minutes
+  if (validated.total_time_minutes !== undefined)
+    updateData.total_time_minutes = validated.total_time_minutes
   if (validated.yield_quantity !== undefined) updateData.yield_quantity = validated.yield_quantity
   if (validated.yield_unit !== undefined) updateData.yield_unit = validated.yield_unit
-  if (validated.yield_description !== undefined) updateData.yield_description = validated.yield_description
+  if (validated.yield_description !== undefined)
+    updateData.yield_description = validated.yield_description
   if (validated.dietary_tags !== undefined) updateData.dietary_tags = validated.dietary_tags
 
   const { data: recipe, error } = await supabase
@@ -435,10 +468,7 @@ export async function deleteRecipe(recipeId: string) {
     .eq('tenant_id', user.tenantId!)
 
   // Delete recipe_ingredients
-  await supabase
-    .from('recipe_ingredients')
-    .delete()
-    .eq('recipe_id', recipeId)
+  await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipeId)
 
   // Delete the recipe
   const { error } = await supabase
@@ -484,7 +514,7 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
     user.id,
     validated.ingredient_name,
     validated.ingredient_category as IngredientCategory,
-    validated.ingredient_default_unit,
+    validated.ingredient_default_unit
   )
 
   // Insert recipe_ingredient
@@ -515,7 +545,10 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
 // 7. UPDATE RECIPE INGREDIENT
 // ============================================
 
-export async function updateRecipeIngredient(recipeIngredientId: string, input: UpdateRecipeIngredientInput) {
+export async function updateRecipeIngredient(
+  recipeIngredientId: string,
+  input: UpdateRecipeIngredientInput
+) {
   const user = await requireChef()
   const supabase = createServerClient()
   const validated = UpdateRecipeIngredientSchema.parse(input)
@@ -534,7 +567,8 @@ export async function updateRecipeIngredient(recipeIngredientId: string, input: 
   const updateData: Record<string, unknown> = {}
   if (validated.quantity !== undefined) updateData.quantity = validated.quantity
   if (validated.unit !== undefined) updateData.unit = validated.unit
-  if (validated.preparation_notes !== undefined) updateData.preparation_notes = validated.preparation_notes
+  if (validated.preparation_notes !== undefined)
+    updateData.preparation_notes = validated.preparation_notes
   if (validated.is_optional !== undefined) updateData.is_optional = validated.is_optional
   if (validated.sort_order !== undefined) updateData.sort_order = validated.sort_order
 
@@ -571,10 +605,7 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
     throw new Error('Recipe ingredient not found')
   }
 
-  const { error } = await supabase
-    .from('recipe_ingredients')
-    .delete()
-    .eq('id', recipeIngredientId)
+  const { error } = await supabase.from('recipe_ingredients').delete().eq('id', recipeIngredientId)
 
   if (error) {
     console.error('[removeIngredientFromRecipe] Error:', error)
@@ -589,10 +620,7 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
 // 9. GET INGREDIENTS (master list)
 // ============================================
 
-export async function getIngredients(filters?: {
-  category?: string
-  search?: string
-}) {
+export async function getIngredients(filters?: { category?: string; search?: string }) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -625,11 +653,9 @@ export async function getIngredients(filters?: {
     .select('ingredient_id, times_used')
     .eq('tenant_id', user.tenantId!)
 
-  const usageMap = new Map(
-    (usageData || []).map(u => [u.ingredient_id, u.times_used ?? 0])
-  )
+  const usageMap = new Map((usageData || []).map((u) => [u.ingredient_id, u.times_used ?? 0]))
 
-  return (ingredients || []).map(ing => ({
+  return (ingredients || []).map((ing) => ({
     ...ing,
     usage_count: usageMap.get(ing.id) ?? 0,
   }))
@@ -698,7 +724,8 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
   if (validated.category !== undefined) updateData.category = validated.category
   if (validated.default_unit !== undefined) updateData.default_unit = validated.default_unit
   if (validated.description !== undefined) updateData.description = validated.description
-  if (validated.average_price_cents !== undefined) updateData.average_price_cents = validated.average_price_cents
+  if (validated.average_price_cents !== undefined)
+    updateData.average_price_cents = validated.average_price_cents
   if (validated.is_staple !== undefined) updateData.is_staple = validated.is_staple
   if (validated.allergen_flags !== undefined) updateData.allergen_flags = validated.allergen_flags
   if (validated.dietary_tags !== undefined) updateData.dietary_tags = validated.dietary_tags
@@ -809,7 +836,7 @@ export async function getRecipesForEvent(eventId: string) {
 
   if (!menus || menus.length === 0) return []
 
-  const menuIds = menus.map(m => m.id)
+  const menuIds = menus.map((m) => m.id)
 
   const { data: dishes } = await supabase
     .from('dishes')
@@ -819,21 +846,23 @@ export async function getRecipesForEvent(eventId: string) {
 
   if (!dishes || dishes.length === 0) return []
 
-  const dishIds = dishes.map(d => d.id)
+  const dishIds = dishes.map((d) => d.id)
 
   const { data: components } = await supabase
     .from('components')
-    .select(`
+    .select(
+      `
       id,
       name,
       category,
       recipe:recipes(id, name, category, method)
-    `)
+    `
+    )
     .in('dish_id', dishIds)
     .eq('tenant_id', user.tenantId!)
     .not('recipe_id', 'is', null)
 
-  return (components || []).map(c => ({
+  return (components || []).map((c) => ({
     componentId: c.id,
     componentName: c.name,
     componentCategory: c.category,
@@ -858,7 +887,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
 
   if (!menus || menus.length === 0) return []
 
-  const menuIds = menus.map(m => m.id)
+  const menuIds = menus.map((m) => m.id)
 
   const { data: dishes } = await supabase
     .from('dishes')
@@ -868,7 +897,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
 
   if (!dishes || dishes.length === 0) return []
 
-  const dishIds = dishes.map(d => d.id)
+  const dishIds = dishes.map((d) => d.id)
 
   const { data: components } = await supabase
     .from('components')
@@ -877,7 +906,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
     .eq('tenant_id', user.tenantId!)
     .is('recipe_id', null)
 
-  return (components || []).map(c => ({
+  return (components || []).map((c) => ({
     id: c.id,
     name: c.name,
     category: c.category,
@@ -909,14 +938,16 @@ export async function getRecipeDebt(): Promise<RecipeDebt> {
   // All components with no recipe, joined through their event
   const { data: components } = await supabase
     .from('components')
-    .select(`
+    .select(
+      `
       id,
       dish:dishes(
         menu:menus(
           event:events(id, event_date)
         )
       )
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .is('recipe_id', null)
 
@@ -974,7 +1005,8 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
 
   const { data: components } = await supabase
     .from('components')
-    .select(`
+    .select(
+      `
       id, name, category,
       dish:dishes(
         menu:menus(
@@ -984,7 +1016,8 @@ export async function getAllUnrecordedComponents(): Promise<UnrecordedComponentF
           )
         )
       )
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .is('recipe_id', null)
 
@@ -1042,7 +1075,7 @@ async function findOrCreateIngredient(
   userId: string,
   name: string,
   category: IngredientCategory,
-  defaultUnit: string,
+  defaultUnit: string
 ): Promise<string> {
   // Case-insensitive lookup
   const { data: existing } = await supabase
@@ -1081,7 +1114,7 @@ async function findOrCreateIngredient(
 }
 
 // ─── Bulk price update (from Grocery Quote) ───────────────────────────────────
-// Called by the "Save to Recipe Bible" action after a grocery price quote run.
+// Called by the "Save to Recipe Book" action after a grocery price quote run.
 // Updates last_price_cents on each ingredient with the averaged market price.
 // Per-unit cents = average total for quantity ÷ recipe quantity.
 

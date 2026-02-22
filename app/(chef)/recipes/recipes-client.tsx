@@ -79,7 +79,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Recipe Bible</h1>
+          <h1 className="text-3xl font-bold text-stone-900">Recipe Book</h1>
           <p className="text-stone-600 mt-1">
             {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your collection
           </p>
@@ -104,7 +104,9 @@ export function RecipeLibraryClient({ recipes }: Props) {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={handleKeyDown}
           />
-          <Button variant="secondary" onClick={handleSearch}>Search</Button>
+          <Button variant="secondary" onClick={handleSearch}>
+            Search
+          </Button>
         </div>
 
         <select
@@ -112,13 +114,15 @@ export function RecipeLibraryClient({ recipes }: Props) {
           onChange={(e) => updateFilters('category', e.target.value)}
           className="border border-stone-300 rounded-md px-3 py-2 text-sm bg-white"
         >
-          {CATEGORY_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          {CATEGORY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
 
         <div className="flex gap-1">
-          {SORT_OPTIONS.map(opt => (
+          {SORT_OPTIONS.map((opt) => (
             <button
               key={opt.value}
               onClick={() => updateFilters('sort', opt.value)}
@@ -138,7 +142,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
       {recipes.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-stone-500 mb-2">Your Recipe Bible is empty.</p>
+            <p className="text-stone-500 mb-2">Your Recipe Book is empty.</p>
             <p className="text-sm text-stone-400 mb-6">
               Start by importing recipes from text or recording them after your next dinner.
             </p>
@@ -171,11 +175,12 @@ export function RecipeLibraryClient({ recipes }: Props) {
 
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
                     {recipe.ingredient_count != null && (
-                      <span>{recipe.ingredient_count} ingredient{recipe.ingredient_count !== 1 ? 's' : ''}</span>
+                      <span>
+                        {recipe.ingredient_count} ingredient
+                        {recipe.ingredient_count !== 1 ? 's' : ''}
+                      </span>
                     )}
-                    {recipe.times_cooked > 0 && (
-                      <span>Used {recipe.times_cooked}x</span>
-                    )}
+                    {recipe.times_cooked > 0 && <span>Used {recipe.times_cooked}x</span>}
                     {recipe.total_cost_cents != null && recipe.has_all_prices && (
                       <span>${(recipe.total_cost_cents / 100).toFixed(2)}</span>
                     )}
@@ -186,8 +191,11 @@ export function RecipeLibraryClient({ recipes }: Props) {
 
                   {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {recipe.dietary_tags.slice(0, 3).map(tag => (
-                        <span key={tag} className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 rounded">
+                      {recipe.dietary_tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 rounded"
+                        >
                           {tag}
                         </span>
                       ))}

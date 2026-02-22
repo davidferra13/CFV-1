@@ -4,7 +4,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 
 export const metadata: Metadata = { title: 'Incomplete Recipes - ChefFlow' }
 
@@ -37,16 +44,16 @@ export default async function IncompleteRecipesPage() {
   const allRecipes = await getRecipes()
 
   // "Drafts" = recipes missing method or ingredients — not yet fully documented
-  const incompleteRecipes = allRecipes.filter(r =>
-    !r.method || r.method.trim() === '' ||
-    r.ingredient_count === null || r.ingredient_count === 0
+  const incompleteRecipes = allRecipes.filter(
+    (r) =>
+      !r.method || r.method.trim() === '' || r.ingredient_count === null || r.ingredient_count === 0
   )
 
   return (
     <div className="space-y-6">
       <div>
         <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-700">
-          ← Recipe Bible
+          ← Recipe Book
         </Link>
         <div className="flex items-center gap-3 mt-1">
           <h1 className="text-3xl font-bold text-stone-900">Incomplete Recipes</h1>
@@ -54,15 +61,21 @@ export default async function IncompleteRecipesPage() {
             {incompleteRecipes.length}
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Recipes missing a method or ingredients — finish documenting these</p>
+        <p className="text-stone-500 mt-1">
+          Recipes missing a method or ingredients — finish documenting these
+        </p>
       </div>
 
       {incompleteRecipes.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-stone-600 font-medium mb-1">All recipes are fully documented</p>
-          <p className="text-stone-400 text-sm mb-4">Every recipe has a method and at least one ingredient</p>
+          <p className="text-stone-400 text-sm mb-4">
+            Every recipe has a method and at least one ingredient
+          </p>
           <Link href="/culinary/recipes">
-            <Button variant="secondary" size="sm">View Recipe Bible</Button>
+            <Button variant="secondary" size="sm">
+              View Recipe Book
+            </Button>
           </Link>
         </Card>
       ) : (
@@ -78,7 +91,7 @@ export default async function IncompleteRecipesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {incompleteRecipes.map(recipe => {
+              {incompleteRecipes.map((recipe) => {
                 const missing = getMissingFields(recipe)
                 return (
                   <TableRow key={recipe.id}>
@@ -91,17 +104,20 @@ export default async function IncompleteRecipesPage() {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[recipe.category] ?? 'bg-stone-100 text-stone-600'}`}>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[recipe.category] ?? 'bg-stone-100 text-stone-600'}`}
+                      >
                         {recipe.category}
                       </span>
                     </TableCell>
-                    <TableCell className="text-stone-600 text-sm">
-                      {recipe.times_cooked}
-                    </TableCell>
+                    <TableCell className="text-stone-600 text-sm">{recipe.times_cooked}</TableCell>
                     <TableCell>
                       <div className="flex gap-1 flex-wrap">
-                        {missing.map(field => (
-                          <span key={field} className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
+                        {missing.map((field) => (
+                          <span
+                            key={field}
+                            className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full"
+                          >
                             {field}
                           </span>
                         ))}
@@ -109,7 +125,9 @@ export default async function IncompleteRecipesPage() {
                     </TableCell>
                     <TableCell>
                       <Link href={`/culinary/recipes/${recipe.id}`}>
-                        <Button size="sm" variant="secondary">Complete</Button>
+                        <Button size="sm" variant="secondary">
+                          Complete
+                        </Button>
                       </Link>
                     </TableCell>
                   </TableRow>

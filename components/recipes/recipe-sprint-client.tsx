@@ -111,7 +111,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
           </div>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-stone-900">Recipe Bible is up to date</h2>
+          <h2 className="text-2xl font-bold text-stone-900">Recipe Book is up to date</h2>
           <p className="text-stone-600 mt-2">
             {doneCount > 0
               ? `You just captured ${doneCount} recipe${doneCount !== 1 ? 's' : ''}. Your future self will thank you.`
@@ -120,7 +120,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
         </div>
         <div className="flex justify-center gap-3">
           <Link href="/recipes">
-            <Button variant="secondary">View Recipe Bible</Button>
+            <Button variant="secondary">View Recipe Book</Button>
           </Link>
           <Link href="/dashboard">
             <Button>Back to Dashboard</Button>
@@ -267,7 +267,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
           Done for today
         </Link>
         <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-700">
-          View Recipe Bible
+          View Recipe Book
         </Link>
       </div>
     </div>
