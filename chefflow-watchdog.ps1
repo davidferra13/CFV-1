@@ -97,6 +97,28 @@ function Ensure-OllamaRunning {
 Write-Log "=== ChefFlow Watchdog Started ==="
 Ensure-OllamaRunning
 
+# Port check — prevents restart loop when server is already running
+
+$port = 3100
+
+function Test-PortInUse {
+    param($p)
+    $listener = Get-NetTCPConnection -LocalPort $p -State Listen -ErrorAction SilentlyContinue
+    return ($null -ne $listener)
+}
+
+function Test-ServerHealthy {
+    try {
+        $response = Invoke-WebRequest -Uri "http://localhost:$port/" `
+            -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
+        return $response.StatusCode -eq 200
+    } catch {
+        # A 3xx/4xx still means the server is alive and responding
+        if ($_.Exception.Response) { return $true }
+        return $false
+    }
+}
+
 # Main Loop
 
 $loopCount = 0
@@ -110,11 +132,20 @@ while ($true) {
         }
     }
 
-    Write-Log "Launching dev server..."
+    # If port 3100 is already listening, don't spawn a duplicate — just wait
+    if (Test-PortInUse $port) {
+        if ($loopCount -eq 1) {
+            Write-Log "Port $port already in use — server is running externally. Watching."
+        }
+        Start-Sleep -Seconds 30
+        continue
+    }
+
+    Write-Log "Launching dev server on port $port..."
     try {
         $psi                  = New-Object System.Diagnostics.ProcessStartInfo
         $psi.FileName         = "C:\nvm4w\nodejs\node.exe"
-        $psi.Arguments        = "`"C:\Users\david\Documents\CFv1\node_modules\next\dist\bin\next`" dev -p 3100 -H 0.0.0.0"
+        $psi.Arguments        = "`"$projectDir\node_modules\next\dist\bin\next`" dev -p $port -H 0.0.0.0"
         $psi.WorkingDirectory = $projectDir
         $psi.WindowStyle      = [System.Diagnostics.ProcessWindowStyle]::Hidden
         $psi.CreateNoWindow   = $true
@@ -123,7 +154,16 @@ while ($true) {
         $proc = [System.Diagnostics.Process]::Start($psi)
         Write-Log "Server running (PID $($proc.Id))"
         $proc.WaitForExit()
-        Write-Log "Server stopped (exit $($proc.ExitCode)). Restarting in 5 s..."
+
+        # If the process died in under 3 seconds, it probably hit a port conflict
+        # or a startup error — back off longer to avoid a tight loop
+        Write-Log "Server stopped (exit $($proc.ExitCode)). Checking port..."
+        if (Test-PortInUse $port) {
+            Write-Log "Port $port still in use after exit — another process took it. Watching."
+            Start-Sleep -Seconds 30
+            continue
+        }
+        Write-Log "Port $port is free. Restarting in 5 s..."
     } catch {
         $errMsg = $_.Exception.Message
         Write-Log "Failed to launch: $errMsg. Retrying in 10 s..."
