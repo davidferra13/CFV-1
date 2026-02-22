@@ -152,6 +152,88 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
     parts.push(`\nRECENT CLIENTS: ${context.recentClients.map((c) => c.name).join(', ')}`)
   }
 
+  // Calendar & Availability
+  if (context.calendarSummary) {
+    const cal = context.calendarSummary
+    const sections: string[] = []
+    if (cal.blockedDates.length > 0) {
+      sections.push(
+        `Blocked dates (next 30 days): ${cal.blockedDates.map((b) => `${b.date} (${b.reason})`).join(', ')}`
+      )
+    }
+    if (cal.calendarEntries.length > 0) {
+      sections.push(
+        `Calendar entries: ${cal.calendarEntries.map((c) => `${c.title} ${c.startDate}–${c.endDate} [${c.type.replace(/_/g, ' ')}]${c.blocksBookings ? ' BLOCKS BOOKINGS' : ''}`).join('; ')}`
+      )
+    }
+    if (cal.waitlistEntries.length > 0) {
+      sections.push(
+        `Waitlist: ${cal.waitlistEntries.map((w) => `${w.clientName} wants ${w.date}${w.occasion ? ` for ${w.occasion}` : ''} [${w.status}]`).join('; ')}`
+      )
+    }
+    if (sections.length > 0) {
+      parts.push(`\nCALENDAR & AVAILABILITY:\n${sections.join('\n')}`)
+    }
+  }
+
+  // Yearly stats
+  if (context.yearlyStats) {
+    const y = context.yearlyStats
+    parts.push(`\nYEAR-TO-DATE STATS:
+- Revenue: $${(y.yearRevenueCents / 100).toFixed(2)}
+- Expenses: $${(y.yearExpenseCents / 100).toFixed(2)}
+- Net: $${((y.yearRevenueCents - y.yearExpenseCents) / 100).toFixed(2)}
+- Events: ${y.totalEventsThisYear} total, ${y.completedEventsThisYear} completed
+- Avg revenue/event: $${(y.avgEventRevenueCents / 100).toFixed(2)}${y.topClients.length > 0 ? `\n- Top clients: ${y.topClients.map((c) => `${c.name} ($${(c.revenueCents / 100).toFixed(2)}, ${c.eventCount} events)`).join('; ')}` : ''}`)
+  }
+
+  // Staff roster
+  if (context.staffRoster && context.staffRoster.length > 0) {
+    parts.push(`\nSTAFF ROSTER (${context.staffRoster.length}):
+${context.staffRoster.map((s) => `- ${s.name} (${s.role.replace(/_/g, ' ')})${s.phone ? ` ${s.phone}` : ''}`).join('\n')}`)
+  }
+
+  // Equipment
+  if (context.equipmentSummary && context.equipmentSummary.totalItems > 0) {
+    parts.push(
+      `\nEQUIPMENT: ${context.equipmentSummary.totalItems} items across ${context.equipmentSummary.categories.join(', ')}`
+    )
+  }
+
+  // Goals
+  if (context.activeGoals && context.activeGoals.length > 0) {
+    parts.push(`\nACTIVE GOALS (${context.activeGoals.length}):
+${context.activeGoals.map((g) => `- ${g.title}${g.targetDate ? ` (due ${g.targetDate})` : ''}${g.progress !== null ? ` ${g.progress}%` : ''} [${g.status}]`).join('\n')}`)
+  }
+
+  // Todos
+  if (context.activeTodos && context.activeTodos.length > 0) {
+    parts.push(`\nTODO LIST (${context.activeTodos.length}):
+${context.activeTodos.map((t) => `- ${t.title}${t.dueDate ? ` (due ${t.dueDate})` : ''} [${t.priority}] ${t.status}`).join('\n')}`)
+  }
+
+  // Scheduled calls
+  if (context.upcomingCalls && context.upcomingCalls.length > 0) {
+    parts.push(`\nUPCOMING CALLS (${context.upcomingCalls.length}):
+${context.upcomingCalls.map((c) => `- ${c.clientName} at ${new Date(c.scheduledAt).toLocaleString()}${c.purpose ? ` — ${c.purpose}` : ''}`).join('\n')}`)
+  }
+
+  // Documents
+  if (
+    context.documentSummary &&
+    (context.documentSummary.totalDocuments > 0 || context.documentSummary.totalFolders > 0)
+  ) {
+    parts.push(
+      `\nDOCUMENTS: ${context.documentSummary.totalDocuments} documents in ${context.documentSummary.totalFolders} folders`
+    )
+  }
+
+  // Recent Remy artifacts
+  if (context.recentArtifacts && context.recentArtifacts.length > 0) {
+    parts.push(`\nRECENT REMY WORK (what you recently created):
+${context.recentArtifacts.map((a) => `- ${a.type.replace(/_/g, ' ')}: ${a.title} (${new Date(a.createdAt).toLocaleDateString()})`).join('\n')}`)
+  }
+
   if (context.currentPage) {
     parts.push(
       `\nThe chef is currently on the ${context.currentPage} page. Consider this when making suggestions.`
@@ -178,12 +260,14 @@ The chef mentioned these by name. Use this data to answer their question accurat
   parts.push(`\n${NAV_ROUTE_MAP}`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
-You may ONLY reference clients, events, inquiries, financials, expenses, staff, quotes, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, CURRENTLY VIEWING, MENTIONED IN MESSAGE, or WHAT YOU REMEMBER sections above.
-When viewing an event, you have access to: ledger entries (payments), expenses, staff assignments, temperature logs, quotes, status history, menu approval status, and grocery price quotes. Use all of this data when answering questions.
-When viewing a client, you have their full event history. When viewing an inquiry, you have the full message thread.
+You may ONLY reference data that appears in the sections above. You have access to:
+ALWAYS AVAILABLE: Business context, upcoming events, recent clients, calendar & availability (blocked dates, calendar entries, waitlist), year-to-date stats (revenue, expenses, top clients), staff roster, equipment inventory, active goals, todo list, upcoming calls, document counts, recent Remy artifacts, and memories.
+ON EVENT PAGES: Ledger entries (payments), expenses, staff assignments, temp logs, quotes, status history, menu approval, grocery quotes, and after-action reviews.
+ON CLIENT PAGES: Full event history, client notes, and client reviews.
+ON INQUIRY PAGES: Full message thread.
+Use all available data when answering questions — never say "I don't have that info" if it's in one of these sections.
 If a section says "0" or is empty, that means there are NONE — do not invent any.
-If you have no data to work with, be honest: "Looks like you're just getting started" or "I don't see any events yet."
-NEVER fabricate names, dates, or details to sound helpful.`)
+NEVER fabricate names, dates, amounts, or details to sound helpful.`)
 
   // Streaming mode: plain text with nav suggestions as JSON at the end
   parts.push(`\nRESPONSE FORMAT:

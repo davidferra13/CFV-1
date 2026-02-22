@@ -22,6 +22,10 @@ interface CachedContext {
     | 'chefName'
     | 'businessName'
     | 'tagline'
+    | 'pageEntity'
+    | 'mentionedEntities'
+    | 'dailyPlan'
+    | 'emailDigest'
   >
   expiresAt: number
 }
@@ -84,6 +88,15 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     pageEntity,
     dailyPlan: dailyPlan ?? undefined,
     emailDigest: emailDigest ?? undefined,
+    calendarSummary: detailed.calendarSummary,
+    yearlyStats: detailed.yearlyStats,
+    staffRoster: detailed.staffRoster,
+    equipmentSummary: detailed.equipmentSummary,
+    activeGoals: detailed.activeGoals,
+    activeTodos: detailed.activeTodos,
+    upcomingCalls: detailed.upcomingCalls,
+    documentSummary: detailed.documentSummary,
+    recentArtifacts: detailed.recentArtifacts,
   }
 }
 
@@ -134,16 +147,39 @@ async function loadDetailedContext(
   tenantId: string
 ) {
   const now = new Date()
+  const today = now.toISOString().split('T')[0]
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+  const yearStart = new Date(now.getFullYear(), 0, 1).toISOString()
+  const next30 = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const [eventsResult, clientsResult, revenueResult, quotesResult] = await Promise.all([
+  const [
+    eventsResult,
+    clientsResult,
+    revenueResult,
+    quotesResult,
+    // New: calendar, availability, staff, equipment, goals, todos, calls, documents, artifacts, yearly stats
+    availabilityResult,
+    calendarResult,
+    waitlistResult,
+    staffResult,
+    equipmentResult,
+    goalsResult,
+    todosResult,
+    callsResult,
+    documentsResult,
+    foldersResult,
+    artifactsResult,
+    yearRevenueResult,
+    yearExpensesResult,
+    yearEventsResult,
+  ] = await Promise.all([
     // Upcoming events (next 7 days, limit 10)
     supabase
       .from('events')
       .select('id, occasion, event_date, status, guest_count, client:clients(full_name)')
       .eq('tenant_id', tenantId)
       .not('status', 'in', '("cancelled","completed")')
-      .gte('event_date', now.toISOString().split('T')[0])
+      .gte('event_date', today)
       .order('event_date', { ascending: true })
       .limit(10),
 
@@ -169,12 +205,205 @@ async function loadDetailedContext(
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
       .in('status', ['draft', 'sent']),
+
+    // Availability blocks (next 30 days)
+    supabase
+      .from('chef_availability_blocks')
+      .select('block_date, block_type, reason')
+      .eq('chef_id', tenantId)
+      .gte('block_date', today)
+      .lte('block_date', next30)
+      .order('block_date', { ascending: true })
+      .limit(20),
+
+    // Calendar entries (next 30 days)
+    supabase
+      .from('chef_calendar_entries')
+      .select('title, start_date, end_date, entry_type, blocks_bookings')
+      .eq('chef_id', tenantId)
+      .gte('end_date', today)
+      .lte('start_date', next30)
+      .order('start_date', { ascending: true })
+      .limit(15),
+
+    // Waitlist entries (active)
+    supabase
+      .from('waitlist_entries')
+      .select('requested_date, occasion, status, client:clients(full_name)')
+      .eq('chef_id', tenantId)
+      .in('status', ['waiting', 'contacted'])
+      .order('requested_date', { ascending: true })
+      .limit(10),
+
+    // Staff roster
+    supabase
+      .from('staff_members')
+      .select('full_name, default_role, phone, status')
+      .eq('chef_id', tenantId)
+      .eq('status', 'active')
+      .order('full_name', { ascending: true })
+      .limit(20),
+
+    // Equipment count by category
+    supabase
+      .from('equipment_items')
+      .select('id, category')
+      .eq('chef_id', tenantId)
+      .eq('status', 'active')
+      .limit(100),
+
+    // Active goals
+    supabase
+      .from('chef_goals')
+      .select('title, target_date, progress_pct, status')
+      .eq('chef_id', tenantId)
+      .in('status', ['active', 'in_progress'])
+      .order('target_date', { ascending: true })
+      .limit(10),
+
+    // Active todos
+    supabase
+      .from('chef_todos')
+      .select('title, due_date, priority, status')
+      .eq('chef_id', tenantId)
+      .in('status', ['pending', 'in_progress'])
+      .order('due_date', { ascending: true })
+      .limit(10),
+
+    // Scheduled calls (upcoming)
+    supabase
+      .from('scheduled_calls')
+      .select('scheduled_at, purpose, status, client:clients(full_name)')
+      .eq('chef_id', tenantId)
+      .gte('scheduled_at', now.toISOString())
+      .in('status', ['scheduled', 'confirmed'])
+      .order('scheduled_at', { ascending: true })
+      .limit(5),
+
+    // Documents count
+    supabase
+      .from('chef_documents')
+      .select('id', { count: 'exact', head: true })
+      .eq('chef_id', tenantId),
+
+    // Folders count
+    supabase
+      .from('chef_folders')
+      .select('id', { count: 'exact', head: true })
+      .eq('chef_id', tenantId),
+
+    // Recent Remy artifacts
+    supabase
+      .from('remy_artifacts')
+      .select('artifact_type, title, created_at')
+      .eq('chef_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(5),
+
+    // Year revenue (ledger payments YTD)
+    supabase
+      .from('ledger_entries')
+      .select('amount_cents, client_id')
+      .eq('tenant_id', tenantId)
+      .eq('entry_type', 'payment')
+      .gte('created_at', yearStart),
+
+    // Year expenses
+    supabase
+      .from('expenses')
+      .select('amount_cents')
+      .eq('tenant_id', tenantId)
+      .gte('expense_date', yearStart.split('T')[0]),
+
+    // Year events
+    supabase
+      .from('events')
+      .select('id, status, quoted_price_cents, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .gte('event_date', yearStart.split('T')[0])
+      .not('status', 'eq', 'cancelled'),
   ])
 
   const monthRevenueCents = (revenueResult.data ?? []).reduce(
     (sum, entry) => sum + ((entry as { amount_cents: number }).amount_cents ?? 0),
     0
   )
+
+  // Build yearly stats
+  const yearRevenue = (yearRevenueResult.data ?? []) as Array<Record<string, unknown>>
+  const yearRevenueCents = yearRevenue.reduce((s, e) => s + ((e.amount_cents as number) ?? 0), 0)
+  const yearExpenseCents = (yearExpensesResult.data ?? []).reduce(
+    (s, e) => s + (((e as Record<string, unknown>).amount_cents as number) ?? 0),
+    0
+  )
+  const yearEvents = (yearEventsResult.data ?? []) as Array<Record<string, unknown>>
+  const completedEventsThisYear = yearEvents.filter((e) => e.status === 'completed').length
+
+  // Top clients by revenue (from ledger)
+  const clientRevMap = new Map<string, { name: string; cents: number; count: number }>()
+  for (const entry of yearRevenue) {
+    const cid = entry.client_id as string | null
+    if (!cid) continue
+    const existing = clientRevMap.get(cid)
+    if (existing) {
+      existing.cents += (entry.amount_cents as number) ?? 0
+      existing.count += 1
+    } else {
+      clientRevMap.set(cid, { name: '', cents: (entry.amount_cents as number) ?? 0, count: 1 })
+    }
+  }
+  // Resolve client names from year events
+  for (const ev of yearEvents) {
+    const client = ev.client as Record<string, unknown> | null
+    if (!client?.full_name) continue
+    // Find matching client in the revenue map by checking events
+  }
+  // Simple approach: get top clients from events with revenue
+  const topClientsArr = Array.from(clientRevMap.entries())
+    .sort((a, b) => b[1].cents - a[1].cents)
+    .slice(0, 5)
+
+  // Resolve top client names from the clients list
+  const topClientIds = topClientsArr.map(([id]) => id)
+  let topClientNames: Record<string, string> = {}
+  if (topClientIds.length > 0) {
+    const { data: nameData } = await supabase
+      .from('clients')
+      .select('id, full_name')
+      .in('id', topClientIds)
+    if (nameData) {
+      topClientNames = Object.fromEntries(
+        nameData.map((c: Record<string, unknown>) => [
+          c.id as string,
+          (c.full_name as string) ?? 'Unknown',
+        ])
+      )
+    }
+  }
+
+  // Build calendar summary
+  const blockedDates = (availabilityResult.data ?? []).map((b: Record<string, unknown>) => ({
+    date: b.block_date as string,
+    reason: (b.reason as string) ?? 'Blocked',
+    type: (b.block_type as string) ?? 'full_day',
+  }))
+  const calendarEntries = (calendarResult.data ?? []).map((c: Record<string, unknown>) => ({
+    title: (c.title as string) ?? 'Untitled',
+    startDate: c.start_date as string,
+    endDate: c.end_date as string,
+    type: (c.entry_type as string) ?? 'other',
+    blocksBookings: (c.blocks_bookings as boolean) ?? true,
+  }))
+  const waitlistEntries = (waitlistResult.data ?? []).map((w: Record<string, unknown>) => ({
+    clientName: ((w.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+    date: w.requested_date as string,
+    occasion: (w.occasion as string) ?? '',
+    status: w.status as string,
+  }))
+
+  // Build equipment summary
+  const equipItems = (equipmentResult.data ?? []) as Array<Record<string, unknown>>
+  const equipCategories = [...new Set(equipItems.map((e) => (e.category as string) ?? 'other'))]
 
   return {
     upcomingEvents: (eventsResult.data ?? []).map((e: Record<string, unknown>) => ({
@@ -191,6 +420,59 @@ async function loadDetailedContext(
     })),
     monthRevenueCents,
     pendingQuoteCount: quotesResult.count ?? 0,
+    // New data domains
+    calendarSummary: {
+      blockedDates,
+      calendarEntries,
+      waitlistEntries,
+    },
+    yearlyStats: {
+      yearRevenueCents,
+      yearExpenseCents,
+      totalEventsThisYear: yearEvents.length,
+      completedEventsThisYear,
+      avgEventRevenueCents:
+        completedEventsThisYear > 0 ? Math.round(yearRevenueCents / completedEventsThisYear) : 0,
+      topClients: topClientsArr.map(([id, data]) => ({
+        name: topClientNames[id] ?? 'Unknown',
+        revenueCents: data.cents,
+        eventCount: data.count,
+      })),
+    },
+    staffRoster: (staffResult.data ?? []).map((s: Record<string, unknown>) => ({
+      name: (s.full_name as string) ?? 'Unknown',
+      role: (s.default_role as string) ?? 'general',
+      phone: (s.phone as string) ?? null,
+      activeAssignments: 0,
+    })),
+    equipmentSummary: { totalItems: equipItems.length, categories: equipCategories },
+    activeGoals: (goalsResult.data ?? []).map((g: Record<string, unknown>) => ({
+      title: (g.title as string) ?? 'Untitled',
+      targetDate: (g.target_date as string) ?? null,
+      progress: (g.progress_pct as number) ?? null,
+      status: (g.status as string) ?? 'active',
+    })),
+    activeTodos: (todosResult.data ?? []).map((t: Record<string, unknown>) => ({
+      title: (t.title as string) ?? 'Untitled',
+      dueDate: (t.due_date as string) ?? null,
+      priority: (t.priority as string) ?? 'normal',
+      status: (t.status as string) ?? 'pending',
+    })),
+    upcomingCalls: (callsResult.data ?? []).map((c: Record<string, unknown>) => ({
+      clientName: ((c.client as Record<string, unknown> | null)?.full_name as string) ?? 'Unknown',
+      scheduledAt: c.scheduled_at as string,
+      purpose: (c.purpose as string) ?? null,
+      status: (c.status as string) ?? 'scheduled',
+    })),
+    documentSummary: {
+      totalDocuments: documentsResult.count ?? 0,
+      totalFolders: foldersResult.count ?? 0,
+    },
+    recentArtifacts: (artifactsResult.data ?? []).map((a: Record<string, unknown>) => ({
+      type: (a.artifact_type as string) ?? 'unknown',
+      title: (a.title as string) ?? 'Untitled',
+      createdAt: a.created_at as string,
+    })),
   }
 }
 
@@ -246,6 +528,7 @@ async function loadEventEntity(
     transitionsResult,
     approvalResult,
     groceryResult,
+    aarResult,
   ] = await Promise.all([
     supabase
       .from('events')
@@ -330,6 +613,14 @@ async function loadEventEntity(
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(3),
+    // After-action reviews
+    supabase
+      .from('after_action_reviews')
+      .select('overall_rating, went_well, to_improve, lessons_learned, would_repeat, created_at')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(1),
   ])
 
   const data = eventResult.data
@@ -522,6 +813,38 @@ async function loadEventEntity(
     }
   }
 
+  // After-action review
+  const aars = aarResult.data ?? []
+  if (aars.length > 0) {
+    const aar = aars[0] as Record<string, unknown>
+    lines.push(`\nAFTER-ACTION REVIEW:`)
+    if (aar.overall_rating) lines.push(`Rating: ${aar.overall_rating}/5`)
+    if (aar.went_well) {
+      const text =
+        (aar.went_well as string).length > 200
+          ? (aar.went_well as string).slice(0, 200) + '...'
+          : aar.went_well
+      lines.push(`Went well: ${text}`)
+    }
+    if (aar.to_improve) {
+      const text =
+        (aar.to_improve as string).length > 200
+          ? (aar.to_improve as string).slice(0, 200) + '...'
+          : aar.to_improve
+      lines.push(`To improve: ${text}`)
+    }
+    if (aar.lessons_learned) {
+      const text =
+        (aar.lessons_learned as string).length > 200
+          ? (aar.lessons_learned as string).slice(0, 200) + '...'
+          : aar.lessons_learned
+      lines.push(`Lessons: ${text}`)
+    }
+    if (aar.would_repeat !== null && aar.would_repeat !== undefined) {
+      lines.push(`Would repeat: ${aar.would_repeat ? 'Yes' : 'No'}`)
+    }
+  }
+
   return { type: 'event', summary: lines.join('\n') }
 }
 
@@ -530,7 +853,7 @@ async function loadClientEntity(
   tenantId: string,
   clientId: string
 ): Promise<PageEntityContext | undefined> {
-  const [clientResult, eventsResult] = await Promise.all([
+  const [clientResult, eventsResult, notesResult, reviewsResult] = await Promise.all([
     supabase
       .from('clients')
       .select(
@@ -553,6 +876,22 @@ async function loadClientEntity(
       .eq('tenant_id', tenantId)
       .order('event_date', { ascending: false })
       .limit(15),
+    // Client notes
+    supabase
+      .from('client_notes')
+      .select('note, category, created_at')
+      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(10),
+    // Client reviews
+    supabase
+      .from('client_reviews')
+      .select('rating, review_text, event_id, created_at')
+      .eq('client_id', clientId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: false })
+      .limit(5),
   ])
 
   const data = clientResult.data
@@ -613,6 +952,31 @@ async function loadClientEntity(
         : ''
       const details = [guests, price, payment].filter(Boolean).join(', ')
       lines.push(`- ${occasion} (${date}) — ${status}${details ? ` | ${details}` : ''}`)
+    }
+  }
+
+  // Client notes
+  const notes = notesResult.data ?? []
+  if (notes.length > 0) {
+    lines.push(`\nNOTES (${notes.length}):`)
+    for (const n of notes as Array<Record<string, unknown>>) {
+      const cat = n.category ? `[${(n.category as string).replace(/_/g, ' ')}] ` : ''
+      const date = n.created_at ? new Date(n.created_at as string).toLocaleDateString() : ''
+      const note = (n.note as string) ?? ''
+      const truncated = note.length > 150 ? note.slice(0, 150) + '...' : note
+      lines.push(`- ${cat}${date}: ${truncated}`)
+    }
+  }
+
+  // Client reviews
+  const reviews = reviewsResult.data ?? []
+  if (reviews.length > 0) {
+    lines.push(`\nREVIEWS (${reviews.length}):`)
+    for (const r of reviews as Array<Record<string, unknown>>) {
+      const rating = r.rating ? `${r.rating}/5` : ''
+      const text = (r.review_text as string) ?? ''
+      const truncated = text.length > 150 ? text.slice(0, 150) + '...' : text
+      lines.push(`- ${rating}${rating && truncated ? ': ' : ''}${truncated}`)
     }
   }
 

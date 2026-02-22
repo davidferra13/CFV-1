@@ -110,6 +110,56 @@ export interface RemyContext {
       receivedAt: string
     }>
   }
+  /** Calendar & availability (next 30 days) */
+  calendarSummary?: {
+    blockedDates: Array<{ date: string; reason: string; type: string }>
+    calendarEntries: Array<{
+      title: string
+      startDate: string
+      endDate: string
+      type: string
+      blocksBookings: boolean
+    }>
+    waitlistEntries: Array<{ clientName: string; date: string; occasion: string; status: string }>
+  }
+  /** Cross-event financial aggregation */
+  yearlyStats?: {
+    yearRevenueCents: number
+    yearExpenseCents: number
+    totalEventsThisYear: number
+    completedEventsThisYear: number
+    avgEventRevenueCents: number
+    topClients: Array<{ name: string; revenueCents: number; eventCount: number }>
+  }
+  /** Staff roster */
+  staffRoster?: Array<{
+    name: string
+    role: string
+    phone: string | null
+    activeAssignments: number
+  }>
+  /** Equipment inventory */
+  equipmentSummary?: { totalItems: number; categories: string[] }
+  /** Active goals */
+  activeGoals?: Array<{
+    title: string
+    targetDate: string | null
+    progress: number | null
+    status: string
+  }>
+  /** Pending todos */
+  activeTodos?: Array<{ title: string; dueDate: string | null; priority: string; status: string }>
+  /** Scheduled calls */
+  upcomingCalls?: Array<{
+    clientName: string
+    scheduledAt: string
+    purpose: string | null
+    status: string
+  }>
+  /** Document counts */
+  documentSummary?: { totalDocuments: number; totalFolders: number }
+  /** Recent Remy artifacts */
+  recentArtifacts?: Array<{ type: string; title: string; createdAt: string }>
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────
