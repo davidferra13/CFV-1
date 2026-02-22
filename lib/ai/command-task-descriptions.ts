@@ -161,6 +161,180 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
       'Fetch and read the content of a specific URL. Use when the chef shares a link or when a web search result needs deeper reading.',
     inputSchema: '{ "url": "string — full URL to fetch and read" }',
   },
+
+  // ─── Phase 2 tasks ──────────────────────────────────────────────────────────
+
+  {
+    type: 'dietary.check',
+    tier: 1,
+    name: 'Dietary/Allergy Check',
+    description:
+      "Cross-check a client's dietary restrictions and allergies against menu items. Flags dangerous conflicts. Use when the chef mentions allergies, dietary needs, or asks to check a menu for a client.",
+    inputSchema: '{ "clientName": "string — client name to look up restrictions for" }',
+  },
+  {
+    type: 'chef.favorite_chefs',
+    tier: 1,
+    name: 'Favorite Chefs',
+    description:
+      "Show the chef's list of culinary heroes and inspirations. These are chefs they admire and draw inspiration from.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'chef.culinary_profile',
+    tier: 1,
+    name: 'Culinary Profile',
+    description:
+      "Show the chef's culinary identity — their cooking philosophy, signature dishes, favorite cuisines, techniques, and food memories.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'prep.timeline',
+    tier: 2,
+    name: 'Prep Timeline',
+    description:
+      'Generate a detailed prep timeline for an event — includes shopping, prep, cooking, plating, and service times. Requires Ollama.',
+    inputSchema: '{ "eventName": "string — event name or occasion to generate a timeline for" }',
+    tierNote: 'ALWAYS tier 2 — chef should review the timeline before committing to it.',
+  },
+  {
+    type: 'nudge.list',
+    tier: 1,
+    name: 'Proactive Nudges',
+    description:
+      "Get a list of things that need the chef's attention: stale inquiries, upcoming events needing prep, follow-ups to send, dormant clients to re-engage.",
+    inputSchema: '{}',
+  },
+  {
+    type: 'grocery.quick_add',
+    tier: 1,
+    name: 'Quick-Add Grocery Items',
+    description:
+      'Parse a natural language grocery list into structured items with quantities, units, and categories.',
+    inputSchema:
+      '{ "items": "string — comma-separated list of grocery items, e.g. 2 lbs chicken, 1 bunch cilantro" }',
+  },
+  {
+    type: 'document.search',
+    tier: 1,
+    name: 'Search Documents',
+    description: "Search the chef's saved documents by title.",
+    inputSchema: '{ "query": "string — document title or keyword to search for" }',
+  },
+  {
+    type: 'document.list_folders',
+    tier: 1,
+    name: 'List Folders',
+    description: 'Show all document folders the chef has created.',
+    inputSchema: '{}',
+  },
+  {
+    type: 'document.create_folder',
+    tier: 2,
+    name: 'Create Folder',
+    description: 'Create a new document folder.',
+    inputSchema: '{ "name": "string — folder name" }',
+    tierNote: 'Tier 2 — chef confirms before creating.',
+  },
+  {
+    type: 'email.generic',
+    tier: 2,
+    name: 'Draft Email',
+    description:
+      "Draft a general email based on the chef's description. Draft only — never auto-sent.",
+    inputSchema: '{ "description": "string — what the email should be about and who it is for" }',
+    tierNote: 'ALWAYS tier 2 — never auto-send emails.',
+  },
+
+  // ─── Communication Draft Templates ──────────────────────────────────────────
+
+  {
+    type: 'draft.thank_you',
+    tier: 2,
+    name: 'Thank-You Note',
+    description:
+      'Draft a heartfelt thank-you note to a client after an event. References specific event details.',
+    inputSchema: '{ "clientName": "string — client name" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.referral_request',
+    tier: 2,
+    name: 'Referral Request',
+    description:
+      'Draft a warm, non-pushy referral request to a loyal client asking if they know anyone who might enjoy your services.',
+    inputSchema: '{ "clientName": "string — client name" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.testimonial_request',
+    tier: 2,
+    name: 'Testimonial Request',
+    description:
+      'Draft a friendly testimonial request to a client who recently had a great experience.',
+    inputSchema: '{ "clientName": "string — client name" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.quote_cover_letter',
+    tier: 2,
+    name: 'Quote Cover Letter',
+    description: 'Draft a professional cover letter to accompany a quote/proposal for an event.',
+    inputSchema: '{ "eventName": "string — event occasion or description" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.decline_response',
+    tier: 2,
+    name: 'Decline Response',
+    description: 'Draft a gracious decline to a booking request when the chef cannot take the job.',
+    inputSchema:
+      '{ "clientName": "string — client name", "reason": "string — optional reason for declining" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.cancellation_response',
+    tier: 2,
+    name: 'Cancellation Response',
+    description: 'Draft an empathetic response to a client who cancelled their event.',
+    inputSchema: '{ "eventName": "string — event occasion or name to find the cancelled event" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.payment_reminder',
+    tier: 2,
+    name: 'Payment Reminder',
+    description: 'Draft a friendly payment reminder to a client with an outstanding balance.',
+    inputSchema: '{ "clientName": "string — client name" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.re_engagement',
+    tier: 2,
+    name: 'Re-Engagement Email',
+    description: "Draft a warm re-engagement email to a client who hasn't booked in a while.",
+    inputSchema: '{ "clientName": "string — client name" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.milestone_recognition',
+    tier: 2,
+    name: 'Milestone Recognition',
+    description:
+      'Draft a milestone celebration email for a loyal client (e.g., 5th event, 10th event, anniversary).',
+    inputSchema:
+      '{ "clientName": "string — client name", "milestone": "string — optional milestone description" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before sending.',
+  },
+  {
+    type: 'draft.food_safety_incident',
+    tier: 2,
+    name: 'Food Safety Incident Report',
+    description:
+      'Draft a formal food safety incident report for internal records and regulatory purposes.',
+    inputSchema: '{ "description": "string — description of the incident" }',
+    tierNote: 'ALWAYS tier 2 — chef reviews before filing.',
+  },
 ]
 
 export function buildTaskListForPrompt(): string {

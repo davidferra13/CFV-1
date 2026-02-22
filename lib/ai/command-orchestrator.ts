@@ -19,6 +19,25 @@ import { generateFollowUpDraft } from '@/lib/ai/followup-draft'
 import { parseEventFromText } from '@/lib/events/parse-event-from-text'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
 import { searchWeb, readWebPage } from '@/lib/ai/remy-web-actions'
+import { checkDietaryByClientName } from '@/lib/ai/dietary-check-actions'
+import { getCulinaryProfile } from '@/lib/ai/chef-profile-actions'
+import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
+import { generatePrepTimelineByName } from '@/lib/ai/prep-timeline-actions'
+import { getProactiveNudges } from '@/lib/ai/reminder-actions'
+import { parseGroceryItems } from '@/lib/ai/grocery-quick-add-actions'
+import { searchDocuments, listFolders, createFolder } from '@/lib/ai/document-management-actions'
+import {
+  generateThankYouDraft,
+  generateReferralRequestDraft,
+  generateTestimonialRequestDraft,
+  generateQuoteCoverLetterDraft,
+  generateDeclineResponseDraft,
+  generateCancellationResponseDraft,
+  generatePaymentReminderDraft,
+  generateReEngagementDraft,
+  generateMilestoneRecognitionDraft,
+  generateFoodSafetyIncidentDraft,
+} from '@/lib/ai/draft-actions'
 import type { CommandRun, TaskResult, PlannedTask, ApprovalTier } from '@/lib/ai/command-types'
 
 // ─── Individual Task Executors ────────────────────────────────────────────────
@@ -344,6 +363,223 @@ async function executeWebRead(inputs: Record<string, unknown>) {
   return { url: result.url, title: result.title, summary: result.summary }
 }
 
+// ─── Phase 2 Executors ────────────────────────────────────────────────────────
+
+async function executeDietaryCheck(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName) {
+    return { summary: 'Please specify a client name to check dietary restrictions for.' }
+  }
+  const result = await checkDietaryByClientName(clientName)
+  return {
+    clientName: result.clientName,
+    restrictions: result.restrictions,
+    flags: result.flags,
+    safeItems: result.safeItems,
+    summary: result.summary,
+  }
+}
+
+async function executeFavoriteChefs() {
+  const chefs = await getFavoriteChefs()
+  return {
+    chefs: chefs.map((c) => ({
+      name: c.chefName,
+      reason: c.reason,
+      websiteUrl: c.websiteUrl,
+    })),
+    count: chefs.length,
+  }
+}
+
+async function executeCulinaryProfile() {
+  const profile = await getCulinaryProfile()
+  const answered = profile.filter((a) => a.answer.trim().length > 0)
+  return {
+    answers: answered.map((a) => ({
+      question: a.question,
+      answer: a.answer,
+    })),
+    answeredCount: answered.length,
+    totalCount: profile.length,
+  }
+}
+
+async function executePrepTimeline(inputs: Record<string, unknown>) {
+  const eventName = String(inputs.eventName ?? '')
+  if (!eventName) {
+    return { summary: 'Please specify an event name to generate a prep timeline for.' }
+  }
+  const result = await generatePrepTimelineByName(eventName)
+  return {
+    eventName: result.eventName,
+    eventDate: result.eventDate,
+    guestCount: result.guestCount,
+    steps: result.steps,
+    totalPrepHours: result.totalPrepHours,
+    summary: result.summary,
+  }
+}
+
+async function executeNudgeList() {
+  const nudges = await getProactiveNudges()
+  return {
+    nudges: nudges.map((n) => ({
+      type: n.type,
+      title: n.title,
+      message: n.message,
+      priority: n.priority,
+      actionLabel: n.actionLabel,
+      actionHref: n.actionHref,
+    })),
+    count: nudges.length,
+  }
+}
+
+async function executeGroceryQuickAdd(inputs: Record<string, unknown>) {
+  const items = String(inputs.items ?? '')
+  if (!items) {
+    return { summary: 'Please specify grocery items to parse.' }
+  }
+  const result = await parseGroceryItems(items)
+  return {
+    items: result.items,
+    summary: result.summary,
+  }
+}
+
+async function executeDocumentSearch(inputs: Record<string, unknown>) {
+  const query = String(inputs.query ?? '')
+  const docs = await searchDocuments(query)
+  return {
+    documents: docs.map((d) => ({
+      id: d.id,
+      title: d.title,
+      type: d.type,
+      folderName: d.folderName,
+    })),
+    count: docs.length,
+  }
+}
+
+async function executeListFolders() {
+  const folders = await listFolders()
+  return {
+    folders: folders.map((f) => ({
+      id: f.id,
+      name: f.name,
+      color: f.color,
+      icon: f.icon,
+    })),
+    count: folders.length,
+  }
+}
+
+async function executeCreateFolder(inputs: Record<string, unknown>) {
+  const name = String(inputs.name ?? '')
+  if (!name) {
+    return { success: false, error: 'Please specify a folder name.' }
+  }
+  const result = await createFolder(name)
+  return result
+}
+
+// ─── Communication Draft Executors ──────────────────────────────────────────
+
+async function executeDraftThankYou(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName) return { draftText: '', error: 'Please specify which client to thank.' }
+  return generateThankYouDraft(clientName)
+}
+
+async function executeDraftReferralRequest(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName)
+    return { draftText: '', error: 'Please specify which client to ask for referrals.' }
+  return generateReferralRequestDraft(clientName)
+}
+
+async function executeDraftTestimonialRequest(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName)
+    return { draftText: '', error: 'Please specify which client to ask for a testimonial.' }
+  return generateTestimonialRequestDraft(clientName)
+}
+
+async function executeDraftQuoteCoverLetter(inputs: Record<string, unknown>) {
+  const eventName = String(inputs.eventName ?? '')
+  if (!eventName)
+    return { draftText: '', error: 'Please specify which event needs a cover letter.' }
+  return generateQuoteCoverLetterDraft(eventName)
+}
+
+async function executeDraftDeclineResponse(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName) return { draftText: '', error: 'Please specify which client to decline.' }
+  const reason = inputs.reason ? String(inputs.reason) : undefined
+  return generateDeclineResponseDraft(clientName, reason)
+}
+
+async function executeDraftCancellationResponse(inputs: Record<string, unknown>) {
+  const eventName = String(inputs.eventName ?? '')
+  if (!eventName) return { draftText: '', error: 'Please specify which event was cancelled.' }
+  return generateCancellationResponseDraft(eventName)
+}
+
+async function executeDraftPaymentReminder(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName)
+    return { draftText: '', error: 'Please specify which client needs a payment reminder.' }
+  return generatePaymentReminderDraft(clientName)
+}
+
+async function executeDraftReEngagement(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName) return { draftText: '', error: 'Please specify which client to re-engage.' }
+  return generateReEngagementDraft(clientName)
+}
+
+async function executeDraftMilestoneRecognition(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName) return { draftText: '', error: 'Please specify which client hit a milestone.' }
+  const milestone = inputs.milestone ? String(inputs.milestone) : undefined
+  return generateMilestoneRecognitionDraft(clientName, milestone)
+}
+
+async function executeDraftFoodSafetyIncident(inputs: Record<string, unknown>) {
+  const description = String(inputs.description ?? '')
+  if (!description) return { draftText: '', error: 'Please describe the food safety incident.' }
+  return generateFoodSafetyIncidentDraft(description)
+}
+
+async function executeEmailGeneric(inputs: Record<string, unknown>) {
+  const description = String(inputs.description ?? '')
+  if (!description) {
+    return { draftText: '', error: 'Please describe what the email should be about.' }
+  }
+
+  // Use Ollama to draft the email
+  const { parseWithOllama } = await import('@/lib/ai/parse-ollama')
+  const { z } = await import('zod')
+
+  const EmailDraftSchema = z.object({
+    subject: z.string(),
+    body: z.string(),
+  })
+
+  const result = await parseWithOllama(
+    `You are a private chef's email assistant. Draft a professional, warm email based on the chef's description. Write in the chef's voice (first person singular "I"). Keep it concise (3-5 short paragraphs max). Don't be salesy. Return JSON: { "subject": "...", "body": "..." }`,
+    `Draft this email: ${description}`,
+    EmailDraftSchema,
+    { modelTier: 'standard' }
+  )
+
+  return {
+    subject: result.subject,
+    draftText: `Subject: ${result.subject}\n\n${result.body}`,
+  }
+}
+
 // ─── DAG Execution Engine ─────────────────────────────────────────────────────
 
 /**
@@ -427,6 +663,26 @@ async function executeSingleTask(
       'scheduling.next_available',
       'web.search',
       'web.read',
+      'dietary.check',
+      'chef.favorite_chefs',
+      'chef.culinary_profile',
+      'prep.timeline',
+      'nudge.list',
+      'grocery.quick_add',
+      'document.search',
+      'document.list_folders',
+      'document.create_folder',
+      'email.generic',
+      'draft.thank_you',
+      'draft.referral_request',
+      'draft.testimonial_request',
+      'draft.quote_cover_letter',
+      'draft.decline_response',
+      'draft.cancellation_response',
+      'draft.payment_reminder',
+      'draft.re_engagement',
+      'draft.milestone_recognition',
+      'draft.food_safety_incident',
     ])
     if (!supportedTaskTypes.has(task.taskType)) {
       return {
@@ -493,6 +749,66 @@ async function executeSingleTask(
         break
       case 'web.read':
         data = await executeWebRead(task.inputs)
+        break
+      case 'dietary.check':
+        data = await executeDietaryCheck(task.inputs)
+        break
+      case 'chef.favorite_chefs':
+        data = await executeFavoriteChefs()
+        break
+      case 'chef.culinary_profile':
+        data = await executeCulinaryProfile()
+        break
+      case 'prep.timeline':
+        data = await executePrepTimeline(task.inputs)
+        break
+      case 'nudge.list':
+        data = await executeNudgeList()
+        break
+      case 'grocery.quick_add':
+        data = await executeGroceryQuickAdd(task.inputs)
+        break
+      case 'document.search':
+        data = await executeDocumentSearch(task.inputs)
+        break
+      case 'document.list_folders':
+        data = await executeListFolders()
+        break
+      case 'document.create_folder':
+        data = await executeCreateFolder(task.inputs)
+        break
+      case 'email.generic':
+        data = await executeEmailGeneric(task.inputs)
+        break
+      case 'draft.thank_you':
+        data = await executeDraftThankYou(task.inputs)
+        break
+      case 'draft.referral_request':
+        data = await executeDraftReferralRequest(task.inputs)
+        break
+      case 'draft.testimonial_request':
+        data = await executeDraftTestimonialRequest(task.inputs)
+        break
+      case 'draft.quote_cover_letter':
+        data = await executeDraftQuoteCoverLetter(task.inputs)
+        break
+      case 'draft.decline_response':
+        data = await executeDraftDeclineResponse(task.inputs)
+        break
+      case 'draft.cancellation_response':
+        data = await executeDraftCancellationResponse(task.inputs)
+        break
+      case 'draft.payment_reminder':
+        data = await executeDraftPaymentReminder(task.inputs)
+        break
+      case 'draft.re_engagement':
+        data = await executeDraftReEngagement(task.inputs)
+        break
+      case 'draft.milestone_recognition':
+        data = await executeDraftMilestoneRecognition(task.inputs)
+        break
+      case 'draft.food_safety_incident':
+        data = await executeDraftFoodSafetyIncident(task.inputs)
         break
       default:
         return {

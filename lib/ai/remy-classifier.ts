@@ -26,7 +26,7 @@ Examples:
 - "Tell me about my upcoming events"
 - "What's on my plate this week?"
 
-COMMAND: Requesting a specific action to be performed — finding someone, checking availability, drafting something, creating something, searching the web, or reading a URL.
+COMMAND: Requesting a specific action to be performed — finding someone, checking availability, drafting something, creating something, searching the web, reading a URL, checking dietary restrictions, or viewing profile info.
 Examples:
 - "Find my client"
 - "Check if March 15th is free"
@@ -37,6 +37,20 @@ Examples:
 - "Look up catering pricing online"
 - "Read this article: https://..."
 - "Google private chef rates in New York"
+- "Check dietary restrictions for Sarah"
+- "Does Sarah have any allergies?"
+- "Show my favorite chefs"
+- "Show my culinary profile"
+- "Write a thank-you note for the Hendersons"
+- "Draft a referral request for Sarah"
+- "Ask the Millers for a testimonial"
+- "Write a cover letter for the Johnson wedding quote"
+- "Decline the booking from Alex"
+- "Respond to the Smith cancellation"
+- "Send a payment reminder to Dave"
+- "Re-engage with the Thompson family"
+- "Celebrate the Johnson's 10th event"
+- "Write up the food safety incident from last night"
 
 MIXED: Contains BOTH a question and an actionable request in the same message.
 Example: "What's my revenue this month, and draft a follow-up for my last client"

@@ -1,0 +1,416 @@
+// AI Task Queue — Task Registry
+// Maps task_type strings to their definitions and handlers.
+// No 'use server' — pure logic, importable anywhere.
+//
+// Every AI task in the system MUST be registered here.
+// Unregistered tasks are rejected at enqueue time.
+
+import type { AiTaskDefinition } from './types'
+import { AI_PRIORITY } from './types'
+import { handleDraftTask } from '@/lib/ai/draft-actions'
+
+// ============================================
+// REGISTRY STORAGE
+// ============================================
+
+const registry = new Map<string, AiTaskDefinition>()
+
+// ============================================
+// REGISTRATION API
+// ============================================
+
+/**
+ * Register an AI task definition. Call this at module load time.
+ * Duplicate registrations overwrite silently (allows hot-reload).
+ */
+export function registerTask(definition: AiTaskDefinition): void {
+  registry.set(definition.taskType, definition)
+}
+
+/**
+ * Register multiple tasks at once (convenience).
+ */
+export function registerTasks(definitions: AiTaskDefinition[]): void {
+  for (const def of definitions) {
+    registry.set(def.taskType, def)
+  }
+}
+
+/**
+ * Get a task definition by type. Returns undefined if not registered.
+ */
+export function getTaskDefinition(taskType: string): AiTaskDefinition | undefined {
+  return registry.get(taskType)
+}
+
+/**
+ * List all registered task types (for debugging/admin UI).
+ */
+export function listRegisteredTasks(): AiTaskDefinition[] {
+  return Array.from(registry.values())
+}
+
+/**
+ * Check if a task type is registered.
+ */
+export function isRegisteredTask(taskType: string): boolean {
+  return registry.has(taskType)
+}
+
+// ============================================
+// BUILT-IN TASK DEFINITIONS
+// ============================================
+// These are placeholder handlers that will be replaced as each
+// feature is implemented. They exist so the queue can accept
+// tasks immediately — the actual handler is swapped in later.
+
+const notImplementedHandler = async (
+  _payload: Record<string, unknown>,
+  _tenantId: string
+): Promise<Record<string, unknown>> => {
+  return {
+    status: 'not_implemented',
+    message: 'This task type is registered but not yet implemented.',
+  }
+}
+
+// ── System tasks ──────────────────────────────────────────────
+
+registerTask({
+  taskType: 'system.health_check',
+  name: 'System Health Check',
+  approvalTier: 'auto',
+  defaultPriority: AI_PRIORITY.SCHEDULED,
+  modelTier: 'fast',
+  preferredEndpoint: 'auto',
+  maxAttempts: 1,
+  recurrence: null,
+  handler: async () => {
+    // Simple ping — just confirms the queue + Ollama are working
+    return { status: 'healthy', timestamp: new Date().toISOString() }
+  },
+})
+
+// ── Placeholder categories for future tasks ───────────────────
+// These will be populated as each phase is implemented.
+// Having them registered now means they can be enqueued even
+// before the handler is written (they'll return 'not_implemented').
+
+const placeholderTasks: Array<Omit<AiTaskDefinition, 'handler'>> = [
+  // PHASE 2 — Interactive features (via Remy commands, not queue)
+  // These don't need queue registration — they go through the command orchestrator.
+
+  // PHASE B — Communication Drafts (placeholders — real handlers registered below)
+
+  // PHASE C — Reactive triggers
+  {
+    taskType: 'reactive.inquiry_created',
+    name: 'New Inquiry Auto-Score',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'fast',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.inquiry_stale',
+    name: 'Stale Inquiry Follow-Up',
+    approvalTier: 'draft',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.event_confirmed',
+    name: 'Event Confirmed Auto-Gen',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.event_completed',
+    name: 'Post-Event Drafts',
+    approvalTier: 'draft',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.event_cancelled',
+    name: 'Cancellation Response',
+    approvalTier: 'draft',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.menu_approved',
+    name: 'Menu Allergen Check',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.payment_received',
+    name: 'Payment Confirmation',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'fast',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.payment_overdue',
+    name: 'Payment Reminder Draft',
+    approvalTier: 'draft',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.client_dormant',
+    name: 'Re-Engage Dormant Client',
+    approvalTier: 'draft',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.client_birthday',
+    name: 'Client Birthday Draft',
+    approvalTier: 'draft',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.client_complaint',
+    name: 'Client Complaint Alert',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'fast',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.temp_out_of_range',
+    name: 'Temperature Alert',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'fast',
+    preferredEndpoint: 'auto',
+    maxAttempts: 1,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.food_recall',
+    name: 'Food Recall Alert',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.guest_list_updated',
+    name: 'Guest List Allergen Re-Check',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+  },
+  {
+    taskType: 'reactive.staff_no_show',
+    name: 'Staff No-Show Alert',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.REACTIVE,
+    modelTier: 'fast',
+    preferredEndpoint: 'auto',
+    maxAttempts: 1,
+    recurrence: null,
+  },
+
+  // PHASE D — Scheduled intelligence
+  {
+    taskType: 'scheduled.daily_briefing',
+    name: 'Daily Briefing Pre-Gen',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'standard',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 day',
+  },
+  {
+    taskType: 'scheduled.lead_scoring',
+    name: 'Auto Lead Scoring',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'fast',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '2 hours',
+  },
+  {
+    taskType: 'scheduled.weekly_insights',
+    name: 'Weekly Business Insights',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.BATCH,
+    modelTier: 'standard',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 week',
+  },
+  {
+    taskType: 'scheduled.revenue_goal',
+    name: 'Revenue Goal Progress',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.BATCH,
+    modelTier: 'standard',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 week',
+  },
+  {
+    taskType: 'scheduled.churn_prediction',
+    name: 'Client Churn Prediction',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.BATCH,
+    modelTier: 'standard',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 week',
+  },
+  {
+    taskType: 'scheduled.food_cost_alert',
+    name: 'Food Cost % Alert',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'fast',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: '1 week',
+  },
+  {
+    taskType: 'scheduled.pipeline_bottleneck',
+    name: 'Pipeline Bottleneck Report',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.BATCH,
+    modelTier: 'standard',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 week',
+  },
+  {
+    taskType: 'scheduled.cert_expiry',
+    name: 'Certification Expiry Check',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'fast',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: '1 day',
+  },
+  {
+    taskType: 'scheduled.food_recall',
+    name: 'FDA Recall Monitoring',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.SCHEDULED,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: '1 day',
+  },
+  {
+    taskType: 'scheduled.quote_analysis',
+    name: 'Quote Win/Loss Analysis',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.BATCH,
+    modelTier: 'standard',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 week',
+  },
+  {
+    taskType: 'scheduled.anomaly_detection',
+    name: 'Platform Anomaly Detection',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.BATCH,
+    modelTier: 'standard',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 day',
+  },
+  {
+    taskType: 'scheduled.menu_engineering',
+    name: 'Menu Engineering Report',
+    approvalTier: 'auto',
+    defaultPriority: AI_PRIORITY.BATCH,
+    modelTier: 'complex',
+    preferredEndpoint: 'pi',
+    maxAttempts: 2,
+    recurrence: '1 month',
+  },
+]
+
+// Register all placeholder tasks
+for (const task of placeholderTasks) {
+  registerTask({ ...task, handler: notImplementedHandler })
+}
+
+// ── Communication Drafts (real handlers) ─────────────────────────────────────
+// These overwrite the placeholders above with actual Ollama-powered implementations.
+
+const DRAFT_TYPES = [
+  { taskType: 'draft.thank_you', name: 'Thank-You Note Draft' },
+  { taskType: 'draft.referral_request', name: 'Referral Request Draft' },
+  { taskType: 'draft.testimonial_request', name: 'Testimonial Request Draft' },
+  { taskType: 'draft.quote_cover_letter', name: 'Quote Cover Letter Draft' },
+  { taskType: 'draft.decline_response', name: 'Decline Response Draft' },
+  { taskType: 'draft.cancellation_response', name: 'Cancellation Response Draft' },
+  { taskType: 'draft.payment_reminder', name: 'Payment Reminder Draft' },
+  { taskType: 'draft.re_engagement', name: 'Client Re-Engagement Draft' },
+  { taskType: 'draft.milestone_recognition', name: 'Milestone Recognition Draft' },
+  { taskType: 'draft.food_safety_incident', name: 'Food Safety Incident Draft' },
+] as const
+
+for (const dt of DRAFT_TYPES) {
+  registerTask({
+    taskType: dt.taskType,
+    name: dt.name,
+    approvalTier: 'draft',
+    defaultPriority: AI_PRIORITY.ON_DEMAND,
+    modelTier: 'standard',
+    preferredEndpoint: 'auto',
+    maxAttempts: 2,
+    recurrence: null,
+    handler: async (payload, _tenantId) => {
+      const result = await handleDraftTask(dt.taskType, payload)
+      return result as unknown as Record<string, unknown>
+    },
+  })
+}

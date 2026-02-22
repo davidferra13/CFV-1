@@ -19,6 +19,8 @@ import {
   REMY_TOPIC_GUARDRAILS,
   REMY_ANTI_INJECTION,
 } from '@/lib/ai/remy-personality'
+import { getCulinaryProfileForPrompt } from '@/lib/ai/chef-profile-actions'
+import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import {
@@ -64,6 +66,8 @@ AVAILABLE PAGES (suggest these when relevant):
 /settings/my-profile - Edit profile
 /settings/integrations - Integrations
 /settings/automations - Automation settings
+/settings/culinary-profile - Culinary profile (food identity for Remy)
+/settings/favorite-chefs - Favorite chefs (culinary heroes)
 /aar - After-action reviews
 /reviews - Client reviews
 /analytics - Analytics & reports
@@ -102,7 +106,9 @@ function formatMemoriesForPrompt(memories: RemyMemory[]): string {
 
 function buildRemySystemPrompt(
   context: Awaited<ReturnType<typeof loadRemyContext>>,
-  memories: RemyMemory[] = []
+  memories: RemyMemory[] = [],
+  culinaryProfile?: string,
+  favoriteChefs?: string
 ): string {
   const parts: string[] = []
 
@@ -111,6 +117,20 @@ function buildRemySystemPrompt(
   parts.push(REMY_PRIVACY_NOTE)
   parts.push(REMY_TOPIC_GUARDRAILS)
   parts.push(REMY_ANTI_INJECTION)
+
+  // Inject culinary profile if available
+  if (culinaryProfile) {
+    parts.push(
+      `\nCHEF'S CULINARY IDENTITY:\n${culinaryProfile}\nUse this to personalize responses — reference their style, cuisines, and philosophy when relevant.`
+    )
+  }
+
+  // Inject favorite chefs if available
+  if (favoriteChefs) {
+    parts.push(
+      `\nCHEF'S CULINARY HEROES:\n${favoriteChefs}\nReference these when discussing inspiration, technique, or style — the chef admires these people.`
+    )
+  }
 
   parts.push(`\nBUSINESS CONTEXT:
 - Business: ${context.businessName ?? 'Your business'}${context.tagline ? ` — "${context.tagline}"` : ''}
@@ -284,6 +304,146 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
     } else if (task.taskType === 'web.read' && task.data) {
       const d = task.data as { url: string; title: string; summary: string }
       summaries.push(`**${d.title}**\n${d.summary}`)
+    } else if (task.taskType === 'dietary.check' && task.data) {
+      const d = task.data as {
+        clientName: string
+        restrictions: string[]
+        flags: Array<{ severity: string; item: string; restriction: string; message: string }>
+        safeItems: string[]
+        summary: string
+      }
+      const lines = [d.summary]
+      if (d.flags.length > 0) {
+        lines.push('')
+        for (const f of d.flags) {
+          const icon = f.severity === 'danger' ? 'DANGER' : 'Warning'
+          lines.push(`- **${icon}**: ${f.message}`)
+        }
+      }
+      if (d.safeItems.length > 0 && d.flags.length > 0) {
+        lines.push(`\nSafe items: ${d.safeItems.join(', ')}`)
+      }
+      summaries.push(lines.join('\n'))
+    } else if (task.taskType === 'chef.favorite_chefs' && task.data) {
+      const d = task.data as {
+        chefs: Array<{ name: string; reason: string | null; websiteUrl: string | null }>
+        count: number
+      }
+      if (d.count === 0) {
+        summaries.push(
+          'No favorite chefs saved yet. Head to Settings > Favorite Chefs to add your culinary heroes!'
+        )
+      } else {
+        const lines = [`Your ${d.count} culinary heroes:`]
+        for (const c of d.chefs) {
+          lines.push(`- **${c.name}**${c.reason ? ` — ${c.reason}` : ''}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'chef.culinary_profile' && task.data) {
+      const d = task.data as {
+        answers: Array<{ question: string; answer: string }>
+        answeredCount: number
+        totalCount: number
+      }
+      if (d.answeredCount === 0) {
+        summaries.push(
+          'Your culinary profile is empty. Head to Settings > Culinary Profile to tell me about your food identity!'
+        )
+      } else {
+        const lines = [`Your culinary profile (${d.answeredCount}/${d.totalCount} answered):`]
+        for (const a of d.answers) {
+          lines.push(`- **${a.question}**: ${a.answer}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'prep.timeline' && task.data) {
+      const d = task.data as {
+        eventName: string
+        steps: Array<{
+          time: string
+          task: string
+          duration: string
+          category: string
+          notes?: string
+        }>
+        totalPrepHours: number
+        summary: string
+      }
+      if (d.steps.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**Prep Timeline for ${d.eventName}** (~${d.totalPrepHours}h total)\n`]
+        for (const step of d.steps) {
+          lines.push(
+            `- **${step.time}** ${step.task} _(${step.duration})_${step.notes ? ` — ${step.notes}` : ''}`
+          )
+        }
+        lines.push(`\n${d.summary}`)
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'nudge.list' && task.data) {
+      const d = task.data as {
+        nudges: Array<{
+          type: string
+          title: string
+          message: string
+          priority: string
+          actionLabel?: string
+          actionHref?: string
+        }>
+        count: number
+      }
+      if (d.count === 0) {
+        summaries.push("Nothing urgent right now — you're all caught up!")
+      } else {
+        const lines = [`Here's what needs your attention (${d.count} items):\n`]
+        for (const n of d.nudges) {
+          const icon = n.priority === 'high' ? '**!!**' : n.priority === 'medium' ? '**!**' : ''
+          lines.push(`- ${icon} **${n.title}**: ${n.message}`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'grocery.quick_add' && task.data) {
+      const d = task.data as {
+        items: Array<{ name: string; quantity: string; unit: string; category: string }>
+        summary: string
+      }
+      if (d.items.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`${d.summary}\n`]
+        for (const item of d.items) {
+          lines.push(`- ${item.quantity} ${item.unit} ${item.name} _(${item.category})_`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'document.search' && task.data) {
+      const d = task.data as {
+        documents: Array<{ title: string; type: string | null }>
+        count: number
+      }
+      if (d.count === 0) summaries.push('No documents found.')
+      else
+        summaries.push(
+          `Found ${d.count} document${d.count !== 1 ? 's' : ''}:\n${d.documents.map((doc) => `- ${doc.title}${doc.type ? ` (${doc.type})` : ''}`).join('\n')}`
+        )
+    } else if (task.taskType === 'document.list_folders' && task.data) {
+      const d = task.data as { folders: Array<{ name: string }>; count: number }
+      if (d.count === 0) summaries.push('No folders yet. Want me to create one?')
+      else
+        summaries.push(
+          `Your ${d.count} folder${d.count !== 1 ? 's' : ''}:\n${d.folders.map((f) => `- ${f.name}`).join('\n')}`
+        )
+    } else if (task.taskType === 'email.generic' && task.data) {
+      const d = task.data as { subject?: string; draftText: string }
+      summaries.push(`Here's a draft for your review:\n\n${d.draftText}`)
+    } else if (task.taskType.startsWith('draft.') && task.data) {
+      const d = task.data as { subject?: string; draftText: string; clientName?: string }
+      const label = d.clientName ? ` for ${d.clientName}` : ''
+      summaries.push(
+        `Here's your ${name.toLowerCase()}${label} — review and edit before sending:\n\n${d.draftText}`
+      )
     } else {
       summaries.push(`"${name}" completed successfully.`)
     }
@@ -483,20 +643,35 @@ export async function POST(req: NextRequest) {
     let context: Awaited<ReturnType<typeof loadRemyContext>>
     let classification: Awaited<ReturnType<typeof classifyIntent>>
     let memories: Awaited<ReturnType<typeof loadRelevantMemories>>
+    let culinaryProfile: string | undefined
+    let favoriteChefsList: string | undefined
 
     try {
-      ;[context, classification, memories] = (await Promise.race([
+      const [ctx, cls, mems, profile, favChefs] = (await Promise.race([
         Promise.all([
           loadRemyContext(currentPage),
           classifyIntent(message),
           loadRelevantMemories(message, undefined, undefined),
+          getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
+          getFavoriteChefs().catch(() => []),
         ]),
         setupTimeout,
       ])) as [
         Awaited<ReturnType<typeof loadRemyContext>>,
         Awaited<ReturnType<typeof classifyIntent>>,
         Awaited<ReturnType<typeof loadRelevantMemories>>,
+        string,
+        Awaited<ReturnType<typeof getFavoriteChefs>>,
       ]
+      context = ctx
+      classification = cls
+      memories = mems
+      culinaryProfile = profile || undefined
+      if (favChefs.length > 0) {
+        favoriteChefsList = favChefs
+          .map((c) => `- ${c.chefName}${c.reason ? `: ${c.reason}` : ''}`)
+          .join('\n')
+      }
     } catch (setupErr) {
       const msg = setupErr instanceof Error ? setupErr.message : String(setupErr)
       const isOllama =
@@ -586,7 +761,12 @@ export async function POST(req: NextRequest) {
       const config = getOllamaConfig()
       const model = getOllamaModel('standard')
       const ollama = new Ollama({ host: config.baseUrl })
-      const systemPrompt = buildRemySystemPrompt(context, memories)
+      const systemPrompt = buildRemySystemPrompt(
+        context,
+        memories,
+        culinaryProfile,
+        favoriteChefsList
+      )
       const historyStr = formatConversationHistory(history)
 
       const encoder = new TextEncoder()
@@ -774,7 +954,7 @@ const OLLAMA_STREAM_MAX_TOKENS = 2048
 function extractNavSuggestions(
   text: string
 ): Array<{ label: string; href: string; description?: string }> {
-  const navMatch = text.match(/NAV_SUGGESTIONS:\s*(\[.*\])/s)
+  const navMatch = text.match(/NAV_SUGGESTIONS:\s*(\[[\s\S]*\])/)
   if (!navMatch) return []
   try {
     return JSON.parse(navMatch[1])
