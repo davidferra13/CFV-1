@@ -32,11 +32,8 @@ ALTER TABLE remy_abuse_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Chefs see own tenant abuse log"
   ON remy_abuse_log FOR SELECT
   USING (
-    tenant_id = (
-      SELECT ur.tenant_id FROM user_roles ur
-      WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef'
-      LIMIT 1
-    )
+    get_current_user_role() = 'chef'
+    AND tenant_id = get_current_tenant_id()
   );
 
 CREATE POLICY "System inserts abuse log"
