@@ -6,7 +6,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { Ollama } from 'ollama'
 import { requireChef } from '@/lib/auth/get-user'
-import { loadRemyContext } from '@/lib/ai/remy-context'
+import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
@@ -164,6 +164,12 @@ ${context.pageEntity.summary}
 Use this data to give specific, informed answers about what the chef is looking at. You know exactly what's on their screen.`)
   }
 
+  if (context.mentionedEntities && context.mentionedEntities.length > 0) {
+    parts.push(`\nMENTIONED IN MESSAGE (auto-resolved from chef's message):
+${context.mentionedEntities.map((e) => `--- ${e.type.toUpperCase()} ---\n${e.summary}`).join('\n\n')}
+The chef mentioned these by name. Use this data to answer their question accurately.`)
+  }
+
   const memoryBlock = formatMemoriesForPrompt(memories)
   if (memoryBlock) {
     parts.push(memoryBlock)
@@ -172,7 +178,7 @@ Use this data to give specific, informed answers about what the chef is looking 
   parts.push(`\n${NAV_ROUTE_MAP}`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
-You may ONLY reference clients, events, inquiries, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, CURRENTLY VIEWING, or WHAT YOU REMEMBER sections above.
+You may ONLY reference clients, events, inquiries, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, CURRENTLY VIEWING, MENTIONED IN MESSAGE, or WHAT YOU REMEMBER sections above.
 If a section says "0" or is empty, that means there are NONE — do not invent any.
 If you have no data to work with, be honest: "Looks like you're just getting started" or "I don't see any events yet."
 NEVER fabricate names, dates, or details to sound helpful.`)
@@ -797,13 +803,17 @@ export async function POST(req: NextRequest) {
     let favoriteChefsList: string | undefined
 
     try {
-      const [ctx, cls, mems, profile, favChefs] = (await Promise.race([
+      const [ctx, cls, mems, profile, favChefs, mentioned] = (await Promise.race([
         Promise.all([
           loadRemyContext(currentPage),
           classifyIntent(message),
           loadRelevantMemories(message, undefined, undefined),
           getCulinaryProfileForPrompt(user.tenantId!).catch(() => ''),
           getFavoriteChefs().catch(() => []),
+          resolveMessageEntities(message).catch((err) => {
+            console.error('[non-blocking] Entity resolution failed:', err)
+            return []
+          }),
         ]),
         setupTimeout,
       ])) as [
@@ -812,8 +822,10 @@ export async function POST(req: NextRequest) {
         Awaited<ReturnType<typeof loadRelevantMemories>>,
         string,
         Awaited<ReturnType<typeof getFavoriteChefs>>,
+        Awaited<ReturnType<typeof resolveMessageEntities>>,
       ]
       context = ctx
+      if (mentioned.length > 0) context.mentionedEntities = mentioned
       classification = cls
       memories = mems
       culinaryProfile = profile || undefined

@@ -512,3 +512,128 @@ async function loadMenuEntity(
 
   return { type: 'menu', summary: lines.join('\n') }
 }
+
+// ─── Tier 4: Message-Aware Entity Resolution ────────────────────────────────
+// Scans the user's message for client names, event occasions, and recipe names.
+// If a match is found in the DB, loads the full entity so Remy can answer
+// questions about any entity mentioned by name — regardless of what page
+// the chef is on.
+
+export async function resolveMessageEntities(message: string): Promise<PageEntityContext[]> {
+  if (!message || message.length < 3) return []
+
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const supabase = createServerClient()
+
+  // Normalize message for matching
+  const msgLower = message.toLowerCase()
+
+  // Run all searches in parallel — each is cheap (indexed ilike, limit 3)
+  const [clientHits, eventHits, recipeHits] = await Promise.all([
+    findMentionedClients(supabase, tenantId, msgLower),
+    findMentionedEvents(supabase, tenantId, msgLower),
+    findMentionedRecipes(supabase, tenantId, msgLower),
+  ])
+
+  const results: PageEntityContext[] = []
+
+  // Load full details for matched entities (limit to 3 total to keep prompt lean)
+  for (const client of clientHits.slice(0, 2)) {
+    const ctx = await loadClientEntity(supabase, tenantId, client.id)
+    if (ctx) results.push(ctx)
+  }
+  for (const event of eventHits.slice(0, 2)) {
+    const ctx = await loadEventEntity(supabase, tenantId, event.id)
+    if (ctx) results.push(ctx)
+  }
+  for (const recipe of recipeHits.slice(0, 1)) {
+    const ctx = await loadRecipeEntity(supabase, tenantId, recipe.id)
+    if (ctx) results.push(ctx)
+  }
+
+  return results.slice(0, 3) // Hard cap: 3 entities max
+}
+
+async function findMentionedClients(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  msgLower: string
+): Promise<Array<{ id: string; full_name: string }>> {
+  // Get all client names for this tenant (cached in Tier 2, so this is usually fast)
+  const { data } = await supabase
+    .from('clients')
+    .select('id, full_name')
+    .eq('tenant_id', tenantId)
+    .limit(200)
+
+  if (!data) return []
+
+  // Match: check if any client's first name, last name, or full name appears in the message
+  return data.filter((c) => {
+    if (!c.full_name) return false
+    const fullLower = c.full_name.toLowerCase()
+    // Full name match
+    if (msgLower.includes(fullLower)) return true
+    // Last name match (more unique, less likely to false-positive)
+    const parts = fullLower.split(/\s+/)
+    if (parts.length >= 2) {
+      const lastName = parts[parts.length - 1]
+      // Only match last names 3+ chars to avoid matching "Mr" or "Li" etc.
+      if (lastName.length >= 3 && msgLower.includes(lastName)) return true
+    }
+    return false
+  })
+}
+
+async function findMentionedEvents(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  msgLower: string
+): Promise<Array<{ id: string }>> {
+  // Get recent events with their occasion and client name
+  const { data } = await supabase
+    .from('events')
+    .select('id, occasion, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .not('status', 'eq', 'cancelled')
+    .order('event_date', { ascending: false })
+    .limit(50)
+
+  if (!data) return []
+
+  return data.filter((e) => {
+    // Match by occasion name
+    if (e.occasion && msgLower.includes(e.occasion.toLowerCase())) return true
+    // Match by client name + event-related keywords
+    const client = e.client as Record<string, unknown> | null
+    if (client?.full_name) {
+      const clientLower = (client.full_name as string).toLowerCase()
+      const eventKeywords = ['event', 'dinner', 'party', 'booking', 'gig', 'service', 'cook']
+      if (msgLower.includes(clientLower) && eventKeywords.some((k) => msgLower.includes(k))) {
+        return true
+      }
+    }
+    return false
+  })
+}
+
+async function findMentionedRecipes(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  msgLower: string
+): Promise<Array<{ id: string }>> {
+  const { data } = await supabase
+    .from('recipes')
+    .select('id, name')
+    .eq('tenant_id', tenantId)
+    .eq('archived', false)
+    .limit(200)
+
+  if (!data) return []
+
+  return data.filter((r) => {
+    if (!r.name) return false
+    return msgLower.includes(r.name.toLowerCase())
+  })
+}

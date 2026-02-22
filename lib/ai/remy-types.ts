@@ -86,6 +86,8 @@ export interface RemyContext {
   currentPage?: string
   /** Deep context about the specific entity the chef is viewing */
   pageEntity?: PageEntityContext
+  /** Entities mentioned by name in the user's message (auto-resolved) */
+  mentionedEntities?: PageEntityContext[]
   /** Daily plan summary (if available) */
   dailyPlan?: {
     totalItems: number
