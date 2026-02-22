@@ -56,7 +56,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
   }, [open])
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative flex-shrink-0">
       <button
         type="button"
         onClick={handleClick}

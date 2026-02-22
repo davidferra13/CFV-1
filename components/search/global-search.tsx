@@ -108,11 +108,11 @@ export function GlobalSearch() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex-shrink-0">
       <div className="relative z-50 flex items-center">
         <button
           onClick={openAndFocus}
-          className="p-2 hover:bg-stone-100 rounded-lg transition-colors"
+          className="flex items-center justify-center w-8 h-8 hover:bg-stone-100 rounded-lg transition-colors"
           aria-label="Open search"
         >
           <svg
@@ -136,7 +136,7 @@ export function GlobalSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Search everything... (Ctrl/Cmd+K)"
-            className="min-w-[220px] px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+            className="absolute right-0 top-full mt-1 w-[280px] px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 bg-white shadow-lg"
             role="combobox"
             aria-controls={listboxId}
             aria-expanded={open}
@@ -148,7 +148,7 @@ export function GlobalSearch() {
       {open && query.length >= 2 && (
         <div
           id={listboxId}
-          className="absolute top-12 left-0 right-0 min-w-[320px] max-w-[600px] bg-white shadow-xl border border-stone-200 rounded-xl z-50 p-2"
+          className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-white shadow-xl border border-stone-200 rounded-xl z-50 p-2"
           role="listbox"
         >
           {loading && (

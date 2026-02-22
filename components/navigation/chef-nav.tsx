@@ -14,7 +14,7 @@ import { LiveIndicator } from '@/components/realtime/live-indicator'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 
-import { LogOut, Menu, X, ChevronLeft, ChevronRight, ChevronDown, Leaf } from 'lucide-react'
+import { LogOut, Menu, X, ChevronLeft, ChevronRight, ChevronDown, Leaf, Bot } from 'lucide-react'
 // Navigation items are centrally defined in `components/navigation/nav-config.tsx`
 
 // ─── Sidebar Context ────────────────────────────────
@@ -504,22 +504,33 @@ export function ChefSidebar({
     >
       {/* Logo + notification bell + collapse toggle */}
       <div
-        className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}
+        className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
-        <Link href="/dashboard" className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
           <AppLogo />
-          {!collapsed && <span className="text-lg font-display text-stone-900">ChefFlow</span>}
+          {!collapsed && (
+            <span className="text-lg font-display text-stone-900 whitespace-nowrap">ChefFlow</span>
+          )}
         </Link>
         {!collapsed ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center flex-shrink-0">
             <LiveIndicator />
             <ActivityDot />
             <GlobalSearch />
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+              aria-label="Open Remy"
+              title="Open Remy"
+            >
+              <Bot className="w-[18px] h-[18px]" />
+            </button>
             <NotificationBell />
             <button
               type="button"
               onClick={() => setCollapsed(true)}
-              className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
               aria-label="Collapse sidebar"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -546,6 +557,15 @@ export function ChefSidebar({
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch />
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+              aria-label="Open Remy"
+              title="Open Remy"
+            >
+              <Bot className="w-[18px] h-[18px]" />
+            </button>
             <LiveIndicator />
             <ActivityDot collapsed />
 
@@ -968,20 +988,29 @@ export function ChefMobileNav({
     <>
       {/* Mobile top bar */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-stone-200 pt-safe">
-        <div className="flex items-center justify-between h-14 px-4">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <AppLogo size={28} className="rounded-md" />
-            <span className="font-display text-stone-900">ChefFlow</span>
+        <div className="flex items-center justify-between h-14 px-3">
+          <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 min-w-0">
+            <AppLogo size={28} className="rounded-md flex-shrink-0" />
+            <span className="font-display text-stone-900 whitespace-nowrap">ChefFlow</span>
           </Link>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center flex-shrink-0">
             <LiveIndicator />
             <ActivityDot />
             <GlobalSearch />
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
+              className="flex items-center justify-center w-9 h-9 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+              aria-label="Open Remy"
+              title="Open Remy"
+            >
+              <Bot className="w-[18px] h-[18px]" />
+            </button>
             <NotificationBell />
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2.5 rounded-lg text-stone-500 hover:bg-stone-100"
+              className="flex items-center justify-center w-9 h-9 flex-shrink-0 rounded-lg text-stone-500 hover:bg-stone-100"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

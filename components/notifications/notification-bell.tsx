@@ -37,7 +37,7 @@ export function NotificationBell({ collapsed = false }: { collapsed?: boolean })
   }, [open])
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative flex-shrink-0">
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -60,9 +60,7 @@ export function NotificationBell({ collapsed = false }: { collapsed?: boolean })
       </button>
 
       {/* Dropdown panel */}
-      {open && (
-        <NotificationPanel onClose={() => setOpen(false)} />
-      )}
+      {open && <NotificationPanel onClose={() => setOpen(false)} />}
     </div>
   )
 }
