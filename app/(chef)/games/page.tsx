@@ -25,6 +25,14 @@ const games = [
       'Pick any culinary topic and let Remy quiz you with unique questions every time. Learn something new with every round.',
     color: 'from-green-500/20 to-teal-500/20',
   },
+  {
+    href: '/games/tic-tac-toe',
+    emoji: '❌',
+    title: 'Tic-Tac-Toe vs Remy',
+    description:
+      'Challenge Remy to a food-themed battle of wits. Pick 3x3, 4x4, or 5x5 grids. Can you outsmart the kitchen AI?',
+    color: 'from-pink-500/20 to-rose-500/20',
+  },
 ]
 
 export default function GamesPage() {
@@ -37,7 +45,7 @@ export default function GamesPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 sm:grid-cols-2">
         {games.map((game) => (
           <Link
             key={game.href}
