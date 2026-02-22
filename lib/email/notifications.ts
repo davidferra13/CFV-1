@@ -363,7 +363,7 @@ export async function sendFrontOfHouseMenuReadyEmail(params: {
 }) {
   await sendEmail({
     to: params.to,
-    subject: `Front-of-house menu ready: ${params.occasion}`,
+    subject: `Your guest menu is ready: ${params.occasion}`,
     react: createElement(FrontOfHouseMenuReadyEmail, {
       clientName: params.clientName,
       chefName: params.chefName,

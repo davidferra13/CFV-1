@@ -14,11 +14,7 @@ import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
 
-export default async function ClientQuoteDetailPage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default async function ClientQuoteDetailPage({ params }: { params: { id: string } }) {
   await requireClient()
 
   const quote = await getClientQuoteById(params.id)
@@ -59,13 +55,19 @@ export default async function ClientQuoteDetailPage({
       {/* Status Banner */}
       {quote.status === 'accepted' && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-          <p className="text-green-800 font-medium">You accepted this quote on {quote.accepted_at && format(new Date(quote.accepted_at), 'MMMM d, yyyy')}.</p>
+          <p className="text-green-800 font-medium">
+            You accepted this quote on{' '}
+            {quote.accepted_at && format(new Date(quote.accepted_at), 'MMMM d, yyyy')}.
+          </p>
         </div>
       )}
 
       {quote.status === 'rejected' && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <p className="text-red-800 font-medium">You declined this quote on {quote.rejected_at && format(new Date(quote.rejected_at), 'MMMM d, yyyy')}.</p>
+          <p className="text-red-800 font-medium">
+            You declined this quote on{' '}
+            {quote.rejected_at && format(new Date(quote.rejected_at), 'MMMM d, yyyy')}.
+          </p>
         </div>
       )}
 
@@ -77,13 +79,16 @@ export default async function ClientQuoteDetailPage({
             <p className="text-3xl sm:text-4xl font-bold text-stone-900">
               {formatCurrency(quote.total_quoted_cents)}
             </p>
-            {quote.pricing_model === 'per_person' && quote.price_per_person_cents && quote.guest_count_estimated && (
-              <p className="text-sm text-stone-500 mt-1">
-                {formatCurrency(quote.price_per_person_cents)} per person x {quote.guest_count_estimated} guests
-              </p>
-            )}
+            {quote.pricing_model === 'per_person' &&
+              quote.price_per_person_cents &&
+              quote.guest_count_estimated && (
+                <p className="text-sm text-stone-500 mt-1">
+                  {formatCurrency(quote.price_per_person_cents)} per guest x{' '}
+                  {quote.guest_count_estimated} guests
+                </p>
+              )}
             {quote.pricing_model === 'flat_rate' && (
-              <p className="text-sm text-stone-500 mt-1">Flat rate</p>
+              <p className="text-sm text-stone-500 mt-1">Fixed price</p>
             )}
           </div>
 
@@ -103,7 +108,9 @@ export default async function ClientQuoteDetailPage({
               <span className="font-medium text-stone-900">
                 {format(new Date(quote.valid_until), 'MMMM d, yyyy')}
                 {new Date(quote.valid_until) < new Date() && (
-                  <Badge variant="warning" className="ml-2">Expired</Badge>
+                  <Badge variant="warning" className="ml-2">
+                    Expired
+                  </Badge>
                 )}
               </span>
             </div>
@@ -127,7 +134,9 @@ export default async function ClientQuoteDetailPage({
             {(quote.inquiry as any).confirmed_occasion && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Occasion</dt>
-                <dd className="text-sm text-stone-900 mt-1">{(quote.inquiry as any).confirmed_occasion}</dd>
+                <dd className="text-sm text-stone-900 mt-1">
+                  {(quote.inquiry as any).confirmed_occasion}
+                </dd>
               </div>
             )}
             {(quote.inquiry as any).confirmed_date && (
@@ -141,7 +150,9 @@ export default async function ClientQuoteDetailPage({
             {(quote.inquiry as any).confirmed_guest_count && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Guests</dt>
-                <dd className="text-sm text-stone-900 mt-1">{(quote.inquiry as any).confirmed_guest_count} guests</dd>
+                <dd className="text-sm text-stone-900 mt-1">
+                  {(quote.inquiry as any).confirmed_guest_count} guests
+                </dd>
               </div>
             )}
           </dl>
@@ -157,7 +168,9 @@ export default async function ClientQuoteDetailPage({
       )}
 
       {/* Response Buttons */}
-      {isPending && <QuoteResponseButtons quoteId={quote.id} totalCents={quote.total_quoted_cents} />}
+      {isPending && (
+        <QuoteResponseButtons quoteId={quote.id} totalCents={quote.total_quoted_cents} />
+      )}
 
       {/* Message chef about this quote */}
       <div className="flex justify-center pt-4">

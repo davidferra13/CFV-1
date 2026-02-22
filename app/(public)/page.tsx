@@ -5,10 +5,10 @@ import { CheckCircle2, CalendarDays, CreditCard, UsersRound } from 'lucide-react
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
 
 export const metadata: Metadata = {
-  title: 'ChefFlow | Private Chef Business OS',
+  title: 'ChefFlow | Private Chef Platform',
   description: 'Events, clients, menus, and payments — finally in one calm workspace.',
   openGraph: {
-    title: 'ChefFlow | Private Chef Business OS',
+    title: 'ChefFlow | Private Chef Platform',
     description: 'Events, clients, menus, and payments — finally in one calm workspace.',
     url: BASE_URL,
     siteName: 'ChefFlow',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow | Private Chef Business OS',
+    title: 'ChefFlow | Private Chef Platform',
     description: 'Events, clients, menus, and payments — finally in one calm workspace.',
   },
 }
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const FEATURES = [
   {
     icon: CalendarDays,
-    title: 'Event Ops In One View',
+    title: 'Events at a Glance',
     description: 'Track inquiries, proposals, prep, and service without switching tools.',
   },
   {
@@ -55,7 +55,7 @@ export default function Home() {
             Run your private chef business from one place.
           </h1>
           <p className="mt-4 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
-            Private Chef Operating System
+            Built for Private Chefs
           </p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-600 md:text-lg">
             Events, clients, menus, and payments — finally in one calm workspace.

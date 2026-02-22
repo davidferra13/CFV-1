@@ -15,7 +15,7 @@ export default function PricingPage() {
     {
       question: 'What payment methods do you accept?',
       answer:
-        'We accept all major credit cards via Stripe. Payment is processed securely and you can cancel your subscription at any time.',
+        'We accept all major credit cards. Payment is processed securely and you can cancel your subscription at any time.',
     },
     {
       question: 'Can I cancel anytime?',
@@ -25,7 +25,7 @@ export default function PricingPage() {
     {
       question: 'Do you charge transaction fees?',
       answer:
-        'No additional fees from us. Standard Stripe payment processing rates apply (2.9% + 30¢ per transaction for US cards).',
+        'No additional fees from us. Standard payment processing fees apply (2.9% + 30¢ per transaction).',
     },
     {
       question: 'Is there a setup fee?',
@@ -129,7 +129,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Stripe payment processing</span>
+                  <span className="text-stone-700">Secure online payments</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -143,7 +143,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Financial reporting</span>
+                  <span className="text-stone-700">Income &amp; expense tracking</span>
                 </li>
                 <li className="flex items-start">
                   <svg

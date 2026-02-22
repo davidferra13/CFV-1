@@ -185,7 +185,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
     }
 
     if (!formData.occasion.trim()) {
-      newErrors.occasion = 'Event Theme/Occasion is required'
+      newErrors.occasion = 'Occasion is required'
     }
 
     if (!formData.budget_range) {
@@ -433,13 +433,13 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           />
 
           <Input
-            label="Event Theme/Occasion"
+            label="Occasion"
             name="occasion"
             type="text"
             value={formData.occasion}
             onChange={handleChange}
             error={errors.occasion}
-            placeholder="Event Theme/Occasion"
+            placeholder="e.g. Birthday, Anniversary, Date Night"
           />
 
           <Select

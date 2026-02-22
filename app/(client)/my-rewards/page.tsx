@@ -113,7 +113,7 @@ export default async function MyRewardsPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-900">Rewards</h1>
         <p className="text-stone-600 mt-1">
-          Track your points, tier progress, and redeem available rewards.
+          Track your points, see your progress, and redeem available rewards.
         </p>
       </div>
 
@@ -125,7 +125,7 @@ export default async function MyRewardsPage() {
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${TIER_BADGE[status.tier]}`}
                 >
-                  {TIER_LABELS[status.tier]} Tier
+                  {TIER_LABELS[status.tier]} Member
                 </span>
                 <p className="text-2xl font-bold text-stone-900">
                   {status.pointsBalance.toLocaleString()} points
@@ -251,11 +251,11 @@ export default async function MyRewardsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
+          <CardTitle>Points Activity</CardTitle>
         </CardHeader>
         <CardContent>
           {status.recentTransactions.length === 0 ? (
-            <p className="text-sm text-stone-600">No loyalty transactions yet.</p>
+            <p className="text-sm text-stone-600">No points activity yet.</p>
           ) : (
             <div className="space-y-3">
               {status.recentTransactions.map((tx) => (

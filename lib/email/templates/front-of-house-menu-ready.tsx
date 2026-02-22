@@ -16,16 +16,14 @@ export function FrontOfHouseMenuReadyEmail({
   eventDate,
 }: FrontOfHouseMenuReadyEmailProps) {
   return (
-    <BaseLayout preview={`Front-of-house menu attached for ${occasion}`}>
-      <Text style={heading}>Front-of-house menu attached</Text>
+    <BaseLayout preview={`Your guest menu is ready for ${occasion}`}>
+      <Text style={heading}>Your guest menu is ready</Text>
       <Text style={paragraph}>Hi {clientName},</Text>
       <Text style={paragraph}>
-        Your printable front-of-house menu for <strong>{occasion}</strong> ({eventDate}) is attached
-        as a PDF.
+        Your printable guest menu for <strong>{occasion}</strong> ({eventDate}) is attached as a
+        PDF.
       </Text>
-      <Text style={paragraph}>
-        {chefName} can print this directly for table placement.
-      </Text>
+      <Text style={paragraph}>Print it and place it on the table for your guests to enjoy.</Text>
       <Text style={muted}>
         If any dish wording should be adjusted before service, reply to this email.
       </Text>

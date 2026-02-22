@@ -234,10 +234,10 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </CardContent>
       </Card>
 
-      {/* Financial Summary Card */}
+      {/* Payment Summary Card */}
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle>Financial Summary</CardTitle>
+          <CardTitle>Payment Summary</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -355,7 +355,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
         </Card>
       )}
 
-      {/* Printable Front-of-House Menu — available once event is confirmed */}
+      {/* Printable Guest Menu — available once event is confirmed */}
       {event.menus &&
         event.menus.length > 0 &&
         ['confirmed', 'in_progress', 'completed'].includes(event.status) && (
@@ -365,8 +365,8 @@ export default async function EventDetailPage({ params }: { params: { id: string
             </CardHeader>
             <CardContent>
               <p className="text-stone-600 text-sm mb-4">
-                Your printable front-of-house menu is ready. Download and print it to place on the
-                dining table.
+                Your printable guest menu is ready. Download and print it to place on the dining
+                table.
               </p>
               <TrackedDownloadLink
                 href={`/api/documents/foh-menu/${event.id}`}
@@ -433,7 +433,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             <ShareEventButton eventId={event.id} existingShare={activeShare} />
             {guests.length > 0 && (
               <div className="pt-4 border-t border-stone-100">
-                <h4 className="text-sm font-medium text-stone-700 mb-3">RSVP Responses</h4>
+                <h4 className="text-sm font-medium text-stone-700 mb-3">Guest Responses</h4>
                 <ClientRSVPSummary
                   guests={guests}
                   summary={{

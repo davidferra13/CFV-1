@@ -26,7 +26,10 @@ type ClientEvent = EventRow & {
 
 // Status badge mapping
 function getStatusBadge(status: EventStatus) {
-  const variants: Record<EventStatus, { variant: 'default' | 'success' | 'warning' | 'error' | 'info', label: string }> = {
+  const variants: Record<
+    EventStatus,
+    { variant: 'default' | 'success' | 'warning' | 'error' | 'info'; label: string }
+  > = {
     draft: { variant: 'default', label: 'Draft' },
     proposed: { variant: 'warning', label: 'Pending Review' },
     accepted: { variant: 'warning', label: 'Payment Due' },
@@ -34,7 +37,7 @@ function getStatusBadge(status: EventStatus) {
     confirmed: { variant: 'success', label: 'Confirmed' },
     in_progress: { variant: 'info', label: 'In Progress' },
     completed: { variant: 'default', label: 'Completed' },
-    cancelled: { variant: 'error', label: 'Cancelled' }
+    cancelled: { variant: 'error', label: 'Cancelled' },
   }
 
   const config = variants[status]
@@ -42,7 +45,13 @@ function getStatusBadge(status: EventStatus) {
 }
 
 // Action button for each event status
-function EventActionButton({ event, hasOutstandingBalance }: { event: ClientEvent; hasOutstandingBalance?: boolean }) {
+function EventActionButton({
+  event,
+  hasOutstandingBalance,
+}: {
+  event: ClientEvent
+  hasOutstandingBalance?: boolean
+}) {
   const { id, status } = event
   const quotedPrice = event.quoted_price_cents ?? 0
 
@@ -121,7 +130,13 @@ function EventActionButton({ event, hasOutstandingBalance }: { event: ClientEven
 }
 
 // Event card component
-function EventCard({ event, hasOutstandingBalance }: { event: ClientEvent; hasOutstandingBalance?: boolean }) {
+function EventCard({
+  event,
+  hasOutstandingBalance,
+}: {
+  event: ClientEvent
+  hasOutstandingBalance?: boolean
+}) {
   const quotedPrice = event.quoted_price_cents ?? 0
   const location = [event.location_address, event.location_city].filter(Boolean).join(', ')
 
@@ -144,14 +159,24 @@ function EventCard({ event, hasOutstandingBalance }: { event: ClientEvent; hasOu
             <div className="space-y-1 text-sm text-stone-600">
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
                 </svg>
                 <span>{format(new Date(event.event_date), 'PPP')}</span>
               </div>
 
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
                 </svg>
                 <span>{event.guest_count} guests</span>
               </div>
@@ -159,8 +184,18 @@ function EventCard({ event, hasOutstandingBalance }: { event: ClientEvent; hasOu
               {location && (
                 <div className="flex items-center gap-2">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
                   </svg>
                   <span>{location}</span>
                 </div>
@@ -197,7 +232,12 @@ function EmptyState({ message }: { message: string }) {
       <CardContent className="p-12 text-center">
         <div className="text-stone-400 mb-2">
           <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1}
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
           </svg>
         </div>
         <p className="text-stone-600">{message}</p>
@@ -237,7 +277,7 @@ export default async function MyEventsPage() {
   let pastWithBalance: Set<string> = new Set()
 
   if (past.length > 0) {
-    const pastIds = past.map(e => e.id)
+    const pastIds = past.map((e) => e.id)
 
     const [reviewRows, balanceRows] = await Promise.all([
       // Which completed events already have reviews?
@@ -245,7 +285,7 @@ export default async function MyEventsPage() {
         .from('client_reviews')
         .select('event_id')
         .in('event_id', pastIds)
-        .then(r => r.data ?? []),
+        .then((r) => r.data ?? []),
 
       // Which completed events have outstanding balances?
       supabase
@@ -253,20 +293,24 @@ export default async function MyEventsPage() {
         .select('event_id, outstanding_balance_cents')
         .in('event_id', pastIds)
         .gt('outstanding_balance_cents', 0)
-        .then(r => r.data ?? []),
+        .then((r) => r.data ?? []),
     ])
 
-    const reviewedEventIds = new Set((reviewRows as Array<{ event_id: string }>).map(r => r.event_id))
-    pastWithBalance = new Set((balanceRows as Array<{ event_id: string; outstanding_balance_cents: number }>)
-      .filter(r => (r.outstanding_balance_cents ?? 0) > 0)
-      .map(r => r.event_id))
+    const reviewedEventIds = new Set(
+      (reviewRows as Array<{ event_id: string }>).map((r) => r.event_id)
+    )
+    pastWithBalance = new Set(
+      (balanceRows as Array<{ event_id: string; outstanding_balance_cents: number }>)
+        .filter((r) => (r.outstanding_balance_cents ?? 0) > 0)
+        .map((r) => r.event_id)
+    )
 
     // Most recent completed event without a review (events are ordered ascending by date,
     // so the last in the array is the most recent)
     const latestFirst = [...past].sort(
       (a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
     )
-    unreviewedEvent = latestFirst.find(e => !reviewedEventIds.has(e.id)) ?? null
+    unreviewedEvent = latestFirst.find((e) => !reviewedEventIds.has(e.id)) ?? null
   }
 
   // Fetch chef name for the post-event banner.
@@ -286,9 +330,7 @@ export default async function MyEventsPage() {
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-stone-900">My Events</h1>
-        <p className="text-stone-600 mt-2">
-          Manage your upcoming events and view past bookings
-        </p>
+        <p className="text-stone-600 mt-2">Manage your upcoming events and view past bookings</p>
       </div>
 
       {/* Post-event review banner — shown for most recent unreviewed completed event */}
@@ -302,41 +344,46 @@ export default async function MyEventsPage() {
       )}
 
       {/* Loyalty Status */}
-      {loyaltyStatus && (loyaltyStatus.pointsBalance > 0 || loyaltyStatus.totalEventsCompleted > 0) && (
-        <Card className="mb-8 border-purple-200 bg-purple-50">
-          <CardContent className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${TIER_COLORS[loyaltyStatus.tier]}`}>
-                  {TIER_LABELS[loyaltyStatus.tier]} Member
-                </span>
-                <div>
-                  <p className="text-lg font-bold text-purple-900">{loyaltyStatus.pointsBalance.toLocaleString()} points</p>
-                  {loyaltyStatus.nextReward && (
-                    <p className="text-sm text-purple-700">
-                      {loyaltyStatus.nextReward.pointsNeeded} points to {loyaltyStatus.nextReward.name}
+      {loyaltyStatus &&
+        (loyaltyStatus.pointsBalance > 0 || loyaltyStatus.totalEventsCompleted > 0) && (
+          <Card className="mb-8 border-purple-200 bg-purple-50">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <span
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${TIER_COLORS[loyaltyStatus.tier]}`}
+                  >
+                    {TIER_LABELS[loyaltyStatus.tier]} Rewards Member
+                  </span>
+                  <div>
+                    <p className="text-lg font-bold text-purple-900">
+                      {loyaltyStatus.pointsBalance.toLocaleString()} points
                     </p>
-                  )}
+                    {loyaltyStatus.nextReward && (
+                      <p className="text-sm text-purple-700">
+                        {loyaltyStatus.nextReward.pointsNeeded} points to{' '}
+                        {loyaltyStatus.nextReward.name}
+                      </p>
+                    )}
+                  </div>
                 </div>
+                {loyaltyStatus.availableRewards.length > 0 && (
+                  <Badge variant="success">
+                    {loyaltyStatus.availableRewards.length} reward
+                    {loyaltyStatus.availableRewards.length > 1 ? 's' : ''} available
+                  </Badge>
+                )}
               </div>
-              {loyaltyStatus.availableRewards.length > 0 && (
-                <Badge variant="success">
-                  {loyaltyStatus.availableRewards.length} reward{loyaltyStatus.availableRewards.length > 1 ? 's' : ''} available
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
 
       {/* Upcoming Events */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-stone-900 mb-4">
-          Upcoming Events
-        </h2>
+        <h2 className="text-2xl font-semibold text-stone-900 mb-4">Upcoming Events</h2>
         {upcoming.length > 0 ? (
           <div className="space-y-4">
-            {upcoming.map(event => (
+            {upcoming.map((event) => (
               <EventCard key={event.id} event={event as ClientEvent} />
             ))}
           </div>
@@ -348,9 +395,7 @@ export default async function MyEventsPage() {
       {/* Past Events */}
       <section className="mb-12">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold text-stone-900">
-            Past Events
-          </h2>
+          <h2 className="text-2xl font-semibold text-stone-900">Past Events</h2>
           {pastTotalCount > 5 && (
             <Link
               href="/my-events/history"
@@ -362,7 +407,7 @@ export default async function MyEventsPage() {
         </div>
         {past.length > 0 ? (
           <div className="space-y-4">
-            {past.map(event => (
+            {past.map((event) => (
               <EventCard
                 key={event.id}
                 event={event as ClientEvent}
@@ -387,11 +432,9 @@ export default async function MyEventsPage() {
       {/* Cancelled Events */}
       {cancelled.length > 0 && (
         <section>
-          <h2 className="text-2xl font-semibold text-stone-900 mb-4">
-            Cancelled Events
-          </h2>
+          <h2 className="text-2xl font-semibold text-stone-900 mb-4">Cancelled Events</h2>
           <div className="space-y-4">
-            {cancelled.map(event => (
+            {cancelled.map((event) => (
               <EventCard key={event.id} event={event as ClientEvent} />
             ))}
           </div>
