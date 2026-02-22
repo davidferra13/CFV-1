@@ -6,7 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
-import type { RemyContext } from '@/lib/ai/remy-types'
+import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
@@ -56,6 +56,12 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     })
   }
 
+  // Tier 3: Page-specific entity context (non-blocking)
+  const pageEntity = await loadPageEntityContext(supabase, tenantId, currentPage).catch((err) => {
+    console.error('[non-blocking] Page entity context failed:', err)
+    return undefined
+  })
+
   return {
     chefName: chefProfile.businessName,
     businessName: chefProfile.businessName,
@@ -68,6 +74,7 @@ export async function loadRemyContext(currentPage?: string): Promise<RemyContext
     monthRevenueCents: detailed.monthRevenueCents,
     pendingQuoteCount: detailed.pendingQuoteCount,
     currentPage,
+    pageEntity,
     dailyPlan: dailyPlan ?? undefined,
   }
 }
@@ -177,4 +184,331 @@ async function loadDetailedContext(
     monthRevenueCents,
     pendingQuoteCount: quotesResult.count ?? 0,
   }
+}
+
+// ─── Tier 3: Page Entity Context ────────────────────────────────────────────
+// Detects entity IDs from the current URL and fetches rich detail so Remy
+// understands exactly what the chef is looking at.
+
+const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i
+
+async function loadPageEntityContext(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  currentPage?: string
+): Promise<PageEntityContext | undefined> {
+  if (!currentPage) return undefined
+
+  const idMatch = currentPage.match(UUID_RE)
+  if (!idMatch) return undefined
+  const entityId = idMatch[0]
+
+  if (currentPage.startsWith('/events/')) {
+    return loadEventEntity(supabase, tenantId, entityId)
+  }
+  if (currentPage.startsWith('/clients/')) {
+    return loadClientEntity(supabase, tenantId, entityId)
+  }
+  if (currentPage.startsWith('/recipes/')) {
+    return loadRecipeEntity(supabase, tenantId, entityId)
+  }
+  if (currentPage.startsWith('/inquiries/')) {
+    return loadInquiryEntity(supabase, tenantId, entityId)
+  }
+  if (currentPage.startsWith('/menus/')) {
+    return loadMenuEntity(supabase, tenantId, entityId)
+  }
+
+  return undefined
+}
+
+async function loadEventEntity(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  eventId: string
+): Promise<PageEntityContext | undefined> {
+  const { data } = await supabase
+    .from('events')
+    .select(
+      `id, occasion, event_date, serve_time, guest_count, status, service_style,
+       location_address, location_city, location_state,
+       dietary_restrictions, allergies, special_requests,
+       quoted_price_cents, payment_status, kitchen_notes,
+       prep_list_ready, grocery_list_ready, timeline_ready,
+       client:clients(full_name, email, phone, dietary_restrictions, allergies, vibe_notes)`
+    )
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!data) return undefined
+
+  const client = data.client as Record<string, unknown> | null
+  const lines: string[] = []
+  lines.push(`EVENT: ${data.occasion ?? 'Untitled event'}`)
+  lines.push(`Status: ${data.status}`)
+  lines.push(`Date: ${data.event_date ?? 'TBD'}${data.serve_time ? ` at ${data.serve_time}` : ''}`)
+  lines.push(`Guests: ${data.guest_count ?? 'TBD'}`)
+  if (data.service_style) lines.push(`Style: ${data.service_style.replace(/_/g, ' ')}`)
+  if (data.location_address) {
+    lines.push(
+      `Location: ${data.location_address}, ${data.location_city ?? ''} ${data.location_state ?? ''}`.trim()
+    )
+  }
+  if (data.quoted_price_cents) lines.push(`Quoted: $${(data.quoted_price_cents / 100).toFixed(2)}`)
+  if (data.payment_status) lines.push(`Payment: ${data.payment_status.replace(/_/g, ' ')}`)
+  if (data.dietary_restrictions?.length)
+    lines.push(`Dietary: ${data.dietary_restrictions.join(', ')}`)
+  if (data.allergies?.length) lines.push(`Allergies: ${data.allergies.join(', ')}`)
+  if (data.special_requests) lines.push(`Special requests: ${data.special_requests}`)
+  if (data.kitchen_notes) lines.push(`Kitchen notes: ${data.kitchen_notes}`)
+
+  const readiness: string[] = []
+  if (data.prep_list_ready) readiness.push('prep')
+  if (data.grocery_list_ready) readiness.push('grocery')
+  if (data.timeline_ready) readiness.push('timeline')
+  if (readiness.length > 0) lines.push(`Ready: ${readiness.join(', ')}`)
+  const notReady: string[] = []
+  if (!data.prep_list_ready) notReady.push('prep')
+  if (!data.grocery_list_ready) notReady.push('grocery')
+  if (!data.timeline_ready) notReady.push('timeline')
+  if (notReady.length > 0) lines.push(`Not ready: ${notReady.join(', ')}`)
+
+  if (client) {
+    lines.push(`\nCLIENT: ${client.full_name ?? 'Unknown'}`)
+    if (client.email) lines.push(`Email: ${client.email}`)
+    if (client.phone) lines.push(`Phone: ${client.phone}`)
+    if ((client.dietary_restrictions as string[] | null)?.length)
+      lines.push(`Client dietary: ${(client.dietary_restrictions as string[]).join(', ')}`)
+    if ((client.allergies as string[] | null)?.length)
+      lines.push(`Client allergies: ${(client.allergies as string[]).join(', ')}`)
+    if (client.vibe_notes) lines.push(`Vibe: ${client.vibe_notes}`)
+  }
+
+  return { type: 'event', summary: lines.join('\n') }
+}
+
+async function loadClientEntity(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  clientId: string
+): Promise<PageEntityContext | undefined> {
+  const { data } = await supabase
+    .from('clients')
+    .select(
+      `id, full_name, email, phone, preferred_contact_method, referral_source,
+       partner_name, dietary_restrictions, allergies, dislikes, spice_tolerance,
+       favorite_cuisines, favorite_dishes, vibe_notes, payment_behavior,
+       tipping_pattern, what_they_care_about, kitchen_size, kitchen_constraints,
+       lifetime_value_cents, total_events_count, average_spend_cents, status`
+    )
+    .eq('id', clientId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!data) return undefined
+
+  const lines: string[] = []
+  lines.push(`CLIENT: ${data.full_name ?? 'Unknown'}`)
+  lines.push(`Status: ${data.status ?? 'active'}`)
+  if (data.email) lines.push(`Email: ${data.email}`)
+  if (data.phone) lines.push(`Phone: ${data.phone}`)
+  if (data.preferred_contact_method) lines.push(`Prefers: ${data.preferred_contact_method}`)
+  if (data.referral_source) lines.push(`Source: ${data.referral_source.replace(/_/g, ' ')}`)
+  if (data.partner_name) lines.push(`Partner: ${data.partner_name}`)
+  if (data.dietary_restrictions?.length)
+    lines.push(`Dietary: ${data.dietary_restrictions.join(', ')}`)
+  if (data.allergies?.length) lines.push(`Allergies: ${data.allergies.join(', ')}`)
+  if (data.dislikes?.length) lines.push(`Dislikes: ${data.dislikes.join(', ')}`)
+  if (data.spice_tolerance) lines.push(`Spice tolerance: ${data.spice_tolerance}`)
+  if (data.favorite_cuisines?.length)
+    lines.push(`Favorite cuisines: ${data.favorite_cuisines.join(', ')}`)
+  if (data.favorite_dishes?.length)
+    lines.push(`Favorite dishes: ${data.favorite_dishes.join(', ')}`)
+  if (data.vibe_notes) lines.push(`Vibe: ${data.vibe_notes}`)
+  if (data.what_they_care_about) lines.push(`Cares about: ${data.what_they_care_about}`)
+  if (data.payment_behavior) lines.push(`Payment behavior: ${data.payment_behavior}`)
+  if (data.tipping_pattern) lines.push(`Tipping: ${data.tipping_pattern}`)
+  if (data.kitchen_size) lines.push(`Kitchen: ${data.kitchen_size}`)
+  if (data.kitchen_constraints) lines.push(`Kitchen constraints: ${data.kitchen_constraints}`)
+  if (data.total_events_count) lines.push(`Total events: ${data.total_events_count}`)
+  if (data.lifetime_value_cents)
+    lines.push(`Lifetime value: $${(data.lifetime_value_cents / 100).toFixed(2)}`)
+  if (data.average_spend_cents)
+    lines.push(`Avg spend: $${(data.average_spend_cents / 100).toFixed(2)}`)
+
+  return { type: 'client', summary: lines.join('\n') }
+}
+
+async function loadRecipeEntity(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  recipeId: string
+): Promise<PageEntityContext | undefined> {
+  const [recipeResult, ingredientsResult] = await Promise.all([
+    supabase
+      .from('recipes')
+      .select(
+        `id, name, category, description, method, yield_description,
+         prep_time_minutes, cook_time_minutes, total_time_minutes,
+         dietary_tags, notes, adaptations, times_cooked, last_cooked_at`
+      )
+      .eq('id', recipeId)
+      .eq('tenant_id', tenantId)
+      .single(),
+    supabase
+      .from('recipe_ingredients')
+      .select('quantity, unit, preparation_notes, ingredient:ingredients(name, allergen_flags)')
+      .eq('recipe_id', recipeId)
+      .order('sort_order', { ascending: true })
+      .limit(30),
+  ])
+
+  const data = recipeResult.data
+  if (!data) return undefined
+
+  const lines: string[] = []
+  lines.push(`RECIPE: ${data.name}`)
+  if (data.category) lines.push(`Category: ${data.category}`)
+  if (data.description) lines.push(`Description: ${data.description}`)
+  if (data.yield_description) lines.push(`Yield: ${data.yield_description}`)
+  const times: string[] = []
+  if (data.prep_time_minutes) times.push(`prep ${data.prep_time_minutes}m`)
+  if (data.cook_time_minutes) times.push(`cook ${data.cook_time_minutes}m`)
+  if (data.total_time_minutes) times.push(`total ${data.total_time_minutes}m`)
+  if (times.length) lines.push(`Time: ${times.join(', ')}`)
+  if (data.dietary_tags?.length) lines.push(`Dietary: ${data.dietary_tags.join(', ')}`)
+  if (data.times_cooked) lines.push(`Cooked ${data.times_cooked} times`)
+  if (data.notes) lines.push(`Notes: ${data.notes}`)
+  if (data.adaptations) lines.push(`Adaptations: ${data.adaptations}`)
+
+  const ingredients = ingredientsResult.data ?? []
+  if (ingredients.length > 0) {
+    lines.push(`\nINGREDIENTS (${ingredients.length}):`)
+    for (const ing of ingredients) {
+      const ingData = ing.ingredient as Record<string, unknown> | null
+      const name = (ingData?.name as string) ?? 'Unknown'
+      const qty = ing.quantity ? `${ing.quantity}` : ''
+      const unit = ing.unit ?? ''
+      const prep = ing.preparation_notes ? ` (${ing.preparation_notes})` : ''
+      lines.push(`- ${qty} ${unit} ${name}${prep}`.trim())
+    }
+  }
+
+  return { type: 'recipe', summary: lines.join('\n') }
+}
+
+async function loadInquiryEntity(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  inquiryId: string
+): Promise<PageEntityContext | undefined> {
+  const { data } = await supabase
+    .from('inquiries')
+    .select(
+      `id, channel, status, source_message,
+       confirmed_date, confirmed_guest_count, confirmed_location,
+       confirmed_occasion, confirmed_budget_cents, confirmed_dietary_restrictions,
+       unknown_fields, next_action_required, next_action_by,
+       follow_up_due_at, first_contact_at,
+       client:clients(full_name, email, phone)`
+    )
+    .eq('id', inquiryId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!data) return undefined
+
+  const client = data.client as Record<string, unknown> | null
+  const lines: string[] = []
+  lines.push(`INQUIRY: ${data.confirmed_occasion ?? 'New inquiry'}`)
+  lines.push(`Status: ${data.status}`)
+  if (data.channel) lines.push(`Channel: ${data.channel}`)
+  if (client?.full_name) lines.push(`Client: ${client.full_name}`)
+  if (client?.email) lines.push(`Email: ${client.email}`)
+  if (client?.phone) lines.push(`Phone: ${client.phone}`)
+  if (data.confirmed_date) lines.push(`Date: ${data.confirmed_date}`)
+  if (data.confirmed_guest_count) lines.push(`Guests: ${data.confirmed_guest_count}`)
+  if (data.confirmed_location) lines.push(`Location: ${data.confirmed_location}`)
+  if (data.confirmed_budget_cents)
+    lines.push(`Budget: $${(data.confirmed_budget_cents / 100).toFixed(2)}`)
+  if (data.confirmed_dietary_restrictions?.length)
+    lines.push(`Dietary: ${data.confirmed_dietary_restrictions.join(', ')}`)
+  if (data.source_message) {
+    const msg =
+      data.source_message.length > 300
+        ? data.source_message.slice(0, 300) + '...'
+        : data.source_message
+    lines.push(`Original message: ${msg}`)
+  }
+  if (data.unknown_fields && Array.isArray(data.unknown_fields) && data.unknown_fields.length > 0)
+    lines.push(`Unanswered questions: ${(data.unknown_fields as string[]).join('; ')}`)
+  if (data.next_action_required)
+    lines.push(`Next action: ${data.next_action_required} (by ${data.next_action_by ?? '?'})`)
+  if (data.follow_up_due_at) lines.push(`Follow-up due: ${data.follow_up_due_at}`)
+
+  return { type: 'inquiry', summary: lines.join('\n') }
+}
+
+async function loadMenuEntity(
+  supabase: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  menuId: string
+): Promise<PageEntityContext | undefined> {
+  const [menuResult, dishesResult] = await Promise.all([
+    supabase
+      .from('menus')
+      .select(
+        `id, name, description, status, cuisine_type, service_style,
+         target_guest_count, is_template, notes`
+      )
+      .eq('id', menuId)
+      .eq('tenant_id', tenantId)
+      .single(),
+    supabase
+      .from('dishes')
+      .select(
+        `id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes,
+         components(name, category, recipe:recipes(name))`
+      )
+      .eq('menu_id', menuId)
+      .eq('tenant_id', tenantId)
+      .order('course_number', { ascending: true })
+      .limit(20),
+  ])
+
+  const data = menuResult.data
+  if (!data) return undefined
+
+  const lines: string[] = []
+  lines.push(`MENU: ${data.name}`)
+  lines.push(`Status: ${data.status}`)
+  if (data.cuisine_type) lines.push(`Cuisine: ${data.cuisine_type}`)
+  if (data.service_style) lines.push(`Style: ${data.service_style.replace(/_/g, ' ')}`)
+  if (data.target_guest_count) lines.push(`Target guests: ${data.target_guest_count}`)
+  if (data.is_template) lines.push(`(Template — reusable)`)
+  if (data.description) lines.push(`Description: ${data.description}`)
+  if (data.notes) lines.push(`Notes: ${data.notes}`)
+
+  const dishes = (dishesResult.data ?? []) as Array<Record<string, unknown>>
+  if (dishes.length > 0) {
+    lines.push(`\nCOURSES (${dishes.length}):`)
+    for (const dish of dishes) {
+      const courseName = (dish.course_name as string) ?? `Course ${dish.course_number}`
+      const desc = dish.description ? `: ${dish.description}` : ''
+      lines.push(`\n${courseName}${desc}`)
+      if ((dish.dietary_tags as string[] | null)?.length)
+        lines.push(`  Dietary: ${(dish.dietary_tags as string[]).join(', ')}`)
+      if ((dish.allergen_flags as string[] | null)?.length)
+        lines.push(`  Allergens: ${(dish.allergen_flags as string[]).join(', ')}`)
+      const components = (dish.components ?? []) as Array<Record<string, unknown>>
+      for (const comp of components) {
+        const recipe = comp.recipe as Record<string, unknown> | null
+        const recipeName = recipe?.name ? ` (recipe: ${recipe.name})` : ''
+        lines.push(`  - ${comp.name}${recipeName}`)
+      }
+    }
+  }
+
+  return { type: 'menu', summary: lines.join('\n') }
 }

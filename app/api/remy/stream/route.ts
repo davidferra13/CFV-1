@@ -158,6 +158,12 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
     )
   }
 
+  if (context.pageEntity) {
+    parts.push(`\nCURRENTLY VIEWING (${context.pageEntity.type.toUpperCase()} DETAIL PAGE):
+${context.pageEntity.summary}
+Use this data to give specific, informed answers about what the chef is looking at. You know exactly what's on their screen.`)
+  }
+
   const memoryBlock = formatMemoriesForPrompt(memories)
   if (memoryBlock) {
     parts.push(memoryBlock)
@@ -166,7 +172,7 @@ ${context.upcomingEvents.map((e) => `- ${e.occasion ?? 'Event'} on ${e.date ?? '
   parts.push(`\n${NAV_ROUTE_MAP}`)
 
   parts.push(`\nGROUNDING RULE (CRITICAL):
-You may ONLY reference clients, events, inquiries, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, or WHAT YOU REMEMBER sections above.
+You may ONLY reference clients, events, inquiries, and facts that appear in the BUSINESS CONTEXT, UPCOMING EVENTS, RECENT CLIENTS, CURRENTLY VIEWING, or WHAT YOU REMEMBER sections above.
 If a section says "0" or is empty, that means there are NONE — do not invent any.
 If you have no data to work with, be honest: "Looks like you're just getting started" or "I don't see any events yet."
 NEVER fabricate names, dates, or details to sound helpful.`)

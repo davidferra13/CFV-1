@@ -84,6 +84,8 @@ export interface RemyContext {
   monthRevenueCents?: number
   pendingQuoteCount?: number
   currentPage?: string
+  /** Deep context about the specific entity the chef is viewing */
+  pageEntity?: PageEntityContext
   /** Daily plan summary (if available) */
   dailyPlan?: {
     totalItems: number
@@ -93,4 +95,11 @@ export interface RemyContext {
     relationshipItems: number
     estimatedMinutes: number
   }
+}
+
+// ─── Page Entity Context ────────────────────────────────────────────────────
+
+export interface PageEntityContext {
+  type: 'event' | 'client' | 'recipe' | 'inquiry' | 'menu'
+  summary: string
 }
