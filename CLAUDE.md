@@ -16,6 +16,23 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
+> **⚠️ TODO FOR DAVID — AI PRIVACY LANGUAGE NEEDS REWORK ⚠️**
+>
+> The AI privacy copy across the app was updated (Feb 2026) to stop saying "runs on your machine / your device" and instead say "ChefFlow's private infrastructure." **David is not happy with how this landed.** The language is more accurate now but still needs a proper rewrite for clarity and tone. Revisit these files:
+>
+> - `app/(chef)/settings/ai-privacy/page.tsx` — status banner + "Our Promise" section
+> - `components/ai-privacy/remy-onboarding-wizard.tsx` — onboarding steps 1, 2, and 5
+> - `components/ai-privacy/data-flow-schematic.tsx` — SVG diagram labels
+> - `components/ai-privacy/remy-gate.tsx` — "What you'll learn" list
+> - `components/ai/remy-drawer.tsx` — welcome message + footer
+> - `components/dashboard/ollama-status-badge.tsx` — tooltip text
+> - `components/ai/command-center-client.tsx` — offline message
+> - `app/(public)/terms/page.tsx` — public terms of service
+>
+> **Goal:** Make the privacy story crystal clear, honest, and not confusing for chefs who are using a web app (not running anything locally).
+
+---
+
 ## Quick Reference
 
 - **Stack:** Next.js · Supabase · Stripe — multi-tenant private chef platform
@@ -447,3 +464,30 @@ Private data categories that must stay local:
 - No local Supabase (no Docker) — use remote with `--linked` flag
 - Project ID: `luefkpakzvxcsqroxyhz`
 - Cross-layer columns added via `ALTER TABLE` (e.g., Layer 3 adds columns to `clients`)
+
+---
+
+## AI/Ollama Loop Bug Fix — 2026-02-22
+
+### Problem
+
+- If a user requested an unsupported AI task (e.g., "upload client ledger"), ChefFlow would repeatedly attempt to process it, causing Ollama to hang and the system to glitch.
+- There was no fail-fast guard for unsupported task types, and Ollama calls could be retried indefinitely on transient errors.
+
+### Solution (2026-02-22)
+
+- **Fail-fast guard:** `lib/ai/command-orchestrator.ts` now immediately returns an error for any unsupported `taskType`, preventing loops and runaway requests.
+- **Retry/timeouts:** `lib/ai/parse-ollama.ts` now wraps Ollama calls in a retry (max 2 attempts) for transient errors (timeouts, network issues), with logging for each retry. No infinite retries.
+- **Result:** Unsupported tasks are rejected instantly, and Ollama cannot get stuck in a retry loop. System stability is preserved.
+
+### Code locations
+
+- `lib/ai/command-orchestrator.ts` — fail-fast for unsupported task types
+- `lib/ai/parse-ollama.ts` — retry logic for Ollama calls
+
+### How to test
+
+- Try an unsupported AI request (e.g., "upload client ledger"). The system should return a clear error and not hang or loop.
+- Simulate a transient Ollama error (e.g., network blip). The system should retry once, then fail gracefully.
+
+---
