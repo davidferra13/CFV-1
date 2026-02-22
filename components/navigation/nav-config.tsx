@@ -67,6 +67,7 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // Primary always-visible shortcuts
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/commands', label: 'Remy', icon: Bot },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/clients', label: 'Clients', icon: Users },
