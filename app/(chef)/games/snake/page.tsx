@@ -134,6 +134,62 @@ export default function SnakeGame() {
     return () => window.removeEventListener('keydown', handler)
   }, [reset])
 
+  // touch controls (swipe to change direction, tap to restart)
+  const touchStartRef = useRef<{ x: number; y: number } | null>(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+      const t = e.touches[0]
+      touchStartRef.current = { x: t.clientX, y: t.clientY }
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault()
+      const s = stateRef.current
+      const start = touchStartRef.current
+      if (!start) return
+
+      const t = e.changedTouches[0]
+      const dx = t.clientX - start.x
+      const dy = t.clientY - start.y
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
+
+      // If game over, any tap restarts
+      if (!s.running) {
+        reset()
+        touchStartRef.current = null
+        return
+      }
+
+      // Need a minimum swipe distance (15px) to register as a direction change
+      if (absDx < 15 && absDy < 15) {
+        touchStartRef.current = null
+        return
+      }
+
+      const opp: Record<Dir, Dir> = { UP: 'DOWN', DOWN: 'UP', LEFT: 'RIGHT', RIGHT: 'LEFT' }
+      let nd: Dir
+      if (absDx > absDy) {
+        nd = dx > 0 ? 'RIGHT' : 'LEFT'
+      } else {
+        nd = dy > 0 ? 'DOWN' : 'UP'
+      }
+      if (opp[nd] !== s.dir) s.nextDir = nd
+      touchStartRef.current = null
+    }
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false })
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false })
+    return () => {
+      canvas.removeEventListener('touchstart', onTouchStart)
+      canvas.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [reset])
+
   // game loop
   useEffect(() => {
     const canvas = canvasRef.current
@@ -307,7 +363,7 @@ export default function SnakeGame() {
         ctx.fillText(`Score: ${s.score}`, SIZE / 2, SIZE / 2 + 10)
         ctx.font = '14px sans-serif'
         ctx.fillStyle = '#aaa'
-        ctx.fillText('Press SPACE to restart', SIZE / 2, SIZE / 2 + 45)
+        ctx.fillText('SPACE or tap to restart', SIZE / 2, SIZE / 2 + 45)
       }
     }
 
@@ -370,12 +426,12 @@ export default function SnakeGame() {
           width={SIZE}
           height={SIZE}
           className="rounded-lg border-2 border-border"
-          style={{ maxWidth: '100%', aspectRatio: '1 / 1' }}
+          style={{ maxWidth: '100%', aspectRatio: '1 / 1', touchAction: 'none' }}
         />
       </div>
 
       <div className="mt-4 text-center text-xs text-muted-foreground">
-        Arrow keys or WASD to move &middot; Collect ingredients to complete recipes &middot; +50
+        Swipe or Arrow keys to move &middot; Collect ingredients to complete recipes &middot; +50
         bonus per recipe
       </div>
     </div>

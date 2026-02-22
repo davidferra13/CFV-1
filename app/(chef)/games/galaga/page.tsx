@@ -138,6 +138,70 @@ export default function GalagaGame() {
     }
   }, [reset])
 
+  // touch controls (drag to move, tap to shoot, tap to restart)
+  const touchRef = useRef<{ id: number; lastX: number; moved: boolean } | null>(null)
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+
+    const onTouchStart = (e: TouchEvent) => {
+      e.preventDefault()
+      const s = stateRef.current
+
+      // Game over — tap to restart
+      if (!s.running) {
+        reset()
+        return
+      }
+
+      const t = e.touches[0]
+      touchRef.current = { id: t.identifier, lastX: t.clientX, moved: false }
+
+      // Start auto-shooting while touching
+      s.keys.add('Space')
+    }
+
+    const onTouchMove = (e: TouchEvent) => {
+      e.preventDefault()
+      const tr = touchRef.current
+      if (!tr) return
+
+      for (let i = 0; i < e.touches.length; i++) {
+        const t = e.touches[i]
+        if (t.identifier === tr.id) {
+          const dx = t.clientX - tr.lastX
+          // Scale the drag movement to canvas coordinates
+          const rect = canvas.getBoundingClientRect()
+          const scale = W / rect.width
+          const s = stateRef.current
+          s.playerX = Math.max(0, Math.min(W - PLAYER_W, s.playerX + dx * scale))
+          tr.lastX = t.clientX
+          tr.moved = true
+          break
+        }
+      }
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      e.preventDefault()
+      const s = stateRef.current
+      // Stop auto-shooting
+      s.keys.delete('Space')
+      touchRef.current = null
+    }
+
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false })
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false })
+    canvas.addEventListener('touchend', onTouchEnd, { passive: false })
+    canvas.addEventListener('touchcancel', onTouchEnd, { passive: false })
+    return () => {
+      canvas.removeEventListener('touchstart', onTouchStart)
+      canvas.removeEventListener('touchmove', onTouchMove)
+      canvas.removeEventListener('touchend', onTouchEnd)
+      canvas.removeEventListener('touchcancel', onTouchEnd)
+    }
+  }, [reset])
+
   // game loop
   useEffect(() => {
     const canvas = canvasRef.current
@@ -460,7 +524,7 @@ export default function GalagaGame() {
         ctx.fillText(`Waves: ${s.wave - 1}`, W / 2, H / 2 + 35)
         ctx.font = '14px sans-serif'
         ctx.fillStyle = '#aaa'
-        ctx.fillText('Press SPACE to restart', W / 2, H / 2 + 70)
+        ctx.fillText('SPACE or tap to restart', W / 2, H / 2 + 70)
       }
     }
 
@@ -508,12 +572,12 @@ export default function GalagaGame() {
           width={W}
           height={H}
           className="rounded-lg border-2 border-border"
-          style={{ maxWidth: '100%' }}
+          style={{ maxWidth: '100%', touchAction: 'none' }}
         />
       </div>
 
       <div className="mt-4 text-center text-xs text-muted-foreground">
-        Arrow keys or A/D to move &middot; SPACE to shoot &middot; Grab 🔪 and 🥄 power-ups
+        Drag to move &middot; Tap to shoot &middot; Arrow keys / A+D / SPACE also work
       </div>
     </div>
   )
