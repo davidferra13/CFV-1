@@ -2,6 +2,14 @@ import Link from 'next/link'
 
 const games = [
   {
+    href: '/games/the-line',
+    emoji: '🔥',
+    title: 'The Line',
+    description:
+      "Survive the dinner rush. Fire orders, manage your stations, and don't burn the proteins. Remy's calling expo.",
+    color: 'from-amber-500/20 to-orange-500/20',
+  },
+  {
     href: '/games/snake',
     emoji: '🐍',
     title: 'Chef Snake',
