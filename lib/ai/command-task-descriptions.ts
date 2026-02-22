@@ -246,6 +246,79 @@ export const TASK_DESCRIPTIONS: TaskDescription[] = [
     tierNote: 'ALWAYS tier 2 — never auto-send emails.',
   },
 
+  // ─── Operations Intelligence ─────────────────────────────────────────────────
+
+  {
+    type: 'ops.portion_calc',
+    tier: 1,
+    name: 'Portion Calculator',
+    description:
+      'Scale a recipe to a specific number of guests. Adjusts all ingredient quantities proportionally.',
+    inputSchema:
+      '{ "recipeName": "string — recipe name to scale", "guestCount": "number — target number of guests/servings" }',
+  },
+  {
+    type: 'ops.packing_list',
+    tier: 1,
+    name: 'Packing List',
+    description:
+      'Generate a comprehensive packing list for an event including equipment, service ware, transport supplies, and safety items.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'ops.cross_contamination',
+    tier: 1,
+    name: 'Cross-Contamination Risk Analysis',
+    description:
+      "Analyze cross-contamination risks for an event based on the client's allergies and the menu. Flags critical risks and suggests safe practices.",
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+
+  // ─── Analytics Intelligence ──────────────────────────────────────────────────
+
+  {
+    type: 'analytics.break_even',
+    tier: 1,
+    name: 'Break-Even Analysis',
+    description:
+      'Calculate the break-even point for an event — how many guests needed to cover costs, plus profit margin.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'analytics.client_ltv',
+    tier: 1,
+    name: 'Client Lifetime Value',
+    description:
+      "Calculate a client's total revenue, event count, average event value, tenure, and loyalty tier.",
+    inputSchema: '{ "clientName": "string — client name" }',
+  },
+  {
+    type: 'analytics.recipe_cost',
+    tier: 1,
+    name: 'Recipe Cost Optimization',
+    description:
+      "Analyze a recipe's ingredient costs and suggest substitutions to reduce costs without sacrificing quality. Requires Ollama.",
+    inputSchema: '{ "recipeName": "string — recipe name to optimize" }',
+  },
+
+  // ─── Client-Facing Intelligence ──────────────────────────────────────────────
+
+  {
+    type: 'client.event_recap',
+    tier: 1,
+    name: 'Event Recap',
+    description:
+      'Get a comprehensive recap of an event including client, date, menu, status, and financials.',
+    inputSchema: '{ "eventName": "string — event name or occasion" }',
+  },
+  {
+    type: 'client.menu_explanation',
+    tier: 1,
+    name: 'Menu Explanation',
+    description: "Get a detailed breakdown of a menu's courses, descriptions, and dietary tags.",
+    inputSchema: '{ "menuName": "string — menu name to explain" }',
+  },
+
   // ─── Communication Draft Templates ──────────────────────────────────────────
 
   {

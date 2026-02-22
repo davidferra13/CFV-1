@@ -553,6 +553,74 @@ export async function handleFoodRecall(
 }
 
 // ============================================
+// HANDLER: reactive.payment_overdue
+// Detect overdue payments and draft reminder
+// ============================================
+
+export async function handlePaymentOverdue(
+  payload: Record<string, unknown>,
+  tenantId: string
+): Promise<Record<string, unknown>> {
+  const supabase = createAdminClient()
+  const eventId = String(payload.eventId ?? '')
+
+  const event = await loadEventWithClient(supabase, eventId, tenantId)
+  if (!event) return { status: 'skipped', reason: 'Event not found' }
+
+  const clientName = (event as any).client?.full_name ?? 'Client'
+  const chefName = await loadChefName(supabase, tenantId)
+
+  // Calculate outstanding balance from ledger
+  const { data: charges } = await supabase
+    .from('ledger_entries')
+    .select('amount_cents')
+    .eq('tenant_id', tenantId)
+    .eq('event_id', eventId)
+    .eq('entry_type', 'charge')
+
+  const { data: payments } = await supabase
+    .from('ledger_entries')
+    .select('amount_cents')
+    .eq('tenant_id', tenantId)
+    .eq('event_id', eventId)
+    .eq('entry_type', 'payment')
+
+  const totalCharges = (charges ?? []).reduce((s: number, c: any) => s + (c.amount_cents ?? 0), 0)
+  const totalPayments = (payments ?? []).reduce((s: number, p: any) => s + (p.amount_cents ?? 0), 0)
+  const balanceDueCents = totalCharges - totalPayments
+
+  if (balanceDueCents <= 0) {
+    return { status: 'skipped', reason: 'No outstanding balance' }
+  }
+
+  const ReminderSchema = z.object({ subject: z.string(), body: z.string() })
+
+  try {
+    const result = await parseWithOllama(
+      `You are ${chefName}, a private chef sending a friendly payment reminder. Be warm and professional — never aggressive. Reference the event and outstanding amount. First person "I". 2-3 short paragraphs. Return JSON: { "subject": "...", "body": "..." }`,
+      `Client: ${clientName}
+Event: ${(event as any).occasion ?? 'event'} on ${(event as any).event_date ?? 'N/A'}
+Outstanding balance: $${(balanceDueCents / 100).toFixed(2)}`,
+      ReminderSchema,
+      { modelTier: 'standard', maxTokens: 600 }
+    )
+
+    return {
+      eventId,
+      clientName,
+      balanceDueCents,
+      balanceFormatted: `$${(balanceDueCents / 100).toFixed(2)}`,
+      subject: result.subject,
+      draftText: `Subject: ${result.subject}\n\n${result.body}`,
+      summary: `Payment reminder drafted for ${clientName} — $${(balanceDueCents / 100).toFixed(2)} outstanding for ${(event as any).occasion ?? 'event'}.`,
+    }
+  } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
+    return { status: 'error', reason: 'Could not generate payment reminder', error: String(err) }
+  }
+}
+
+// ============================================
 // HANDLER: reactive.inquiry_stale
 // Draft follow-up for stale inquiry
 // ============================================

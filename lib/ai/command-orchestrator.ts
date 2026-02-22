@@ -27,6 +27,17 @@ import { getProactiveNudges } from '@/lib/ai/reminder-actions'
 import { parseGroceryItems } from '@/lib/ai/grocery-quick-add-actions'
 import { searchDocuments, listFolders, createFolder } from '@/lib/ai/document-management-actions'
 import {
+  calculatePortions,
+  generatePackingList,
+  analyzeCrossContamination,
+} from '@/lib/ai/operations-actions'
+import {
+  analyzeBreakEven,
+  calculateClientLTV,
+  optimizeRecipeCost,
+} from '@/lib/ai/analytics-actions'
+import { getEventRecap, explainMenu } from '@/lib/ai/client-facing-actions'
+import {
   generateThankYouDraft,
   generateReferralRequestDraft,
   generateTestimonialRequestDraft,
@@ -484,6 +495,57 @@ async function executeCreateFolder(inputs: Record<string, unknown>) {
   return result
 }
 
+// ─── Operations / Analytics / Client-Facing Executors ───────────────────────
+
+async function executePortionCalc(inputs: Record<string, unknown>) {
+  const recipeName = String(inputs.recipeName ?? '')
+  const guestCount = Number(inputs.guestCount) || 10
+  if (!recipeName) return { summary: 'Please specify a recipe name.' }
+  return calculatePortions(recipeName, guestCount)
+}
+
+async function executePackingList(inputs: Record<string, unknown>) {
+  const eventName = String(inputs.eventName ?? '')
+  if (!eventName) return { summary: 'Please specify an event name.' }
+  return generatePackingList(eventName)
+}
+
+async function executeCrossContamination(inputs: Record<string, unknown>) {
+  const eventName = String(inputs.eventName ?? '')
+  if (!eventName) return { summary: 'Please specify an event name.' }
+  return analyzeCrossContamination(eventName)
+}
+
+async function executeBreakEven(inputs: Record<string, unknown>) {
+  const eventName = String(inputs.eventName ?? '')
+  if (!eventName) return { summary: 'Please specify an event name.' }
+  return analyzeBreakEven(eventName)
+}
+
+async function executeClientLTV(inputs: Record<string, unknown>) {
+  const clientName = String(inputs.clientName ?? '')
+  if (!clientName) return { summary: 'Please specify a client name.' }
+  return calculateClientLTV(clientName)
+}
+
+async function executeRecipeCost(inputs: Record<string, unknown>) {
+  const recipeName = String(inputs.recipeName ?? '')
+  if (!recipeName) return { summary: 'Please specify a recipe name.' }
+  return optimizeRecipeCost(recipeName)
+}
+
+async function executeEventRecap(inputs: Record<string, unknown>) {
+  const eventName = String(inputs.eventName ?? '')
+  if (!eventName) return { summary: 'Please specify an event name.' }
+  return getEventRecap(eventName)
+}
+
+async function executeMenuExplanation(inputs: Record<string, unknown>) {
+  const menuName = String(inputs.menuName ?? '')
+  if (!menuName) return { summary: 'Please specify a menu name.' }
+  return explainMenu(menuName)
+}
+
 // ─── Communication Draft Executors ──────────────────────────────────────────
 
 async function executeDraftThankYou(inputs: Record<string, unknown>) {
@@ -683,6 +745,14 @@ async function executeSingleTask(
       'draft.re_engagement',
       'draft.milestone_recognition',
       'draft.food_safety_incident',
+      'ops.portion_calc',
+      'ops.packing_list',
+      'ops.cross_contamination',
+      'analytics.break_even',
+      'analytics.client_ltv',
+      'analytics.recipe_cost',
+      'client.event_recap',
+      'client.menu_explanation',
     ])
     if (!supportedTaskTypes.has(task.taskType)) {
       return {
@@ -809,6 +879,30 @@ async function executeSingleTask(
         break
       case 'draft.food_safety_incident':
         data = await executeDraftFoodSafetyIncident(task.inputs)
+        break
+      case 'ops.portion_calc':
+        data = await executePortionCalc(task.inputs)
+        break
+      case 'ops.packing_list':
+        data = await executePackingList(task.inputs)
+        break
+      case 'ops.cross_contamination':
+        data = await executeCrossContamination(task.inputs)
+        break
+      case 'analytics.break_even':
+        data = await executeBreakEven(task.inputs)
+        break
+      case 'analytics.client_ltv':
+        data = await executeClientLTV(task.inputs)
+        break
+      case 'analytics.recipe_cost':
+        data = await executeRecipeCost(task.inputs)
+        break
+      case 'client.event_recap':
+        data = await executeEventRecap(task.inputs)
+        break
+      case 'client.menu_explanation':
+        data = await executeMenuExplanation(task.inputs)
         break
       default:
         return {

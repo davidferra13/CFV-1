@@ -126,6 +126,38 @@ export const SCHEDULED_JOBS: ScheduledJob[] = [
     seedOnStartup: true,
     enabledWithoutPi: false,
   },
+  {
+    taskType: 'scheduled.stale_inquiry_scanner',
+    name: 'Stale Inquiry Scanner',
+    intervalMs: 6 * 60 * 60 * 1000, // 6 hours
+    priority: AI_PRIORITY.SCHEDULED,
+    seedOnStartup: true,
+    enabledWithoutPi: true, // Pure SQL — no LLM needed for the scan itself
+  },
+  {
+    taskType: 'scheduled.payment_overdue_scanner',
+    name: 'Payment Overdue Scanner',
+    intervalMs: 24 * 60 * 60 * 1000, // 1 day
+    priority: AI_PRIORITY.SCHEDULED,
+    seedOnStartup: true,
+    enabledWithoutPi: true, // Pure SQL scan
+  },
+  {
+    taskType: 'scheduled.social_post_draft',
+    name: 'Social Post Draft',
+    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
+    priority: AI_PRIORITY.BATCH,
+    seedOnStartup: true,
+    enabledWithoutPi: false, // Needs LLM — defer to Pi
+  },
+  {
+    taskType: 'scheduled.client_sentiment',
+    name: 'Client Sentiment Monitor',
+    intervalMs: 7 * 24 * 60 * 60 * 1000, // 1 week
+    priority: AI_PRIORITY.BATCH,
+    seedOnStartup: true,
+    enabledWithoutPi: false, // Needs LLM — defer to Pi
+  },
 ]
 
 // ============================================

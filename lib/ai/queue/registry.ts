@@ -21,6 +21,10 @@ import {
   handleQuoteAnalysis,
   handleAnomalyDetection,
   handleMenuEngineering,
+  handleStaleInquiryScanner,
+  handlePaymentOverdueScanner,
+  handleSocialPostDraft,
+  handleClientSentiment,
 } from '@/lib/ai/scheduled/jobs'
 import {
   handleInquiryCreated,
@@ -30,6 +34,7 @@ import {
   handleEventCancelled,
   handleMenuApproved,
   handlePaymentReceived,
+  handlePaymentOverdue,
   handleClientDormant,
   handleClientBirthday,
   handleClientComplaint,
@@ -129,23 +134,8 @@ registerTask({
 const placeholderTasks: Array<Omit<AiTaskDefinition, 'handler'>> = [
   // PHASE 2 — Interactive features (via Remy commands, not queue)
   // These don't need queue registration — they go through the command orchestrator.
-
   // PHASE B — Communication Drafts (placeholders — real handlers registered below)
-
-  // PHASE C — Reactive triggers (placeholders — real handlers registered below)
-
-  // payment_overdue has no reactive hook — triggered by scheduled job
-  {
-    taskType: 'reactive.payment_overdue',
-    name: 'Payment Reminder Draft',
-    approvalTier: 'draft',
-    defaultPriority: AI_PRIORITY.SCHEDULED,
-    modelTier: 'standard',
-    preferredEndpoint: 'auto',
-    maxAttempts: 2,
-    recurrence: null,
-  },
-
+  // PHASE C — Reactive triggers (real handlers registered below)
   // PHASE D — Scheduled intelligence (real handlers registered below)
 ]
 
@@ -312,6 +302,14 @@ const REACTIVE_HANDLER_MAP: Record<
     maxAttempts: 1,
     handler: handleStaffNoShow,
   },
+  'reactive.payment_overdue': {
+    name: 'Payment Reminder Draft',
+    tier: 'draft',
+    priority: AI_PRIORITY.SCHEDULED,
+    model: 'standard',
+    maxAttempts: 2,
+    handler: handlePaymentOverdue,
+  },
 }
 
 for (const [taskType, def] of Object.entries(REACTIVE_HANDLER_MAP)) {
@@ -423,6 +421,34 @@ const SCHEDULED_HANDLER_MAP: Record<
     endpoint: 'pi',
     recurrence: '1 month',
     handler: handleMenuEngineering,
+  },
+  'scheduled.stale_inquiry_scanner': {
+    name: 'Stale Inquiry Scanner',
+    model: 'fast',
+    endpoint: 'auto',
+    recurrence: '6 hours',
+    handler: handleStaleInquiryScanner,
+  },
+  'scheduled.payment_overdue_scanner': {
+    name: 'Payment Overdue Scanner',
+    model: 'fast',
+    endpoint: 'auto',
+    recurrence: '1 day',
+    handler: handlePaymentOverdueScanner,
+  },
+  'scheduled.social_post_draft': {
+    name: 'Social Post Draft',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 week',
+    handler: handleSocialPostDraft,
+  },
+  'scheduled.client_sentiment': {
+    name: 'Client Sentiment Monitor',
+    model: 'standard',
+    endpoint: 'pi',
+    recurrence: '1 week',
+    handler: handleClientSentiment,
   },
 }
 

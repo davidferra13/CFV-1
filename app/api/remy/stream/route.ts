@@ -440,6 +440,145 @@ function summarizeTaskResults(results: RemyTaskResult[]): string {
         summaries.push(
           `Your ${d.count} folder${d.count !== 1 ? 's' : ''}:\n${d.folders.map((f) => `- ${f.name}`).join('\n')}`
         )
+    } else if (task.taskType === 'ops.portion_calc' && task.data) {
+      const d = task.data as {
+        recipeName: string
+        originalYield: number
+        targetGuests: number
+        scaleFactor: number
+        ingredients: Array<{ name: string; originalQty: string; scaledQty: string; unit: string }>
+        summary: string
+      }
+      if (d.ingredients.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [
+          `**${d.recipeName}** — scaled from ${d.originalYield} to ${d.targetGuests} servings (${d.scaleFactor}x)\n`,
+        ]
+        for (const ing of d.ingredients) {
+          lines.push(`- ${ing.scaledQty} ${ing.unit} ${ing.name} _(was ${ing.originalQty})_`)
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'ops.packing_list' && task.data) {
+      const d = task.data as {
+        eventName: string
+        guestCount: number
+        categories: Array<{
+          name: string
+          items: Array<{ item: string; quantity: string; notes?: string }>
+        }>
+        summary: string
+      }
+      if (d.categories.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**Packing List: ${d.eventName}** (${d.guestCount} guests)\n`]
+        for (const cat of d.categories) {
+          lines.push(`**${cat.name}:**`)
+          for (const item of cat.items) {
+            lines.push(`- ${item.quantity} × ${item.item}${item.notes ? ` _(${item.notes})_` : ''}`)
+          }
+          lines.push('')
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'ops.cross_contamination' && task.data) {
+      const d = task.data as {
+        eventName: string
+        clientName: string
+        risks: Array<{ severity: string; allergen: string; menuItem: string; message: string }>
+        safePractices: string[]
+        summary: string
+      }
+      const lines = [d.summary]
+      if (d.risks.length > 0) {
+        lines.push('')
+        for (const r of d.risks) {
+          const icon = r.severity === 'critical' ? 'CRITICAL' : 'Warning'
+          lines.push(`- **${icon}**: ${r.message}`)
+        }
+      }
+      if (d.safePractices.length > 0) {
+        lines.push('\n**Safe Practices:**')
+        for (const p of d.safePractices) lines.push(`- ${p}`)
+      }
+      summaries.push(lines.join('\n'))
+    } else if (task.taskType === 'analytics.break_even' && task.data) {
+      const d = task.data as {
+        eventName: string
+        revenueCents: number
+        profitCents: number
+        marginPct: number
+        breakEvenGuests: number
+        guestCount: number
+        summary: string
+      }
+      summaries.push(d.summary)
+    } else if (task.taskType === 'analytics.client_ltv' && task.data) {
+      const d = task.data as {
+        clientName: string
+        totalRevenueCents: number
+        eventCount: number
+        avgEventRevenueCents: number
+        tier: string
+        tenureDays: number
+        summary: string
+      }
+      summaries.push(d.summary)
+    } else if (task.taskType === 'analytics.recipe_cost' && task.data) {
+      const d = task.data as {
+        recipeName: string
+        currentCostCents: number
+        suggestions: Array<{
+          ingredient: string
+          currentCost: string
+          suggestion: string
+          estimatedSaving: string
+        }>
+        summary: string
+      }
+      if (d.suggestions.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**${d.recipeName}** — $${(d.currentCostCents / 100).toFixed(2)} total\n`]
+        for (const s of d.suggestions) {
+          lines.push(
+            `- **${s.ingredient}** (${s.currentCost}): ${s.suggestion} — save ~${s.estimatedSaving}`
+          )
+        }
+        summaries.push(lines.join('\n'))
+      }
+    } else if (task.taskType === 'client.event_recap' && task.data) {
+      const d = task.data as {
+        eventName: string
+        clientName: string
+        date: string | null
+        guestCount: number
+        status: string
+        menuItems: string[]
+        financials: { quotedCents: number; paidCents: number; outstandingCents: number }
+        summary: string
+      }
+      summaries.push(d.summary)
+    } else if (task.taskType === 'client.menu_explanation' && task.data) {
+      const d = task.data as {
+        menuName: string
+        eventName: string | null
+        courses: Array<{ name: string; description: string | null; dietaryTags: string[] }>
+        summary: string
+      }
+      if (d.courses.length === 0) {
+        summaries.push(d.summary)
+      } else {
+        const lines = [`**${d.menuName}**${d.eventName ? ` _(${d.eventName})_` : ''}\n`]
+        for (const c of d.courses) {
+          lines.push(
+            `- **${c.name}**${c.description ? `: ${c.description}` : ''}${c.dietaryTags.length > 0 ? ` [${c.dietaryTags.join(', ')}]` : ''}`
+          )
+        }
+        summaries.push(lines.join('\n'))
+      }
     } else if (task.taskType === 'email.generic' && task.data) {
       const d = task.data as { subject?: string; draftText: string }
       summaries.push(`Here's a draft for your review:\n\n${d.draftText}`)

@@ -202,6 +202,31 @@ export async function onPaymentReceived(
   }
 }
 
+/**
+ * Called when a payment is overdue (>7 days since event accepted).
+ * Enqueues: friendly payment reminder draft.
+ * Triggered by the scheduled payment_overdue_scanner.
+ */
+export async function onPaymentOverdue(
+  tenantId: string,
+  eventId: string,
+  clientId: string | null,
+  clientName: string
+): Promise<void> {
+  try {
+    await enqueueTask({
+      tenantId,
+      taskType: 'reactive.payment_overdue',
+      payload: { eventId, clientId, clientName },
+      priority: AI_PRIORITY.SCHEDULED,
+      relatedEventId: eventId,
+      relatedClientId: clientId ?? undefined,
+    })
+  } catch (err) {
+    console.warn('[reactive] onPaymentOverdue enqueue failed (non-blocking)', err)
+  }
+}
+
 // ============================================
 // SAFETY HOOKS
 // ============================================

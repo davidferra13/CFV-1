@@ -9,6 +9,8 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { enqueueTask } from '@/lib/ai/queue/actions'
+import { AI_PRIORITY } from '@/lib/ai/queue/types'
 import { z } from 'zod'
 
 // ============================================
@@ -591,6 +593,284 @@ export async function handleMenuEngineering(
     withRecipes,
     withoutRecipes,
     summary: `${items.length} menu items analyzed. Average price: $${(avgPriceCents / 100).toFixed(2)}. ${withoutRecipes} items missing recipe links.`,
+    generatedAt: new Date().toISOString(),
+  }
+}
+
+// ============================================
+// 13. STALE INQUIRY SCANNER (pure SQL — triggers reactive.inquiry_stale)
+// ============================================
+
+export async function handleStaleInquiryScanner(
+  payload: Record<string, unknown>,
+  tenantId: string
+): Promise<Record<string, unknown>> {
+  const supabase = createAdminClient()
+  const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+
+  // Find inquiries that are still open and older than 48h
+  const { data: staleInquiries } = await supabase
+    .from('inquiries')
+    .select('id, created_at, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .in('status', ['new', 'awaiting_chef'])
+    .lt('created_at', fortyEightHoursAgo)
+    .order('created_at', { ascending: true })
+    .limit(10)
+
+  if (!staleInquiries || staleInquiries.length === 0) {
+    return {
+      enqueued: 0,
+      summary: 'No stale inquiries found.',
+      generatedAt: new Date().toISOString(),
+    }
+  }
+
+  let enqueued = 0
+  for (const inq of staleInquiries) {
+    try {
+      await enqueueTask({
+        tenantId,
+        taskType: 'reactive.inquiry_stale',
+        payload: {
+          inquiryId: inq.id,
+          clientName: (inq as any).client?.full_name ?? 'Client',
+        },
+        priority: AI_PRIORITY.SCHEDULED,
+        relatedInquiryId: inq.id,
+      })
+      enqueued++
+    } catch {
+      // Dedup or queue full — skip silently
+    }
+  }
+
+  return {
+    staleCount: staleInquiries.length,
+    enqueued,
+    summary: `Found ${staleInquiries.length} stale inquiries (>48h), enqueued ${enqueued} follow-up drafts.`,
+    generatedAt: new Date().toISOString(),
+  }
+}
+
+// ============================================
+// 14. PAYMENT OVERDUE SCANNER (pure SQL — triggers reactive.payment_overdue)
+// ============================================
+
+export async function handlePaymentOverdueScanner(
+  payload: Record<string, unknown>,
+  tenantId: string
+): Promise<Record<string, unknown>> {
+  const supabase = createAdminClient()
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+
+  // Find events in 'accepted' status (awaiting payment) older than 7 days
+  const { data: overdueEvents } = await supabase
+    .from('events')
+    .select('id, occasion, event_date, client_id, client:clients(full_name)')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'accepted')
+    .lt('updated_at', sevenDaysAgo)
+    .order('updated_at', { ascending: true })
+    .limit(10)
+
+  if (!overdueEvents || overdueEvents.length === 0) {
+    return {
+      enqueued: 0,
+      summary: 'No overdue payments found.',
+      generatedAt: new Date().toISOString(),
+    }
+  }
+
+  let enqueued = 0
+  for (const evt of overdueEvents) {
+    try {
+      await enqueueTask({
+        tenantId,
+        taskType: 'reactive.payment_overdue',
+        payload: {
+          eventId: evt.id,
+          clientId: evt.client_id,
+          clientName: (evt as any).client?.full_name ?? 'Client',
+          occasion: (evt as any).occasion,
+        },
+        priority: AI_PRIORITY.SCHEDULED,
+        relatedEventId: evt.id,
+        relatedClientId: evt.client_id ?? undefined,
+      })
+      enqueued++
+    } catch {
+      // Dedup or queue full — skip
+    }
+  }
+
+  return {
+    overdueCount: overdueEvents.length,
+    enqueued,
+    summary: `Found ${overdueEvents.length} events with payments overdue >7d, enqueued ${enqueued} reminder drafts.`,
+    generatedAt: new Date().toISOString(),
+  }
+}
+
+// ============================================
+// 15. SOCIAL POST DRAFT (Ollama-powered — Pi preferred)
+// ============================================
+
+export async function handleSocialPostDraft(
+  payload: Record<string, unknown>,
+  tenantId: string
+): Promise<Record<string, unknown>> {
+  const supabase = createAdminClient()
+  const chefName = await loadChefName(supabase, tenantId)
+
+  // Get recent completed events for inspiration
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const { data: recentEvents } = await supabase
+    .from('events')
+    .select('occasion, guest_count, event_date')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'completed')
+    .gte('event_date', sevenDaysAgo)
+    .order('event_date', { ascending: false })
+    .limit(3)
+
+  // Get upcoming events for promotional angle
+  const today = new Date().toISOString().split('T')[0]
+  const { data: upcomingEvents } = await supabase
+    .from('events')
+    .select('occasion, event_date')
+    .eq('tenant_id', tenantId)
+    .not('status', 'in', '("cancelled","completed","draft")')
+    .gte('event_date', today)
+    .order('event_date', { ascending: true })
+    .limit(3)
+
+  const PostSchema = z.object({
+    posts: z.array(
+      z.object({
+        platform: z.string(),
+        caption: z.string(),
+        hashtags: z.array(z.string()),
+        postType: z.string(),
+      })
+    ),
+  })
+
+  try {
+    const result = await parseWithOllama(
+      `You are a social media assistant for ${chefName}, a private chef. Generate 2-3 social media post ideas based on their recent activity. Mix promotional and engagement posts. Never mention specific client names — privacy first. Return JSON: { "posts": [{ "platform": "Instagram|Facebook|LinkedIn", "caption": "post text", "hashtags": ["tag1", "tag2"], "postType": "recap|promo|engagement|seasonal" }] }`,
+      `Recent completed events:\n${(recentEvents ?? []).map((e: any) => `- ${e.occasion ?? 'Private event'} (${e.guest_count ?? '?'} guests, ${e.event_date})`).join('\n') || 'None this week'}\n\nUpcoming events: ${upcomingEvents?.length ?? 0}\nSeason: ${new Date().toLocaleString('default', { month: 'long' })}`,
+      PostSchema,
+      { modelTier: 'standard', maxTokens: 800 }
+    )
+
+    return {
+      postCount: result.posts.length,
+      posts: result.posts,
+      summary: `Generated ${result.posts.length} social post drafts for ${chefName}.`,
+      generatedAt: new Date().toISOString(),
+    }
+  } catch (err) {
+    if (err instanceof OllamaOfflineError) throw err
+    return {
+      posts: [],
+      summary: 'Could not generate social posts — start Ollama.',
+      generatedAt: new Date().toISOString(),
+      fallback: true,
+    }
+  }
+}
+
+// ============================================
+// 16. CLIENT SENTIMENT MONITORING (pure SQL + light LLM)
+// ============================================
+
+export async function handleClientSentiment(
+  payload: Record<string, unknown>,
+  tenantId: string
+): Promise<Record<string, unknown>> {
+  const supabase = createAdminClient()
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+
+  // Gather signals: recent messages, event completion rate, inquiry conversion
+  const [recentMessages, completedEvents, cancelledEvents] = await Promise.all([
+    supabase
+      .from('messages')
+      .select('id, body, sender_role, created_at, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .eq('sender_role', 'client')
+      .gte('created_at', thirtyDaysAgo)
+      .order('created_at', { ascending: false })
+      .limit(20)
+      .then((r: any) => r.data ?? []),
+    supabase
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('status', 'completed')
+      .gte('event_date', thirtyDaysAgo)
+      .then((r: any) => r.count ?? 0),
+    supabase
+      .from('events')
+      .select('id', { count: 'exact', head: true })
+      .eq('tenant_id', tenantId)
+      .eq('status', 'cancelled')
+      .gte('event_date', thirtyDaysAgo)
+      .then((r: any) => r.count ?? 0),
+  ])
+
+  // Pure data signals (no LLM needed for basic metrics)
+  const totalEvents = completedEvents + cancelledEvents
+  const completionRate = totalEvents > 0 ? Math.round((completedEvents / totalEvents) * 100) : 100
+  const messageCount = recentMessages.length
+
+  // Aggregate sentiment signals
+  const signals: string[] = []
+  if (completionRate < 80) signals.push(`Low completion rate: ${completionRate}%`)
+  if (cancelledEvents > 2) signals.push(`${cancelledEvents} cancellations in 30 days`)
+  if (messageCount === 0) signals.push('No client messages in 30 days — engagement may be dropping')
+
+  // If we have messages and Ollama is running, do a light sentiment scan
+  let sentimentAnalysis: Record<string, unknown> | null = null
+  if (messageCount > 0) {
+    const SentimentSchema = z.object({
+      overallSentiment: z.enum(['positive', 'neutral', 'negative', 'mixed']),
+      highlights: z.array(z.string()),
+      concerns: z.array(z.string()),
+    })
+
+    try {
+      const messageSample = recentMessages
+        .slice(0, 10)
+        .map(
+          (m: any) =>
+            `[${(m as any).client?.full_name ?? 'Client'}]: ${(m.body ?? '').substring(0, 100)}`
+        )
+        .join('\n')
+
+      sentimentAnalysis = await parseWithOllama(
+        'Analyze the overall client sentiment from these recent messages to a private chef. Look for satisfaction signals, complaints, enthusiasm, or concerns. Do NOT include client names in your output — use "a client" instead. Return JSON: { "overallSentiment": "positive|neutral|negative|mixed", "highlights": ["positive signals"], "concerns": ["negative signals or risks"] }',
+        `Recent client messages (last 30 days):\n${messageSample}`,
+        SentimentSchema,
+        { modelTier: 'fast', maxTokens: 400 }
+      )
+    } catch (err) {
+      if (err instanceof OllamaOfflineError) throw err
+      // Fall through to data-only report
+    }
+  }
+
+  return {
+    period: '30 days',
+    messageCount,
+    completedEvents,
+    cancelledEvents,
+    completionRate,
+    signals,
+    sentimentAnalysis,
+    summary: sentimentAnalysis
+      ? `Client sentiment: ${(sentimentAnalysis as any).overallSentiment}. ${completedEvents} events completed, ${cancelledEvents} cancelled (${completionRate}% completion). ${signals.length > 0 ? `Concerns: ${signals.join('; ')}` : 'No concerns.'}`
+      : `${completedEvents} events completed, ${cancelledEvents} cancelled in 30 days (${completionRate}% completion). ${messageCount} client messages. ${signals.length > 0 ? `Signals: ${signals.join('; ')}` : 'All healthy.'}`,
     generatedAt: new Date().toISOString(),
   }
 }

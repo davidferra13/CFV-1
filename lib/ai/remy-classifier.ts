@@ -51,6 +51,17 @@ Examples:
 - "Re-engage with the Thompson family"
 - "Celebrate the Johnson's 10th event"
 - "Write up the food safety incident from last night"
+- "Scale my risotto recipe for 30 guests"
+- "Portion calculator for the chicken dish for 50 people"
+- "Generate a packing list for the Henderson wedding"
+- "What do I need to pack for Saturday's event?"
+- "Check cross-contamination risks for the Miller dinner"
+- "Break-even analysis for the corporate event"
+- "What's Sarah's lifetime value?"
+- "How much has the Johnson family spent total?"
+- "Optimize costs for my lobster bisque recipe"
+- "Recap the Thompson anniversary dinner"
+- "Explain the tasting menu"
 
 MIXED: Contains BOTH a question and an actionable request in the same message.
 Example: "What's my revenue this month, and draft a follow-up for my last client"
