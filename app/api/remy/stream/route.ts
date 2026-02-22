@@ -28,6 +28,7 @@ import { getCulinaryProfileForPrompt } from '@/lib/ai/chef-profile-actions'
 import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
+import { acquireInteractiveLock, releaseInteractiveLock } from '@/lib/ai/queue'
 import {
   loadRelevantMemories,
   listRemyMemories,
@@ -874,12 +875,17 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
+    // ─── INTERACTIVE LOCK: pause background worker while Remy is streaming ──
+    // This prevents the AI queue worker from competing for Ollama while
+    // we're streaming a response. Released in the finally block.
+    acquireInteractiveLock()
+
     // ─── MAIN PATH: classify + load context ─────────────────────
-    // Hard timeout: if the entire pre-stream setup takes >45s, bail out.
-    // Generous — classifier + context + memories usually takes 5-15s.
-    // This only fires if Ollama is truly hung during classification.
+    // Hard timeout: if the entire pre-stream setup takes >60s, bail out.
+    // Classifier + context + memories usually takes 5-15s, but cold model
+    // loading can add ~3-5s on top. This only fires if Ollama is truly hung.
     const setupTimeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Pre-stream setup timed out after 45s')), 45_000)
+      setTimeout(() => reject(new Error('Pre-stream setup timed out after 60s')), 60_000)
     )
 
     let context: Awaited<ReturnType<typeof loadRemyContext>>
@@ -921,6 +927,7 @@ export async function POST(req: NextRequest) {
           .join('\n')
       }
     } catch (setupErr) {
+      releaseInteractiveLock()
       const msg = setupErr instanceof Error ? setupErr.message : String(setupErr)
       const isOllama =
         msg.includes('Ollama') || msg.includes('timeout') || msg.includes('timed out')
@@ -940,6 +947,7 @@ export async function POST(req: NextRequest) {
       const commandRun = await runCommand(message)
 
       if (commandRun.ollamaOffline) {
+        releaseInteractiveLock()
         return new Response(
           encodeSSE({
             type: 'error',
@@ -972,6 +980,7 @@ export async function POST(req: NextRequest) {
           controller.close()
         },
       })
+      releaseInteractiveLock()
       return new Response(stream, { headers: sseHeaders() })
     }
 
@@ -997,6 +1006,7 @@ export async function POST(req: NextRequest) {
 
       // Stream the conversational part
       if (!isOllamaEnabled()) {
+        releaseInteractiveLock()
         return new Response(
           encodeSSE({
             type: 'error',
@@ -1079,6 +1089,7 @@ export async function POST(req: NextRequest) {
             )
           } finally {
             clearTimeout(timeout)
+            releaseInteractiveLock()
             controller.close()
           }
         },
@@ -1089,6 +1100,7 @@ export async function POST(req: NextRequest) {
 
     // ─── QUESTION path (default) — STREAMED ──────────────────────
     if (!isOllamaEnabled()) {
+      releaseInteractiveLock()
       return new Response(
         encodeSSE({
           type: 'error',
@@ -1168,6 +1180,7 @@ export async function POST(req: NextRequest) {
           )
         } finally {
           clearTimeout(timeout)
+          releaseInteractiveLock()
           controller.close()
         }
       },
@@ -1175,6 +1188,8 @@ export async function POST(req: NextRequest) {
 
     return new Response(stream, { headers: sseHeaders() })
   } catch (err) {
+    // Release lock on any error that prevents streaming from starting
+    releaseInteractiveLock()
     const errMsg = err instanceof Error ? err.message : String(err)
     return new Response(encodeSSE({ type: 'error', data: `Remy ran into an issue: ${errMsg}` }), {
       headers: sseHeaders(),
@@ -1195,10 +1210,11 @@ function sseHeaders(): HeadersInit {
 
 /**
  * Hard timeout for Ollama streaming calls.
- * 90s is generous — a 30b model streaming 2048 tokens usually finishes in 30-60s.
- * This only fires if Ollama is truly stuck, not just thinking hard.
+ * 3 minutes — the 30b MoE model with partial GPU offload (9/49 layers)
+ * regularly takes 40-74s per response. Under load or with long context,
+ * it can exceed 90s. This only fires if Ollama is truly stuck.
  */
-const OLLAMA_STREAM_TIMEOUT_MS = 90_000
+const OLLAMA_STREAM_TIMEOUT_MS = 180_000
 
 /**
  * Max tokens for streaming conversational responses.

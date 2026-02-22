@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
 
     // Stream response
     const abortController = new AbortController()
-    const timeout = setTimeout(() => abortController.abort(), 90_000) // 90s timeout
+    const timeout = setTimeout(() => abortController.abort(), 180_000) // 3 min — 30b model can be slow
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
