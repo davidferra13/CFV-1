@@ -1,3 +1,4 @@
+Initialising login role...
 export type Json =
   | string
   | number
@@ -3784,6 +3785,7 @@ export type Database = {
       }
       chef_preferences: {
         Row: {
+          activity_log_enabled: boolean
           business_address: string | null
           business_legal_name: string | null
           category_nudge_levels: Json
@@ -3800,6 +3802,7 @@ export type Database = {
           default_shopping_minutes: number
           default_specialty_stores: Json
           enabled_goal_categories: string[]
+          enabled_modules: string[] | null
           home_address: string | null
           home_city: string | null
           home_state: string | null
@@ -3826,6 +3829,7 @@ export type Database = {
           wake_time_latest: string
         }
         Insert: {
+          activity_log_enabled?: boolean
           business_address?: string | null
           business_legal_name?: string | null
           category_nudge_levels?: Json
@@ -3842,6 +3846,7 @@ export type Database = {
           default_shopping_minutes?: number
           default_specialty_stores?: Json
           enabled_goal_categories?: string[]
+          enabled_modules?: string[] | null
           home_address?: string | null
           home_city?: string | null
           home_state?: string | null
@@ -3868,6 +3873,7 @@ export type Database = {
           wake_time_latest?: string
         }
         Update: {
+          activity_log_enabled?: boolean
           business_address?: string | null
           business_legal_name?: string | null
           category_nudge_levels?: Json
@@ -3884,6 +3890,7 @@ export type Database = {
           default_shopping_minutes?: number
           default_specialty_stores?: Json
           enabled_goal_categories?: string[]
+          enabled_modules?: string[] | null
           home_address?: string | null
           home_city?: string | null
           home_state?: string | null
@@ -15223,6 +15230,97 @@ export type Database = {
           },
           {
             foreignKeyName: "referral_partners_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remy_artifacts: {
+        Row: {
+          artifact_type: string
+          content: string | null
+          created_at: string
+          data: Json | null
+          id: string
+          pinned: boolean
+          related_client_id: string | null
+          related_event_id: string | null
+          source_message: string | null
+          source_task_type: string | null
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          artifact_type?: string
+          content?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          pinned?: boolean
+          related_client_id?: string | null
+          related_event_id?: string | null
+          source_message?: string | null
+          source_task_type?: string | null
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          artifact_type?: string
+          content?: string | null
+          created_at?: string
+          data?: Json | null
+          id?: string
+          pinned?: boolean
+          related_client_id?: string | null
+          related_event_id?: string | null
+          source_message?: string | null
+          source_task_type?: string | null
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remy_artifacts_related_client_id_fkey"
+            columns: ["related_client_id"]
+            isOneToOne: false
+            referencedRelation: "client_financial_summary"
+            referencedColumns: ["client_id"]
+          },
+          {
+            foreignKeyName: "remy_artifacts_related_client_id_fkey"
+            columns: ["related_client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remy_artifacts_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_financial_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "remy_artifacts_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "event_time_summary"
+            referencedColumns: ["event_id"]
+          },
+          {
+            foreignKeyName: "remy_artifacts_related_event_id_fkey"
+            columns: ["related_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "remy_artifacts_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"

@@ -219,7 +219,15 @@ export function RemyDrawer() {
                       numbers — whatever you need.
                     </p>
                     <p className="text-xs text-stone-400 mt-2">
-                      Everything I suggest is a draft — you always have the final say.
+                      Everything I create is auto-saved to your{' '}
+                      <Link
+                        href="/remy"
+                        className="underline hover:text-brand-600"
+                        onClick={() => setOpen(false)}
+                      >
+                        Remy History
+                      </Link>
+                      . Nothing gets lost.
                     </p>
                   </div>
 
@@ -249,35 +257,14 @@ export function RemyDrawer() {
                 >
                   <div className={`max-w-[85%] space-y-2 ${msg.role === 'user' ? '' : ''}`}>
                     {/* Message bubble */}
-                    <div className="group relative">
-                      <div
-                        className={`rounded-xl px-4 py-2.5 text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-brand-600 text-white'
-                            : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
-                        }`}
-                      >
-                        <pre className="whitespace-pre-wrap font-sans">{msg.content}</pre>
-                      </div>
-                      {/* Save button — only on Remy messages */}
-                      {msg.role === 'remy' && (
-                        <button
-                          onClick={() => handleSaveMessage(msg)}
-                          className={`absolute -bottom-1 -right-1 p-1 rounded-full bg-white dark:bg-stone-700 shadow-sm border border-stone-200 dark:border-stone-600 transition-all ${
-                            savedIds.has(msg.id)
-                              ? 'text-brand-600 dark:text-brand-400'
-                              : 'text-stone-400 hover:text-brand-600 dark:text-stone-500 dark:hover:text-brand-400 opacity-0 group-hover:opacity-100'
-                          }`}
-                          title={savedIds.has(msg.id) ? 'Saved' : 'Save to Remy history'}
-                          disabled={savedIds.has(msg.id)}
-                        >
-                          {savedIds.has(msg.id) ? (
-                            <BookmarkCheck className="h-3 w-3" />
-                          ) : (
-                            <Bookmark className="h-3 w-3" />
-                          )}
-                        </button>
-                      )}
+                    <div
+                      className={`rounded-xl px-4 py-2.5 text-sm ${
+                        msg.role === 'user'
+                          ? 'bg-brand-600 text-white'
+                          : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                      }`}
+                    >
+                      <pre className="whitespace-pre-wrap font-sans">{msg.content}</pre>
                     </div>
 
                     {/* Task result cards (Remy messages only) */}
@@ -289,8 +276,6 @@ export function RemyDrawer() {
                             task={task}
                             onApprove={handleApproveTask}
                             onReject={handleRejectTask}
-                            onSave={handleSaveTask}
-                            saved={savedIds.has(task.taskId)}
                           />
                         ))}
                       </div>
