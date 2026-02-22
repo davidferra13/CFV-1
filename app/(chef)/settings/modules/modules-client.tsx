@@ -1,0 +1,144 @@
+'use client'
+
+// Module toggle grid — lets chefs choose which feature areas appear in their sidebar.
+// Each module card shows name, description, tier badge, and a toggle switch.
+
+import { useState, useTransition } from 'react'
+import Link from 'next/link'
+import { Sparkles, Lock } from 'lucide-react'
+import { MODULES } from '@/lib/billing/modules'
+import type { Tier } from '@/lib/billing/tier'
+import { updateEnabledModules, enableAllModules } from '@/lib/billing/module-actions'
+
+type Props = {
+  enabledModules: string[]
+  tier: Tier
+  isGrandfathered: boolean
+}
+
+export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }: Props) {
+  const [enabled, setEnabled] = useState<Set<string>>(new Set(initial))
+  const [isPending, startTransition] = useTransition()
+
+  function toggle(slug: string) {
+    const next = new Set(enabled)
+    if (next.has(slug)) {
+      next.delete(slug)
+    } else {
+      next.add(slug)
+    }
+    setEnabled(next)
+    startTransition(async () => {
+      await updateEnabledModules(Array.from(next))
+    })
+  }
+
+  function selectAll() {
+    const all = new Set(MODULES.map((m) => m.slug))
+    setEnabled(all)
+    startTransition(async () => {
+      await enableAllModules()
+    })
+  }
+
+  function selectDefaults() {
+    const defaults = new Set(MODULES.filter((m) => m.defaultEnabled).map((m) => m.slug))
+    setEnabled(defaults)
+    startTransition(async () => {
+      await updateEnabledModules(Array.from(defaults))
+    })
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Quick actions */}
+      <div className="flex gap-2">
+        <button
+          onClick={selectAll}
+          disabled={isPending}
+          className="text-sm px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
+        >
+          Select All
+        </button>
+        <button
+          onClick={selectDefaults}
+          disabled={isPending}
+          className="text-sm px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
+        >
+          Reset to Defaults
+        </button>
+      </div>
+
+      {/* Module grid */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {MODULES.map((mod) => {
+          const isOn = enabled.has(mod.slug)
+          const isProModule = mod.tier === 'pro'
+          const isLocked = isProModule && tier === 'free'
+
+          return (
+            <div
+              key={mod.slug}
+              className={`relative rounded-xl border p-4 transition-colors ${
+                isOn
+                  ? 'border-brand-300 bg-brand-50/30 dark:border-brand-700 dark:bg-brand-900/20'
+                  : 'border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-800'
+              } ${mod.alwaysVisible ? 'opacity-75' : ''}`}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                      {mod.label}
+                    </h3>
+                    {isProModule && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-300">
+                        <Sparkles size={10} />
+                        Pro
+                      </span>
+                    )}
+                    {isLocked && <Lock size={12} className="text-stone-400" />}
+                  </div>
+                  <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                    {mod.description}
+                  </p>
+                  {isLocked && (
+                    <Link
+                      href="/settings/billing"
+                      className="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 mt-1 inline-block"
+                    >
+                      Upgrade to unlock
+                    </Link>
+                  )}
+                </div>
+                {!mod.alwaysVisible && (
+                  <button
+                    onClick={() => toggle(mod.slug)}
+                    disabled={isPending}
+                    className={`relative shrink-0 w-10 h-6 rounded-full transition-colors disabled:opacity-50 ${
+                      isOn ? 'bg-brand-500' : 'bg-stone-300 dark:bg-stone-600'
+                    }`}
+                    aria-label={`Toggle ${mod.label}`}
+                  >
+                    <span
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                        isOn ? 'translate-x-4' : 'translate-x-0'
+                      }`}
+                    />
+                  </button>
+                )}
+                {mod.alwaysVisible && (
+                  <span className="text-[10px] text-stone-400 dark:text-stone-500 uppercase tracking-wider">
+                    Always on
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {isPending && <p className="text-xs text-stone-400 animate-pulse">Saving...</p>}
+    </div>
+  )
+}

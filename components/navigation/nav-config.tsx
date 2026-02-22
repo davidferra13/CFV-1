@@ -51,7 +51,13 @@ type NavCollapsibleItem = NavItem & {
   children?: NavSubItem[]
   visibility?: 'secondary' | 'advanced'
 }
-type NavGroup = { id: string; label: string; icon: LucideIcon; items: NavCollapsibleItem[] }
+type NavGroup = {
+  id: string
+  label: string
+  icon: LucideIcon
+  items: NavCollapsibleItem[]
+  module?: string
+}
 type PrimaryShortcutOption = NavItem & { context: string }
 
 // Primary always-visible shortcuts
@@ -75,6 +81,7 @@ export const navGroups: NavGroup[] = [
     id: 'pipeline',
     label: 'Pipeline',
     icon: Inbox,
+    module: 'pipeline',
     items: [
       {
         href: '/inquiries/awaiting-response',
@@ -162,6 +169,7 @@ export const navGroups: NavGroup[] = [
     id: 'events',
     label: 'Events',
     icon: CalendarDays,
+    module: 'events',
     items: [
       {
         href: '/events/upcoming',
@@ -268,6 +276,7 @@ export const navGroups: NavGroup[] = [
     id: 'clients',
     label: 'Clients',
     icon: Users,
+    module: 'clients',
     items: [
       {
         href: '/clients',
@@ -347,6 +356,7 @@ export const navGroups: NavGroup[] = [
     id: 'finance',
     label: 'Finance',
     icon: DollarSign,
+    module: 'finance',
     items: [
       {
         href: '/financials',
@@ -464,6 +474,7 @@ export const navGroups: NavGroup[] = [
     id: 'protection',
     label: 'Protection',
     icon: ShieldCheck,
+    module: 'protection',
     items: [
       {
         href: '/settings/protection',
@@ -501,6 +512,7 @@ export const navGroups: NavGroup[] = [
     id: 'more',
     label: 'More',
     icon: ListChecks,
+    module: 'more',
     items: [
       {
         href: '/goals/setup',
@@ -620,6 +632,7 @@ export const mobileTabItems: NavItem[] = [
 ]
 
 const settingsShortcutOptions: PrimaryShortcutOption[] = [
+  { href: '/settings/modules', label: 'Modules', icon: Settings, context: 'Settings' },
   { href: '/settings/navigation', label: 'Navigation', icon: Settings, context: 'Settings' },
   { href: '/settings/dashboard', label: 'Dashboard Widgets', icon: Settings, context: 'Settings' },
   { href: '/settings/my-profile', label: 'My Profile', icon: Settings, context: 'Settings' },

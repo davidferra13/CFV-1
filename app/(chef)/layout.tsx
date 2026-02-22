@@ -22,6 +22,9 @@ import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
 import { QuickCapture } from '@/components/mobile/quick-capture'
 import { FeedbackNudgeModal } from '@/components/feedback/feedback-nudge-modal'
 import { ThemeProvider } from '@/components/ui/theme-provider'
+import { getTierForChef } from '@/lib/billing/tier'
+import { isAdmin } from '@/lib/auth/admin'
+import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
@@ -50,12 +53,22 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const announcement = await getAnnouncement().catch(() => null)
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
+  const enabledModules =
+    layoutData.enabled_modules.length > 0 ? layoutData.enabled_modules : DEFAULT_ENABLED_MODULES
+  // Tier check — non-fatal, defaults to pro (fail open so billing never breaks the portal)
+  const tierStatus = await getTierForChef(user.entityId).catch(() => ({
+    tier: 'pro' as const,
+    isGrandfathered: true,
+    subscriptionStatus: 'grandfathered',
+  }))
   const daysSinceCreation = layoutData.created_at
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
   const showFeedbackNudge = daysSinceCreation >= 7
   // Cannabis tier check — non-fatal, fails closed (no access shown if DB unavailable)
   const hasCannabisTier = await hasCannabisAccess(user.id).catch(() => false)
+  // Admin check — admins bypass all tier restrictions
+  const userIsAdmin = await isAdmin().catch(() => false)
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
@@ -82,9 +95,17 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
               <TrialBanner chefId={user.entityId} />
               {/* Desktop sidebar */}
-              <ChefSidebar primaryNavHrefs={primaryNavHrefs} hasCannabisTier={hasCannabisTier} />
+              <ChefSidebar
+                primaryNavHrefs={primaryNavHrefs}
+                hasCannabisTier={hasCannabisTier}
+                enabledModules={enabledModules}
+              />
               {/* Mobile nav (top bar + bottom tabs) */}
-              <ChefMobileNav primaryNavHrefs={primaryNavHrefs} hasCannabisTier={hasCannabisTier} />
+              <ChefMobileNav
+                primaryNavHrefs={primaryNavHrefs}
+                hasCannabisTier={hasCannabisTier}
+                enabledModules={enabledModules}
+              />
 
               {/* Main content — offset adjusts dynamically based on sidebar state */}
               <ChefMainContent>{children}</ChefMainContent>
@@ -98,8 +119,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               {/* Offline connectivity banner — renders nothing when online */}
               <OfflineBanner />
 
-              {/* Remy — AI companion chatbot, available on all chef pages */}
-              <RemyDrawer />
+              {/* Remy — AI companion chatbot, Pro tier + admins */}
+              {(tierStatus.tier === 'pro' || userIsAdmin) && <RemyDrawer />}
 
               {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
               <QuickCapture />

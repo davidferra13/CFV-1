@@ -14,14 +14,21 @@
 import { hasProAccess } from '@/lib/billing/tier'
 import { requireChef } from '@/lib/auth/get-user'
 import { ProFeatureRequiredError } from '@/lib/billing/errors'
+import { isAdmin } from '@/lib/auth/admin'
 
 /**
  * Enforce Pro tier for the current chef session.
  * Throws ProFeatureRequiredError if the chef is on the Free tier.
+ * Admins always bypass — they have full Pro access regardless of subscription.
  * @param featureSlug — identifies which Pro feature was attempted (for analytics/UI)
  */
 export async function requirePro(featureSlug: string): Promise<void> {
   const user = await requireChef()
+
+  // Admins always have full Pro access
+  const adminCheck = await isAdmin().catch(() => false)
+  if (adminCheck) return
+
   const hasPro = await hasProAccess(user.entityId)
   if (!hasPro) {
     throw new ProFeatureRequiredError(featureSlug)

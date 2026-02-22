@@ -359,6 +359,19 @@ Only use variants that actually exist — wrong variants fail silently or throw.
 
 `outline`, `default` (Button), `warning` (Button), `success` (Button) do **not** exist.
 
+### 5. Tier Assignment (New Features)
+
+Every new feature **MUST** be assigned to a tier and module. This ensures the freemium system stays consistent.
+
+1. **Determine the tier**: Is it part of the irreducible core (inquiries, events, clients, quotes, payments, basic calendar, basic finance, recipes, documents)? → **Free**. Everything else → **Pro**.
+2. **Assign a module**: Which module from `lib/billing/modules.ts` does this belong to? If none fits, discuss with the developer first.
+3. **Add gating** (Pro features only):
+   - Server actions: add `await requirePro('module-slug')` at the top
+   - Pages: wrap content in `<UpgradeGate chefId={user.entityId} featureSlug="slug">`
+   - Nav items: set `module: 'module-slug'` on the nav config entry
+4. **Update the registry**: Add the feature to `lib/billing/pro-features.ts` if it's Pro.
+5. **Admin bypass**: Admins (`isAdmin()`) always have full Pro access. `requirePro()` and `<UpgradeGate>` handle this automatically.
+
 ---
 
 ## ARCHITECTURE REMINDERS
@@ -413,6 +426,12 @@ Private data categories that must stay local:
 | Schema Layer 3       | `supabase/migrations/20260215000003_layer_3_events_quotes_financials.sql` |
 | Schema Layer 4       | `supabase/migrations/20260215000004_layer_4_menus_recipes_costing.sql`    |
 | Generated types      | `types/database.ts` (never edit manually)                                 |
+| Tier resolution      | `lib/billing/tier.ts`                                                     |
+| Pro feature registry | `lib/billing/pro-features.ts`                                             |
+| Module definitions   | `lib/billing/modules.ts`                                                  |
+| Pro enforcement      | `lib/billing/require-pro.ts`                                              |
+| Upgrade gate UI      | `components/billing/upgrade-gate.tsx`                                     |
+| Module toggle page   | `app/(chef)/settings/modules/page.tsx`                                    |
 
 ---
 

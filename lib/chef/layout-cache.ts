@@ -22,6 +22,8 @@ export type ChefLayoutData = {
   portal_background_color: string | null
   portal_background_image_url: string | null
   primary_nav_hrefs: string[]
+  enabled_modules: string[]
+  subscription_status: string | null
 }
 
 export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
@@ -33,13 +35,13 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         supabase
           .from('chefs')
           .select(
-            'slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url'
+            'slug, tagline, business_name, created_at, portal_primary_color, portal_background_color, portal_background_image_url, subscription_status'
           )
           .eq('id', chefId)
           .single(),
         supabase
           .from('chef_preferences')
-          .select('primary_nav_hrefs')
+          .select('primary_nav_hrefs, enabled_modules')
           .eq('chef_id', chefId)
           .single(),
       ])
@@ -55,6 +57,10 @@ export function getChefLayoutData(chefId: string): Promise<ChefLayoutData> {
         primary_nav_hrefs: Array.isArray(prefsResult.data?.primary_nav_hrefs)
           ? (prefsResult.data.primary_nav_hrefs as string[])
           : [],
+        enabled_modules: Array.isArray((prefsResult.data as any)?.enabled_modules)
+          ? ((prefsResult.data as any).enabled_modules as string[])
+          : [],
+        subscription_status: (chefResult.data as any)?.subscription_status ?? null,
       }
     },
     [`chef-layout-${chefId}`],

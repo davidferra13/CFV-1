@@ -1,31 +1,64 @@
 'use client'
 
 // Billing page interactive UI — renders the subscription status card,
-// plan features list, and CTA buttons (upgrade / manage subscription).
+// Free vs Pro comparison, and CTA buttons (upgrade / manage subscription).
 
 import { redirectToCheckout, redirectToBillingPortal } from './actions'
 import type { SubscriptionStatus } from '@/lib/stripe/subscription'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CheckCircle2, Clock, AlertTriangle, CreditCard, Star, Sparkles } from 'lucide-react'
+import { PRO_FEATURES } from '@/lib/billing/pro-features'
+import { CheckCircle2, Clock, AlertTriangle, CreditCard, Star, Sparkles, X } from 'lucide-react'
 
 type Props = {
   status: SubscriptionStatus
   upgraded: boolean
 }
 
-const PLAN_FEATURES = [
+const FREE_FEATURES = [
   'Unlimited events & quotes',
-  'Client portal with e-signature',
-  'Full financial ledger & invoicing',
-  'Recipe costing & grocery quotes',
-  'AI copilot (local, private)',
-  'Calendar sync & ICS invite links',
-  'Staff briefings & temperature logs',
-  'Partner showcase portal',
-  'Goal tracking & revenue planning',
-  'Priority support',
+  'Full event lifecycle (8-state FSM)',
+  'Client directory with preferences',
+  'Inquiry capture & unified inbox',
+  'Professional proposals',
+  'Payment collection (Stripe + offline)',
+  'Immutable financial ledger',
+  'Invoicing & expense tracking',
+  'Recipes & menus (unlimited)',
+  'Day-of document suite (6 documents)',
+  'Calendar (month, day, week views)',
+  'Client portal & public booking page',
+  'Chat & messaging',
 ]
+
+// Group Pro features by category for display
+const PRO_CATEGORIES = [
+  { label: 'AI Assistant (Remy)', features: PRO_FEATURES.filter((f) => f.category === 'ai') },
+  {
+    label: 'Analytics & Insights',
+    features: PRO_FEATURES.filter((f) => f.category === 'analytics'),
+  },
+  { label: 'Advanced Finance', features: PRO_FEATURES.filter((f) => f.category === 'finance') },
+  { label: 'Marketing & Social', features: PRO_FEATURES.filter((f) => f.category === 'marketing') },
+  { label: 'Client Intelligence', features: PRO_FEATURES.filter((f) => f.category === 'clients') },
+  { label: 'Loyalty Program', features: PRO_FEATURES.filter((f) => f.category === 'loyalty') },
+  { label: 'Staff Management', features: PRO_FEATURES.filter((f) => f.category === 'staff') },
+  {
+    label: 'Operations & Inventory',
+    features: PRO_FEATURES.filter((f) => f.category === 'operations'),
+  },
+  {
+    label: 'Business Protection',
+    features: PRO_FEATURES.filter((f) => f.category === 'protection'),
+  },
+  { label: 'Community', features: PRO_FEATURES.filter((f) => f.category === 'community') },
+  {
+    label: 'Professional Development',
+    features: PRO_FEATURES.filter((f) => f.category === 'professional'),
+  },
+  { label: 'Integrations', features: PRO_FEATURES.filter((f) => f.category === 'integrations') },
+  { label: 'Advanced Calendar', features: PRO_FEATURES.filter((f) => f.category === 'calendar') },
+].filter((c) => c.features.length > 0)
 
 function StatusBadge({ status }: { status: SubscriptionStatus }) {
   if (status.isGrandfathered) return <Badge variant="info">Founding Member</Badge>
@@ -37,6 +70,8 @@ function StatusBadge({ status }: { status: SubscriptionStatus }) {
 }
 
 export function BillingClient({ status, upgraded }: Props) {
+  const isPro = status.isGrandfathered || status.isActive || (status.isTrial && !status.isExpired)
+
   return (
     <div className="space-y-6">
       {/* Post-upgrade success message */}
@@ -44,7 +79,7 @@ export function BillingClient({ status, upgraded }: Props) {
         <div className="rounded-xl bg-green-50 border border-green-200 p-4 flex items-center gap-3">
           <Sparkles size={18} className="text-green-600 shrink-0" />
           <p className="text-sm font-medium text-green-800">
-            Welcome to ChefFlow Professional! Your subscription is now active.
+            Welcome to ChefFlow Pro! Your subscription is now active.
           </p>
         </div>
       )}
@@ -53,8 +88,16 @@ export function BillingClient({ status, upgraded }: Props) {
       <div className="rounded-xl border border-stone-200 bg-white p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">ChefFlow Professional</h2>
-            <p className="mt-0.5 text-sm text-stone-500">$29 / month</p>
+            <h2 className="text-lg font-semibold text-stone-900">
+              {isPro ? 'ChefFlow Pro' : 'ChefFlow Free'}
+            </h2>
+            <p className="mt-0.5 text-sm text-stone-500">
+              {status.isGrandfathered
+                ? 'Founding member — free forever'
+                : isPro
+                  ? 'Full access to all features'
+                  : 'Core features included'}
+            </p>
           </div>
           <StatusBadge status={status} />
         </div>
@@ -64,7 +107,7 @@ export function BillingClient({ status, upgraded }: Props) {
             <div className="flex items-center gap-2 text-sm text-stone-600">
               <Star size={15} className="text-amber-500 shrink-0" />
               <span>
-                You're on the founding member plan — full access, no subscription charge. Ever.
+                You're on the founding member plan — full Pro access, no subscription charge. Ever.
               </span>
             </div>
           )}
@@ -74,7 +117,7 @@ export function BillingClient({ status, upgraded }: Props) {
               <Clock size={15} className="text-amber-500 shrink-0" />
               <span>
                 {status.daysRemaining} day{status.daysRemaining === 1 ? '' : 's'} remaining in your
-                free trial. Subscribe to keep uninterrupted access.
+                free trial. Subscribe to keep Pro access.
               </span>
             </div>
           )}
@@ -96,7 +139,7 @@ export function BillingClient({ status, upgraded }: Props) {
           {status.isExpired && (
             <div className="flex items-center gap-2 text-sm text-red-700">
               <AlertTriangle size={15} className="shrink-0" />
-              <span>Your trial has ended. Subscribe to continue using ChefFlow.</span>
+              <span>Your trial has ended. Upgrade to Pro to unlock all features.</span>
             </div>
           )}
         </div>
@@ -107,7 +150,7 @@ export function BillingClient({ status, upgraded }: Props) {
             <form action={redirectToCheckout}>
               <Button type="submit" variant="primary">
                 <CreditCard size={15} className="mr-2" />
-                Upgrade to Professional — $29/mo
+                Upgrade to Pro
               </Button>
             </form>
           )}
@@ -122,17 +165,61 @@ export function BillingClient({ status, upgraded }: Props) {
         </div>
       </div>
 
-      {/* Plan Features */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6">
-        <h2 className="mb-4 text-base font-semibold text-stone-900">Everything in Professional</h2>
-        <ul className="space-y-2.5">
-          {PLAN_FEATURES.map((feature) => (
-            <li key={feature} className="flex items-center gap-3 text-sm text-stone-700">
-              <CheckCircle2 size={14} className="shrink-0 text-green-500" />
-              {feature}
-            </li>
-          ))}
-        </ul>
+      {/* Free vs Pro Comparison */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Free Tier */}
+        <div className="rounded-xl border border-stone-200 bg-white p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-base font-semibold text-stone-900">Free</h3>
+            <span className="text-xs text-stone-400 font-medium">Forever</span>
+          </div>
+          <ul className="space-y-2">
+            {FREE_FEATURES.map((feature) => (
+              <li key={feature} className="flex items-start gap-2.5 text-sm text-stone-700">
+                <CheckCircle2 size={14} className="shrink-0 text-green-500 mt-0.5" />
+                {feature}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Pro Tier */}
+        <div className="rounded-xl border-2 border-brand-300 bg-gradient-to-b from-brand-50/50 to-white p-6">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-base font-semibold text-stone-900">Pro</h3>
+            <Sparkles size={14} className="text-brand-500" />
+          </div>
+          <p className="text-xs text-stone-500 mb-3">Everything in Free, plus:</p>
+          <div className="space-y-3">
+            {PRO_CATEGORIES.map((category) => (
+              <div key={category.label}>
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1">
+                  {category.label}
+                </p>
+                <ul className="space-y-1">
+                  {category.features.map((feature) => (
+                    <li
+                      key={feature.slug}
+                      className="flex items-start gap-2.5 text-sm text-stone-700"
+                    >
+                      <Sparkles size={12} className="shrink-0 text-brand-500 mt-0.5" />
+                      {feature.label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {!isPro && (
+            <form action={redirectToCheckout} className="mt-5">
+              <Button type="submit" variant="primary" className="w-full">
+                <Sparkles size={15} className="mr-2" />
+                Upgrade to Pro
+              </Button>
+            </form>
+          )}
+        </div>
       </div>
 
       {/* Stripe Connect note */}

@@ -28,8 +28,8 @@ export function TrialBannerClient({ type, daysLeft }: Props) {
     : 'bg-amber-50 border-b border-amber-200 text-amber-900'
 
   const message = isExpired
-    ? 'Your 14-day trial has ended. Upgrade to keep ChefFlow.'
-    : `Your trial ends in ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Upgrade to keep ChefFlow.`
+    ? 'Your free trial has ended. Upgrade to Pro to unlock all features.'
+    : `Your trial ends in ${daysLeft} day${daysLeft === 1 ? '' : 's'}. Upgrade to Pro to keep full access.`
 
   function dismiss() {
     sessionStorage.setItem(`trial_banner_dismissed_${type}`, '1')
@@ -44,7 +44,7 @@ export function TrialBannerClient({ type, daysLeft }: Props) {
         href="/settings/billing"
         className="font-semibold underline underline-offset-2 shrink-0"
       >
-        Upgrade →
+        Upgrade to Pro →
       </Link>
       <button
         onClick={dismiss}
