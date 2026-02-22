@@ -48,8 +48,6 @@ export async function GET(request: NextRequest) {
       `${origin}/settings?error=${encodeURIComponent('CSRF validation failed')}`
     )
   }
-  // Clear the CSRF cookie
-  cookieStore.delete('google-oauth-csrf')
 
   // Verify the authenticated user owns this chef ID (prevents tenant hijacking)
   const currentUser = await getCurrentUser()
@@ -100,33 +98,43 @@ export async function GET(request: NextRequest) {
 
   // Determine which services were connected based on granted scopes
   const grantedScopes = (tokens.scope || '').split(' ')
-  const gmailConnected = grantedScopes.some((s: string) =>
-    s.includes('gmail.readonly') || s.includes('gmail.send') || s.includes('gmail.modify')
+  const gmailConnected = grantedScopes.some(
+    (s: string) =>
+      s.includes('gmail.readonly') || s.includes('gmail.send') || s.includes('gmail.modify')
   )
-  const calendarConnected = grantedScopes.some((s: string) =>
-    s.includes('calendar')
-  )
+  const calendarConnected = grantedScopes.some((s: string) => s.includes('calendar'))
 
-  // Upsert into google_connections
+  // Merge with existing connection so we don't overwrite the other service's flag.
+  // E.g. if Gmail is already connected and we're adding Calendar, keep gmail_connected = true.
   const supabase = createServerClient({ admin: true })
 
-  const { error: upsertError } = await supabase
+  const { data: existing } = await supabase
     .from('google_connections')
-    .upsert(
-      {
-        chef_id: state.chefId,
-        tenant_id: state.chefId,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        token_expires_at: expiresAt,
-        connected_email: connectedEmail,
-        gmail_connected: gmailConnected,
-        calendar_connected: calendarConnected,
-        scopes: grantedScopes,
-        gmail_sync_errors: 0,
-      },
-      { onConflict: 'chef_id' }
-    )
+    .select('gmail_connected, calendar_connected, scopes, refresh_token')
+    .eq('chef_id', state.chefId)
+    .single()
+
+  const mergedGmail = gmailConnected || (existing?.gmail_connected ?? false)
+  const mergedCalendar = calendarConnected || (existing?.calendar_connected ?? false)
+  const mergedScopes = Array.from(new Set([...(existing?.scopes ?? []), ...grantedScopes]))
+  // Google only returns refresh_token on first consent; preserve the existing one
+  const refreshToken = tokens.refresh_token || existing?.refresh_token || null
+
+  const { error: upsertError } = await supabase.from('google_connections').upsert(
+    {
+      chef_id: state.chefId,
+      tenant_id: state.chefId,
+      access_token: tokens.access_token,
+      refresh_token: refreshToken,
+      token_expires_at: expiresAt,
+      connected_email: connectedEmail,
+      gmail_connected: mergedGmail,
+      calendar_connected: mergedCalendar,
+      scopes: mergedScopes,
+      gmail_sync_errors: 0,
+    },
+    { onConflict: 'chef_id' }
+  )
 
   if (upsertError) {
     console.error('[Google OAuth] Failed to save connection:', upsertError)
@@ -136,5 +144,8 @@ export async function GET(request: NextRequest) {
   }
 
   const service = gmailConnected ? 'gmail' : calendarConnected ? 'calendar' : 'google'
-  return NextResponse.redirect(`${origin}/settings?connected=${service}`)
+  const response = NextResponse.redirect(`${origin}/settings?connected=${service}`)
+  // Clear the CSRF cookie now that OAuth is complete
+  response.cookies.delete('google-oauth-csrf')
+  return response
 }

@@ -1,8 +1,8 @@
 // components/settings/google-integrations.tsx
 'use client'
 
-import { useState, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, type ReactNode } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
@@ -16,6 +16,7 @@ import type {
 } from '@/lib/google/types'
 import { HistoricalScanSection } from '@/components/gmail/historical-scan-section'
 import type { HistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
+import { toast } from 'sonner'
 
 // Reusable card for a single Google service connection
 function ServiceCard({
@@ -37,7 +38,13 @@ function ServiceCard({
 
   const handleConnect = async () => {
     setLoading(true)
-    await onConnect()
+    try {
+      await onConnect()
+    } catch {
+      // Parent component will show the error via setError
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleDisconnect = async () => {
@@ -104,7 +111,26 @@ export function GoogleIntegrations({
   historicalScanStatus,
 }: GoogleIntegrationsProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
+
+  // Show toast feedback when returning from Google OAuth redirect
+  useEffect(() => {
+    if (!searchParams) return
+    const connected = searchParams.get('connected')
+    const oauthError = searchParams.get('error')
+    if (connected) {
+      const label =
+        connected === 'gmail' ? 'Gmail' : connected === 'calendar' ? 'Google Calendar' : 'Google'
+      toast.success(`${label} connected successfully!`)
+      // Clean the URL so refreshing doesn't re-trigger
+      router.replace('/settings', { scroll: false })
+    } else if (oauthError) {
+      setError(oauthError)
+      toast.error(oauthError)
+      router.replace('/settings', { scroll: false })
+    }
+  }, [searchParams, router])
   const [syncing, setSyncing] = useState(false)
   const [syncResult, setSyncResult] = useState<{
     processed: number

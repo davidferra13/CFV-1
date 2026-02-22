@@ -40,11 +40,20 @@ export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirec
 
   const redirectUri = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/google/connect/callback`
 
+  // Always include email+profile so the callback can fetch the connected account's email
+  const allScopes = Array.from(
+    new Set([
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      ...scopes,
+    ])
+  )
+
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: redirectUri,
     response_type: 'code',
-    scope: scopes.join(' '),
+    scope: allScopes.join(' '),
     access_type: 'offline',
     prompt: 'consent',
     state: Buffer.from(state).toString('base64'),
