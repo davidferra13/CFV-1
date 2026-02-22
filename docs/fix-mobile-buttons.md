@@ -9,32 +9,43 @@ On mobile, buttons in the navigation bar (hamburger menu, Remy, notifications) a
 
 ## Root Cause
 
-**Stale Service Worker:** The `SwRegister` component unconditionally registered `sw.js` even in development mode. The `sw.js` precache manifest referenced old production build chunks (`chefflow-build`). On mobile, where the service worker persists between visits, it served stale cached JavaScript that didn't match the dev server's current output. This broke React hydration, meaning event handlers (onClick, etc.) were never attached to buttons.
+**Stale Service Worker with CacheFirst strategy for JS files.**
 
-**Contributing factors:**
+The `public/sw.js` was a Workbox-generated service worker with a precache manifest referencing old production build chunks (`chefflow-build`). Critically, it used `CacheFirst` for `/_next/static.+.js` — meaning it **always served JS from the cache, never checking the network**. The cached JS didn't match the current dev server output, so React hydration failed silently. Without hydration, event handlers (`onClick`, etc.) were never attached to buttons.
 
-- `GlobalSearch` backdrop used `z-40` (same level as mobile header), creating stacking context conflicts
-- Mobile header touch targets were 36px — below the recommended 44px minimum
+**Why only mobile was affected:**
 
-## Changes
+- On desktop (localhost), the browser was likely fetching fresh JS because the SW wasn't registered or the cache was empty.
+- On mobile, the user connects via LAN IP (e.g., `192.168.x.x:3100`). The SW was registered there from a previous session and the CacheFirst strategy served stale JS on every subsequent visit.
 
-### 1. `components/pwa/sw-register.tsx`
+**Why the first fix attempt didn't work:**
 
-- In development mode (localhost, 127.0.0.1, port 3000/3100), the component now **unregisters** any existing service worker instead of registering one
-- In production, behavior is unchanged (registers `sw.js` normally)
+- The initial fix only unregistered the SW when `hostname === 'localhost'` or `hostname === '127.0.0.1'`. Mobile connects via a LAN IP, which didn't match any of those conditions. The stale SW remained active on mobile.
 
-### 2. `components/search/global-search.tsx`
+## Solution
 
-- Lowered the full-screen backdrop from `z-40` to `z-30` so it doesn't compete with other `z-40` fixed elements (mobile header, bottom tab bar)
+### 1. `public/sw.js` — Replaced with self-destructing SW
 
-### 3. `components/navigation/chef-nav.tsx`
+The old 500+ line Workbox SW was replaced with a minimal "self-destructing" service worker that:
 
-- Increased mobile header button touch targets from `w-9 h-9` (36px) to `w-10 h-10` (40px)
-- Added `gap-0.5` spacing between header buttons
+1. Calls `self.skipWaiting()` on install
+2. On activate: clears all caches, unregisters itself, and reloads all open tabs
+
+When mobile's existing SW checks for updates (happens on navigation), it downloads this new `sw.js`, sees it has changed, installs it, and the new SW immediately kills itself and reloads the page. After that, there's no SW at all and React hydration works normally.
+
+### 2. `components/pwa/sw-register.tsx` — Always unregister
+
+The `SwRegister` component now unconditionally unregisters any existing service worker on every page load. Since PWA is bypassed in `next.config.js` (only active when `ENABLE_PWA_BUILD=1`), there's never a valid SW to register. The belt-and-suspenders approach ensures the SW is killed both server-side (new sw.js) and client-side (SwRegister).
+
+### 3. Earlier changes (kept)
+
+- `components/search/global-search.tsx` — backdrop lowered from `z-40` to `z-30`
+- `components/navigation/chef-nav.tsx` — touch targets increased to 40px
 
 ## How to Verify
 
 1. Open the app on your phone
-2. The service worker should auto-unregister on next load (check console for `[SW] Unregistered stale service worker in dev mode`)
-3. All navigation buttons, hamburger menu, and Remy FAB should respond to taps
-4. If buttons still don't work after one page load, do a hard refresh (pull down or clear cache) to flush the old SW cache
+2. The self-destructing SW will install, clear all caches, unregister itself, and reload the page
+3. After the reload, all navigation buttons, hamburger menu, and Remy FAB should respond to taps
+4. Check browser console for `[SW] Unregistered service worker`
+5. If buttons still don't work after one reload, clear site data in phone settings (Settings > Safari/Chrome > Clear Website Data)

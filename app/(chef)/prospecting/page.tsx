@@ -9,7 +9,7 @@ import { getProspects, getProspectStats } from '@/lib/prospecting/actions'
 import { ProspectTable } from '@/components/prospecting/prospect-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Search, Zap, Phone, Target, CheckCircle, XCircle } from 'lucide-react'
+import { Search, Zap, Phone, Target, CheckCircle } from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Prospecting - ChefFlow' }
 
@@ -42,18 +42,14 @@ export default async function ProspectingPage({
           </p>
         </div>
         <div className="flex gap-2">
-          <Link href="/prospecting/scrub">
-            <Button className="flex items-center gap-2">
-              <Zap className="h-4 w-4" />
-              AI Scrub
-            </Button>
-          </Link>
-          <Link href="/prospecting/queue">
-            <Button variant="secondary" className="flex items-center gap-2">
-              <Phone className="h-4 w-4" />
-              Call Queue
-            </Button>
-          </Link>
+          <Button href="/prospecting/scrub" className="flex items-center gap-2">
+            <Zap className="h-4 w-4" />
+            AI Scrub
+          </Button>
+          <Button href="/prospecting/queue" variant="secondary" className="flex items-center gap-2">
+            <Phone className="h-4 w-4" />
+            Call Queue
+          </Button>
         </div>
       </div>
 

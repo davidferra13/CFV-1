@@ -2,7 +2,6 @@
 // Admin-only. Free-form query to generate prospect dossiers.
 
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { getScrubSessions } from '@/lib/prospecting/actions'
@@ -24,11 +23,9 @@ export default async function ScrubPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link href="/prospecting">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
+        <Button href="/prospecting" variant="ghost" size="sm">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <div>
           <h1 className="text-3xl font-bold text-stone-900">AI Lead Scrub</h1>
           <p className="text-stone-600 mt-1">
