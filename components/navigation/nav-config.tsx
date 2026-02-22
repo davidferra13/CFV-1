@@ -68,8 +68,6 @@ type PrimaryShortcutOption = NavItem & { context: string }
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks },
-  { href: '/commands', label: 'Ask Remy', icon: Bot },
-  { href: '/remy', label: 'Remy History', icon: Bot },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/inquiries', label: 'Inquiries', icon: Inbox },
@@ -84,6 +82,15 @@ export const standaloneTop: NavItem[] = [
 
 // Main domains
 export const navGroups: NavGroup[] = [
+  {
+    id: 'remy',
+    label: 'Remy',
+    icon: Bot,
+    items: [
+      { href: '/commands', label: 'Ask Remy', icon: Bot },
+      { href: '/remy', label: 'Remy History', icon: Bot },
+    ],
+  },
   {
     id: 'pipeline',
     label: 'Pipeline',
