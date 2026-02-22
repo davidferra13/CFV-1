@@ -26,6 +26,58 @@ const TIME_PER_QUESTION = 15 // seconds
 
 type GamePhase = 'setup' | 'loading' | 'playing' | 'result' | 'error'
 
+const LOADING_MESSAGES = [
+  'Remy is cooking up your questions...',
+  'Simmering the trivia...',
+  'Plating the questions...',
+  'Adding a pinch of difficulty...',
+  'Almost ready to serve...',
+  'Remy is perfecting the garnish...',
+]
+
+function LoadingState({ onCancel }: { onCancel: () => void }) {
+  const [elapsed, setElapsed] = useState(0)
+  const [msgIdx, setMsgIdx] = useState(0)
+
+  useEffect(() => {
+    const timer = setInterval(() => setElapsed((e) => e + 1), 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const cycle = setInterval(() => setMsgIdx((i) => (i + 1) % LOADING_MESSAGES.length), 4000)
+    return () => clearInterval(cycle)
+  }, [])
+
+  return (
+    <div className="py-16 text-center space-y-4">
+      <div className="mb-2 text-4xl animate-bounce">🧑‍🍳</div>
+      <p className="text-muted-foreground transition-all">{LOADING_MESSAGES[msgIdx]}</p>
+      <div className="flex items-center justify-center gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-2 w-2 rounded-full bg-brand-500 animate-pulse"
+            style={{ animationDelay: `${i * 200}ms` }}
+          />
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground/60">{elapsed}s elapsed</p>
+      {elapsed >= 10 && (
+        <p className="text-xs text-muted-foreground/80">
+          Ollama is still generating — this can take up to a minute for detailed questions.
+        </p>
+      )}
+      <button
+        onClick={onCancel}
+        className="mt-2 rounded-lg border px-5 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
+      >
+        Cancel
+      </button>
+    </div>
+  )
+}
+
 export default function TriviaGame() {
   const [phase, setPhase] = useState<GamePhase>('setup')
   const [topic, setTopic] = useState('')
@@ -62,27 +114,40 @@ export default function TriviaGame() {
     setSelected(null)
     setShowAnswer(false)
 
-    const result = await generateTriviaQuestions(chosenTopic, difficulty, previousIdsRef.current)
+    try {
+      const result = await generateTriviaQuestions(chosenTopic, difficulty, previousIdsRef.current)
 
-    if (result.error === 'ollama-offline') {
-      setErrorMsg('Remy needs Ollama to generate trivia. Start Ollama and try again!')
+      if (result.error === 'ollama-offline') {
+        setErrorMsg('Remy needs Ollama to generate trivia. Start Ollama and try again!')
+        setPhase('error')
+        return
+      }
+      if (result.error || result.questions.length === 0) {
+        setErrorMsg(result.error || 'Failed to generate questions. Try again!')
+        setPhase('error')
+        return
+      }
+
+      // save seen IDs
+      const newIds = result.questions.map((q) => q.id)
+      previousIdsRef.current = [...previousIdsRef.current, ...newIds].slice(-100)
+      localStorage.setItem('chefflow-trivia-seen', JSON.stringify(previousIdsRef.current))
+
+      setQuestions(result.questions)
+      setTimeLeft(TIME_PER_QUESTION)
+      setPhase('playing')
+    } catch (err) {
+      console.error('[trivia] Failed to call server action:', err)
+      const msg = err instanceof Error ? err.message : String(err)
+      if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+        setErrorMsg(
+          'Could not reach the server. Make sure the dev server is running and try again.'
+        )
+      } else {
+        setErrorMsg(`Something went wrong: ${msg}`)
+      }
       setPhase('error')
-      return
     }
-    if (result.error || result.questions.length === 0) {
-      setErrorMsg(result.error || 'Failed to generate questions. Try again!')
-      setPhase('error')
-      return
-    }
-
-    // save seen IDs
-    const newIds = result.questions.map((q) => q.id)
-    previousIdsRef.current = [...previousIdsRef.current, ...newIds].slice(-100)
-    localStorage.setItem('chefflow-trivia-seen', JSON.stringify(previousIdsRef.current))
-
-    setQuestions(result.questions)
-    setTimeLeft(TIME_PER_QUESTION)
-    setPhase('playing')
   }, [topic, customTopic, difficulty])
 
   // timer
@@ -222,12 +287,7 @@ export default function TriviaGame() {
       )}
 
       {/* LOADING */}
-      {phase === 'loading' && (
-        <div className="py-20 text-center">
-          <div className="mb-4 text-4xl animate-bounce">🧑‍🍳</div>
-          <p className="text-muted-foreground">Remy is cooking up your questions...</p>
-        </div>
-      )}
+      {phase === 'loading' && <LoadingState onCancel={() => setPhase('setup')} />}
 
       {/* ERROR */}
       {phase === 'error' && (
