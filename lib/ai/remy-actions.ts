@@ -64,6 +64,7 @@ AVAILABLE PAGES (suggest these when relevant):
 /proposals - Proposal templates
 /loyalty - Loyalty program
 /goals - Business goals
+/remy - Remy history (everything Remy has saved)
 `.trim()
 
 // ─── System Prompt Builder ──────────────────────────────────────────────────

@@ -1,6 +1,15 @@
 'use client'
 
-import { Check, X, AlertTriangle, Clock, ChevronDown, ChevronUp } from 'lucide-react'
+import {
+  Check,
+  X,
+  AlertTriangle,
+  Clock,
+  ChevronDown,
+  ChevronUp,
+  Bookmark,
+  BookmarkCheck,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import type { RemyTaskResult } from '@/lib/ai/remy-types'
@@ -9,9 +18,11 @@ interface RemyTaskCardProps {
   task: RemyTaskResult
   onApprove?: (taskId: string, taskType: string, data: unknown) => void
   onReject?: (taskId: string) => void
+  onSave?: (taskId: string, taskType: string, taskName: string, data: unknown) => void
+  saved?: boolean
 }
 
-export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
+export function RemyTaskCard({ task, onApprove, onReject, onSave, saved }: RemyTaskCardProps) {
   const [expanded, setExpanded] = useState(false)
   const errorText: string | null = task.status === 'error' && task.error ? task.error : null
   const holdText: string | null = task.status === 'held' && task.holdReason ? task.holdReason : null
@@ -45,9 +56,29 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
           {statusIcons[task.status]}
           <span className="font-medium text-stone-900 dark:text-stone-100">{task.name}</span>
         </div>
-        <span className="text-xs text-stone-500 dark:text-stone-400">
-          {statusLabels[task.status]}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-stone-500 dark:text-stone-400">
+            {statusLabels[task.status]}
+          </span>
+          {task.status !== 'error' && onSave && (
+            <button
+              onClick={() => onSave(task.taskId, task.taskType, task.name, task.data)}
+              className={`p-0.5 rounded transition-colors ${
+                saved
+                  ? 'text-brand-600 dark:text-brand-400'
+                  : 'text-stone-400 hover:text-brand-600 dark:text-stone-500 dark:hover:text-brand-400'
+              }`}
+              title={saved ? 'Saved' : 'Save to Remy history'}
+              disabled={saved}
+            >
+              {saved ? (
+                <BookmarkCheck className="h-3.5 w-3.5" />
+              ) : (
+                <Bookmark className="h-3.5 w-3.5" />
+              )}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Error message */}

@@ -15,11 +15,15 @@ import {
   Mail,
   Users,
   AlertCircle,
+  Bookmark,
+  BookmarkCheck,
+  History,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
 import { sendRemyMessage } from '@/lib/ai/remy-actions'
 import { approveTask } from '@/lib/ai/command-orchestrator'
+import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
 import { toast } from 'sonner'
 import type { RemyMessage } from '@/lib/ai/remy-types'
 
@@ -35,6 +39,7 @@ export function RemyDrawer() {
   const [messages, setMessages] = useState<RemyMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const pathname = usePathname()
@@ -133,6 +138,64 @@ export function RemyDrawer() {
     toast.success('Task dismissed')
   }, [])
 
+  // Save a Remy message to artifacts
+  const handleSaveMessage = useCallback(
+    async (msg: RemyMessage) => {
+      if (savedIds.has(msg.id)) return
+      try {
+        // Find the user message that prompted this response
+        const msgIndex = messages.findIndex((m) => m.id === msg.id)
+        const promptMsg = msgIndex > 0 ? messages[msgIndex - 1] : null
+        const sourceMessage = promptMsg?.role === 'user' ? promptMsg.content : undefined
+
+        const title = msg.content.length > 60 ? msg.content.slice(0, 57) + '...' : msg.content
+
+        await saveRemyMessage({
+          title,
+          content: msg.content,
+          sourceMessage: sourceMessage ?? '',
+        })
+        setSavedIds((prev) => new Set(prev).add(msg.id))
+        toast.success('Saved to Remy history')
+      } catch {
+        toast.error('Failed to save')
+      }
+    },
+    [savedIds, messages]
+  )
+
+  // Save a task result to artifacts
+  const handleSaveTask = useCallback(
+    async (taskId: string, taskType: string, taskName: string, data: unknown) => {
+      if (savedIds.has(taskId)) return
+      try {
+        // Find the user message that triggered this task
+        let sourceMessage: string | undefined
+        for (const msg of messages) {
+          if (msg.tasks?.some((t) => t.taskId === taskId)) {
+            const msgIndex = messages.indexOf(msg)
+            if (msgIndex > 0 && messages[msgIndex - 1].role === 'user') {
+              sourceMessage = messages[msgIndex - 1].content
+            }
+            break
+          }
+        }
+
+        await saveRemyTaskResult({
+          taskType,
+          taskName,
+          data,
+          sourceMessage,
+        })
+        setSavedIds((prev) => new Set(prev).add(taskId))
+        toast.success('Saved to Remy history')
+      } catch {
+        toast.error('Failed to save')
+      }
+    },
+    [savedIds, messages]
+  )
+
   return (
     <>
       {/* Floating trigger button */}
@@ -161,13 +224,23 @@ export function RemyDrawer() {
                 <span className="font-semibold text-white">Remy</span>
                 <span className="text-xs text-white/60 font-normal">AI Companion</span>
               </div>
-              <button
-                onClick={() => setOpen(false)}
-                className="text-white/80 hover:text-white transition-colors"
-                aria-label="Close Remy"
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-1">
+                <Link
+                  href="/remy"
+                  onClick={() => setOpen(false)}
+                  className="text-white/80 hover:text-white transition-colors p-1"
+                  title="Remy History"
+                >
+                  <History className="h-4.5 w-4.5" />
+                </Link>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="text-white/80 hover:text-white transition-colors p-1"
+                  aria-label="Close Remy"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
 
             {/* Messages */}
@@ -212,14 +285,35 @@ export function RemyDrawer() {
                 >
                   <div className={`max-w-[85%] space-y-2 ${msg.role === 'user' ? '' : ''}`}>
                     {/* Message bubble */}
-                    <div
-                      className={`rounded-xl px-4 py-2.5 text-sm ${
-                        msg.role === 'user'
-                          ? 'bg-brand-600 text-white'
-                          : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
-                      }`}
-                    >
-                      <pre className="whitespace-pre-wrap font-sans">{msg.content}</pre>
+                    <div className="group relative">
+                      <div
+                        className={`rounded-xl px-4 py-2.5 text-sm ${
+                          msg.role === 'user'
+                            ? 'bg-brand-600 text-white'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                        }`}
+                      >
+                        <pre className="whitespace-pre-wrap font-sans">{msg.content}</pre>
+                      </div>
+                      {/* Save button — only on Remy messages */}
+                      {msg.role === 'remy' && (
+                        <button
+                          onClick={() => handleSaveMessage(msg)}
+                          className={`absolute -bottom-1 -right-1 p-1 rounded-full bg-white dark:bg-stone-700 shadow-sm border border-stone-200 dark:border-stone-600 transition-all ${
+                            savedIds.has(msg.id)
+                              ? 'text-brand-600 dark:text-brand-400'
+                              : 'text-stone-400 hover:text-brand-600 dark:text-stone-500 dark:hover:text-brand-400 opacity-0 group-hover:opacity-100'
+                          }`}
+                          title={savedIds.has(msg.id) ? 'Saved' : 'Save to Remy history'}
+                          disabled={savedIds.has(msg.id)}
+                        >
+                          {savedIds.has(msg.id) ? (
+                            <BookmarkCheck className="h-3 w-3" />
+                          ) : (
+                            <Bookmark className="h-3 w-3" />
+                          )}
+                        </button>
+                      )}
                     </div>
 
                     {/* Task result cards (Remy messages only) */}
@@ -231,6 +325,8 @@ export function RemyDrawer() {
                             task={task}
                             onApprove={handleApproveTask}
                             onReject={handleRejectTask}
+                            onSave={handleSaveTask}
+                            saved={savedIds.has(task.taskId)}
                           />
                         ))}
                       </div>

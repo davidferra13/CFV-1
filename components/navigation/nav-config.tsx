@@ -58,6 +58,7 @@ type PrimaryShortcutOption = NavItem & { context: string }
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/commands', label: 'Command Center', icon: Bot },
+  { href: '/remy', label: 'Remy History', icon: Bot },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/inquiries', label: 'Inquiries', icon: Inbox },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
