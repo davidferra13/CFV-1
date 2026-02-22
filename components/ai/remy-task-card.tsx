@@ -352,6 +352,52 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
       )
     }
 
+    case 'web.search': {
+      const d = data as {
+        query: string
+        results: Array<{ title: string; snippet: string; url: string }>
+      }
+      if (!d.results?.length) return <p className="text-xs text-stone-500">No web results found.</p>
+      return (
+        <div className="space-y-2">
+          <p className="text-xs text-stone-400">Results for &quot;{d.query}&quot;</p>
+          {d.results.map((r, i) => (
+            <div key={i} className="text-xs border-l-2 border-brand-400/50 pl-2">
+              <a
+                href={r.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-brand-600 dark:text-brand-400 hover:underline"
+              >
+                {r.title}
+              </a>
+              <p className="text-stone-500 dark:text-stone-400 mt-0.5 line-clamp-2">{r.snippet}</p>
+              <p className="text-stone-300 dark:text-stone-600 text-[10px] truncate">{r.url}</p>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
+    case 'web.read': {
+      const d = data as { url: string; title: string; summary: string }
+      return (
+        <div className="text-xs">
+          <a
+            href={d.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-brand-600 dark:text-brand-400 hover:underline"
+          >
+            {d.title}
+          </a>
+          <p className="text-stone-600 dark:text-stone-300 mt-1 whitespace-pre-wrap line-clamp-6">
+            {d.summary}
+          </p>
+        </div>
+      )
+    }
+
     default:
       return (
         <pre className="whitespace-pre-wrap font-mono text-xs text-stone-500 max-h-32 overflow-auto">
