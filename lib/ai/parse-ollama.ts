@@ -35,8 +35,10 @@ export interface ParseOllamaOptions {
 /** Default max tokens for structured JSON responses — keeps Ollama from running away */
 const DEFAULT_MAX_TOKENS = 512
 
-/** Default hard timeout for any Ollama call — prevents infinite hangs */
-const DEFAULT_OLLAMA_TIMEOUT_MS = 30_000
+/** Default hard timeout for any Ollama call — prevents infinite hangs.
+ *  60s is generous for a 30b model on a laptop — normal calls finish in 10-30s.
+ *  This only fires if Ollama is truly stuck, not just thinking. */
+const DEFAULT_OLLAMA_TIMEOUT_MS = 60_000
 
 /**
  * Wraps a promise with a hard timeout. If the promise doesn't resolve

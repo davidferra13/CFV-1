@@ -473,9 +473,11 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── MAIN PATH: classify + load context ─────────────────────
-    // Hard timeout: if the entire pre-stream setup takes >20s, bail out
+    // Hard timeout: if the entire pre-stream setup takes >45s, bail out.
+    // Generous — classifier + context + memories usually takes 5-15s.
+    // This only fires if Ollama is truly hung during classification.
     const setupTimeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('Pre-stream setup timed out after 20s')), 20_000)
+      setTimeout(() => reject(new Error('Pre-stream setup timed out after 45s')), 45_000)
     )
 
     let context: Awaited<ReturnType<typeof loadRemyContext>>
@@ -757,10 +759,10 @@ function sseHeaders(): HeadersInit {
 
 /**
  * Hard timeout for Ollama streaming calls.
- * If Ollama hangs (bad prompt, infinite generation), this kills it after 45s.
- * Prevents runaway memory/CPU that freezes the whole machine.
+ * 90s is generous — a 30b model streaming 2048 tokens usually finishes in 30-60s.
+ * This only fires if Ollama is truly stuck, not just thinking hard.
  */
-const OLLAMA_STREAM_TIMEOUT_MS = 45_000
+const OLLAMA_STREAM_TIMEOUT_MS = 90_000
 
 /**
  * Max tokens for streaming conversational responses.

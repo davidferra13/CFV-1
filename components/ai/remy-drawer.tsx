@@ -581,8 +581,9 @@ export function RemyDrawer() {
         const controller = new AbortController()
         abortControllerRef.current = controller
 
-        // Hard client-side timeout: 60s — if Ollama is stuck, we bail
-        const timeoutId = setTimeout(() => controller.abort(), 60_000)
+        // Hard client-side timeout: 2 min — generous for a big model, but
+        // won't let a stuck request run forever. Cancel button is always available.
+        const timeoutId = setTimeout(() => controller.abort(), 120_000)
 
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
