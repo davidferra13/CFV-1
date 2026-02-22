@@ -49,7 +49,9 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
   const [targetYear, setTargetYear] = useState(settings.target_year)
   const [postsPerWeek, setPostsPerWeek] = useState(settings.posts_per_week)
   const [timezone, setTimezone] = useState(settings.timezone)
-  const [slots, setSlots] = useState<QueueSlot[]>(buildSlots(settings.queue_days, settings.queue_times))
+  const [slots, setSlots] = useState<QueueSlot[]>(
+    buildSlots(settings.queue_days, settings.queue_times)
+  )
   const [holdoutSlots, setHoldoutSlots] = useState(settings.holdout_slots_per_month)
 
   const estimatedTotal = postsPerWeek * 52 - holdoutSlots * 12
@@ -129,7 +131,9 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
           className="w-40 px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white"
         >
           {[2025, 2026, 2027, 2028].map((y) => (
-            <option key={y} value={y}>{y}</option>
+            <option key={y} value={y}>
+              {y}
+            </option>
           ))}
         </select>
       </div>
@@ -138,7 +142,9 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
       <div>
         <label htmlFor="posts-per-week" className="block text-sm font-medium text-stone-700 mb-1.5">
           Posts Per Week
-          <span className="ml-2 font-normal text-stone-400">({postsPerWeek}/week = ~{postsPerWeek * 52} posts/year)</span>
+          <span className="ml-2 font-normal text-stone-400">
+            ({postsPerWeek}/week = ~{postsPerWeek * 52} posts/year)
+          </span>
         </label>
         <div className="flex items-center gap-4">
           <input
@@ -183,7 +189,9 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
           className="w-72 px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white"
         >
           {TIMEZONES.map((tz) => (
-            <option key={tz} value={tz}>{tz}</option>
+            <option key={tz} value={tz}>
+              {tz}
+            </option>
           ))}
         </select>
       </div>
@@ -212,7 +220,9 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
                 className="px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
               >
                 {DAY_LABELS.slice(1).map((label, di) => (
-                  <option key={di + 1} value={di + 1}>{label}</option>
+                  <option key={di + 1} value={di + 1}>
+                    {label}
+                  </option>
                 ))}
               </select>
               <input
@@ -265,13 +275,15 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
           <span className="font-bold text-stone-900">{estimatedTotal}</span> posts for {targetYear}.
           {estimatedTotal >= 250 && (
             <span className="text-emerald-600 ml-1">
-              That&apos;s {Math.round(estimatedTotal / 52 * 10) / 10} posts/week — a full marketing agent on autopilot.
+              That&apos;s {Math.round((estimatedTotal / 52) * 10) / 10} posts/week — a full content
+              planner on autopilot.
             </span>
           )}
         </p>
         {postCount > 0 && (
           <p className="text-xs text-stone-400 mt-1">
-            You currently have <strong>{postCount}</strong> posts generated for {settings.target_year}.
+            You currently have <strong>{postCount}</strong> posts generated for{' '}
+            {settings.target_year}.
           </p>
         )}
       </div>
@@ -294,15 +306,16 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
         <Button variant="primary" onClick={() => handleSave(false)} loading={isPending}>
           Save Settings
         </Button>
-        <Button variant="secondary" onClick={() => handleSave(true)} loading={isPending} disabled={postCount > 0}>
+        <Button
+          variant="secondary"
+          onClick={() => handleSave(true)}
+          loading={isPending}
+          disabled={postCount > 0}
+        >
           Save &amp; Generate Plan
         </Button>
         {postCount > 0 && (
-          <Button
-            variant="danger"
-            onClick={() => setConfirmRegenerate(true)}
-            loading={isPending}
-          >
+          <Button variant="danger" onClick={() => setConfirmRegenerate(true)} loading={isPending}>
             Regenerate (Replace All)
           </Button>
         )}
@@ -318,14 +331,24 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
               <h3 className="font-semibold text-stone-900">Replace all posts?</h3>
             </div>
             <p className="text-sm text-stone-600">
-              This will delete all <strong>{postCount}</strong> existing posts for {settings.target_year} and
-              generate a fresh set. Any content you&apos;ve written will be permanently lost.
+              This will delete all <strong>{postCount}</strong> existing posts for{' '}
+              {settings.target_year} and generate a fresh set. Any content you&apos;ve written will
+              be permanently lost.
             </p>
             <div className="flex gap-3">
-              <Button variant="ghost" onClick={() => setConfirmRegenerate(false)} className="flex-1">
+              <Button
+                variant="ghost"
+                onClick={() => setConfirmRegenerate(false)}
+                className="flex-1"
+              >
                 Cancel
               </Button>
-              <Button variant="danger" onClick={handleForceRegenerate} loading={isPending} className="flex-1">
+              <Button
+                variant="danger"
+                onClick={handleForceRegenerate}
+                loading={isPending}
+                className="flex-1"
+              >
                 Yes, Replace All
               </Button>
             </div>

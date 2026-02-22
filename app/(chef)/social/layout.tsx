@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { SocialLayoutTabs } from '@/components/social/social-layout-tabs'
 
 export const metadata: Metadata = {
-  title: 'Marketing Agent - ChefFlow',
+  title: 'Content Planner - ChefFlow',
 }
 
 export default function SocialLayout({ children }: { children: React.ReactNode }) {
@@ -12,7 +12,7 @@ export default function SocialLayout({ children }: { children: React.ReactNode }
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end gap-1 pt-4 pb-0">
             <div className="flex-1 pb-3">
-              <h1 className="text-2xl font-bold text-stone-900">Marketing Agent</h1>
+              <h1 className="text-2xl font-bold text-stone-900">Content Planner</h1>
               <p className="text-sm text-stone-500 mt-0.5">
                 Build your year of content once — ChefFlow posts it automatically on every platform.
               </p>
@@ -21,9 +21,7 @@ export default function SocialLayout({ children }: { children: React.ReactNode }
           <SocialLayoutTabs />
         </div>
       </div>
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {children}
-      </div>
+      <div className="max-w-7xl mx-auto px-4 py-6">{children}</div>
     </div>
   )
 }

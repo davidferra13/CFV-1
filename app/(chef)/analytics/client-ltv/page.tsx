@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getTopClientsByLTV } from '@/lib/analytics/client-ltv-actions'
 import { ClientLTVChart } from '@/components/analytics/client-ltv-chart'
 
-export const metadata: Metadata = { title: 'Client Lifetime Value - ChefFlow' }
+export const metadata: Metadata = { title: 'Client Value - ChefFlow' }
 
 export default async function ClientLTVPage() {
   const user = await requireChef()
@@ -21,7 +21,7 @@ export default async function ClientLTVPage() {
           <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-700">
             &larr; Analytics
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Client Lifetime Value</h1>
+          <h1 className="text-3xl font-bold text-stone-900 mt-1">Client Value</h1>
           <p className="text-stone-600 mt-1">
             Your top clients ranked by total revenue contribution across all events.
           </p>
@@ -39,7 +39,8 @@ export default async function ClientLTVPage() {
       ) : (
         <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
           <p className="text-stone-500 text-sm">
-            No client revenue data yet. Complete events with payments to see lifetime value rankings.
+            No client revenue data yet. Complete events with payments to see lifetime value
+            rankings.
           </p>
         </div>
       )}

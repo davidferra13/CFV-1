@@ -569,7 +569,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/social/planner',
-        label: 'Marketing Agent',
+        label: 'Content Planner',
         icon: Mail,
         children: [
           { href: '/social/planner', label: 'Content Planner' },
@@ -605,13 +605,13 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/analytics/benchmarks',
-        label: 'Enhanced Analytics',
+        label: 'Business Analytics',
         icon: TrendingUp,
         children: [
           { href: '/analytics/benchmarks', label: 'Benchmarks' },
           { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
           { href: '/analytics/demand', label: 'Demand Heatmap' },
-          { href: '/analytics/client-ltv', label: 'Client LTV' },
+          { href: '/analytics/client-ltv', label: 'Client Value' },
           {
             href: '/analytics/referral-sources',
             label: 'Referral Sources',
