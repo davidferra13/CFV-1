@@ -156,7 +156,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
       </button>
 
       {open && (
-        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] bg-white rounded-lg shadow-lg border border-stone-200 py-1.5">
+        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-lg border border-stone-200 py-1.5">
           <p className="px-3 py-1.5 text-xs font-semibold text-stone-400 uppercase tracking-wider">
             {group.label}
           </p>
@@ -190,10 +190,10 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-200 ${
-                      itemOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+                      itemOpen ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="ml-8 mr-2 mb-1 space-y-0.5">
+                    <div className="ml-8 mr-2 mb-1 space-y-0.5 max-h-[60vh] overflow-y-auto custom-scrollbar">
                       {secondary.map((child) => {
                         const childActive = isItemActive(pathname, child.href)
                         return (
@@ -351,7 +351,7 @@ function NavGroupSection({
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-200 ${
-                      itemOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+                      itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div className="ml-6 pl-2 border-l border-stone-100 mt-0.5 space-y-0.5">
@@ -832,7 +832,7 @@ function MobileGroupSection({
                   </button>
                   <div
                     className={`overflow-hidden transition-all duration-200 ${
-                      itemOpen ? 'max-h-72 opacity-100' : 'max-h-0 opacity-0'
+                      itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
                     <div className="ml-5 pl-3 border-l border-stone-100 mt-0.5 space-y-0.5">
