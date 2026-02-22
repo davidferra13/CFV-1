@@ -51,10 +51,7 @@
     "test:interactions:admin": "npx playwright test --project=interactions-admin",
     "test:isolation": "npx playwright test --project=isolation-tests",
     "test:everything": "npx playwright test",
-    "test:report": "npx playwright show-report",
-    "check:constraints": "node scripts/check-constraints.cjs",
-    "check:constraints:staged": "node scripts/check-constraints.cjs --staged",
-    "save:ticket": "node scripts/save-ticket.cjs"
+    "test:report": "npx playwright show-report"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

@@ -134,8 +134,3 @@ null
 
 # Remy local AI stats (machine-specific, no PII, regenerated automatically)
 /data/remy-stats/
-
-# Patch queue — local workflow state (handoff.md and .constraints/ ARE committed)
-.patches/queue/
-.patches/applied/
-.patches/rejected/
