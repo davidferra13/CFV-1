@@ -44,6 +44,7 @@ const WORD_ANIMATION_MAP: Record<string, CulinaryAnimation> = {
   Snappy: 'shatter',
   Tuile: 'shatter',
   Craggy: 'shatter',
+  Splintery: 'shatter',
 
   // ── MELT: things that soften and drip ──
   Melting: 'melt',
@@ -312,6 +313,10 @@ const WORD_ANIMATION_MAP: Record<string, CulinaryAnimation> = {
   Fermented: 'bloom',
   Ferment: 'bloom',
 
+  // ── Added by user ──
+  Splintery: 'shatter',
+  Burnt: 'flame',
+
   // ── Remaining words that need a home ──
   Soggy: 'melt',
   Sweet: 'glide',
@@ -322,6 +327,7 @@ const WORD_ANIMATION_MAP: Record<string, CulinaryAnimation> = {
   Metallic: 'sizzle',
   Cloying: 'melt',
   Acrid: 'flame',
+  Burnt: 'flame',
   Yeasty: 'puff',
   Rancid: 'crumble',
   Stinky: 'puff',

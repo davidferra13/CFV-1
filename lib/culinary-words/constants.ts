@@ -138,6 +138,8 @@ export const DEFAULT_CULINARY_WORDS: CulinaryWord[] = [
   { word: 'Plush', tier: 3, category: 'texture' },
   { word: 'Rustic', tier: 3, category: 'texture' },
   { word: 'Crunch', tier: 3, category: 'texture' },
+  { word: 'Splintery', tier: 3, category: 'texture' },
+  { word: 'Burnt', tier: 3, category: 'texture' },
   { word: 'Tuile', tier: 4, category: 'texture' },
 
   // ══════════════════════════════════════════
