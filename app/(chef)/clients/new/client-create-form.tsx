@@ -388,15 +388,21 @@ export function ClientCreateForm() {
         full_name: fullName.trim(),
       }
 
-      // Quick Add fields
+      // Quick Add fields (always sent)
       if (email.trim()) payload.email = email.trim()
       if (phone.trim()) payload.phone = phone.trim()
       if (referralSource) payload.referral_source = referralSource
       if (status && status !== 'active') payload.status = status
+      if (preferredName.trim()) payload.preferred_name = preferredName.trim()
+      if (address.trim()) payload.address = address.trim()
+      if (partnerName.trim()) payload.partner_name = partnerName.trim()
+      if (guestCount.trim()) payload.typical_guest_count = guestCount.trim()
+      if (allergies.length > 0) payload.allergies = allergies
+      if (dietaryRestrictions.length > 0) payload.dietary_restrictions = dietaryRestrictions
+      if (vibeNotes.trim()) payload.vibe_notes = vibeNotes.trim()
 
       // Full Profile fields (only sent in full mode)
       if (mode === 'full') {
-        if (preferredName.trim()) payload.preferred_name = preferredName.trim()
         if (preferredContact) payload.preferred_contact_method = preferredContact
         if (referralDetail.trim()) payload.referral_source_detail = referralDetail.trim()
         if (occupation.trim()) payload.occupation = occupation.trim()
@@ -406,24 +412,20 @@ export function ClientCreateForm() {
         if (instagram.trim()) payload.instagram_handle = instagram.trim().replace(/^@/, '')
 
         // Household
-        if (partnerName.trim()) payload.partner_name = partnerName.trim()
         if (children.filter((c) => c.trim()).length > 0)
           payload.children = children.filter((c) => c.trim())
         if (pets.filter((p) => p.name.trim()).length > 0)
           payload.pets = pets.filter((p) => p.name.trim())
         if (familyNotes.trim()) payload.family_notes = familyNotes.trim()
 
-        // Dietary
-        if (dietaryRestrictions.length > 0) payload.dietary_restrictions = dietaryRestrictions
-        if (allergies.length > 0) payload.allergies = allergies
+        // Dietary (extended — allergies & restrictions already sent above)
         if (dislikes.length > 0) payload.dislikes = dislikes
         if (spiceTolerance) payload.spice_tolerance = spiceTolerance
         if (favoriteCuisines.length > 0) payload.favorite_cuisines = favoriteCuisines
         if (favoriteDishes.length > 0) payload.favorite_dishes = favoriteDishes
         if (wineBeveragePrefs.trim()) payload.wine_beverage_preferences = wineBeveragePrefs.trim()
 
-        // Address / Access
-        if (address.trim()) payload.address = address.trim()
+        // Address / Access (address already sent above)
         if (parkingInstructions.trim()) payload.parking_instructions = parkingInstructions.trim()
         if (accessInstructions.trim()) payload.access_instructions = accessInstructions.trim()
         if (gateCode.trim()) payload.gate_code = gateCode.trim()
@@ -450,9 +452,8 @@ export function ClientCreateForm() {
         if (platingNotes.trim()) payload.kitchen_plating_notes = platingNotes.trim()
         if (sinkNotes.trim()) payload.kitchen_sink_notes = sinkNotes.trim()
 
-        // Service Defaults
+        // Service Defaults (guest count already sent above)
         if (serviceStyle.trim()) payload.preferred_service_style = serviceStyle.trim()
-        if (guestCount.trim()) payload.typical_guest_count = guestCount.trim()
         if (preferredDays.length > 0) payload.preferred_event_days = preferredDays
         if (budgetMin.trim())
           payload.budget_range_min_cents = Math.round(parseFloat(budgetMin) * 100)
@@ -461,10 +462,9 @@ export function ClientCreateForm() {
         if (cleanupExpectations.trim()) payload.cleanup_expectations = cleanupExpectations.trim()
         if (leftoversPref.trim()) payload.leftovers_preference = leftoversPref.trim()
 
-        // Personality / Communication
+        // Personality / Communication (vibe notes already sent above)
         if (formalityLevel) payload.formality_level = formalityLevel
         if (communicationStyle.trim()) payload.communication_style_notes = communicationStyle.trim()
-        if (vibeNotes.trim()) payload.vibe_notes = vibeNotes.trim()
         if (whatTheyCareAbout.trim()) payload.what_they_care_about = whatTheyCareAbout.trim()
         if (wowFactors.trim()) payload.wow_factors = wowFactors.trim()
         if (paymentBehavior.trim()) payload.payment_behavior = paymentBehavior.trim()
@@ -533,6 +533,12 @@ export function ClientCreateForm() {
             required
           />
           <Input
+            label="Preferred Name / Nickname"
+            placeholder="What they like to be called"
+            value={preferredName}
+            onChange={(e) => setPreferredName(e.target.value)}
+          />
+          <Input
             label="Email"
             type="email"
             placeholder="client@example.com"
@@ -544,6 +550,12 @@ export function ClientCreateForm() {
             placeholder="(555) 555-5555"
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
+          />
+          <Textarea
+            label="Address"
+            placeholder="Full address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
           />
           <Select
             label="How did they find you?"
@@ -559,7 +571,45 @@ export function ClientCreateForm() {
             <option value="email">Email</option>
             <option value="other">Other</option>
           </Select>
+          <Input
+            label="Partner / Spouse Name"
+            placeholder="Name"
+            value={partnerName}
+            onChange={(e) => setPartnerName(e.target.value)}
+          />
+          <Input
+            label="Typical Guest Count"
+            placeholder="e.g. 4-6, 8-12, 20+"
+            value={guestCount}
+            onChange={(e) => setGuestCount(e.target.value)}
+          />
         </div>
+
+        {/* Dietary — always on Quick Add because it's safety-critical */}
+        <div className="space-y-3">
+          <TagArrayInput
+            label="Allergies"
+            value={allergies}
+            onChange={setAllergies}
+            placeholder="Type allergy and press Enter"
+            suggestions={ALLERGY_SUGGESTIONS}
+          />
+          <TagArrayInput
+            label="Dietary Restrictions"
+            value={dietaryRestrictions}
+            onChange={setDietaryRestrictions}
+            placeholder="e.g. Vegetarian, Gluten-Free"
+            suggestions={RESTRICTION_SUGGESTIONS}
+          />
+        </div>
+
+        {/* Quick notes field */}
+        <Textarea
+          label="Notes"
+          placeholder="Anything else from the first call — vibe, special requests, how they sounded..."
+          value={vibeNotes}
+          onChange={(e) => setVibeNotes(e.target.value)}
+        />
 
         {/* ─── Full Profile Sections (collapsible) ────────────────────── */}
         {mode === 'full' && (
@@ -567,15 +617,9 @@ export function ClientCreateForm() {
             {/* 1. Identity & Demographics */}
             <Section
               title="Identity & Demographics"
-              description="Preferred name, occupation, birthday, social media"
+              description="Occupation, birthday, social media, contact preferences"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Preferred Name / Nickname"
-                  placeholder="What they like to be called"
-                  value={preferredName}
-                  onChange={(e) => setPreferredName(e.target.value)}
-                />
                 <Select
                   label="Preferred Contact Method"
                   value={preferredContact}
@@ -638,18 +682,7 @@ export function ClientCreateForm() {
             </Section>
 
             {/* 2. Household & Family */}
-            <Section
-              title="Household & Family"
-              description="Partner, children, pets, family dynamics"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Partner / Spouse Name"
-                  placeholder="Name"
-                  value={partnerName}
-                  onChange={(e) => setPartnerName(e.target.value)}
-                />
-              </div>
+            <Section title="Household & Family" description="Children, pets, family dynamics">
               <ChildrenManager value={children} onChange={setChildren} />
               <PetManager value={pets} onChange={setPets} />
               <Textarea
@@ -662,24 +695,9 @@ export function ClientCreateForm() {
 
             {/* 3. Dietary & Culinary Preferences */}
             <Section
-              title="Dietary & Culinary Preferences"
-              description="Allergies, restrictions, favorites, dislikes"
-              badge="Safety-Critical"
+              title="Culinary Preferences"
+              description="Favorites, dislikes, spice tolerance, beverages"
             >
-              <TagArrayInput
-                label="Allergies (CRITICAL)"
-                value={allergies}
-                onChange={setAllergies}
-                placeholder="Type allergy and press Enter"
-                suggestions={ALLERGY_SUGGESTIONS}
-              />
-              <TagArrayInput
-                label="Dietary Restrictions"
-                value={dietaryRestrictions}
-                onChange={setDietaryRestrictions}
-                placeholder="e.g. Vegetarian, Gluten-Free"
-                suggestions={RESTRICTION_SUGGESTIONS}
-              />
               <TagArrayInput
                 label="Dislikes / Won't Eat"
                 value={dislikes}
@@ -720,13 +738,7 @@ export function ClientCreateForm() {
             </Section>
 
             {/* 4. Address & Access */}
-            <Section title="Address & Access" description="Location, parking, gate codes, WiFi">
-              <Textarea
-                label="Address"
-                placeholder="Full address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
+            <Section title="Access & Security" description="Parking, gate codes, WiFi, house rules">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label="Gate Code"
@@ -898,7 +910,7 @@ export function ClientCreateForm() {
             {/* 6. Service Defaults */}
             <Section
               title="Service Defaults"
-              description="Preferred style, budget, guest count, cleanup"
+              description="Preferred style, budget, cleanup, event preferences"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Select
@@ -916,12 +928,6 @@ export function ClientCreateForm() {
                   <option value="cocktail-party">Cocktail Party / Passed Apps</option>
                   <option value="bbq">BBQ / Outdoor Grill</option>
                 </Select>
-                <Input
-                  label="Typical Guest Count"
-                  placeholder="e.g. 4-6, 8-12, 20+"
-                  value={guestCount}
-                  onChange={(e) => setGuestCount(e.target.value)}
-                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1.5">
