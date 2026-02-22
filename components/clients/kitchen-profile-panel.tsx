@@ -23,6 +23,12 @@ interface KitchenProfileData {
   equipment_available: string[] | null
   equipment_must_bring: string[] | null
   kitchen_profile_updated_at: string | null
+  // Extended fields
+  has_dishwasher: boolean | null
+  outdoor_cooking_notes: string | null
+  nearest_grocery_store: string | null
+  water_quality_notes: string | null
+  available_place_settings: number | null
 }
 
 interface KitchenProfilePanelProps {
@@ -71,7 +77,14 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
   const [draft, setDraft] = useState<KitchenProfileData>(initialData)
 
   const hasAnyNotes =
-    FIELDS.some((f) => !!data[f.key]) || !!data.kitchen_constraints || !!data.kitchen_size
+    FIELDS.some((f) => !!data[f.key]) ||
+    !!data.kitchen_constraints ||
+    !!data.kitchen_size ||
+    data.has_dishwasher !== null ||
+    !!data.outdoor_cooking_notes ||
+    !!data.nearest_grocery_store ||
+    !!data.water_quality_notes ||
+    data.available_place_settings !== null
 
   function startEdit() {
     setDraft({ ...data })
@@ -98,6 +111,11 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
         kitchen_sink_notes: draft.kitchen_sink_notes ?? undefined,
         equipment_available: draft.equipment_available ?? undefined,
         equipment_must_bring: draft.equipment_must_bring ?? undefined,
+        has_dishwasher: draft.has_dishwasher,
+        outdoor_cooking_notes: draft.outdoor_cooking_notes ?? undefined,
+        nearest_grocery_store: draft.nearest_grocery_store ?? undefined,
+        water_quality_notes: draft.water_quality_notes ?? undefined,
+        available_place_settings: draft.available_place_settings,
         kitchen_profile_updated_at: new Date().toISOString(),
       } as any)
       setData({ ...draft, kitchen_profile_updated_at: new Date().toISOString() })
@@ -172,6 +190,102 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                 ))}
               </div>
 
+              {/* Extended kitchen fields */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">
+                    Dishwasher?
+                  </label>
+                  <div className="flex gap-3 py-2">
+                    <label className="flex items-center gap-1.5 text-sm">
+                      <input
+                        type="radio"
+                        name="dishwasher"
+                        checked={draft.has_dishwasher === true}
+                        onChange={() => setDraft((p) => ({ ...p, has_dishwasher: true }))}
+                        className="text-brand-500"
+                      />{' '}
+                      Yes
+                    </label>
+                    <label className="flex items-center gap-1.5 text-sm">
+                      <input
+                        type="radio"
+                        name="dishwasher"
+                        checked={draft.has_dishwasher === false}
+                        onChange={() => setDraft((p) => ({ ...p, has_dishwasher: false }))}
+                        className="text-brand-500"
+                      />{' '}
+                      No
+                    </label>
+                    <label className="flex items-center gap-1.5 text-sm">
+                      <input
+                        type="radio"
+                        name="dishwasher"
+                        checked={draft.has_dishwasher === null}
+                        onChange={() => setDraft((p) => ({ ...p, has_dishwasher: null }))}
+                        className="text-brand-500"
+                      />{' '}
+                      Unknown
+                    </label>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">
+                    Place settings available
+                  </label>
+                  <input
+                    type="number"
+                    value={draft.available_place_settings ?? ''}
+                    onChange={(e) =>
+                      setDraft((p) => ({
+                        ...p,
+                        available_place_settings: e.target.value ? parseInt(e.target.value) : null,
+                      }))
+                    }
+                    placeholder="How many?"
+                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">
+                    Nearest grocery store
+                  </label>
+                  <input
+                    type="text"
+                    value={draft.nearest_grocery_store ?? ''}
+                    onChange={(e) =>
+                      updateDraftField('nearest_grocery_store' as any, e.target.value)
+                    }
+                    placeholder="Name and distance"
+                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-stone-500 mb-1">
+                    Water quality
+                  </label>
+                  <input
+                    type="text"
+                    value={draft.water_quality_notes ?? ''}
+                    onChange={(e) => updateDraftField('water_quality_notes' as any, e.target.value)}
+                    placeholder="Well, city, filtered..."
+                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-stone-500 mb-1">
+                  Outdoor cooking
+                </label>
+                <textarea
+                  value={draft.outdoor_cooking_notes ?? ''}
+                  onChange={(e) => updateDraftField('outdoor_cooking_notes' as any, e.target.value)}
+                  placeholder="Grill, smoker, pizza oven, fire pit..."
+                  rows={2}
+                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
+                />
+              </div>
+
               {/* General constraints */}
               <div>
                 <label className="block text-xs font-medium text-stone-500 mb-1">
@@ -221,6 +335,41 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                     <div>
                       <p className="text-xs font-medium text-stone-500">General notes</p>
                       <p className="text-sm text-stone-800">{data.kitchen_constraints}</p>
+                    </div>
+                  )}
+                  {/* Extended fields */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {data.has_dishwasher !== null && (
+                      <div>
+                        <p className="text-xs font-medium text-stone-500">Dishwasher</p>
+                        <p className="text-sm text-stone-800">
+                          {data.has_dishwasher ? 'Yes' : 'No'}
+                        </p>
+                      </div>
+                    )}
+                    {data.available_place_settings !== null && (
+                      <div>
+                        <p className="text-xs font-medium text-stone-500">Place settings</p>
+                        <p className="text-sm text-stone-800">{data.available_place_settings}</p>
+                      </div>
+                    )}
+                    {data.nearest_grocery_store && (
+                      <div>
+                        <p className="text-xs font-medium text-stone-500">Nearest grocery</p>
+                        <p className="text-sm text-stone-800">{data.nearest_grocery_store}</p>
+                      </div>
+                    )}
+                    {data.water_quality_notes && (
+                      <div>
+                        <p className="text-xs font-medium text-stone-500">Water quality</p>
+                        <p className="text-sm text-stone-800">{data.water_quality_notes}</p>
+                      </div>
+                    )}
+                  </div>
+                  {data.outdoor_cooking_notes && (
+                    <div>
+                      <p className="text-xs font-medium text-stone-500">Outdoor cooking</p>
+                      <p className="text-sm text-stone-800">{data.outdoor_cooking_notes}</p>
                     </div>
                   )}
                 </div>

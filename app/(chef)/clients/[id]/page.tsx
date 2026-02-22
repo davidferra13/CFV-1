@@ -62,6 +62,14 @@ import { PortalLinkManager } from '@/components/clients/portal-link-manager'
 import { ClientPreferencePanel } from '@/components/ai/client-preference-panel'
 import { SentimentBadge } from '@/components/ai/sentiment-badge'
 import { NDAPanel } from '@/components/protection/nda-panel'
+import { DemographicsEditor } from '@/components/clients/demographics-editor'
+import { PetManager } from '@/components/clients/pet-manager'
+import { SecurityAccessPanel } from '@/components/clients/security-access-panel'
+import { ServiceDefaultsPanel } from '@/components/clients/service-defaults-panel'
+import { BusinessIntelPanel } from '@/components/clients/business-intel-panel'
+import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
+import { getClientPhotos } from '@/lib/clients/photo-actions'
+import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
 
 const TIER_COLORS: Record<string, string> = {
   bronze: 'bg-amber-100 text-amber-800',
@@ -111,6 +119,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     allUsedTags,
     clientNBA,
     portalTokenData,
+    clientPhotos,
   ] = await Promise.all([
     getClientWithStats(params.id),
     getMessageThread('client', params.id),
@@ -136,6 +145,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getAllUsedTags().catch(() => []),
     getClientNextBestAction(params.id).catch(() => null),
     getClientPortalToken(params.id).catch(() => ({ token: null, createdAt: null })),
+    getClientPhotos(params.id).catch(() => []),
   ])
 
   const clientReviews = allReviews.filter((r: any) => r.client?.id === params.id)
@@ -317,6 +327,20 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </CardContent>
       </Card>
+
+      {/* Demographics & Identity */}
+      <DemographicsEditor
+        clientId={client.id}
+        occupation={(client as any).occupation ?? null}
+        companyName={(client as any).company_name ?? null}
+        birthday={(client as any).birthday ?? null}
+        anniversary={(client as any).anniversary ?? null}
+        instagramHandle={(client as any).instagram_handle ?? null}
+        preferredContactMethod={(client as any).preferred_contact_method ?? null}
+        referralSource={(client as any).referral_source ?? null}
+        referralSourceDetail={(client as any).referral_source_detail ?? null}
+        formality={(client as any).formality_level ?? null}
+      />
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
@@ -634,6 +658,63 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         }}
       />
 
+      {/* Pets */}
+      <PetManager
+        clientId={client.id}
+        initialPets={
+          ((client as any).pets as Array<{ name: string; type: string; notes?: string }>) ?? []
+        }
+      />
+
+      {/* Client Photos */}
+      <ClientPhotoGallery clientId={client.id} initialPhotos={clientPhotos as any} />
+
+      {/* Kitchen Profile */}
+      <KitchenProfilePanel
+        clientId={client.id}
+        initialData={{
+          kitchen_size: (client as any).kitchen_size ?? null,
+          kitchen_constraints: (client as any).kitchen_constraints ?? null,
+          kitchen_oven_notes: (client as any).kitchen_oven_notes ?? null,
+          kitchen_burner_notes: (client as any).kitchen_burner_notes ?? null,
+          kitchen_counter_notes: (client as any).kitchen_counter_notes ?? null,
+          kitchen_refrigeration_notes: (client as any).kitchen_refrigeration_notes ?? null,
+          kitchen_plating_notes: (client as any).kitchen_plating_notes ?? null,
+          kitchen_sink_notes: (client as any).kitchen_sink_notes ?? null,
+          equipment_available: (client as any).equipment_available ?? null,
+          equipment_must_bring: (client as any).equipment_must_bring ?? null,
+          kitchen_profile_updated_at: (client as any).kitchen_profile_updated_at ?? null,
+          has_dishwasher: (client as any).has_dishwasher ?? null,
+          outdoor_cooking_notes: (client as any).outdoor_cooking_notes ?? null,
+          nearest_grocery_store: (client as any).nearest_grocery_store ?? null,
+          water_quality_notes: (client as any).water_quality_notes ?? null,
+          available_place_settings: (client as any).available_place_settings ?? null,
+        }}
+      />
+
+      {/* Security & Access */}
+      <SecurityAccessPanel
+        clientId={client.id}
+        gateCode={(client as any).gate_code ?? null}
+        wifiPassword={(client as any).wifi_password ?? null}
+        securityNotes={(client as any).security_notes ?? null}
+        parkingInstructions={(client as any).parking_instructions ?? null}
+        accessInstructions={(client as any).access_instructions ?? null}
+        houseRules={(client as any).house_rules ?? null}
+      />
+
+      {/* Service Defaults */}
+      <ServiceDefaultsPanel
+        clientId={client.id}
+        preferredServiceStyle={(client as any).preferred_service_style ?? null}
+        typicalGuestCount={(client as any).typical_guest_count ?? null}
+        preferredEventDays={(client as any).preferred_event_days ?? null}
+        budgetRangeMinCents={(client as any).budget_range_min_cents ?? null}
+        budgetRangeMaxCents={(client as any).budget_range_max_cents ?? null}
+        cleanupExpectations={(client as any).cleanup_expectations ?? null}
+        leftoversPref={(client as any).leftovers_preference ?? null}
+      />
+
       {/* Client Connections */}
       <ClientConnections
         clientId={client.id}
@@ -691,6 +772,19 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* AI Client Preference Panel */}
       <ClientPreferencePanel clientId={params.id} />
+
+      {/* Chef's Internal Assessment */}
+      <BusinessIntelPanel
+        clientId={client.id}
+        referralPotential={(client as any).referral_potential ?? null}
+        redFlags={(client as any).red_flags ?? null}
+        acquisitionCostCents={(client as any).acquisition_cost_cents ?? null}
+        complaintHandling={(client as any).complaint_handling_notes ?? null}
+        wowFactors={(client as any).wow_factors ?? null}
+        paymentBehavior={(client as any).payment_behavior ?? null}
+        tippingPattern={(client as any).tipping_pattern ?? null}
+        farewellStyle={(client as any).farewell_style ?? null}
+      />
 
       {/* Unified Client Timeline */}
       <Card>

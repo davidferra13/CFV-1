@@ -26,6 +26,13 @@ type ClientLike = {
   personal_milestones?: unknown[] | null
   what_they_care_about?: string | null
   tipping_pattern?: string | null
+  // Extended fields
+  birthday?: string | null
+  anniversary?: string | null
+  address?: string | null
+  pets?: unknown[] | null
+  preferred_service_style?: string | null
+  formality_level?: string | null
 }
 
 type FieldCheck = {
@@ -38,74 +45,103 @@ const FIELDS: FieldCheck[] = [
   // Critical — allergies and safety (weighted heavily)
   {
     label: 'allergies confirmed',
-    weight: 20,
-    filled: c => Array.isArray(c.allergies) && c.allergies.length > 0,
+    weight: 15,
+    filled: (c) => Array.isArray(c.allergies) && c.allergies.length > 0,
   },
   {
     label: 'dietary restrictions',
-    weight: 15,
-    filled: c => Array.isArray(c.dietary_restrictions) && c.dietary_restrictions.length > 0,
+    weight: 12,
+    filled: (c) => Array.isArray(c.dietary_restrictions) && c.dietary_restrictions.length > 0,
   },
   {
     label: 'kitchen constraints',
-    weight: 10,
-    filled: c => typeof c.kitchen_constraints === 'string' && c.kitchen_constraints.trim().length > 0,
+    weight: 8,
+    filled: (c) =>
+      typeof c.kitchen_constraints === 'string' && c.kitchen_constraints.trim().length > 0,
   },
 
   // Important — preferences and logistics
   {
     label: 'contact info (phone or email)',
-    weight: 10,
-    filled: c =>
+    weight: 8,
+    filled: (c) =>
       (typeof c.phone === 'string' && c.phone.trim().length > 0) ||
       (typeof c.email === 'string' && c.email.trim().length > 0),
   },
   {
     label: 'preferred cuisines',
-    weight: 8,
-    filled: c => Array.isArray(c.favorite_cuisines) && c.favorite_cuisines.length > 0,
+    weight: 6,
+    filled: (c) => Array.isArray(c.favorite_cuisines) && c.favorite_cuisines.length > 0,
   },
   {
     label: 'dislikes',
-    weight: 8,
-    filled: c => Array.isArray(c.dislikes) && c.dislikes.length > 0,
+    weight: 6,
+    filled: (c) => Array.isArray(c.dislikes) && c.dislikes.length > 0,
   },
   {
     label: 'vibe notes',
-    weight: 8,
-    filled: c => typeof c.vibe_notes === 'string' && c.vibe_notes.trim().length > 0,
+    weight: 6,
+    filled: (c) => typeof c.vibe_notes === 'string' && c.vibe_notes.trim().length > 0,
   },
   {
     label: 'payment behavior',
-    weight: 6,
-    filled: c => typeof c.payment_behavior === 'string' && c.payment_behavior.trim().length > 0,
+    weight: 5,
+    filled: (c) => typeof c.payment_behavior === 'string' && c.payment_behavior.trim().length > 0,
+  },
+
+  // New fields — address, birthday, service preferences
+  {
+    label: 'birthday or anniversary',
+    weight: 5,
+    filled: (c) =>
+      (typeof c.birthday === 'string' && c.birthday.length > 0) ||
+      (typeof c.anniversary === 'string' && c.anniversary.length > 0),
+  },
+  {
+    label: 'address',
+    weight: 5,
+    filled: (c) => typeof c.address === 'string' && c.address.trim().length > 0,
+  },
+  {
+    label: 'pets documented',
+    weight: 4,
+    filled: (c) => Array.isArray(c.pets) && c.pets.length > 0,
+  },
+  {
+    label: 'service defaults',
+    weight: 4,
+    filled: (c) =>
+      (typeof c.preferred_service_style === 'string' &&
+        c.preferred_service_style.trim().length > 0) ||
+      (typeof c.formality_level === 'string' && c.formality_level.trim().length > 0),
   },
 
   // Nice-to-have — relationship depth
   {
     label: 'regular guests',
-    weight: 5,
-    filled: c => Array.isArray(c.regular_guests) && c.regular_guests.length > 0,
+    weight: 4,
+    filled: (c) => Array.isArray(c.regular_guests) && c.regular_guests.length > 0,
   },
   {
     label: "partner's name",
     weight: 4,
-    filled: c => typeof c.partner_name === 'string' && c.partner_name.trim().length > 0,
+    filled: (c) => typeof c.partner_name === 'string' && c.partner_name.trim().length > 0,
   },
   {
     label: 'personal milestones',
     weight: 4,
-    filled: c => Array.isArray(c.personal_milestones) && c.personal_milestones.length > 0,
+    filled: (c) => Array.isArray(c.personal_milestones) && c.personal_milestones.length > 0,
   },
   {
     label: 'what they care about',
-    weight: 2,
-    filled: c => typeof c.what_they_care_about === 'string' && c.what_they_care_about.trim().length > 0,
+    weight: 4,
+    filled: (c) =>
+      typeof c.what_they_care_about === 'string' && c.what_they_care_about.trim().length > 0,
   },
 ]
 
 // Total weight must equal 100
-// 20 + 15 + 10 + 10 + 8 + 8 + 8 + 6 + 5 + 4 + 4 + 2 = 100 ✓
+// 15 + 12 + 8 + 8 + 6 + 6 + 6 + 5 + 5 + 5 + 4 + 4 + 4 + 4 + 4 + 4 = 100 ✓
 
 export function getClientProfileCompleteness(client: ClientLike): ProfileCompletenessResult {
   let score = 0
@@ -120,17 +156,13 @@ export function getClientProfileCompleteness(client: ClientLike): ProfileComplet
   }
 
   // Show only the top missing fields by weight (most impactful first)
-  const sortedMissing = FIELDS
-    .filter(f => !f.filled(client))
+  const sortedMissing = FIELDS.filter((f) => !f.filled(client))
     .sort((a, b) => b.weight - a.weight)
     .slice(0, 4)
-    .map(f => f.label)
+    .map((f) => f.label)
 
   const tier: ProfileCompletenessResult['tier'] =
-    score >= 85 ? 'complete' :
-    score >= 60 ? 'good' :
-    score >= 35 ? 'basic' :
-    'minimal'
+    score >= 85 ? 'complete' : score >= 60 ? 'good' : score >= 35 ? 'basic' : 'minimal'
 
   return { score, missing: sortedMissing, tier }
 }

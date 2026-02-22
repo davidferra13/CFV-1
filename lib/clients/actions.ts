@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { appendLedgerEntryForChef } from '@/lib/ledger/append'
 import { z } from 'zod'
 import crypto from 'crypto'
 
@@ -15,11 +16,33 @@ const InviteClientSchema = z.object({
   full_name: z.string().min(1, 'Name required'),
 })
 
-const UpdateClientSchema = z.object({
-  full_name: z.string().min(1).optional(),
+const CreateClientSchema = z.object({
+  // Required
+  full_name: z.string().min(1, 'Name required'),
+  // Optional identity
+  email: z.string().email('Valid email').optional(),
   phone: z.string().optional(),
-  address: z.string().optional(),
+  preferred_name: z.string().optional(),
   preferred_contact_method: z.enum(['phone', 'email', 'text', 'instagram']).optional(),
+  referral_source: z
+    .enum(['take_a_chef', 'instagram', 'referral', 'website', 'phone', 'email', 'other'])
+    .optional(),
+  referral_source_detail: z.string().optional(),
+  // Demographics
+  occupation: z.string().optional(),
+  company_name: z.string().optional(),
+  birthday: z.string().optional(),
+  anniversary: z.string().optional(),
+  instagram_handle: z.string().optional(),
+  social_media_links: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
+  // Household
+  partner_name: z.string().optional(),
+  children: z.array(z.string()).optional(),
+  pets: z
+    .array(z.object({ name: z.string(), type: z.string(), notes: z.string().optional() }))
+    .optional(),
+  family_notes: z.string().optional(),
+  // Dietary
   dietary_restrictions: z.array(z.string()).optional(),
   allergies: z.array(z.string()).optional(),
   dislikes: z.array(z.string()).optional(),
@@ -27,18 +50,107 @@ const UpdateClientSchema = z.object({
   favorite_cuisines: z.array(z.string()).optional(),
   favorite_dishes: z.array(z.string()).optional(),
   wine_beverage_preferences: z.string().optional(),
-  partner_name: z.string().optional(),
+  dietary_protocols: z.array(z.string()).optional(),
+  // Address / Access
+  address: z.string().optional(),
   parking_instructions: z.string().optional(),
   access_instructions: z.string().optional(),
+  gate_code: z.string().optional(),
+  wifi_password: z.string().optional(),
+  security_notes: z.string().optional(),
+  house_rules: z.string().optional(),
+  // Kitchen
   kitchen_size: z.string().optional(),
   kitchen_constraints: z.string().optional(),
-  house_rules: z.string().optional(),
+  has_dishwasher: z.boolean().optional(),
+  outdoor_cooking_notes: z.string().optional(),
+  nearest_grocery_store: z.string().optional(),
+  water_quality_notes: z.string().optional(),
+  available_place_settings: z.number().int().optional(),
   equipment_available: z.array(z.string()).optional(),
   equipment_must_bring: z.array(z.string()).optional(),
+  kitchen_oven_notes: z.string().optional(),
+  kitchen_burner_notes: z.string().optional(),
+  kitchen_counter_notes: z.string().optional(),
+  kitchen_refrigeration_notes: z.string().optional(),
+  kitchen_plating_notes: z.string().optional(),
+  kitchen_sink_notes: z.string().optional(),
+  // Service Defaults
+  preferred_service_style: z.string().optional(),
+  typical_guest_count: z.string().optional(),
+  preferred_event_days: z.array(z.string()).optional(),
+  budget_range_min_cents: z.number().int().optional(),
+  budget_range_max_cents: z.number().int().optional(),
+  cleanup_expectations: z.string().optional(),
+  leftovers_preference: z.string().optional(),
+  // Personality / Communication
+  formality_level: z.enum(['casual', 'semi_formal', 'formal']).optional(),
+  communication_style_notes: z.string().optional(),
   vibe_notes: z.string().optional(),
   what_they_care_about: z.string().optional(),
+  wow_factors: z.string().optional(),
+  payment_behavior: z.string().optional(),
+  tipping_pattern: z.string().optional(),
+  farewell_style: z.string().optional(),
+  complaint_handling_notes: z.string().optional(),
+  // Business Intelligence
+  referral_potential: z.enum(['low', 'medium', 'high']).optional(),
+  red_flags: z.string().optional(),
+  acquisition_cost_cents: z.number().int().optional(),
+  // Status
   status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional(),
-  // Kitchen profile structured fields (Migration D)
+})
+
+const UpdateClientSchema = z.object({
+  full_name: z.string().min(1).optional(),
+  phone: z.string().optional(),
+  preferred_name: z.string().optional(),
+  preferred_contact_method: z.enum(['phone', 'email', 'text', 'instagram']).optional(),
+  referral_source: z
+    .enum(['take_a_chef', 'instagram', 'referral', 'website', 'phone', 'email', 'other'])
+    .optional(),
+  referral_source_detail: z.string().optional(),
+  // Demographics
+  occupation: z.string().optional(),
+  company_name: z.string().optional(),
+  birthday: z.string().nullable().optional(),
+  anniversary: z.string().nullable().optional(),
+  instagram_handle: z.string().optional(),
+  social_media_links: z.array(z.object({ platform: z.string(), url: z.string() })).optional(),
+  // Household
+  partner_name: z.string().optional(),
+  children: z.array(z.string()).optional(),
+  pets: z
+    .array(z.object({ name: z.string(), type: z.string(), notes: z.string().optional() }))
+    .optional(),
+  family_notes: z.string().optional(),
+  // Dietary
+  dietary_restrictions: z.array(z.string()).optional(),
+  allergies: z.array(z.string()).optional(),
+  dislikes: z.array(z.string()).optional(),
+  spice_tolerance: z.enum(['none', 'mild', 'medium', 'hot', 'very_hot']).optional(),
+  favorite_cuisines: z.array(z.string()).optional(),
+  favorite_dishes: z.array(z.string()).optional(),
+  wine_beverage_preferences: z.string().optional(),
+  dietary_protocols: z.array(z.string()).optional(),
+  // Address / Access
+  address: z.string().optional(),
+  parking_instructions: z.string().optional(),
+  access_instructions: z.string().optional(),
+  gate_code: z.string().optional(),
+  wifi_password: z.string().optional(),
+  security_notes: z.string().optional(),
+  house_rules: z.string().optional(),
+  // Kitchen
+  kitchen_size: z.string().optional(),
+  kitchen_constraints: z.string().optional(),
+  has_dishwasher: z.boolean().nullable().optional(),
+  outdoor_cooking_notes: z.string().optional(),
+  nearest_grocery_store: z.string().optional(),
+  water_quality_notes: z.string().optional(),
+  available_place_settings: z.number().int().nullable().optional(),
+  equipment_available: z.array(z.string()).optional(),
+  equipment_must_bring: z.array(z.string()).optional(),
   kitchen_oven_notes: z.string().optional(),
   kitchen_burner_notes: z.string().optional(),
   kitchen_counter_notes: z.string().optional(),
@@ -46,10 +158,35 @@ const UpdateClientSchema = z.object({
   kitchen_plating_notes: z.string().optional(),
   kitchen_sink_notes: z.string().optional(),
   kitchen_profile_updated_at: z.string().optional(),
+  // Service Defaults
+  preferred_service_style: z.string().optional(),
+  typical_guest_count: z.string().optional(),
+  preferred_event_days: z.array(z.string()).optional(),
+  budget_range_min_cents: z.number().int().nullable().optional(),
+  budget_range_max_cents: z.number().int().nullable().optional(),
+  cleanup_expectations: z.string().optional(),
+  leftovers_preference: z.string().optional(),
+  // Personality / Communication
+  formality_level: z.enum(['casual', 'semi_formal', 'formal']).nullable().optional(),
+  communication_style_notes: z.string().optional(),
+  vibe_notes: z.string().optional(),
+  what_they_care_about: z.string().optional(),
+  wow_factors: z.string().optional(),
+  payment_behavior: z.string().optional(),
+  tipping_pattern: z.string().optional(),
+  farewell_style: z.string().optional(),
+  complaint_handling_notes: z.string().optional(),
+  // Business Intelligence
+  referral_potential: z.enum(['low', 'medium', 'high']).nullable().optional(),
+  red_flags: z.string().optional(),
+  acquisition_cost_cents: z.number().int().nullable().optional(),
+  // Status
+  status: z.enum(['active', 'dormant', 'repeat_ready', 'vip']).optional(),
 })
 
 export type InviteClientInput = z.infer<typeof InviteClientSchema>
 export type UpdateClientInput = z.infer<typeof UpdateClientSchema>
+export type CreateClientInput = z.infer<typeof CreateClientSchema>
 
 /**
  * Send client invitation (chef-only)
@@ -156,6 +293,159 @@ export async function inviteClient(input: InviteClientInput) {
   }
 
   return { success: true, invitation, invitationUrl }
+}
+
+/**
+ * Create client directly (chef-only)
+ * Used when chef wants to add a client record without sending an invitation
+ */
+export async function createClient(input: CreateClientInput) {
+  const user = await requireChef()
+  const validated = CreateClientSchema.parse(input)
+
+  const supabase = createServerClient()
+
+  // If email provided, ensure no existing client with same email in tenant
+  if (validated.email) {
+    const { data: existing } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('tenant_id', user.tenantId!)
+      .eq('email', validated.email)
+      .single()
+
+    if (existing) {
+      throw new Error('Client with this email already exists in your tenant')
+    }
+  }
+
+  // Build insert payload — only include fields that were provided
+  const insertData: Record<string, unknown> = {
+    tenant_id: user.tenantId!,
+    full_name: validated.full_name,
+    email: validated.email || null,
+    phone: validated.phone || null,
+    status: validated.status || 'active',
+  }
+
+  // Pass through all optional fields that were provided
+  const optionalFields = [
+    'preferred_name',
+    'preferred_contact_method',
+    'referral_source',
+    'referral_source_detail',
+    'occupation',
+    'company_name',
+    'birthday',
+    'anniversary',
+    'instagram_handle',
+    'social_media_links',
+    'partner_name',
+    'children',
+    'pets',
+    'family_notes',
+    'dietary_restrictions',
+    'allergies',
+    'dislikes',
+    'spice_tolerance',
+    'favorite_cuisines',
+    'favorite_dishes',
+    'wine_beverage_preferences',
+    'dietary_protocols',
+    'address',
+    'parking_instructions',
+    'access_instructions',
+    'gate_code',
+    'wifi_password',
+    'security_notes',
+    'house_rules',
+    'kitchen_size',
+    'kitchen_constraints',
+    'has_dishwasher',
+    'outdoor_cooking_notes',
+    'nearest_grocery_store',
+    'water_quality_notes',
+    'available_place_settings',
+    'equipment_available',
+    'equipment_must_bring',
+    'kitchen_oven_notes',
+    'kitchen_burner_notes',
+    'kitchen_counter_notes',
+    'kitchen_refrigeration_notes',
+    'kitchen_plating_notes',
+    'kitchen_sink_notes',
+    'preferred_service_style',
+    'typical_guest_count',
+    'preferred_event_days',
+    'budget_range_min_cents',
+    'budget_range_max_cents',
+    'cleanup_expectations',
+    'leftovers_preference',
+    'formality_level',
+    'communication_style_notes',
+    'vibe_notes',
+    'what_they_care_about',
+    'wow_factors',
+    'payment_behavior',
+    'tipping_pattern',
+    'farewell_style',
+    'complaint_handling_notes',
+    'referral_potential',
+    'red_flags',
+    'acquisition_cost_cents',
+  ] as const
+
+  for (const key of optionalFields) {
+    if ((validated as Record<string, unknown>)[key] !== undefined) {
+      insertData[key] = (validated as Record<string, unknown>)[key]
+    }
+  }
+
+  const { data: client, error } = await supabase
+    .from('clients')
+    .insert(insertData as any)
+    .select('*')
+    .single()
+
+  if (error) {
+    console.error('[createClient] Error:', error)
+    throw new Error(`Failed to create client: ${error.message}`)
+  }
+
+  // Append a zero-dollar ledger entry to record client creation (audit)
+  try {
+    await appendLedgerEntryForChef({
+      client_id: client.id,
+      entry_type: 'adjustment',
+      amount_cents: 0,
+      payment_method: 'cash',
+      description: 'Client record created',
+    })
+  } catch (err) {
+    console.error('[createClient] Ledger append failed (non-blocking):', err)
+  }
+
+  // Revalidate clients list
+  revalidatePath('/clients')
+
+  // Log chef activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      action: 'client_created',
+      domain: 'client',
+      entityType: 'client',
+      entityId: client.id,
+      summary: `Created client: ${validated.full_name} (${validated.email || 'no email'})`,
+      context: { client_name: validated.full_name, email: validated.email || null },
+    })
+  } catch (err) {
+    console.error('[createClient] Activity log failed (non-blocking):', err)
+  }
+
+  return { success: true, client }
 }
 
 /**
