@@ -1014,16 +1014,18 @@ export function RemyDrawer() {
 
   return (
     <>
-      {/* Floating trigger button — nudged above mobile bottom nav (h-14 = 56px + safe area) */}
-      <button
-        onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
-        aria-label="Open Remy (Ctrl+K)"
-        title="Open Remy (Ctrl+K)"
-      >
-        <Bot className="h-5 w-5" />
-        <span className="text-sm font-medium hidden sm:inline">Remy</span>
-      </button>
+      {/* Floating trigger button — hidden when drawer is open */}
+      {!open && (
+        <button
+          onClick={() => setOpen(true)}
+          className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
+          aria-label="Open Remy (Ctrl+K)"
+          title="Open Remy (Ctrl+K)"
+        >
+          <Bot className="h-5 w-5" />
+          <span className="text-sm font-medium hidden sm:inline">Remy</span>
+        </button>
+      )}
 
       {/* Hidden file input */}
       <input
@@ -1035,599 +1037,591 @@ export function RemyDrawer() {
         aria-label="Attach file to Remy"
       />
 
-      {/* Drawer overlay */}
+      {/* Drawer panel — no overlay, page remains interactive */}
       {open && (
-        <div
-          className="fixed inset-0 z-50 flex justify-end"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setOpen(false)
-          }}
-        >
-          <div className="w-full max-w-md bg-white dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-200 dark:border-stone-700">
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-700 bg-brand-600">
-              <div className="flex items-center gap-2">
-                {showConversationList ? (
-                  <button
-                    onClick={() => setShowConversationList(false)}
-                    className="text-white/80 hover:text-white transition-colors p-0.5"
-                    aria-label="Back to chat"
-                  >
-                    <ChevronLeft className="h-5 w-5" />
-                  </button>
-                ) : (
-                  <Bot className="h-5 w-5 text-white" />
-                )}
-                <span className="font-semibold text-white">
-                  {showConversationList ? 'Conversations' : 'Remy'}
-                </span>
-                {!showConversationList &&
-                  currentConvTitle &&
-                  currentConvTitle !== 'New conversation' && (
-                    <span className="text-xs text-white/60 font-normal truncate max-w-[140px]">
-                      {currentConvTitle}
-                    </span>
-                  )}
-              </div>
-              <div className="flex items-center gap-1">
-                {!showConversationList && (
-                  <>
-                    <button
-                      onClick={() => setSoundEnabled((prev) => !prev)}
-                      className="text-white/80 hover:text-white transition-colors p-1"
-                      title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
-                    >
-                      {soundEnabled ? (
-                        <Volume2 className="h-4 w-4" />
-                      ) : (
-                        <VolumeX className="h-4 w-4" />
-                      )}
-                    </button>
-                    <button
-                      onClick={() => setShowVoiceSettings((prev) => !prev)}
-                      className={`transition-colors p-1 ${showVoiceSettings ? 'text-white' : 'text-white/80 hover:text-white'}`}
-                      title="Voice settings"
-                    >
-                      <Settings2 className="h-4 w-4" />
-                    </button>
-                    {currentConversationId && (
-                      <button
-                        onClick={handleExport}
-                        className="text-white/80 hover:text-white transition-colors p-1"
-                        title="Export conversation"
-                      >
-                        <Download className="h-4 w-4" />
-                      </button>
-                    )}
-                    <button
-                      onClick={handleNewConversation}
-                      className="text-white/80 hover:text-white transition-colors p-1"
-                      title="New conversation"
-                    >
-                      <Plus className="h-4.5 w-4.5" />
-                    </button>
-                    <button
-                      onClick={() => setShowConversationList(true)}
-                      className="text-white/80 hover:text-white transition-colors p-1"
-                      title="All conversations"
-                    >
-                      <MessageSquare className="h-4.5 w-4.5" />
-                    </button>
-                  </>
-                )}
-                <Link
-                  href="/remy"
-                  onClick={() => setOpen(false)}
-                  className="text-white/80 hover:text-white transition-colors p-1"
-                  title="Remy History"
-                >
-                  <History className="h-4.5 w-4.5" />
-                </Link>
+        <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-200 dark:border-stone-700">
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-700 bg-brand-600">
+            <div className="flex items-center gap-2">
+              {showConversationList ? (
                 <button
-                  onClick={() => setOpen(false)}
-                  className="text-white/80 hover:text-white transition-colors p-1"
-                  aria-label="Close Remy (Esc)"
+                  onClick={() => setShowConversationList(false)}
+                  className="text-white/80 hover:text-white transition-colors p-0.5"
+                  aria-label="Back to chat"
                 >
-                  <X className="h-5 w-5" />
+                  <ChevronLeft className="h-5 w-5" />
                 </button>
-              </div>
-            </div>
-
-            {/* Voice settings panel */}
-            {showVoiceSettings && (
-              <div className="border-b border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 px-4 py-3 space-y-3 max-h-[320px] overflow-y-auto">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide">
-                    Voice Settings
+              ) : (
+                <Bot className="h-5 w-5 text-white" />
+              )}
+              <span className="font-semibold text-white">
+                {showConversationList ? 'Conversations' : 'Remy'}
+              </span>
+              {!showConversationList &&
+                currentConvTitle &&
+                currentConvTitle !== 'New conversation' && (
+                  <span className="text-xs text-white/60 font-normal truncate max-w-[140px]">
+                    {currentConvTitle}
                   </span>
+                )}
+            </div>
+            <div className="flex items-center gap-1">
+              {!showConversationList && (
+                <>
                   <button
-                    onClick={() => {
-                      setVoiceSettings(DEFAULT_VOICE_SETTINGS)
-                      saveVoiceSettings(DEFAULT_VOICE_SETTINGS)
-                    }}
-                    className="text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                    onClick={() => setSoundEnabled((prev) => !prev)}
+                    className="text-white/80 hover:text-white transition-colors p-1"
+                    title={soundEnabled ? 'Mute notifications' : 'Enable notifications'}
                   >
-                    Reset
+                    {soundEnabled ? (
+                      <Volume2 className="h-4 w-4" />
+                    ) : (
+                      <VolumeX className="h-4 w-4" />
+                    )}
                   </button>
-                </div>
-
-                {/* Voice selector */}
-                <div>
-                  <label className="block text-xs font-medium text-stone-600 dark:text-stone-300 mb-1">
-                    Voice
-                  </label>
-                  <div className="flex gap-1.5">
-                    <select
-                      value={voiceSettings.voiceURI ?? ''}
-                      onChange={(e) => updateVoiceSetting('voiceURI', e.target.value || null)}
-                      title="Select voice"
-                      className="flex-1 text-xs rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 px-2 py-1.5 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
-                    >
-                      <option value="">System default</option>
-                      {availableVoices
-                        .filter((v) => v.lang.startsWith('en'))
-                        .map((v) => (
-                          <option key={v.voiceURI} value={v.voiceURI}>
-                            {v.name} {v.localService ? '' : '(network)'}
-                          </option>
-                        ))}
-                      {availableVoices.filter((v) => !v.lang.startsWith('en')).length > 0 && (
-                        <optgroup label="Other languages">
-                          {availableVoices
-                            .filter((v) => !v.lang.startsWith('en'))
-                            .map((v) => (
-                              <option key={v.voiceURI} value={v.voiceURI}>
-                                {v.name} ({v.lang})
-                              </option>
-                            ))}
-                        </optgroup>
-                      )}
-                    </select>
+                  <button
+                    onClick={() => setShowVoiceSettings((prev) => !prev)}
+                    className={`transition-colors p-1 ${showVoiceSettings ? 'text-white' : 'text-white/80 hover:text-white'}`}
+                    title="Voice settings"
+                  >
+                    <Settings2 className="h-4 w-4" />
+                  </button>
+                  {currentConversationId && (
                     <button
-                      type="button"
-                      onClick={() => handlePreviewVoice(voiceSettings.voiceURI)}
-                      className="text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-md px-2.5 py-1.5 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors whitespace-nowrap"
+                      onClick={handleExport}
+                      className="text-white/80 hover:text-white transition-colors p-1"
+                      title="Export conversation"
                     >
-                      Preview
+                      <Download className="h-4 w-4" />
                     </button>
-                  </div>
-                </div>
-
-                {/* Speed slider */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
-                      Speed
-                    </label>
-                    <span className="text-xs text-stone-400 tabular-nums">
-                      {voiceSettings.rate.toFixed(1)}x
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="2"
-                    step="0.1"
-                    value={voiceSettings.rate}
-                    onChange={(e) => updateVoiceSetting('rate', parseFloat(e.target.value))}
-                    title="Speech speed"
-                    className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
-                    <span>Slow</span>
-                    <span>Normal</span>
-                    <span>Fast</span>
-                  </div>
-                </div>
-
-                {/* Pitch slider */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
-                      Pitch
-                    </label>
-                    <span className="text-xs text-stone-400 tabular-nums">
-                      {voiceSettings.pitch.toFixed(1)}
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="1.5"
-                    step="0.1"
-                    value={voiceSettings.pitch}
-                    onChange={(e) => updateVoiceSetting('pitch', parseFloat(e.target.value))}
-                    title="Speech pitch"
-                    className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
-                    <span>Lower</span>
-                    <span>Normal</span>
-                    <span>Higher</span>
-                  </div>
-                </div>
-
-                {/* Volume slider */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
-                      Volume
-                    </label>
-                    <span className="text-xs text-stone-400 tabular-nums">
-                      {Math.round(voiceSettings.volume * 100)}%
-                    </span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.05"
-                    value={voiceSettings.volume}
-                    onChange={(e) => updateVoiceSetting('volume', parseFloat(e.target.value))}
-                    title="Speech volume"
-                    className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
-                  />
-                  <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
-                    <span>Quiet</span>
-                    <span>Full</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Conversation list view */}
-            {showConversationList ? (
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-3">
+                  )}
                   <button
                     onClick={handleNewConversation}
-                    className="w-full flex items-center gap-2 text-sm bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-lg px-3 py-2.5 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors mb-2"
+                    className="text-white/80 hover:text-white transition-colors p-1"
+                    title="New conversation"
                   >
-                    <Plus className="h-4 w-4" />
-                    New conversation
+                    <Plus className="h-4.5 w-4.5" />
+                  </button>
+                  <button
+                    onClick={() => setShowConversationList(true)}
+                    className="text-white/80 hover:text-white transition-colors p-1"
+                    title="All conversations"
+                  >
+                    <MessageSquare className="h-4.5 w-4.5" />
+                  </button>
+                </>
+              )}
+              <Link
+                href="/remy"
+                onClick={() => setOpen(false)}
+                className="text-white/80 hover:text-white transition-colors p-1"
+                title="Remy History"
+              >
+                <History className="h-4.5 w-4.5" />
+              </Link>
+              <button
+                onClick={() => setOpen(false)}
+                className="text-white/80 hover:text-white transition-colors p-1"
+                aria-label="Close Remy (Esc)"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+
+          {/* Voice settings panel */}
+          {showVoiceSettings && (
+            <div className="border-b border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 px-4 py-3 space-y-3 max-h-[320px] overflow-y-auto">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide">
+                  Voice Settings
+                </span>
+                <button
+                  onClick={() => {
+                    setVoiceSettings(DEFAULT_VOICE_SETTINGS)
+                    saveVoiceSettings(DEFAULT_VOICE_SETTINGS)
+                  }}
+                  className="text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                >
+                  Reset
+                </button>
+              </div>
+
+              {/* Voice selector */}
+              <div>
+                <label className="block text-xs font-medium text-stone-600 dark:text-stone-300 mb-1">
+                  Voice
+                </label>
+                <div className="flex gap-1.5">
+                  <select
+                    value={voiceSettings.voiceURI ?? ''}
+                    onChange={(e) => updateVoiceSetting('voiceURI', e.target.value || null)}
+                    title="Select voice"
+                    className="flex-1 text-xs rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 px-2 py-1.5 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  >
+                    <option value="">System default</option>
+                    {availableVoices
+                      .filter((v) => v.lang.startsWith('en'))
+                      .map((v) => (
+                        <option key={v.voiceURI} value={v.voiceURI}>
+                          {v.name} {v.localService ? '' : '(network)'}
+                        </option>
+                      ))}
+                    {availableVoices.filter((v) => !v.lang.startsWith('en')).length > 0 && (
+                      <optgroup label="Other languages">
+                        {availableVoices
+                          .filter((v) => !v.lang.startsWith('en'))
+                          .map((v) => (
+                            <option key={v.voiceURI} value={v.voiceURI}>
+                              {v.name} ({v.lang})
+                            </option>
+                          ))}
+                      </optgroup>
+                    )}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => handlePreviewVoice(voiceSettings.voiceURI)}
+                    className="text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-md px-2.5 py-1.5 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors whitespace-nowrap"
+                  >
+                    Preview
                   </button>
                 </div>
-                <div className="px-3 pb-3 space-y-1">
-                  {conversations.map((conv) => (
-                    <div
-                      key={conv.id}
-                      className={`group flex items-center gap-2 rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
-                        conv.id === currentConversationId
-                          ? 'bg-stone-100 dark:bg-stone-800'
-                          : 'hover:bg-stone-50 dark:hover:bg-stone-800/50'
-                      }`}
-                    >
-                      <button
-                        onClick={() => handleSelectConversation(conv.id)}
-                        className="flex-1 text-left min-w-0"
-                      >
-                        <p className="text-sm font-medium text-stone-900 dark:text-stone-100 truncate">
-                          {conv.title}
-                        </p>
-                        {conv.lastMessage && (
-                          <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
-                            {conv.lastMessage}
-                          </p>
-                        )}
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleDeleteConversation(conv.id)
-                        }}
-                        className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-red-500 transition-all p-1"
-                        title="Delete conversation"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                  {conversations.length === 0 && (
-                    <p className="text-sm text-stone-400 text-center py-8">
-                      No conversations yet. Start one!
-                    </p>
-                  )}
+              </div>
+
+              {/* Speed slider */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                    Speed
+                  </label>
+                  <span className="text-xs text-stone-400 tabular-nums">
+                    {voiceSettings.rate.toFixed(1)}x
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="2"
+                  step="0.1"
+                  value={voiceSettings.rate}
+                  onChange={(e) => updateVoiceSetting('rate', parseFloat(e.target.value))}
+                  title="Speech speed"
+                  className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                />
+                <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                  <span>Slow</span>
+                  <span>Normal</span>
+                  <span>Fast</span>
                 </div>
               </div>
-            ) : (
-              <>
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  {/* Welcome message */}
-                  {messages.length === 0 && !streamingContent && (
-                    <div className="space-y-4">
-                      <div className="bg-stone-50 dark:bg-stone-800 rounded-xl p-4">
-                        <p className="text-sm text-stone-700 dark:text-stone-300">
-                          Hey chef! I&apos;m <span className="font-semibold">Remy</span>, your
-                          kitchen companion. I can check your schedule, look up clients, draft
-                          messages, crunch numbers, <strong>search the web</strong> — whatever you
-                          need.
-                        </p>
-                        <p className="text-xs text-stone-400 mt-2 flex items-center gap-1">
-                          <Globe className="h-3 w-3" />
-                          Web search enabled. Local AI for private data. Press{' '}
-                          <kbd className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
-                            Ctrl+K
-                          </kbd>{' '}
-                          anytime.
-                        </p>
-                      </div>
 
-                      <div className="grid grid-cols-1 gap-2">
-                        {starters.map((starter) => {
-                          const Icon = starter.icon
-                          return (
-                            <button
-                              key={starter.text}
-                              onClick={() => handleSend(starter.text)}
-                              className="flex items-center gap-2 text-left text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors text-stone-700 dark:text-stone-300"
-                            >
-                              <Icon className="h-4 w-4 text-brand-600 flex-shrink-0" />
-                              {starter.text}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
+              {/* Pitch slider */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                    Pitch
+                  </label>
+                  <span className="text-xs text-stone-400 tabular-nums">
+                    {voiceSettings.pitch.toFixed(1)}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="1.5"
+                  step="0.1"
+                  value={voiceSettings.pitch}
+                  onChange={(e) => updateVoiceSetting('pitch', parseFloat(e.target.value))}
+                  title="Speech pitch"
+                  className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                />
+                <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                  <span>Lower</span>
+                  <span>Normal</span>
+                  <span>Higher</span>
+                </div>
+              </div>
 
-                  {/* Message list */}
-                  {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`group flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+              {/* Volume slider */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                    Volume
+                  </label>
+                  <span className="text-xs text-stone-400 tabular-nums">
+                    {Math.round(voiceSettings.volume * 100)}%
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  value={voiceSettings.volume}
+                  onChange={(e) => updateVoiceSetting('volume', parseFloat(e.target.value))}
+                  title="Speech volume"
+                  className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                />
+                <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
+                  <span>Quiet</span>
+                  <span>Full</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Conversation list view */}
+          {showConversationList ? (
+            <div className="flex-1 overflow-y-auto">
+              <div className="p-3">
+                <button
+                  onClick={handleNewConversation}
+                  className="w-full flex items-center gap-2 text-sm bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-lg px-3 py-2.5 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors mb-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  New conversation
+                </button>
+              </div>
+              <div className="px-3 pb-3 space-y-1">
+                {conversations.map((conv) => (
+                  <div
+                    key={conv.id}
+                    className={`group flex items-center gap-2 rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
+                      conv.id === currentConversationId
+                        ? 'bg-stone-100 dark:bg-stone-800'
+                        : 'hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                    }`}
+                  >
+                    <button
+                      onClick={() => handleSelectConversation(conv.id)}
+                      className="flex-1 text-left min-w-0"
                     >
-                      <div className={`max-w-[85%] space-y-2 relative`}>
-                        {/* Action buttons on hover */}
-                        <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 z-10 transition-all">
-                          {msg.role === 'remy' && (
-                            <>
-                              <button
-                                onClick={() => handleSpeak(msg.id, msg.content)}
-                                className={`bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 transition-colors ${
-                                  speakingId === msg.id
-                                    ? 'text-brand-600 dark:text-brand-400'
-                                    : 'text-stone-400 hover:text-brand-600'
-                                }`}
-                                title={speakingId === msg.id ? 'Stop listening' : 'Listen'}
-                              >
-                                {speakingId === msg.id ? (
-                                  <Square className="h-3 w-3" />
-                                ) : (
-                                  <Volume2 className="h-3 w-3" />
-                                )}
-                              </button>
-                              <button
-                                onClick={() => handleCopy(msg.id, msg.content)}
-                                className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
-                                title="Copy message"
-                              >
-                                {copiedId === msg.id ? (
-                                  <Check className="h-3 w-3 text-green-500" />
-                                ) : (
-                                  <Copy className="h-3 w-3" />
-                                )}
-                              </button>
-                            </>
-                          )}
-                          <button
-                            onClick={() => handleDeleteMessage(msg.id)}
-                            className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
-                            title="Remove message"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </div>
-
-                        {/* Message bubble */}
-                        <div
-                          className={`rounded-xl px-4 py-2.5 text-sm ${
-                            msg.role === 'user'
-                              ? 'bg-brand-600 text-white'
-                              : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
-                          }`}
-                        >
-                          {msg.role === 'user' ? (
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
-                          ) : (
-                            <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                              <ReactMarkdown
-                                remarkPlugins={[remarkGfm]}
-                                components={markdownComponents as any}
-                              >
-                                {msg.content}
-                              </ReactMarkdown>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Task result cards */}
-                        {msg.role === 'remy' && msg.tasks && msg.tasks.length > 0 && (
-                          <div className="space-y-2">
-                            {msg.tasks.map((task) => (
-                              <RemyTaskCard
-                                key={task.taskId}
-                                task={task}
-                                onApprove={handleApproveTask}
-                                onReject={handleRejectTask}
-                              />
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Navigation suggestions */}
-                        {msg.role === 'remy' &&
-                          msg.navSuggestions &&
-                          msg.navSuggestions.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5">
-                              {msg.navSuggestions.map((nav) => (
-                                <Link
-                                  key={nav.href}
-                                  href={nav.href}
-                                  onClick={() => setOpen(false)}
-                                  className="inline-flex items-center gap-1 text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors"
-                                >
-                                  <ArrowRight className="h-3 w-3" />
-                                  {nav.label}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
-
-                        {/* Memory items with delete buttons */}
-                        {msg.role === 'remy' && msg.memoryItems && msg.memoryItems.length > 0 && (
-                          <div className="mt-2 space-y-1 max-h-80 overflow-y-auto">
-                            {(() => {
-                              const grouped = new Map<string, RemyMemoryItem[]>()
-                              for (const item of msg.memoryItems) {
-                                const cat = item.category
-                                if (!grouped.has(cat)) grouped.set(cat, [])
-                                grouped.get(cat)!.push(item)
-                              }
-                              return Array.from(grouped.entries()).map(([category, items]) => (
-                                <div key={category} className="mb-2">
-                                  <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1 px-1">
-                                    {category.replace(/_/g, ' ')}
-                                  </p>
-                                  {items.map((item) => (
-                                    <div
-                                      key={item.id}
-                                      className="group/mem flex items-start gap-1.5 rounded-lg px-2 py-1.5 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
-                                    >
-                                      <span className="flex-1 text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
-                                        {item.content}
-                                        {item.importance >= 8 && (
-                                          <span
-                                            className="ml-1 text-amber-500"
-                                            title="High importance"
-                                          >
-                                            !
-                                          </span>
-                                        )}
-                                      </span>
-                                      <button
-                                        onClick={() => handleDeleteMemory(item.id)}
-                                        className="opacity-0 group-hover/mem:opacity-100 flex-shrink-0 mt-0.5 text-stone-400 hover:text-red-500 transition-all p-0.5"
-                                        title="Delete this memory"
-                                      >
-                                        <X className="h-3 w-3" />
-                                      </button>
-                                    </div>
-                                  ))}
-                                </div>
-                              ))
-                            })()}
-                          </div>
-                        )}
-                      </div>
+                      <p className="text-sm font-medium text-stone-900 dark:text-stone-100 truncate">
+                        {conv.title}
+                      </p>
+                      {conv.lastMessage && (
+                        <p className="text-xs text-stone-500 dark:text-stone-400 truncate mt-0.5">
+                          {conv.lastMessage}
+                        </p>
+                      )}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDeleteConversation(conv.id)
+                      }}
+                      className="opacity-0 group-hover:opacity-100 text-stone-400 hover:text-red-500 transition-all p-1"
+                      title="Delete conversation"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ))}
+                {conversations.length === 0 && (
+                  <p className="text-sm text-stone-400 text-center py-8">
+                    No conversations yet. Start one!
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Welcome message */}
+                {messages.length === 0 && !streamingContent && (
+                  <div className="space-y-4">
+                    <div className="bg-stone-50 dark:bg-stone-800 rounded-xl p-4">
+                      <p className="text-sm text-stone-700 dark:text-stone-300">
+                        Hey chef! I&apos;m <span className="font-semibold">Remy</span>, your kitchen
+                        companion. I can check your schedule, look up clients, draft messages,
+                        crunch numbers, <strong>search the web</strong> — whatever you need.
+                      </p>
+                      <p className="text-xs text-stone-400 mt-2 flex items-center gap-1">
+                        <Globe className="h-3 w-3" />
+                        Web search enabled. Local AI for private data. Press{' '}
+                        <kbd className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
+                          Ctrl+K
+                        </kbd>{' '}
+                        anytime.
+                      </p>
                     </div>
-                  ))}
 
-                  {/* Streaming indicator */}
-                  {loading && streamingContent && (
-                    <div className="flex justify-start">
-                      <div className="max-w-[85%] space-y-1">
-                        <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100">
+                    <div className="grid grid-cols-1 gap-2">
+                      {starters.map((starter) => {
+                        const Icon = starter.icon
+                        return (
+                          <button
+                            key={starter.text}
+                            onClick={() => handleSend(starter.text)}
+                            className="flex items-center gap-2 text-left text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors text-stone-700 dark:text-stone-300"
+                          >
+                            <Icon className="h-4 w-4 text-brand-600 flex-shrink-0" />
+                            {starter.text}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Message list */}
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`group flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div className={`max-w-[85%] space-y-2 relative`}>
+                      {/* Action buttons on hover */}
+                      <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 flex items-center gap-0.5 z-10 transition-all">
+                        {msg.role === 'remy' && (
+                          <>
+                            <button
+                              onClick={() => handleSpeak(msg.id, msg.content)}
+                              className={`bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 transition-colors ${
+                                speakingId === msg.id
+                                  ? 'text-brand-600 dark:text-brand-400'
+                                  : 'text-stone-400 hover:text-brand-600'
+                              }`}
+                              title={speakingId === msg.id ? 'Stop listening' : 'Listen'}
+                            >
+                              {speakingId === msg.id ? (
+                                <Square className="h-3 w-3" />
+                              ) : (
+                                <Volume2 className="h-3 w-3" />
+                              )}
+                            </button>
+                            <button
+                              onClick={() => handleCopy(msg.id, msg.content)}
+                              className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
+                              title="Copy message"
+                            >
+                              {copiedId === msg.id ? (
+                                <Check className="h-3 w-3 text-green-500" />
+                              ) : (
+                                <Copy className="h-3 w-3" />
+                              )}
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => handleDeleteMessage(msg.id)}
+                          className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
+                          title="Remove message"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+
+                      {/* Message bubble */}
+                      <div
+                        className={`rounded-xl px-4 py-2.5 text-sm ${
+                          msg.role === 'user'
+                            ? 'bg-brand-600 text-white'
+                            : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                        }`}
+                      >
+                        {msg.role === 'user' ? (
+                          <p className="whitespace-pre-wrap">{msg.content}</p>
+                        ) : (
                           <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                             <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               components={markdownComponents as any}
                             >
-                              {streamingContent}
+                              {msg.content}
                             </ReactMarkdown>
                           </div>
-                          <span className="inline-block w-1.5 h-4 bg-brand-600 animate-pulse ml-0.5 align-text-bottom" />
+                        )}
+                      </div>
+
+                      {/* Task result cards */}
+                      {msg.role === 'remy' && msg.tasks && msg.tasks.length > 0 && (
+                        <div className="space-y-2">
+                          {msg.tasks.map((task) => (
+                            <RemyTaskCard
+                              key={task.taskId}
+                              task={task}
+                              onApprove={handleApproveTask}
+                              onReject={handleRejectTask}
+                            />
+                          ))}
                         </div>
-                        <button
-                          onClick={handleCancel}
-                          className="text-xs text-red-500 hover:text-red-700 underline transition-colors ml-1"
-                        >
-                          Stop generating
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                      )}
 
-                  {/* Loading indicator (before streaming starts) */}
-                  {loading && !streamingContent && (
-                    <div className="flex justify-start">
-                      <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-3 flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
-                        <span className="text-xs text-stone-500">
-                          {getThinkingMessage(elapsedSec, streamingIntent)}
-                          {elapsedSec > 0 ? ` ${elapsedSec}s` : ''}
-                        </span>
-                        <button
-                          onClick={handleCancel}
-                          className="ml-2 text-xs text-red-500 hover:text-red-700 underline transition-colors"
-                          title="Cancel request"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
+                      {/* Navigation suggestions */}
+                      {msg.role === 'remy' &&
+                        msg.navSuggestions &&
+                        msg.navSuggestions.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5">
+                            {msg.navSuggestions.map((nav) => (
+                              <Link
+                                key={nav.href}
+                                href={nav.href}
+                                onClick={() => setOpen(false)}
+                                className="inline-flex items-center gap-1 text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors"
+                              >
+                                <ArrowRight className="h-3 w-3" />
+                                {nav.label}
+                              </Link>
+                            ))}
+                          </div>
+                        )}
 
-                  <div ref={messagesEndRef} />
-                </div>
-
-                {/* Input */}
-                <div className="p-4 border-t border-stone-200 dark:border-stone-700">
-                  <div className="flex gap-2">
-                    <div className="flex-1 relative">
-                      <textarea
-                        ref={textareaRef}
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault()
-                            handleSend()
-                          }
-                        }}
-                        placeholder="Ask Remy anything..."
-                        className="w-full resize-none rounded-lg border border-stone-300 dark:border-stone-600 px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
-                        rows={1}
-                      />
-                      <button
-                        onClick={() => fileInputRef.current?.click()}
-                        className="absolute right-2 bottom-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
-                        title="Attach file (.txt, .md, .csv, .json, images)"
-                      >
-                        <Paperclip className="h-4 w-4" />
-                      </button>
+                      {/* Memory items with delete buttons */}
+                      {msg.role === 'remy' && msg.memoryItems && msg.memoryItems.length > 0 && (
+                        <div className="mt-2 space-y-1 max-h-80 overflow-y-auto">
+                          {(() => {
+                            const grouped = new Map<string, RemyMemoryItem[]>()
+                            for (const item of msg.memoryItems) {
+                              const cat = item.category
+                              if (!grouped.has(cat)) grouped.set(cat, [])
+                              grouped.get(cat)!.push(item)
+                            }
+                            return Array.from(grouped.entries()).map(([category, items]) => (
+                              <div key={category} className="mb-2">
+                                <p className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide mb-1 px-1">
+                                  {category.replace(/_/g, ' ')}
+                                </p>
+                                {items.map((item) => (
+                                  <div
+                                    key={item.id}
+                                    className="group/mem flex items-start gap-1.5 rounded-lg px-2 py-1.5 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
+                                  >
+                                    <span className="flex-1 text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
+                                      {item.content}
+                                      {item.importance >= 8 && (
+                                        <span
+                                          className="ml-1 text-amber-500"
+                                          title="High importance"
+                                        >
+                                          !
+                                        </span>
+                                      )}
+                                    </span>
+                                    <button
+                                      onClick={() => handleDeleteMemory(item.id)}
+                                      className="opacity-0 group-hover/mem:opacity-100 flex-shrink-0 mt-0.5 text-stone-400 hover:text-red-500 transition-all p-0.5"
+                                      title="Delete this memory"
+                                    >
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            ))
+                          })()}
+                        </div>
+                      )}
                     </div>
-                    {supportsVoice && (
-                      <button
-                        onClick={toggleVoiceInput}
-                        className={`flex items-center justify-center rounded-lg p-2 transition-colors ${
-                          isListening
-                            ? 'bg-red-500 text-white animate-pulse'
-                            : 'bg-stone-100 dark:bg-stone-700 text-stone-500 hover:text-brand-600 hover:bg-stone-200 dark:hover:bg-stone-600'
-                        }`}
-                        title={isListening ? 'Stop listening' : 'Voice input'}
-                        aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
-                      >
-                        {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                      </button>
-                    )}
-                    <Button
-                      onClick={() => handleSend()}
-                      disabled={!input.trim() || loading}
-                      variant="primary"
-                      size="sm"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
                   </div>
-                  <p className="text-xs text-stone-400 mt-1.5 flex items-center gap-1">
-                    <Globe className="h-3 w-3" />
-                    Local AI + web search. Ctrl+K to toggle.
-                  </p>
+                ))}
+
+                {/* Streaming indicator */}
+                {loading && streamingContent && (
+                  <div className="flex justify-start">
+                    <div className="max-w-[85%] space-y-1">
+                      <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100">
+                        <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={markdownComponents as any}
+                          >
+                            {streamingContent}
+                          </ReactMarkdown>
+                        </div>
+                        <span className="inline-block w-1.5 h-4 bg-brand-600 animate-pulse ml-0.5 align-text-bottom" />
+                      </div>
+                      <button
+                        onClick={handleCancel}
+                        className="text-xs text-red-500 hover:text-red-700 underline transition-colors ml-1"
+                      >
+                        Stop generating
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Loading indicator (before streaming starts) */}
+                {loading && !streamingContent && (
+                  <div className="flex justify-start">
+                    <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-3 flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
+                      <span className="text-xs text-stone-500">
+                        {getThinkingMessage(elapsedSec, streamingIntent)}
+                        {elapsedSec > 0 ? ` ${elapsedSec}s` : ''}
+                      </span>
+                      <button
+                        onClick={handleCancel}
+                        className="ml-2 text-xs text-red-500 hover:text-red-700 underline transition-colors"
+                        title="Cancel request"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input */}
+              <div className="p-4 border-t border-stone-200 dark:border-stone-700">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <textarea
+                      ref={textareaRef}
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSend()
+                        }
+                      }}
+                      placeholder="Ask Remy anything..."
+                      className="w-full resize-none rounded-lg border border-stone-300 dark:border-stone-600 px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
+                      rows={1}
+                    />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="absolute right-2 bottom-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                      title="Attach file (.txt, .md, .csv, .json, images)"
+                    >
+                      <Paperclip className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {supportsVoice && (
+                    <button
+                      onClick={toggleVoiceInput}
+                      className={`flex items-center justify-center rounded-lg p-2 transition-colors ${
+                        isListening
+                          ? 'bg-red-500 text-white animate-pulse'
+                          : 'bg-stone-100 dark:bg-stone-700 text-stone-500 hover:text-brand-600 hover:bg-stone-200 dark:hover:bg-stone-600'
+                      }`}
+                      title={isListening ? 'Stop listening' : 'Voice input'}
+                      aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
+                    >
+                      {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                    </button>
+                  )}
+                  <Button
+                    onClick={() => handleSend()}
+                    disabled={!input.trim() || loading}
+                    variant="primary"
+                    size="sm"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
                 </div>
-              </>
-            )}
-          </div>
+                <p className="text-xs text-stone-400 mt-1.5 flex items-center gap-1">
+                  <Globe className="h-3 w-3" />
+                  Local AI + web search. Ctrl+K to toggle.
+                </p>
+              </div>
+            </>
+          )}
         </div>
       )}
     </>
