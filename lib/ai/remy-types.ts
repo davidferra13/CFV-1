@@ -31,6 +31,8 @@ export interface RemyTaskResult {
   data?: unknown
   error?: string
   holdReason?: string
+  /** Agent action: structured preview for confirmation card */
+  preview?: import('@/lib/ai/command-types').AgentActionPreview
 }
 
 // ─── Server Response ────────────────────────────────────────────────────────

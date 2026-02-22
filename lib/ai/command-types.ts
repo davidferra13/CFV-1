@@ -43,6 +43,8 @@ export interface TaskResult {
   holdReason?: string
   /** tier 3: disambiguation options (e.g. multiple matching clients) */
   alternatives?: Array<{ label: string; value: string }>
+  /** Agent action: structured preview for confirmation card */
+  preview?: AgentActionPreview
 }
 
 export interface CommandRun {
@@ -51,4 +53,26 @@ export interface CommandRun {
   startedAt: string
   results: TaskResult[]
   ollamaOffline?: boolean
+}
+
+// ─── Agent Action Preview (for confirmation cards) ─────────────────────────
+
+export type AgentSafetyLevel = 'reversible' | 'significant' | 'restricted'
+
+export interface AgentActionField {
+  label: string
+  value: string
+  editable?: boolean
+}
+
+export interface AgentActionPreview {
+  actionType: string
+  summary: string
+  fields: AgentActionField[]
+  warnings?: string[]
+  safety: AgentSafetyLevel
+  /** Data payload to send back on approval */
+  commitPayload?: Record<string, unknown>
+  /** URL to redirect to after successful commit */
+  redirectUrl?: string
 }
