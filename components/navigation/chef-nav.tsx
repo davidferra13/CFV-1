@@ -911,6 +911,70 @@ function MobileGroupSection({
   )
 }
 
+// ─── Mobile Bottom Tab Bar (React-independent) ──────
+// CRITICAL: This component uses native <a> tags with an onClick fallback
+// to window.location.href. If React hydration fails (stale SW, JS error,
+// hydration mismatch), Next.js <Link> swallows the click (preventDefault)
+// but router.push silently fails → nothing happens. Native <a> tags with
+// hard-navigation fallback guarantee the bottom nav ALWAYS works.
+function MobileBottomTabBar({
+  pathname,
+  onMoreClick,
+}: {
+  pathname: string
+  onMoreClick: () => void
+}) {
+  // Ref for the "More" button — attaches a native onclick as backup
+  const moreRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    const btn = moreRef.current
+    if (!btn) return
+    // Attach a native DOM listener as backup in case React's onClick fails
+    const handler = () => onMoreClick()
+    btn.addEventListener('click', handler)
+    return () => btn.removeEventListener('click', handler)
+  }, [onMoreClick])
+
+  return (
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 pb-safe">
+      <div className="flex items-center justify-around h-14">
+        {mobileTabItems.map((item) => {
+          const active = isItemActive(pathname, item.href)
+          const Icon = item.icon
+          return (
+            <a
+              key={item.href}
+              href={item.href}
+              onClick={(e) => {
+                // Hard navigate — bypasses Next.js client router entirely.
+                // This is intentional: the bottom nav must NEVER silently fail.
+                e.preventDefault()
+                window.location.href = item.href
+              }}
+              className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors no-underline ${
+                active ? 'text-brand-600' : 'text-stone-400'
+              }`}
+            >
+              <Icon className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
+              {item.label}
+            </a>
+          )
+        })}
+        <button
+          ref={moreRef}
+          type="button"
+          onClick={() => onMoreClick()}
+          className="group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium text-stone-400"
+        >
+          <Menu className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
+          More
+        </button>
+      </div>
+    </nav>
+  )
+}
+
 // ─── Mobile Navigation ──────────────────────────────
 export function ChefMobileNav({
   primaryNavHrefs,
@@ -1161,35 +1225,10 @@ export function ChefMobileNav({
         </>
       )}
 
-      {/* Mobile bottom tab bar */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 pb-safe">
-        <div className="flex items-center justify-around h-14">
-          {mobileTabItems.map((item) => {
-            const active = isItemActive(pathname, item.href)
-            const Icon = item.icon
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors ${
-                  active ? 'text-brand-600' : 'text-stone-400'
-                }`}
-              >
-                <Icon className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
-                {item.label}
-              </Link>
-            )
-          })}
-          <button
-            type="button"
-            onClick={() => setMenuOpen(true)}
-            className="group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium text-stone-400"
-          >
-            <Menu className="w-5 h-5 group-active:scale-110 transition-transform duration-100" />
-            More
-          </button>
-        </div>
-      </nav>
+      {/* Mobile bottom tab bar — uses native <a> tags so navigation works
+          even when React hydration fails. This is the MOST CRITICAL nav on mobile;
+          it must never depend on React's event system being functional. */}
+      <MobileBottomTabBar pathname={pathname} onMoreClick={() => setMenuOpen(true)} />
     </>
   )
 }

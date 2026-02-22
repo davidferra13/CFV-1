@@ -403,7 +403,7 @@ export default function TriviaGame() {
       {/* RESULTS */}
       {phase === 'result' && (
         <div className="py-8 text-center space-y-6">
-          <div className="text-5xl">{score >= 200 ? '🏆' : score >= 100 ? '🌟' : '👨‍🍳'}</div>
+          <div className="text-5xl">{score >= 150 ? '🏆' : score >= 75 ? '🌟' : '👨‍🍳'}</div>
           <div>
             <div className="text-3xl font-bold text-brand-500">{score} points</div>
             <div className="mt-1 text-muted-foreground">

@@ -31,7 +31,7 @@ export async function generateTriviaQuestions(
 
     const result = await parseWithOllama(
       `You are Remy, ChefFlow's culinary AI. You LOVE teaching chefs new things through fun trivia.
-Generate exactly 10 multiple-choice culinary trivia questions. Each must have exactly 4 choices with one correct answer.
+Generate exactly 5 multiple-choice culinary trivia questions. Each must have exactly 4 choices with one correct answer.
 Make questions genuinely educational — the chef should learn something new from each one.
 Vary question types: history, technique, science, ingredients, culture, famous chefs, food safety.
 
@@ -41,11 +41,11 @@ Rules:
 - funFact should be a short, interesting tidbit the chef can remember
 - Difficulty level: ${difficulty}
 - ALWAYS return valid JSON matching the schema exactly${avoidClause}`,
-      `Generate 10 ${difficulty} culinary trivia questions about: ${topic}
+      `Generate 5 ${difficulty} culinary trivia questions about: ${topic}
 
 Return JSON: { "questions": [{ "id": "unique_id", "question": "...", "choices": ["A", "B", "C", "D"], "correctIndex": 0, "funFact": "..." }, ...] }`,
       TriviaSchema,
-      { modelTier: 'standard', maxTokens: 2048, timeoutMs: 60000 }
+      { modelTier: 'standard', maxTokens: 2048, timeoutMs: 120000 }
     )
 
     return { questions: result.questions }
