@@ -39,6 +39,7 @@ import {
   TrendingUp,
   Users,
   UtensilsCrossed,
+  Gamepad2,
   Palette,
   Warehouse,
 } from 'lucide-react'
@@ -680,6 +681,7 @@ export const navGroups: NavGroup[] = [
 
 export const standaloneBottom: NavItem[] = [
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/games', label: 'Games', icon: Gamepad2 },
 ]
 
 export const mobileTabItems: NavItem[] = [
