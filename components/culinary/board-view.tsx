@@ -1,8 +1,9 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useCallback, useRef } from 'react'
 import type { CulinaryWord } from '@/lib/culinary-words/constants'
 import { BOARD_COLORS, BOARD_FONTS, wordHash } from '@/lib/culinary-words/constants'
+import { getWordAnimation, getAnimationClass } from '@/lib/culinary-words/animations'
 
 type BoardViewProps = {
   words: CulinaryWord[]
@@ -31,6 +32,8 @@ const DECORATIONS = [
 ]
 
 export function BoardView({ words }: BoardViewProps) {
+  const animatingSet = useRef(new Set<string>())
+
   const styledWords = useMemo(() => {
     return words.map((w) => {
       const h = wordHash(w.word)
@@ -45,8 +48,10 @@ export function BoardView({ words }: BoardViewProps) {
 
       return {
         ...w,
+        rotation,
         displayWord: (isUppercase ? w.word.toUpperCase() : w.word) + suffix,
         style: {
+          '--base-rotate': `rotate(${rotation}deg)`,
           color,
           fontFamily: font,
           fontSize: TIER_SIZES[w.tier],
@@ -64,6 +69,28 @@ export function BoardView({ words }: BoardViewProps) {
       }
     })
   }, [words])
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
+    const el = e.currentTarget
+    const word = el.dataset.word
+    if (!word) return
+
+    // Prevent re-triggering while animating
+    if (animatingSet.current.has(word)) return
+    animatingSet.current.add(word)
+
+    const anim = getWordAnimation(word)
+    const cls = getAnimationClass(anim)
+
+    el.classList.add(cls)
+
+    const onEnd = () => {
+      el.classList.remove(cls)
+      animatingSet.current.delete(word)
+      el.removeEventListener('animationend', onEnd)
+    }
+    el.addEventListener('animationend', onEnd)
+  }, [])
 
   return (
     <div
@@ -98,9 +125,11 @@ export function BoardView({ words }: BoardViewProps) {
         {styledWords.map((w, i) => (
           <span
             key={`${w.word}-${i}`}
-            className="inline-block cursor-default transition-all duration-200 opacity-90 hover:opacity-100 hover:scale-110"
+            className="culinary-word-clickable inline-block transition-all duration-200 opacity-90 hover:opacity-100 hover:scale-110"
             style={w.style}
-            title={`${w.word} — ${w.category}`}
+            title={`${w.word} — ${w.category} — click me!`}
+            data-word={w.word}
+            onClick={handleClick}
           >
             {w.displayWord}
           </span>

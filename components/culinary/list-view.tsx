@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useCallback, useRef } from 'react'
 import type { CulinaryWord, WordCategory, WordTier } from '@/lib/culinary-words/constants'
 import {
   CATEGORIES,
@@ -8,6 +8,7 @@ import {
   CATEGORY_ICONS,
   TIER_LABELS,
 } from '@/lib/culinary-words/constants'
+import { getWordAnimation, getAnimationClass } from '@/lib/culinary-words/animations'
 
 type ListViewProps = {
   words: CulinaryWord[]
@@ -21,6 +22,8 @@ const TIER_BADGE_COLORS: Record<WordTier, string> = {
 }
 
 export function ListView({ words }: ListViewProps) {
+  const animatingSet = useRef(new Set<string>())
+
   const grouped = useMemo(() => {
     const map = new Map<WordCategory, CulinaryWord[]>()
     for (const cat of CATEGORIES) {
@@ -35,6 +38,29 @@ export function ListView({ words }: ListViewProps) {
     }
     return map
   }, [words])
+
+  const handleClick = useCallback((e: React.MouseEvent<HTMLSpanElement>) => {
+    const el = e.currentTarget
+    const word = el.dataset.word
+    if (!word) return
+
+    if (animatingSet.current.has(word)) return
+    animatingSet.current.add(word)
+
+    const anim = getWordAnimation(word)
+    const cls = getAnimationClass(anim)
+
+    // List view has no rotation, so set base-rotate to none
+    el.style.setProperty('--base-rotate', 'rotate(0deg)')
+    el.classList.add(cls)
+
+    const onEnd = () => {
+      el.classList.remove(cls)
+      animatingSet.current.delete(word)
+      el.removeEventListener('animationend', onEnd)
+    }
+    el.addEventListener('animationend', onEnd)
+  }, [])
 
   return (
     <div className="space-y-8">
@@ -54,8 +80,10 @@ export function ListView({ words }: ListViewProps) {
               {catWords.map((w, i) => (
                 <span
                   key={`${w.word}-${i}`}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border ${TIER_BADGE_COLORS[w.tier]}`}
-                  title={`Tier ${w.tier}: ${TIER_LABELS[w.tier]}`}
+                  className={`culinary-word-clickable inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border ${TIER_BADGE_COLORS[w.tier]}`}
+                  title={`Tier ${w.tier}: ${TIER_LABELS[w.tier]} — click me!`}
+                  data-word={w.word}
+                  onClick={handleClick}
                 >
                   {w.tier <= 2 && <span className="font-bold text-xs">T{w.tier}</span>}
                   <span className={w.tier <= 2 ? 'font-semibold' : ''}>{w.word}</span>
