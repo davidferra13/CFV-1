@@ -14,6 +14,30 @@ const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token'
 const GOOGLE_USERINFO_URL = 'https://www.googleapis.com/oauth2/v2/userinfo'
 const GOOGLE_REVOKE_URL = 'https://oauth2.googleapis.com/revoke'
 
+// ─── Configuration Checks ───────────────────────────────────────────────────
+
+export async function isGoogleOAuthConfigured(): Promise<boolean> {
+  return !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
+}
+
+export async function checkGoogleOAuthHealth(): Promise<{
+  configured: boolean
+  clientIdSet: boolean
+  clientSecretSet: boolean
+  redirectUri: string
+  siteUrl: string
+}> {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3100'
+  const redirectUri = `${siteUrl}/api/auth/google/connect/callback`
+  return {
+    configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+    clientIdSet: !!process.env.GOOGLE_CLIENT_ID,
+    clientSecretSet: !!process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri,
+    siteUrl,
+  }
+}
+
 // ─── Initiate Google Connect ────────────────────────────────────────────────
 
 export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirectUrl: string }> {

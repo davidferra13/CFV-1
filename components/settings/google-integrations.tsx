@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { initiateGoogleConnect, disconnectGoogle } from '@/lib/google/auth'
+import { initiateGoogleConnect, disconnectGoogle, checkGoogleOAuthHealth } from '@/lib/google/auth'
 import { triggerGmailSync } from '@/lib/gmail/actions'
 import type {
   GoogleConnectionStatus,
@@ -98,6 +98,47 @@ function ServiceCard({
   )
 }
 
+// Diagnostic panel — shows when Google OAuth is misconfigured or after errors
+function OAuthDiagnostics({
+  redirectUri,
+  errorMessage,
+}: {
+  redirectUri: string | null
+  errorMessage: string | null
+}) {
+  if (!errorMessage && !redirectUri) return null
+
+  return (
+    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+      <h4 className="text-sm font-semibold text-amber-900">Google OAuth Setup</h4>
+      {errorMessage && <p className="text-sm text-amber-800">{errorMessage}</p>}
+      {redirectUri && (
+        <div className="space-y-1">
+          <p className="text-xs text-amber-700">
+            This redirect URI must be registered in your{' '}
+            <a
+              href="https://console.cloud.google.com/apis/credentials"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline font-medium"
+            >
+              Google Cloud Console
+            </a>{' '}
+            under OAuth 2.0 Client IDs &rarr; Authorized redirect URIs:
+          </p>
+          <code className="block bg-amber-100 rounded px-2 py-1 text-xs text-amber-900 font-mono select-all break-all">
+            {redirectUri}
+          </code>
+          <p className="text-xs text-amber-600">
+            Also ensure the Gmail API and Google Calendar API are enabled in your Google Cloud
+            project.
+          </p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Main component that orchestrates all Google integrations
 interface GoogleIntegrationsProps {
   connection: GoogleConnectionStatus
@@ -113,6 +154,22 @@ export function GoogleIntegrations({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [error, setError] = useState<string | null>(null)
+  const [diagnosticUri, setDiagnosticUri] = useState<string | null>(null)
+  const [configured, setConfigured] = useState(true)
+
+  // Check Google OAuth configuration on mount
+  useEffect(() => {
+    checkGoogleOAuthHealth()
+      .then((health) => {
+        setConfigured(health.configured)
+        if (!health.configured || (!connection.gmail.connected && !connection.calendar.connected)) {
+          setDiagnosticUri(health.redirectUri)
+        }
+      })
+      .catch(() => {
+        // Non-blocking — diagnostics are best-effort
+      })
+  }, [connection.gmail.connected, connection.calendar.connected])
 
   // Show toast feedback when returning from Google OAuth redirect
   useEffect(() => {
@@ -127,6 +184,12 @@ export function GoogleIntegrations({
       router.replace('/settings', { scroll: false })
     } else if (oauthError) {
       setError(oauthError)
+      // Show the diagnostic URI when there's an OAuth error
+      checkGoogleOAuthHealth()
+        .then((health) => {
+          setDiagnosticUri(health.redirectUri)
+        })
+        .catch(() => {})
       toast.error(oauthError)
       router.replace('/settings', { scroll: false })
     }
@@ -187,6 +250,19 @@ export function GoogleIntegrations({
   return (
     <div className="space-y-4">
       {error && <Alert variant="error">{error}</Alert>}
+
+      {!configured && (
+        <Alert variant="warning">
+          Google OAuth is not configured. Set <code>GOOGLE_CLIENT_ID</code> and{' '}
+          <code>GOOGLE_CLIENT_SECRET</code> in your environment variables to enable Gmail and
+          Calendar integration.
+        </Alert>
+      )}
+
+      <OAuthDiagnostics
+        redirectUri={error || !configured ? diagnosticUri : null}
+        errorMessage={null}
+      />
 
       <ServiceCard
         title="Gmail"

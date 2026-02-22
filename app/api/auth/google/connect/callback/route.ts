@@ -75,11 +75,30 @@ export async function GET(request: NextRequest) {
   })
 
   if (!tokenResponse.ok) {
-    const err = await tokenResponse.text()
-    console.error('[Google OAuth] Token exchange failed:', err)
-    return NextResponse.redirect(
-      `${origin}/settings?error=${encodeURIComponent('Failed to exchange authorization code')}`
-    )
+    const errText = await tokenResponse.text()
+    console.error('[Google OAuth] Token exchange failed:', errText)
+
+    // Parse specific Google error for a better user-facing message
+    let userMessage = 'Failed to exchange authorization code'
+    try {
+      const errJson = JSON.parse(errText)
+      if (errJson.error === 'redirect_uri_mismatch') {
+        userMessage =
+          'Redirect URI mismatch. The callback URL must be registered in Google Cloud Console. ' +
+          'Go to Settings to see the exact URI to add.'
+      } else if (errJson.error === 'invalid_grant') {
+        userMessage = 'Authorization code expired or already used. Please try connecting again.'
+      } else if (errJson.error === 'invalid_client') {
+        userMessage = 'Google Client ID or Secret is invalid. Check your environment variables.'
+      } else if (errJson.error_description) {
+        userMessage = errJson.error_description
+      }
+    } catch {
+      // Not JSON — use the raw text if short enough
+      if (errText.length < 200) userMessage = errText
+    }
+
+    return NextResponse.redirect(`${origin}/settings?error=${encodeURIComponent(userMessage)}`)
   }
 
   const tokens = await tokenResponse.json()

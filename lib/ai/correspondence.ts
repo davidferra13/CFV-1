@@ -2,7 +2,7 @@
 
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
-import { generateACEDraft, draftChefResponse } from './gemini-service'
+import { generateACEDraft, draftChefResponse } from './ace-ollama'
 import {
   detectLifecycleState,
   getAgentBrainForState,
@@ -120,9 +120,12 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
     if (messages && messages.length > 0) {
       // Reverse to chronological order for context
-      threadMessages = messages.reverse().map(m =>
-        `[${m.created_at}] ${m.sender_id === chef.entityId ? 'Chef' : 'Client'}: ${m.body || '(no text)'}`
-      )
+      threadMessages = messages
+        .reverse()
+        .map(
+          (m) =>
+            `[${m.created_at}] ${m.sender_id === chef.entityId ? 'Chef' : 'Client'}: ${m.body || '(no text)'}`
+        )
     }
   }
 
@@ -137,9 +140,10 @@ export async function draftResponseForInquiry(inquiryId: string) {
       .eq('event_date', inquiry.confirmed_date)
       .neq('status', 'cancelled')
 
-    calendarContext = conflicts && conflicts.length > 0
-      ? `Date ${inquiry.confirmed_date} has ${conflicts.length} existing event(s) — may be UNAVAILABLE.`
-      : `Date ${inquiry.confirmed_date} appears to be OPEN.`
+    calendarContext =
+      conflicts && conflicts.length > 0
+        ? `Date ${inquiry.confirmed_date} has ${conflicts.length} existing event(s) — may be UNAVAILABLE.`
+        : `Date ${inquiry.confirmed_date} appears to be OPEN.`
   }
 
   // ── 7. Detect lifecycle state ─────────────────────────────────────────────
@@ -157,22 +161,26 @@ export async function draftResponseForInquiry(inquiryId: string) {
       client_id: inquiry.client_id,
       converted_to_event_id: inquiry.converted_to_event_id,
     },
-    quote: quote ? {
-      status: quote.status,
-      total_quoted_cents: quote.total_quoted_cents,
-      sent_at: quote.sent_at,
-      accepted_at: quote.accepted_at,
-    } : null,
-    event: event ? {
-      status: event.status,
-      menu_id: event.menu_id,
-      grocery_list_ready: event.grocery_list_ready,
-      execution_sheet_ready: event.execution_sheet_ready,
-      equipment_list_ready: event.equipment_list_ready,
-      follow_up_sent: event.follow_up_sent,
-      financially_closed: event.financially_closed,
-      aar_filed: event.aar_filed,
-    } : null,
+    quote: quote
+      ? {
+          status: quote.status,
+          total_quoted_cents: quote.total_quoted_cents,
+          sent_at: quote.sent_at,
+          accepted_at: quote.accepted_at,
+        }
+      : null,
+    event: event
+      ? {
+          status: event.status,
+          menu_id: event.menu_id,
+          grocery_list_ready: event.grocery_list_ready,
+          execution_sheet_ready: event.execution_sheet_ready,
+          equipment_list_ready: event.equipment_list_ready,
+          follow_up_sent: event.follow_up_sent,
+          financially_closed: event.financially_closed,
+          aar_filed: event.aar_filed,
+        }
+      : null,
     messageCount,
     clientHasPriorEvents,
   })
@@ -183,11 +191,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 
   // ── 9. Determine conversation depth ───────────────────────────────────────
 
-  const depth = detectConversationDepth(
-    messageCount,
-    !!event,
-    event?.status === 'completed',
-  )
+  const depth = detectConversationDepth(messageCount, !!event, event?.status === 'completed')
   const depthInstruction = getDepthInstruction(depth, chefIdentity)
 
   // ── 10. Build inquiry summary for the AI ──────────────────────────────────
@@ -286,7 +290,7 @@ export async function draftResponseForInquiry(inquiryId: string) {
 export async function draftSimpleResponse(
   context: string,
   tone: string,
-  latestClientMessage: string,
+  latestClientMessage: string
 ) {
   const chef = await requireChef()
   const supabase = createServerClient()
@@ -305,10 +309,7 @@ export async function draftSimpleResponse(
 
 // ─── Post-Event Follow Up ───────────────────────────────────────────────────
 
-export async function draftPostEventFollowUp(
-  clientName: string,
-  eventDate: string,
-) {
+export async function draftPostEventFollowUp(clientName: string, eventDate: string) {
   const chef = await requireChef()
   const supabase = createServerClient()
 
@@ -337,7 +338,7 @@ ${chefFirstName}`
 
 function buildInquirySummary(
   inquiry: Record<string, unknown>,
-  detection: LifecycleDetectionResult,
+  detection: LifecycleDetectionResult
 ): string {
   const lines: string[] = [
     `Lifecycle State: ${detection.state} (${detection.emailStage} stage)`,
@@ -347,25 +348,25 @@ function buildInquirySummary(
   ]
 
   // Known data
-  const known = detection.dataFields.filter(f => f.status === 'known')
+  const known = detection.dataFields.filter((f) => f.status === 'known')
   if (known.length > 0) {
     lines.push('KNOWN DATA:')
-    known.forEach(f => lines.push(`  ${f.field}: ${f.value}`))
+    known.forEach((f) => lines.push(`  ${f.field}: ${f.value}`))
     lines.push('')
   }
 
   // Missing blocking data
   if (detection.missingBlocking.length > 0) {
     lines.push('MISSING (blocking — must collect to advance):')
-    detection.missingBlocking.forEach(f => lines.push(`  - ${f}`))
+    detection.missingBlocking.forEach((f) => lines.push(`  - ${f}`))
     lines.push('')
   }
 
   // Missing non-blocking
-  const nonBlocking = detection.dataFields.filter(f => f.status === 'missing_non_blocking')
+  const nonBlocking = detection.dataFields.filter((f) => f.status === 'missing_non_blocking')
   if (nonBlocking.length > 0) {
     lines.push('MISSING (non-blocking — accept if offered):')
-    nonBlocking.forEach(f => lines.push(`  - ${f.field}`))
+    nonBlocking.forEach((f) => lines.push(`  - ${f.field}`))
     lines.push('')
   }
 
