@@ -10,7 +10,12 @@ import { loadRemyContext } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
-import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
+import {
+  isOllamaEnabled,
+  getOllamaConfig,
+  getOllamaModel,
+  getOllamaContextSize,
+} from '@/lib/ai/providers'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import {
   REMY_PERSONALITY,
@@ -786,7 +791,10 @@ export async function POST(req: NextRequest) {
                 { role: 'user', content: `${historyStr}Chef: ${questionInput}` },
               ],
               stream: true,
-              options: { num_predict: OLLAMA_STREAM_MAX_TOKENS },
+              options: {
+                num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                num_ctx: getOllamaContextSize('chef'),
+              },
             })
 
             let fullResponse = ''
@@ -869,7 +877,10 @@ export async function POST(req: NextRequest) {
               { role: 'user', content: `${historyStr}Chef: ${message}` },
             ],
             stream: true,
-            options: { num_predict: OLLAMA_STREAM_MAX_TOKENS },
+            options: {
+              num_predict: OLLAMA_STREAM_MAX_TOKENS,
+              num_ctx: getOllamaContextSize('chef'),
+            },
           })
 
           let fullResponse = ''

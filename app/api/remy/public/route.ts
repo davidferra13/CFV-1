@@ -5,7 +5,12 @@
 
 import { NextRequest } from 'next/server'
 import { Ollama } from 'ollama'
-import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
+import {
+  isOllamaEnabled,
+  getOllamaConfig,
+  getOllamaModel,
+  getOllamaContextSize,
+} from '@/lib/ai/providers'
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
 import {
   REMY_PUBLIC_PERSONALITY,
@@ -190,6 +195,7 @@ export async function POST(req: NextRequest) {
             options: {
               temperature: 0.7,
               num_predict: 512, // Shorter responses for public
+              num_ctx: getOllamaContextSize('public'),
             },
           })
 
