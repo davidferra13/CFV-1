@@ -23,22 +23,26 @@ type ServiceStyle = Database['public']['Enums']['event_service_style']
 const CreateMenuSchema = z.object({
   name: z.string().min(1, 'Name required'),
   description: z.string().optional(),
-  service_style: z.enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other']).optional(),
+  service_style: z
+    .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
+    .optional(),
   cuisine_type: z.string().optional(),
   target_guest_count: z.number().int().positive().optional(),
   notes: z.string().optional(),
   is_template: z.boolean().optional(),
-  event_id: z.string().uuid().optional()
+  event_id: z.string().uuid().optional(),
 })
 
 const UpdateMenuSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  service_style: z.enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other']).optional(),
+  service_style: z
+    .enum(['plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'other'])
+    .optional(),
   cuisine_type: z.string().optional(),
   target_guest_count: z.number().int().positive().optional(),
   notes: z.string().optional(),
-  is_template: z.boolean().optional()
+  is_template: z.boolean().optional(),
 })
 
 export type CreateMenuInput = z.infer<typeof CreateMenuSchema>
@@ -58,7 +62,7 @@ const CreateDishSchema = z.object({
   allergen_flags: z.array(z.string()).default([]),
   chef_notes: z.string().optional(),
   client_notes: z.string().optional(),
-  sort_order: z.number().int().optional()
+  sort_order: z.number().int().optional(),
 })
 
 const UpdateDishSchema = z.object({
@@ -70,7 +74,7 @@ const UpdateDishSchema = z.object({
   allergen_flags: z.array(z.string()).optional(),
   chef_notes: z.string().optional(),
   client_notes: z.string().optional(),
-  sort_order: z.number().int().optional()
+  sort_order: z.number().int().optional(),
 })
 
 export type CreateDishInput = z.infer<typeof CreateDishSchema>
@@ -95,7 +99,7 @@ const CreateComponentSchema = z.object({
   transport_category: z.enum(TRANSPORT_CATEGORIES).optional(),
   execution_notes: z.string().optional(),
   storage_notes: z.string().optional(),
-  sort_order: z.number().int().optional()
+  sort_order: z.number().int().optional(),
 })
 
 const UpdateComponentSchema = z.object({
@@ -109,7 +113,7 @@ const UpdateComponentSchema = z.object({
   transport_category: z.enum(TRANSPORT_CATEGORIES).nullable().optional(),
   execution_notes: z.string().optional(),
   storage_notes: z.string().optional(),
-  sort_order: z.number().int().optional()
+  sort_order: z.number().int().optional(),
 })
 
 export type CreateComponentInput = z.infer<typeof CreateComponentSchema>
@@ -158,7 +162,7 @@ export async function createMenu(input: CreateMenuInput) {
       is_template: validated.is_template,
       event_id: validated.event_id,
       created_by: user.id,
-      updated_by: user.id
+      updated_by: user.id,
     })
     .select()
     .single()
@@ -174,7 +178,7 @@ export async function createMenu(input: CreateMenuInput) {
     menu_id: menu.id,
     from_status: null,
     to_status: 'draft',
-    transitioned_by: user.id
+    transitioned_by: user.id,
   })
 
   revalidatePath('/menus')
@@ -190,7 +194,11 @@ export async function createMenu(input: CreateMenuInput) {
       entityType: 'menu',
       entityId: menu.id,
       summary: `Created menu: ${validated.name}${validated.is_template ? ' (template)' : ''}`,
-      context: { name: validated.name, is_template: validated.is_template, event_id: validated.event_id },
+      context: {
+        name: validated.name,
+        is_template: validated.is_template,
+        event_id: validated.event_id,
+      },
     })
   } catch (err) {
     console.error('[createMenu] Activity log failed (non-blocking):', err)
@@ -206,10 +214,7 @@ export async function getMenus({ statusFilter }: { statusFilter?: MenuStatus } =
   const user = await requireChef()
   const supabase = createServerClient()
 
-  let query = supabase
-    .from('menus')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = supabase.from('menus').select('*').eq('tenant_id', user.tenantId!)
 
   if (statusFilter) {
     query = query.eq('status', statusFilter)
@@ -254,18 +259,20 @@ export async function getMenuById(menuId: string) {
     .order('sort_order', { ascending: true })
 
   // Fetch components for all dishes
-  const dishIds = (dishes || []).map(d => d.id)
+  const dishIds = (dishes || []).map((d) => d.id)
 
   // Query components if there are dishes
-  const componentRows = dishIds.length > 0
-    ? (await supabase
-        .from('components')
-        .select('*')
-        .in('dish_id', dishIds)
-        .eq('tenant_id', user.tenantId!)
-        .order('sort_order', { ascending: true })
-      ).data || []
-    : []
+  const componentRows =
+    dishIds.length > 0
+      ? (
+          await supabase
+            .from('components')
+            .select('*')
+            .in('dish_id', dishIds)
+            .eq('tenant_id', user.tenantId!)
+            .order('sort_order', { ascending: true })
+        ).data || []
+      : []
 
   // Group components by dish_id
   const componentsByDish = new Map<string, typeof componentRows>()
@@ -279,10 +286,10 @@ export async function getMenuById(menuId: string) {
 
   return {
     ...menu,
-    dishes: (dishes || []).map(dish => ({
+    dishes: (dishes || []).map((dish) => ({
       ...dish,
-      components: componentsByDish.get(dish.id) || []
-    }))
+      components: componentsByDish.get(dish.id) || [],
+    })),
   }
 }
 
@@ -317,7 +324,7 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
     .update({
       ...validated,
       service_style: validated.service_style as ServiceStyle | undefined,
-      updated_by: user.id
+      updated_by: user.id,
     })
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
@@ -500,10 +507,12 @@ export async function getMenuEvent(menuId: string) {
 
   const { data: menu, error } = await supabase
     .from('menus')
-    .select(`
+    .select(
+      `
       event_id,
       event:events(id, occasion, event_date, status, quoted_price_cents)
-    `)
+    `
+    )
     .eq('id', menuId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -524,7 +533,7 @@ const VALID_MENU_TRANSITIONS: Record<MenuStatus, MenuStatus[]> = {
   draft: ['shared', 'archived'],
   shared: ['locked', 'draft', 'archived'],
   locked: ['archived'],
-  archived: ['draft']
+  archived: ['draft'],
 }
 
 /**
@@ -556,7 +565,7 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
   // Build update payload with status-specific timestamps
   const updatePayload: Record<string, unknown> = {
     status: toStatus,
-    updated_by: user.id
+    updated_by: user.id,
   }
 
   if (toStatus === 'shared') {
@@ -585,7 +594,7 @@ export async function transitionMenu(menuId: string, toStatus: MenuStatus, reaso
     from_status: currentStatus,
     to_status: toStatus,
     transitioned_by: user.id,
-    reason
+    reason,
   })
 
   revalidatePath('/menus')
@@ -655,7 +664,7 @@ export async function addDishToMenu(input: CreateDishInput) {
       client_notes: validated.client_notes,
       sort_order: validated.sort_order ?? 0,
       created_by: user.id,
-      updated_by: user.id
+      updated_by: user.id,
     })
     .select()
     .single()
@@ -682,7 +691,7 @@ export async function updateDish(dishId: string, input: UpdateDishInput) {
     .from('dishes')
     .update({
       ...validated,
-      updated_by: user.id
+      updated_by: user.id,
     })
     .eq('id', dishId)
     .eq('tenant_id', user.tenantId!)
@@ -733,6 +742,31 @@ export async function deleteDish(dishId: string) {
   return { success: true }
 }
 
+/**
+ * Get all dishes across all menus (for component assignment)
+ */
+export async function getAllDishes(): Promise<{ id: string; name: string; menuName: string }[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('dishes')
+    .select('id, course_name, menu:menus(name)')
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('[getAllDishes] Error:', error)
+    return []
+  }
+
+  return (data || []).map((d: any) => ({
+    id: d.id,
+    name: d.course_name || 'Untitled Dish',
+    menuName: d.menu?.name || '',
+  }))
+}
+
 // ============================================
 // COMPONENT CRUD
 // ============================================
@@ -752,7 +786,7 @@ export async function addComponentToDish(input: CreateComponentInput) {
       tenant_id: user.tenantId!,
       dish_id: validated.dish_id,
       name: validated.name,
-      category: validated.category ,
+      category: validated.category,
       description: validated.description,
       recipe_id: validated.recipe_id,
       scale_factor: validated.scale_factor,
@@ -763,7 +797,7 @@ export async function addComponentToDish(input: CreateComponentInput) {
       storage_notes: validated.storage_notes,
       sort_order: validated.sort_order ?? 0,
       created_by: user.id,
-      updated_by: user.id
+      updated_by: user.id,
     })
     .select()
     .single()
@@ -789,8 +823,8 @@ export async function updateComponent(componentId: string, input: UpdateComponen
     .from('components')
     .update({
       ...validated,
-      category: validated.category ,
-      updated_by: user.id
+      category: validated.category,
+      updated_by: user.id,
     })
     .eq('id', componentId)
     .eq('tenant_id', user.tenantId!)
@@ -856,11 +890,13 @@ export async function getAllComponents(filters?: {
 
   let query = supabase
     .from('components')
-    .select(`
+    .select(
+      `
       id, name, category, is_make_ahead, make_ahead_window_hours,
       transport_category, storage_notes, execution_notes, recipe_id, dish_id, created_at,
       dish:dishes(id, course_name, menu:menus(id, name))
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
@@ -875,7 +911,7 @@ export async function getAllComponents(filters?: {
     throw new Error('Failed to fetch components')
   }
 
-  let result: ComponentListItem[] = (components || []).map(c => {
+  let result: ComponentListItem[] = (components || []).map((c) => {
     const dish = c.dish as any
     const raw = c as any
     return {
@@ -897,9 +933,9 @@ export async function getAllComponents(filters?: {
   })
 
   if (filters?.has_recipe === true) {
-    result = result.filter(c => c.recipe_id !== null)
+    result = result.filter((c) => c.recipe_id !== null)
   } else if (filters?.has_recipe === false) {
-    result = result.filter(c => c.recipe_id === null)
+    result = result.filter((c) => c.recipe_id === null)
   }
 
   return result
@@ -926,7 +962,9 @@ export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
 
   const { data, error } = await supabase
     .from('menu_cost_summary')
-    .select('menu_id, menu_name, event_id, total_component_count, total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs')
+    .select(
+      'menu_id, menu_name, event_id, total_component_count, total_recipe_cost_cents, cost_per_guest_cents, food_cost_percentage, has_all_recipe_costs'
+    )
     .eq('tenant_id', user.tenantId!)
     .order('total_recipe_cost_cents', { ascending: false, nullsFirst: false })
 
@@ -971,7 +1009,7 @@ export async function duplicateMenu(menuId: string) {
       notes: original.notes,
       is_template: original.is_template,
       created_by: user.id,
-      updated_by: user.id
+      updated_by: user.id,
     })
     .select()
     .single()
@@ -997,7 +1035,7 @@ export async function duplicateMenu(menuId: string) {
         client_notes: dish.client_notes,
         sort_order: dish.sort_order,
         created_by: user.id,
-        updated_by: user.id
+        updated_by: user.id,
       })
       .select()
       .single()
@@ -1023,7 +1061,7 @@ export async function duplicateMenu(menuId: string) {
         storage_notes: comp.storage_notes,
         sort_order: comp.sort_order,
         created_by: user.id,
-        updated_by: user.id
+        updated_by: user.id,
       })
       if (error) {
         console.error('[duplicateMenu] Component insert failed:', error)
@@ -1039,7 +1077,7 @@ export async function duplicateMenu(menuId: string) {
     from_status: null,
     to_status: 'draft',
     transitioned_by: user.id,
-    reason: `Duplicated from menu ${menuId}`
+    reason: `Duplicated from menu ${menuId}`,
   })
 
   revalidatePath('/menus')

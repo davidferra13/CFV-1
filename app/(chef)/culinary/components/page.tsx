@@ -1,10 +1,18 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getAllComponents } from '@/lib/menus/actions'
+import { getAllComponents, getAllDishes } from '@/lib/menus/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { AddComponentForm } from '@/components/culinary/add-component-form'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 
 export const metadata: Metadata = { title: 'Components - ChefFlow' }
 
@@ -38,10 +46,10 @@ const TRANSPORT_STYLES: Record<string, string> = {
 
 export default async function ComponentsPage() {
   await requireChef()
-  const components = await getAllComponents()
+  const [components, dishes] = await Promise.all([getAllComponents(), getAllDishes()])
 
-  const linkedCount = components.filter(c => c.recipe_id !== null).length
-  const makeAheadCount = components.filter(c => c.is_make_ahead).length
+  const linkedCount = components.filter((c) => c.recipe_id !== null).length
+  const makeAheadCount = components.filter((c) => c.is_make_ahead).length
   const unlinkedCount = components.length - linkedCount
 
   return (
@@ -50,11 +58,14 @@ export default async function ComponentsPage() {
         <Link href="/culinary" className="text-sm text-stone-500 hover:text-stone-700">
           ← Culinary
         </Link>
-        <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Components</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
-            {components.length}
-          </span>
+        <div className="flex items-center justify-between mt-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-stone-900">Components</h1>
+            <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+              {components.length}
+            </span>
+          </div>
+          <AddComponentForm dishes={dishes} />
         </div>
         <p className="text-stone-500 mt-1">Building blocks across all your menus</p>
       </div>
@@ -84,10 +95,12 @@ export default async function ComponentsPage() {
         <Card className="p-12 text-center">
           <p className="text-stone-600 font-medium mb-1">No components yet</p>
           <p className="text-stone-400 text-sm mb-4">
-            Components are created when you build dishes inside a menu
+            Add components manually or create them when you build dishes inside a menu
           </p>
           <Link href="/culinary/menus">
-            <Button variant="secondary" size="sm">Go to Menus</Button>
+            <Button variant="secondary" size="sm">
+              Go to Menus
+            </Button>
           </Link>
         </Card>
       ) : (
@@ -105,17 +118,17 @@ export default async function ComponentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {components.map(comp => (
+              {components.map((comp) => (
                 <TableRow key={comp.id}>
                   <TableCell className="font-medium">{comp.name}</TableCell>
                   <TableCell>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[comp.category] ?? 'bg-stone-100 text-stone-600'}`}>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${CATEGORY_STYLES[comp.category] ?? 'bg-stone-100 text-stone-600'}`}
+                    >
                       {comp.category}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
-                    {comp.dish_name || '—'}
-                  </TableCell>
+                  <TableCell className="text-stone-600 text-sm">{comp.dish_name || '—'}</TableCell>
                   <TableCell className="text-stone-600 text-sm">
                     {comp.menu_id ? (
                       <Link
@@ -124,7 +137,9 @@ export default async function ComponentsPage() {
                       >
                         {comp.menu_name || 'View Menu'}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell>
                     {comp.recipe_id ? (
@@ -141,16 +156,24 @@ export default async function ComponentsPage() {
                   <TableCell>
                     {comp.is_make_ahead ? (
                       <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
-                        {comp.make_ahead_window_hours ? `${comp.make_ahead_window_hours}h ahead` : 'Make ahead'}
+                        {comp.make_ahead_window_hours
+                          ? `${comp.make_ahead_window_hours}h ahead`
+                          : 'Make ahead'}
                       </span>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell>
                     {comp.is_make_ahead && comp.transport_category ? (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${TRANSPORT_STYLES[comp.transport_category] ?? 'bg-stone-100 text-stone-600'}`}>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${TRANSPORT_STYLES[comp.transport_category] ?? 'bg-stone-100 text-stone-600'}`}
+                      >
                         {TRANSPORT_LABELS[comp.transport_category] ?? comp.transport_category}
                       </span>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

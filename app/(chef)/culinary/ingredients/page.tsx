@@ -4,8 +4,16 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getIngredients } from '@/lib/recipes/actions'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
+import { AddIngredientForm } from '@/components/culinary/add-ingredient-form'
 
 export const metadata: Metadata = { title: 'Ingredients - ChefFlow' }
 
@@ -32,8 +40,8 @@ export default async function IngredientsPage() {
   await requireChef()
   const ingredients = await getIngredients()
 
-  const stapleCount = ingredients.filter(i => i.is_staple).length
-  const pricedCount = ingredients.filter(i => i.average_price_cents != null).length
+  const stapleCount = ingredients.filter((i) => i.is_staple).length
+  const pricedCount = ingredients.filter((i) => i.average_price_cents != null).length
 
   return (
     <div className="space-y-6">
@@ -48,6 +56,7 @@ export default async function IngredientsPage() {
               {ingredients.length}
             </span>
           </div>
+          <AddIngredientForm />
         </div>
         <p className="text-stone-500 mt-1">Your pantry and ingredient price library</p>
       </div>
@@ -73,10 +82,12 @@ export default async function IngredientsPage() {
         <Card className="p-12 text-center">
           <p className="text-stone-600 font-medium mb-1">No ingredients yet</p>
           <p className="text-stone-400 text-sm mb-4">
-            Ingredients are added automatically when you build recipes — no manual entry needed
+            Add ingredients manually or they&apos;ll appear automatically when you build recipes
           </p>
           <Link href="/culinary/recipes/new">
-            <Button variant="secondary" size="sm">Add a Recipe</Button>
+            <Button variant="secondary" size="sm">
+              Add a Recipe
+            </Button>
           </Link>
         </Card>
       ) : (
@@ -93,29 +104,39 @@ export default async function IngredientsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {ingredients.map(ing => (
+              {ingredients.map((ing) => (
                 <TableRow key={ing.id}>
                   <TableCell className="font-medium">
                     {ing.name}
                     {ing.preferred_vendor && (
-                      <p className="text-xs text-stone-400 mt-0.5">Vendor: {ing.preferred_vendor}</p>
+                      <p className="text-xs text-stone-400 mt-0.5">
+                        Vendor: {ing.preferred_vendor}
+                      </p>
                     )}
                   </TableCell>
                   <TableCell>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORY_STYLES[ing.category] ?? 'bg-stone-100 text-stone-600'}`}>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${CATEGORY_STYLES[ing.category] ?? 'bg-stone-100 text-stone-600'}`}
+                    >
                       {ing.category.replace(/_/g, ' ')}
                     </span>
                   </TableCell>
                   <TableCell className="text-stone-600 text-sm">{ing.default_unit}</TableCell>
                   <TableCell>
                     {ing.is_staple ? (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Staple</span>
-                    ) : '—'}
+                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                        Staple
+                      </span>
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell className="text-stone-600 text-sm">
-                    {ing.average_price_cents != null
-                      ? `${formatCurrency(ing.average_price_cents)} / ${ing.default_unit}`
-                      : <span className="text-stone-400">Not set</span>}
+                    {ing.average_price_cents != null ? (
+                      `${formatCurrency(ing.average_price_cents)} / ${ing.default_unit}`
+                    ) : (
+                      <span className="text-stone-400">Not set</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-stone-600 text-sm">
                     {(ing as any).usage_count > 0

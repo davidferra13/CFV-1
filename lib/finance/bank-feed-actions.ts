@@ -221,6 +221,51 @@ export async function ignoreTransaction(transactionId: string): Promise<void> {
   revalidatePath('/finance/bank-feed')
 }
 
+/**
+ * Add a manual (non-bank-imported) transaction for reconciliation tracking.
+ */
+export async function addManualTransaction(input: {
+  description: string
+  amountCents: number
+  category: string
+  date: string
+}): Promise<BankTransaction> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data, error } = await supabase
+    .from('bank_transactions')
+    .insert({
+      chef_id: user.tenantId!,
+      description: input.description,
+      amount_cents: input.amountCents,
+      suggested_category: input.category,
+      date: input.date,
+      status: 'pending',
+      bank_connection_id: null,
+      provider_transaction_id: null,
+    })
+    .select()
+    .single()
+
+  if (error) throw new Error(`Failed to add transaction: ${error.message}`)
+  revalidatePath('/finance/bank-feed')
+
+  return {
+    id: data.id,
+    bankConnectionId: data.bank_connection_id,
+    providerTransactionId: data.provider_transaction_id,
+    amountCents: data.amount_cents,
+    date: data.date,
+    description: data.description,
+    vendorName: data.vendor_name,
+    suggestedCategory: data.suggested_category,
+    confirmedCategory: data.confirmed_category,
+    matchedExpenseId: data.matched_expense_id,
+    status: data.status,
+  }
+}
+
 export async function getReconciliationSummary(): Promise<ReconciliationSummary> {
   const user = await requireChef()
   const supabase = createServerClient()

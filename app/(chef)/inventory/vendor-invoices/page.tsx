@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getVendorInvoices } from '@/lib/inventory/vendor-invoice-actions'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { UploadVendorInvoiceForm } from '@/components/inventory/upload-vendor-invoice-form'
 
 export const metadata: Metadata = { title: 'Vendor Invoices - ChefFlow' }
 
@@ -16,16 +17,32 @@ function formatMoney(cents: number): string {
 
 function statusBadgeVariant(status: string): 'default' | 'success' | 'warning' | 'error' {
   switch (status) {
-    case 'matched': return 'success'
-    case 'disputed': return 'error'
+    case 'matched':
+      return 'success'
+    case 'disputed':
+      return 'error'
     case 'pending':
-    default: return 'warning'
+    default:
+      return 'warning'
   }
 }
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`
 }
 
@@ -46,13 +63,14 @@ export default async function VendorInvoicesPage() {
             Upload vendor invoices, match line items to tracked ingredients, and flag price changes.
           </p>
         </div>
+        <UploadVendorInvoiceForm />
       </div>
 
       {(invoices as any[]).length === 0 ? (
         <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
           <p className="text-stone-500 text-sm">
-            No vendor invoices uploaded yet. Upload your first invoice to start matching
-            line items to ingredients and tracking price changes.
+            No vendor invoices uploaded yet. Upload your first invoice to start matching line items
+            to ingredients and tracking price changes.
           </p>
         </div>
       ) : (
@@ -65,15 +83,14 @@ export default async function VendorInvoicesPage() {
                     <span className="font-medium text-stone-900">
                       {invoice.invoiceNumber || 'No invoice number'}
                     </span>
-                    <Badge variant={statusBadgeVariant(invoice.status)}>
-                      {invoice.status}
-                    </Badge>
+                    <Badge variant={statusBadgeVariant(invoice.status)}>{invoice.status}</Badge>
                   </div>
                   <div className="mt-1 flex flex-wrap gap-x-4 text-sm text-stone-500">
                     <span>{formatDate(invoice.invoiceDate)}</span>
                     <span>{formatMoney(invoice.totalCents)}</span>
                     <span>
-                      {invoice.itemCount ?? invoice.items?.length ?? 0} item{(invoice.itemCount ?? invoice.items?.length ?? 0) !== 1 ? 's' : ''}
+                      {invoice.itemCount ?? invoice.items?.length ?? 0} item
+                      {(invoice.itemCount ?? invoice.items?.length ?? 0) !== 1 ? 's' : ''}
                     </span>
                   </div>
                 </div>

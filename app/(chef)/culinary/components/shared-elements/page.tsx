@@ -1,18 +1,26 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getAllComponents } from '@/lib/menus/actions'
+import { getAllComponents, getAllDishes } from '@/lib/menus/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { AddComponentForm } from '@/components/culinary/add-component-form'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 
 export const metadata: Metadata = { title: 'Shared Elements - ChefFlow' }
 
 export default async function SharedElementsPage() {
   await requireChef()
-  const allComponents = await getAllComponents()
+  const [allComponents, dishes] = await Promise.all([getAllComponents(), getAllDishes()])
 
   // "Shared elements" = components linked to a recipe (reusable across menus)
-  const shared = allComponents.filter(c => c.recipe_id !== null)
+  const shared = allComponents.filter((c) => c.recipe_id !== null)
 
   // Find which recipe_ids appear in multiple contexts
   const recipeUsage = new Map<string, number>()
@@ -22,17 +30,26 @@ export default async function SharedElementsPage() {
     }
   }
 
-  const multiUse = shared.filter(c => (recipeUsage.get(c.recipe_id!) ?? 0) > 1)
+  const multiUse = shared.filter((c) => (recipeUsage.get(c.recipe_id!) ?? 0) > 1)
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-700">← Components</Link>
-        <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Shared Elements</h1>
-          <span className="bg-sky-100 text-sky-700 text-sm px-2 py-0.5 rounded-full">{shared.length}</span>
+        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-700">
+          ← Components
+        </Link>
+        <div className="flex items-center justify-between mt-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold text-stone-900">Shared Elements</h1>
+            <span className="bg-sky-100 text-sky-700 text-sm px-2 py-0.5 rounded-full">
+              {shared.length}
+            </span>
+          </div>
+          <AddComponentForm dishes={dishes} />
         </div>
-        <p className="text-stone-500 mt-1">Components with linked recipes — reusable building blocks across your menus</p>
+        <p className="text-stone-500 mt-1">
+          Components with linked recipes — reusable building blocks across your menus
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -45,7 +62,9 @@ export default async function SharedElementsPage() {
           <p className="text-sm text-stone-500 mt-1">Used in multiple places</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-amber-700">{allComponents.filter(c => c.is_make_ahead && c.recipe_id).length}</p>
+          <p className="text-2xl font-bold text-amber-700">
+            {allComponents.filter((c) => c.is_make_ahead && c.recipe_id).length}
+          </p>
           <p className="text-sm text-stone-500 mt-1">Make-ahead with recipe</p>
         </Card>
       </div>
@@ -71,20 +90,32 @@ export default async function SharedElementsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {shared.map(comp => (
+              {shared.map((comp) => (
                 <TableRow key={comp.id}>
                   <TableCell className="font-medium text-stone-900">{comp.name}</TableCell>
                   <TableCell>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 capitalize">{comp.category}</span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 capitalize">
+                      {comp.category}
+                    </span>
                   </TableCell>
                   <TableCell className="text-stone-500 text-sm">{comp.dish_name ?? '—'}</TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {comp.menu_id ? (
-                      <Link href={`/culinary/menus/${comp.menu_id}`} className="text-brand-600 hover:underline">{comp.menu_name ?? 'View'}</Link>
-                    ) : '—'}
+                      <Link
+                        href={`/culinary/menus/${comp.menu_id}`}
+                        className="text-brand-600 hover:underline"
+                      >
+                        {comp.menu_name ?? 'View'}
+                      </Link>
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
                   <TableCell>
-                    <Link href={`/culinary/recipes/${comp.recipe_id}`} className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200">
+                    <Link
+                      href={`/culinary/recipes/${comp.recipe_id}`}
+                      className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
+                    >
                       View Recipe
                     </Link>
                   </TableCell>
