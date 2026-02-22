@@ -178,6 +178,16 @@ export default async function SettingsPage() {
               </p>
             </Link>
             <Link
+              href="/settings/favorite-chefs"
+              className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            >
+              <p className="font-medium text-stone-900">Favorite Chefs</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Celebrate the culinary heroes who inspire your craft. Share your list on social
+                media.
+              </p>
+            </Link>
+            <Link
               href="/settings/client-preview"
               className="block border border-brand-200 rounded-lg p-4 bg-brand-50/40 hover:bg-brand-50 transition-colors"
             >
@@ -197,6 +207,34 @@ export default async function SettingsPage() {
               </Link>
             )}
           </div>
+        </div>
+      </SettingsCategory>
+
+      <SettingsCategory
+        title="AI & Privacy"
+        description="Control Remy, understand how your data is handled, and manage AI features."
+        defaultOpen
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/ai-privacy"
+            className="block border border-emerald-200 rounded-lg p-4 bg-emerald-50/40 hover:bg-emerald-50 transition-colors"
+          >
+            <p className="font-semibold text-emerald-900">AI Trust Center</p>
+            <p className="text-sm text-emerald-700 mt-1">
+              See exactly how Remy works, where your data goes, and manage all AI controls. Walk
+              through privacy practices and delete data anytime.
+            </p>
+          </Link>
+          <Link
+            href="/settings/culinary-profile"
+            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+          >
+            <p className="font-medium text-stone-900">Culinary Profile</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Tell Remy about your cooking philosophy, signature dishes, and food identity.
+            </p>
+          </Link>
         </div>
       </SettingsCategory>
 

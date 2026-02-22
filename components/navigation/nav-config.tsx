@@ -72,9 +72,6 @@ export const standaloneTop: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/inquiries', label: 'Inquiries', icon: Inbox },
-  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
-  { href: '/recipes', label: 'Recipes', icon: UtensilsCrossed },
-  { href: '/culinary-board', label: 'Culinary Board', icon: Palette },
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays },
   { href: '/events', label: 'All Events', icon: CalendarDays },
@@ -743,6 +740,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     icon: Settings,
     context: 'Settings',
   },
+  { href: '/settings/ai-privacy', label: 'AI & Privacy', icon: ShieldCheck, context: 'Settings' },
   { href: '/settings/api-keys', label: 'API Keys', icon: Settings, context: 'Settings' },
   { href: '/settings/webhooks', label: 'Webhooks', icon: Settings, context: 'Settings' },
   {
