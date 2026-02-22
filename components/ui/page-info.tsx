@@ -191,7 +191,7 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
   return createPortal(
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-40 overflow-y-auto"
+      className="fixed inset-0 z-[60] overflow-y-auto"
       onClick={(e) => {
         if (e.target === overlayRef.current || (e.target as HTMLElement).dataset.backdrop) {
           onClose()
@@ -201,7 +201,7 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
       {/* Transparent backdrop */}
       <div
         data-backdrop="true"
-        className="absolute inset-0 bg-white/82 dark:bg-stone-950/82 backdrop-blur-[1.5px]"
+        className="absolute inset-0 bg-white/80 dark:bg-stone-950/80 backdrop-blur-[1.5px]"
         style={{ minHeight: docH }}
       />
 
@@ -324,7 +324,9 @@ function FallbackSummary({
     <div
       ref={ref}
       className={`${
-        inline ? 'fixed bottom-4 left-4 z-50' : 'fixed bottom-16 left-4 lg:bottom-16 lg:left-4 z-40'
+        inline
+          ? 'fixed bottom-4 left-4 z-[60]'
+          : 'fixed bottom-[7.5rem] left-4 lg:bottom-16 lg:left-4 z-[60]'
       } w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-stone-900 rounded-xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden animate-scale-in`}
     >
       {/* Header */}
@@ -398,13 +400,13 @@ export function PageInfoButton() {
 
   return (
     <>
-      {/* The info button */}
+      {/* The info button — z-50 to sit above mobile nav (z-40) and sidebar */}
       <button
         onClick={handleToggle}
-        className={`fixed bottom-20 left-4 lg:bottom-4 lg:left-4 z-30 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 ${
+        className={`fixed bottom-[5.5rem] left-4 lg:bottom-4 lg:left-4 z-50 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 ${
           isOpen
             ? 'bg-stone-900 text-white shadow-lg dark:bg-white dark:text-stone-900'
-            : 'bg-stone-100/60 dark:bg-stone-800/60 backdrop-blur-sm text-stone-400 dark:text-stone-500 hover:text-stone-600 dark:hover:text-stone-300 hover:bg-stone-200/80 dark:hover:bg-stone-700/80 border border-stone-200/40 dark:border-stone-700/40 shadow-sm'
+            : 'bg-white dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 shadow-md'
         }`}
         aria-label="Page info"
         title="What does this page do?"
