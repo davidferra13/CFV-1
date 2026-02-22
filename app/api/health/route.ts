@@ -39,6 +39,14 @@ export const runtime = 'nodejs'
 // No caching — health checks must always be fresh
 export const dynamic = 'force-dynamic'
 
+// HEAD — lightweight connectivity check for offline detection (no DB query)
+export async function HEAD() {
+  return new Response(null, {
+    status: 200,
+    headers: { 'Cache-Control': 'no-store' },
+  })
+}
+
 export async function GET(request: Request) {
   const requestId = request.headers.get('x-request-id') ?? 'health-check'
   const startTime = Date.now()
@@ -64,11 +72,7 @@ export async function GET(request: Request) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     )
     // Lightweight query — just fetch one row from a small, always-present table
-    const { error } = await supabase
-      .from('chefs')
-      .select('id')
-      .limit(1)
-      .maybeSingle()
+    const { error } = await supabase.from('chefs').select('id').limit(1).maybeSingle()
 
     latencyMs.database = Date.now() - dbStart
 

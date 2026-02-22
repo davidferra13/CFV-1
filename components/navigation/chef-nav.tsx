@@ -10,7 +10,7 @@ import { navGroups, standaloneBottom, mobileTabItems, resolveStandaloneTop } fro
 import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
-import { LiveIndicator } from '@/components/realtime/live-indicator'
+import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 
@@ -514,7 +514,7 @@ export function ChefSidebar({
         </Link>
         {!collapsed ? (
           <div className="flex items-center flex-shrink-0">
-            <LiveIndicator />
+            <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch />
             <button
@@ -566,7 +566,7 @@ export function ChefSidebar({
             >
               <Bot className="w-[18px] h-[18px]" />
             </button>
-            <LiveIndicator />
+            <OfflineNavIndicator />
             <ActivityDot collapsed />
 
             {/* Dashboard */}
@@ -1058,7 +1058,7 @@ export function ChefMobileNav({
             <span className="font-display text-stone-900 whitespace-nowrap">ChefFlow</span>
           </Link>
           <div className="flex items-center flex-shrink-0 gap-0.5">
-            <LiveIndicator />
+            <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch />
             <button

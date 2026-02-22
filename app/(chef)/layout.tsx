@@ -17,7 +17,8 @@ import { getAnnouncement } from '@/lib/admin/platform-actions'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
 import { TrialBanner } from '@/components/billing/trial-banner'
 import { RemyDrawer } from '@/components/ai/remy-drawer'
-import { OfflineBanner } from '@/components/ui/offline-banner'
+import { OfflineProvider } from '@/components/offline/offline-provider'
+import { OfflineStatusBar } from '@/components/offline/offline-status-bar'
 import { MilestoneOverlay } from '@/components/ui/milestone-overlay'
 import { BreadcrumbTracker } from '@/components/activity/breadcrumb-tracker'
 import { QuickCapture } from '@/components/mobile/quick-capture'
@@ -77,71 +78,73 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
-      <SidebarProvider>
-        <NotificationProvider userId={user.id}>
-          <ToastProvider />
-          <KeyboardShortcutsWrapper>
-            <div
-              className="min-h-screen"
-              style={{
-                backgroundColor: profile.portal_background_color || '#ede9e4',
-                backgroundImage: profile.portal_background_image_url
-                  ? `url(${profile.portal_background_image_url})`
-                  : undefined,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center center',
-                backgroundRepeat: 'no-repeat',
-              }}
-            >
-              {/* Platform announcement banner — shown when admin sets one */}
-              {announcement && (
-                <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
-              )}
-              {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
-              <TrialBanner chefId={user.entityId} />
-              {/* Desktop sidebar */}
-              <ChefSidebar
-                primaryNavHrefs={primaryNavHrefs}
-                hasCannabisTier={hasCannabisTier}
-                enabledModules={enabledModules}
-              />
-              {/* Mobile nav (top bar + bottom tabs) */}
-              <ChefMobileNav
-                primaryNavHrefs={primaryNavHrefs}
-                hasCannabisTier={hasCannabisTier}
-                enabledModules={enabledModules}
-              />
+      <OfflineProvider>
+        <SidebarProvider>
+          <NotificationProvider userId={user.id}>
+            <ToastProvider />
+            <KeyboardShortcutsWrapper>
+              <div
+                className="min-h-screen"
+                style={{
+                  backgroundColor: profile.portal_background_color || '#ede9e4',
+                  backgroundImage: profile.portal_background_image_url
+                    ? `url(${profile.portal_background_image_url})`
+                    : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center center',
+                  backgroundRepeat: 'no-repeat',
+                }}
+              >
+                {/* Platform announcement banner — shown when admin sets one */}
+                {announcement && (
+                  <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
+                )}
+                {/* Trial / subscription banner — shown when trial is expiring (≤3 days) or expired */}
+                <TrialBanner chefId={user.entityId} />
+                {/* Desktop sidebar */}
+                <ChefSidebar
+                  primaryNavHrefs={primaryNavHrefs}
+                  hasCannabisTier={hasCannabisTier}
+                  enabledModules={enabledModules}
+                />
+                {/* Mobile nav (top bar + bottom tabs) */}
+                <ChefMobileNav
+                  primaryNavHrefs={primaryNavHrefs}
+                  hasCannabisTier={hasCannabisTier}
+                  enabledModules={enabledModules}
+                />
 
-              {/* Main content — offset adjusts dynamically based on sidebar state */}
-              <ChefMainContent>{children}</ChefMainContent>
+                {/* Main content — offset adjusts dynamically based on sidebar state */}
+                <ChefMainContent>{children}</ChefMainContent>
 
-              {/* Push notification permission prompt — appears after 5s if not subscribed */}
-              <PushPermissionPrompt />
+                {/* Push notification permission prompt — appears after 5s if not subscribed */}
+                <PushPermissionPrompt />
 
-              {/* Feedback nudge — shown once, 7 days after account creation */}
-              {showFeedbackNudge && <FeedbackNudgeModal />}
+                {/* Feedback nudge — shown once, 7 days after account creation */}
+                {showFeedbackNudge && <FeedbackNudgeModal />}
 
-              {/* Offline connectivity banner — renders nothing when online */}
-              <OfflineBanner />
+                {/* Offline connectivity bar — shows status, queue count, sync progress */}
+                <OfflineStatusBar />
 
-              {/* Remy — AI companion chatbot, Pro tier + admins */}
-              {(tierStatus.tier === 'pro' || userIsAdmin) && <RemyDrawer />}
+                {/* Remy — AI companion chatbot, Pro tier + admins */}
+                {(tierStatus.tier === 'pro' || userIsAdmin) && <RemyDrawer />}
 
-              {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
-              <QuickCapture />
+                {/* Mobile quick capture FAB — mobile-only, hidden on desktop */}
+                <QuickCapture />
 
-              {/* Breadcrumb tracker — silent navigation tracking for retrace mode */}
-              <BreadcrumbTracker />
+                {/* Breadcrumb tracker — silent navigation tracking for retrace mode */}
+                <BreadcrumbTracker />
 
-              {/* Business milestone celebrations — fires once per threshold, replayable */}
-              <MilestoneOverlay />
+                {/* Business milestone celebrations — fires once per threshold, replayable */}
+                <MilestoneOverlay />
 
-              {/* Page info — contextual help overlay */}
-              <PageInfoButton />
-            </div>
-          </KeyboardShortcutsWrapper>
-        </NotificationProvider>
-      </SidebarProvider>
+                {/* Page info — contextual help overlay */}
+                <PageInfoButton />
+              </div>
+            </KeyboardShortcutsWrapper>
+          </NotificationProvider>
+        </SidebarProvider>
+      </OfflineProvider>
     </ThemeProvider>
   )
 }

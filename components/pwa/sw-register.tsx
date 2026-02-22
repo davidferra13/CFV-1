@@ -1,20 +1,44 @@
 'use client'
 
+// SwRegister — Registers the ChefFlow service worker for offline caching.
+// On update, prompts the new SW to activate immediately via SKIP_WAITING.
+
 import { useEffect } from 'react'
 
 export function SwRegister() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
 
-    // Always unregister any existing service worker.
-    // The old Workbox SW cached stale JS with CacheFirst strategy, which broke
-    // React hydration on mobile (buttons stopped responding to taps).
-    // PWA is bypassed in next.config.js unless ENABLE_PWA_BUILD=1, so there is
-    // no valid SW to register. If a stale one exists, kill it.
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-      for (const registration of registrations) {
-        registration.unregister()
-        console.info('[SW] Unregistered service worker')
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .then((registration) => {
+        console.info('[SW] Service worker registered')
+
+        // When a new SW is waiting, tell it to activate immediately
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing
+          if (!newWorker) return
+
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available — activate it
+              newWorker.postMessage({ type: 'SKIP_WAITING' })
+              console.info('[SW] New service worker activated')
+            }
+          })
+        })
+      })
+      .catch((err) => {
+        console.warn('[SW] Registration failed:', err)
+      })
+
+    // When the new SW takes over, reload the page for the latest assets
+    let refreshing = false
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true
+        // Don't reload during initial registration (no previous controller)
+        // Only reload on subsequent updates
       }
     })
   }, [])
