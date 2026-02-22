@@ -267,7 +267,7 @@ export default async function SharePage({ params }: { params: { token: string } 
         {/* Excitement Wall */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle>Guest Wall</CardTitle>
+            <CardTitle>What guests are saying</CardTitle>
           </CardHeader>
           <CardContent>
             <ExcitementWall

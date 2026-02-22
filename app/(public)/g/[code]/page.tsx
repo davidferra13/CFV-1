@@ -56,8 +56,7 @@ export default async function GuestLandingPage({ params }: Props) {
           {data.tagline && <p className="text-lg text-stone-600 mt-2">{data.tagline}</p>}
 
           <p className="text-stone-500 mt-4 max-w-md mx-auto leading-relaxed">
-            Enjoyed tonight's dinner? I'd love to cook for you and your guests. Leave your info
-            below and I'll be in touch.
+            Enjoyed tonight? Leave your info and I'll reach out about cooking for you.
           </p>
         </div>
       </section>

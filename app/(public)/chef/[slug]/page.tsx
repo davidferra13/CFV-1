@@ -16,7 +16,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
   const title = `${data.chef.display_name} — Private Chef`
-  const description = data.chef.tagline || data.chef.bio || `Book ${data.chef.display_name} for your next private dining experience`
+  const description =
+    data.chef.tagline ||
+    data.chef.bio ||
+    `Book ${data.chef.display_name} for your next private dining experience`
   const profileUrl = `${BASE_URL}/chef/${params.slug}`
   const imageUrl = (data.chef as any).profile_image_url as string | undefined
 
@@ -58,12 +61,12 @@ export default async function ChefProfilePage({ params }: Props) {
   const preferChefFlow = chef.preferred_inquiry_destination === 'chefflow_only'
   const pageBackgroundStyle = backgroundImageUrl
     ? {
-      backgroundColor,
-      backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed' as const,
-    }
+        backgroundColor,
+        backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed' as const,
+      }
     : { backgroundColor }
 
   return (
@@ -97,9 +100,7 @@ export default async function ChefProfilePage({ params }: Props) {
             </div>
           )}
 
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-900">
-            {chef.display_name}
-          </h1>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-900">{chef.display_name}</h1>
 
           {chef.tagline && (
             <p className="text-lg md:text-xl text-stone-600 mt-3 max-w-2xl mx-auto">
@@ -108,9 +109,7 @@ export default async function ChefProfilePage({ params }: Props) {
           )}
 
           {chef.bio && (
-            <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed">
-              {chef.bio}
-            </p>
+            <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed">{chef.bio}</p>
           )}
         </div>
       </section>
@@ -120,11 +119,10 @@ export default async function ChefProfilePage({ params }: Props) {
         <section className="py-16 px-6 bg-white/70">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-stone-900">
-                Where I Cook
-              </h2>
+              <h2 className="text-3xl font-bold text-stone-900">Where I Cook</h2>
               <p className="text-stone-600 mt-3 max-w-xl mx-auto">
-                Book one of these amazing venues and enjoy a private dining experience with a personal chef
+                Book one of these amazing venues and enjoy a private dining experience with a
+                personal chef
               </p>
             </div>
 
@@ -144,10 +142,16 @@ export default async function ChefProfilePage({ params }: Props) {
               </p>
             </div>
             <div className="space-y-3">
-              {availabilitySignals.map(signal => {
-                const dateLabel = new Date(signal.start_date + 'T00:00:00').toLocaleDateString('en-US', {
-                  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
-                })
+              {availabilitySignals.map((signal) => {
+                const dateLabel = new Date(signal.start_date + 'T00:00:00').toLocaleDateString(
+                  'en-US',
+                  {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  }
+                )
                 return (
                   <div
                     key={signal.id}
@@ -177,9 +181,7 @@ export default async function ChefProfilePage({ params }: Props) {
       {/* CTA Section */}
       <section className="py-16 px-6 bg-white/75">
         <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-2xl font-bold text-stone-900">
-            Ready to Book?
-          </h2>
+          <h2 className="text-2xl font-bold text-stone-900">Ready to Book?</h2>
           <p className="text-stone-600 mt-3">
             {partners.length > 0
               ? `Choose a venue above and hire ${chef.display_name} for an unforgettable dining experience, or submit a custom inquiry below.`
@@ -187,21 +189,34 @@ export default async function ChefProfilePage({ params }: Props) {
           </p>
 
           <div className="mt-6 flex flex-col items-center gap-3">
-            {(!preferWebsite || !hasWebsiteLink) && (
+            <div className="flex w-full max-w-md gap-3">
+              {(!preferWebsite || !hasWebsiteLink) && (
+                <a
+                  href={`/chef/${params.slug}/inquire`}
+                  className="inline-block flex-1 px-6 py-3 text-white rounded-lg font-medium text-center transition-opacity hover:opacity-90"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Start your booking
+                </a>
+              )}
               <a
-                href={`/chef/${params.slug}/inquire`}
-                className="inline-block w-full max-w-xs px-8 py-3 text-white rounded-lg font-medium transition-opacity hover:opacity-90"
-                style={{ backgroundColor: primaryColor }}
+                href={`/chef/${params.slug}/gift-cards`}
+                className="inline-block flex-1 px-6 py-3 rounded-lg font-medium text-center border transition-colors"
+                style={{
+                  borderColor: primaryColor,
+                  color: primaryColor,
+                  backgroundColor: 'rgba(255,255,255,0.9)',
+                }}
               >
-                Inquire About an Event
+                Give the gift of a private chef
               </a>
-            )}
+            </div>
             {hasWebsiteLink && (
               <a
                 href={chef.website_url!}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block w-full max-w-xs px-8 py-3 rounded-lg font-medium border transition-colors"
+                className="inline-block w-full max-w-md px-8 py-3 rounded-lg font-medium border transition-colors text-center"
                 style={{
                   borderColor: primaryColor,
                   color: primaryColor,
@@ -223,13 +238,6 @@ export default async function ChefProfilePage({ params }: Props) {
                 </a>
               </p>
             )}
-            <a
-              href={`/chef/${params.slug}/gift-cards`}
-              className="inline-block w-full max-w-xs px-8 py-3 rounded-lg font-medium border transition-colors"
-              style={{ borderColor: primaryColor, color: primaryColor, backgroundColor: 'rgba(255,255,255,0.9)' }}
-            >
-              Buy a Gift Card
-            </a>
           </div>
 
           <div className="mt-6 flex items-center justify-center gap-4 text-sm">

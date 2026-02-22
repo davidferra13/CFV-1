@@ -25,7 +25,7 @@ export default function ContactPage() {
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
@@ -85,15 +85,13 @@ export default function ContactPage() {
     }
   }
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
+    setFormData((prev) => ({ ...prev, [name]: value }))
 
     // Clear error for this field when user starts typing
     if (errors[name as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [name]: undefined }))
+      setErrors((prev) => ({ ...prev, [name]: undefined }))
     }
   }
 
@@ -102,12 +100,8 @@ export default function ContactPage() {
       {/* Page Header */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">
-            Get in Touch
-          </h1>
-          <p className="text-lg md:text-xl text-stone-600">
-            Have questions? We&apos;re here to help.
-          </p>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">Talk to us</h1>
+          <p className="text-lg md:text-xl text-stone-600">We respond within 24 hours.</p>
         </div>
       </section>
 
@@ -125,12 +119,22 @@ export default function ContactPage() {
                   {showSuccess && (
                     <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
                       <div className="flex items-start">
-                        <svg className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         <div>
                           <h4 className="font-semibold text-green-900 mb-1">Message sent!</h4>
-                          <p className="text-green-700 text-sm">We&apos;ll respond within 24 hours.</p>
+                          <p className="text-green-700 text-sm">
+                            We&apos;ll respond within 24 hours.
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -209,13 +213,26 @@ export default function ContactPage() {
                   <div>
                     <div className="flex items-start mb-4">
                       <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        <svg className="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <svg
+                          className="w-5 h-5 text-brand-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                          />
                         </svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-stone-900 mb-1">Email</h4>
-                        <a href="mailto:support@cheflowhq.com" className="text-brand-600 hover:text-brand-700">
+                        <a
+                          href="mailto:support@cheflowhq.com"
+                          className="text-brand-600 hover:text-brand-700"
+                        >
                           support@cheflowhq.com
                         </a>
                       </div>
@@ -225,13 +242,25 @@ export default function ContactPage() {
                   <div className="pt-6 border-t border-stone-200">
                     <div className="flex items-start">
                       <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        <svg className="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-5 h-5 text-brand-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-stone-900 mb-1">Response Time</h4>
-                        <p className="text-stone-600 text-sm">We typically respond within 24 hours during business days</p>
+                        <p className="text-stone-600 text-sm">
+                          We typically respond within 24 hours during business days
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -239,13 +268,27 @@ export default function ContactPage() {
                   <div className="pt-6 border-t border-stone-200">
                     <div className="flex items-start">
                       <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
-                        <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg
+                          className="w-5 h-5 text-emerald-600"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
                         </svg>
                       </div>
                       <div>
                         <h4 className="font-semibold text-stone-900 mb-1">Support Hours</h4>
-                        <p className="text-stone-600 text-sm">Monday - Friday<br />9:00 AM - 5:00 PM PST</p>
+                        <p className="text-stone-600 text-sm">
+                          Monday - Friday
+                          <br />
+                          9:00 AM - 5:00 PM PST
+                        </p>
                       </div>
                     </div>
                   </div>

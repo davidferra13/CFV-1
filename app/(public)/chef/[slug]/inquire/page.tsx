@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `Book ${data.chef.display_name} — Private Chef Inquiry`,
-    description: `Submit an inquiry to book ${data.chef.display_name} for your next private dining experience.`,
+    description: `Tell ${data.chef.display_name} about your event.`,
   }
 }
 
@@ -27,12 +27,12 @@ export default async function InquirePage({ params }: Props) {
   const backgroundImageUrl = data.chef.portal_background_image_url
   const pageBackgroundStyle = backgroundImageUrl
     ? {
-      backgroundColor,
-      backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed' as const,
-    }
+        backgroundColor,
+        backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed' as const,
+      }
     : { backgroundColor }
 
   return (
