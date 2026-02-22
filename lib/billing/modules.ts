@@ -45,11 +45,20 @@ export const MODULES: ModuleDefinition[] = [
   {
     slug: 'events',
     label: 'Events',
-    description: 'Event lifecycle, calendar, menus, and recipes',
+    description: 'Event lifecycle, calendar, staff, and operations',
     tier: 'free',
     defaultEnabled: true,
     alwaysVisible: false,
     navGroupId: 'events',
+  },
+  {
+    slug: 'culinary',
+    label: 'Culinary',
+    description: 'Menus, recipes, ingredients, prep, costing, vendors, and kitchen management',
+    tier: 'free',
+    defaultEnabled: true,
+    alwaysVisible: false,
+    navGroupId: 'culinary',
   },
   {
     slug: 'clients',
