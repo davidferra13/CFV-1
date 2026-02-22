@@ -26,6 +26,38 @@ export interface ParseOllamaOptions {
   modelTier?: ModelTier
   /** Enable in-memory response cache. Default: false. */
   cache?: boolean
+  /** Hard timeout in ms for the entire Ollama call. Default: 30000 (30s). */
+  timeoutMs?: number
+}
+
+/** Default hard timeout for any Ollama call — prevents infinite hangs */
+const DEFAULT_OLLAMA_TIMEOUT_MS = 30_000
+
+/**
+ * Wraps a promise with a hard timeout. If the promise doesn't resolve
+ * within timeoutMs, it rejects with an OllamaOfflineError.
+ */
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(
+        new OllamaOfflineError(
+          `Ollama ${label} timed out after ${Math.round(timeoutMs / 1000)}s`,
+          'timeout'
+        )
+      )
+    }, timeoutMs)
+    promise.then(
+      (val) => {
+        clearTimeout(timer)
+        resolve(val)
+      },
+      (err) => {
+        clearTimeout(timer)
+        reject(err)
+      }
+    )
+  })
 }
 
 /**
@@ -62,17 +94,44 @@ export async function parseWithOllama<T>(
 
   const ollama = new Ollama({ host: config.baseUrl })
   const startTime = Date.now()
+  const timeoutMs = options?.timeoutMs ?? DEFAULT_OLLAMA_TIMEOUT_MS
 
+  // Retry Ollama call up to 2 times on transient errors, with hard timeout per attempt
   let rawText: string
+  const { withRetry } = await import('@/lib/resilience/retry')
   try {
-    const response = await ollama.chat({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userContent },
-      ],
-      format: 'json',
-    })
+    const response = await withRetry(
+      () =>
+        withTimeout(
+          ollama.chat({
+            model,
+            messages: [
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userContent },
+            ],
+            format: 'json',
+          }),
+          timeoutMs,
+          'chat'
+        ),
+      {
+        maxAttempts: 2,
+        onRetry: (attempt, err) => {
+          console.warn(`[ollama] Retry attempt ${attempt} due to error:`, err)
+        },
+        retryOn: (err) => {
+          if (err instanceof OllamaOfflineError) return true
+          const msg = err instanceof Error ? err.message : String(err)
+          return (
+            msg.includes('timeout') ||
+            msg.includes('aborted') ||
+            msg.includes('AbortError') ||
+            msg.includes('unreachable') ||
+            msg.includes('network')
+          )
+        },
+      }
+    )
     rawText = response.message.content
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : String(err)
@@ -117,24 +176,28 @@ export async function parseWithOllama<T>(
 
     // Single repair pass via Ollama (still local — no privacy risk)
     try {
-      const repairResponse = await ollama.chat({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          {
-            role: 'user',
-            content: [
-              'Your previous response did not satisfy the required JSON schema.',
-              `Validation errors: ${firstPassIssues}`,
-              'Return ONLY corrected JSON (no markdown, no prose).',
-              'Keep the same structure and preserve as much extracted data as possible.',
-              '--- Previous JSON ---',
-              jsonStr,
-            ].join('\n'),
-          },
-        ],
-        format: 'json',
-      })
+      const repairResponse = await withTimeout(
+        ollama.chat({
+          model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            {
+              role: 'user',
+              content: [
+                'Your previous response did not satisfy the required JSON schema.',
+                `Validation errors: ${firstPassIssues}`,
+                'Return ONLY corrected JSON (no markdown, no prose).',
+                'Keep the same structure and preserve as much extracted data as possible.',
+                '--- Previous JSON ---',
+                jsonStr,
+              ].join('\n'),
+            },
+          ],
+          format: 'json',
+        }),
+        timeoutMs,
+        'repair'
+      )
 
       const repairedText = repairResponse.message.content
       const repairedJsonStr = extractJsonPayload(repairedText || '')

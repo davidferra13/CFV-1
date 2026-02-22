@@ -224,6 +224,7 @@ export function RemyDrawer() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
   const pathname = usePathname()
   const router = useRouter()
 
@@ -272,6 +273,24 @@ export function RemyDrawer() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [open])
+
+  // Listen for custom 'open-remy' event so nav buttons can open the drawer
+  useEffect(() => {
+    const handler = () => setOpen(true)
+    window.addEventListener('open-remy', handler)
+    return () => window.removeEventListener('open-remy', handler)
+  }, [])
+
+  // Abort in-flight Ollama request when drawer closes
+  useEffect(() => {
+    if (!open && abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+      setLoading(false)
+      setStreamingContent('')
+      setStreamingIntent(undefined)
+    }
   }, [open])
 
   // Memory decay — run once per session when drawer first opens
@@ -496,6 +515,19 @@ export function RemyDrawer() {
     )
   }, [])
 
+  // ─── Cancel In-Flight Request ────────────────────────────────────────────────
+
+  const handleCancel = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort()
+      abortControllerRef.current = null
+    }
+    setLoading(false)
+    setStreamingContent('')
+    setStreamingIntent(undefined)
+    toast.success('Request cancelled')
+  }, [])
+
   // ─── Streaming Send ─────────────────────────────────────────────────────────
 
   const handleSend = useCallback(
@@ -545,6 +577,13 @@ export function RemyDrawer() {
       }).catch((err) => console.error('[non-blocking] Save user msg failed', err))
 
       try {
+        // Create an AbortController so we can cancel the request
+        const controller = new AbortController()
+        abortControllerRef.current = controller
+
+        // Hard client-side timeout: 60s — if Ollama is stuck, we bail
+        const timeoutId = setTimeout(() => controller.abort(), 60_000)
+
         const response = await fetch('/api/remy/stream', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -553,7 +592,10 @@ export function RemyDrawer() {
             history: messages,
             currentPage: pathname,
           }),
+          signal: controller.signal,
         })
+
+        clearTimeout(timeoutId)
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
@@ -644,21 +686,36 @@ export function RemyDrawer() {
 
         autoSave(message, remyMsg)
       } catch (err: unknown) {
-        const errMsg = err instanceof Error ? err.message : 'Remy is having trouble. Try again.'
-        const isOllamaOffline = errMsg.includes('Local AI is offline') || errMsg.includes('Ollama')
-        const remyErrorMsg: RemyMessage = {
-          id: generateId(),
-          role: 'remy',
-          content: isOllamaOffline
-            ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
-            : errMsg,
-          timestamp: new Date().toISOString(),
+        // If the user cancelled or the timeout fired, don't show a scary error
+        if (err instanceof DOMException && err.name === 'AbortError') {
+          const cancelMsg: RemyMessage = {
+            id: generateId(),
+            role: 'remy',
+            content: "Request was cancelled or timed out. Try again when you're ready.",
+            timestamp: new Date().toISOString(),
+          }
+          setMessages((prev) => [...prev, cancelMsg])
+          setStreamingContent('')
+          setStreamingIntent(undefined)
+        } else {
+          const errMsg = err instanceof Error ? err.message : 'Remy is having trouble. Try again.'
+          const isOllamaOffline =
+            errMsg.includes('Local AI is offline') || errMsg.includes('Ollama')
+          const remyErrorMsg: RemyMessage = {
+            id: generateId(),
+            role: 'remy',
+            content: isOllamaOffline
+              ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
+              : errMsg,
+            timestamp: new Date().toISOString(),
+          }
+          setMessages((prev) => [...prev, remyErrorMsg])
+          setStreamingContent('')
+          setStreamingIntent(undefined)
+          if (!isOllamaOffline) toast.error(errMsg)
         }
-        setMessages((prev) => [...prev, remyErrorMsg])
-        setStreamingContent('')
-        setStreamingIntent(undefined)
-        if (!isOllamaOffline) toast.error(errMsg)
       } finally {
+        abortControllerRef.current = null
         setLoading(false)
       }
     },
@@ -732,10 +789,10 @@ export function RemyDrawer() {
 
   return (
     <>
-      {/* Floating trigger button */}
+      {/* Floating trigger button — nudged above mobile bottom nav (h-14 = 56px + safe area) */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
+        className="fixed bottom-20 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
         aria-label="Open Remy (Ctrl+K)"
         title="Open Remy (Ctrl+K)"
       >
@@ -1078,16 +1135,24 @@ export function RemyDrawer() {
                   {/* Streaming indicator */}
                   {loading && streamingContent && (
                     <div className="flex justify-start">
-                      <div className="max-w-[85%] bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100">
-                        <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                          <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
-                            components={markdownComponents as any}
-                          >
-                            {streamingContent}
-                          </ReactMarkdown>
+                      <div className="max-w-[85%] space-y-1">
+                        <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100">
+                          <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={markdownComponents as any}
+                            >
+                              {streamingContent}
+                            </ReactMarkdown>
+                          </div>
+                          <span className="inline-block w-1.5 h-4 bg-brand-600 animate-pulse ml-0.5 align-text-bottom" />
                         </div>
-                        <span className="inline-block w-1.5 h-4 bg-brand-600 animate-pulse ml-0.5 align-text-bottom" />
+                        <button
+                          onClick={handleCancel}
+                          className="text-xs text-red-500 hover:text-red-700 underline transition-colors ml-1"
+                        >
+                          Stop generating
+                        </button>
                       </div>
                     </div>
                   )}
@@ -1101,6 +1166,13 @@ export function RemyDrawer() {
                           {getThinkingMessage(elapsedSec, streamingIntent)}
                           {elapsedSec > 0 ? ` ${elapsedSec}s` : ''}
                         </span>
+                        <button
+                          onClick={handleCancel}
+                          className="ml-2 text-xs text-red-500 hover:text-red-700 underline transition-colors"
+                          title="Cancel request"
+                        >
+                          Cancel
+                        </button>
                       </div>
                     </div>
                   )}

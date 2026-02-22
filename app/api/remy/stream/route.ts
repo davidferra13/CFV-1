@@ -473,11 +473,42 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── MAIN PATH: classify + load context ─────────────────────
-    const [context, classification, memories] = await Promise.all([
-      loadRemyContext(currentPage),
-      classifyIntent(message),
-      loadRelevantMemories(message, undefined, undefined),
-    ])
+    // Hard timeout: if the entire pre-stream setup takes >20s, bail out
+    const setupTimeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Pre-stream setup timed out after 20s')), 20_000)
+    )
+
+    let context: Awaited<ReturnType<typeof loadRemyContext>>
+    let classification: Awaited<ReturnType<typeof classifyIntent>>
+    let memories: Awaited<ReturnType<typeof loadRelevantMemories>>
+
+    try {
+      ;[context, classification, memories] = (await Promise.race([
+        Promise.all([
+          loadRemyContext(currentPage),
+          classifyIntent(message),
+          loadRelevantMemories(message, undefined, undefined),
+        ]),
+        setupTimeout,
+      ])) as [
+        Awaited<ReturnType<typeof loadRemyContext>>,
+        Awaited<ReturnType<typeof classifyIntent>>,
+        Awaited<ReturnType<typeof loadRelevantMemories>>,
+      ]
+    } catch (setupErr) {
+      const msg = setupErr instanceof Error ? setupErr.message : String(setupErr)
+      const isOllama =
+        msg.includes('Ollama') || msg.includes('timeout') || msg.includes('timed out')
+      return new Response(
+        encodeSSE({
+          type: 'error',
+          data: isOllama
+            ? 'Ollama is taking too long to respond. It may be stuck — try restarting Ollama and sending your message again.'
+            : `Setup failed: ${msg}`,
+        }),
+        { headers: sseHeaders() }
+      )
+    }
 
     // ─── COMMAND path ────────────────────────────────────────────
     if (classification.intent === 'command') {
@@ -559,6 +590,10 @@ export async function POST(req: NextRequest) {
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
         async start(controller) {
+          // Hard timeout: kill the Ollama call if it hangs
+          const abortCtrl = new AbortController()
+          const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
+
           try {
             controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'mixed' })))
 
@@ -573,6 +608,9 @@ export async function POST(req: NextRequest) {
 
             let fullResponse = ''
             for await (const chunk of response) {
+              if (abortCtrl.signal.aborted) {
+                throw new Error('Ollama response timed out — the request took too long.')
+              }
               const token = chunk.message?.content ?? ''
               if (token) {
                 fullResponse += token
@@ -605,6 +643,7 @@ export async function POST(req: NextRequest) {
               )
             )
           } finally {
+            clearTimeout(timeout)
             controller.close()
           }
         },
@@ -633,6 +672,10 @@ export async function POST(req: NextRequest) {
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
       async start(controller) {
+        // Hard timeout: kill the Ollama call if it hangs
+        const abortCtrl = new AbortController()
+        const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
+
         try {
           controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
 
@@ -647,6 +690,10 @@ export async function POST(req: NextRequest) {
 
           let fullResponse = ''
           for await (const chunk of response) {
+            // Check if we've been aborted by the timeout
+            if (abortCtrl.signal.aborted) {
+              throw new Error('Ollama response timed out — the request took too long.')
+            }
             const token = chunk.message?.content ?? ''
             if (token) {
               fullResponse += token
@@ -666,7 +713,9 @@ export async function POST(req: NextRequest) {
           const isOllamaDown =
             errMsg.includes('ECONNREFUSED') ||
             errMsg.includes('unreachable') ||
-            errMsg.includes('timeout')
+            errMsg.includes('timeout') ||
+            errMsg.includes('timed out') ||
+            errMsg.includes('aborted')
           controller.enqueue(
             encoder.encode(
               encodeSSE({
@@ -678,6 +727,7 @@ export async function POST(req: NextRequest) {
             )
           )
         } finally {
+          clearTimeout(timeout)
           controller.close()
         }
       },
@@ -702,6 +752,13 @@ function sseHeaders(): HeadersInit {
     'X-Accel-Buffering': 'no',
   }
 }
+
+/**
+ * Hard timeout for Ollama streaming calls.
+ * If Ollama hangs (bad prompt, infinite generation), this kills it after 45s.
+ * Prevents runaway memory/CPU that freezes the whole machine.
+ */
+const OLLAMA_STREAM_TIMEOUT_MS = 45_000
 
 function extractNavSuggestions(
   text: string
