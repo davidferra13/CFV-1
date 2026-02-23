@@ -8,7 +8,7 @@
 // Today: only PC exists. When Pi arrives, set OLLAMA_PI_URL and
 // background tasks automatically flow there. Zero code changes.
 
-import { getOllamaConfig } from './providers'
+import { getOllamaConfig, getModelForEndpoint } from './providers'
 import type { LlmEndpoint } from './queue/types'
 import { AI_PRIORITY } from './queue/types'
 
@@ -106,6 +106,31 @@ export async function routeTask(
   // Nothing healthy — return PC URL and let caller handle error
   const defaultUrl = getOllamaConfig().baseUrl
   return { url: defaultUrl, endpointName: 'pc' }
+}
+
+/**
+ * Route a Remy chat request. Returns full endpoint config or null if offline.
+ * Convenience wrapper around routeTask() for the Remy streaming route.
+ * Accepts an optional preferred endpoint override for load-aware routing.
+ */
+export async function routeForRemy(opts?: { preferEndpoint?: LlmEndpoint }): Promise<{
+  host: string
+  model: string
+  endpointName: 'pc' | 'pi'
+} | null> {
+  const healthy = await isAnyEndpointHealthy()
+  if (!healthy) return null
+
+  const { url, endpointName } = await routeTask(
+    opts?.preferEndpoint ?? 'auto',
+    AI_PRIORITY.ON_DEMAND
+  )
+
+  return {
+    host: url,
+    model: getModelForEndpoint(endpointName, 'standard'),
+    endpointName,
+  }
 }
 
 /**

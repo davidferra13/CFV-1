@@ -75,6 +75,26 @@ export function getModelForEndpoint(endpoint: 'pc' | 'pi', tier: ModelTier = 'st
 }
 
 /**
+ * Compute a right-sized context window based on actual input length.
+ * Avoids over-allocating VRAM by requesting only what's needed.
+ *
+ * Rough estimate: 1 token ≈ 4 characters.
+ * Budget: input tokens + 512 safety buffer + 2048 response headroom.
+ * Result rounded up to nearest 1024 for Ollama efficiency, clamped to [2048, max].
+ */
+export function computeDynamicContext(
+  inputChars: number,
+  endpoint: 'pc' | 'pi',
+  layer: RemyLayer
+): number {
+  const maxCtx = getContextSizeForEndpoint(endpoint, layer)
+  const estimatedInputTokens = Math.ceil(inputChars / 4)
+  const needed = estimatedInputTokens + 512 + 2048 // safety buffer + response headroom
+  const rounded = Math.ceil(needed / 1024) * 1024
+  return Math.min(Math.max(rounded, 2048), maxCtx)
+}
+
+/**
  * Returns the right context window size for an endpoint + layer.
  * Pi uses smaller context windows because the 8B model has less capacity.
  */

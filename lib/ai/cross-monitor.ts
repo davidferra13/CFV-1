@@ -189,6 +189,15 @@ export function getRecoveryLog(): RecoveryAction[] {
 }
 
 /**
+ * Get the cached health snapshot for a specific endpoint.
+ * Returns null if the endpoint hasn't been checked yet.
+ * Used by Remy and the router for load-aware routing decisions.
+ */
+export function getEndpointSnapshot(name: 'pc' | 'pi'): EndpointHealthSnapshot | null {
+  return state.endpoints.get(name) ?? null
+}
+
+/**
  * Force an immediate health check on all endpoints.
  */
 export async function forceMonitorCheck(): Promise<SystemHealthReport> {
@@ -393,16 +402,37 @@ async function evaluateAndAct(): Promise<void> {
       }
     }
 
-    // L2: Model not loaded — this is auto-fixable
+    // L2: Model not loaded — proactively preload it so first real request is fast
     if (snapshot.grade === 'degraded' && snapshot.online && !snapshot.modelReady) {
-      logRecoveryAction({
-        level: 1,
-        action: 'model-check',
-        target: name,
-        timestamp: new Date(),
-        success: true,
-        detail: `${name} online but model ${snapshot.configuredModel} not loaded — will be pulled on next use`,
-      })
+      try {
+        await fetch(`${snapshot.url}/api/generate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: snapshot.configuredModel,
+            prompt: '',
+            keep_alive: '5m',
+          }),
+          signal: AbortSignal.timeout(30_000),
+        })
+        logRecoveryAction({
+          level: 2,
+          action: 'model-preload',
+          target: name,
+          timestamp: new Date(),
+          success: true,
+          detail: `Preloaded ${snapshot.configuredModel} on ${name}`,
+        })
+      } catch (preloadErr) {
+        logRecoveryAction({
+          level: 2,
+          action: 'model-preload',
+          target: name,
+          timestamp: new Date(),
+          success: false,
+          detail: `Failed to preload on ${name}: ${preloadErr instanceof Error ? preloadErr.message : String(preloadErr)}`,
+        })
+      }
     }
   }
 }

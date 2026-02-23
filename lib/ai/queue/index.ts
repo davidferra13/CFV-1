@@ -46,6 +46,7 @@ export {
   releaseInteractiveLock,
   getWorkerState,
   isWorkerProcessing,
+  isSlotBusy,
 } from './worker'
 
 // Monitor

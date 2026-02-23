@@ -197,6 +197,15 @@ export function isWorkerProcessing(): boolean {
   return slots.pc.taskId !== null || slots.pi.taskId !== null
 }
 
+/**
+ * Check if a specific endpoint slot is currently busy processing a task.
+ * Used by Remy to avoid GPU contention — if the PC is mid-background-task,
+ * Remy can route to the Pi instead of competing for the same GPU.
+ */
+export function isSlotBusy(endpoint: 'pc' | 'pi'): boolean {
+  return slots[endpoint].taskId !== null
+}
+
 // ============================================
 // POLLING LOOP
 // ============================================

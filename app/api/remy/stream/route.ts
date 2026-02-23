@@ -10,15 +10,9 @@ import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
-import {
-  isOllamaEnabled,
-  getOllamaConfig,
-  getOllamaModel,
-  getOllamaContextSize,
-  getOllamaPiUrl,
-  getModelForEndpoint,
-  getContextSizeForEndpoint,
-} from '@/lib/ai/providers'
+import { computeDynamicContext } from '@/lib/ai/providers'
+import { routeForRemy } from '@/lib/ai/llm-router'
+import { getEndpointSnapshot } from '@/lib/ai/cross-monitor'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import {
   REMY_PERSONALITY,
@@ -31,7 +25,7 @@ import { getCulinaryProfileForPrompt } from '@/lib/ai/chef-profile-actions'
 import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
-import { acquireInteractiveLock, releaseInteractiveLock } from '@/lib/ai/queue'
+import { acquireInteractiveLock, releaseInteractiveLock, isSlotBusy } from '@/lib/ai/queue'
 import {
   loadRelevantMemories,
   listRemyMemories,
@@ -1017,8 +1011,20 @@ export async function POST(req: NextRequest) {
 
       const taskSummary = summarizeTaskResults(tasks)
 
-      // Stream the conversational part
-      const mixedEndpoint = await resolveRemyEndpoint()
+      // Stream the conversational part — same load-aware routing as question path
+      let mixedPrefer: 'auto' | 'pc' | 'pi' = 'auto'
+      const mixedPcBusy = isSlotBusy('pc')
+      const mixedPcSnap = getEndpointSnapshot('pc')
+      const mixedPiSnap = getEndpointSnapshot('pi')
+      if (
+        (mixedPcBusy || mixedPcSnap?.activeGeneration) &&
+        mixedPiSnap &&
+        mixedPiSnap.grade !== 'unhealthy'
+      ) {
+        mixedPrefer = 'pi'
+      }
+
+      const mixedEndpoint = await routeForRemy({ preferEndpoint: mixedPrefer })
       if (!mixedEndpoint) {
         releaseInteractiveLock()
         return new Response(
@@ -1030,7 +1036,6 @@ export async function POST(req: NextRequest) {
         )
       }
 
-      const mixedOllama = new Ollama({ host: mixedEndpoint.host })
       const systemPrompt = buildRemySystemPrompt(
         context,
         memories,
@@ -1038,6 +1043,12 @@ export async function POST(req: NextRequest) {
         favoriteChefsList
       )
       const historyStr = formatConversationHistory(history)
+      const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
+      const mixedNumCtx = computeDynamicContext(
+        systemPrompt.length + mixedUserMessage.length,
+        mixedEndpoint.endpointName,
+        'chef'
+      )
 
       const encoder = new TextEncoder()
       const stream = new ReadableStream({
@@ -1052,29 +1063,73 @@ export async function POST(req: NextRequest) {
           try {
             controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'mixed' })))
 
-            const response = await mixedOllama.chat({
-              model: mixedEndpoint.model,
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: `${historyStr}Chef: ${questionInput}` },
-              ],
-              stream: true,
-              options: {
-                num_predict: OLLAMA_STREAM_MAX_TOKENS,
-                num_ctx: mixedEndpoint.numCtx,
-              },
-              keep_alive: '1m',
-            })
-
             let fullResponse = ''
-            for await (const chunk of response) {
-              if (abortCtrl.signal.aborted) {
-                break
+            let usedMixedEndpoint = mixedEndpoint
+
+            // Try primary endpoint, failover if connection fails before any tokens
+            try {
+              const mixedOllama = new Ollama({ host: mixedEndpoint.host })
+              const response = await mixedOllama.chat({
+                model: mixedEndpoint.model,
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: mixedUserMessage },
+                ],
+                stream: true,
+                options: {
+                  num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                  num_ctx: mixedNumCtx,
+                },
+                keep_alive: '1m',
+              })
+
+              for await (const chunk of response) {
+                if (abortCtrl.signal.aborted) break
+                const token = chunk.message?.content ?? ''
+                if (token) {
+                  fullResponse += token
+                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+                }
               }
-              const token = chunk.message?.content ?? ''
-              if (token) {
-                fullResponse += token
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+            } catch (primaryErr) {
+              if (fullResponse.length > 0) throw primaryErr
+
+              const fallbackPref = mixedEndpoint.endpointName === 'pc' ? 'pi' : 'pc'
+              const fallback = await routeForRemy({ preferEndpoint: fallbackPref })
+              if (!fallback || fallback.endpointName === mixedEndpoint.endpointName)
+                throw primaryErr
+
+              console.log(
+                `[remy] mixed: ${mixedEndpoint.endpointName} failed — falling back to ${fallback.endpointName}`
+              )
+              usedMixedEndpoint = fallback
+              const fbNumCtx = computeDynamicContext(
+                systemPrompt.length + mixedUserMessage.length,
+                fallback.endpointName,
+                'chef'
+              )
+              const fallbackOllama = new Ollama({ host: fallback.host })
+              const response = await fallbackOllama.chat({
+                model: fallback.model,
+                messages: [
+                  { role: 'system', content: systemPrompt },
+                  { role: 'user', content: mixedUserMessage },
+                ],
+                stream: true,
+                options: {
+                  num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                  num_ctx: fbNumCtx,
+                },
+                keep_alive: '1m',
+              })
+
+              for await (const chunk of response) {
+                if (abortCtrl.signal.aborted) break
+                const token = chunk.message?.content ?? ''
+                if (token) {
+                  fullResponse += token
+                  controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+                }
               }
             }
 
@@ -1114,22 +1169,47 @@ export async function POST(req: NextRequest) {
       return new Response(stream, { headers: sseHeaders() })
     }
 
-    // ─── QUESTION path (default) — STREAMED ──────────────────────
-    const endpoint = await resolveRemyEndpoint()
+    // ─── QUESTION path (default) — STREAMED with load-aware routing + failover ──
+    // ─── Smart endpoint selection (load-aware) ──────────────────
+    // If the PC is mid-background-task or actively generating, prefer the Pi
+    // to avoid GPU contention. Falls back gracefully if Pi is unavailable.
+    let preferEndpoint: 'auto' | 'pc' | 'pi' = 'auto'
+    const pcBusy = isSlotBusy('pc')
+    const pcSnapshot = getEndpointSnapshot('pc')
+    const piSnapshot = getEndpointSnapshot('pi')
+    if (
+      (pcBusy || pcSnapshot?.activeGeneration) &&
+      piSnapshot &&
+      piSnapshot.grade !== 'unhealthy'
+    ) {
+      preferEndpoint = 'pi'
+    }
+
+    const endpoint = await routeForRemy({ preferEndpoint })
     if (!endpoint) {
       releaseInteractiveLock()
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm offline right now — no Ollama endpoints are reachable (checked PC and Pi). Start Ollama and try again!",
+          data: "I'm offline right now — no Ollama endpoints are reachable. Start Ollama and try again!",
         }),
         { headers: sseHeaders() }
       )
     }
 
-    const ollama = new Ollama({ host: endpoint.host })
-    const systemPrompt = buildRemySystemPrompt(context, memories)
+    const systemPrompt = buildRemySystemPrompt(
+      context,
+      memories,
+      culinaryProfile,
+      favoriteChefsList
+    )
     const historyStr = formatConversationHistory(history)
+    const userMessage = `${historyStr}Chef: ${message}`
+    const numCtx = computeDynamicContext(
+      systemPrompt.length + userMessage.length,
+      endpoint.endpointName,
+      'chef'
+    )
 
     const encoder = new TextEncoder()
     const stream = new ReadableStream({
@@ -1144,29 +1224,73 @@ export async function POST(req: NextRequest) {
         try {
           controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
 
-          const response = await ollama.chat({
-            model: endpoint.model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: `${historyStr}Chef: ${message}` },
-            ],
-            stream: true,
-            options: {
-              num_predict: OLLAMA_STREAM_MAX_TOKENS,
-              num_ctx: endpoint.numCtx,
-            },
-            keep_alive: '1m',
-          })
-
           let fullResponse = ''
-          for await (const chunk of response) {
-            if (abortCtrl.signal.aborted) {
-              break
+          let usedEndpoint = endpoint
+
+          // Try primary endpoint, failover to secondary if connection fails
+          try {
+            const ollama = new Ollama({ host: endpoint.host })
+            const response = await ollama.chat({
+              model: endpoint.model,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userMessage },
+              ],
+              stream: true,
+              options: {
+                num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                num_ctx: numCtx,
+              },
+              keep_alive: '1m',
+            })
+
+            for await (const chunk of response) {
+              if (abortCtrl.signal.aborted) break
+              const token = chunk.message?.content ?? ''
+              if (token) {
+                fullResponse += token
+                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+              }
             }
-            const token = chunk.message?.content ?? ''
-            if (token) {
-              fullResponse += token
-              controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+          } catch (primaryErr) {
+            // Only failover if no tokens were sent (connection failure, not mid-stream)
+            if (fullResponse.length > 0) throw primaryErr
+
+            const fallbackPref = endpoint.endpointName === 'pc' ? 'pi' : 'pc'
+            const fallback = await routeForRemy({ preferEndpoint: fallbackPref })
+            if (!fallback || fallback.endpointName === endpoint.endpointName) throw primaryErr
+
+            console.log(
+              `[remy] ${endpoint.endpointName} failed — falling back to ${fallback.endpointName}`
+            )
+            usedEndpoint = fallback
+            const fallbackNumCtx = computeDynamicContext(
+              systemPrompt.length + userMessage.length,
+              fallback.endpointName,
+              'chef'
+            )
+            const fallbackOllama = new Ollama({ host: fallback.host })
+            const response = await fallbackOllama.chat({
+              model: fallback.model,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userMessage },
+              ],
+              stream: true,
+              options: {
+                num_predict: OLLAMA_STREAM_MAX_TOKENS,
+                num_ctx: fallbackNumCtx,
+              },
+              keep_alive: '1m',
+            })
+
+            for await (const chunk of response) {
+              if (abortCtrl.signal.aborted) break
+              const token = chunk.message?.content ?? ''
+              if (token) {
+                fullResponse += token
+                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: token })))
+              }
             }
           }
 
@@ -1182,7 +1306,7 @@ export async function POST(req: NextRequest) {
           recordRemyMetric({
             featureCategory: 'general',
             messageCount: 1,
-            modelVersion: endpoint.model,
+            modelVersion: usedEndpoint.model,
           }).catch((err) => console.error('[non-blocking] Remy metric failed', err))
         } catch (err) {
           const errMsg = err instanceof Error ? err.message : String(err)
@@ -1254,62 +1378,6 @@ const OLLAMA_STREAM_TIMEOUT_MS = 180_000
  * 2048 tokens ≈ ~1500 words — more than enough for a chat reply.
  */
 const OLLAMA_STREAM_MAX_TOKENS = 2048
-
-/**
- * Resolve the best available Ollama endpoint for Remy streaming.
- * Tries PC first (faster 30B model), falls back to Pi if PC is offline.
- * Returns null if nothing is reachable.
- */
-async function resolveRemyEndpoint(): Promise<{
-  host: string
-  model: string
-  numCtx: number
-  endpointName: 'pc' | 'pi'
-} | null> {
-  const config = getOllamaConfig()
-
-  // Try PC first
-  try {
-    const res = await fetch(`${config.baseUrl}/api/tags`, {
-      signal: AbortSignal.timeout(3000),
-      cache: 'no-store',
-    })
-    if (res.ok) {
-      return {
-        host: config.baseUrl,
-        model: getOllamaModel('standard'),
-        numCtx: getOllamaContextSize('chef'),
-        endpointName: 'pc',
-      }
-    }
-  } catch {
-    // PC unreachable — try Pi
-  }
-
-  // Try Pi fallback
-  const piUrl = getOllamaPiUrl()
-  if (piUrl) {
-    try {
-      const res = await fetch(`${piUrl}/api/tags`, {
-        signal: AbortSignal.timeout(3000),
-        cache: 'no-store',
-      })
-      if (res.ok) {
-        console.log('[remy] PC Ollama offline — falling back to Pi')
-        return {
-          host: piUrl,
-          model: getModelForEndpoint('pi', 'standard'),
-          numCtx: getContextSizeForEndpoint('pi', 'chef'),
-          endpointName: 'pi',
-        }
-      }
-    } catch {
-      // Pi also unreachable
-    }
-  }
-
-  return null
-}
 
 function extractNavSuggestions(
   text: string
