@@ -21,6 +21,8 @@ import {
   REMY_TOPIC_GUARDRAILS,
   REMY_ANTI_INJECTION,
 } from '@/lib/ai/remy-personality'
+import { getArchetype } from '@/lib/ai/remy-archetypes'
+import { getRemyArchetype } from '@/lib/ai/privacy-actions'
 import { getCulinaryProfileForPrompt } from '@/lib/ai/chef-profile-actions'
 import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
@@ -72,6 +74,7 @@ AVAILABLE PAGES (suggest these when relevant):
 /settings/automations - Automation settings
 /settings/culinary-profile - Culinary profile (food identity for Remy)
 /settings/favorite-chefs - Favorite chefs (culinary heroes)
+/settings/ai-privacy - Remy settings, personality archetype, privacy & data controls
 /aar - After-action reviews
 /reviews - Client reviews
 /analytics - Analytics & reports
@@ -112,11 +115,17 @@ function buildRemySystemPrompt(
   context: Awaited<ReturnType<typeof loadRemyContext>>,
   memories: RemyMemory[] = [],
   culinaryProfile?: string,
-  favoriteChefs?: string
+  favoriteChefs?: string,
+  archetypeId?: string | null
 ): string {
   const parts: string[] = []
 
   parts.push(REMY_PERSONALITY)
+
+  // Inject personality archetype modifier (chef-selected or default)
+  const archetype = getArchetype(archetypeId)
+  parts.push(`\n${archetype.promptModifier}`)
+
   parts.push(REMY_DRAFT_INSTRUCTIONS)
   parts.push(REMY_PRIVACY_NOTE)
   parts.push(REMY_TOPIC_GUARDRAILS)
@@ -1016,9 +1025,10 @@ export async function POST(req: NextRequest) {
     let memories: Awaited<ReturnType<typeof loadRelevantMemories>>
     let culinaryProfile: string | undefined
     let favoriteChefsList: string | undefined
+    let archetypeId: string | null = null
 
     try {
-      const [ctx, cls, mems, profile, favChefs, mentioned] = (await Promise.race([
+      const [ctx, cls, mems, profile, favChefs, mentioned, archetype] = (await Promise.race([
         Promise.all([
           loadRemyContext(currentPage),
           classifyIntent(message),
@@ -1029,6 +1039,7 @@ export async function POST(req: NextRequest) {
             console.error('[non-blocking] Entity resolution failed:', err)
             return []
           }),
+          getRemyArchetype().catch(() => null),
         ]),
         setupTimeout,
       ])) as [
@@ -1038,12 +1049,14 @@ export async function POST(req: NextRequest) {
         string,
         Awaited<ReturnType<typeof getFavoriteChefs>>,
         Awaited<ReturnType<typeof resolveMessageEntities>>,
+        string | null,
       ]
       context = ctx
       if (mentioned.length > 0) context.mentionedEntities = mentioned
       classification = cls
       memories = mems
       culinaryProfile = profile || undefined
+      archetypeId = archetype
       if (favChefs.length > 0) {
         favoriteChefsList = favChefs
           .map((c) => `- ${c.chefName}${c.reason ? `: ${c.reason}` : ''}`)
@@ -1165,7 +1178,8 @@ export async function POST(req: NextRequest) {
         context,
         memories,
         culinaryProfile,
-        favoriteChefsList
+        favoriteChefsList,
+        archetypeId
       )
       const historyStr = formatConversationHistory(history)
       const mixedUserMessage = `${historyStr}Chef: ${questionInput}`
@@ -1326,7 +1340,8 @@ export async function POST(req: NextRequest) {
       context,
       memories,
       culinaryProfile,
-      favoriteChefsList
+      favoriteChefsList,
+      archetypeId
     )
     const historyStr = formatConversationHistory(history)
     const userMessage = `${historyStr}Chef: ${message}`

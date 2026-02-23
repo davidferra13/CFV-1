@@ -13,6 +13,7 @@ export type AiPreferences = {
   allow_memory: boolean
   allow_suggestions: boolean
   allow_document_drafts: boolean
+  remy_archetype: string | null
 }
 
 export type AiDataSummary = {
@@ -44,6 +45,7 @@ export async function getAiPreferences(): Promise<AiPreferences> {
       allow_memory: true,
       allow_suggestions: true,
       allow_document_drafts: true,
+      remy_archetype: null,
     }
   }
 
@@ -55,6 +57,7 @@ export async function getAiPreferences(): Promise<AiPreferences> {
     allow_memory: data.allow_memory,
     allow_suggestions: data.allow_suggestions,
     allow_document_drafts: data.allow_document_drafts,
+    remy_archetype: data.remy_archetype ?? null,
   }
 }
 
@@ -160,6 +163,43 @@ export async function disableRemy(): Promise<{ success: boolean }> {
   }
 
   return { success: true }
+}
+
+// ─── Archetype ───────────────────────────────────────────────────────────────
+
+export async function saveRemyArchetype(archetype: string | null): Promise<{ success: boolean }> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+  const tenantId = user.tenantId!
+
+  const { error } = await supabase.from('ai_preferences').upsert(
+    {
+      tenant_id: tenantId,
+      remy_archetype: archetype,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id' }
+  )
+
+  if (error) {
+    console.error('[ai-privacy] Failed to save archetype:', error)
+    return { success: false }
+  }
+
+  return { success: true }
+}
+
+export async function getRemyArchetype(): Promise<string | null> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data } = await supabase
+    .from('ai_preferences')
+    .select('remy_archetype')
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  return data?.remy_archetype ?? null
 }
 
 // ─── Delete ──────────────────────────────────────────────────────────────────

@@ -29,6 +29,7 @@ import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wi
 import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
 import { PrivacySchematicPlayer } from '@/components/ai-privacy/privacy-schematic-player'
 import { DataControls } from '@/components/ai-privacy/data-controls'
+import { RemyArchetypeSelector } from '@/components/ai-privacy/remy-archetype-selector'
 import {
   getAiPreferences,
   getAiDataSummary,
@@ -125,6 +126,13 @@ export default function AiPrivacyPage() {
           </div>
         </div>
       </div>
+
+      {/* ─── Remy Personality Selector ─────────────────────────── */}
+      {prefs.remy_enabled && (
+        <div className="rounded-xl border border-stone-200 bg-white p-6">
+          <RemyArchetypeSelector currentArchetype={prefs.remy_archetype} />
+        </div>
+      )}
 
       {/* ─── Section 1: How It Works ─────────────────────────── */}
       <div className="rounded-xl border border-stone-200 bg-white p-6 space-y-4">

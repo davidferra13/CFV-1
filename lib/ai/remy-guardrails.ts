@@ -36,7 +36,7 @@ export function validateRemyInput(message: string): GuardrailResult {
   if (!trimmed) {
     return {
       allowed: false,
-      refusal: "Looks like you sent an empty message. What's on your mind, chef?",
+      refusal: "Empty ticket, chef — nothing on it 📝 What's on your mind?",
     }
   }
 
@@ -54,7 +54,7 @@ export function validateRemyInput(message: string): GuardrailResult {
     return {
       allowed: false,
       refusal:
-        "I can't help with that, and I won't. This has been flagged. Let's get back to what I'm here for — your chef business.",
+        "Hard no on that one, chef. That's been flagged. Let's get back to the kitchen — what do you need on the business side? 🔪",
       severity: 'critical',
       category: 'dangerous_content',
       matchedPattern: dangerousCheck,
@@ -67,7 +67,7 @@ export function validateRemyInput(message: string): GuardrailResult {
     return {
       allowed: false,
       refusal:
-        "That's not something I'll engage with. This has been flagged. I'm here to help with your business — let's keep it there.",
+        "Not touching that — and it's been flagged. I'm here to help you run a killer business, not for that. What's cooking? 👨‍🍳",
       severity: 'critical',
       category: 'abuse',
       matchedPattern: abuseCheck,
@@ -80,7 +80,7 @@ export function validateRemyInput(message: string): GuardrailResult {
     return {
       allowed: false,
       refusal:
-        "Nice try, but I don't take instructions from inside messages. I'm Remy — your chef business partner, not a general-purpose AI. What can I help with on the business side?",
+        "Ha — nice try, chef. I've had tougher tickets come in on a Friday night 😄 I'm Remy, your kitchen business partner. What can I actually help with?",
       severity: 'warning',
       category: 'prompt_injection',
       matchedPattern: injectionCheck,
