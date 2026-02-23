@@ -27,6 +27,7 @@ import {
 } from 'lucide-react'
 import { RemyOnboardingWizard } from '@/components/ai-privacy/remy-onboarding-wizard'
 import { DataFlowAnimated } from '@/components/ai-privacy/data-flow-animated'
+import { PrivacySchematicPlayer } from '@/components/ai-privacy/privacy-schematic-player'
 import { DataControls } from '@/components/ai-privacy/data-controls'
 import {
   getAiPreferences,
@@ -275,15 +276,31 @@ export default function AiPrivacyPage() {
         </p>
       </div>
 
-      {/* ─── How It Works — visual schematic (collapsible) ──── */}
+      {/* ─── How It Works — animated schematic ──── */}
+      <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+        <div className="px-5 py-4">
+          <div className="flex items-center gap-2">
+            <Bot className="h-4 w-4 text-brand-500" />
+            <h2 className="text-lg font-semibold text-stone-900">See how it works</h2>
+          </div>
+          <p className="mt-1 text-sm text-stone-500">
+            55-second animated walkthrough of where your data goes (and doesn&apos;t go).
+          </p>
+        </div>
+        <div className="border-t border-stone-200 p-5">
+          <PrivacySchematicPlayer />
+        </div>
+      </div>
+
+      {/* ─── Static data flow diagram (collapsible) ──── */}
       <details className="rounded-xl border border-stone-200 bg-white">
         <summary className="cursor-pointer px-5 py-4">
           <div className="inline-flex items-center gap-2">
             <Bot className="h-4 w-4 text-brand-500" />
-            <h2 className="text-lg font-semibold text-stone-900">See the data flow</h2>
+            <h2 className="text-lg font-semibold text-stone-900">Static data flow diagram</h2>
           </div>
           <p className="mt-1 text-sm text-stone-500">
-            Visual diagram of where your data goes (and doesn&apos;t go).
+            Side-by-side comparison of ChefFlow vs. other AI services.
           </p>
         </summary>
         <div className="border-t border-stone-200 p-5">

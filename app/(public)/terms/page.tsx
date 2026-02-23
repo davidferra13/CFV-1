@@ -106,8 +106,8 @@ export default function TermsPage() {
                 'The authenticated interface at /my-events, /my-quotes, /my-chat, and related pages where Clients view Events, approve Quotes, and make payments.',
               ],
               [
-                'Local AI',
-                "ChefFlow's on-device AI (Ollama) that processes private data on the Chef's own machine without transmitting it to external servers.",
+                'Private AI',
+                "ChefFlow's private AI (Ollama) running on ChefFlow's own infrastructure. Conversation content is processed privately and never stored on ChefFlow's servers — it stays in the Chef's browser.",
               ],
               [
                 'Manual Payment',
@@ -782,14 +782,19 @@ export default function TermsPage() {
           </p>
 
           <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">AI Data Handling</h3>
+          <p className="mb-4 leading-relaxed">
+            Remy conversations are processed by ChefFlow&apos;s private AI infrastructure (Ollama)
+            and are <strong>never stored on ChefFlow&apos;s servers</strong>. Conversation history
+            lives in the Chef&apos;s browser (IndexedDB) and never leaves their device. ChefFlow
+            collects only anonymous usage metrics (counts and categories — never conversation
+            content).
+          </p>
           <p className="mb-6 leading-relaxed">
-            Private data (Client PII, financial records, messages, allergen information) is
-            processed
-            <strong> only by Local AI (Ollama)</strong> running on the Chef&apos;s own machine and
-            is never transmitted to external AI providers. General-purpose AI features may use
-            external APIs; these requests do not include private data or personally identifiable
-            information. If Ollama is offline, private AI features display an error rather than fall
-            back to any external AI service.
+            Some non-conversation features use external APIs for item-level data: Spoonacular
+            (nutrition), Kroger and MealMe (grocery pricing), and Instacart (cart links). These
+            services receive ingredient or product names only — never client PII, conversation
+            content, or personally identifiable information. If Ollama is offline, private AI
+            features display an error rather than fall back to any external AI service.
           </p>
 
           <h3 className="mb-2 text-base font-semibold text-stone-800">GDPR (EU Users)</h3>
@@ -848,7 +853,10 @@ export default function TermsPage() {
                   ['Supabase', 'Database hosting & authentication'],
                   ['Vercel', 'Application hosting'],
                   ['Google', 'Calendar sync, Gmail integration (optional, Chef-authorized)'],
-                  ['Ollama', 'Local AI inference (on-device; no data transmitted externally)'],
+                  [
+                    'Ollama',
+                    'Private AI inference on ChefFlow infrastructure (conversations never stored on servers)',
+                  ],
                   ['Resend', 'Transactional email delivery'],
                   [
                     'Spoonacular / Kroger / MealMe',
@@ -885,15 +893,15 @@ export default function TermsPage() {
               human approval.
             </li>
             <li>
-              <strong>Private data stays within ChefFlow.</strong> AI features that process private
-              data (client PII, financials, messages, allergen records) use ChefFlow&apos;s own AI
-              (Ollama) — never third-party services like OpenAI or Google. This data is never sent
-              to any external AI provider.
+              <strong>Conversations are private by architecture.</strong> Remy conversations are
+              processed on ChefFlow&apos;s own private infrastructure (Ollama) and are never stored
+              on ChefFlow&apos;s servers. Conversation history lives in your browser only. ChefFlow
+              structurally cannot access your conversation content.
             </li>
             <li>
-              <strong>General AI features may use external APIs.</strong> Features like recipe
-              suggestions or market pricing may call external AI services; no private data is
-              included in these requests.
+              <strong>Some features use external APIs for non-sensitive data.</strong> Grocery
+              pricing (Spoonacular, Kroger, MealMe) and cart links (Instacart) send item-level data
+              only (e.g., &ldquo;broccoli price&rdquo;) — never client PII or conversation content.
             </li>
             <li>
               <strong>Ollama offline behavior.</strong> If Ollama is not running, private AI

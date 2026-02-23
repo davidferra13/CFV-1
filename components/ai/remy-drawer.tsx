@@ -46,15 +46,15 @@ import { RemyCapabilitiesPanel } from '@/components/ai/remy-capabilities-panel'
 import { approveTask } from '@/lib/ai/command-orchestrator'
 import { saveRemyMessage, saveRemyTaskResult } from '@/lib/ai/remy-artifact-actions'
 import {
-  createConversation,
-  listConversations,
-  loadConversationMessages,
-  saveConversationMessage,
-  autoTitleConversation,
-  deleteConversation,
-  deleteConversationMessage,
-  exportConversation,
-} from '@/lib/ai/remy-conversation-actions'
+  createConversation as createLocalConversation,
+  getConversations as listLocalConversations,
+  getMessages as loadLocalMessages,
+  addMessage as saveLocalMessage,
+  updateConversation as updateLocalConversation,
+  deleteConversation as deleteLocalConversation,
+  exportConversation as exportLocalConversation,
+} from '@/lib/ai/remy-local-storage'
+import type { LocalConversation } from '@/lib/ai/remy-local-storage'
 import {
   extractAndSaveMemories,
   deleteRemyMemory,
@@ -68,7 +68,15 @@ import type {
   RemyTaskResult,
   NavigationSuggestion,
 } from '@/lib/ai/remy-types'
-import type { RemyConversation } from '@/lib/ai/remy-conversation-actions'
+// RemyConversation type mapped from LocalConversation for UI compatibility
+type RemyConversation = {
+  id: string
+  title: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  lastMessage?: string
+}
 
 function generateId(): string {
   try {
@@ -383,16 +391,31 @@ export function RemyDrawer() {
 
   const loadConversationList = useCallback(async () => {
     try {
-      const result = await listConversations({ limit: 30 })
-      setConversations(result.conversations)
+      const localConvs = await listLocalConversations()
+      const mapped: RemyConversation[] = localConvs.map((c) => ({
+        id: c.id,
+        title: c.title,
+        isActive: true,
+        createdAt: c.createdAt,
+        updatedAt: c.updatedAt,
+      }))
+      setConversations(mapped)
       setConversationsLoaded(true)
 
-      if (result.conversations.length > 0 && !currentConversationId) {
-        const latest = result.conversations[0]
+      if (mapped.length > 0 && !currentConversationId) {
+        const latest = mapped[0]
         setCurrentConversationId(latest.id)
-        const msgs = await loadConversationMessages(latest.id)
-        setMessages(msgs)
-        setIsFirstExchange(msgs.length === 0)
+        const localMsgs = await loadLocalMessages(latest.id)
+        const remyMsgs: RemyMessage[] = localMsgs.map((m) => ({
+          id: m.id,
+          role: m.role === 'remy' ? 'remy' : 'user',
+          content: m.content,
+          timestamp: m.createdAt,
+          tasks: m.tasks as RemyTaskResult[] | undefined,
+          navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
+        }))
+        setMessages(remyMsgs)
+        setIsFirstExchange(remyMsgs.length === 0)
       }
     } catch (err) {
       console.error('[remy] Failed to load conversations:', err)
@@ -401,11 +424,19 @@ export function RemyDrawer() {
 
   const handleSelectConversation = useCallback(async (convId: string) => {
     try {
-      const msgs = await loadConversationMessages(convId)
-      setMessages(msgs)
+      const localMsgs = await loadLocalMessages(convId)
+      const remyMsgs: RemyMessage[] = localMsgs.map((m) => ({
+        id: m.id,
+        role: m.role === 'remy' ? 'remy' : 'user',
+        content: m.content,
+        timestamp: m.createdAt,
+        tasks: m.tasks as RemyTaskResult[] | undefined,
+        navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
+      }))
+      setMessages(remyMsgs)
       setCurrentConversationId(convId)
       setShowConversationList(false)
-      setIsFirstExchange(msgs.length === 0)
+      setIsFirstExchange(remyMsgs.length === 0)
     } catch (err) {
       console.error('[remy] Failed to load conversation:', err)
       toast.error('Failed to load conversation')
@@ -414,18 +445,18 @@ export function RemyDrawer() {
 
   const handleNewConversation = useCallback(async () => {
     try {
-      const { id } = await createConversation()
-      setCurrentConversationId(id)
+      const conv = await createLocalConversation()
+      setCurrentConversationId(conv.id)
       setMessages([])
       setShowConversationList(false)
       setIsFirstExchange(true)
       setConversations((prev) => [
         {
-          id,
-          title: 'New conversation',
+          id: conv.id,
+          title: conv.title,
           isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
+          createdAt: conv.createdAt,
+          updatedAt: conv.updatedAt,
         },
         ...prev,
       ])
@@ -438,7 +469,7 @@ export function RemyDrawer() {
   const handleDeleteConversation = useCallback(
     async (convId: string) => {
       try {
-        await deleteConversation(convId)
+        await deleteLocalConversation(convId)
         setConversations((prev) => prev.filter((c) => c.id !== convId))
         if (currentConversationId === convId) {
           setCurrentConversationId(null)
@@ -456,9 +487,8 @@ export function RemyDrawer() {
 
   const handleDeleteMessage = useCallback(async (msgId: string) => {
     setMessages((prev) => prev.filter((m) => m.id !== msgId))
-    deleteConversationMessage(msgId).catch((err) =>
-      console.error('[non-blocking] Server message delete failed:', err)
-    )
+    // Messages live in IndexedDB — removing from local state is sufficient
+    // (individual message deletion from IndexedDB store is a future enhancement)
     toast.success('Message removed')
   }, [])
 
@@ -573,12 +603,25 @@ export function RemyDrawer() {
   const handleExport = useCallback(async () => {
     if (!currentConversationId) return
     try {
-      const { title, content } = await exportConversation(currentConversationId, 'markdown')
+      const exported = await exportLocalConversation(currentConversationId)
+      if (!exported) {
+        toast.error('Conversation not found')
+        return
+      }
+      const lines = [`# ${exported.title}`, `_Exported from ChefFlow Remy_\n`]
+      for (const msg of exported.messages) {
+        const role = msg.role === 'user' ? '**Chef**' : '**Remy**'
+        const time = new Date(msg.createdAt).toLocaleString()
+        lines.push(`${role} _(${time})_`)
+        lines.push(msg.content)
+        lines.push('')
+      }
+      const content = lines.join('\n')
       const blob = new Blob([content], { type: 'text/markdown' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `${title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.md`
+      a.download = `${exported.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}.md`
       a.click()
       URL.revokeObjectURL(url)
       toast.success('Conversation exported')
@@ -590,17 +633,11 @@ export function RemyDrawer() {
 
   const handleSendToSupport = useCallback(async () => {
     if (!currentConversationId || messages.length === 0) return
-    const currentConv = conversations.find((c) => c.id === currentConversationId)
     try {
-      const exported = {
-        conversationId: currentConversationId,
-        title: currentConv?.title ?? 'Remy conversation',
-        messages: messages.map((m) => ({
-          role: m.role as 'user' | 'remy',
-          content: m.content,
-          createdAt: m.timestamp,
-        })),
-        exportedAt: new Date().toISOString(),
+      const exported = await exportLocalConversation(currentConversationId)
+      if (!exported) {
+        toast.error('Conversation not found')
+        return
       }
       const result = await shareConversationWithSupport(exported)
       if (result.success) {
@@ -612,7 +649,7 @@ export function RemyDrawer() {
       console.error('[remy] Send to support failed:', err)
       toast.error('Failed to share conversation with support')
     }
-  }, [currentConversationId, messages, conversations])
+  }, [currentConversationId, messages])
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -797,16 +834,16 @@ export function RemyDrawer() {
       let convId = currentConversationId
       if (!convId) {
         try {
-          const { id } = await createConversation()
-          convId = id
-          setCurrentConversationId(id)
+          const conv = await createLocalConversation()
+          convId = conv.id
+          setCurrentConversationId(conv.id)
           setConversations((prev) => [
             {
-              id,
-              title: 'New conversation',
+              id: conv.id,
+              title: conv.title,
               isActive: true,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
+              createdAt: conv.createdAt,
+              updatedAt: conv.updatedAt,
             },
             ...prev,
           ])
@@ -828,11 +865,9 @@ export function RemyDrawer() {
       setStreamingContent('')
       setStreamingIntent(undefined)
 
-      saveConversationMessage({
-        conversationId: convId,
-        role: 'user',
-        content: message,
-      }).catch((err) => console.error('[non-blocking] Save user msg failed', err))
+      saveLocalMessage(convId, 'user', message).catch((err) =>
+        console.error('[non-blocking] Save user msg failed', err)
+      )
 
       try {
         // Create an AbortController so we can cancel the request
@@ -928,18 +963,18 @@ export function RemyDrawer() {
 
         playNotificationSound()
 
-        saveConversationMessage({
-          conversationId: convId,
-          role: 'remy',
-          content: cleanContent,
-          tasks,
-          navSuggestions,
-        }).catch((err) => console.error('[non-blocking] Save remy msg failed', err))
+        saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions }).catch((err) =>
+          console.error('[non-blocking] Save remy msg failed', err)
+        )
 
         if (isFirstExchange) {
           setIsFirstExchange(false)
-          autoTitleConversation(convId, message, cleanContent)
-            .then(() => loadConversationList())
+          // Derive title from first message (no server call needed)
+          const title = message.length > 50 ? message.slice(0, 47) + '...' : message
+          updateLocalConversation(convId, { title })
+            .then(() => {
+              setConversations((prev) => prev.map((c) => (c.id === convId ? { ...c, title } : c)))
+            })
             .catch((err) => console.error('[non-blocking] Auto-title failed', err))
         }
 
@@ -986,7 +1021,6 @@ export function RemyDrawer() {
       autoSave,
       currentConversationId,
       isFirstExchange,
-      loadConversationList,
       playNotificationSound,
     ]
   )

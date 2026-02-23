@@ -16,21 +16,14 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
-> **✅ AI PRIVACY LANGUAGE — REWORKED (2026-02-22)**
+> **✅ AI PRIVACY ARCHITECTURE — COMPLETE (2026-02-22)**
 >
-> The AI privacy architecture has been upgraded to Level 3 (privacy by architecture, not by policy). Core files rewritten:
+> Level 3 privacy by architecture. Conversations processed privately, never stored on servers, history lives in browser IndexedDB.
 >
-> - `app/(chef)/settings/ai-privacy/page.tsx` — 3-section transparency page + external API disclosure
-> - `components/ai-privacy/remy-onboarding-wizard.tsx` — simplified, confident privacy mention
-> - `components/ai-privacy/data-flow-schematic.tsx` — private loop diagram (Chef → Pi → Chef)
-> - `components/ai-privacy/remy-gate.tsx` — factual setup prompt
-> - `components/ai/remy-drawer.tsx` — "Send to Support" button + updated language
-> - `lib/ai/remy-local-storage.ts` — IndexedDB for browser-local conversation storage
-> - `lib/ai/remy-metrics.ts` — anonymous usage metrics (counts only)
-> - `lib/ai/support-share-action.ts` — voluntary support sharing
-> - `lib/remotion/remy-privacy-schematic.tsx` — 55-second animated explainer
+> **Principle:** "We don't have your data" > "We promise not to look."
 >
-> **Still TODO:** Update `components/dashboard/ollama-status-badge.tsx`, `components/ai/command-center-client.tsx`, and `app/(public)/terms/page.tsx` to match the new tone.
+> All files updated — see `docs/remy-privacy-architecture.md` for full reference.
+> Key integration: `remy-drawer.tsx` now uses IndexedDB (`remy-local-storage.ts`) instead of Supabase for conversation storage.
 >
 > **Principle:** "We don't have your data" > "We promise not to look." See `docs/remy-privacy-architecture.md`.
 

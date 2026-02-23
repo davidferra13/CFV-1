@@ -37,6 +37,7 @@ import {
   listRemyMemories,
   addRemyMemoryManual,
 } from '@/lib/ai/remy-memory-actions'
+import { recordRemyMetric } from '@/lib/ai/remy-metrics'
 import type { RemyMessage, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 
@@ -985,6 +986,13 @@ export async function POST(req: NextRequest) {
         },
       })
       releaseInteractiveLock()
+
+      // Record anonymous command metric (non-blocking)
+      recordRemyMetric({
+        featureCategory: 'general',
+        messageCount: 1,
+      }).catch(() => {})
+
       return new Response(stream, { headers: sseHeaders() })
     }
 
@@ -1169,6 +1177,13 @@ export async function POST(req: NextRequest) {
           }
 
           controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+
+          // Record anonymous usage metric (non-blocking, never fails the response)
+          recordRemyMetric({
+            featureCategory: 'general',
+            messageCount: 1,
+            modelVersion: endpoint.model,
+          }).catch((err) => console.error('[non-blocking] Remy metric failed', err))
         } catch (err) {
           const errMsg = err instanceof Error ? err.message : String(err)
           const isOllamaDown =
@@ -1187,6 +1202,13 @@ export async function POST(req: NextRequest) {
               })
             )
           )
+
+          // Record error metric (non-blocking)
+          recordRemyMetric({
+            featureCategory: 'general',
+            errorCount: 1,
+            modelVersion: endpoint.model,
+          }).catch(() => {})
         } finally {
           clearTimeout(timeout)
           req.signal.removeEventListener('abort', onDisconnect)

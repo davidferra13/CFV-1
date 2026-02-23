@@ -163,7 +163,7 @@ function DualEndpointBadge({ health }: { health: HealthResponse }) {
     return (
       <span
         className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
-        title={`Private AI — both endpoints healthy\nPC: ${pc?.latencyMs ?? '?'}ms (${pc?.configuredModel})\nPi: ${pi?.latencyMs ?? '?'}ms (${pi?.configuredModel})`}
+        title={`Private AI — conversations stay in your browser\nPC: ${pc?.latencyMs ?? '?'}ms (${pc?.configuredModel})\nPi: ${pi?.latencyMs ?? '?'}ms (${pi?.configuredModel})`}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
         <span className="hidden sm:inline">PC · {pc?.latencyMs ?? '?'}ms</span>
@@ -232,8 +232,8 @@ function SingleEndpointBadge({ status }: { status: LegacyStatus }) {
     const latencyLabel =
       status.latencyMs !== null ? `${sourceLabel} · ${status.latencyMs}ms` : `${sourceLabel} Mode`
     const tooltip = status.isRemote
-      ? 'Running on your Raspberry Pi — data stays private'
-      : 'Private AI — data stays within ChefFlow'
+      ? 'Private AI on Pi — conversations stay in your browser'
+      : 'Private AI — conversations stay in your browser'
     return (
       <span
         className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
@@ -259,8 +259,8 @@ function SingleEndpointBadge({ status }: { status: LegacyStatus }) {
 
   const offlineLabel = status.isRemote ? 'Pi Offline' : 'Local AI Offline'
   const offlineTooltip = status.isRemote
-    ? `Raspberry Pi AI is unreachable — check that the Pi is powered on. Error: ${status.error ?? 'unreachable'}`
-    : `Local AI offline — private AI features are unavailable. Start Ollama to restore. Error: ${status.error ?? 'unreachable'}`
+    ? `Pi AI is unreachable — check that the Pi is powered on. Error: ${status.error ?? 'unreachable'}`
+    : `Private AI offline — start Ollama to restore Remy. Error: ${status.error ?? 'unreachable'}`
   return (
     <span
       className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
@@ -279,7 +279,7 @@ function SingleEndpointBadgeFromHealth({ endpoint: ep }: { endpoint: EndpointHea
     return (
       <span
         className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
-        title="Private AI — data stays within ChefFlow"
+        title="Private AI — conversations stay in your browser"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
         Local · {ep.latencyMs ?? '?'}ms
