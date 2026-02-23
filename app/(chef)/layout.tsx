@@ -106,6 +106,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   primaryNavHrefs={primaryNavHrefs}
                   hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
+                  isAdmin={userIsAdmin}
                 />
                 {/* Mobile nav (top bar + bottom tabs) */}
                 <ChefMobileNav

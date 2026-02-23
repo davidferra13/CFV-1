@@ -433,10 +433,12 @@ export function ChefSidebar({
   primaryNavHrefs,
   hasCannabisTier,
   enabledModules,
+  isAdmin,
 }: {
   primaryNavHrefs?: string[]
   hasCannabisTier?: boolean
   enabledModules?: string[]
+  isAdmin?: boolean
 }) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useSidebar()
@@ -515,7 +517,7 @@ export function ChefSidebar({
         </Link>
         {!collapsed ? (
           <div className="flex items-center flex-shrink-0">
-            <OllamaStatusBadge />
+            {isAdmin && <OllamaStatusBadge />}
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch />
