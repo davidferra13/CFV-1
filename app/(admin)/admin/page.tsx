@@ -17,6 +17,7 @@ import {
   ToggleLeft,
   TrendingUp,
   TrendingDown,
+  Globe,
 } from 'lucide-react'
 
 const SystemArchitecturePlayer = dynamic(
@@ -209,6 +210,12 @@ export default async function AdminOverviewPage() {
             icon={Megaphone}
             label="Communications"
             description="Announcements and direct email"
+          />
+          <QuickTile
+            href="/admin/directory"
+            icon={Globe}
+            label="Directory"
+            description="Approve chefs for the public listing"
           />
         </div>
       </div>
