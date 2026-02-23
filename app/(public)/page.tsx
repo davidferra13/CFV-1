@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
 import { WorkflowSteps } from '@/components/public/workflow-steps'
+import { RemyConciergeSection } from '@/components/public/remy-concierge-section'
+import { HowItWorksSection } from '@/components/public/how-it-works-section'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
 
@@ -106,6 +108,10 @@ export default function Home() {
           <WorkflowSteps />
         </div>
       </section>
+
+      <RemyConciergeSection />
+
+      <HowItWorksSection />
 
       <section className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
         <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">

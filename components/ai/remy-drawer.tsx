@@ -68,6 +68,11 @@ import type {
   RemyTaskResult,
   NavigationSuggestion,
 } from '@/lib/ai/remy-types'
+import {
+  REMY_WELCOME_MESSAGE,
+  NEW_USER_STARTERS,
+  REMY_WELCOME_SHOWN_KEY,
+} from '@/lib/ai/remy-welcome'
 // RemyConversation type mapped from LocalConversation for UI compatibility
 type RemyConversation = {
   id: string
@@ -416,6 +421,23 @@ export function RemyDrawer() {
         }))
         setMessages(remyMsgs)
         setIsFirstExchange(remyMsgs.length === 0)
+      } else if (mapped.length === 0) {
+        // Brand new user — inject Remy welcome message (once per device)
+        const welcomeShown =
+          typeof window !== 'undefined' && localStorage.getItem(REMY_WELCOME_SHOWN_KEY)
+        if (!welcomeShown) {
+          const welcomeMsg: RemyMessage = {
+            id: `remy-welcome-${Date.now()}`,
+            role: 'remy',
+            content: REMY_WELCOME_MESSAGE,
+            timestamp: new Date().toISOString(),
+          }
+          setMessages([welcomeMsg])
+          setIsFirstExchange(false)
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(REMY_WELCOME_SHOWN_KEY, '1')
+          }
+        }
       }
     } catch (err) {
       console.error('[remy] Failed to load conversations:', err)
@@ -1645,6 +1667,25 @@ export function RemyDrawer() {
                     </div>
                   </div>
                 ))}
+
+                {/* New-user quick action starters (show after welcome message) */}
+                {messages.length === 1 &&
+                  messages[0]?.role === 'remy' &&
+                  messages[0]?.id.startsWith('remy-welcome') &&
+                  !loading && (
+                    <div className="grid grid-cols-1 gap-2 mt-2">
+                      {NEW_USER_STARTERS.map((s) => (
+                        <button
+                          key={s.label}
+                          onClick={() => handleSend(s.message)}
+                          className="flex items-center gap-2 text-left text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors text-stone-700 dark:text-stone-300"
+                        >
+                          <ArrowRight className="h-4 w-4 text-brand-600 flex-shrink-0" />
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
                 {/* Streaming indicator */}
                 {loading && streamingContent && (
