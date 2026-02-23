@@ -256,15 +256,27 @@ export default async function SettingsPage() {
           </div>
           <div className="border-t border-stone-200 pt-4">
             <h3 className="text-sm font-semibold text-stone-700 mb-3">Integration Center</h3>
-            <Link
-              href="/settings/integrations"
-              className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
-            >
-              <p className="font-medium text-stone-900">Manage Integrations</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Manage POS, website, scheduling, and CRM integrations in one place.
-              </p>
-            </Link>
+            <div className="space-y-3">
+              <Link
+                href="/settings/embed"
+                className="block border border-brand-200 rounded-lg p-4 bg-brand-50/40 hover:bg-brand-50 transition-colors"
+              >
+                <p className="font-semibold text-brand-900">Website Widget</p>
+                <p className="text-sm text-brand-700 mt-1">
+                  Add a booking form to your existing website. Works on Wix, Squarespace, WordPress,
+                  and any site.
+                </p>
+              </Link>
+              <Link
+                href="/settings/integrations"
+                className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+              >
+                <p className="font-medium text-stone-900">Manage Integrations</p>
+                <p className="text-sm text-stone-500 mt-1">
+                  Manage POS, website, scheduling, and CRM integrations in one place.
+                </p>
+              </Link>
+            </div>
           </div>
         </div>
       </SettingsCategory>

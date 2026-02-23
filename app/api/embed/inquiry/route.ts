@@ -1,0 +1,324 @@
+// Public API endpoint for embeddable inquiry widget submissions
+// CORS-enabled — accepts POST from any external website
+// Rate-limited by IP to prevent spam
+// Creates: client + inquiry + draft event in one shot
+
+import { NextRequest, NextResponse } from 'next/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { z } from 'zod'
+
+// ── In-memory IP rate limiting (no Redis dependency for embed route) ──
+const ipBuckets = new Map<string, { count: number; windowStart: number }>()
+const RATE_LIMIT_MAX = 10 // 10 submissions per window
+const RATE_LIMIT_WINDOW_MS = 60_000 * 5 // 5 minutes
+
+function checkEmbedRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const bucket = ipBuckets.get(ip)
+  if (!bucket || now - bucket.windowStart > RATE_LIMIT_WINDOW_MS) {
+    ipBuckets.set(ip, { count: 1, windowStart: now })
+    return true
+  }
+  bucket.count++
+  return bucket.count <= RATE_LIMIT_MAX
+}
+
+// Periodic cleanup to prevent memory leaks (every 100 requests)
+let requestCount = 0
+function maybeCleanBuckets() {
+  requestCount++
+  if (requestCount % 100 === 0) {
+    const now = Date.now()
+    for (const [ip, bucket] of ipBuckets) {
+      if (now - bucket.windowStart > RATE_LIMIT_WINDOW_MS * 2) {
+        ipBuckets.delete(ip)
+      }
+    }
+  }
+}
+
+// ── CORS headers for cross-origin embeds ──
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Max-Age': '86400',
+}
+
+// ── Validation schema (matches the embed form fields) ──
+const EmbedInquirySchema = z.object({
+  chef_id: z.string().uuid('Invalid chef ID'),
+  // Required
+  full_name: z.string().min(1, 'Name is required').max(200),
+  email: z.string().email('Valid email required').max(320),
+  event_date: z.string().min(1, 'Event date is required'),
+  serve_time: z.string().min(1, 'Serve time is required'),
+  guest_count: z.number().int().positive().max(500),
+  occasion: z.string().min(1, 'Occasion is required').max(500),
+  // Optional
+  phone: z.string().max(50).optional().or(z.literal('')),
+  address: z.string().max(500).optional().or(z.literal('')),
+  budget_range: z.enum(['under_500', '500_1500', '1500_3000', '3000_5000', 'over_5000']).optional(),
+  allergy_flag: z.enum(['none', 'yes', 'unknown']).optional(),
+  allergies_food_restrictions: z.string().max(2000).optional().or(z.literal('')),
+  favorite_ingredients_dislikes: z.string().max(2000).optional().or(z.literal('')),
+  additional_notes: z.string().max(5000).optional().or(z.literal('')),
+  // Honeypot — must be empty (bots fill this in)
+  website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
+})
+
+const BUDGET_RANGE_MIDPOINTS: Record<string, number> = {
+  under_500: 25000,
+  '500_1500': 100000,
+  '1500_3000': 225000,
+  '3000_5000': 400000,
+  over_5000: 600000,
+}
+
+// ── CORS preflight ──
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders })
+}
+
+// ── Main submission handler ──
+export async function POST(request: NextRequest) {
+  maybeCleanBuckets()
+
+  // Rate limit by IP
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+  if (!checkEmbedRateLimit(ip)) {
+    return NextResponse.json(
+      { error: 'Too many submissions. Please try again later.' },
+      { status: 429, headers: corsHeaders }
+    )
+  }
+
+  try {
+    const body = await request.json()
+
+    // Validate input
+    const parseResult = EmbedInquirySchema.safeParse(body)
+    if (!parseResult.success) {
+      const firstError = parseResult.error.issues[0]
+      return NextResponse.json(
+        { error: firstError?.message || 'Invalid form data' },
+        { status: 400, headers: corsHeaders }
+      )
+    }
+
+    const data = parseResult.data
+
+    // Honeypot check — bots fill hidden fields
+    if (data.website_url && data.website_url.length > 0) {
+      // Silently accept but don't create anything (don't reveal bot detection)
+      return NextResponse.json(
+        { success: true, message: 'Inquiry submitted successfully.' },
+        { status: 200, headers: corsHeaders }
+      )
+    }
+
+    const supabase = createAdminClient()
+
+    // 1. Verify chef exists
+    const { data: chef, error: chefError } = await supabase
+      .from('chefs')
+      .select('id, business_name')
+      .eq('id', data.chef_id)
+      .single()
+
+    if (chefError || !chef) {
+      return NextResponse.json({ error: 'Chef not found' }, { status: 404, headers: corsHeaders })
+    }
+
+    const tenantId = chef.id as string
+    const chefName = (chef.business_name as string | null) || 'Your Chef'
+
+    // 2. Create or find existing client (idempotent by email)
+    const clientEmail = data.email.toLowerCase().trim()
+    const clientName = data.full_name.trim()
+
+    // Check for existing client under this chef
+    const { data: existingClient } = await supabase
+      .from('clients')
+      .select('id')
+      .eq('chef_id', tenantId)
+      .ilike('email', clientEmail)
+      .single()
+
+    let clientId: string
+
+    if (existingClient) {
+      clientId = existingClient.id
+    } else {
+      const { data: newClient, error: clientCreateError } = await supabase
+        .from('clients')
+        .insert({
+          chef_id: tenantId,
+          full_name: clientName,
+          email: clientEmail,
+          phone: data.phone?.trim() || null,
+          referral_source: 'website',
+          address: data.address?.trim() || null,
+        })
+        .select('id')
+        .single()
+
+      if (clientCreateError || !newClient) {
+        console.error('[embed-inquiry] Client creation error:', clientCreateError)
+        return NextResponse.json(
+          { error: 'Failed to process inquiry' },
+          { status: 500, headers: corsHeaders }
+        )
+      }
+      clientId = newClient.id
+    }
+
+    // 3. Build source message from optional fields
+    const sourceParts = [
+      `Source: Embedded widget`,
+      `Serving Time: ${data.serve_time.trim()}`,
+      data.address?.trim() ? `Address: ${data.address.trim()}` : null,
+      data.favorite_ingredients_dislikes?.trim()
+        ? `Favorites/Dislikes: ${data.favorite_ingredients_dislikes.trim()}`
+        : null,
+      data.allergies_food_restrictions?.trim()
+        ? `Allergies/Restrictions: ${data.allergies_food_restrictions.trim()}`
+        : null,
+      data.additional_notes?.trim() ? `Additional Notes: ${data.additional_notes.trim()}` : null,
+    ].filter(Boolean)
+    const sourceMessage = sourceParts.join('\n')
+
+    // Derive budget in cents from range
+    const budgetCents = data.budget_range
+      ? (BUDGET_RANGE_MIDPOINTS[data.budget_range] ?? null)
+      : null
+
+    // Parse dietary restrictions
+    const allergiesList = data.allergies_food_restrictions
+      ? data.allergies_food_restrictions
+          .split(/[\n,]/)
+          .map((item) => item.trim())
+          .filter(Boolean)
+      : null
+
+    // 4. Create inquiry
+    const { data: inquiry, error: inquiryError } = await supabase
+      .from('inquiries')
+      .insert({
+        tenant_id: tenantId,
+        channel: 'website',
+        client_id: clientId,
+        first_contact_at: new Date().toISOString(),
+        confirmed_date: data.event_date || null,
+        confirmed_guest_count: data.guest_count,
+        confirmed_location: data.address?.trim() || null,
+        confirmed_occasion: data.occasion.trim(),
+        confirmed_budget_cents: budgetCents,
+        confirmed_service_expectations: `Serve time ${data.serve_time.trim()}. Chef will arrive 2hr prior.`,
+        confirmed_dietary_restrictions: allergiesList,
+        source_message: sourceMessage,
+        unknown_fields: {
+          embed_source: true,
+          address: data.address?.trim() || null,
+          serve_time: data.serve_time.trim(),
+          allergy_flag: data.allergy_flag ?? null,
+          budget_range: data.budget_range ?? null,
+          favorite_ingredients_dislikes: data.favorite_ingredients_dislikes?.trim() || null,
+          allergies_food_restrictions: data.allergies_food_restrictions?.trim() || null,
+          additional_notes: data.additional_notes?.trim() || null,
+          referrer_ip: ip,
+        },
+        status: 'new',
+      })
+      .select('id')
+      .single()
+
+    if (inquiryError) {
+      console.error('[embed-inquiry] Inquiry creation error:', inquiryError)
+      return NextResponse.json(
+        { error: 'Failed to create inquiry' },
+        { status: 500, headers: corsHeaders }
+      )
+    }
+
+    // 5. Create draft event (non-blocking — if it fails, inquiry is still saved)
+    try {
+      const { data: event } = await supabase
+        .from('events')
+        .insert({
+          tenant_id: tenantId,
+          client_id: clientId,
+          inquiry_id: inquiry.id,
+          event_date: data.event_date,
+          serve_time: data.serve_time.trim(),
+          guest_count: data.guest_count,
+          location_address: data.address?.trim() || 'TBD',
+          location_city: 'TBD',
+          location_zip: 'TBD',
+          occasion: data.occasion.trim(),
+          quoted_price_cents: budgetCents,
+          special_requests: sourceMessage || null,
+        })
+        .select('id')
+        .single()
+
+      if (event) {
+        // Log state transition (null → draft)
+        await supabase.from('event_state_transitions').insert({
+          tenant_id: tenantId,
+          event_id: event.id,
+          from_status: null,
+          to_status: 'draft',
+          metadata: { action: 'auto_created_from_embed_widget', inquiry_id: inquiry.id },
+        })
+
+        // Link inquiry to event
+        await supabase
+          .from('inquiries')
+          .update({ converted_to_event_id: event.id })
+          .eq('id', inquiry.id)
+      }
+    } catch (eventErr) {
+      console.error('[embed-inquiry] Event creation failed (non-blocking):', eventErr)
+    }
+
+    // 6. Send acknowledgment email (non-blocking)
+    try {
+      const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
+      await sendInquiryReceivedEmail({
+        clientEmail,
+        clientName,
+        chefName,
+        occasion: data.occasion.trim(),
+        eventDate: data.event_date || null,
+      })
+    } catch (emailErr) {
+      console.error('[embed-inquiry] Acknowledgment email failed (non-blocking):', emailErr)
+    }
+
+    // 7. Enqueue Remy AI lead scoring (non-blocking)
+    try {
+      const { onInquiryCreated } = await import('@/lib/ai/reactive/hooks')
+      await onInquiryCreated(tenantId, inquiry.id, clientId, {
+        channel: 'website',
+        clientName,
+        occasion: data.occasion ?? undefined,
+        budgetCents: budgetCents ?? undefined,
+        guestCount: data.guest_count ?? undefined,
+      })
+    } catch (aiErr) {
+      console.error('[embed-inquiry] Remy reactive enqueue failed (non-blocking):', aiErr)
+    }
+
+    return NextResponse.json(
+      { success: true, message: 'Inquiry submitted successfully.' },
+      { status: 200, headers: corsHeaders }
+    )
+  } catch (err) {
+    console.error('[embed-inquiry] Unexpected error:', err)
+    return NextResponse.json(
+      { error: 'An unexpected error occurred. Please try again.' },
+      { status: 500, headers: corsHeaders }
+    )
+  }
+}

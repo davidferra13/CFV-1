@@ -438,6 +438,7 @@ Private data categories that must stay local:
 - **Ledger-first financial model** — immutable, append-only, computed balances
 - **8-state event FSM:** draft → proposed → accepted → paid → confirmed → in_progress → completed | cancelled
 - **`types/database.ts`** is auto-generated — never manually edit it
+- **Embeddable widget** — `/embed/*` routes are public (no auth), use inline styles (no Tailwind), and have relaxed CSP (`frame-ancestors *`). The widget script (`public/embed/chefflow-widget.js`) is self-contained vanilla JS. See `docs/embeddable-widget.md`.
 
 ---
 
@@ -462,6 +463,11 @@ Private data categories that must stay local:
 | Pro enforcement      | `lib/billing/require-pro.ts`                                              |
 | Upgrade gate UI      | `components/billing/upgrade-gate.tsx`                                     |
 | Module toggle page   | `app/(chef)/settings/modules/page.tsx`                                    |
+| Embed widget script  | `public/embed/chefflow-widget.js`                                         |
+| Embed API route      | `app/api/embed/inquiry/route.ts`                                          |
+| Embed form page      | `app/embed/inquiry/[chefId]/page.tsx`                                     |
+| Embed form component | `components/embed/embed-inquiry-form.tsx`                                 |
+| Embed settings page  | `app/(chef)/settings/embed/page.tsx`                                      |
 
 ---
 

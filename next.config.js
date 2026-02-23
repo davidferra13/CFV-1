@@ -45,8 +45,52 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // Embed pages — allow framing from any origin (the whole point is external embeds)
       {
-        source: '/(.*)',
+        source: '/embed/:path*',
+        headers: [
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=31536000; includeSubDomains',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          // No X-Frame-Options → allows embedding in iframes
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
+            key: 'Permissions-Policy',
+            value: 'geolocation=(), microphone=(), camera=()',
+          },
+          {
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: blob: https://luefkpakzvxcsqroxyhz.supabase.co",
+              "font-src 'self'",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              "worker-src 'self'",
+              'frame-ancestors *',
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+        ],
+      },
+      // All other pages — strict security headers
+      {
+        source: '/((?!embed/).*)',
         headers: [
           {
             key: 'Strict-Transport-Security',
