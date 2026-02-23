@@ -271,6 +271,10 @@ function saveVoiceSettings(settings: VoiceSettings) {
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+const DRAWER_MIN_WIDTH = 320
+const DRAWER_MAX_WIDTH = 800
+const DRAWER_DEFAULT_WIDTH = 448 // max-w-md equivalent
+
 export function RemyDrawer() {
   const [open, setOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
@@ -287,6 +291,8 @@ export function RemyDrawer() {
   const [showVoiceSettings, setShowVoiceSettings] = useState(false)
   const [voiceSettings, setVoiceSettings] = useState<VoiceSettings>(loadVoiceSettings)
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [drawerWidth, setDrawerWidth] = useState(DRAWER_DEFAULT_WIDTH)
+  const drawerResizingRef = useRef<{ startX: number; startW: number } | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -295,6 +301,48 @@ export function RemyDrawer() {
   const abortControllerRef = useRef<AbortController | null>(null)
   const pathname = usePathname()
   const router = useRouter()
+
+  // Restore saved drawer width from sessionStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('remy-drawer-width')
+      if (saved) {
+        const w = parseInt(saved, 10)
+        if (w >= DRAWER_MIN_WIDTH && w <= DRAWER_MAX_WIDTH) setDrawerWidth(w)
+      }
+    }
+  }, [])
+
+  // Drag-to-resize the drawer from the left edge
+  const startDrawerResize = useCallback(
+    (e: React.MouseEvent) => {
+      e.preventDefault()
+      drawerResizingRef.current = { startX: e.clientX, startW: drawerWidth }
+      let latestW = drawerWidth
+
+      const onMouseMove = (ev: MouseEvent) => {
+        if (!drawerResizingRef.current) return
+        const { startX, startW } = drawerResizingRef.current
+        // Dragging left = wider, dragging right = narrower (drawer is on right side)
+        latestW = Math.min(
+          DRAWER_MAX_WIDTH,
+          Math.max(DRAWER_MIN_WIDTH, startW + (startX - ev.clientX))
+        )
+        setDrawerWidth(latestW)
+      }
+
+      const onMouseUp = () => {
+        drawerResizingRef.current = null
+        sessionStorage.setItem('remy-drawer-width', String(latestW))
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+      }
+
+      document.addEventListener('mousemove', onMouseMove)
+      document.addEventListener('mouseup', onMouseUp)
+    },
+    [drawerWidth]
+  )
 
   // Conversation threading state
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null)
@@ -1162,7 +1210,16 @@ export function RemyDrawer() {
 
       {/* Drawer panel — no overlay, page remains interactive */}
       {open && !collapsed && (
-        <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-200 dark:border-stone-700">
+        <div
+          className="fixed top-0 right-0 bottom-0 z-50 bg-white dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-200 dark:border-stone-700"
+          style={{ width: `min(${drawerWidth}px, 100vw)` }}
+        >
+          {/* Left-edge resize handle */}
+          <div
+            onMouseDown={startDrawerResize}
+            className="absolute left-0 top-0 bottom-0 w-1.5 z-[60] cursor-ew-resize hover:bg-brand-400/30 active:bg-brand-400/50 transition-colors"
+            title="Drag to resize"
+          />
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-700 bg-brand-600">
             <div className="flex items-center gap-2">

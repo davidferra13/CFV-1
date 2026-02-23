@@ -11,6 +11,16 @@ import { menuAgentActions } from './menu-actions'
 import { quoteAgentActions } from './quote-actions'
 import { operationsAgentActions } from './operations-actions'
 import { restrictedAgentActions } from './restricted-actions'
+// ─── New action modules (2026-02-22) ──────────────────────────────────────
+import { menuEditAgentActions } from './menu-edit-actions'
+import { draftEmailAgentActions } from './draft-email-actions'
+import { eventOpsAgentActions } from './event-ops-actions'
+import { staffAgentActions } from './staff-actions'
+import { notesTagsAgentActions } from './notes-tags-actions'
+import { calendarAgentActions } from './calendar-actions'
+import { financialCallAgentActions } from './financial-call-actions'
+import { groceryAgentActions } from './grocery-actions'
+import { proactiveAgentActions } from './proactive-actions'
 
 let registered = false
 
@@ -18,6 +28,7 @@ export function ensureAgentActionsRegistered(): void {
   if (registered) return
   registered = true
 
+  // ─── Original actions ──────────────────────────────────────────────────
   registerAgentActions(clientAgentActions)
   registerAgentActions(eventAgentActions)
   registerAgentActions(inquiryAgentActions)
@@ -26,4 +37,15 @@ export function ensureAgentActionsRegistered(): void {
   registerAgentActions(quoteAgentActions)
   registerAgentActions(operationsAgentActions)
   registerAgentActions(restrictedAgentActions)
+
+  // ─── New actions (2026-02-22) ──────────────────────────────────────────
+  registerAgentActions(menuEditAgentActions)
+  registerAgentActions(draftEmailAgentActions)
+  registerAgentActions(eventOpsAgentActions)
+  registerAgentActions(staffAgentActions)
+  registerAgentActions(notesTagsAgentActions)
+  registerAgentActions(calendarAgentActions)
+  registerAgentActions(financialCallAgentActions)
+  registerAgentActions(groceryAgentActions)
+  registerAgentActions(proactiveAgentActions)
 }
