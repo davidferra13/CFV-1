@@ -31,6 +31,7 @@ import { OLLAMA_GUARD } from './types'
 import type { WorkerState, AiQueueItem } from './types'
 import type { ModelTier } from '../providers'
 import { recordMetric, writeDailySummary, writeTaskPerformance } from './monitor'
+import { reportTaskFailure, reportWorkerBackoff } from '../../incidents/reporter'
 
 // ============================================
 // DUAL-SLOT STATE
@@ -483,7 +484,24 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
         `[ai-worker] [${endpointName}] CIRCUIT BREAKER: ${slot.consecutiveFailures} consecutive failures. ` +
           `Backing off until ${slot.backoffUntil.toISOString()}.`
       )
+
+      reportWorkerBackoff({
+        endpoint: endpointName,
+        consecutiveFailures: slot.consecutiveFailures,
+        backoffUntil: slot.backoffUntil,
+      })
     }
+
+    // Write incident report for task failure
+    reportTaskFailure({
+      taskType: task.task_type,
+      taskId: task.id,
+      error: errorMessage,
+      endpoint: endpointName,
+      attempt: task.attempts,
+      maxAttempts: task.max_attempts,
+      durationMs,
+    })
 
     // ── Extra cooldown after failure ──
     await sleep(OLLAMA_GUARD.COOLDOWN_MS * 3)

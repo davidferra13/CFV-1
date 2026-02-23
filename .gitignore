@@ -134,3 +134,6 @@ null
 
 # Remy local AI stats (machine-specific, no PII, regenerated automatically)
 /data/remy-stats/
+
+# Incident reports (local failure logs, machine-specific, no PII)
+/data/incidents/

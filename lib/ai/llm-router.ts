@@ -11,6 +11,7 @@
 import { getOllamaConfig, getModelForEndpoint } from './providers'
 import type { LlmEndpoint } from './queue/types'
 import { AI_PRIORITY } from './queue/types'
+import { reportHealthDegraded } from '../incidents/reporter'
 
 // ============================================
 // ENDPOINT TYPES
@@ -197,6 +198,31 @@ async function checkAllEndpoints(): Promise<void> {
 
   state.endpoints = endpoints
   state.lastHealthCheck = new Date()
+
+  // Report if any endpoint is down (throttled to avoid spamming reports)
+  const pcEp = endpoints.find((e) => e.name === 'pc')
+  const piEp = endpoints.find((e) => e.name === 'pi')
+  const piConfigured = !!process.env.OLLAMA_PI_URL
+  const anyDown = (pcEp && !pcEp.healthy) || (piConfigured && piEp && !piEp.healthy)
+  if (anyDown && shouldReportHealth()) {
+    reportHealthDegraded({
+      pcHealthy: pcEp?.healthy ?? false,
+      piHealthy: piEp?.healthy ?? false,
+      pcLatencyMs: pcEp?.latencyMs,
+      piLatencyMs: piEp?.latencyMs,
+    })
+  }
+}
+
+/** Throttle health incident reports — max one every 10 minutes per state change */
+let lastHealthReportAt = 0
+const HEALTH_REPORT_COOLDOWN_MS = 600_000 // 10 minutes
+
+function shouldReportHealth(): boolean {
+  const now = Date.now()
+  if (now - lastHealthReportAt < HEALTH_REPORT_COOLDOWN_MS) return false
+  lastHealthReportAt = now
+  return true
 }
 
 async function pingEndpoint(url: string): Promise<{ healthy: boolean; latencyMs: number | null }> {

@@ -43,8 +43,8 @@ const circuitStore = new Map<string, CircuitBreakerState>()
 
 const DEFAULT_OPTIONS: Required<CircuitBreakerOptions> = {
   failureThreshold: 5,
-  resetTimeoutMs: 60_000,     // 1 minute
-  requestTimeoutMs: 10_000,   // 10 seconds
+  resetTimeoutMs: 60_000, // 1 minute
+  requestTimeoutMs: 10_000, // 10 seconds
   onStateChange: () => {},
 }
 
@@ -53,7 +53,7 @@ const DEFAULT_OPTIONS: Required<CircuitBreakerOptions> = {
  * Call once at module level — the breaker is shared across requests.
  */
 export function getCircuitBreaker(serviceName: string, options: CircuitBreakerOptions = {}) {
-  const opts = { ...DEFAULT_OPTIONS, ...options }
+  const opts: Required<CircuitBreakerOptions> = { ...DEFAULT_OPTIONS, ...options }
 
   if (!circuitStore.has(serviceName)) {
     circuitStore.set(serviceName, {
@@ -86,10 +86,7 @@ export function getCircuitBreaker(serviceName: string, options: CircuitBreakerOp
 
       // ── Execute the function (with timeout) ────────────────────────────
       try {
-        const result = await Promise.race([
-          fn(),
-          timeout(opts.requestTimeoutMs, serviceName),
-        ])
+        const result = await Promise.race([fn(), timeout(opts.requestTimeoutMs, serviceName)])
 
         // Success: reset failure count
         if (cb.state === 'HALF_OPEN') {
@@ -154,19 +151,38 @@ function transition(
     cb.openedAt = null
   }
   opts.onStateChange(serviceName, from, to)
+
+  // Write incident report for state changes
+  try {
+    const { reportCircuitBreakerChange } = require('../incidents/reporter')
+    reportCircuitBreakerChange({
+      service: serviceName,
+      from,
+      to,
+      failures: cb.failures,
+    })
+  } catch {
+    // Incident reporting must never crash the circuit breaker
+  }
 }
 
 function timeout(ms: number, serviceName: string): Promise<never> {
   return new Promise((_, reject) =>
-    setTimeout(() => reject(new Error(`[CircuitBreaker] ${serviceName} timed out after ${ms}ms`)), ms)
+    setTimeout(
+      () => reject(new Error(`[CircuitBreaker] ${serviceName} timed out after ${ms}ms`)),
+      ms
+    )
   )
 }
 
 export class CircuitOpenError extends Error {
-  constructor(public readonly serviceName: string, public readonly retryAfterMs: number) {
+  constructor(
+    public readonly serviceName: string,
+    public readonly retryAfterMs: number
+  ) {
     super(
       `Circuit breaker OPEN for "${serviceName}". ` +
-      `Service is unavailable. Retry after ~${Math.ceil(retryAfterMs / 1000)}s.`
+        `Service is unavailable. Retry after ~${Math.ceil(retryAfterMs / 1000)}s.`
     )
     this.name = 'CircuitOpenError'
   }
@@ -183,19 +199,22 @@ export class CircuitOpenError extends Error {
  * const result = await breakers.stripe.execute(() => stripe.charges.create(...))
  */
 export const breakers = {
-  stripe:     getCircuitBreaker('stripe',     { failureThreshold: 3, resetTimeoutMs: 30_000 }),
-  resend:     getCircuitBreaker('resend',     { failureThreshold: 5, resetTimeoutMs: 60_000 }),
-  gemini:     getCircuitBreaker('gemini',     { failureThreshold: 5, resetTimeoutMs: 60_000 }),
-  mealme:     getCircuitBreaker('mealme',     { failureThreshold: 5, resetTimeoutMs: 120_000 }),
-  kroger:     getCircuitBreaker('kroger',     { failureThreshold: 5, resetTimeoutMs: 120_000 }),
+  stripe: getCircuitBreaker('stripe', { failureThreshold: 3, resetTimeoutMs: 30_000 }),
+  resend: getCircuitBreaker('resend', { failureThreshold: 5, resetTimeoutMs: 60_000 }),
+  gemini: getCircuitBreaker('gemini', { failureThreshold: 5, resetTimeoutMs: 60_000 }),
+  mealme: getCircuitBreaker('mealme', { failureThreshold: 5, resetTimeoutMs: 120_000 }),
+  kroger: getCircuitBreaker('kroger', { failureThreshold: 5, resetTimeoutMs: 120_000 }),
   spoonacular: getCircuitBreaker('spoonacular', { failureThreshold: 5, resetTimeoutMs: 120_000 }),
   googleMaps: getCircuitBreaker('google-maps', { failureThreshold: 5, resetTimeoutMs: 60_000 }),
-  supabase:   getCircuitBreaker('supabase',   { failureThreshold: 10, resetTimeoutMs: 10_000 }),
+  supabase: getCircuitBreaker('supabase', { failureThreshold: 10, resetTimeoutMs: 10_000 }),
 }
 
 // ─── Health snapshot for /api/health endpoint ─────────────────────────────────
 
-export function getCircuitBreakerHealth(): Record<string, { state: CircuitState; failures: number }> {
+export function getCircuitBreakerHealth(): Record<
+  string,
+  { state: CircuitState; failures: number }
+> {
   const snapshot: Record<string, { state: CircuitState; failures: number }> = {}
   for (const [name, state] of circuitStore) {
     snapshot[name] = { state: state.state, failures: state.failures }
