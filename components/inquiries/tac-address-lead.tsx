@@ -105,20 +105,35 @@ export function TacAddressLead({
         )}
       </div>
 
+      {/* Urgency context */}
+      <p className="text-xs text-stone-600">
+        {isStale
+          ? 'This lead is going cold. Address it now or decline it — waiting longer means losing the booking.'
+          : isUrgent
+            ? "This lead has been waiting over 12 hours. Respond today or they'll move on to another chef."
+            : 'New lead — respond within 12 hours to stay competitive on TakeAChef.'}
+      </p>
+
       {/* Quick actions */}
-      <div className="flex flex-wrap gap-1.5">
-        <Button
-          variant="secondary"
-          size="sm"
-          disabled={loading}
-          loading={loading}
-          onClick={handleSendMenu}
-        >
-          I'll Send a Menu
-        </Button>
-        <Button variant="ghost" size="sm" disabled={loading} onClick={handleDecline}>
-          Not Interested
-        </Button>
+      <div className="space-y-1.5">
+        <div className="flex flex-wrap gap-1.5">
+          <Button
+            variant="secondary"
+            size="sm"
+            disabled={loading}
+            loading={loading}
+            onClick={handleSendMenu}
+          >
+            I'll Send a Menu
+          </Button>
+          <Button variant="ghost" size="sm" disabled={loading} onClick={handleDecline}>
+            Not Interested
+          </Button>
+        </div>
+        <p className="text-[11px] text-stone-400">
+          "Send a Menu" marks this lead as addressed — then open TakeAChef to send your initial
+          menu. "Not Interested" declines the lead.
+        </p>
       </div>
 
       {error && <p className="text-xs text-red-600">{error}</p>}

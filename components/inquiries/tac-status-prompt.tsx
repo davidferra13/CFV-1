@@ -110,41 +110,56 @@ export function TacStatusPrompt({
         )}
       </div>
 
-      {/* Quick status buttons */}
-      <div className="flex flex-wrap gap-1.5">
-        <Button
-          variant="ghost"
-          size="sm"
+      {/* Subtitle */}
+      <p className="text-xs text-stone-600">
+        Update the status based on your latest TakeAChef conversation. Pick whichever matches what
+        just happened.
+      </p>
+
+      {/* Quick status buttons with descriptions */}
+      <div className="grid grid-cols-2 gap-1.5">
+        <button
+          type="button"
           disabled={loading}
           onClick={() => handleQuickStatus('still_discussing')}
+          className="flex flex-col items-start rounded-md border border-stone-200 bg-white px-3 py-2 text-left hover:bg-stone-50 disabled:opacity-50 transition-colors"
         >
-          Still Discussing
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
+          <span className="text-sm font-medium text-stone-800">Still Discussing</span>
+          <span className="text-[11px] text-stone-400 mt-0.5">
+            No change — conversation ongoing
+          </span>
+        </button>
+        <button
+          type="button"
           disabled={loading}
-          loading={loading}
           onClick={() => handleQuickStatus('sent_proposal')}
+          className="flex flex-col items-start rounded-md border border-brand-200 bg-brand-50/30 px-3 py-2 text-left hover:bg-brand-50 disabled:opacity-50 transition-colors"
         >
-          Sent Proposal
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
+          <span className="text-sm font-medium text-stone-800">Sent Proposal</span>
+          <span className="text-[11px] text-stone-400 mt-0.5">
+            Moves to Quoted — waiting on them
+          </span>
+        </button>
+        <button
+          type="button"
           disabled={loading}
           onClick={() => handleQuickStatus('want_to_book')}
+          className="flex flex-col items-start rounded-md border border-green-200 bg-green-50/30 px-3 py-2 text-left hover:bg-green-50 disabled:opacity-50 transition-colors"
         >
-          They Want to Book
-        </Button>
-        <Button
-          variant="secondary"
-          size="sm"
+          <span className="text-sm font-medium text-stone-800">They Want to Book</span>
+          <span className="text-[11px] text-stone-400 mt-0.5">
+            Moves to Confirmed — booking locked in
+          </span>
+        </button>
+        <button
+          type="button"
           disabled={loading}
           onClick={() => handleQuickStatus('changed_mind')}
+          className="flex flex-col items-start rounded-md border border-stone-200 bg-white px-3 py-2 text-left hover:bg-stone-50 disabled:opacity-50 transition-colors"
         >
-          Changed Their Mind
-        </Button>
+          <span className="text-sm font-medium text-stone-800">Changed Their Mind</span>
+          <span className="text-[11px] text-stone-400 mt-0.5">Closes inquiry — lead declined</span>
+        </button>
       </div>
 
       {/* Optional note toggle + textarea */}

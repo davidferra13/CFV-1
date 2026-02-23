@@ -10,6 +10,7 @@ import {
   getTakeAChefDailyStats,
   getTakeAChefActionableLeads,
 } from '@/lib/gmail/take-a-chef-stats'
+import { TacWelcomeGuide } from './tac-welcome-guide'
 
 function formatSyncAge(lastSyncAt: string): string {
   const diff = Date.now() - new Date(lastSyncAt).getTime()
@@ -64,14 +65,15 @@ export async function TacDashboardWidget() {
             <div>
               <p className="text-sm font-medium text-stone-700">TakeAChef Leads</p>
               <p className="text-xs text-stone-400 mt-1">
-                Connect your TakeAChef account to see leads here.
+                Connect your Gmail to automatically pull in TakeAChef leads. We detect TakeAChef
+                emails and create inquiries for you.
               </p>
             </div>
             <Link
               href="/settings/integrations"
               className="text-xs font-medium text-brand-600 hover:text-brand-700 whitespace-nowrap"
             >
-              Connect TakeAChef
+              Connect Gmail
             </Link>
           </div>
         </CardContent>
@@ -94,6 +96,9 @@ export async function TacDashboardWidget() {
       </CardHeader>
 
       <CardContent className="px-4 py-3 space-y-3">
+        {/* First-run guide — dismissible */}
+        <TacWelcomeGuide />
+
         {/* Untouched Leads — action required */}
         {actionable.untouched.length > 0 && (
           <div className="space-y-1.5">
@@ -101,7 +106,9 @@ export async function TacDashboardWidget() {
               <Badge variant={stats.staleCount > 0 ? 'error' : 'warning'}>
                 {actionable.untouched.length} Untouched
               </Badge>
-              <span className="text-xs text-stone-500">New leads — address each one</span>
+              <span className="text-xs text-stone-500">
+                Send a menu or decline — don't leave them hanging
+              </span>
             </div>
             <div className="space-y-1">
               {actionable.untouched.slice(0, 5).map((lead) => {
@@ -150,7 +157,9 @@ export async function TacDashboardWidget() {
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <Badge variant="warning">{actionable.awaitingChef.length} Awaiting Response</Badge>
-              <span className="text-xs text-stone-500">Clients messaged you</span>
+              <span className="text-xs text-stone-500">
+                Check TakeAChef and update the status here
+              </span>
             </div>
             <div className="space-y-1">
               {actionable.awaitingChef.slice(0, 5).map((lead) => (

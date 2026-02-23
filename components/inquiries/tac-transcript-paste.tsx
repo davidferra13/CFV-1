@@ -159,7 +159,8 @@ export function TacTranscriptPaste({
           <div>
             <h3 className="text-lg font-semibold text-stone-900">Paste TakeAChef Conversation</h3>
             <p className="text-xs text-stone-500 mt-0.5">
-              Copy the conversation from TakeAChef and paste it below
+              Open the conversation on TakeAChef, select all the messages (Ctrl+A), copy, and paste
+              below
             </p>
           </div>
           <button
@@ -184,6 +185,10 @@ export function TacTranscriptPaste({
               <p className="text-xs text-stone-400">
                 We'll try to split this into individual messages. If we can't detect message
                 boundaries, the whole text will be saved as a single note.
+              </p>
+              <p className="text-xs text-stone-400">
+                Messages will appear in the Communication Log on this inquiry's page — same place as
+                emails and notes. You can always add more later.
               </p>
             </>
           ) : (

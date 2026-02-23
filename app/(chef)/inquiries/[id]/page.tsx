@@ -48,6 +48,7 @@ import { TacAddressLead } from '@/components/inquiries/tac-address-lead'
 import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-prompt'
 import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
 import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
+import { TacWorkflowGuide } from '@/components/inquiries/tac-workflow-guide'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -222,6 +223,9 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Inquiry Summary — visual snapshot */}
       <InquirySummary data={summaryData} variant="chef" />
+
+      {/* TakeAChef workflow guide — collapsible overview for first-time users */}
+      {inquiry.channel === 'take_a_chef' && <TacWorkflowGuide inquiryStatus={inquiry.status} />}
 
       {/* TakeAChef-specific panels — only for take_a_chef channel */}
       {inquiry.channel === 'take_a_chef' && inquiry.status === 'new' && (

@@ -64,15 +64,20 @@ export function TacMenuNudge({ inquiryId, eventId, clientName, hasMenu }: TacMen
           &times;
         </button>
       </div>
-      <div className="flex gap-2 mt-3 ml-8">
-        <Link href={`/events/${eventId}`}>
-          <Button size="sm" variant="primary">
-            Create Menu
+      <div className="mt-3 ml-8 space-y-1.5">
+        <div className="flex gap-2">
+          <Link href={`/events/${eventId}`}>
+            <Button size="sm" variant="primary">
+              Create Menu for This Event
+            </Button>
+          </Link>
+          <Button size="sm" variant="ghost" onClick={handleDismiss}>
+            I'll do it later
           </Button>
-        </Link>
-        <Button size="sm" variant="ghost" onClick={handleDismiss}>
-          I'll do it later
-        </Button>
+        </div>
+        <p className="text-[11px] text-stone-400">
+          Opens the event page where you can build the final menu from scratch or use a template.
+        </p>
       </div>
     </Card>
   )

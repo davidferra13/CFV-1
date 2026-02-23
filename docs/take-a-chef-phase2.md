@@ -149,6 +149,46 @@ TakeAChef requires sending a menu to open any conversation. This initial menu is
 
 ---
 
+## UX Guidance System
+
+Every TakeAChef component now includes inline guidance so a chef who has never seen it before understands what to do and why. The `tac-transcript-prompt` was the gold standard — all other components were brought up to match.
+
+### Dashboard Widget — First-Run Welcome
+
+`components/dashboard/tac-welcome-guide.tsx` — dismissible guide ("How TakeAChef Integration Works") shown inside the dashboard widget. 4 numbered steps explaining the full flow. Stored in `localStorage: chefflow:tac-welcome-dismissed`. Empty state also improved: says "Connect your Gmail" instead of "Connect your TakeAChef account".
+
+### Address Lead — Urgency Context
+
+Time-based subtitle explaining why speed matters:
+
+- < 12h: "Respond within 12 hours to stay competitive"
+- 12-24h: "They'll move on to another chef"
+- \> 24h: "Waiting longer means losing the booking"
+
+Button descriptions: "Send a Menu marks this as addressed", "Not Interested declines the lead".
+
+### Status Prompt — Action Descriptions
+
+Redesigned as a 2x2 grid with each button explaining what state change it triggers. "Still Discussing" = no change, "Sent Proposal" = moves to Quoted, "They Want to Book" = moves to Confirmed, "Changed Their Mind" = closes inquiry.
+
+### Likelihood Toggle — Labels + Tooltips
+
+Added "Your gut feel:" label. Each button has a native tooltip: Hot = "strong interest, good fit", Warm = "interested but undecided", Cold = "shopping around or poor fit".
+
+### Transcript Paste — Destination Clarity
+
+Added: "Messages will appear in the Communication Log — same place as emails and notes." Dialog subtitle explains HOW to copy from TakeAChef (Ctrl+A, copy, paste).
+
+### Menu Nudge — Clearer Next Step
+
+Button text: "Create Menu for This Event". Helper: "Opens the event page where you can build the final menu from scratch or use a template."
+
+### Inquiry Detail — Workflow Guide
+
+`components/inquiries/tac-workflow-guide.tsx` — collapsible 4-step workflow overview. Highlights "you are here" based on inquiry status. Dismissible via `localStorage: chefflow:tac-workflow-guide-dismissed`.
+
+---
+
 ## Architecture Notes
 
 - All new server actions follow the tenant-scoping-from-session pattern
