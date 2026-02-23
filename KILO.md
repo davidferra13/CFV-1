@@ -118,6 +118,21 @@ export function myFunction(input: MyType): string {
 
 ---
 
+## BEFORE YOU START (do this EVERY time)
+
+1. Check what branch you're on: `git branch --show-current`
+2. Create your own working branch off the current branch:
+
+```bash
+git checkout -b kilo/<short-task-name>
+```
+
+3. Now do your work on that branch.
+
+**Never work directly on `main`, `feature/*`, or any branch that isn't your `kilo/` branch.**
+
+---
+
 ## WHEN YOU FINISH
 
 Run exactly these commands and nothing else:
@@ -134,6 +149,8 @@ Commit message examples:
 - `kilo: refactor(types): extract event summary interface`
 
 **Do NOT run anything after the commit. No build. No push. No tests. Stop.**
+
+Then tell the developer: "Done. My work is on branch `kilo/<task-name>`. Ready for review."
 
 ---
 
