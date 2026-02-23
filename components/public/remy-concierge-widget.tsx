@@ -277,40 +277,45 @@ export function RemyConciergeWidget() {
             }
       }
     >
-      {/* Resize handles (hidden when maximized) */}
+      {/* Resize handles — ALWAYS present when not maximized.
+           Corner handles are larger (16px) and higher z-index (z-30) so they
+           ALWAYS win over edge handles. This is a permanent rule — do not
+           shrink corners or lower their z-index. Ever. */}
       {!isMaximized && (
         <>
+          {/* Edge handles (z-20) — inset so they don't overlap corners */}
           <div
             onMouseDown={startResize('n')}
-            className="absolute top-0 left-2 right-2 h-1.5 z-20 cursor-n-resize"
+            className="absolute top-0 left-4 right-4 h-2 z-20 cursor-n-resize"
           />
           <div
             onMouseDown={startResize('s')}
-            className="absolute bottom-0 left-2 right-2 h-1.5 z-20 cursor-s-resize"
+            className="absolute bottom-0 left-4 right-4 h-2 z-20 cursor-s-resize"
           />
           <div
             onMouseDown={startResize('w')}
-            className="absolute left-0 top-2 bottom-2 w-1.5 z-20 cursor-w-resize"
+            className="absolute left-0 top-4 bottom-4 w-2 z-20 cursor-w-resize"
           />
           <div
             onMouseDown={startResize('e')}
-            className="absolute right-0 top-2 bottom-2 w-1.5 z-20 cursor-e-resize"
+            className="absolute right-0 top-4 bottom-4 w-2 z-20 cursor-e-resize"
           />
+          {/* Corner handles (z-30, 16px) — MUST be larger and above edges */}
           <div
             onMouseDown={startResize('nw')}
-            className="absolute top-0 left-0 h-3 w-3 z-20 cursor-nw-resize"
+            className="absolute top-0 left-0 h-4 w-4 z-30 cursor-nw-resize"
           />
           <div
             onMouseDown={startResize('ne')}
-            className="absolute top-0 right-0 h-3 w-3 z-20 cursor-ne-resize"
+            className="absolute top-0 right-0 h-4 w-4 z-30 cursor-ne-resize"
           />
           <div
             onMouseDown={startResize('sw')}
-            className="absolute bottom-0 left-0 h-3 w-3 z-20 cursor-sw-resize"
+            className="absolute bottom-0 left-0 h-4 w-4 z-30 cursor-sw-resize"
           />
           <div
             onMouseDown={startResize('se')}
-            className="absolute bottom-0 right-0 h-3 w-3 z-20 cursor-se-resize"
+            className="absolute bottom-0 right-0 h-4 w-4 z-30 cursor-se-resize"
           />
         </>
       )}

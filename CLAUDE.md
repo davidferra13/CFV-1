@@ -379,7 +379,17 @@ Only use variants that actually exist — wrong variants fail silently or throw.
 
 `outline`, `default` (Button), `warning` (Button), `success` (Button) do **not** exist.
 
-### 5. Tier Assignment (New Features)
+### 5. Remy Chat Widget — Drag/Resize Corners Are Sacred
+
+**The Remy concierge widget (`components/public/remy-concierge-widget.tsx`) MUST always have working drag-to-resize on all edges AND all four corners.** This is a permanent, non-negotiable rule.
+
+- **Corner handles**: 16px hit area (`h-4 w-4`), z-index **higher** than edge handles (z-30 vs z-20).
+- **Edge handles**: inset from corners (`left-4 right-4` / `top-4 bottom-4`) so they never overlap or block corner grabs.
+- **Never** shrink corner hit areas, lower their z-index, or remove them.
+- **Never** let edge handles extend into the corner zone.
+- If refactoring the widget, preserve this resize architecture exactly.
+
+### 6. Tier Assignment (New Features)
 
 Every new feature **MUST** be assigned to a tier and module. This ensures the freemium system stays consistent.
 
