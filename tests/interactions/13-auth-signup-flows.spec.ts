@@ -82,9 +82,16 @@ test.describe('Auth — Sign In', () => {
     expect(stayedOnAuth || hasError, 'Invalid credentials should not succeed').toBeTruthy()
   })
 
+  test('/auth/signin — has Sign in with Google button', async ({ page }) => {
+    await page.goto('/auth/signin')
+    await page.waitForLoadState('networkidle')
+    const googleBtn = page.getByRole('button', { name: /sign in with google/i })
+    await expect(googleBtn).toBeVisible({ timeout: 10_000 })
+  })
+
   test('/auth/signin — does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/auth/signin')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -118,9 +125,7 @@ test.describe('Auth — Chef Signup', () => {
   test('/auth/signup — has email and password fields', async ({ page }) => {
     await page.goto('/auth/signup')
     await page.waitForLoadState('networkidle')
-    const emailField = page
-      .locator('input[type="email"], input[name="email"]')
-      .first()
+    const emailField = page.locator('input[type="email"], input[name="email"]').first()
     await expect(emailField).toBeVisible({ timeout: 10_000 })
   })
 
@@ -146,9 +151,16 @@ test.describe('Auth — Chef Signup', () => {
     expect(url).not.toMatch(/dashboard/)
   })
 
+  test('/auth/signup — has Sign up with Google button', async ({ page }) => {
+    await page.goto('/auth/signup')
+    await page.waitForLoadState('networkidle')
+    const googleBtn = page.getByRole('button', { name: /sign up with google/i })
+    await expect(googleBtn).toBeVisible({ timeout: 10_000 })
+  })
+
   test('/auth/signup — does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/auth/signup')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -156,7 +168,7 @@ test.describe('Auth — Chef Signup', () => {
 
   test('/auth/signup — typing in email field works without crash', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/auth/signup')
     await page.waitForLoadState('networkidle')
 
@@ -188,9 +200,16 @@ test.describe('Auth — Client Signup', () => {
     expect(inputs).toBeGreaterThan(0)
   })
 
+  test('/auth/client-signup — has Sign up with Google button', async ({ page }) => {
+    await page.goto('/auth/client-signup')
+    await page.waitForLoadState('networkidle')
+    const googleBtn = page.getByRole('button', { name: /sign up with google/i })
+    await expect(googleBtn).toBeVisible({ timeout: 10_000 })
+  })
+
   test('/auth/client-signup — does not throw JS errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.goto('/auth/client-signup')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
@@ -247,16 +266,12 @@ test.describe('Auth — Password Reset', () => {
 // ─── Auth Pages — No Regression ───────────────────────────────────────────────
 
 test.describe('Auth — No Regression', () => {
-  const authPages = [
-    '/auth/signin',
-    '/auth/signup',
-    '/auth/client-signup',
-  ]
+  const authPages = ['/auth/signin', '/auth/signup', '/auth/client-signup']
 
   for (const path of authPages) {
     test(`${path} — no unhandled JS errors`, async ({ page }) => {
       const errors: string[] = []
-      page.on('pageerror', err => errors.push(err.message))
+      page.on('pageerror', (err) => errors.push(err.message))
       await page.goto(path)
       await page.waitForLoadState('networkidle')
       expect(errors, `${path} should not throw JS errors`).toHaveLength(0)

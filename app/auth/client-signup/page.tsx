@@ -4,7 +4,9 @@ import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { signUpClient, type ClientSignupInput } from '@/lib/auth/actions'
+import { signInWithGoogle } from '@/lib/supabase/client'
 import { getInvitationByToken } from '@/lib/auth/invitations'
+import { Chrome } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
@@ -16,6 +18,7 @@ function ClientSignUpForm() {
   const token = searchParams.get('token')
 
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [invitationLoading, setInvitationLoading] = useState(!!token)
   const [error, setError] = useState<string | null>(null)
 
@@ -67,6 +70,18 @@ function ClientSignUpForm() {
     }
   }
 
+  const handleGoogleSignUp = async () => {
+    setError(null)
+    setGoogleLoading(true)
+    try {
+      await signInWithGoogle()
+    } catch (err) {
+      const error = err as Error
+      setError(error.message)
+      setGoogleLoading(false)
+    }
+  }
+
   if (invitationLoading) {
     return (
       <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
@@ -83,9 +98,7 @@ function ClientSignUpForm() {
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">
-            Create your client account
-          </p>
+          <p className="text-stone-600 mt-2">Create your client account</p>
         </div>
 
         <Card>
@@ -133,22 +146,39 @@ function ClientSignUpForm() {
                 helperText="Minimum 8 characters"
                 autoComplete="new-password"
               />
-
             </CardContent>
 
-            <CardFooter className="flex flex-col gap-3">
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                loading={loading}
-              >
+            <CardFooter className="flex flex-col gap-4">
+              <Button type="submit" variant="primary" className="w-full" loading={loading}>
                 Create Client Account
+              </Button>
+
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-stone-500">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full"
+                onClick={handleGoogleSignUp}
+                loading={googleLoading}
+              >
+                <Chrome className="mr-2 h-4 w-4" />
+                Sign up with Google
               </Button>
 
               <div className="text-sm text-center text-stone-600">
                 Already have an account?{' '}
-                <Link href="/auth/signin" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link
+                  href="/auth/signin"
+                  className="text-brand-600 hover:text-brand-700 font-medium"
+                >
                   Sign in
                 </Link>
               </div>
