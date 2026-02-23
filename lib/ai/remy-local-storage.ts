@@ -353,3 +353,64 @@ export function isLocalStorageAvailable(): boolean {
     return false
   }
 }
+
+// ─── Auto-Pruning ─────────────────────────────────────────────────────
+
+/** Max conversations before oldest are deleted */
+const MAX_CONVERSATIONS = 200
+
+/** Max messages per conversation before oldest are trimmed */
+const MAX_MESSAGES_PER_CONVERSATION = 500
+
+/**
+ * Prune old conversations if the total exceeds MAX_CONVERSATIONS.
+ * Deletes the oldest conversations (by updatedAt) and their messages.
+ * Call this periodically (e.g., after creating a new conversation).
+ */
+export async function pruneOldConversations(): Promise<number> {
+  const conversations = await getConversations()
+  if (conversations.length <= MAX_CONVERSATIONS) return 0
+
+  // getConversations returns most-recent-first, so the tail is oldest
+  const toDelete = conversations.slice(MAX_CONVERSATIONS)
+  for (const conv of toDelete) {
+    await deleteConversation(conv.id)
+  }
+
+  console.log(
+    `[remy-storage] Pruned ${toDelete.length} old conversations (was ${conversations.length}, now ${MAX_CONVERSATIONS})`
+  )
+  return toDelete.length
+}
+
+/**
+ * Trim messages in a conversation if they exceed MAX_MESSAGES_PER_CONVERSATION.
+ * Keeps the most recent messages, deletes the oldest.
+ */
+export async function trimConversationMessages(conversationId: string): Promise<number> {
+  const messages = await getMessages(conversationId)
+  if (messages.length <= MAX_MESSAGES_PER_CONVERSATION) return 0
+
+  // messages are sorted oldest-first; delete from the beginning
+  const toDelete = messages.slice(0, messages.length - MAX_MESSAGES_PER_CONVERSATION)
+  const db = await openDB()
+
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(MESSAGES_STORE, 'readwrite')
+    const store = tx.objectStore(MESSAGES_STORE)
+    for (const msg of toDelete) {
+      store.delete(msg.id)
+    }
+    tx.oncomplete = () => {
+      db.close()
+      console.log(
+        `[remy-storage] Trimmed ${toDelete.length} old messages from conversation ${conversationId}`
+      )
+      resolve(toDelete.length)
+    }
+    tx.onerror = () => {
+      db.close()
+      reject(tx.error)
+    }
+  })
+}

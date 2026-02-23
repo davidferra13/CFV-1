@@ -53,6 +53,8 @@ import {
   updateConversation as updateLocalConversation,
   deleteConversation as deleteLocalConversation,
   exportConversation as exportLocalConversation,
+  pruneOldConversations,
+  trimConversationMessages,
 } from '@/lib/ai/remy-local-storage'
 import type { LocalConversation } from '@/lib/ai/remy-local-storage'
 import {
@@ -530,6 +532,8 @@ export function RemyDrawer() {
         },
         ...prev,
       ])
+      // Auto-prune old conversations (non-blocking)
+      pruneOldConversations().catch(() => {})
     } catch (err) {
       console.error('[remy] Failed to create conversation:', err)
       toast.error('Failed to start new conversation')
@@ -725,6 +729,14 @@ export function RemyDrawer() {
     const file = e.target.files?.[0]
     if (!file) return
 
+    // Block oversized files before reading into memory (prevents browser tab crash)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error(`File too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max 5MB.`)
+      e.target.value = ''
+      return
+    }
+
     if (
       file.type.startsWith('text/') ||
       file.name.endsWith('.md') ||
@@ -917,6 +929,8 @@ export function RemyDrawer() {
             },
             ...prev,
           ])
+          // Auto-prune old conversations (non-blocking)
+          pruneOldConversations().catch(() => {})
         } catch (err) {
           console.error('[remy] Failed to create conversation:', err)
           toast.error('Failed to start conversation')
@@ -1033,9 +1047,9 @@ export function RemyDrawer() {
 
         playNotificationSound()
 
-        saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions }).catch((err) =>
-          console.error('[non-blocking] Save remy msg failed', err)
-        )
+        saveLocalMessage(convId, 'remy', cleanContent, { tasks, navSuggestions })
+          .then(() => trimConversationMessages(convId).catch(() => {}))
+          .catch((err) => console.error('[non-blocking] Save remy msg failed', err))
 
         if (isFirstExchange) {
           setIsFirstExchange(false)

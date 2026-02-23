@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/supabase/server'
 import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
+import { sanitizeForPrompt } from '@/lib/ai/remy-input-validation'
 
 // ─── In-Memory Cache (per-tenant, 5-min TTL) ────────────────────────────────
 
@@ -643,8 +644,9 @@ async function loadEventEntity(
   if (data.dietary_restrictions?.length)
     lines.push(`Dietary: ${data.dietary_restrictions.join(', ')}`)
   if (data.allergies?.length) lines.push(`Allergies: ${data.allergies.join(', ')}`)
-  if (data.special_requests) lines.push(`Special requests: ${data.special_requests}`)
-  if (data.kitchen_notes) lines.push(`Kitchen notes: ${data.kitchen_notes}`)
+  if (data.special_requests)
+    lines.push(`Special requests: ${sanitizeForPrompt(data.special_requests)}`)
+  if (data.kitchen_notes) lines.push(`Kitchen notes: ${sanitizeForPrompt(data.kitchen_notes)}`)
 
   const readiness: string[] = []
   if (data.prep_list_ready) readiness.push('prep')
@@ -663,7 +665,8 @@ async function loadEventEntity(
     if (data.menu_sent_at) lines.push(`Sent: ${new Date(data.menu_sent_at).toLocaleDateString()}`)
     if (data.menu_approved_at)
       lines.push(`Approved: ${new Date(data.menu_approved_at).toLocaleDateString()}`)
-    if (data.menu_revision_notes) lines.push(`Client feedback: ${data.menu_revision_notes}`)
+    if (data.menu_revision_notes)
+      lines.push(`Client feedback: ${sanitizeForPrompt(data.menu_revision_notes)}`)
   }
   // Approval request history
   const approvals = approvalResult.data ?? []
@@ -684,7 +687,7 @@ async function loadEventEntity(
       lines.push(`Client dietary: ${(client.dietary_restrictions as string[]).join(', ')}`)
     if ((client.allergies as string[] | null)?.length)
       lines.push(`Client allergies: ${(client.allergies as string[]).join(', ')}`)
-    if (client.vibe_notes) lines.push(`Vibe: ${client.vibe_notes}`)
+    if (client.vibe_notes) lines.push(`Vibe: ${sanitizeForPrompt(client.vibe_notes as string)}`)
   }
 
   // Ledger entries (financial breakdown)
@@ -820,25 +823,13 @@ async function loadEventEntity(
     lines.push(`\nAFTER-ACTION REVIEW:`)
     if (aar.overall_rating) lines.push(`Rating: ${aar.overall_rating}/5`)
     if (aar.went_well) {
-      const text =
-        (aar.went_well as string).length > 200
-          ? (aar.went_well as string).slice(0, 200) + '...'
-          : aar.went_well
-      lines.push(`Went well: ${text}`)
+      lines.push(`Went well: ${sanitizeForPrompt(aar.went_well as string)}`)
     }
     if (aar.to_improve) {
-      const text =
-        (aar.to_improve as string).length > 200
-          ? (aar.to_improve as string).slice(0, 200) + '...'
-          : aar.to_improve
-      lines.push(`To improve: ${text}`)
+      lines.push(`To improve: ${sanitizeForPrompt(aar.to_improve as string)}`)
     }
     if (aar.lessons_learned) {
-      const text =
-        (aar.lessons_learned as string).length > 200
-          ? (aar.lessons_learned as string).slice(0, 200) + '...'
-          : aar.lessons_learned
-      lines.push(`Lessons: ${text}`)
+      lines.push(`Lessons: ${sanitizeForPrompt(aar.lessons_learned as string)}`)
     }
     if (aar.would_repeat !== null && aar.would_repeat !== undefined) {
       lines.push(`Would repeat: ${aar.would_repeat ? 'Yes' : 'No'}`)
@@ -914,12 +905,15 @@ async function loadClientEntity(
     lines.push(`Favorite cuisines: ${data.favorite_cuisines.join(', ')}`)
   if (data.favorite_dishes?.length)
     lines.push(`Favorite dishes: ${data.favorite_dishes.join(', ')}`)
-  if (data.vibe_notes) lines.push(`Vibe: ${data.vibe_notes}`)
-  if (data.what_they_care_about) lines.push(`Cares about: ${data.what_they_care_about}`)
-  if (data.payment_behavior) lines.push(`Payment behavior: ${data.payment_behavior}`)
-  if (data.tipping_pattern) lines.push(`Tipping: ${data.tipping_pattern}`)
+  if (data.vibe_notes) lines.push(`Vibe: ${sanitizeForPrompt(data.vibe_notes)}`)
+  if (data.what_they_care_about)
+    lines.push(`Cares about: ${sanitizeForPrompt(data.what_they_care_about)}`)
+  if (data.payment_behavior)
+    lines.push(`Payment behavior: ${sanitizeForPrompt(data.payment_behavior)}`)
+  if (data.tipping_pattern) lines.push(`Tipping: ${sanitizeForPrompt(data.tipping_pattern)}`)
   if (data.kitchen_size) lines.push(`Kitchen: ${data.kitchen_size}`)
-  if (data.kitchen_constraints) lines.push(`Kitchen constraints: ${data.kitchen_constraints}`)
+  if (data.kitchen_constraints)
+    lines.push(`Kitchen constraints: ${sanitizeForPrompt(data.kitchen_constraints)}`)
   if (data.total_events_count) lines.push(`Total events: ${data.total_events_count}`)
   if (data.lifetime_value_cents)
     lines.push(`Lifetime value: $${(data.lifetime_value_cents / 100).toFixed(2)}`)
@@ -962,7 +956,7 @@ async function loadClientEntity(
     for (const n of notes as Array<Record<string, unknown>>) {
       const cat = n.category ? `[${(n.category as string).replace(/_/g, ' ')}] ` : ''
       const date = n.created_at ? new Date(n.created_at as string).toLocaleDateString() : ''
-      const note = (n.note as string) ?? ''
+      const note = sanitizeForPrompt((n.note as string) ?? '')
       const truncated = note.length > 150 ? note.slice(0, 150) + '...' : note
       lines.push(`- ${cat}${date}: ${truncated}`)
     }
@@ -974,7 +968,7 @@ async function loadClientEntity(
     lines.push(`\nREVIEWS (${reviews.length}):`)
     for (const r of reviews as Array<Record<string, unknown>>) {
       const rating = r.rating ? `${r.rating}/5` : ''
-      const text = (r.review_text as string) ?? ''
+      const text = sanitizeForPrompt((r.review_text as string) ?? '')
       const truncated = text.length > 150 ? text.slice(0, 150) + '...' : text
       lines.push(`- ${rating}${rating && truncated ? ': ' : ''}${truncated}`)
     }
@@ -1022,8 +1016,8 @@ async function loadRecipeEntity(
   if (times.length) lines.push(`Time: ${times.join(', ')}`)
   if (data.dietary_tags?.length) lines.push(`Dietary: ${data.dietary_tags.join(', ')}`)
   if (data.times_cooked) lines.push(`Cooked ${data.times_cooked} times`)
-  if (data.notes) lines.push(`Notes: ${data.notes}`)
-  if (data.adaptations) lines.push(`Adaptations: ${data.adaptations}`)
+  if (data.notes) lines.push(`Notes: ${sanitizeForPrompt(data.notes)}`)
+  if (data.adaptations) lines.push(`Adaptations: ${sanitizeForPrompt(data.adaptations)}`)
 
   const ingredients = ingredientsResult.data ?? []
   if (ingredients.length > 0) {

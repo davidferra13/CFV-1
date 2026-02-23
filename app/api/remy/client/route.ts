@@ -13,6 +13,7 @@ import {
   getOllamaContextSize,
 } from '@/lib/ai/providers'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
+import { validateRemyRequestBody, validateHistory } from '@/lib/ai/remy-input-validation'
 import {
   REMY_CLIENT_PERSONALITY,
   REMY_CLIENT_TOPIC_GUARDRAILS,
@@ -81,11 +82,16 @@ export async function POST(req: NextRequest) {
     // Auth — must be an authenticated client
     const user = await requireClient()
 
-    const body = await req.json()
-    const { message, history } = body as {
-      message: string
-      history: Array<{ role: string; content: string }>
+    const rawBody = await req.json()
+    const validated = validateRemyRequestBody(rawBody)
+    if (!validated) {
+      return new Response(
+        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
+        { headers: sseHeaders() }
+      )
     }
+    const { message } = validated
+    const history = validateHistory(rawBody.history, 8)
 
     // Rate limiting (reuse tenant-based rate limiter)
     const rateCheck = checkRemyRateLimit(user.tenantId!)

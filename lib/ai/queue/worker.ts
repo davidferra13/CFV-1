@@ -55,6 +55,13 @@ const state: WorkerState = {
   tasksFailed: 0,
 }
 
+/**
+ * Reentrant interactive lock counter.
+ * Multiple concurrent Remy streams each call acquire/release.
+ * The lock is only fully released when all streams have finished.
+ */
+let interactiveLockCount = 0
+
 /** Per-slot state for dual-slot processing */
 const slots: Record<'pc' | 'pi', SlotState> = {
   pc: {
@@ -160,19 +167,30 @@ export function stopWorker(): void {
  * Signal that Remy interactive chat is active.
  * Worker will pause PC slot (user-facing endpoint).
  * Pi slot continues processing — it's a separate machine.
+ * Reentrant — multiple concurrent streams each increment the counter.
  */
 export function acquireInteractiveLock(): void {
-  state.interactiveLock = true
-  console.log('[ai-worker] Interactive lock acquired — pausing PC slot (Pi continues)')
+  interactiveLockCount++
+  state.interactiveLock = interactiveLockCount > 0
+  console.log(
+    `[ai-worker] Interactive lock acquired (depth: ${interactiveLockCount}) — pausing PC slot (Pi continues)`
+  )
 }
 
 /**
  * Signal that Remy interactive chat has ended.
- * PC slot resumes processing.
+ * PC slot only resumes when ALL concurrent streams have released.
  */
 export function releaseInteractiveLock(): void {
-  state.interactiveLock = false
-  console.log('[ai-worker] Interactive lock released — PC slot resuming')
+  interactiveLockCount = Math.max(0, interactiveLockCount - 1)
+  state.interactiveLock = interactiveLockCount > 0
+  if (interactiveLockCount === 0) {
+    console.log('[ai-worker] Interactive lock fully released — PC slot resuming')
+  } else {
+    console.log(
+      `[ai-worker] Interactive lock released (depth: ${interactiveLockCount}) — PC slot still paused`
+    )
+  }
 }
 
 /**

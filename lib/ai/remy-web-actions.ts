@@ -5,6 +5,7 @@
 // These actions allow Remy to search the internet and read web pages.
 
 import { requireChef } from '@/lib/auth/get-user'
+import { isUrlSafeForFetch } from '@/lib/ai/remy-input-validation'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,6 +53,12 @@ export async function searchWeb(query: string, limit = 5): Promise<WebSearchResu
  */
 export async function readWebPage(url: string): Promise<WebReadResult> {
   await requireChef()
+
+  // SSRF protection: block internal/private URLs
+  const urlCheck = isUrlSafeForFetch(url)
+  if (!urlCheck.safe) {
+    throw new Error(urlCheck.reason ?? 'URL is not allowed.')
+  }
 
   const controller = new AbortController()
   const timeout = setTimeout(() => controller.abort(), 15000)

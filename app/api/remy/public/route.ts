@@ -12,6 +12,7 @@ import {
   getOllamaContextSize,
 } from '@/lib/ai/providers'
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
+import { validateRemyRequestBody, validateHistory } from '@/lib/ai/remy-input-validation'
 import {
   REMY_PUBLIC_PERSONALITY,
   REMY_PUBLIC_TOPIC_GUARDRAILS,
@@ -125,12 +126,16 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    const body = await req.json()
-    const { message, history, tenantId } = body as {
-      message: string
-      history: Array<{ role: string; content: string }>
-      tenantId: string
+    const rawBody = await req.json()
+    const validated = validateRemyRequestBody(rawBody)
+    if (!validated) {
+      return new Response(
+        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
+        { headers: sseHeaders() }
+      )
     }
+    const { message, tenantId } = validated
+    const history = validateHistory(rawBody.history, 6)
 
     // Validate tenant ID
     if (!tenantId) {

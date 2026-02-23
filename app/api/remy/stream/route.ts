@@ -26,6 +26,11 @@ import { getRemyArchetype } from '@/lib/ai/privacy-actions'
 import { getCulinaryProfileForPrompt } from '@/lib/ai/chef-profile-actions'
 import { getFavoriteChefs } from '@/lib/favorite-chefs/actions'
 import { validateRemyInput, checkRemyRateLimit } from '@/lib/ai/remy-guardrails'
+import {
+  validateRemyRequestBody,
+  validateHistory,
+  sanitizeErrorForClient,
+} from '@/lib/ai/remy-input-validation'
 import { isRemyBlocked, isRemyAdmin, logRemyAbuse } from '@/lib/ai/remy-abuse-actions'
 import { acquireInteractiveLock, releaseInteractiveLock, isSlotBusy } from '@/lib/ai/queue'
 import {
@@ -397,7 +402,7 @@ async function handlePiTest(): Promise<Response> {
           encoder.encode(
             encodeSSE({
               type: 'token',
-              data: `**Pi Test — UNREACHABLE**\n\nCould not reach \`${piUrl}\`. Check that Ollama is running on the Pi and the network is connected.`,
+              data: `**Pi Test — UNREACHABLE**\n\nCould not reach the Pi endpoint. Check that Ollama is running on the Pi and the network is connected.`,
             })
           )
         )
@@ -437,7 +442,7 @@ async function handlePiTest(): Promise<Response> {
     '**Pi Test — SUCCESS**\n',
     `| Detail | Value |`,
     `|--------|-------|`,
-    `| Endpoint | \`${piUrl}\` |`,
+    `| Endpoint | Pi (configured) |`,
     `| Model | \`${piModel}\` |`,
     `| Ping | ${pingMs}ms |`,
     `| Chat response | ${chatMs}ms |`,
@@ -833,12 +838,16 @@ function encodeSSE(event: StreamEvent): string {
 export async function POST(req: NextRequest) {
   try {
     const user = await requireChef()
-    const body = await req.json()
-    const { message, history, currentPage } = body as {
-      message: string
-      history: RemyMessage[]
-      currentPage?: string
+    const rawBody = await req.json()
+    const validated = validateRemyRequestBody(rawBody)
+    if (!validated) {
+      return new Response(
+        encodeSSE({ type: 'error', data: 'Invalid request — please try again.' }),
+        { headers: sseHeaders() }
+      )
     }
+    const { message, currentPage } = validated
+    const history = validateHistory(rawBody.history, 10) as RemyMessage[]
 
     // ─── GUARDRAILS ──────────────────────────────────────────────
     const admin = await isRemyAdmin()
@@ -1067,12 +1076,13 @@ export async function POST(req: NextRequest) {
       const msg = setupErr instanceof Error ? setupErr.message : String(setupErr)
       const isOllama =
         msg.includes('Ollama') || msg.includes('timeout') || msg.includes('timed out')
+      console.error('[remy] Setup failed:', msg)
       return new Response(
         encodeSSE({
           type: 'error',
           data: isOllama
             ? 'Ollama is taking too long to respond. It may be stuck — try restarting Ollama and sending your message again.'
-            : `Setup failed: ${msg}`,
+            : sanitizeErrorForClient(setupErr, 'Setup failed — please try again in a moment.'),
         }),
         { headers: sseHeaders() }
       )
@@ -1290,11 +1300,12 @@ export async function POST(req: NextRequest) {
             }
             controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
           } catch (err) {
-            const errMsg = err instanceof Error ? err.message : String(err)
+            console.error(
+              '[remy] Mixed path streaming error:',
+              err instanceof Error ? err.message : err
+            )
             controller.enqueue(
-              encoder.encode(
-                encodeSSE({ type: 'error', data: `Remy ran into an issue: ${errMsg}` })
-              )
+              encoder.encode(encodeSSE({ type: 'error', data: sanitizeErrorForClient(err) }))
             )
           } finally {
             clearTimeout(timeout)
@@ -1456,13 +1467,14 @@ export async function POST(req: NextRequest) {
             errMsg.includes('timeout') ||
             errMsg.includes('timed out') ||
             errMsg.includes('aborted')
+          console.error('[remy] Question path streaming error:', errMsg)
           controller.enqueue(
             encoder.encode(
               encodeSSE({
                 type: 'error',
                 data: isOllamaDown
                   ? "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!"
-                  : `Remy ran into an issue: ${errMsg}`,
+                  : sanitizeErrorForClient(err),
               })
             )
           )
@@ -1486,8 +1498,8 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     // Release lock on any error that prevents streaming from starting
     releaseInteractiveLock()
-    const errMsg = err instanceof Error ? err.message : String(err)
-    return new Response(encodeSSE({ type: 'error', data: `Remy ran into an issue: ${errMsg}` }), {
+    console.error('[remy] Outer route error:', err instanceof Error ? err.message : err)
+    return new Response(encodeSSE({ type: 'error', data: sanitizeErrorForClient(err) }), {
       headers: sseHeaders(),
     })
   }
