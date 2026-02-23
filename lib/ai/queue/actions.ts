@@ -8,6 +8,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createServerClient } from '@/lib/supabase/server'
 import { requireChef } from '@/lib/auth/get-user'
+import type { Json } from '@/types/database'
 import type { AiQueueItem, AiTaskStatus, ApprovalTier, EnqueueInput, LlmEndpoint } from './types'
 import { OLLAMA_GUARD } from './types'
 import { getTaskDefinition } from './registry'
@@ -68,7 +69,7 @@ export async function enqueueTask(
       priority: input.priority ?? definition.defaultPriority,
       approval_tier: input.approvalTier ?? definition.approvalTier,
       status: 'pending',
-      payload: input.payload ?? {},
+      payload: (input.payload ?? {}) as Json,
       target_endpoint: input.targetEndpoint ?? definition.preferredEndpoint,
       model_tier: definition.modelTier,
       scheduled_for: input.scheduledFor?.toISOString() ?? new Date().toISOString(),
@@ -127,7 +128,7 @@ export async function claimNextTask(): Promise<AiQueueItem | null> {
     .update({
       status: 'processing' as AiTaskStatus,
       started_at: now,
-      attempts: supabase.rpc ? undefined : undefined, // handled below
+      // attempts incremented separately below
     })
     .eq('id', taskId)
     .eq('status', 'pending') // CAS guard
@@ -175,7 +176,7 @@ export async function completeTask(taskId: string, result: Record<string, unknow
     .from('ai_task_queue')
     .update({
       status: finalStatus,
-      result,
+      result: result as Json,
       completed_at: new Date().toISOString(),
     })
     .eq('id', taskId)

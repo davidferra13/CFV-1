@@ -20,6 +20,8 @@ import {
   Plus,
   MessageSquare,
   ChevronLeft,
+  ChevronsRight,
+  ChevronsLeft,
   Trash2,
   Brain,
   Copy,
@@ -256,6 +258,7 @@ function saveVoiceSettings(settings: VoiceSettings) {
 
 export function RemyDrawer() {
   const [open, setOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
   const [messages, setMessages] = useState<RemyMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -1040,8 +1043,41 @@ export function RemyDrawer() {
         aria-label="Attach file to Remy"
       />
 
+      {/* Collapsed sidebar strip */}
+      {open && collapsed && (
+        <div className="fixed top-0 right-0 bottom-0 z-50 w-12 bg-brand-600 shadow-2xl flex flex-col items-center py-3 gap-2 border-l border-brand-700">
+          <button
+            onClick={() => setCollapsed(false)}
+            className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
+            aria-label="Expand Remy"
+            title="Expand Remy"
+          >
+            <ChevronsLeft className="h-5 w-5" />
+          </button>
+          <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center mt-1">
+            <Bot className="h-4 w-4 text-white" />
+          </div>
+          {loading && <Loader2 className="h-4 w-4 animate-spin text-white/80 mt-1" />}
+          {messages.length > 0 && !loading && (
+            <span className="text-[10px] text-white/50 font-medium">{messages.length}</span>
+          )}
+          <div className="flex-1" />
+          <button
+            onClick={() => {
+              setCollapsed(false)
+              setOpen(false)
+            }}
+            className="text-white/40 hover:text-white transition-colors p-1.5"
+            aria-label="Close Remy"
+            title="Close Remy"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Drawer panel — no overlay, page remains interactive */}
-      {open && (
+      {open && !collapsed && (
         <div className="fixed top-0 right-0 bottom-0 z-50 w-full max-w-md bg-white dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-200 dark:border-stone-700">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-700 bg-brand-600">
@@ -1055,7 +1091,14 @@ export function RemyDrawer() {
                   <ChevronLeft className="h-5 w-5" />
                 </button>
               ) : (
-                <Bot className="h-5 w-5 text-white" />
+                <button
+                  onClick={() => setCollapsed(true)}
+                  className="text-white/80 hover:text-white transition-colors p-0.5"
+                  aria-label="Collapse Remy"
+                  title="Collapse sidebar"
+                >
+                  <ChevronsRight className="h-5 w-5" />
+                </button>
               )}
               <span className="font-semibold text-white">
                 {showConversationList ? 'Conversations' : 'Remy'}
