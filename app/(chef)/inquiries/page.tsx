@@ -44,7 +44,13 @@ function getDisplayName(inquiry: {
   return (unknown?.client_name as string) || 'Unknown Lead'
 }
 
-async function InquiryList({ filter }: { filter: InquiryFilter }) {
+async function InquiryList({
+  filter,
+  channelFilter,
+}: {
+  filter: InquiryFilter
+  channelFilter: string | null
+}) {
   await requireChef()
 
   const [allInquiries, bookingScores] = await Promise.all([
@@ -54,7 +60,12 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 
   let inquiries = allInquiries
 
-  // Apply filter
+  // Apply channel filter
+  if (channelFilter) {
+    inquiries = inquiries.filter((i) => i.channel === channelFilter)
+  }
+
+  // Apply status filter
   if (filter === 'closed') {
     inquiries = inquiries.filter((i) => i.status === 'declined' || i.status === 'expired')
   } else if (filter !== 'all') {
@@ -167,11 +178,12 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
 export default async function InquiriesPage({
   searchParams,
 }: {
-  searchParams: { status?: InquiryFilter }
+  searchParams: { status?: InquiryFilter; channel?: string }
 }) {
   await requireChef()
 
   const filter = (searchParams.status || 'all') as InquiryFilter
+  const channelFilter = searchParams.channel || null
 
   const tabs: { value: InquiryFilter; label: string }[] = [
     { value: 'all', label: 'All' },
@@ -217,14 +229,34 @@ export default async function InquiriesPage({
         {/* Status Tabs + List — unchanged, passed as children slot */}
         <div className="space-y-4">
           <Card className="p-4">
-            <div className="flex gap-2 flex-wrap">
-              {tabs.map((tab) => (
-                <Link key={tab.value} href={`/inquiries?status=${tab.value}`}>
-                  <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
-                    {tab.label}
-                  </Button>
-                </Link>
-              ))}
+            <div className="flex gap-2 flex-wrap items-center">
+              {tabs.map((tab) => {
+                const href = channelFilter
+                  ? `/inquiries?status=${tab.value}&channel=${channelFilter}`
+                  : `/inquiries?status=${tab.value}`
+                return (
+                  <Link key={tab.value} href={href}>
+                    <Button size="sm" variant={filter === tab.value ? 'primary' : 'secondary'}>
+                      {tab.label}
+                    </Button>
+                  </Link>
+                )
+              })}
+              <span className="w-px h-6 bg-stone-300 mx-1" />
+              <Link
+                href={
+                  channelFilter === 'take_a_chef'
+                    ? `/inquiries?status=${filter}`
+                    : `/inquiries?status=${filter}&channel=take_a_chef`
+                }
+              >
+                <Button
+                  size="sm"
+                  variant={channelFilter === 'take_a_chef' ? 'primary' : 'secondary'}
+                >
+                  TakeAChef
+                </Button>
+              </Link>
             </div>
           </Card>
 
@@ -236,7 +268,7 @@ export default async function InquiriesPage({
               </Card>
             }
           >
-            <InquiryList filter={filter} />
+            <InquiryList filter={filter} channelFilter={channelFilter} />
           </Suspense>
         </div>
       </InquiriesViewWrapper>

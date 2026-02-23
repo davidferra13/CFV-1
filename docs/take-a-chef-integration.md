@@ -1,150 +1,67 @@
-# Take a Chef ↔ ChefFlow Integration
+# TakeAChef / Private Chef Manager Gmail Integration
 
-## What Changed
+## Overview
 
-This feature activates the TakeaChef pipeline that was latent in ChefFlow's schema since day one. No database migration was required — the `inquiry_channel`, `message_channel`, and `referral_source` enums already included `take_a_chef` in Layer 2. The work was entirely building the UI and pipeline to use what was already there.
+Automatically captures TakeAChef leads, messages, bookings, and payments from the chef's Gmail inbox. Eliminates the need to constantly check TakeAChef — everything flows into ChefFlow's inquiry pipeline.
 
----
+**Why this exists:** 80% of private chef business flows through TakeAChef. Chefs spend hours daily checking the platform for new inquiries, responding to messages, and manually copying data. This integration makes ChefFlow the single source of truth.
 
-## Why This Exists
+## How It Works
 
-Take a Chef is a two-sided marketplace (Airbnb for private chefs) that solves the chef's hardest problem — client discovery — but takes a 20–30% commission on every booking and doesn't own the operational layer. ChefFlow is the operational layer. The two systems are architecturally complementary:
+1. Chef connects Gmail via OAuth (Settings > Integrations > Connect TakeAChef)
+2. Every 5 minutes, the existing Gmail sync cron fetches new emails
+3. Emails from `@privatechefmanager.com` or `@takeachef.com` are detected by sender domain
+4. TakeAChef emails bypass Ollama classification — routed to dedicated regex parser
+5. Parser identifies email type and extracts structured fields
+6. Data flows into ChefFlow's inquiry system with full deduplication
 
-- **Take a Chef** gets the chef the gig
-- **ChefFlow** runs everything after the client says yes
+## Email Types Handled
 
-The business flywheel: a chef captures a TakeaChef booking into ChefFlow, builds the direct relationship, and when the client rebooks — they book directly, saving the commission entirely.
+| Email Type        | Subject Pattern                                   | System Action                              |
+| ----------------- | ------------------------------------------------- | ------------------------------------------ |
+| New Inquiry       | "You just received a new request from {Name}!"    | Create inquiry + client record             |
+| Client Message    | "You have a message for the on {Date}"            | Advance status to `awaiting_chef` + notify |
+| Booking Confirmed | "New booking confirmed (Order ID: {ID})"          | Advance to `confirmed` + create event      |
+| Customer Info     | "Guest contact details for your upcoming booking" | Merge phone/email into client record       |
+| Payment           | Payment-related keywords                          | Log notification (parser TBD)              |
+| Administrative    | Everything else from TakeAChef                    | Log and skip                               |
 
----
+## Deduplication
 
-## Files Created
+TakeAChef sends the same inquiry notification multiple times. Two layers of dedup:
 
-### `lib/ai/import-take-a-chef-action.ts`
-AI-assisted import server action. Pipeline:
-1. Chef pastes booking notification email as raw text
-2. `parseInquiryFromText()` extracts: client name, email, date, time, guests, location, occasion, dietary notes, channel = `take_a_chef`
-3. `createClientFromLead(tenantId, { source: 'take_a_chef' })` — idempotent, deduplicates on email
-4. INSERT into `inquiries` with `channel: 'take_a_chef'`
-5. INSERT draft event
-6. INSERT `event_state_transitions` (null → draft)
-7. UPDATE `inquiries.converted_to_event_id`
-8. If commission % > 0: INSERT commission expense into `expenses` with `category: 'professional_services'`, `vendor_name: 'Take a Chef'`
-9. `logChefActivity()`
+1. **Email-level:** `gmail_sync_log` unique constraint on `(tenant_id, gmail_message_id)`
+2. **Inquiry-level:** Before creating an inquiry, checks for existing TakeAChef inquiry with matching client name + event date. If found, skips. Never overwrites or deletes.
 
-Pattern follows `lib/wix/process.ts` — the reference implementation for external source pipelines.
+## Dashboard Widget
 
-### `lib/inquiries/take-a-chef-capture-actions.ts`
-Two exports:
+Shows new leads, awaiting response, confirmed bookings, and daily inquiry volume (today, yesterday, this week, this month).
 
-**`captureTakeAChefBooking(input)`** — structured manual capture (no AI). Takes form fields directly and creates client + inquiry + draft event + optional commission expense. Used when the chef doesn't want to paste an email or doesn't have the notification.
+## File Locations
 
-**`getTakeAChefConversionData(eventId)`** — server action called from the event detail page. Checks whether an event's client was sourced from TakeaChef (by checking `client.referral_source === 'take_a_chef'` OR `inquiry.channel === 'take_a_chef'`). Returns the chef's direct booking URL (`/chef/{slug}`) and client name for the conversion banner.
+| File                                                             | Purpose                                                |
+| ---------------------------------------------------------------- | ------------------------------------------------------ |
+| `lib/gmail/take-a-chef-parser.ts`                                | Email type detection + field extraction                |
+| `lib/gmail/take-a-chef-dedup.ts`                                 | Inquiry-level deduplication                            |
+| `lib/gmail/take-a-chef-stats.ts`                                 | Stats queries (overview + daily volume)                |
+| `lib/gmail/classify.ts`                                          | Modified — sender detection before Ollama              |
+| `lib/gmail/sync.ts`                                              | Modified — TakeAChef routing + all email type handlers |
+| `components/inquiries/tac-status-prompt.tsx`                     | Message blind spot quick-action prompt                 |
+| `components/dashboard/tac-dashboard-widget.tsx`                  | Dashboard widget                                       |
+| `components/integrations/take-a-chef-setup.tsx`                  | Onboarding wizard                                      |
+| `supabase/migrations/20260322000051_take_a_chef_integration.sql` | DB columns + indexes                                   |
 
-### `components/import/take-a-chef-import.tsx`
-Client component for the AI import tab. Two states:
-- **Input state**: textarea for pasting booking email + commission % slider + "Parse & Review" button
-- **Done state**: success confirmation with links to the created inquiry and a note about the commission expense
+## Database Changes
 
-### `components/inquiries/take-a-chef-capture-form.tsx`
-Manual quick-capture form (client component). Fields: full_name, email, phone (optional), event_date, serve_time, guest_count, location, occasion, total_price, commission_percent, log_commission checkbox, dietary_restrictions, additional_notes. Shows computed commission in dollars as the chef types.
+- `inquiries.external_inquiry_id` — TakeAChef Order ID
+- `inquiries.external_platform` — 'take_a_chef'
+- `inquiries.external_link` — Direct TakeAChef URL
+- `gmail_sync_log.platform_email_type` — tac_new_inquiry, tac_booking_confirmed, etc.
 
-### `components/events/take-a-chef-convert-banner.tsx`
-Dismissable banner (client component) shown on completed TakeaChef-sourced event detail pages. Features:
-- Pre-written message the chef can copy-send to the client
-- One-click clipboard copy
-- "Preview Link" button to open the booking URL
-- Dismiss button that stores `tac_convert_dismissed_{eventId}` in localStorage — never nags after dismissal
-- localStorage checked via `useEffect` to avoid hydration mismatch
+## Future Enhancements
 
----
-
-## Files Modified
-
-### `components/import/smart-import-hub.tsx`
-- Added `'take-a-chef'` to the `ImportMode` union type
-- Added tab config: `{ mode: 'take-a-chef', label: 'Take a Chef', placeholder: '', isCustomComponent: true }`
-- Added render: `{isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}`
-
-### `app/(chef)/import/page.tsx`
-- Added `'take-a-chef'` to the `IMPORT_MODES` array
-
-### `app/(chef)/events/[id]/page.tsx`
-- On page load for completed events: fetches `getTakeAChefConversionData(eventId)` (parallel, errors are swallowed)
-- If the event is TakeaChef-sourced: renders `<TakeAChefConvertBanner>` between the event header and the DOP progress section
-
-### `lib/analytics/insights-actions.ts`
-- Added `TakeAChefROI` type (exported)
-- Added `getTakeAChefROI()` function that computes:
-  - `tacClientCount` — clients with `referral_source = 'take_a_chef'`
-  - `platformBookingsCount` — events where `inquiry.channel = 'take_a_chef'`
-  - `directBookingsCount` — events from TAC clients where channel ≠ `take_a_chef`
-  - `conversionRate` — % of TAC clients with at least one direct booking
-  - `estimatedCommissionPaidCents` — sum of expenses with `vendor_name = 'Take a Chef'`
-  - `estimatedCommissionSavedCents` — directBookings × avgEventValue × 0.25
-  - `avgEventValueCents` — across all TAC client events
-  - `topTacClients` — top 10 by total events, with per-client breakdown
-
-### `app/(chef)/insights/page.tsx`
-- Added `getTakeAChefROI` to the parallel `Promise.all` fetch
-- Passed `tacROI` to `InsightsClient`
-
-### `components/analytics/insights-client.tsx`
-- Added `TakeAChefROI` to type imports
-- Added `tacROI: TakeAChefROI` to `InsightsClientProps`
-- Added `{ id: 'take-a-chef', label: 'Take a Chef ROI' }` to TABS
-- Added full `TakeAChefROITab` component with stat cards, financial cards, client table, and explainer
-- Added tab panel render: `{activeTab === 'take-a-chef' && <TakeAChefROITab roi={tacROI} />}`
-
----
-
-## How It Connects to the System
-
-### Schema (no changes needed)
-The Layer 2 migration already defined:
-- `take_a_chef` in `inquiry_channel` enum
-- `take_a_chef` in `message_channel` enum
-- `take_a_chef` in `referral_source` values used by `createClientFromLead()`
-
-The Layer 2 AI parser (`lib/ai/parse-inquiry.ts`) already included `take_a_chef` in its channel schema and system prompt.
-
-The Insights system (`getClientAcquisitionStats()`) already had `SOURCE_LABELS['take_a_chef'] = 'Take a Chef'`.
-
-### Commission Tracking
-Commission is stored as a standard expense:
-- `category: 'professional_services'`
-- `vendor_name: 'Take a Chef'`
-- `description: 'Take a Chef commission (25%)'`
-- `is_business_expense: true`
-
-The `getTakeAChefROI()` function queries these via `vendor_name` filter. No new expense category was added — `professional_services` is the correct category per the existing constants.
-
-### UX Flows
-
-**Flow A — AI-assisted import:**
-`/import?mode=take-a-chef` → paste booking email → AI parses → review → save → client + inquiry + draft event + commission expense created
-
-**Flow B — Manual quick-capture:**
-Quick-capture form → fill fields → save → same result as Flow A
-
-**Flow C — Post-event direct booking prompt:**
-Completed event detail page → banner appears → chef copies pre-written message → sends to client → client books directly next time
-
-**Flow D — ROI review:**
-Insights page → "Take a Chef ROI" tab → see clients sourced, conversion rate, commission saved
-
----
-
-## No-Email Client Handling
-The manual capture form handles the case where the chef doesn't have the client's email. In this case, the action inserts directly into the `clients` table without an email, bypassing `createClientFromLead()` which requires one. The client record is created with `source: 'take_a_chef'` and whatever contact info is available.
-
----
-
-## Verification Checklist
-- [ ] `/import?mode=take-a-chef` shows the new tab
-- [ ] Paste a sample TakeaChef booking email → fields parse correctly (requires ANTHROPIC_API_KEY)
-- [ ] Save → client with `referral_source = 'take_a_chef'`, inquiry with `channel = 'take_a_chef'`, draft event, and commission expense all created
-- [ ] Navigate to created event, transition it to completed → "Convert to Direct" banner appears
-- [ ] Click "Copy Message" → pre-written message + chef profile URL in clipboard
-- [ ] Click Dismiss → localStorage key set, banner gone, doesn't return on reload
-- [ ] Open Insights → "Take a Chef ROI" tab appears and renders (zeroes if no data)
-- [ ] Clients list → client shows source as "Take a Chef"
+- Payment email parser (need sample email)
+- Auto-expiry cron for past-date inquiries
+- Multi-platform support for other chef marketplaces
+- Commission rate persistence per chef
+- Remy drafting TakeAChef responses

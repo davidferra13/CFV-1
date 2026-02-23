@@ -1,0 +1,170 @@
+'use client'
+
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import Link from 'next/link'
+
+interface TakeAChefSetupProps {
+  gmailConnected: boolean
+  lastSyncAt: string | null
+  tacLeadCount: number
+}
+
+export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: TakeAChefSetupProps) {
+  const [commissionRate, setCommissionRate] = useState(25)
+
+  // --- State 1: Connected with leads captured ---
+  if (gmailConnected && tacLeadCount > 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>TakeAChef Integration</CardTitle>
+            <Badge variant="success">Connected</Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-stone-600">Leads captured</span>
+              <span className="text-sm font-semibold text-stone-900">{tacLeadCount}</span>
+            </div>
+            {lastSyncAt && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-stone-600">Last synced</span>
+                <span className="text-sm text-stone-500">
+                  {new Date(lastSyncAt).toLocaleString()}
+                </span>
+              </div>
+            )}
+            <div className="pt-2 border-t border-stone-100">
+              <button
+                type="button"
+                className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                onClick={() => {
+                  /* placeholder — disconnect not yet implemented */
+                }}
+              >
+                Disconnect Gmail
+              </button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // --- State 2: Connected but no leads yet ---
+  if (gmailConnected && tacLeadCount === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>TakeAChef Integration</CardTitle>
+            <Badge variant="info">Scanning</Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-3">
+            <div className="mt-0.5 flex-shrink-0 h-5 w-5 text-sky-500">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <p className="text-sm text-stone-600 leading-relaxed">
+              We&apos;re scanning your inbox for TakeAChef emails. New leads will appear on your
+              dashboard within 5 minutes.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
+  // --- State 3: Not connected — setup wizard ---
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>TakeAChef Integration</CardTitle>
+        <p className="mt-1 text-sm text-stone-500">
+          Automatically capture leads from TakeAChef notification emails.
+        </p>
+      </CardHeader>
+      <CardContent>
+        <ol className="space-y-6">
+          {/* Step 1: Connect Gmail */}
+          <li className="flex gap-4">
+            <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-brand-600 text-white text-xs font-bold">
+              1
+            </div>
+            <div className="flex-1 space-y-2">
+              <h4 className="text-sm font-semibold text-stone-900">Connect your Gmail</h4>
+              <p className="text-sm text-stone-500 leading-relaxed">
+                ChefFlow will scan for TakeAChef notification emails so we can turn them into leads
+                automatically.
+              </p>
+              <p className="text-xs text-stone-400 italic">
+                ChefFlow only reads emails from TakeAChef &mdash; we never access your personal
+                messages.
+              </p>
+              <div className="pt-1">
+                <Link href="/api/auth/google/connect">
+                  <Button variant="primary" size="sm">
+                    Connect Gmail
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </li>
+
+          {/* Step 2: Automatic processing */}
+          <li className="flex gap-4">
+            <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-200 text-stone-600 text-xs font-bold">
+              2
+            </div>
+            <div className="flex-1 space-y-2">
+              <h4 className="text-sm font-semibold text-stone-900">We do the rest</h4>
+              <p className="text-sm text-stone-500 leading-relaxed">
+                ChefFlow automatically detects new TakeAChef emails, deduplicates contacts, and
+                creates leads in your pipeline. No manual entry needed.
+              </p>
+            </div>
+          </li>
+
+          {/* Step 3: Commission rate */}
+          <li className="flex gap-4">
+            <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-200 text-stone-600 text-xs font-bold">
+              3
+            </div>
+            <div className="flex-1 space-y-2">
+              <h4 className="text-sm font-semibold text-stone-900">Set commission rate</h4>
+              <p className="text-sm text-stone-500 leading-relaxed">
+                TakeAChef takes a percentage of each booking. Set it here so ChefFlow can calculate
+                your net revenue accurately.
+              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={commissionRate}
+                  onChange={(e) =>
+                    setCommissionRate(Math.min(100, Math.max(0, Number(e.target.value))))
+                  }
+                  className="w-20 h-9 px-3 text-sm text-stone-900 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                />
+                <span className="text-sm text-stone-500">%</span>
+              </div>
+            </div>
+          </li>
+        </ol>
+      </CardContent>
+    </Card>
+  )
+}

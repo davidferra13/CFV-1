@@ -1,11 +1,14 @@
 // Email Classification with Local Ollama
 // PRIVACY: Processes known client email list + email body — must stay local.
+// TakeAChef/Private Chef Manager emails are detected by sender domain and
+// short-circuited BEFORE Ollama runs (no AI needed — consistent format).
 
 'use server'
 
 import { z } from 'zod'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { isTakeAChefEmail } from './take-a-chef-parser'
 import type { EmailClassification } from './types'
 
 const EmailClassificationSchema = z.object({
@@ -55,6 +58,19 @@ export async function classifyEmail(
   fromAddress: string,
   knownClientEmails: string[]
 ): Promise<EmailClassification> {
+  // Short-circuit: TakeAChef / Private Chef Manager emails are handled by
+  // the dedicated TakeAChef parser pipeline — not by Ollama classification.
+  // We return a special classification that the sync pipeline checks for.
+  if (isTakeAChefEmail(fromAddress)) {
+    return {
+      category: 'inquiry', // The sync pipeline will override routing via isTakeAChefEmail check
+      confidence: 'high',
+      reasoning:
+        'TakeAChef/Private Chef Manager email detected by sender domain — routed to dedicated parser',
+      is_food_related: true,
+    }
+  }
+
   const clientContext =
     knownClientEmails.length > 0
       ? `\nKNOWN CLIENT EMAILS: ${knownClientEmails.join(', ')}`
