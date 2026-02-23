@@ -236,6 +236,31 @@ These steps run automatically at the end of every session, whether or not the de
 
 - **Always create a follow-up `.md` document for every code change.** Every implementation should have a reflecting document that explains what changed, why, and how it connects to the system. No code-only changes.
 
+### Living App Audit — `docs/app-complete-audit.md` (MANDATORY)
+
+This file is the **master registry of every page, button, tab, form, modal, overlay, and navigation path** in ChefFlow. It must always reflect the current state of the app.
+
+**When to update it:**
+
+- You **add a new page** → add its entry (route, what it shows, every button/form/tab on it)
+- You **add or remove a button, tab, link, modal, or form field** on any page → update that page's section
+- You **rename or move a page** → update the route and any cross-references
+- You **add a new feature** (panel, widget, overlay, AI feature) → document it under the relevant page
+- You **delete or disable a feature** → remove or mark it in the audit
+
+**How to update it:**
+
+- Find the relevant section by page name
+- Add/edit/remove the specific element — keep the same format as surrounding entries
+- If adding a whole new page, add it under the correct section heading with the same structure (route, what's displayed, buttons, forms, tabs, modals, navigation)
+
+**When NOT to update it:**
+
+- Pure backend changes (new server action, migration, refactored logic) that don't change what the user sees or clicks — skip it
+- Styling-only changes (color, font, spacing) — skip it
+
+**This rule exists because:** a full re-audit of ~265 pages takes an entire session and costs real money. Keeping this file current incrementally is free. The developer relies on this as their "ultimate manual" for understanding what the app does.
+
 ### Git Workflow
 
 - Use **feature branches** for new work, not direct commits to `main`.
@@ -490,6 +515,7 @@ Private data categories that must stay local:
 | Embed form page      | `app/embed/inquiry/[chefId]/page.tsx`                                     |
 | Embed form component | `components/embed/embed-inquiry-form.tsx`                                 |
 | Embed settings page  | `app/(chef)/settings/embed/page.tsx`                                      |
+| App audit (living)   | `docs/app-complete-audit.md` **(update when UI changes)**                 |
 | Agent registry       | `docs/agent-registry.md`                                                  |
 | Kilo agent rules     | `KILO.md`                                                                 |
 | Kilo workflow        | `docs/kilo-workflow.md`                                                   |
