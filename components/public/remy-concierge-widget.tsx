@@ -282,35 +282,35 @@ export function RemyConciergeWidget() {
         <>
           <div
             onMouseDown={startResize('n')}
-            className="absolute top-0 left-2 right-2 h-1.5 cursor-n-resize"
+            className="absolute top-0 left-2 right-2 h-1.5 z-20 cursor-n-resize"
           />
           <div
             onMouseDown={startResize('s')}
-            className="absolute bottom-0 left-2 right-2 h-1.5 cursor-s-resize"
+            className="absolute bottom-0 left-2 right-2 h-1.5 z-20 cursor-s-resize"
           />
           <div
             onMouseDown={startResize('w')}
-            className="absolute left-0 top-2 bottom-2 w-1.5 cursor-w-resize"
+            className="absolute left-0 top-2 bottom-2 w-1.5 z-20 cursor-w-resize"
           />
           <div
             onMouseDown={startResize('e')}
-            className="absolute right-0 top-2 bottom-2 w-1.5 cursor-e-resize"
+            className="absolute right-0 top-2 bottom-2 w-1.5 z-20 cursor-e-resize"
           />
           <div
             onMouseDown={startResize('nw')}
-            className="absolute top-0 left-0 h-3 w-3 cursor-nw-resize"
+            className="absolute top-0 left-0 h-3 w-3 z-20 cursor-nw-resize"
           />
           <div
             onMouseDown={startResize('ne')}
-            className="absolute top-0 right-0 h-3 w-3 cursor-ne-resize"
+            className="absolute top-0 right-0 h-3 w-3 z-20 cursor-ne-resize"
           />
           <div
             onMouseDown={startResize('sw')}
-            className="absolute bottom-0 left-0 h-3 w-3 cursor-sw-resize"
+            className="absolute bottom-0 left-0 h-3 w-3 z-20 cursor-sw-resize"
           />
           <div
             onMouseDown={startResize('se')}
-            className="absolute bottom-0 right-0 h-3 w-3 cursor-se-resize"
+            className="absolute bottom-0 right-0 h-3 w-3 z-20 cursor-se-resize"
           />
         </>
       )}
