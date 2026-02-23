@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
+import { CalendarDays, CreditCard, MessageCircle, UsersRound } from 'lucide-react'
 import { WorkflowSteps } from '@/components/public/workflow-steps'
-import { RemyConciergeSection } from '@/components/public/remy-concierge-section'
 import { HowItWorksSection } from '@/components/public/how-it-works-section'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
@@ -109,7 +108,23 @@ export default function Home() {
         </div>
       </section>
 
-      <RemyConciergeSection />
+      <section className="border-y border-stone-200 bg-gradient-to-b from-brand-50/60 to-white">
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+          <div className="text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700">
+              <MessageCircle className="h-7 w-7" />
+            </div>
+            <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
+              Not sure if ChefFlow fits your workflow?
+            </h2>
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+              Ask Remy — our concierge knows every feature inside and out. Describe your biggest
+              headache and he&apos;ll show you exactly how ChefFlow handles it.
+            </p>
+            <p className="mt-6 text-sm font-medium text-brand-600">Try the chat in the corner →</p>
+          </div>
+        </div>
+      </section>
 
       <HowItWorksSection />
 
