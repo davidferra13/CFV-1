@@ -338,6 +338,9 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
       `tier=${task.approval_tier}, attempt=${task.attempts}/${task.max_attempts})`
   )
 
+  // Hoisted so `finally` can always clear it (prevents timer leak)
+  let timeoutTimer: ReturnType<typeof setTimeout> | null = null
+
   try {
     // ── Route to the right Ollama endpoint ──
     let endpointUrl: string
@@ -361,7 +364,19 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
     const modelTier = (definition.modelTier || 'standard') as ModelTier
     const resolvedModel = getModelForEndpoint(resolvedEndpointName, modelTier)
 
-    // ── Execute with hard timeout ──
+    // ── Execute with hard timeout (timer cleaned up in finally block) ──
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutTimer = setTimeout(() => {
+        reject(
+          new Error(
+            `Task ${task.task_type} timed out after ${OLLAMA_GUARD.CALL_TIMEOUT_MS}ms. ` +
+              `This prevents Ollama from hanging indefinitely. ` +
+              `The task will be retried if attempts remain.`
+          )
+        )
+      }, OLLAMA_GUARD.CALL_TIMEOUT_MS)
+    })
+
     const result = await Promise.race([
       definition.handler(
         {
@@ -372,9 +387,8 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
         },
         task.tenant_id
       ),
-      createTimeout(OLLAMA_GUARD.CALL_TIMEOUT_MS, task.task_type),
+      timeoutPromise,
     ])
-
     const durationMs = Date.now() - startTime
 
     // ── Validate result is not garbage ──
@@ -447,6 +461,7 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
     // ── Extra cooldown after failure ──
     await sleep(OLLAMA_GUARD.COOLDOWN_MS * 3)
   } finally {
+    if (timeoutTimer) clearTimeout(timeoutTimer) // Prevent timer leak
     slot.taskId = null
     state.currentTaskId = slots.pc.taskId ?? slots.pi.taskId ?? null // Update backwards compat
   }
@@ -455,24 +470,6 @@ async function processTask(task: AiQueueItem, forcedEndpoint?: 'pc' | 'pi'): Pro
 // ============================================
 // HELPERS
 // ============================================
-
-/**
- * Creates a promise that rejects after a timeout.
- * Used with Promise.race to enforce hard time limits on Ollama calls.
- */
-function createTimeout(ms: number, taskType: string): Promise<never> {
-  return new Promise((_, reject) => {
-    setTimeout(() => {
-      reject(
-        new Error(
-          `Task ${taskType} timed out after ${ms}ms. ` +
-            `This prevents Ollama from hanging indefinitely. ` +
-            `The task will be retried if attempts remain.`
-        )
-      )
-    }, ms)
-  })
-}
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))

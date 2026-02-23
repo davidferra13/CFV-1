@@ -11,6 +11,7 @@ import type { NavGroup, NavCollapsibleItem, NavSubItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
+import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { ActivityDot } from '@/components/activity/activity-dot'
 import { AppLogo } from '@/components/branding/app-logo'
 
@@ -514,6 +515,7 @@ export function ChefSidebar({
         </Link>
         {!collapsed ? (
           <div className="flex items-center flex-shrink-0">
+            <OllamaStatusBadge />
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch />
