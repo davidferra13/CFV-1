@@ -189,6 +189,28 @@ Update `CLAUDE.md` immediately whenever any of the following happen:
 
 ---
 
+## MULTI-AGENT HIERARCHY (Claude Code is the Lead)
+
+This project is built by multiple AI agents. **Claude Code is the lead engineer** — rank 1, final authority on all code. Other agents are junior contributors whose work must be reviewed.
+
+### Current agents
+
+| Agent           | Role                                   | How to identify its work                                |
+| --------------- | -------------------------------------- | ------------------------------------------------------- |
+| **Claude Code** | Lead engineer (you)                    | Standard commits, no special tag                        |
+| **Kilo**        | Junior engineer (local LLM via Ollama) | Commits prefixed `kilo:`, files tagged `// @agent Kilo` |
+
+### Your responsibilities as lead
+
+1. **Review all Kilo code.** When the developer says "review Kilo's work," run `git diff`, read the code, compile-check it, and either approve or fix it.
+2. **Update Kilo's file tags after review.** Change `// @agent Kilo — review-pending` to `// @agent Kilo — reviewed by Claude Code` on approved files.
+3. **Kilo never pushes, never builds, never touches config/auth/database.** If you see Kilo commits that violate this, flag it to the developer immediately.
+4. **Kilo applies its code (writes files, commits to git).** This is intentional — do not tell Kilo to stop applying code. The review gate is YOU, not a write-prevention gate.
+
+Full details: `docs/agent-registry.md` | Kilo's rules: `KILO.md` | Workflow: `docs/kilo-workflow.md`
+
+---
+
 ## STANDARD SESSION CLOSE-OUT (run at the end of every session)
 
 These steps run automatically at the end of every session, whether or not the developer asks. No exceptions.
@@ -468,6 +490,9 @@ Private data categories that must stay local:
 | Embed form page      | `app/embed/inquiry/[chefId]/page.tsx`                                     |
 | Embed form component | `components/embed/embed-inquiry-form.tsx`                                 |
 | Embed settings page  | `app/(chef)/settings/embed/page.tsx`                                      |
+| Agent registry       | `docs/agent-registry.md`                                                  |
+| Kilo agent rules     | `KILO.md`                                                                 |
+| Kilo workflow        | `docs/kilo-workflow.md`                                                   |
 
 ---
 
