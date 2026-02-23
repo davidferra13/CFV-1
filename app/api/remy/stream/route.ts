@@ -10,7 +10,7 @@ import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
 import { runCommand } from '@/lib/ai/command-orchestrator'
 import { getTaskName } from '@/lib/ai/command-task-descriptions'
-import { computeDynamicContext } from '@/lib/ai/providers'
+import { computeDynamicContext, getOllamaPiUrl, getModelForEndpoint } from '@/lib/ai/providers'
 import { routeForRemy } from '@/lib/ai/llm-router'
 import { getEndpointSnapshot } from '@/lib/ai/cross-monitor'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
@@ -326,6 +326,126 @@ function detectMemoryIntent(message: string): MemoryIntent {
 
 function formatCategoryLabel(cat: string): string {
   return cat.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
+}
+
+// ─── Pi Test Detection (Admin Only) ──────────────────────────────────────────
+
+const PI_TEST_PATTERNS = [
+  /\brun\s+(a\s+)?test\b/i,
+  /\btest\s+the\s+pi\b/i,
+  /\bping\s+(the\s+)?pi\b/i,
+  /\bpi\s+test\b/i,
+  /\btest\s+raspberry\b/i,
+]
+
+function detectPiTestIntent(message: string): boolean {
+  return PI_TEST_PATTERNS.some((p) => p.test(message))
+}
+
+async function handlePiTest(): Promise<Response> {
+  const encoder = new TextEncoder()
+  const piUrl = getOllamaPiUrl()
+
+  if (!piUrl) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'pi-test' })))
+        controller.enqueue(
+          encoder.encode(
+            encodeSSE({
+              type: 'token',
+              data: '**Pi Test — FAILED**\n\nNo `OLLAMA_PI_URL` configured in environment. Set it in `.env.local` and restart the dev server.',
+            })
+          )
+        )
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+        controller.close()
+      },
+    })
+    return new Response(stream, { headers: sseHeaders() })
+  }
+
+  const piModel = getModelForEndpoint('pi', 'standard')
+  const startTime = Date.now()
+
+  // Step 1: Ping the Pi
+  let pingOk = false
+  try {
+    const res = await fetch(`${piUrl}/api/tags`, {
+      signal: AbortSignal.timeout(5000),
+      cache: 'no-store',
+    })
+    pingOk = res.ok
+  } catch {
+    // unreachable
+  }
+
+  if (!pingOk) {
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'pi-test' })))
+        controller.enqueue(
+          encoder.encode(
+            encodeSSE({
+              type: 'token',
+              data: `**Pi Test — UNREACHABLE**\n\nCould not reach \`${piUrl}\`. Check that Ollama is running on the Pi and the network is connected.`,
+            })
+          )
+        )
+        controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+        controller.close()
+      },
+    })
+    return new Response(stream, { headers: sseHeaders() })
+  }
+
+  const pingMs = Date.now() - startTime
+
+  // Step 2: Send a simple chat to verify the model responds
+  let modelResponse = ''
+  let chatMs = 0
+  try {
+    const chatStart = Date.now()
+    const ollama = new Ollama({ host: piUrl })
+    const res = await ollama.chat({
+      model: piModel,
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant. Respond in one sentence.' },
+        { role: 'user', content: 'Say hello and confirm you are running.' },
+      ],
+      options: { num_predict: 64 },
+      keep_alive: '5m',
+    })
+    modelResponse = res.message?.content ?? '(no response)'
+    chatMs = Date.now() - chatStart
+  } catch (err) {
+    modelResponse = `Error: ${err instanceof Error ? err.message : String(err)}`
+  }
+
+  const totalMs = Date.now() - startTime
+
+  const report = [
+    '**Pi Test — SUCCESS**\n',
+    `| Detail | Value |`,
+    `|--------|-------|`,
+    `| Endpoint | \`${piUrl}\` |`,
+    `| Model | \`${piModel}\` |`,
+    `| Ping | ${pingMs}ms |`,
+    `| Chat response | ${chatMs}ms |`,
+    `| Total | ${totalMs}ms |`,
+    '',
+    `**Pi says:** ${modelResponse}`,
+  ].join('\n')
+
+  const stream = new ReadableStream({
+    start(controller) {
+      controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'pi-test' })))
+      controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: report })))
+      controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+      controller.close()
+    },
+  })
+  return new Response(stream, { headers: sseHeaders() })
 }
 
 // ─── Task Result Summarizer ───────────────────────────────────────────────────
@@ -747,6 +867,11 @@ export async function POST(req: NextRequest) {
           headers: sseHeaders(),
         })
       }
+    }
+
+    // ─── PI TEST (admin only) ──────────────────────────────────────
+    if (admin && detectPiTestIntent(message)) {
+      return handlePiTest()
     }
 
     // ─── MEMORY PATH (no streaming needed) ───────────────────────
