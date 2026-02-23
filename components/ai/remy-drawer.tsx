@@ -1813,7 +1813,10 @@ export function RemyDrawer() {
                     <textarea
                       ref={textareaRef}
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                      onChange={(e) => {
+                        if (e.target.value.length <= 500) setInput(e.target.value)
+                      }}
+                      maxLength={500}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault()
@@ -1855,10 +1858,17 @@ export function RemyDrawer() {
                     <Send className="h-4 w-4" />
                   </Button>
                 </div>
-                <p className="text-xs text-stone-400 mt-1.5 flex items-center gap-1">
-                  <Globe className="h-3 w-3" />
-                  Conversations stay in your browser. Ctrl+K to toggle.
-                </p>
+                <div className="flex items-center justify-between mt-1.5">
+                  <p className="text-xs text-stone-400 flex items-center gap-1">
+                    <Globe className="h-3 w-3" />
+                    Conversations stay in your browser. Ctrl+K to toggle.
+                  </p>
+                  <span
+                    className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
+                  >
+                    {input.length}/500
+                  </span>
+                </div>
               </div>
             </>
           )}

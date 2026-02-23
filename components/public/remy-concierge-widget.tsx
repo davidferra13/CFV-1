@@ -286,45 +286,47 @@ export function RemyConciergeWidget() {
           {/* Edge handles (z-20) — inset so they don't overlap corners */}
           <div
             onMouseDown={startResize('n')}
-            className="absolute top-0 left-5 right-5 h-2 z-20 cursor-n-resize"
+            className="absolute top-0 left-5 right-5 h-2 z-20 cursor-n-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors"
           />
           <div
             onMouseDown={startResize('s')}
-            className="absolute bottom-0 left-5 right-5 h-2 z-20 cursor-s-resize"
+            className="absolute bottom-0 left-5 right-5 h-2 z-20 cursor-s-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors"
           />
           <div
             onMouseDown={startResize('w')}
-            className="absolute left-0 top-5 bottom-5 w-2 z-20 cursor-w-resize"
+            className="absolute left-0 top-5 bottom-5 w-2 z-20 cursor-w-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors"
           />
           <div
             onMouseDown={startResize('e')}
-            className="absolute right-0 top-5 bottom-5 w-2 z-20 cursor-e-resize"
+            className="absolute right-0 top-5 bottom-5 w-2 z-20 cursor-e-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors"
           />
           {/* Corner handles (z-30, 20px) — MUST be larger and above edges.
                These extend slightly OUTSIDE the rounded border to ensure
                they are always grabbable and never clipped. */}
           <div
             onMouseDown={startResize('nw')}
-            className="absolute -top-1 -left-1 h-5 w-5 z-30 cursor-nw-resize"
+            className="absolute -top-1 -left-1 h-5 w-5 z-30 cursor-nw-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors rounded-tl-lg"
           />
           <div
             onMouseDown={startResize('ne')}
-            className="absolute -top-1 -right-1 h-5 w-5 z-30 cursor-ne-resize"
+            className="absolute -top-1 -right-1 h-5 w-5 z-30 cursor-ne-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors rounded-tr-lg"
           />
           <div
             onMouseDown={startResize('sw')}
-            className="absolute -bottom-1 -left-1 h-5 w-5 z-30 cursor-sw-resize"
+            className="absolute -bottom-1 -left-1 h-5 w-5 z-30 cursor-sw-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors rounded-bl-lg"
           />
           <div
             onMouseDown={startResize('se')}
-            className="absolute -bottom-1 -right-1 h-5 w-5 z-30 cursor-se-resize"
+            className="absolute -bottom-1 -right-1 h-5 w-5 z-30 cursor-se-resize hover:bg-brand-400/20 active:bg-brand-400/40 transition-colors rounded-br-lg"
           />
         </>
       )}
 
-      {/* Inner content wrapper — overflow-hidden here for rounded clipping */}
+      {/* Inner content wrapper — overflow-hidden here for rounded clipping.
+           z-10 ensures resize handles (z-20 edges, z-30 corners) are ALWAYS above content.
+           Without this, animate-in / shadow-2xl can create a stacking context that covers handles. */}
       <div
-        className={`flex flex-col h-full overflow-hidden border border-stone-200 bg-white shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+        className={`relative z-10 flex flex-col h-full overflow-hidden border border-stone-200 bg-white shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${
           isMaximized ? 'rounded-xl' : 'rounded-2xl'
         }`}
       >
@@ -449,7 +451,10 @@ export function RemyConciergeWidget() {
             <textarea
               ref={inputRef}
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                if (e.target.value.length <= 500) setInput(e.target.value)
+              }}
+              maxLength={500}
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
@@ -470,11 +475,16 @@ export function RemyConciergeWidget() {
               )}
             </button>
           </div>
-          <p className="mt-1.5 text-center text-[10px] text-stone-400">
-            Powered by ChefFlow AI — private &amp; local
-            <br />
-            Responses may take a moment — our AI runs locally for your privacy
-          </p>
+          <div className="mt-1.5 flex items-center justify-between px-1">
+            <p className="text-center text-[10px] text-stone-400 flex-1">
+              Powered by ChefFlow AI — private &amp; local
+            </p>
+            <span
+              className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
+            >
+              {input.length}/500
+            </span>
+          </div>
         </div>
       </div>
       {/* end inner content wrapper */}
