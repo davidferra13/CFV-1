@@ -5,7 +5,25 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { getPlatformOverviewStats } from '@/lib/admin/platform-stats'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Radio, Users, UserCheck, DollarSign, CalendarRange, Activity, Megaphone, ToggleLeft, TrendingUp, TrendingDown } from 'lucide-react'
+import dynamic from 'next/dynamic'
+import {
+  Radio,
+  Users,
+  UserCheck,
+  DollarSign,
+  CalendarRange,
+  Activity,
+  Megaphone,
+  ToggleLeft,
+  TrendingUp,
+  TrendingDown,
+} from 'lucide-react'
+
+const SystemArchitecturePlayer = dynamic(
+  () =>
+    import('@/components/admin/system-architecture-player').then((m) => m.SystemArchitecturePlayer),
+  { ssr: false }
+)
 
 function StatCard({
   label,
@@ -55,7 +73,10 @@ function QuickTile({
     >
       <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-orange-50 transition-colors">
-          <Icon size={16} className="text-slate-600 group-hover:text-orange-500 transition-colors" />
+          <Icon
+            size={16}
+            className="text-slate-600 group-hover:text-orange-500 transition-colors"
+          />
         </div>
         <span className="font-medium text-sm text-slate-900">{label}</span>
       </div>
@@ -124,22 +145,10 @@ export default async function AdminOverviewPage() {
             subLabel="this month"
             trend="up"
           />
-          <StatCard
-            label="Avg Events / Chef"
-            value={stats.avgEventsPerChef}
-          />
-          <StatCard
-            label="Avg GMV / Chef"
-            value={formatCents(stats.avgGMVPerChef)}
-          />
-          <StatCard
-            label="GMV This Month"
-            value={formatCents(stats.gmvThisMonth)}
-          />
-          <StatCard
-            label="New Clients (Month)"
-            value={stats.clientsThisMonth}
-          />
+          <StatCard label="Avg Events / Chef" value={stats.avgEventsPerChef} />
+          <StatCard label="Avg GMV / Chef" value={formatCents(stats.avgGMVPerChef)} />
+          <StatCard label="GMV This Month" value={formatCents(stats.gmvThisMonth)} />
+          <StatCard label="New Clients (Month)" value={stats.clientsThisMonth} />
         </div>
       ) : (
         <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
@@ -149,7 +158,9 @@ export default async function AdminOverviewPage() {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">Quick Access</h2>
+        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
+          Quick Access
+        </h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <QuickTile
             href="/admin/presence"
@@ -200,6 +211,14 @@ export default async function AdminOverviewPage() {
             description="Announcements and direct email"
           />
         </div>
+      </div>
+
+      {/* System Architecture */}
+      <div>
+        <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide mb-3">
+          System Architecture
+        </h2>
+        <SystemArchitecturePlayer />
       </div>
     </div>
   )
