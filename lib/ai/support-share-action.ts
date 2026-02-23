@@ -13,7 +13,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/required'
+import { requireChef } from '@/lib/auth/get-user'
 import type { ExportedConversation } from './remy-local-storage'
 
 interface ShareResult {

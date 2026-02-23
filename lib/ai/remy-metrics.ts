@@ -15,7 +15,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server'
-import { requireChef } from '@/lib/auth/required'
+import { requireChef } from '@/lib/auth/get-user'
 
 type FeatureCategory = 'recipe' | 'event' | 'client' | 'menu' | 'finance' | 'general'
 

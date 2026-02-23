@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
-import { ProductExplainerPlayer } from '@/components/public/product-explainer-player'
+import { WorkflowSteps } from '@/components/public/workflow-steps'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
 
@@ -103,9 +103,7 @@ export default function Home() {
               fragmented spreadsheets.
             </p>
           </div>
-          <div className="mx-auto max-w-2xl">
-            <ProductExplainerPlayer />
-          </div>
+          <WorkflowSteps />
         </div>
       </section>
 
