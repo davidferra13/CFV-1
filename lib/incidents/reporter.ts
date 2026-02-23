@@ -62,6 +62,38 @@ const SEVERITY_LABELS: Record<IncidentSeverity, string> = {
 }
 
 // ============================================
+// DEDUPLICATION — prevents spam
+// ============================================
+// Tracks recent incident titles so we don't write the same report 50 times.
+// Key: "system:title-slug", Value: timestamp of last write.
+// Same incident type is suppressed for DEDUP_WINDOW_MS after the first write.
+
+const recentIncidents = new Map<string, number>()
+const DEDUP_WINDOW_MS = 30 * 60 * 1000 // 30 minutes — same incident won't repeat for 30 min
+
+function isDuplicate(system: IncidentSystem, title: string): boolean {
+  const key = `${system}:${slugify(title)}`
+  const lastWritten = recentIncidents.get(key)
+  const now = Date.now()
+
+  if (lastWritten && now - lastWritten < DEDUP_WINDOW_MS) {
+    return true // Already reported recently — suppress
+  }
+
+  recentIncidents.set(key, now)
+
+  // Evict stale entries to prevent memory leak (keep last 100)
+  if (recentIncidents.size > 100) {
+    const cutoff = now - DEDUP_WINDOW_MS
+    for (const [k, v] of recentIncidents) {
+      if (v < cutoff) recentIncidents.delete(k)
+    }
+  }
+
+  return false
+}
+
+// ============================================
 // PUBLIC API
 // ============================================
 
@@ -73,6 +105,11 @@ const SEVERITY_LABELS: Record<IncidentSeverity, string> = {
  */
 export function writeIncident(report: IncidentReport): string | null {
   try {
+    // Skip if we already wrote this exact incident recently
+    if (isDuplicate(report.system, report.title)) {
+      return null
+    }
+
     const now = new Date()
     const dateStr = formatDate(now)
     const timeStr = formatTime(now)
@@ -136,13 +173,17 @@ export function reportTaskFailure(opts: {
   isDead?: boolean
 }): string | null {
   const isDead = opts.isDead ?? opts.attempt >= opts.maxAttempts
+
+  // Only write a report when the task is DEAD (exhausted all retries).
+  // Individual retry attempts are normal — they're not incidents.
+  // This prevents 3 reports for what is really 1 problem.
+  if (!isDead) return null
+
   return writeIncident({
-    severity: isDead ? 'error' : 'warning',
+    severity: 'error',
     system: 'queue',
-    title: isDead ? `Task Dead: ${opts.taskType}` : `Task Failed: ${opts.taskType}`,
-    description: isDead
-      ? `Task ${opts.taskType} exhausted all ${opts.maxAttempts} attempts and moved to dead letter queue.`
-      : `Task ${opts.taskType} failed on attempt ${opts.attempt}/${opts.maxAttempts}. Will retry.`,
+    title: `Task Dead: ${opts.taskType}`,
+    description: `Task ${opts.taskType} exhausted all ${opts.maxAttempts} attempts and moved to dead letter queue.`,
     error: opts.error,
     endpoint: opts.endpoint,
     context: {
@@ -151,11 +192,10 @@ export function reportTaskFailure(opts: {
       attempt: opts.attempt,
       maxAttempts: opts.maxAttempts,
       durationMs: opts.durationMs,
-      movedToDLQ: isDead,
+      movedToDLQ: true,
     },
-    suggestedAction: isDead
-      ? 'Check the dead letter queue in the database. Review the error and decide whether to retry manually.'
-      : 'Task will retry automatically. Monitor for repeated failures.',
+    suggestedAction:
+      'Check the dead letter queue in the database. Review the error and decide whether to retry manually.',
   })
 }
 
@@ -168,23 +208,22 @@ export function reportCircuitBreakerChange(opts: {
   to: string
   failures?: number
 }): string | null {
-  const isOpening = opts.to === 'OPEN'
+  // Only report when a circuit OPENS (something broke).
+  // Recovery transitions (HALF_OPEN, CLOSED) are normal — not incidents.
+  if (opts.to !== 'OPEN') return null
+
   return writeIncident({
-    severity: isOpening ? 'error' : 'info',
+    severity: 'error',
     system: 'circuit-breaker',
-    title: isOpening ? `Circuit OPEN: ${opts.service}` : `Circuit ${opts.to}: ${opts.service}`,
-    description: isOpening
-      ? `Circuit breaker for "${opts.service}" tripped after ${opts.failures ?? '?'} consecutive failures. All requests will fast-fail until the circuit resets.`
-      : `Circuit breaker for "${opts.service}" transitioned from ${opts.from} to ${opts.to}.`,
+    title: `Circuit OPEN: ${opts.service}`,
+    description: `Circuit breaker for "${opts.service}" tripped after ${opts.failures ?? '?'} consecutive failures. All requests will fast-fail until the circuit resets.`,
     context: {
       service: opts.service,
       previousState: opts.from,
       newState: opts.to,
       consecutiveFailures: opts.failures,
     },
-    suggestedAction: isOpening
-      ? `The ${opts.service} service is down or unreachable. Check connectivity and service status.`
-      : undefined,
+    suggestedAction: `The ${opts.service} service is down or unreachable. Check connectivity and service status.`,
   })
 }
 

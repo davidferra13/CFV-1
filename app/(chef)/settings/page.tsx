@@ -35,6 +35,7 @@ import { hasDemoData } from '@/lib/onboarding/demo-data'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import { DesktopAppSettings } from '@/components/settings/desktop-app-settings'
 import Link from 'next/link'
+import { isAdmin } from '@/lib/auth/admin'
 
 function SettingsCategory({
   title,
@@ -59,7 +60,7 @@ function SettingsCategory({
 }
 
 export default async function SettingsPage() {
-  await requireChef()
+  const user = await requireChef()
   const [
     preferences,
     googleConnection,
@@ -446,6 +447,17 @@ export default async function SettingsPage() {
               Check Stripe, Gmail, and DOP task status at a glance.
             </p>
           </Link>
+          {isAdmin(user.email) && (
+            <Link
+              href="/settings/incidents"
+              className="block border border-amber-200 rounded-lg p-4 hover:bg-amber-50/50 transition-colors"
+            >
+              <p className="font-medium text-stone-900">System Incidents</p>
+              <p className="text-sm text-stone-500 mt-1">
+                View failure reports from Ollama, task queue, and circuit breakers.
+              </p>
+            </Link>
+          )}
           <Link
             href="/settings/change-password"
             className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
