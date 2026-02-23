@@ -1,10 +1,15 @@
-// TakeAChef Dashboard Widget — Shows TakeAChef lead stats on the chef dashboard.
+// TakeAChef Dashboard Widget — Actionable command center, not just stats.
 // Server component — data is fetched at render time, no client JS needed.
 
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { getTakeAChefStats, getTakeAChefDailyStats } from '@/lib/gmail/take-a-chef-stats'
+import { Button } from '@/components/ui/button'
+import {
+  getTakeAChefStats,
+  getTakeAChefDailyStats,
+  getTakeAChefActionableLeads,
+} from '@/lib/gmail/take-a-chef-stats'
 
 function formatSyncAge(lastSyncAt: string): string {
   const diff = Date.now() - new Date(lastSyncAt).getTime()
@@ -17,11 +22,22 @@ function formatSyncAge(lastSyncAt: string): string {
   return `${days}d ago`
 }
 
+function formatAge(hours: number): string {
+  if (hours < 1) return 'just now'
+  if (hours < 24) return `${hours}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
 export async function TacDashboardWidget() {
   let stats
   let dailyStats
+  let actionable
   try {
-    ;[stats, dailyStats] = await Promise.all([getTakeAChefStats(), getTakeAChefDailyStats()])
+    ;[stats, dailyStats, actionable] = await Promise.all([
+      getTakeAChefStats(),
+      getTakeAChefDailyStats(),
+      getTakeAChefActionableLeads(),
+    ])
   } catch {
     return (
       <Card>
@@ -67,73 +83,165 @@ export async function TacDashboardWidget() {
     <Card>
       <CardHeader className="py-3 px-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-stone-800">TakeAChef Leads</CardTitle>
-          {stats.totalAllTime > 0 && <Badge variant="default">{stats.totalAllTime}</Badge>}
+          <CardTitle className="text-sm font-semibold text-stone-800">
+            TakeAChef Command Center
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            {stats.staleCount > 0 && <Badge variant="error">{stats.staleCount} stale</Badge>}
+            {stats.totalAllTime > 0 && <Badge variant="default">{stats.totalAllTime} total</Badge>}
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="px-4 py-3 space-y-2">
-        {/* New Leads */}
-        <Link
-          href="/inquiries?channel=take_a_chef&status=new"
-          className="flex items-center justify-between text-sm hover:bg-stone-50 rounded px-2 py-1.5 -mx-2 transition-colors"
-        >
-          <span className="text-stone-600">New Leads</span>
-          <span className="font-semibold text-stone-900">{stats.newLeads}</span>
-        </Link>
-
-        {/* Awaiting Response */}
-        <div className="flex items-center justify-between text-sm px-2 py-1.5 -mx-2">
-          <span className="text-stone-600">Awaiting Response</span>
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-stone-900">{stats.awaitingResponse}</span>
-            {stats.awaitingResponse > 0 && <Badge variant="warning">Action needed</Badge>}
+      <CardContent className="px-4 py-3 space-y-3">
+        {/* Untouched Leads — action required */}
+        {actionable.untouched.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Badge variant={stats.staleCount > 0 ? 'error' : 'warning'}>
+                {actionable.untouched.length} Untouched
+              </Badge>
+              <span className="text-xs text-stone-500">New leads — address each one</span>
+            </div>
+            <div className="space-y-1">
+              {actionable.untouched.slice(0, 5).map((lead) => {
+                const isStale = lead.ageHours > 24
+                return (
+                  <div
+                    key={lead.id}
+                    className={`flex items-center justify-between text-sm rounded px-2 py-1.5 ${
+                      isStale ? 'bg-red-50' : 'bg-amber-50/50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-medium text-stone-800 truncate">{lead.clientName}</span>
+                      <span
+                        className={`text-xs ${isStale ? 'text-red-600 font-medium' : 'text-stone-500'}`}
+                      >
+                        {formatAge(lead.ageHours)}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      {lead.externalLink && (
+                        <a
+                          href={lead.externalLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-brand-600 hover:text-brand-700"
+                        >
+                          TakeAChef
+                        </a>
+                      )}
+                      <Link href={`/inquiries/${lead.id}`}>
+                        <Button variant="ghost" size="sm" className="h-6 text-xs px-2">
+                          Open
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Confirmed */}
-        <div className="flex items-center justify-between text-sm px-2 py-1.5 -mx-2">
+        {/* Awaiting Chef Response */}
+        {actionable.awaitingChef.length > 0 && (
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Badge variant="warning">{actionable.awaitingChef.length} Awaiting Response</Badge>
+              <span className="text-xs text-stone-500">Clients messaged you</span>
+            </div>
+            <div className="space-y-1">
+              {actionable.awaitingChef.slice(0, 5).map((lead) => (
+                <div
+                  key={lead.id}
+                  className="flex items-center justify-between text-sm rounded px-2 py-1.5 bg-yellow-50/50"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="font-medium text-stone-800 truncate">{lead.clientName}</span>
+                    <span className="text-xs text-stone-500">{formatAge(lead.ageHours)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {lead.externalLink && (
+                      <a
+                        href={lead.externalLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-brand-600 hover:text-brand-700"
+                      >
+                        TakeAChef
+                      </a>
+                    )}
+                    <Link href={`/inquiries/${lead.id}`}>
+                      <Button variant="ghost" size="sm" className="h-6 text-xs px-2">
+                        Update
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Summary Stats Row */}
+        <div className="flex items-center justify-between text-sm px-2 py-1 -mx-2">
+          <Link
+            href="/inquiries?channel=take_a_chef&status=new"
+            className="text-stone-600 hover:text-stone-900"
+          >
+            New Leads
+          </Link>
+          <span className="font-semibold text-stone-900">{stats.newLeads}</span>
+        </div>
+        <div className="flex items-center justify-between text-sm px-2 py-1 -mx-2">
           <span className="text-stone-600">Confirmed</span>
           <div className="flex items-center gap-2">
             <span className="font-semibold text-stone-900">{stats.confirmed}</span>
             {stats.confirmed > 0 && <Badge variant="success">Booked</Badge>}
           </div>
         </div>
-        {/* Daily Inquiry Volume — cuts through TakeAChef spam noise */}
+
+        {/* Daily Inquiry Volume */}
         {dailyStats && (
-          <div className="mt-3 pt-3 border-t border-stone-100">
+          <div className="mt-2 pt-2 border-t border-stone-100">
             <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">
               Inquiry Volume
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-md bg-stone-50 px-2.5 py-2 text-center">
-                <p className="text-lg font-bold text-stone-900">{dailyStats.today}</p>
-                <p className="text-xs text-stone-500">Today</p>
+            <div className="grid grid-cols-4 gap-1.5">
+              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-900">{dailyStats.today}</p>
+                <p className="text-[10px] text-stone-500">Today</p>
               </div>
-              <div className="rounded-md bg-stone-50 px-2.5 py-2 text-center">
-                <p className="text-lg font-bold text-stone-900">{dailyStats.yesterday}</p>
-                <p className="text-xs text-stone-500">Yesterday</p>
+              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-900">{dailyStats.yesterday}</p>
+                <p className="text-[10px] text-stone-500">Yesterday</p>
               </div>
-              <div className="rounded-md bg-stone-50 px-2.5 py-2 text-center">
-                <p className="text-lg font-bold text-stone-900">{dailyStats.thisWeek}</p>
-                <p className="text-xs text-stone-500">This Week</p>
+              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-900">{dailyStats.thisWeek}</p>
+                <p className="text-[10px] text-stone-500">Week</p>
               </div>
-              <div className="rounded-md bg-stone-50 px-2.5 py-2 text-center">
-                <p className="text-lg font-bold text-stone-900">{dailyStats.thisMonth}</p>
-                <p className="text-xs text-stone-500">This Month</p>
+              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-900">{dailyStats.thisMonth}</p>
+                <p className="text-[10px] text-stone-500">Month</p>
               </div>
             </div>
           </div>
         )}
       </CardContent>
 
-      {stats.lastSyncAt && (
-        <CardFooter className="py-2 px-4">
-          <p className="text-xs text-muted-foreground">
-            Last synced: {formatSyncAge(stats.lastSyncAt)}
-          </p>
-        </CardFooter>
-      )}
+      <CardFooter className="py-2 px-4 flex items-center justify-between">
+        <Link
+          href="/inquiries?channel=take_a_chef"
+          className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+        >
+          View all TakeAChef leads
+        </Link>
+        {stats.lastSyncAt && (
+          <p className="text-xs text-muted-foreground">Synced {formatSyncAge(stats.lastSyncAt)}</p>
+        )}
+      </CardFooter>
     </Card>
   )
 }

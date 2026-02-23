@@ -934,6 +934,28 @@ async function handleTacBookingConfirmed(
             inquiry_id: inquiryId,
           },
         })
+
+        // Log auto-onboarding activity (non-blocking)
+        try {
+          const { logChefActivity } = await import('@/lib/activity/log-chef')
+          await logChefActivity({
+            tenantId,
+            actorId: chefId,
+            action: 'event_created',
+            domain: 'event',
+            entityType: 'event',
+            entityId: event.id,
+            summary: `Auto-created event from TakeAChef booking — Order #${booking.orderId || 'unknown'}. Next: create the final menu.`,
+            context: {
+              source: 'take_a_chef_booking_email',
+              order_id: booking.orderId,
+              inquiry_id: inquiryId,
+              amount_cents: booking.amountCents,
+            },
+          })
+        } catch (actErr) {
+          console.error('[TakeAChef] Activity log failed (non-fatal):', actErr)
+        }
       }
     }
   }

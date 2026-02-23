@@ -5,6 +5,12 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import type { QueueItem, ScoreInputs } from '../types'
 import { computeScore, urgencyFromScore } from '../score'
 
+function ageLabel(hours: number): string {
+  if (hours < 1) return 'just now'
+  if (hours < 24) return `${Math.floor(hours)}h ago`
+  return `${Math.floor(hours / 24)}d ago`
+}
+
 export async function getInquiryQueueItems(
   supabase: SupabaseClient,
   tenantId: string
@@ -14,11 +20,13 @@ export async function getInquiryQueueItems(
 
   const { data: inquiries } = await supabase
     .from('inquiries')
-    .select(`
+    .select(
+      `
       id, status, channel, created_at, follow_up_due_at,
       unknown_fields, confirmed_occasion,
       client:clients(id, full_name)
-    `)
+    `
+    )
     .eq('tenant_id', tenantId)
     .in('status', ['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
 
@@ -30,27 +38,38 @@ export async function getInquiryQueueItems(
 
     // New inquiries — chef has not responded yet
     if (inq.status === 'new') {
+      const isTac = inq.channel === 'take_a_chef'
+      // TakeAChef leads get a priority boost — platform expectations for response time
+      const tacBoost = isTac ? 0.15 : 0
       const inputs: ScoreInputs = {
-        hoursUntilDue: Math.max(0, 24 - hoursSinceCreated),
-        impactWeight: 0.8,
+        hoursUntilDue: Math.max(0, (isTac ? 12 : 24) - hoursSinceCreated),
+        impactWeight: 0.8 + tacBoost,
         isBlocking: true,
         hoursSinceCreated,
         revenueCents: 0,
         isExpiring: false,
       }
       const score = computeScore(inputs)
+      const tacStale = isTac && hoursSinceCreated > 24
+      const tacUrgent = isTac && hoursSinceCreated > 12
       items.push({
         id: `inquiry:inquiry:${inq.id}:respond_new`,
         domain: 'inquiry',
-        urgency: urgencyFromScore(score),
-        score,
-        title: 'Respond to new inquiry',
-        description: `${clientName} reached out via ${inq.channel}. First response sets the tone.`,
+        urgency: tacStale ? 'critical' : tacUrgent ? 'high' : urgencyFromScore(score),
+        score: score + (isTac ? 20 : 0),
+        title: isTac
+          ? `New TakeAChef lead from ${clientName}${tacStale ? ' — STALE' : ''}`
+          : 'Respond to new inquiry',
+        description: isTac
+          ? `${clientName} requested via TakeAChef — untouched ${ageLabel(hoursSinceCreated)}.`
+          : `${clientName} reached out via ${inq.channel}. First response sets the tone.`,
         href: `/inquiries/${inq.id}`,
         icon: 'MessageSquare',
         context: {
           primaryLabel: clientName,
-          secondaryLabel: `via ${inq.channel}`,
+          secondaryLabel: isTac
+            ? `TakeAChef — ${ageLabel(hoursSinceCreated)}`
+            : `via ${inq.channel}`,
         },
         createdAt: inq.created_at,
         dueAt: null,

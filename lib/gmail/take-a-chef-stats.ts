@@ -12,6 +12,8 @@ export type TakeAChefStats = {
   confirmed: number
   totalAllTime: number
   lastSyncAt: string | null
+  untouchedCount: number // new leads not yet addressed
+  staleCount: number // new leads untouched > 24 hours
 }
 
 export type TakeAChefDailyCount = {
@@ -33,6 +35,8 @@ const EMPTY_STATS: TakeAChefStats = {
   confirmed: 0,
   totalAllTime: 0,
   lastSyncAt: null,
+  untouchedCount: 0,
+  staleCount: 0,
 }
 
 export async function getTakeAChefStats(): Promise<TakeAChefStats> {
@@ -42,7 +46,7 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
     const supabase = createServerClient()
 
     // Run all count queries in parallel for speed
-    const [newRes, awaitingRes, confirmedRes, totalRes, syncRes] = await Promise.all([
+    const [newRes, awaitingRes, confirmedRes, totalRes, syncRes, staleRes] = await Promise.all([
       // New leads: channel = take_a_chef, status = new
       supabase
         .from('inquiries')
@@ -80,14 +84,28 @@ export async function getTakeAChefStats(): Promise<TakeAChefStats> {
         .select('gmail_last_sync_at')
         .eq('chef_id', user.entityId)
         .single(),
+
+      // Stale leads: new + take_a_chef + created more than 24 hours ago
+      supabase
+        .from('inquiries')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .eq('channel', 'take_a_chef')
+        .eq('status', 'new')
+        .lt('created_at', new Date(Date.now() - 24 * 3600000).toISOString()),
     ])
 
+    const untouched = newRes.count ?? 0
+    const stale = staleRes.count ?? 0
+
     return {
-      newLeads: newRes.count ?? 0,
+      newLeads: untouched,
       awaitingResponse: awaitingRes.count ?? 0,
       confirmed: confirmedRes.count ?? 0,
       totalAllTime: totalRes.count ?? 0,
       lastSyncAt: syncRes.data?.gmail_last_sync_at ?? null,
+      untouchedCount: untouched,
+      staleCount: stale,
     }
   } catch (err) {
     console.error('[take-a-chef-stats] Failed to fetch stats:', err)
@@ -216,6 +234,61 @@ export async function getTakeAChefDailyStats(): Promise<TakeAChefDailyStats> {
     }
   } catch (err) {
     console.error('[take-a-chef-stats] Failed to fetch daily stats:', err)
+    return empty
+  }
+}
+
+// ─── Actionable Leads ────────────────────────────────────────────────
+// Returns actual inquiry records for the dashboard command center widget.
+
+export type TacActionableLead = {
+  id: string
+  clientName: string
+  status: string
+  createdAt: string
+  externalLink: string | null
+  ageHours: number
+}
+
+export async function getTakeAChefActionableLeads(): Promise<{
+  untouched: TacActionableLead[]
+  awaitingChef: TacActionableLead[]
+}> {
+  const empty = { untouched: [], awaitingChef: [] }
+
+  try {
+    const user = await requireChef()
+    const tenantId = user.tenantId!
+    const supabase = createServerClient()
+
+    const { data } = await supabase
+      .from('inquiries')
+      .select('id, status, created_at, external_link, unknown_fields, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .eq('channel', 'take_a_chef')
+      .in('status', ['new', 'awaiting_chef'])
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    if (!data) return empty
+
+    const now = Date.now()
+    const toLead = (row: any): TacActionableLead => ({
+      id: row.id,
+      clientName:
+        (row.client as any)?.full_name || (row.unknown_fields as any)?.client_name || 'Unknown',
+      status: row.status,
+      createdAt: row.created_at,
+      externalLink: row.external_link,
+      ageHours: Math.floor((now - new Date(row.created_at).getTime()) / 3600000),
+    })
+
+    return {
+      untouched: data.filter((r) => r.status === 'new').map(toLead),
+      awaitingChef: data.filter((r) => r.status === 'awaiting_chef').map(toLead),
+    }
+  } catch (err) {
+    console.error('[take-a-chef-stats] Failed to fetch actionable leads:', err)
     return empty
   }
 }

@@ -17,6 +17,7 @@ import {
   InquiryChannelBadge,
 } from '@/components/inquiries/inquiry-status-badge'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { EmptyState } from '@/components/ui/empty-state'
 import { NoInquiriesIllustration } from '@/components/ui/branded-illustrations'
@@ -126,14 +127,29 @@ async function InquiryList({
           ? leadScoreMap.get(inquiry.id)
           : undefined
 
+        // TakeAChef stagnancy tracking
+        const isTacNew = inquiry.channel === 'take_a_chef' && inquiry.status === 'new'
+        const ageHours = isTacNew
+          ? Math.floor((Date.now() - new Date(inquiry.created_at).getTime()) / 3600000)
+          : 0
+        const isStale = isTacNew && ageHours > 24
+        const isUrgent = isTacNew && ageHours > 12
+
+        // Chef manual likelihood tag
+        const chefLikelihood = (inquiry as any).chef_likelihood as string | null
+
         return (
           <Link
             key={inquiry.id}
             href={`/inquiries/${inquiry.id}`}
             className={`block rounded-lg border p-4 hover:shadow-sm transition-all ${
-              isNew
-                ? 'border-l-4 border-l-amber-500 bg-amber-50/50 hover:bg-amber-50'
-                : 'border-stone-200 hover:bg-stone-50'
+              isStale
+                ? 'border-l-4 border-l-red-500 bg-red-50/50 hover:bg-red-50'
+                : isUrgent
+                  ? 'border-l-4 border-l-orange-500 bg-orange-50/50 hover:bg-orange-50'
+                  : isNew
+                    ? 'border-l-4 border-l-amber-500 bg-amber-50/50 hover:bg-amber-50'
+                    : 'border-stone-200 hover:bg-stone-50'
             }`}
           >
             <div className="flex justify-between items-start gap-4">
@@ -142,6 +158,28 @@ async function InquiryList({
                   <span className="font-medium text-stone-900">{name}</span>
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
+                  {isTacNew && (
+                    <Badge variant={isStale ? 'error' : isUrgent ? 'warning' : 'info'}>
+                      {isStale
+                        ? `Stale — ${Math.floor(ageHours / 24)}d`
+                        : isUrgent
+                          ? `Untouched — ${ageHours}h`
+                          : 'Untouched'}
+                    </Badge>
+                  )}
+                  {chefLikelihood && (
+                    <Badge
+                      variant={
+                        chefLikelihood === 'hot'
+                          ? 'error'
+                          : chefLikelihood === 'warm'
+                            ? 'warning'
+                            : 'info'
+                      }
+                    >
+                      {chefLikelihood.charAt(0).toUpperCase() + chefLikelihood.slice(1)}
+                    </Badge>
+                  )}
                   {score && <BookingScoreBadge score={score} />}
                   {leadScore && <LeadScoreBadge score={leadScore} />}
                 </div>

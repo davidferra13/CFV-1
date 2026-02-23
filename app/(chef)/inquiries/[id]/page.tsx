@@ -43,6 +43,11 @@ import { InquiryAddClientButton } from '@/components/inquiries/inquiry-add-clien
 import { getBookingScoreForInquiry } from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 import { LeadScoreBadge } from '@/components/ai/lead-score-badge'
+import { TacStatusPrompt } from '@/components/inquiries/tac-status-prompt'
+import { TacAddressLead } from '@/components/inquiries/tac-address-lead'
+import { TacTranscriptPrompt } from '@/components/inquiries/tac-transcript-prompt'
+import { TacMenuNudge } from '@/components/inquiries/tac-menu-nudge'
+import { LikelihoodToggle } from '@/components/inquiries/likelihood-toggle'
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -178,6 +183,12 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             )}
             {bookingScore && <BookingScoreBadge score={bookingScore} />}
             <LeadScoreBadge inquiryId={params.id} />
+            {inquiry.channel === 'take_a_chef' && (
+              <LikelihoodToggle
+                inquiryId={inquiry.id}
+                currentLikelihood={(inquiry as any).chef_likelihood ?? null}
+              />
+            )}
           </div>
           {inquiry.confirmed_occasion && (
             <p className="text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
@@ -211,6 +222,33 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Inquiry Summary — visual snapshot */}
       <InquirySummary data={summaryData} variant="chef" />
+
+      {/* TakeAChef-specific panels — only for take_a_chef channel */}
+      {inquiry.channel === 'take_a_chef' && inquiry.status === 'new' && (
+        <TacAddressLead
+          inquiryId={inquiry.id}
+          clientName={name}
+          eventDate={inquiry.confirmed_date}
+          tacLink={(inquiry as any).external_link ?? null}
+          createdAt={inquiry.created_at}
+        />
+      )}
+      {inquiry.channel === 'take_a_chef' && inquiry.status === 'awaiting_chef' && (
+        <TacStatusPrompt
+          inquiryId={inquiry.id}
+          clientName={name}
+          eventDate={inquiry.confirmed_date}
+          tacLink={(inquiry as any).external_link ?? null}
+        />
+      )}
+      {inquiry.channel === 'take_a_chef' && convertedEventId && inquiry.status === 'confirmed' && (
+        <TacMenuNudge
+          inquiryId={inquiry.id}
+          eventId={convertedEventId}
+          clientName={name}
+          hasMenu={false}
+        />
+      )}
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -450,6 +488,16 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           gmailConnected={gmailStatus.gmail.connected}
         />
       )}
+
+      {/* TakeAChef transcript prompt — encourage pasting the TAC conversation */}
+      {inquiry.channel === 'take_a_chef' &&
+        (inquiry.status === 'awaiting_chef' || inquiry.status === 'quoted') && (
+          <TacTranscriptPrompt
+            inquiryId={inquiry.id}
+            clientName={name}
+            tacMessageCount={messages.filter((m: any) => m.channel === 'take_a_chef').length}
+          />
+        )}
 
       {/* Communication Log */}
       <Card className="p-6">
