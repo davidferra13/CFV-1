@@ -1,96 +1,232 @@
 'use client'
 
-// Ollama Status Badge
-// Polls /api/ollama-status with adaptive intervals.
+// Ollama Status Badge — Dual-Endpoint Aware
+// Polls /api/ai/health for both PC + Pi status with adaptive intervals.
 //
-// Three states:
-//   configured + online + model ready → green (local AI running, data stays on-device)
-//   configured + online + model loading → blue (Ollama up, model loading)
-//   configured + offline → red warning (local AI down — private features unavailable)
-//   not configured       → renders nothing (cloud AI is expected behavior, no alarm needed)
+// Best practices adopted:
+//   Netflix: graceful degradation — show partial status, not errors
+//   Google SRE: expose golden signals (latency per endpoint)
+//   AWS: multi-AZ status indicator pattern
 //
-// The badge is intentionally shown site-wide (in the sidebar) so the chef sees the
-// warning regardless of which page they trigger an AI operation from.
+// Display states:
+//   Both healthy     → green: "PC · 45ms | Pi · 120ms"
+//   One degraded     → amber: "PC · 45ms | Pi Loading"
+//   One offline      → mixed: "PC · 45ms | Pi Offline"
+//   Both offline     → red: "AI Offline"
+//   Not configured   → renders nothing
+//   Single-endpoint  → original behavior: "Local · 45ms"
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 
-interface OllamaStatus {
+// ── Types ────────────────────────────────────────────────────
+
+interface EndpointHealth {
+  name: 'pc' | 'pi'
+  url: string
+  online: boolean
+  latencyMs: number | null
+  modelReady: boolean
+  configuredModel: string
+  loadedModels: string[]
+  activeGeneration: boolean
+  error: string | null
+}
+
+interface HealthResponse {
+  status: 'all_healthy' | 'degraded' | 'offline'
+  endpoints: EndpointHealth[]
+  dualMode: boolean
+  summary: string
+  timestamp: string
+}
+
+// Fallback for single-endpoint mode (existing /api/ollama-status)
+interface LegacyStatus {
   online: boolean
   configured: boolean
   isRemote: boolean
   model: string
   modelReady: boolean
   latencyMs: number | null
-  gpuLayers: number | null
-  totalLayers: number | null
   error: string | null
 }
 
-// Adaptive polling intervals (ms)
-const POLL_ONLINE = 60_000 // When healthy — check once per minute
-const POLL_OFFLINE = 10_000 // When down — check every 10s to detect recovery
-const POLL_BACKOFF_MAX = 120_000 // Max backoff after consecutive failures
+// ── Adaptive Polling ─────────────────────────────────────────
+
+const POLL_HEALTHY = 60_000 // When both healthy — check once per minute
+const POLL_DEGRADED = 15_000 // When one is down — check more frequently
+const POLL_OFFLINE = 10_000 // When all down — check every 10s for recovery
+const POLL_BACKOFF_MAX = 120_000 // Max backoff after repeated fetch failures
 
 export function OllamaStatusBadge() {
-  const [status, setStatus] = useState<OllamaStatus | null>(null)
+  const [health, setHealth] = useState<HealthResponse | null>(null)
+  const [legacy, setLegacy] = useState<LegacyStatus | null>(null)
+  const [useDualMode, setUseDualMode] = useState(false)
   const failCountRef = useRef(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  // ── Determine poll interval based on current state ──
   const getInterval = useCallback(() => {
-    if (!status) return POLL_ONLINE // initial — no need to poll aggressively before first result
-    if (status.online) {
-      failCountRef.current = 0
-      return POLL_ONLINE
+    if (health) {
+      if (health.status === 'all_healthy') {
+        failCountRef.current = 0
+        return POLL_HEALTHY
+      }
+      if (health.status === 'degraded') return POLL_DEGRADED
+      return POLL_OFFLINE
     }
-    // Exponential backoff: 10s, 20s, 40s, 80s, 120s max
-    const backoff = Math.min(POLL_OFFLINE * Math.pow(2, failCountRef.current), POLL_BACKOFF_MAX)
-    return backoff
-  }, [status])
+    if (legacy) {
+      if (legacy.online) return POLL_HEALTHY
+      return POLL_OFFLINE
+    }
+    return POLL_HEALTHY
+  }, [health, legacy])
 
-  const fetchStatus = useCallback(async () => {
+  // ── Fetch health status ──
+  const fetchHealth = useCallback(async () => {
+    // Try dual-endpoint health API first
     try {
-      const res = await fetch('/api/ollama-status', { cache: 'no-store' })
-      if (!res.ok) {
-        failCountRef.current++
+      const res = await fetch('/api/ai/health', { cache: 'no-store' })
+      if (res.ok) {
+        const data: HealthResponse = await res.json()
+        setHealth(data)
+        setUseDualMode(data.dualMode)
+        failCountRef.current = 0
         return
       }
-      const data = await res.json()
-      setStatus(data)
-      if (!data.online) failCountRef.current++
     } catch {
-      failCountRef.current++
-      setStatus({
-        online: false,
-        configured: false,
-        isRemote: false,
-        model: '',
-        modelReady: false,
-        latencyMs: null,
-        gpuLayers: null,
-        totalLayers: null,
-        error: 'Fetch failed',
-      })
+      // /api/ai/health not available — fall back to legacy
     }
+
+    // Fallback to legacy single-endpoint API
+    try {
+      const res = await fetch('/api/ollama-status', { cache: 'no-store' })
+      if (res.ok) {
+        const data: LegacyStatus = await res.json()
+        setLegacy(data)
+        setUseDualMode(false)
+        failCountRef.current = 0
+        return
+      }
+    } catch {
+      // Both APIs failed
+    }
+
+    failCountRef.current++
   }, [])
 
-  // Initial fetch + adaptive interval
+  // ── Initial fetch ──
   useEffect(() => {
-    fetchStatus()
-  }, [fetchStatus])
+    fetchHealth()
+  }, [fetchHealth])
 
+  // ── Adaptive polling ──
   useEffect(() => {
     if (intervalRef.current) clearInterval(intervalRef.current)
-    const ms = getInterval()
-    intervalRef.current = setInterval(fetchStatus, ms)
+    const ms = Math.min(getInterval() * Math.pow(1.5, failCountRef.current), POLL_BACKOFF_MAX)
+    intervalRef.current = setInterval(fetchHealth, ms)
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-  }, [status, getInterval, fetchStatus])
+  }, [health, legacy, getInterval, fetchHealth])
 
-  // Not loaded yet, or Ollama was never configured — show nothing
-  if (!status || !status.configured) return null
+  // ── DUAL-ENDPOINT MODE ──
+  if (useDualMode && health) {
+    return <DualEndpointBadge health={health} />
+  }
 
-  // Online + model ready
+  // ── SINGLE-ENDPOINT MODE (legacy) ──
+  if (legacy) {
+    return <SingleEndpointBadge status={legacy} />
+  }
+
+  // ── Health API response in single-endpoint mode ──
+  if (health && !health.dualMode && health.endpoints.length > 0) {
+    const ep = health.endpoints[0]
+    return <SingleEndpointBadgeFromHealth endpoint={ep} />
+  }
+
+  // Nothing loaded yet or not configured
+  return null
+}
+
+// ── Dual-Endpoint Badge ──────────────────────────────────────
+
+function DualEndpointBadge({ health }: { health: HealthResponse }) {
+  const pc = health.endpoints.find((e) => e.name === 'pc')
+  const pi = health.endpoints.find((e) => e.name === 'pi')
+
+  if (!pc && !pi) return null
+
+  // All healthy
+  if (health.status === 'all_healthy') {
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
+        title={`Private AI — both endpoints healthy\nPC: ${pc?.latencyMs ?? '?'}ms (${pc?.configuredModel})\nPi: ${pi?.latencyMs ?? '?'}ms (${pi?.configuredModel})`}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="hidden sm:inline">PC · {pc?.latencyMs ?? '?'}ms</span>
+        <span className="hidden sm:inline text-emerald-400">|</span>
+        <span className="hidden sm:inline">Pi · {pi?.latencyMs ?? '?'}ms</span>
+        <span className="sm:hidden">Dual AI</span>
+      </span>
+    )
+  }
+
+  // Degraded — at least one endpoint has issues
+  if (health.status === 'degraded') {
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 shrink-0"
+        title={`AI system degraded\n${health.summary}`}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+        <span className="hidden sm:inline">
+          <EndpointChip ep={pc} />
+          <span className="text-amber-400 mx-0.5">|</span>
+          <EndpointChip ep={pi} />
+        </span>
+        <span className="sm:hidden">AI Degraded</span>
+      </span>
+    )
+  }
+
+  // Offline — all endpoints down
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
+      title={`All AI endpoints offline — private AI features unavailable.\n${health.summary}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      AI Offline
+    </span>
+  )
+}
+
+function EndpointChip({ ep }: { ep: EndpointHealth | undefined }) {
+  if (!ep) return <span>?</span>
+
+  const label = ep.name === 'pc' ? 'PC' : 'Pi'
+
+  if (ep.online && ep.modelReady) {
+    return (
+      <span>
+        {label} · {ep.latencyMs ?? '?'}ms
+      </span>
+    )
+  }
+  if (ep.online && !ep.modelReady) {
+    return <span className="text-blue-600">{label} Loading</span>
+  }
+  return <span className="text-red-600">{label} Off</span>
+}
+
+// ── Single-Endpoint Badge (legacy fallback) ──────────────────
+
+function SingleEndpointBadge({ status }: { status: LegacyStatus }) {
+  if (!status.configured) return null
+
   if (status.online && status.modelReady !== false) {
     const sourceLabel = status.isRemote ? 'Pi' : 'Local'
     const latencyLabel =
@@ -109,7 +245,6 @@ export function OllamaStatusBadge() {
     )
   }
 
-  // Online but model not loaded yet
   if (status.online && status.modelReady === false) {
     return (
       <span
@@ -122,10 +257,9 @@ export function OllamaStatusBadge() {
     )
   }
 
-  // Configured but offline — this is a hard failure, not a graceful degradation
   const offlineLabel = status.isRemote ? 'Pi Offline' : 'Local AI Offline'
   const offlineTooltip = status.isRemote
-    ? `Raspberry Pi AI is unreachable — check that the Pi is powered on and connected. Error: ${status.error ?? 'unreachable'}`
+    ? `Raspberry Pi AI is unreachable — check that the Pi is powered on. Error: ${status.error ?? 'unreachable'}`
     : `Local AI offline — private AI features are unavailable. Start Ollama to restore. Error: ${status.error ?? 'unreachable'}`
   return (
     <span
@@ -134,6 +268,44 @@ export function OllamaStatusBadge() {
     >
       <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
       {offlineLabel}
+    </span>
+  )
+}
+
+// ── Single-Endpoint Badge from Health API ────────────────────
+
+function SingleEndpointBadgeFromHealth({ endpoint: ep }: { endpoint: EndpointHealth }) {
+  if (ep.online && ep.modelReady) {
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
+        title="Private AI — data stays within ChefFlow"
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        Local · {ep.latencyMs ?? '?'}ms
+      </span>
+    )
+  }
+
+  if (ep.online && !ep.modelReady) {
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 shrink-0"
+        title={`Model "${ep.configuredModel}" is loading...`}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
+        Loading Model
+      </span>
+    )
+  }
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
+      title={`Local AI offline — ${ep.error ?? 'unreachable'}`}
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      AI Offline
     </span>
   )
 }

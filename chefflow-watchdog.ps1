@@ -14,7 +14,9 @@ if ((Test-Path $logFile) -and (Get-Item $logFile).Length -gt 1MB) {
     Rename-Item  $logFile "$logFile.old" -ErrorAction SilentlyContinue
 }
 
-# Ollama Health + Auto-Start
+# ============================================
+# Ollama Health + Auto-Start (PC)
+# ============================================
 
 # Reads OLLAMA_BASE_URL from .env.local so the watchdog always points to the
 # same host the app uses (localhost when on laptop, Pi IP when Pi is connected).
@@ -47,7 +49,7 @@ function Test-OllamaHealth {
 
 function Ensure-OllamaRunning {
     if (Test-OllamaHealth) {
-        Write-Log "[ollama] Ollama is online."
+        Write-Log "[ollama] PC Ollama is online."
         return
     }
 
@@ -59,7 +61,7 @@ function Ensure-OllamaRunning {
         return
     }
 
-    Write-Log "[ollama] Ollama not responding - attempting to start..."
+    Write-Log "[ollama] PC Ollama not responding - attempting to start..."
     try {
         $svc = Get-Service -Name "Ollama" -ErrorAction SilentlyContinue
         if ($null -ne $svc) {
@@ -88,13 +90,139 @@ function Ensure-OllamaRunning {
         }
     } catch {
         $errMsg = $_.Exception.Message
-        Write-Log "[ollama] Could not start Ollama: $errMsg"
+        Write-Log "[ollama] Could not start PC Ollama: $errMsg"
+    }
+}
+
+# ============================================
+# Pi Ollama Health + SSH Restart
+# ============================================
+# Best practice: Google SRE cross-monitoring pattern
+# PC monitors Pi's Ollama health via network. If Pi's Ollama
+# is unreachable for 5+ minutes, SSH restart it remotely.
+# Circuit breaker: max 2 SSH restarts per hour.
+
+$piRestartCount = 0
+$piRestartWindowStart = Get-Date
+$piConsecutiveFailures = 0
+$piMaxConsecutiveFailures = 5  # 5 failed checks (~2.5 min) before SSH restart
+
+function Get-PiUrl {
+    $envFile = "$projectDir\.env.local"
+    if (Test-Path $envFile) {
+        $line = Get-Content $envFile | Where-Object { $_ -match '^OLLAMA_PI_URL=' }
+        if ($line) {
+            return ($line -split '=', 2)[1].Trim()
+        }
+    }
+    return $null
+}
+
+function Get-PiCredentials {
+    $credsFile = "$projectDir\.auth\pi.json"
+    if (-not (Test-Path $credsFile)) { return $null }
+    try {
+        $json = Get-Content $credsFile -Raw | ConvertFrom-Json
+        return @{
+            Host     = $json.host
+            Username = $json.username
+        }
+    } catch {
+        return $null
+    }
+}
+
+function Test-PiOllamaHealth {
+    $piUrl = Get-PiUrl
+    if (-not $piUrl) { return $null }  # Pi not configured
+
+    try {
+        $response = Invoke-WebRequest -Uri "$piUrl/api/tags" `
+            -TimeoutSec 8 -UseBasicParsing -ErrorAction Stop
+        return $response.StatusCode -eq 200
+    } catch {
+        return $false
+    }
+}
+
+function Restart-PiOllama {
+    # Circuit breaker: max 2 restarts per hour
+    $now = Get-Date
+    $elapsed = ($now - $script:piRestartWindowStart).TotalSeconds
+    if ($elapsed -gt 3600) {
+        # Reset window
+        $script:piRestartCount = 0
+        $script:piRestartWindowStart = $now
+    }
+    if ($script:piRestartCount -ge 2) {
+        Write-Log "[pi] CIRCUIT BREAKER: Already restarted Pi Ollama $($script:piRestartCount) times this hour. Skipping."
+        return $false
+    }
+
+    $creds = Get-PiCredentials
+    if (-not $creds) {
+        Write-Log "[pi] Cannot SSH restart — no Pi credentials found in .auth/pi.json"
+        return $false
+    }
+
+    Write-Log "[pi] Attempting SSH restart of Pi Ollama..."
+    try {
+        # Use key-based auth (BatchMode=yes) — no password prompt
+        & ssh -o ConnectTimeout=10 -o StrictHostKeyChecking=no -o BatchMode=yes "$($creds.Username)@$($creds.Host)" "sudo systemctl restart ollama" 2>&1 | Out-Null
+        $script:piRestartCount++
+
+        # Wait for Ollama to come back
+        Start-Sleep -Seconds 10
+
+        $piHealthy = Test-PiOllamaHealth
+        if ($piHealthy) {
+            Write-Log "[pi] SSH restart successful — Pi Ollama is back online."
+            return $true
+        } else {
+            Write-Log "[pi] SSH restart issued but Pi Ollama not yet responding."
+            return $false
+        }
+    } catch {
+        $errMsg = $_.Exception.Message
+        Write-Log "[pi] SSH restart failed: $errMsg"
+        return $false
+    }
+}
+
+function Monitor-PiOllama {
+    $piUrl = Get-PiUrl
+    if (-not $piUrl) { return }  # Pi not configured — nothing to monitor
+
+    $piHealthy = Test-PiOllamaHealth
+    if ($null -eq $piHealthy) { return }  # Pi not configured
+
+    if ($piHealthy) {
+        if ($script:piConsecutiveFailures -gt 0) {
+            Write-Log "[pi] Pi Ollama recovered (was down for $($script:piConsecutiveFailures) checks)."
+        } else {
+            Write-Log "[pi] Pi Ollama is online."
+        }
+        $script:piConsecutiveFailures = 0
+        return
+    }
+
+    # Pi is unhealthy
+    $script:piConsecutiveFailures++
+    Write-Log "[pi] Pi Ollama health check failed ($($script:piConsecutiveFailures)/$piMaxConsecutiveFailures)"
+
+    # After N consecutive failures, attempt SSH restart
+    if ($script:piConsecutiveFailures -ge $piMaxConsecutiveFailures) {
+        Write-Log "[pi] Pi Ollama has been down for $($script:piConsecutiveFailures) checks — initiating SSH restart..."
+        $restarted = Restart-PiOllama
+        if ($restarted) {
+            $script:piConsecutiveFailures = 0
+        }
     }
 }
 
 # Startup
 
-Write-Log "=== ChefFlow Watchdog Started ==="
+Write-Log "=== ChefFlow Watchdog Started (PC + Pi Monitoring) ==="
 Ensure-OllamaRunning
 
 # Port check — prevents restart loop when server is already running
@@ -125,12 +253,17 @@ $loopCount = 0
 
 while ($true) {
     $loopCount++
+
+    # Every 10 loops (~5 min at 30s intervals): check PC Ollama
     if ($loopCount % 10 -eq 0) {
         if (-not (Test-OllamaHealth)) {
-            Write-Log "[ollama] Periodic health check failed - attempting restart..."
+            Write-Log "[ollama] Periodic PC health check failed - attempting restart..."
             Ensure-OllamaRunning
         }
     }
+
+    # Every loop: check Pi Ollama (lightweight — just a GET /api/tags)
+    Monitor-PiOllama
 
     # If port 3100 is already listening, don't spawn a duplicate — just wait
     if (Test-PortInUse $port) {

@@ -400,6 +400,119 @@ export async function getQueueStats(tenantId: string): Promise<{
 }
 
 // ============================================
+// ENDPOINT-AWARE CLAIMING (Dual-Slot Support)
+// ============================================
+
+/**
+ * Claim the next task suitable for a specific endpoint.
+ * Used by the dual-slot worker to prevent both slots from grabbing the same task.
+ *
+ * Routing logic (matches llm-router.ts):
+ *   - Tasks with target_endpoint = 'pc' or 'pi' → only claimable by that endpoint
+ *   - Tasks with target_endpoint = 'auto':
+ *       priority >= 800 (ON_DEMAND) → prefer PC
+ *       priority <  800             → prefer Pi (offload background work)
+ *
+ * Best practices (AWS SQS / Netflix):
+ *   - Atomic claim via UPDATE ... WHERE (CAS pattern)
+ *   - Records actual_endpoint so we know where each task ran
+ *   - Jittered polling prevents thundering herd when both slots poll simultaneously
+ */
+export async function claimNextTaskForEndpoint(endpoint: 'pc' | 'pi'): Promise<AiQueueItem | null> {
+  const supabase = createAdminClient()
+  const now = new Date().toISOString()
+
+  // First, recover any hung tasks
+  await recoverHungTasks()
+
+  // Build query: find tasks this endpoint should handle
+  // Priority: explicit target match > auto-routed tasks
+  let query = supabase
+    .from('ai_task_queue')
+    .select('id, target_endpoint, priority')
+    .eq('status', 'pending')
+    .lte('scheduled_for', now)
+    .order('priority', { ascending: false })
+    .order('scheduled_for', { ascending: true })
+    .limit(10) // Fetch a batch so we can pick the best match
+
+  const { data: candidates, error: findError } = await query
+
+  if (findError || !candidates || candidates.length === 0) {
+    return null
+  }
+
+  // Pick the best candidate for this endpoint
+  const taskId = pickBestCandidate(candidates, endpoint)
+  if (!taskId) return null
+
+  // Atomically claim it (CAS: only if still pending)
+  const { data: claimed, error: claimError } = await supabase
+    .from('ai_task_queue')
+    .update({
+      status: 'processing' as AiTaskStatus,
+      started_at: now,
+      actual_endpoint: endpoint,
+    })
+    .eq('id', taskId)
+    .eq('status', 'pending') // CAS guard
+    .select()
+    .single()
+
+  if (claimError || !claimed) {
+    // Another worker/slot claimed it — not an error
+    return null
+  }
+
+  // Increment attempts
+  await supabase
+    .from('ai_task_queue')
+    .update({ attempts: (claimed.attempts ?? 0) + 1 })
+    .eq('id', taskId)
+
+  return claimed as AiQueueItem
+}
+
+/**
+ * Pick the best task candidate for a given endpoint.
+ *
+ * Selection priority:
+ *   1. Tasks explicitly targeted at this endpoint
+ *   2. Auto-routed tasks that match this endpoint's affinity
+ *   3. Any remaining task (work stealing — idle endpoint helps the other)
+ */
+function pickBestCandidate(
+  candidates: Array<{ id: string; target_endpoint: string | null; priority: number }>,
+  endpoint: 'pc' | 'pi'
+): string | null {
+  // Tier 1: Explicitly targeted at this endpoint
+  const explicit = candidates.find((c) => c.target_endpoint === endpoint)
+  if (explicit) return explicit.id
+
+  // Tier 2: Auto-routed tasks matching this endpoint's natural affinity
+  const autoTasks = candidates.filter((c) => c.target_endpoint === 'auto' || !c.target_endpoint)
+
+  for (const task of autoTasks) {
+    if (endpoint === 'pc' && task.priority >= 800) return task.id // PC handles high-priority
+    if (endpoint === 'pi' && task.priority < 800) return task.id // Pi handles background
+  }
+
+  // Tier 3: Work stealing — take any auto task (idle endpoint helps out)
+  // This is the "work stealing" pattern from Google Borg / Netflix Mantis
+  const anyAuto = autoTasks[0]
+  if (anyAuto) return anyAuto.id
+
+  // Tier 4: Even steal explicitly-targeted tasks if the target endpoint is down
+  // (The worker already checks endpoint health before calling this)
+  const anyTask = candidates.find(
+    (c) => c.target_endpoint !== endpoint // Not our explicit target
+  )
+  if (anyTask) return anyTask.id
+
+  return null
+}
+
+// ============================================
 // INTERNAL HELPERS
 // ============================================
 

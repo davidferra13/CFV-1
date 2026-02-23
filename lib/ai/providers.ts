@@ -62,6 +62,36 @@ export function getOllamaModel(tier: ModelTier = 'standard'): string {
   }
 }
 
+/**
+ * Returns the right model for a specific endpoint + tier combination.
+ * PC uses the powerful 30B model; Pi uses the lighter 8B model.
+ * When running on the Pi, all tiers resolve to the Pi model (8B can't run 30B).
+ */
+export function getModelForEndpoint(endpoint: 'pc' | 'pi', tier: ModelTier = 'standard'): string {
+  if (endpoint === 'pi') {
+    return process.env.OLLAMA_PI_MODEL || 'qwen3:8b'
+  }
+  return getOllamaModel(tier)
+}
+
+/**
+ * Returns the right context window size for an endpoint + layer.
+ * Pi uses smaller context windows because the 8B model has less capacity.
+ */
+export function getContextSizeForEndpoint(endpoint: 'pc' | 'pi', layer: RemyLayer): number {
+  if (endpoint === 'pi') {
+    switch (layer) {
+      case 'chef':
+        return 8192
+      case 'client':
+        return 4096
+      case 'public':
+        return 2048
+    }
+  }
+  return getOllamaContextSize(layer)
+}
+
 /** Remy layer identifier for context window sizing. */
 export type RemyLayer = 'chef' | 'client' | 'public'
 

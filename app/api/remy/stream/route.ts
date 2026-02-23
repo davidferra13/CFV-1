@@ -15,6 +15,9 @@ import {
   getOllamaConfig,
   getOllamaModel,
   getOllamaContextSize,
+  getOllamaPiUrl,
+  getModelForEndpoint,
+  getContextSizeForEndpoint,
 } from '@/lib/ai/providers'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import {
@@ -1007,20 +1010,19 @@ export async function POST(req: NextRequest) {
       const taskSummary = summarizeTaskResults(tasks)
 
       // Stream the conversational part
-      if (!isOllamaEnabled()) {
+      const mixedEndpoint = await resolveRemyEndpoint()
+      if (!mixedEndpoint) {
         releaseInteractiveLock()
         return new Response(
           encodeSSE({
             type: 'error',
-            data: "I'm offline right now — Ollama needs to be running.",
+            data: "I'm offline right now — no Ollama endpoints are reachable.",
           }),
           { headers: sseHeaders() }
         )
       }
 
-      const config = getOllamaConfig()
-      const model = getOllamaModel('standard')
-      const ollama = new Ollama({ host: config.baseUrl })
+      const mixedOllama = new Ollama({ host: mixedEndpoint.host })
       const systemPrompt = buildRemySystemPrompt(
         context,
         memories,
@@ -1035,12 +1037,15 @@ export async function POST(req: NextRequest) {
           // Hard timeout: kill the Ollama call if it hangs
           const abortCtrl = new AbortController()
           const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
+          // Stop streaming when the client disconnects (drawer closed)
+          const onDisconnect = () => abortCtrl.abort()
+          req.signal.addEventListener('abort', onDisconnect)
 
           try {
             controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'mixed' })))
 
-            const response = await ollama.chat({
-              model,
+            const response = await mixedOllama.chat({
+              model: mixedEndpoint.model,
               messages: [
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: `${historyStr}Chef: ${questionInput}` },
@@ -1048,15 +1053,15 @@ export async function POST(req: NextRequest) {
               stream: true,
               options: {
                 num_predict: OLLAMA_STREAM_MAX_TOKENS,
-                num_ctx: getOllamaContextSize('chef'),
+                num_ctx: mixedEndpoint.numCtx,
               },
-              keep_alive: '5m',
+              keep_alive: '1m',
             })
 
             let fullResponse = ''
             for await (const chunk of response) {
               if (abortCtrl.signal.aborted) {
-                throw new Error('Ollama response timed out — the request took too long.')
+                break
               }
               const token = chunk.message?.content ?? ''
               if (token) {
@@ -1091,6 +1096,7 @@ export async function POST(req: NextRequest) {
             )
           } finally {
             clearTimeout(timeout)
+            req.signal.removeEventListener('abort', onDisconnect)
             releaseInteractiveLock()
             controller.close()
           }
@@ -1101,20 +1107,19 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── QUESTION path (default) — STREAMED ──────────────────────
-    if (!isOllamaEnabled()) {
+    const endpoint = await resolveRemyEndpoint()
+    if (!endpoint) {
       releaseInteractiveLock()
       return new Response(
         encodeSSE({
           type: 'error',
-          data: "I'm offline right now — Ollama needs to be running for me to help. Start it up and try again!",
+          data: "I'm offline right now — no Ollama endpoints are reachable (checked PC and Pi). Start Ollama and try again!",
         }),
         { headers: sseHeaders() }
       )
     }
 
-    const config = getOllamaConfig()
-    const model = getOllamaModel('standard')
-    const ollama = new Ollama({ host: config.baseUrl })
+    const ollama = new Ollama({ host: endpoint.host })
     const systemPrompt = buildRemySystemPrompt(context, memories)
     const historyStr = formatConversationHistory(history)
 
@@ -1124,12 +1129,15 @@ export async function POST(req: NextRequest) {
         // Hard timeout: kill the Ollama call if it hangs
         const abortCtrl = new AbortController()
         const timeout = setTimeout(() => abortCtrl.abort(), OLLAMA_STREAM_TIMEOUT_MS)
+        // Stop streaming when the client disconnects (drawer closed)
+        const onDisconnect = () => abortCtrl.abort()
+        req.signal.addEventListener('abort', onDisconnect)
 
         try {
           controller.enqueue(encoder.encode(encodeSSE({ type: 'intent', data: 'question' })))
 
           const response = await ollama.chat({
-            model,
+            model: endpoint.model,
             messages: [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: `${historyStr}Chef: ${message}` },
@@ -1137,16 +1145,15 @@ export async function POST(req: NextRequest) {
             stream: true,
             options: {
               num_predict: OLLAMA_STREAM_MAX_TOKENS,
-              num_ctx: getOllamaContextSize('chef'),
+              num_ctx: endpoint.numCtx,
             },
-            keep_alive: '5m',
+            keep_alive: '1m',
           })
 
           let fullResponse = ''
           for await (const chunk of response) {
-            // Check if we've been aborted by the timeout
             if (abortCtrl.signal.aborted) {
-              throw new Error('Ollama response timed out — the request took too long.')
+              break
             }
             const token = chunk.message?.content ?? ''
             if (token) {
@@ -1182,6 +1189,7 @@ export async function POST(req: NextRequest) {
           )
         } finally {
           clearTimeout(timeout)
+          req.signal.removeEventListener('abort', onDisconnect)
           releaseInteractiveLock()
           controller.close()
         }
@@ -1224,6 +1232,62 @@ const OLLAMA_STREAM_TIMEOUT_MS = 180_000
  * 2048 tokens ≈ ~1500 words — more than enough for a chat reply.
  */
 const OLLAMA_STREAM_MAX_TOKENS = 2048
+
+/**
+ * Resolve the best available Ollama endpoint for Remy streaming.
+ * Tries PC first (faster 30B model), falls back to Pi if PC is offline.
+ * Returns null if nothing is reachable.
+ */
+async function resolveRemyEndpoint(): Promise<{
+  host: string
+  model: string
+  numCtx: number
+  endpointName: 'pc' | 'pi'
+} | null> {
+  const config = getOllamaConfig()
+
+  // Try PC first
+  try {
+    const res = await fetch(`${config.baseUrl}/api/tags`, {
+      signal: AbortSignal.timeout(3000),
+      cache: 'no-store',
+    })
+    if (res.ok) {
+      return {
+        host: config.baseUrl,
+        model: getOllamaModel('standard'),
+        numCtx: getOllamaContextSize('chef'),
+        endpointName: 'pc',
+      }
+    }
+  } catch {
+    // PC unreachable — try Pi
+  }
+
+  // Try Pi fallback
+  const piUrl = getOllamaPiUrl()
+  if (piUrl) {
+    try {
+      const res = await fetch(`${piUrl}/api/tags`, {
+        signal: AbortSignal.timeout(3000),
+        cache: 'no-store',
+      })
+      if (res.ok) {
+        console.log('[remy] PC Ollama offline — falling back to Pi')
+        return {
+          host: piUrl,
+          model: getModelForEndpoint('pi', 'standard'),
+          numCtx: getContextSizeForEndpoint('pi', 'chef'),
+          endpointName: 'pi',
+        }
+      }
+    } catch {
+      // Pi also unreachable
+    }
+  }
+
+  return null
+}
 
 function extractNavSuggestions(
   text: string

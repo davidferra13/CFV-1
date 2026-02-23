@@ -30,6 +30,10 @@ export interface ParseOllamaOptions {
   timeoutMs?: number
   /** Max tokens Ollama can generate. Default: 512 (JSON responses are short). */
   maxTokens?: number
+  /** Override the Ollama endpoint URL (e.g. Pi URL). If not set, uses OLLAMA_BASE_URL. */
+  endpointUrl?: string
+  /** Override the model name (e.g. Pi model). If not set, uses tier-based resolution. */
+  model?: string
 }
 
 /** Default max tokens for structured JSON responses — keeps Ollama from running away */
@@ -88,7 +92,9 @@ export async function parseWithOllama<T>(
   }
 
   const config = getOllamaConfig()
-  const model = options?.modelTier ? getOllamaModel(options.modelTier) : config.model
+  const baseUrl = options?.endpointUrl || config.baseUrl
+  const model =
+    options?.model || (options?.modelTier ? getOllamaModel(options.modelTier) : config.model)
 
   // Check cache first
   if (options?.cache) {
@@ -99,7 +105,7 @@ export async function parseWithOllama<T>(
     }
   }
 
-  const ollama = new Ollama({ host: config.baseUrl })
+  const ollama = new Ollama({ host: baseUrl })
   const startTime = Date.now()
   const timeoutMs = options?.timeoutMs ?? DEFAULT_OLLAMA_TIMEOUT_MS
 
@@ -155,12 +161,9 @@ export async function parseWithOllama<T>(
       )
     }
     if (errMsg.includes('timeout') || errMsg.includes('aborted') || errMsg.includes('AbortError')) {
-      throw new OllamaOfflineError(`Ollama timed out at ${config.baseUrl}`, 'timeout')
+      throw new OllamaOfflineError(`Ollama timed out at ${baseUrl}`, 'timeout')
     }
-    throw new OllamaOfflineError(
-      `Ollama unreachable at ${config.baseUrl}: ${errMsg}`,
-      'unreachable'
-    )
+    throw new OllamaOfflineError(`Ollama unreachable at ${baseUrl}: ${errMsg}`, 'unreachable')
   }
 
   if (!rawText) {

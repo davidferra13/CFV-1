@@ -19,6 +19,7 @@ export { AI_PRIORITY, OLLAMA_GUARD } from './types'
 export {
   enqueueTask,
   claimNextTask,
+  claimNextTaskForEndpoint,
   completeTask,
   failTask,
   approveTask,
