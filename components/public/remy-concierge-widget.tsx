@@ -5,8 +5,13 @@
 // Platform-level concierge: no tenantId, hits /api/remy/landing endpoint.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { MessageCircle, X, Send, Loader2, Minus } from 'lucide-react'
+import { MessageCircle, X, Send, Loader2, Minus, Maximize2, Minimize2 } from 'lucide-react'
 import { getStarterPainPoints } from '@/lib/ai/chefflow-feature-map'
+
+const DEFAULT_WIDTH = 380
+const DEFAULT_HEIGHT = 520
+const MIN_WIDTH = 300
+const MIN_HEIGHT = 350
 
 interface Message {
   id: string
@@ -21,9 +26,19 @@ export function RemyConciergeWidget() {
   const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isMaximized, setIsMaximized] = useState(false)
+  const [size, setSize] = useState({ w: DEFAULT_WIDTH, h: DEFAULT_HEIGHT })
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const widgetRef = useRef<HTMLDivElement>(null)
+  const resizingRef = useRef<{
+    edge: string
+    startX: number
+    startY: number
+    startW: number
+    startH: number
+  } | null>(null)
 
   const starters = getStarterPainPoints()
 
@@ -155,6 +170,79 @@ export function RemyConciergeWidget() {
     }
   }
 
+  const toggleMaximize = useCallback(() => {
+    setIsMaximized((prev) => {
+      const next = !prev
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('remy-maximized', next ? '1' : '0')
+      }
+      return next
+    })
+  }, [])
+
+  // Restore maximized state from session
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const max = sessionStorage.getItem('remy-maximized')
+      if (max === '1') setIsMaximized(true)
+      const savedW = sessionStorage.getItem('remy-width')
+      const savedH = sessionStorage.getItem('remy-height')
+      if (savedW && savedH) {
+        setSize({ w: parseInt(savedW, 10), h: parseInt(savedH, 10) })
+      }
+    }
+  }, [])
+
+  // Edge/corner resize via mouse drag
+  const startResize = useCallback(
+    (edge: string) => (e: React.MouseEvent) => {
+      e.preventDefault()
+      if (isMaximized) return
+      resizingRef.current = {
+        edge,
+        startX: e.clientX,
+        startY: e.clientY,
+        startW: size.w,
+        startH: size.h,
+      }
+
+      const onMouseMove = (ev: MouseEvent) => {
+        if (!resizingRef.current) return
+        const { edge: ed, startX, startY, startW, startH } = resizingRef.current
+        let newW = startW
+        let newH = startH
+
+        if (ed.includes('w')) newW = Math.max(MIN_WIDTH, startW + (startX - ev.clientX))
+        if (ed.includes('e')) newW = Math.max(MIN_WIDTH, startW + (ev.clientX - startX))
+        if (ed.includes('n')) newH = Math.max(MIN_HEIGHT, startH + (startY - ev.clientY))
+        if (ed.includes('s')) newH = Math.max(MIN_HEIGHT, startH + (ev.clientY - startY))
+
+        // Clamp to viewport
+        newW = Math.min(newW, window.innerWidth - 32)
+        newH = Math.min(newH, window.innerHeight - 32)
+
+        setSize({ w: newW, h: newH })
+      }
+
+      const onMouseUp = () => {
+        if (resizingRef.current) {
+          const el = widgetRef.current
+          if (el) {
+            sessionStorage.setItem('remy-width', String(el.offsetWidth))
+            sessionStorage.setItem('remy-height', String(el.offsetHeight))
+          }
+        }
+        resizingRef.current = null
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+      }
+
+      document.addEventListener('mousemove', onMouseMove)
+      document.addEventListener('mouseup', onMouseUp)
+    },
+    [isMaximized, size]
+  )
+
   // Collapsed state — floating branded button
   if (!isOpen) {
     return (
@@ -175,7 +263,58 @@ export function RemyConciergeWidget() {
 
   // Open state — full chatbot widget
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div
+      ref={widgetRef}
+      className={`fixed z-50 flex flex-col overflow-hidden border border-stone-200 bg-white shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+        isMaximized ? 'inset-4 rounded-xl' : 'bottom-6 right-6 rounded-2xl'
+      }`}
+      style={
+        isMaximized
+          ? undefined
+          : {
+              width: `min(${size.w}px, calc(100vw - 2rem))`,
+              height: `min(${size.h}px, calc(100vh - 2rem))`,
+            }
+      }
+    >
+      {/* Resize handles (hidden when maximized) */}
+      {!isMaximized && (
+        <>
+          <div
+            onMouseDown={startResize('n')}
+            className="absolute top-0 left-2 right-2 h-1.5 cursor-n-resize"
+          />
+          <div
+            onMouseDown={startResize('s')}
+            className="absolute bottom-0 left-2 right-2 h-1.5 cursor-s-resize"
+          />
+          <div
+            onMouseDown={startResize('w')}
+            className="absolute left-0 top-2 bottom-2 w-1.5 cursor-w-resize"
+          />
+          <div
+            onMouseDown={startResize('e')}
+            className="absolute right-0 top-2 bottom-2 w-1.5 cursor-e-resize"
+          />
+          <div
+            onMouseDown={startResize('nw')}
+            className="absolute top-0 left-0 h-3 w-3 cursor-nw-resize"
+          />
+          <div
+            onMouseDown={startResize('ne')}
+            className="absolute top-0 right-0 h-3 w-3 cursor-ne-resize"
+          />
+          <div
+            onMouseDown={startResize('sw')}
+            className="absolute bottom-0 left-0 h-3 w-3 cursor-sw-resize"
+          />
+          <div
+            onMouseDown={startResize('se')}
+            className="absolute bottom-0 right-0 h-3 w-3 cursor-se-resize"
+          />
+        </>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between bg-brand-600 px-4 py-3.5">
         <div className="flex items-center gap-3">
@@ -195,6 +334,14 @@ export function RemyConciergeWidget() {
         </div>
         <div className="flex items-center gap-1">
           <button
+            onClick={toggleMaximize}
+            className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+            aria-label={isMaximized ? 'Restore chat size' : 'Maximize chat'}
+            title={isMaximized ? 'Restore' : 'Maximize'}
+          >
+            {isMaximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+          </button>
+          <button
             onClick={handleCollapse}
             className="rounded-lg p-1.5 text-white/60 transition-colors hover:bg-white/10 hover:text-white"
             aria-label="Minimize chat"
@@ -212,10 +359,7 @@ export function RemyConciergeWidget() {
       </div>
 
       {/* Messages */}
-      <div
-        className="flex-1 overflow-y-auto bg-stone-50 p-4"
-        style={{ maxHeight: '360px', minHeight: '180px' }}
-      >
+      <div className="flex-1 overflow-y-auto bg-stone-50 p-4" style={{ minHeight: '120px' }}>
         {messages.length === 0 && (
           <div className="space-y-4">
             {/* Welcome message — looks like a chat bubble from Remy */}
@@ -314,7 +458,9 @@ export function RemyConciergeWidget() {
           </button>
         </div>
         <p className="mt-1.5 text-center text-[10px] text-stone-400">
-          Powered by ChefFlow AI — private &amp; secure
+          Powered by ChefFlow AI — private &amp; local
+          <br />
+          Responses may take a moment — our AI runs locally for your privacy
         </p>
       </div>
     </div>
