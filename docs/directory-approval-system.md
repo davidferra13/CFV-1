@@ -45,13 +45,22 @@ All gated behind `requireAdmin()`.
 
 - Premium TakeAChef-inspired design with:
   - Dark hero section with warm brand accents
-  - Large 4:3 aspect ratio photo tiles
+  - Large 4:3 aspect ratio chef photo tiles — face is front and center
   - Name + tagline overlaid on photo with gradient
   - "Featured" badge for founder account
+  - **Partner venue showcase** on each tile — "Where I Cook" section showing up to 3 partner venues with thumbnails, names, city/state, and type badges
   - **"Book Now" CTA** on every tile linking directly to `/chef/[slug]/inquire`
   - "Profile" secondary link for browsing
   - Trust footer ("Every chef is personally vetted")
 - Responsive: 1 col mobile, 2 col tablet, 3 col desktop
+
+### Partner Venue Showcase on Tiles
+
+- `getDiscoverableChefs()` now also fetches each chef's showcase-visible partners in a single parallel query
+- Each tile shows up to 3 partner pills with: cover image thumbnail, venue name, city/state, type badge
+- Partners with `is_showcase_visible=true` and `status='active'` are included
+- If a chef has more than 3 partners, a "+N more venues" count is shown
+- Partners see their venues promoted on the public directory — makes them feel acknowledged
 
 ## How It Works for New Chefs
 

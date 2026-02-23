@@ -16,6 +16,23 @@ import { createServerClient } from '@/lib/supabase/server'
  */
 const FOUNDER_EMAIL = 'davidferra13@gmail.com'
 
+export type DirectoryPartnerLocation = {
+  id: string
+  name: string
+  city: string | null
+  state: string | null
+}
+
+export type DirectoryPartner = {
+  id: string
+  name: string
+  partner_type: string
+  cover_image_url: string | null
+  description: string | null
+  booking_url: string | null
+  partner_locations: DirectoryPartnerLocation[]
+}
+
 export type DirectoryChef = {
   id: string
   slug: string
@@ -25,6 +42,8 @@ export type DirectoryChef = {
   profile_image_url: string | null
   /** True if this is the founder / platform owner */
   is_founder: boolean
+  /** Showcase-visible partners with their locations */
+  partners: DirectoryPartner[]
 }
 
 /**
@@ -34,6 +53,7 @@ export type DirectoryChef = {
  *   2. chef_preferences.network_discoverable = true
  *   3. chef.directory_approved = true  OR  chef.email = founder email
  *
+ * Also fetches each chef's showcase-visible partners and their locations.
  * Safe to call from public (no-auth) server components.
  */
 export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
@@ -72,6 +92,58 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
     return c.directory_approved === true || isFounder
   })
 
+  // Fetch showcase partners for all approved chefs in parallel
+  const chefIds = approved.map((c: any) => c.id)
+
+  let partnersMap: Record<string, DirectoryPartner[]> = {}
+
+  if (chefIds.length > 0) {
+    const { data: partners, error: partnerError } = await supabase
+      .from('referral_partners')
+      .select(
+        `
+        id,
+        tenant_id,
+        name,
+        partner_type,
+        cover_image_url,
+        description,
+        booking_url,
+        showcase_order,
+        partner_locations(id, name, city, state, is_active)
+      `
+      )
+      .in('tenant_id', chefIds)
+      .eq('is_showcase_visible', true)
+      .eq('status', 'active')
+      .order('showcase_order', { ascending: true })
+
+    if (!partnerError && partners) {
+      for (const p of partners as any[]) {
+        const chefId = p.tenant_id as string
+        if (!partnersMap[chefId]) partnersMap[chefId] = []
+        partnersMap[chefId].push({
+          id: p.id,
+          name: p.name,
+          partner_type: p.partner_type,
+          cover_image_url: p.cover_image_url ?? null,
+          description: p.description ?? null,
+          booking_url: p.booking_url ?? null,
+          partner_locations: (p.partner_locations || [])
+            .filter((l: any) => l.is_active !== false)
+            .map((l: any) => ({
+              id: l.id,
+              name: l.name,
+              city: l.city ?? null,
+              state: l.state ?? null,
+            })),
+        })
+      }
+    } else if (partnerError) {
+      console.error('[getDiscoverableChefs] partner fetch error:', partnerError)
+    }
+  }
+
   // Map to public shape (strip email — never expose)
   return approved.map((c: any) => ({
     id: c.id,
@@ -81,5 +153,6 @@ export async function getDiscoverableChefs(): Promise<DirectoryChef[]> {
     bio: c.bio ?? null,
     profile_image_url: c.profile_image_url ?? null,
     is_founder: (c.email || '').toLowerCase() === FOUNDER_EMAIL,
+    partners: partnersMap[c.id] || [],
   }))
 }
