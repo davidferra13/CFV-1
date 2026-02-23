@@ -38,6 +38,7 @@ import {
   MicOff,
   Settings2,
   Info,
+  Headphones,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -59,6 +60,7 @@ import {
   deleteRemyMemory,
   decayStaleMemories,
 } from '@/lib/ai/remy-memory-actions'
+import { shareConversationWithSupport } from '@/lib/ai/support-share-action'
 import { toast } from 'sonner'
 import type {
   RemyMessage,
@@ -585,6 +587,32 @@ export function RemyDrawer() {
       toast.error('Failed to export conversation')
     }
   }, [currentConversationId])
+
+  const handleSendToSupport = useCallback(async () => {
+    if (!currentConversationId || messages.length === 0) return
+    const currentConv = conversations.find((c) => c.id === currentConversationId)
+    try {
+      const exported = {
+        conversationId: currentConversationId,
+        title: currentConv?.title ?? 'Remy conversation',
+        messages: messages.map((m) => ({
+          role: m.role as 'user' | 'remy',
+          content: m.content,
+          createdAt: m.timestamp,
+        })),
+        exportedAt: new Date().toISOString(),
+      }
+      const result = await shareConversationWithSupport(exported)
+      if (result.success) {
+        toast.success('Conversation shared with support')
+      } else {
+        toast.error(result.error ?? 'Failed to share')
+      }
+    } catch (err) {
+      console.error('[remy] Send to support failed:', err)
+      toast.error('Failed to share conversation with support')
+    }
+  }, [currentConversationId, messages, conversations])
 
   const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1133,13 +1161,22 @@ export function RemyDrawer() {
                     <Settings2 className="h-4 w-4" />
                   </button>
                   {currentConversationId && (
-                    <button
-                      onClick={handleExport}
-                      className="text-white/80 hover:text-white transition-colors p-1"
-                      title="Export conversation"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
+                    <>
+                      <button
+                        onClick={handleExport}
+                        className="text-white/80 hover:text-white transition-colors p-1"
+                        title="Export conversation"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={handleSendToSupport}
+                        className="text-white/80 hover:text-white transition-colors p-1"
+                        title="Send to Support"
+                      >
+                        <Headphones className="h-4 w-4" />
+                      </button>
+                    </>
                   )}
                   <button
                     onClick={handleNewConversation}
@@ -1397,7 +1434,7 @@ export function RemyDrawer() {
                       </p>
                       <p className="text-xs text-stone-400 mt-2 flex items-center gap-1">
                         <Globe className="h-3 w-3" />
-                        Web search enabled. Private AI — your data stays in ChefFlow. Press{' '}
+                        Web search enabled. Conversations stay in your browser. Press{' '}
                         <kbd className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
                           Ctrl+K
                         </kbd>{' '}
@@ -1674,7 +1711,7 @@ export function RemyDrawer() {
                 </div>
                 <p className="text-xs text-stone-400 mt-1.5 flex items-center gap-1">
                   <Globe className="h-3 w-3" />
-                  Private AI + web search. Ctrl+K to toggle.
+                  Conversations stay in your browser. Ctrl+K to toggle.
                 </p>
               </div>
             </>

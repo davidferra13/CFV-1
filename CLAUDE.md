@@ -16,20 +16,23 @@ This file is read by Claude Code at the start of every conversation. These rules
 
 ---
 
-> **⚠️ TODO FOR DAVID — AI PRIVACY LANGUAGE NEEDS REWORK ⚠️**
+> **✅ AI PRIVACY LANGUAGE — REWORKED (2026-02-22)**
 >
-> The AI privacy copy across the app was updated (Feb 2026) to stop saying "runs on your machine / your device" and instead say "ChefFlow's private infrastructure." **David is not happy with how this landed.** The language is more accurate now but still needs a proper rewrite for clarity and tone. Revisit these files:
+> The AI privacy architecture has been upgraded to Level 3 (privacy by architecture, not by policy). Core files rewritten:
 >
-> - `app/(chef)/settings/ai-privacy/page.tsx` — status banner + "Our Promise" section
-> - `components/ai-privacy/remy-onboarding-wizard.tsx` — onboarding steps 1, 2, and 5
-> - `components/ai-privacy/data-flow-schematic.tsx` — SVG diagram labels
-> - `components/ai-privacy/remy-gate.tsx` — "What you'll learn" list
-> - `components/ai/remy-drawer.tsx` — welcome message + footer
-> - `components/dashboard/ollama-status-badge.tsx` — tooltip text
-> - `components/ai/command-center-client.tsx` — offline message
-> - `app/(public)/terms/page.tsx` — public terms of service
+> - `app/(chef)/settings/ai-privacy/page.tsx` — 3-section transparency page + external API disclosure
+> - `components/ai-privacy/remy-onboarding-wizard.tsx` — simplified, confident privacy mention
+> - `components/ai-privacy/data-flow-schematic.tsx` — private loop diagram (Chef → Pi → Chef)
+> - `components/ai-privacy/remy-gate.tsx` — factual setup prompt
+> - `components/ai/remy-drawer.tsx` — "Send to Support" button + updated language
+> - `lib/ai/remy-local-storage.ts` — IndexedDB for browser-local conversation storage
+> - `lib/ai/remy-metrics.ts` — anonymous usage metrics (counts only)
+> - `lib/ai/support-share-action.ts` — voluntary support sharing
+> - `lib/remotion/remy-privacy-schematic.tsx` — 55-second animated explainer
 >
-> **Goal:** Make the privacy story crystal clear, honest, and not confusing for chefs who are using a web app (not running anything locally).
+> **Still TODO:** Update `components/dashboard/ollama-status-badge.tsx`, `components/ai/command-center-client.tsx`, and `app/(public)/terms/page.tsx` to match the new tone.
+>
+> **Principle:** "We don't have your data" > "We promise not to look." See `docs/remy-privacy-architecture.md`.
 
 ---
 

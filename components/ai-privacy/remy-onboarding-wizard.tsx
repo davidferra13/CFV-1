@@ -1,17 +1,16 @@
 'use client'
 
 /**
- * RemyOnboardingWizard — 5-step walkthrough that every chef sees
- * before they can use Remy. Teaches best practices, shows the data
- * flow schematic, lets them practice deleting data, and requires
- * explicit opt-in.
+ * RemyOnboardingWizard — 5-step walkthrough before first Remy use.
  *
  * Steps:
  * 1. "Meet Remy" — what it is, what it does
- * 2. "Your Data Stays in ChefFlow" — the schematic
- * 3. "You're in Control" — show the delete/toggle controls
- * 4. "Best Practices" — how to use AI safely
- * 5. "Ready?" — explicit opt-in with a big toggle
+ * 2. "How It Works" — the data flow schematic
+ * 3. "You're in Control" — delete capabilities
+ * 4. "Best Practices" — how to use AI effectively
+ * 5. "Ready?" — explicit opt-in
+ *
+ * Privacy is mentioned once, confidently, not belabored.
  */
 
 import { useState } from 'react'
@@ -26,12 +25,7 @@ import {
   Check,
   Lock,
   Eye,
-  EyeOff,
   HardDrive,
-  Wifi,
-  WifiOff,
-  ToggleLeft,
-  ToggleRight,
 } from 'lucide-react'
 import { DataFlowAnimated } from './data-flow-animated'
 import { completeOnboarding } from '@/lib/ai/privacy-actions'
@@ -48,13 +42,13 @@ const STEPS: OnboardingStep[] = [
     id: 'meet',
     icon: <Bot className="h-5 w-5" />,
     title: 'Meet Remy',
-    subtitle: 'Your private AI sous chef',
+    subtitle: 'Your AI sous chef',
   },
   {
     id: 'data',
     icon: <Shield className="h-5 w-5" />,
-    title: 'Your Data Stays in ChefFlow',
-    subtitle: 'See exactly where data goes',
+    title: 'How It Works',
+    subtitle: 'See the data flow',
   },
   {
     id: 'control',
@@ -66,13 +60,13 @@ const STEPS: OnboardingStep[] = [
     id: 'practices',
     icon: <BookOpen className="h-5 w-5" />,
     title: 'Best Practices',
-    subtitle: 'How to use AI safely',
+    subtitle: 'Tips for using Remy well',
   },
   {
     id: 'ready',
     icon: <Power className="h-5 w-5" />,
     title: 'Ready?',
-    subtitle: 'Your choice to opt in',
+    subtitle: 'Your choice to enable',
   },
 ]
 
@@ -81,7 +75,6 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
   const [completing, setCompleting] = useState(false)
   const [practiceDeleted, setPracticeDeleted] = useState(false)
 
-  const currentStep = STEPS[step]
   const isLast = step === STEPS.length - 1
   const isFirst = step === 0
 
@@ -151,8 +144,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 </div>
                 <h2 className="text-2xl font-bold text-stone-900">Meet Remy</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
-                  Remy is your private AI sous chef. It helps you draft emails, plan menus, manage
-                  prep timelines, and run your business more efficiently.
+                  Remy is your AI sous chef. It helps you draft emails, plan menus, manage prep
+                  timelines, and run your business more efficiently.
                 </p>
               </div>
 
@@ -161,17 +154,17 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   {
                     icon: <HardDrive className="h-5 w-5 text-brand-500" />,
                     title: 'Private AI',
-                    desc: 'Remy runs on ChefFlow\u2019s own servers using Ollama. Your data is never sent to OpenAI, Google, or any third party.',
+                    desc: 'Remy runs on ChefFlow\u2019s private servers. Your conversations are processed locally and never stored on our servers.',
                   },
                   {
                     icon: <Lock className="h-5 w-5 text-brand-500" />,
-                    title: '100% Private',
-                    desc: 'Your client names, budgets, recipes, and conversations stay within ChefFlow \u2014 never shared externally.',
+                    title: 'Your Data',
+                    desc: 'Client names, budgets, recipes — everything stays within ChefFlow. Conversation history lives in your browser.',
                   },
                   {
                     icon: <Eye className="h-5 w-5 text-brand-500" />,
-                    title: 'Fully Transparent',
-                    desc: 'You can see exactly what Remy knows, delete anything at any time, or turn it off completely.',
+                    title: 'Full Control',
+                    desc: 'Delete anything at any time, turn Remy off whenever you want, or share a conversation with support if you need help.',
                   },
                 ].map((card) => (
                   <div
@@ -184,23 +177,13 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   </div>
                 ))}
               </div>
-
-              <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-                <p className="text-sm text-amber-800">
-                  <strong>Why this matters:</strong> Most AI services (ChatGPT, Google Gemini, etc.)
-                  send your data to their servers where it can be stored, analyzed, or used to train
-                  their models. Remy is different — it uses a private AI engine called Ollama that
-                  runs on ChefFlow&apos;s own infrastructure. Your data is never sent to any
-                  third-party AI provider. It stays within ChefFlow, period.
-                </p>
-              </div>
             </div>
           )}
 
-          {/* ─── Step 2: Your Data Stays in ChefFlow (The Schematic) ─── */}
+          {/* ─── Step 2: How It Works (The Schematic) ─────── */}
           {step === 1 && <DataFlowAnimated />}
 
-          {/* ─── Step 3: You're in Control ──────────────────── */}
+          {/* ─── Step 3: You're in Control ────────────────── */}
           {step === 2 && (
             <div className="space-y-6">
               <div className="text-center">
@@ -209,8 +192,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 </div>
                 <h2 className="text-2xl font-bold text-stone-900">You&apos;re in Control</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
-                  You can delete any data Remy creates at any time. When you delete it, it&apos;s
-                  truly gone — not hidden, not archived, not recoverable. Gone.
+                  Your conversation history lives in your browser. You can clear it at any time —
+                  and when you do, it&apos;s gone. Not archived, not hidden. Gone.
                 </p>
               </div>
 
@@ -220,12 +203,11 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   Try It — Practice Deleting Data
                 </h3>
                 <p className="text-sm text-stone-500 text-center">
-                  This is a safe demo. Click the delete button to see how it works.
+                  This is a safe demo. Click delete to see how it works.
                 </p>
 
                 {!practiceDeleted ? (
                   <div className="space-y-3">
-                    {/* Fake data items */}
                     {[
                       { type: 'Conversation', text: 'Menu planning with Remy - 3 messages' },
                       { type: 'Memory', text: 'Chef prefers rustic plating style' },
@@ -258,8 +240,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                     </div>
                     <p className="text-sm font-medium text-emerald-700">All deleted. Truly gone.</p>
                     <p className="text-xs text-stone-500">
-                      That&apos;s exactly how it works with real data too. One click, permanently
-                      deleted.
+                      That&apos;s how it works with real data too.
                     </p>
                     <button
                       onClick={() => setPracticeDeleted(false)}
@@ -270,37 +251,10 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   </div>
                 )}
               </div>
-
-              {/* What you can delete */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {[
-                  {
-                    title: 'Conversations',
-                    desc: 'Every chat with Remy. Delete one or delete them all.',
-                  },
-                  {
-                    title: 'Memories',
-                    desc: 'Things Remy has learned about you. Wipe them anytime.',
-                  },
-                  {
-                    title: 'Drafts & Artifacts',
-                    desc: 'Emails, notes, and anything Remy created. Your call.',
-                  },
-                  {
-                    title: 'Everything at Once',
-                    desc: 'One button to delete all AI data. Nuclear option, always available.',
-                  },
-                ].map((item) => (
-                  <div key={item.title} className="rounded-lg border border-stone-200 bg-white p-3">
-                    <h4 className="font-medium text-stone-900 text-sm">{item.title}</h4>
-                    <p className="text-xs text-stone-500 mt-1">{item.desc}</p>
-                  </div>
-                ))}
-              </div>
             </div>
           )}
 
-          {/* ─── Step 4: Best Practices ────────────────────── */}
+          {/* ─── Step 4: Best Practices ──────────────────── */}
           {step === 3 && (
             <div className="space-y-6">
               <div className="text-center">
@@ -308,9 +262,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   <BookOpen className="h-8 w-8 text-blue-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-stone-900">Best Practices</h2>
-                <p className="text-stone-500 mt-2 max-w-lg mx-auto">
-                  Here&apos;s how to get the most out of Remy while staying in complete control.
-                </p>
+                <p className="text-stone-500 mt-2 max-w-lg mx-auto">Get the most out of Remy.</p>
               </div>
 
               <div className="space-y-4">
@@ -318,31 +270,25 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   {
                     number: '1',
                     title: 'Review before sending',
-                    desc: 'Remy drafts emails and messages, but nothing gets sent until you review and approve it. Always read what Remy wrote before hitting send.',
+                    desc: 'Remy drafts emails and messages for you to review. Nothing gets sent until you approve it.',
                     color: 'brand',
                   },
                   {
                     number: '2',
-                    title: 'Clean up regularly',
-                    desc: "Visit Settings > AI & Privacy anytime to see what data Remy has accumulated. Delete conversations you don't need anymore. Think of it like clearing your browser history.",
+                    title: 'Be specific',
+                    desc: 'The more context you give Remy, the better it can help. "Plan a menu for 8 guests with nut allergies" works better than "plan a menu."',
                     color: 'emerald',
                   },
                   {
                     number: '3',
                     title: 'Control what Remy remembers',
-                    desc: "You can turn off Remy's memory feature entirely. When memory is off, every conversation starts fresh — Remy won't recall previous interactions.",
+                    desc: "You can turn off Remy's memory from Settings. When memory is off, every conversation starts fresh.",
                     color: 'blue',
                   },
                   {
                     number: '4',
-                    title: 'Turn features on and off',
-                    desc: "Don't want Remy to draft documents? Turn off document drafting. Don't want suggestions? Turn off suggestions. Each feature is its own toggle.",
-                    color: 'purple',
-                  },
-                  {
-                    number: '5',
-                    title: 'Turn Remy off completely anytime',
-                    desc: "Changed your mind? Go to Settings > AI & Privacy and flip the master switch. Remy stops immediately. Your existing data stays until you decide to delete it — we don't make that decision for you.",
+                    title: 'Turn it off anytime',
+                    desc: 'Go to Settings > Privacy & Data and flip the switch. Remy stops immediately. Your data stays until you choose to delete it.',
                     color: 'amber',
                   },
                 ].map((practice) => (
@@ -366,15 +312,14 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
 
               <div className="rounded-lg bg-stone-50 border border-stone-200 p-4">
                 <p className="text-sm text-stone-600">
-                  <strong>Remember:</strong> Remy is a tool, not a decision-maker. It assists you —
-                  it never acts on its own. Every email, every suggestion, every action requires
-                  your explicit approval before anything happens.
+                  <strong>Remember:</strong> Remy is a tool, not a decision-maker. Every email,
+                  every suggestion, every action requires your approval.
                 </p>
               </div>
             </div>
           )}
 
-          {/* ─── Step 5: Ready / Opt-In ────────────────────── */}
+          {/* ─── Step 5: Ready / Opt-In ──────────────────── */}
           {step === 4 && (
             <div className="space-y-6">
               <div className="text-center">
@@ -383,20 +328,18 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 </div>
                 <h2 className="text-2xl font-bold text-stone-900">You&apos;re Ready</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
-                  You now know exactly how Remy works, where your data goes (nowhere), and how to
-                  stay in control. The choice is yours.
+                  You know how Remy works and how to stay in control. The choice is yours.
                 </p>
               </div>
 
               {/* Summary card */}
               <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 space-y-3">
-                <h3 className="font-semibold text-emerald-900">What you&apos;ve learned:</h3>
+                <h3 className="font-semibold text-emerald-900">Quick recap:</h3>
                 {[
-                  'Remy runs on ChefFlow\u2019s private servers — not OpenAI, not Google',
-                  'Your data never leaves ChefFlow',
-                  'You can delete any or all AI data at any time',
-                  'Every Remy feature can be individually toggled',
-                  'Remy assists only — it never acts without your approval',
+                  'Remy runs on ChefFlow\u2019s private servers — no third-party AI',
+                  'Conversations stay in your browser, not on our servers',
+                  'Delete anything at any time',
+                  'Remy assists only — never acts without your approval',
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-emerald-500 shrink-0" />
@@ -423,19 +366,19 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   ) : (
                     <>
                       <Power className="h-5 w-5" />
-                      Enable Remy — I&apos;m In
+                      Enable Remy
                     </>
                   )}
                 </button>
                 <p className="text-xs text-stone-400">
-                  You can turn Remy off at any time from Settings &gt; AI &amp; Privacy.
+                  You can turn Remy off at any time from Settings.
                 </p>
               </div>
 
               {/* Skip option */}
               <div className="text-center border-t border-stone-100 pt-4">
                 <p className="text-sm text-stone-500">
-                  Not ready yet? No problem. You can come back here anytime from Settings.
+                  Not ready? No problem. Come back anytime from Settings.
                 </p>
               </div>
             </div>

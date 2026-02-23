@@ -4,7 +4,6 @@
  * RemyGate — wraps any Remy-powered UI.
  * If the chef hasn't completed the AI onboarding, shows a prompt
  * directing them to the AI & Privacy settings page first.
- * This ensures no one accidentally uses AI without understanding it.
  */
 
 import { useState, useEffect } from 'react'
@@ -41,7 +40,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
     return <>{children}</>
   }
 
-  // ─── Gated: show the trust prompt ─────────────────────────
+  // ─── Gated: show the setup prompt ─────────────────────────
   return (
     <div className="max-w-lg mx-auto py-12 px-6 text-center space-y-6">
       <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-100 flex items-center justify-center">
@@ -49,32 +48,31 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-stone-900">Before You Use Remy</h2>
+        <h2 className="text-xl font-bold text-stone-900">Set Up Remy</h2>
         <p className="text-stone-500 text-sm leading-relaxed">
-          We want you to feel completely comfortable with how AI works in ChefFlow. Before
-          activating Remy, walk through a quick overview of how your data is handled, where it goes
-          (and doesn&apos;t go), and how you stay in full control.
+          Before using Remy, take a quick look at how it works. Remy runs on ChefFlow&apos;s private
+          infrastructure — your conversations are never sent to external AI services.
         </p>
       </div>
 
       <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-3 text-left">
-        <p className="text-sm font-medium text-stone-900">What you&apos;ll learn:</p>
+        <p className="text-sm font-medium text-stone-900">Quick setup covers:</p>
         <ul className="text-sm text-stone-600 space-y-1.5">
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            How Remy keeps your data private within ChefFlow
+            What Remy can help you with
           </li>
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            Why your data is never sent to third-party AI services
+            How your data stays private
           </li>
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            How to delete any data Remy creates
+            How to manage or delete anything Remy creates
           </li>
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
-            Best practices for using AI safely
+            Best practices for using Remy effectively
           </li>
         </ul>
       </div>
@@ -89,9 +87,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
         <ArrowRight className="h-4 w-4" />
       </Link>
 
-      <p className="text-xs text-stone-400">
-        Takes about 2 minutes. You&apos;ll understand exactly how everything works.
-      </p>
+      <p className="text-xs text-stone-400">Takes about 2 minutes.</p>
     </div>
   )
 }
