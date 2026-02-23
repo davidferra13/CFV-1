@@ -29,7 +29,7 @@ export async function ensureClient(
     allergies?: string[]
     status?: string
     referral_source?: string
-    notes?: string
+    vibe_notes?: string
   }
 ): Promise<string> {
   const { data: existing } = await admin
@@ -52,7 +52,7 @@ export async function ensureClient(
       allergies: client.allergies ?? [],
       status: client.status ?? 'active',
       referral_source: client.referral_source ?? 'website',
-      notes: client.notes ?? null,
+      vibe_notes: client.vibe_notes ?? null,
     })
     .select('id')
     .single()

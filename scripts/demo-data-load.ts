@@ -7,9 +7,14 @@
 
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
+import { createRequire } from 'module'
 import dotenv from 'dotenv'
 
-import {
+// Use createRequire for local .ts imports — tsx + Node 24 on Windows treats
+// .ts files as CJS when imported from scripts/, breaking named ESM imports.
+const require = createRequire(import.meta.url)
+
+const {
   DEMO_CLIENTS,
   DEMO_EVENTS,
   DEMO_INQUIRIES,
@@ -19,9 +24,9 @@ import {
   DEMO_LEDGER_ENTRIES,
   DEMO_EXPENSES,
   DEMO_CALENDAR_ENTRIES,
-} from '../lib/demo/fixtures'
+} = require('../lib/demo/fixtures')
 
-import {
+const {
   ensureClient,
   ensureEvent,
   ensureInquiry,
@@ -31,7 +36,7 @@ import {
   ensureLedgerEntry,
   ensureExpense,
   ensureCalendarEntry,
-} from '../lib/demo/seed-helpers'
+} = require('../lib/demo/seed-helpers')
 
 dotenv.config({ path: '.env.local' })
 

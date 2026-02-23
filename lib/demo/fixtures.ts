@@ -28,8 +28,8 @@ export const DEMO_CLIENTS = [
     dietary_restrictions: ['pescatarian'],
     allergies: [] as string[],
     status: 'vip' as const,
-    referral_source: 'word_of_mouth',
-    notes:
+    referral_source: 'referral',
+    vibe_notes:
       'Hosts quarterly dinner parties. Prefers modern Japanese fusion. Has referred 3 new clients.',
   },
   {
@@ -40,7 +40,7 @@ export const DEMO_CLIENTS = [
     allergies: ['shellfish'],
     status: 'active' as const,
     referral_source: 'referral',
-    notes: 'Anniversary dinners every year. Classic French preferred. Budget flexible.',
+    vibe_notes: 'Anniversary dinners every year. Classic French preferred. Budget flexible.',
   },
   {
     full_name: 'Anika Patel',
@@ -50,7 +50,7 @@ export const DEMO_CLIENTS = [
     allergies: ['tree nuts'],
     status: 'active' as const,
     referral_source: 'website',
-    notes:
+    vibe_notes:
       'Corporate team dinners for her startup. 15-25 guests typically. Indian-Mediterranean fusion.',
   },
   {
@@ -61,7 +61,7 @@ export const DEMO_CLIENTS = [
     allergies: [] as string[],
     status: 'active' as const,
     referral_source: 'instagram',
-    notes: 'Love tasting menus. Adventurous eaters. Recently moved to Back Bay.',
+    vibe_notes: 'Love tasting menus. Adventurous eaters. Recently moved to Back Bay.',
   },
   {
     full_name: 'Emily Nakamura',
@@ -70,8 +70,8 @@ export const DEMO_CLIENTS = [
     dietary_restrictions: ['gluten-free'],
     allergies: ['wheat', 'barley'],
     status: 'active' as const,
-    referral_source: 'google',
-    notes: 'Monthly birthday celebrations for her book club (8-10 guests).',
+    referral_source: 'website',
+    vibe_notes: 'Monthly birthday celebrations for her book club (8-10 guests).',
   },
   {
     full_name: "Thomas & Grace O'Brien",
@@ -81,7 +81,7 @@ export const DEMO_CLIENTS = [
     allergies: [] as string[],
     status: 'active' as const,
     referral_source: 'referral',
-    notes: 'Holiday parties and summer BBQs. Large groups (20-40). Casual style preferred.',
+    vibe_notes: 'Holiday parties and summer BBQs. Large groups (20-40). Casual style preferred.',
   },
   {
     full_name: 'Dr. Marcus Washington',
@@ -90,8 +90,8 @@ export const DEMO_CLIENTS = [
     dietary_restrictions: ['keto'],
     allergies: [] as string[],
     status: 'active' as const,
-    referral_source: 'word_of_mouth',
-    notes: 'Intimate dinner parties for 4-6. Wine pairing enthusiast. Prefers Mediterranean.',
+    referral_source: 'referral',
+    vibe_notes: 'Intimate dinner parties for 4-6. Wine pairing enthusiast. Prefers Mediterranean.',
   },
   {
     full_name: 'Sofia & Alejandro Reyes',
@@ -101,7 +101,7 @@ export const DEMO_CLIENTS = [
     allergies: ['dairy'],
     status: 'active' as const,
     referral_source: 'website',
-    notes: 'Engagement party coming up. Latin-Asian fusion. Very detail-oriented.',
+    vibe_notes: 'Engagement party coming up. Latin-Asian fusion. Very detail-oriented.',
   },
   {
     full_name: 'Claire Beaumont',
@@ -111,7 +111,7 @@ export const DEMO_CLIENTS = [
     allergies: [] as string[],
     status: 'dormant' as const,
     referral_source: 'website',
-    notes: 'Had one event last year. Loved the vegan tasting menu. Follow up for spring.',
+    vibe_notes: 'Had one event last year. Loved the vegan tasting menu. Follow up for spring.',
   },
   {
     full_name: 'David & Kim Park',
@@ -120,8 +120,8 @@ export const DEMO_CLIENTS = [
     dietary_restrictions: [] as string[],
     allergies: ['peanuts'],
     status: 'active' as const,
-    referral_source: 'partner',
-    notes: 'Referred by venue partner (The Langham). Formal plated dinners for 8-12.',
+    referral_source: 'referral',
+    vibe_notes: 'Referred by venue partner (The Langham). Formal plated dinners for 8-12.',
   },
 ]
 
@@ -379,8 +379,8 @@ export const DEMO_INQUIRIES = [
   },
   {
     clientIndex: 0,
-    channel: 'referral',
-    status: 'converted',
+    channel: 'other',
+    status: 'confirmed',
     source_message:
       "Our friend Marcus recommended you. We'd love to book a spring dinner party — 8 guests, Japanese or Mediterranean fusion.",
     confirmed_occasion: 'Spring Dinner Party',
@@ -403,7 +403,7 @@ export const DEMO_INQUIRIES = [
   },
   {
     clientIndex: 9,
-    channel: 'partner',
+    channel: 'phone',
     status: 'new',
     source_message:
       "The Langham referred us. We're planning a lakehouse weekend and would love a private chef for one evening. 10 guests, upscale casual.",
@@ -424,7 +424,7 @@ export const DEMO_MENUS = [
     cuisine_type: 'Modern American',
     target_guest_count: 8,
     is_template: true,
-    status: 'active',
+    status: 'shared',
     dishes: [
       {
         course_number: 1,
@@ -459,7 +459,7 @@ export const DEMO_MENUS = [
     cuisine_type: 'Mediterranean',
     target_guest_count: 6,
     is_template: true,
-    status: 'active',
+    status: 'shared',
     dishes: [
       {
         course_number: 1,
@@ -495,7 +495,7 @@ export const DEMO_MENUS = [
     cuisine_type: 'Japanese',
     target_guest_count: 4,
     is_template: true,
-    status: 'active',
+    status: 'shared',
     dishes: [
       {
         course_number: 1,
@@ -527,7 +527,7 @@ export const DEMO_MENUS = [
     cuisine_type: 'Plant-Based',
     target_guest_count: 10,
     is_template: true,
-    status: 'active',
+    status: 'shared',
     dishes: [
       {
         course_number: 1,
@@ -598,7 +598,7 @@ export const DEMO_MENUS = [
 export const DEMO_RECIPES = [
   {
     name: 'Seared Dayboat Scallops with Corn Purée',
-    category: 'seafood',
+    category: 'protein',
     description: 'Pan-seared U10 scallops with sweet corn purée, crispy shallots, and micro herbs.',
     method:
       '1. Pat scallops dry, season with salt. 2. Heat cast iron until smoking, sear 2 min per side. 3. For purée: sweat shallots, add corn kernels, cream, blend until smooth. 4. Fry shallot rings at 350°F until golden. 5. Plate purée, top with scallops, garnish with shallots and micro greens.',
@@ -618,7 +618,7 @@ export const DEMO_RECIPES = [
   },
   {
     name: 'Herb-Crusted Lamb Rack',
-    category: 'meat',
+    category: 'protein',
     description: 'Dijon-crusted rack of lamb with rosemary, thyme, and a red wine jus.',
     method:
       '1. French the lamb racks. 2. Season, sear all sides. 3. Coat with Dijon, press herb-breadcrumb mixture. 4. Roast at 425°F to 130°F internal (medium-rare). 5. Rest 10 min. 6. Reduce red wine with stock, aromatics, and butter for jus.',
@@ -665,7 +665,7 @@ export const DEMO_RECIPES = [
   },
   {
     name: 'Grilled Octopus with Romesco',
-    category: 'seafood',
+    category: 'protein',
     description:
       'Tender braised then grilled octopus with smoky romesco sauce and fingerling potatoes.',
     method:
@@ -706,7 +706,7 @@ export const DEMO_RECIPES = [
   },
   {
     name: 'A5 Wagyu with Miso Eggplant',
-    category: 'meat',
+    category: 'protein',
     description: 'Japanese A5 wagyu beef with sweet white miso-glazed eggplant and pickled ginger.',
     method:
       '1. Score eggplant, brush with white miso glaze. 2. Roast at 400°F until caramelized. 3. Slice wagyu thin, sear briefly on extremely hot surface. 4. Plate eggplant, arrange wagyu slices, garnish with pickled ginger and shiso.',
@@ -766,7 +766,7 @@ export const DEMO_RECIPES = [
   },
   {
     name: 'Smoked Brisket with House BBQ Sauce',
-    category: 'meat',
+    category: 'protein',
     description: 'Low-and-slow smoked beef brisket with a tangy-sweet house-made BBQ sauce.',
     method:
       '1. Trim brisket, apply dry rub generously. Refrigerate overnight. 2. Smoke at 225°F for 12-14 hours until 203°F internal. 3. Rest wrapped in butcher paper for 1 hour. 4. For sauce: sauté onion, add ketchup, vinegar, brown sugar, Worcestershire, spices. Simmer 20 min. 5. Slice against the grain, serve with sauce.',
@@ -828,7 +828,7 @@ export const DEMO_RECIPES = [
   },
   {
     name: 'Cedar Plank Salmon with Dill Crème Fraîche',
-    category: 'seafood',
+    category: 'protein',
     description:
       'Wild-caught salmon roasted on soaked cedar planks with a fresh dill crème fraîche.',
     method:
@@ -1036,10 +1036,18 @@ export const DEMO_EXPENSES = [
 // ─── Calendar Availability Signals ───────────────────────────────────────────
 
 export const DEMO_CALENDAR_ENTRIES = [
-  { daysOut: 8, public_note: 'Open for intimate dinner (2-6 guests)', type: 'available' },
-  { daysOut: 15, public_note: 'Available — perfect for a weekend gathering', type: 'available' },
-  { daysOut: 22, public_note: 'Open for private dining or tasting menu', type: 'available' },
-  { daysOut: 29, public_note: 'Weekend available — book now', type: 'available' },
-  { daysOut: 36, public_note: 'Open for events up to 20 guests', type: 'available' },
-  { daysOut: 43, public_note: 'Last weekend of the month — still available', type: 'available' },
+  { daysOut: 8, public_note: 'Open for intimate dinner (2-6 guests)', type: 'target_booking' },
+  {
+    daysOut: 15,
+    public_note: 'Available — perfect for a weekend gathering',
+    type: 'target_booking',
+  },
+  { daysOut: 22, public_note: 'Open for private dining or tasting menu', type: 'target_booking' },
+  { daysOut: 29, public_note: 'Weekend available — book now', type: 'target_booking' },
+  { daysOut: 36, public_note: 'Open for events up to 20 guests', type: 'target_booking' },
+  {
+    daysOut: 43,
+    public_note: 'Last weekend of the month — still available',
+    type: 'target_booking',
+  },
 ]

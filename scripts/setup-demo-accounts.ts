@@ -96,7 +96,6 @@ async function main() {
     portal_background_color: '#faf7f4',
     show_availability_signals: true,
     subscription_status: 'active',
-    network_discoverable: true,
     onboarding_completed_at: new Date().toISOString(),
     timezone: 'America/New_York',
   }
