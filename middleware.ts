@@ -56,6 +56,7 @@ const skipAuthPaths = [
   '/survey',
   '/book',
   '/embed',
+  '/demo',
 ]
 // Admin paths — require authentication but not a specific role (email check is in layout)
 const adminPaths = ['/admin']
@@ -89,7 +90,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith('/api/ollama-status') ||
     pathname.startsWith('/api/ai/health') ||
     pathname.startsWith('/api/ai/monitor') ||
-    pathname.startsWith('/api/embed')
+    pathname.startsWith('/api/embed') ||
+    pathname.startsWith('/api/demo')
   ) {
     return NextResponse.next()
   }
