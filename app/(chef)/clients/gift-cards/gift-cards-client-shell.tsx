@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { IssueIncentiveForm } from '@/components/incentives/issue-incentive-form'
 import { SendIncentiveForm } from '@/components/incentives/send-incentive-form'
 import { deactivateIncentive } from '@/lib/loyalty/voucher-actions'
+import { toast } from 'sonner'
 
 type Client = { id: string; full_name: string | null }
 type Incentive = {
@@ -43,7 +44,12 @@ function IssueButton({ clients }: { clients: Client[] }) {
                 className="text-stone-400 hover:text-stone-600 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -78,7 +84,7 @@ function RowActions({ incentive }: { incentive: Incentive }) {
       await deactivateIncentive(incentive.id)
       router.refresh()
     } catch {
-      alert('Failed to deactivate. Please try again.')
+      toast.error('Failed to deactivate. Please try again.')
     } finally {
       setDeactivating(false)
     }
@@ -104,9 +110,7 @@ function RowActions({ incentive }: { incentive: Incentive }) {
             {deactivating ? '…' : 'Deactivate'}
           </button>
         )}
-        {!incentive.is_active && (
-          <span className="text-xs text-stone-300">Inactive</span>
-        )}
+        {!incentive.is_active && <span className="text-xs text-stone-300">Inactive</span>}
       </div>
 
       {/* Send modal */}
@@ -120,7 +124,12 @@ function RowActions({ incentive }: { incentive: Incentive }) {
                 className="text-stone-400 hover:text-stone-600"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>

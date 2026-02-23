@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert } from '@/components/ui/alert'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export function ClientInvitationForm() {
   const router = useRouter()
@@ -54,7 +55,7 @@ export function ClientInvitationForm() {
 
   function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text)
-    alert('Invitation link copied to clipboard!')
+    toast.success('Invitation link copied to clipboard!')
   }
 
   return (

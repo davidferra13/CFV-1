@@ -7,19 +7,22 @@ import { HowItWorksSection } from '@/components/public/how-it-works-section'
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
 
 export const metadata: Metadata = {
-  title: 'ChefFlow | Private Chef Platform',
-  description: 'Events, clients, menus, and payments — finally in one calm workspace.',
+  title: 'ChefFlow | Ops for Artists',
+  description:
+    'The business operating system built by a chef, for chefs. Events, clients, menus, and payments — finally in one calm workspace.',
   openGraph: {
-    title: 'ChefFlow | Private Chef Platform',
-    description: 'Events, clients, menus, and payments — finally in one calm workspace.',
+    title: 'ChefFlow | Ops for Artists',
+    description:
+      'The business operating system built by a chef, for chefs. Events, clients, menus, and payments — finally in one calm workspace.',
     url: BASE_URL,
     siteName: 'ChefFlow',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow | Private Chef Platform',
-    description: 'Events, clients, menus, and payments — finally in one calm workspace.',
+    title: 'ChefFlow | Ops for Artists',
+    description:
+      'The business operating system built by a chef, for chefs. Events, clients, menus, and payments — finally in one calm workspace.',
   },
 }
 
@@ -48,13 +51,14 @@ export default function Home() {
         <div className="pointer-events-none absolute left-1/2 top-0 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl" />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 md:pb-20 md:pt-24 lg:px-8">
           <h1 className="max-w-4xl text-4xl font-display tracking-tight text-stone-900 md:text-6xl">
-            Run your private chef business from one place.
+            The business OS built by a chef, for chefs.
           </h1>
           <p className="mt-4 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
-            Built for Private Chefs
+            Designed by Someone Who Gets It
           </p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-600 md:text-lg">
-            Events, clients, menus, and payments — finally in one calm workspace.
+            Private dinners, grazing tables, catering — whatever your craft, manage every inquiry,
+            event, menu, and payment from one calm workspace.
           </p>
           <div className="mt-8 flex w-full max-w-md flex-col gap-3 sm:flex-row">
             <Link

@@ -1,7 +1,15 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { useRouter } from 'next/navigation'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { Input } from '@/components/ui/input'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
@@ -21,6 +29,7 @@ interface ClientsTableProps {
 }
 
 export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
+  const router = useRouter()
   const [search, setSearch] = useState('')
   const [sortBy, setSortBy] = useState<'name' | 'created' | 'spent'>('created')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
@@ -28,7 +37,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
   // Filter and sort clients
   const filteredAndSortedClients = useMemo(() => {
     // Filter by search
-    let filtered = clients.filter(client => {
+    let filtered = clients.filter((client) => {
       const searchLower = search.toLowerCase()
       return (
         client.full_name.toLowerCase().includes(searchLower) ||
@@ -138,7 +147,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
               <TableRow
                 key={client.id}
                 className="cursor-pointer"
-                onClick={() => window.location.href = `/clients/${client.id}`}
+                onClick={() => router.push(`/clients/${client.id}`)}
               >
                 <TableCell className="font-medium">{client.full_name}</TableCell>
                 <TableCell>

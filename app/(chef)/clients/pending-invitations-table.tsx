@@ -1,13 +1,21 @@
 'use client'
 
 import { useState } from 'react'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cancelInvitation } from '@/lib/clients/actions'
 import { format, differenceInDays } from 'date-fns'
 import { useRouter } from 'next/navigation'
 import { Tables } from '@/types/database'
+import { toast } from 'sonner'
 
 interface PendingInvitationsTableProps {
   invitations: Tables<'client_invitations'>[]
@@ -27,7 +35,7 @@ export function PendingInvitationsTable({ invitations }: PendingInvitationsTable
       await cancelInvitation(invitationId)
       router.refresh()
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to cancel invitation')
+      toast.error(err instanceof Error ? err.message : 'Failed to cancel invitation')
     } finally {
       setCancelling(null)
     }
@@ -36,7 +44,7 @@ export function PendingInvitationsTable({ invitations }: PendingInvitationsTable
   function copyToClipboard(token: string) {
     const url = `${window.location.origin}/auth/client-signup?token=${token}`
     navigator.clipboard.writeText(url)
-    alert('Invitation link copied to clipboard!')
+    toast.success('Invitation link copied to clipboard!')
   }
 
   function getStatus(expiresAt: string) {

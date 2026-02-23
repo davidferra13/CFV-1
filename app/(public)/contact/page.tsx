@@ -101,7 +101,7 @@ export default function ContactPage() {
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">Talk to us</h1>
-          <p className="text-lg md:text-xl text-stone-600">We respond within 24 hours.</p>
+          <p className="text-lg md:text-xl text-stone-600">We respond within 1 business day.</p>
         </div>
       </section>
 
@@ -133,7 +133,7 @@ export default function ContactPage() {
                         <div>
                           <h4 className="font-semibold text-green-900 mb-1">Message sent!</h4>
                           <p className="text-green-700 text-sm">
-                            We&apos;ll respond within 24 hours.
+                            We&apos;ll respond within 1 business day.
                           </p>
                         </div>
                       </div>

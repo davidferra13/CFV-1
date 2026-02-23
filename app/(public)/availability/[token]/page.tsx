@@ -18,22 +18,59 @@ export default async function PublicAvailabilityPage({
 
   if (!shareToken) {
     return (
-      <div className="max-w-md mx-auto mt-20 text-center">
-        <h1 className="text-xl font-bold text-stone-900">Link Not Found</h1>
-        <p className="text-sm text-stone-500 mt-2">
-          This availability link is invalid or has been revoked.
-        </p>
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100">
+            <svg
+              className="h-7 w-7 text-stone-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.86-2.314a4.5 4.5 0 0 0-1.242-7.244l4.5-4.5a4.5 4.5 0 0 1 6.364 6.364l-1.757 1.757"
+              />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-stone-900">Link Not Found</h1>
+          <p className="text-sm text-stone-500 mt-2">
+            This availability link is invalid or has been revoked.
+          </p>
+          <p className="text-xs text-stone-400 mt-4">
+            Please contact your chef directly for an updated link.
+          </p>
+        </div>
       </div>
     )
   }
 
   if (shareToken.expires_at && new Date(shareToken.expires_at) < new Date()) {
     return (
-      <div className="max-w-md mx-auto mt-20 text-center">
-        <h1 className="text-xl font-bold text-stone-900">Link Expired</h1>
-        <p className="text-sm text-stone-500 mt-2">
-          This availability link has expired. Please request a new one.
-        </p>
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <div className="max-w-md text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100">
+            <svg
+              className="h-7 w-7 text-stone-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
+            </svg>
+          </div>
+          <h1 className="text-xl font-bold text-stone-900">Link Expired</h1>
+          <p className="text-sm text-stone-500 mt-2">
+            This availability link has expired. Please request a new one from your chef.
+          </p>
+        </div>
       </div>
     )
   }

@@ -61,11 +61,11 @@ export function InquiryForm({
       const available = await isAIConfigured()
       setAiAvailable(available)
       if (!available) {
-        setError('Smart import not configured. Set GEMINI_API_KEY in .env.local.')
+        setError('Smart import is temporarily unavailable. Please enter details manually.')
         return
       }
     } else if (!aiAvailable) {
-      setError('Smart import not configured. Set GEMINI_API_KEY in .env.local.')
+      setError('Smart import is temporarily unavailable. Please enter details manually.')
       return
     }
     setSmartFillOpen(true)
@@ -80,10 +80,14 @@ export function InquiryForm({
     if (data.confirmed_guest_count) setGuestCount(String(data.confirmed_guest_count))
     if (data.confirmed_location) setLocation(data.confirmed_location)
     if (data.confirmed_occasion) setOccasion(data.confirmed_occasion)
-    if (data.confirmed_budget_cents) setBudgetAmount(formatCentsToDisplay(data.confirmed_budget_cents))
-    if (data.confirmed_dietary_restrictions.length > 0) setDietaryRestrictions(data.confirmed_dietary_restrictions.join(', '))
-    if (data.confirmed_service_expectations) setServiceExpectations(data.confirmed_service_expectations)
-    if (data.confirmed_cannabis_preference) setCannabisPreference(data.confirmed_cannabis_preference)
+    if (data.confirmed_budget_cents)
+      setBudgetAmount(formatCentsToDisplay(data.confirmed_budget_cents))
+    if (data.confirmed_dietary_restrictions.length > 0)
+      setDietaryRestrictions(data.confirmed_dietary_restrictions.join(', '))
+    if (data.confirmed_service_expectations)
+      setServiceExpectations(data.confirmed_service_expectations)
+    if (data.confirmed_cannabis_preference)
+      setCannabisPreference(data.confirmed_cannabis_preference)
     if (data.source_message) setSourceMessage(data.source_message)
     if (data.notes) setNotes(data.notes)
     if (data.referral_source) setReferralSource(data.referral_source)
@@ -122,7 +126,7 @@ export function InquiryForm({
   const handleClientSelect = (clientId: string) => {
     setSelectedClientId(clientId)
     if (clientId) {
-      const client = clients.find(c => c.id === clientId)
+      const client = clients.find((c) => c.id === clientId)
       if (client) {
         setClientName(client.full_name)
         setClientEmail(client.email)
@@ -161,7 +165,10 @@ export function InquiryForm({
         confirmed_occasion: occasion || undefined,
         confirmed_budget_cents: budgetCents,
         confirmed_dietary_restrictions: dietaryRestrictions
-          ? dietaryRestrictions.split(',').map(s => s.trim()).filter(Boolean)
+          ? dietaryRestrictions
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean)
           : null,
         confirmed_service_expectations: serviceExpectations || undefined,
         confirmed_cannabis_preference: cannabisPreference || undefined,
@@ -196,9 +203,9 @@ export function InquiryForm({
     { value: 'other', label: 'Other' },
   ]
 
-  const clientOptions = clients.map(c => ({
+  const clientOptions = clients.map((c) => ({
     value: c.id,
-    label: `${c.full_name} (${c.email})`
+    label: `${c.full_name} (${c.email})`,
   }))
 
   return (
@@ -219,7 +226,9 @@ export function InquiryForm({
           >
             Paste from text
           </button>
-          <span className="text-xs text-stone-400">Quick form fill from messages, emails, or notes</span>
+          <span className="text-xs text-stone-400">
+            Quick form fill from messages, emails, or notes
+          </span>
         </div>
 
         <SmartFillModal
@@ -228,7 +237,9 @@ export function InquiryForm({
           onFill={handleSmartFill}
           parseFn={parseInquiryFromText}
           title="Smart Fill - Paste Text"
-          placeholder={"Paste a text thread, email, DM, or notes about this inquiry...\n\nExample:\n\"Hi! I'm Sarah, looking for a private chef for our anniversary dinner on March 15th. We'll be 8 people at our home. Budget around $200/person. My husband has a shellfish allergy. Found you on Instagram!\""}
+          placeholder={
+            'Paste a text thread, email, DM, or notes about this inquiry...\n\nExample:\n"Hi! I\'m Sarah, looking for a private chef for our anniversary dinner on March 15th. We\'ll be 8 people at our home. Budget around $200/person. My husband has a shellfish allergy. Found you on Instagram!"'
+          }
         />
 
         {/* === REQUIRED SECTION === */}
@@ -272,14 +283,20 @@ export function InquiryForm({
 
             <Select
               label="Referral Partner"
-              options={partners.map(p => ({
+              options={partners.map((p) => ({
                 value: p.id,
                 label: `${p.name} (${
-                  p.partner_type === 'airbnb_host' ? 'Airbnb' :
-                  p.partner_type === 'business' ? 'Business' :
-                  p.partner_type === 'platform' ? 'Platform' :
-                  p.partner_type === 'venue' ? 'Venue' :
-                  p.partner_type === 'individual' ? 'Individual' : 'Other'
+                  p.partner_type === 'airbnb_host'
+                    ? 'Airbnb'
+                    : p.partner_type === 'business'
+                      ? 'Business'
+                      : p.partner_type === 'platform'
+                        ? 'Platform'
+                        : p.partner_type === 'venue'
+                          ? 'Venue'
+                          : p.partner_type === 'individual'
+                            ? 'Individual'
+                            : 'Other'
                 })`,
               }))}
               value={selectedPartnerId}
@@ -293,7 +310,7 @@ export function InquiryForm({
             {selectedPartnerId && (partnerLocations[selectedPartnerId] || []).length > 0 && (
               <Select
                 label="Partner Location"
-                options={(partnerLocations[selectedPartnerId] || []).map(loc => ({
+                options={(partnerLocations[selectedPartnerId] || []).map((loc) => ({
                   value: loc.id,
                   label: `${loc.name}${loc.city ? ` — ${loc.city}${loc.state ? `, ${loc.state}` : ''}` : ''}`,
                 }))}
@@ -412,9 +429,7 @@ export function InquiryForm({
 
         {/* === CONTEXT === */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider">
-            Context
-          </h3>
+          <h3 className="text-sm font-semibold text-stone-500 uppercase tracking-wider">Context</h3>
 
           <Textarea
             label="Original Message"
@@ -435,11 +450,7 @@ export function InquiryForm({
 
         {/* === SUBMIT === */}
         <div className="flex gap-3 pt-4 border-t">
-          <Button
-            type="submit"
-            loading={loading}
-            disabled={loading}
-          >
+          <Button type="submit" loading={loading} disabled={loading}>
             Log Inquiry
           </Button>
           <Button

@@ -66,7 +66,7 @@ export default function PricingPage() {
                   EVERYTHING YOU NEED
                 </span>
               </div>
-              <CardTitle className="text-2xl mb-4">Professional Chef</CardTitle>
+              <CardTitle className="text-2xl mb-4">Everything You Need</CardTitle>
               <div className="mb-2">
                 <span className="text-5xl font-bold text-stone-900">$29</span>
                 <span className="text-stone-600 text-lg">/month</span>
@@ -87,7 +87,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Unlimited events</span>
+                  <span className="text-stone-700">Unlimited events &amp; clients</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -101,7 +101,9 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Unlimited clients</span>
+                  <span className="text-stone-700">
+                    Inquiry-to-payout pipeline — track every step
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -115,7 +117,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Client portal access</span>
+                  <span className="text-stone-700">Menus, recipes &amp; food costing</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -129,7 +131,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Secure online payments</span>
+                  <span className="text-stone-700">Invoices, payments &amp; expense tracking</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -143,7 +145,9 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Income &amp; expense tracking</span>
+                  <span className="text-stone-700">
+                    Client portal — proposals, approvals &amp; messaging
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -157,7 +161,9 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Email support</span>
+                  <span className="text-stone-700">
+                    Auto-generated documents when milestones hit
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -171,7 +177,9 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Menu management</span>
+                  <span className="text-stone-700">
+                    Prep lists, shopping lists &amp; kitchen ops
+                  </span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -185,7 +193,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Client communication tools</span>
+                  <span className="text-stone-700">Calendar, scheduling &amp; email support</span>
                 </li>
               </ul>
               <p className="text-xs text-stone-500 text-center mb-2">No credit card required</p>
@@ -205,10 +213,11 @@ export default function PricingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-stone-900 mb-4">
-              Ready to streamline your chef business?
+              Ready to ditch the spreadsheets?
             </h2>
             <p className="text-lg text-stone-600 mb-8">
-              Join professional chefs who trust ChefFlow to manage their business
+              Built by a chef who got tired of juggling it all — join the chefs who let ChefFlow
+              handle the admin
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link

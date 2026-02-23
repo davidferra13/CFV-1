@@ -61,6 +61,42 @@ export default async function CalendarPage({
         </div>
       </div>
 
+      {unifiedItems.length === 0 && waitlistEntries.length === 0 && (
+        <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
+            <svg
+              className="h-7 w-7 text-brand-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+              />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-stone-900">Your calendar is empty</h2>
+          <p className="mt-2 text-sm text-stone-500 max-w-md mx-auto">
+            Events, prep days, and personal commitments will appear here once you start scheduling.
+          </p>
+          <div className="mt-5 flex justify-center gap-3">
+            <Link href="/events/new">
+              <Button variant="primary" size="sm">
+                Create an Event
+              </Button>
+            </Link>
+            <Link href="/inquiries/new">
+              <Button variant="secondary" size="sm">
+                Log an Inquiry
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6">
         <div className="min-w-0">
           <AvailabilityCalendarClient

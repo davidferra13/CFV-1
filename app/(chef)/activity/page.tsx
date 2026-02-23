@@ -54,6 +54,33 @@ export default async function ActivityPage() {
         </p>
       </div>
 
+      {resumeItems.length === 0 &&
+        chefActivityResult.items.length === 0 &&
+        clientActivityResult.items.length === 0 && (
+          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50">
+              <svg
+                className="h-6 w-6 text-brand-600"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+            </div>
+            <h2 className="text-lg font-semibold text-stone-900">No activity yet</h2>
+            <p className="mt-2 text-sm text-stone-500 max-w-md mx-auto">
+              As you create events, manage clients, and work through your pipeline, your actions
+              will be logged here.
+            </p>
+          </div>
+        )}
+
       <ActivityPageClient
         resumeItems={resumeItems}
         initialChefActivity={chefActivityResult.items}

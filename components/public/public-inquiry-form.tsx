@@ -328,11 +328,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center">
-            <h2 className="text-4xl font-semibold text-stone-900 underline underline-offset-4">
-              Book Now
-            </h2>
-            <p className="text-3xl font-semibold text-stone-800 underline underline-offset-4 mt-6">
-              Please fill out the following
+            <h2 className="text-3xl font-semibold text-stone-900">Book Now</h2>
+            <p className="text-base text-stone-500 mt-2">
+              Fill out the details below and we&apos;ll be in touch.
             </p>
           </div>
 

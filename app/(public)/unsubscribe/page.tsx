@@ -63,8 +63,10 @@ function UnsubscribeResult({
             marginBottom: '32px',
           }}
         >
-          <span style={{ color: '#ffffff', fontWeight: 700, fontSize: '18px', letterSpacing: '-0.3px' }}>
-            CheFlow
+          <span
+            style={{ color: '#ffffff', fontWeight: 700, fontSize: '18px', letterSpacing: '-0.3px' }}
+          >
+            ChefFlow
           </span>
         </div>
 
@@ -78,8 +80,8 @@ function UnsubscribeResult({
               {chefName ? <strong>{chefName}</strong> : 'this chef'}.
             </p>
             <p style={{ fontSize: '13px', color: '#9ca3af', margin: '0' }}>
-              You&apos;ll still receive important emails about events you&apos;ve booked,
-              quotes, and payments.
+              You&apos;ll still receive important emails about events you&apos;ve booked, quotes,
+              and payments.
             </p>
           </>
         ) : (

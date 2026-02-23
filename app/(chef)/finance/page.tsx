@@ -122,6 +122,15 @@ export default async function FinancePage() {
         </p>
       </div>
 
+      {summary.totalRevenueCents === 0 && summary.totalRefundsCents === 0 && (
+        <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
+          <p className="text-sm text-stone-600">
+            No financial activity yet. Once you record your first payment or expense, your numbers
+            will appear here.
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-stone-900">
