@@ -8,24 +8,25 @@ import { BaseLayout } from './base-layout'
 import type { CallType } from '@/lib/calls/actions'
 
 const CALL_TYPE_LABELS: Record<CallType, string> = {
-  discovery:            'discovery call',
-  follow_up:            'follow-up call',
+  discovery: 'discovery call',
+  follow_up: 'follow-up call',
   proposal_walkthrough: 'proposal walkthrough',
-  pre_event_logistics:  'pre-event logistics call',
-  vendor_supplier:      'vendor call',
-  partner:              'partner call',
-  general:              'call',
+  pre_event_logistics: 'pre-event logistics call',
+  vendor_supplier: 'vendor call',
+  partner: 'partner call',
+  general: 'call',
+  prospecting: 'prospecting call',
 }
 
 type CallReminderEmailProps = {
   recipientName: string
   chefName: string
   callType: CallType
-  scheduledAt: string    // ISO string
+  scheduledAt: string // ISO string
   durationMinutes: number
   title: string | null
   isChefReminder: boolean
-  hoursUntil?: number    // e.g. 24 or 1 (for subject line)
+  hoursUntil?: number // e.g. 24 or 1 (for subject line)
 }
 
 export function CallReminderEmail({
@@ -41,10 +42,15 @@ export function CallReminderEmail({
   const typeLabel = CALL_TYPE_LABELS[callType] ?? 'call'
   const date = new Date(scheduledAt)
   const formattedDate = date.toLocaleDateString('en-US', {
-    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   })
   const formattedTime = date.toLocaleTimeString('en-US', {
-    hour: 'numeric', minute: '2-digit', hour12: true,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   })
   const callLabel = title ?? `${typeLabel.charAt(0).toUpperCase()}${typeLabel.slice(1)}`
 
@@ -65,9 +71,8 @@ export function CallReminderEmail({
           </Text>
           <Text style={paragraph}>Hi {recipientName},</Text>
           <Text style={paragraph}>
-            You have a <strong>{callLabel}</strong> scheduled for{' '}
-            <strong>{formattedDate}</strong> at <strong>{formattedTime}</strong>
-            {' '}({durationMinutes} min).
+            You have a <strong>{callLabel}</strong> scheduled for <strong>{formattedDate}</strong>{' '}
+            at <strong>{formattedTime}</strong> ({durationMinutes} min).
           </Text>
           <Text style={paragraph}>
             Open ChefFlow to review your prep checklist and agenda before the call.
@@ -79,12 +84,12 @@ export function CallReminderEmail({
           <Text style={paragraph}>Hi {recipientName},</Text>
           <Text style={paragraph}>
             {chefName} has scheduled a <strong>{callLabel}</strong> with you for{' '}
-            <strong>{formattedDate}</strong> at <strong>{formattedTime}</strong>
-            {' '}({durationMinutes} min).
+            <strong>{formattedDate}</strong> at <strong>{formattedTime}</strong> ({durationMinutes}{' '}
+            min).
           </Text>
           <Text style={paragraph}>
-            Please make sure you&apos;re available at that time. If you need to reschedule,
-            reach out to {chefName} directly.
+            Please make sure you&apos;re available at that time. If you need to reschedule, reach
+            out to {chefName} directly.
           </Text>
         </>
       )}

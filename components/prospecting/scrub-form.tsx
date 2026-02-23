@@ -132,6 +132,38 @@ export function ScrubForm() {
             )}
           </div>
         )}
+
+        {/* How It Works — always visible */}
+        <div className="rounded-lg bg-stone-50 border border-stone-200 p-4 space-y-3">
+          <h4 className="text-sm font-medium text-stone-700">How AI Scrub Works</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-stone-600">
+            <div className="space-y-1">
+              <p className="font-medium text-stone-800">Phase 1: Generate</p>
+              <p>
+                Ollama (local AI) generates a list of real businesses or individuals matching your
+                query. Up to 10 prospects per scrub.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-stone-800">Phase 2: Enrich</p>
+              <p>
+                For the top 5, the system searches the public web for their actual website, phone
+                number, email, and social profiles.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="font-medium text-stone-800">Phase 3: Strategize</p>
+              <p>
+                AI writes personalized talking points and an approach strategy for each prospect so
+                you sound prepared when you call.
+              </p>
+            </div>
+          </div>
+          <p className="text-xs text-stone-500">
+            Duplicates are automatically skipped. All data comes from public sources. Ollama must be
+            running.
+          </p>
+        </div>
       </CardContent>
     </Card>
   )

@@ -16,6 +16,7 @@ export type ChefActivityDomain =
   | 'marketing'
   | 'ai'
   | 'settings'
+  | 'prospecting'
 
 export type ChefActivityAction =
   // Events
@@ -303,6 +304,9 @@ export type ChefActivityAction =
   | 'onboarding_step_completed'
   | 'api_key_created'
   | 'api_key_revoked'
+  // Prospecting
+  | 'prospect_called'
+  | 'prospect_converted'
 
 export type ChefActivityEntry = {
   id: string
@@ -366,4 +370,5 @@ export const DOMAIN_CONFIG: Record<
   marketing: { label: 'Marketing', color: 'text-fuchsia-700', bgColor: 'bg-fuchsia-100' },
   ai: { label: 'AI', color: 'text-violet-700', bgColor: 'bg-violet-100' },
   settings: { label: 'Settings', color: 'text-gray-600', bgColor: 'bg-gray-100' },
+  prospecting: { label: 'Prospecting', color: 'text-orange-700', bgColor: 'bg-orange-100' },
 }

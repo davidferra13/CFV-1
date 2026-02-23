@@ -47,6 +47,11 @@ export function CallQueueClient() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <p className="text-sm text-stone-600">
+              Select how many prospects to call today. The queue automatically prioritizes:
+              follow-ups due first, then fresh new leads, then older contacts you haven&apos;t
+              reached recently.
+            </p>
             <div className="flex items-center gap-3">
               <label className="text-sm text-stone-700">How many calls today?</label>
               <select
@@ -72,6 +77,23 @@ export function CallQueueClient() {
                 'Build Queue'
               )}
             </Button>
+            <div className="rounded-lg bg-stone-50 border border-stone-200 p-3 text-xs text-stone-600 space-y-1">
+              <p className="font-medium text-stone-700">How to use the queue:</p>
+              <ul className="list-disc list-inside space-y-0.5">
+                <li>
+                  Click the <strong>Call</strong> button to dial the prospect directly
+                </li>
+                <li>
+                  Expand a card to see their approach strategy, talking points, and call script
+                </li>
+                <li>After each call, select an outcome (No Answer, Follow Up, Booked, etc.)</li>
+                <li>The prospect&apos;s status updates automatically based on the outcome</li>
+                <li>
+                  &ldquo;Spoke &mdash; Booked Tasting!&rdquo; converts them into a real ChefFlow
+                  inquiry
+                </li>
+              </ul>
+            </div>
           </CardContent>
         </Card>
       )}

@@ -9,7 +9,16 @@ import { getProspects, getProspectStats } from '@/lib/prospecting/actions'
 import { ProspectTable } from '@/components/prospecting/prospect-table'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Search, Zap, Phone, Target, CheckCircle } from 'lucide-react'
+import {
+  Search,
+  Zap,
+  Phone,
+  Target,
+  CheckCircle,
+  BookOpen,
+  ArrowRight,
+  FileText,
+} from 'lucide-react'
 
 export const metadata: Metadata = { title: 'Prospecting - ChefFlow' }
 
@@ -42,14 +51,18 @@ export default async function ProspectingPage({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button href="/prospecting/scrub" className="flex items-center gap-2">
-            <Zap className="h-4 w-4" />
-            AI Scrub
-          </Button>
-          <Button href="/prospecting/queue" variant="secondary" className="flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            Call Queue
-          </Button>
+          <Link href="/prospecting/scrub">
+            <Button className="flex items-center gap-2">
+              <Zap className="h-4 w-4" />
+              AI Scrub
+            </Button>
+          </Link>
+          <Link href="/prospecting/queue">
+            <Button variant="secondary" className="flex items-center gap-2">
+              <Phone className="h-4 w-4" />
+              Call Queue
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -122,6 +135,116 @@ export default async function ProspectingPage({
           </form>
         </CardContent>
       </Card>
+
+      {/* Getting Started Guide — only shows when database is empty */}
+      {stats.total === 0 && (
+        <Card className="border-brand-200 bg-gradient-to-br from-brand-50/50 to-white">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-brand-800">
+              <BookOpen className="h-5 w-5" />
+              Getting Started with Prospecting
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <p className="text-stone-600">
+              The Prospecting Hub is your outbound sales machine. Instead of waiting for clients to
+              find you, you go out and find them. Here&apos;s how it works:
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-100 text-brand-700 font-bold text-sm">
+                    1
+                  </div>
+                  <h3 className="font-semibold text-stone-900">AI Scrub</h3>
+                </div>
+                <p className="text-sm text-stone-600">
+                  Type any query like &ldquo;yacht clubs in Cape Cod&rdquo; or &ldquo;luxury wedding
+                  planners in the Hamptons.&rdquo; AI researches real businesses, finds their
+                  contact info, and writes you personalized approach strategies.
+                </p>
+                <Link
+                  href="/prospecting/scrub"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-700"
+                >
+                  Run your first scrub <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+
+              <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-100 text-brand-700 font-bold text-sm">
+                    2
+                  </div>
+                  <h3 className="font-semibold text-stone-900">Call Queue</h3>
+                </div>
+                <p className="text-sm text-stone-600">
+                  Build a daily call list. The system prioritizes follow-ups first, then fresh
+                  leads, then older contacts. Log each call&apos;s outcome and it automatically
+                  moves prospects through your pipeline.
+                </p>
+                <Link
+                  href="/prospecting/queue"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-700"
+                >
+                  Build a call queue <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+
+              <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-100 text-brand-700 font-bold text-sm">
+                    3
+                  </div>
+                  <h3 className="font-semibold text-stone-900">Call Scripts</h3>
+                </div>
+                <p className="text-sm text-stone-600">
+                  Write reusable cold-calling scripts for different prospect types. Assign scripts
+                  to categories (yacht clubs, wedding planners, etc.) and they auto-suggest during
+                  calls.
+                </p>
+                <Link
+                  href="/prospecting/scripts"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-brand-600 hover:text-brand-700"
+                >
+                  Create a script <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
+              <h4 className="font-medium text-amber-900 text-sm mb-2">How the Pipeline Works</h4>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-amber-800">
+                <span className="rounded-full bg-blue-100 px-2.5 py-1 font-medium">New</span>
+                <ArrowRight className="h-3 w-3" />
+                <span className="rounded-full bg-amber-100 px-2.5 py-1 font-medium">Queued</span>
+                <ArrowRight className="h-3 w-3" />
+                <span className="rounded-full bg-stone-200 px-2.5 py-1 font-medium">Called</span>
+                <ArrowRight className="h-3 w-3" />
+                <span className="rounded-full bg-amber-100 px-2.5 py-1 font-medium">Follow Up</span>
+                <ArrowRight className="h-3 w-3" />
+                <span className="rounded-full bg-green-100 px-2.5 py-1 font-medium">
+                  Converted!
+                </span>
+              </div>
+              <p className="text-xs text-amber-700 mt-2">
+                When a prospect books a tasting, they automatically convert into a real ChefFlow
+                inquiry. &ldquo;Not interested&rdquo; and &ldquo;dead leads&rdquo; get archived but
+                stay in your database in case things change later.
+              </p>
+            </div>
+
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-4">
+              <h4 className="font-medium text-blue-900 text-sm mb-2">Requires Ollama</h4>
+              <p className="text-xs text-blue-700">
+                AI Scrub uses your local Ollama installation to research prospects. Make sure Ollama
+                is running before starting a scrub. Your data never leaves your machine.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Prospect Table */}
       <Card>

@@ -7,7 +7,7 @@ import { requireAdmin } from '@/lib/auth/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import type { Prospect } from './actions'
+import type { Prospect } from './types'
 import { CALL_OUTCOMES } from './constants'
 
 // ── Build Daily Queue ────────────────────────────────────────────────────────
@@ -189,8 +189,8 @@ export async function logProspectCall(
     await logChefActivity({
       tenantId: user.tenantId!,
       actorId: user.id,
-      action: 'prospect_called' as any,
-      domain: 'prospecting' as any,
+      action: 'prospect_called',
+      domain: 'prospecting',
       entityType: 'prospect',
       entityId: prospectId,
       summary: `Called ${prospect.name}: ${outcome.label}`,
@@ -231,11 +231,12 @@ export async function convertProspectToInquiry(prospectId: string) {
       tenant_id: user.tenantId!,
       status: 'new',
       channel: 'outbound_prospecting',
-      notes: [
+      first_contact_at: new Date().toISOString(),
+      source_message: [
         `Converted from prospect: ${prospect.name}`,
         prospect.category ? `Category: ${prospect.category}` : '',
         prospect.description ?? '',
-        prospect.approach_strategy ? `\nApproach: ${prospect.approach_strategy}` : '',
+        prospect.approach_strategy ? `Approach: ${prospect.approach_strategy}` : '',
       ]
         .filter(Boolean)
         .join('\n'),

@@ -59,15 +59,15 @@ Return ONLY valid JSON: { "talkingPoints": "...", "approachStrategy": "..." }`
 export function buildApproachUserPrompt(prospect: {
   name: string
   category: string
-  description?: string
-  city?: string
-  state?: string
-  annualEventsEstimate?: string
-  avgEventBudget?: string
-  eventTypesHosted?: string[]
-  competitorsPresent?: string
-  luxuryIndicators?: string[]
-  enrichedDetails?: string
+  description?: string | null
+  city?: string | null
+  state?: string | null
+  annualEventsEstimate?: string | null
+  avgEventBudget?: string | null
+  eventTypesHosted?: string[] | null
+  competitorsPresent?: string | null
+  luxuryIndicators?: string[] | null
+  enrichedDetails?: string | null
 }): string {
   const lines = [
     `Prospect: ${prospect.name}`,

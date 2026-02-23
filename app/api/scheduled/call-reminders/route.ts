@@ -8,6 +8,7 @@
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import type { CallType } from '@/lib/calls/actions'
 
 async function handleCallReminders(request: NextRequest): Promise<NextResponse> {
   // Validate cron secret
@@ -116,7 +117,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         react: CallReminderEmail({
           recipientName: chef.displayName,
           chefName: chef.displayName,
-          callType: call.call_type,
+          callType: call.call_type as CallType,
           scheduledAt: call.scheduled_at,
           durationMinutes: call.duration_minutes,
           title: call.title ?? null,
@@ -150,7 +151,7 @@ async function handleCallReminders(request: NextRequest): Promise<NextResponse> 
         react: CallReminderEmail({
           recipientName: chef.displayName,
           chefName: chef.displayName,
-          callType: call.call_type,
+          callType: call.call_type as CallType,
           scheduledAt: call.scheduled_at,
           durationMinutes: call.duration_minutes,
           title: call.title ?? null,

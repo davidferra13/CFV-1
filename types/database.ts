@@ -20608,6 +20608,7 @@ export type Database = {
         | "walk_in"
         | "wix"
         | "campaign_response"
+        | "outbound_prospecting"
       inquiry_note_category:
         | "general"
         | "inspiration"
@@ -21153,6 +21154,7 @@ export const Constants = {
         "walk_in",
         "wix",
         "campaign_response",
+        "outbound_prospecting",
       ],
       inquiry_note_category: [
         "general",
