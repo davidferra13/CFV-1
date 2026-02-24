@@ -56,19 +56,19 @@ export function ProtectedTimeForm({ onClose }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Title</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Title</label>
         <input
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Family weekend, Recovery day"
-          className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+          className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Start date</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Start date</label>
           <input
             type="date"
             value={startDate}
@@ -78,27 +78,27 @@ export function ProtectedTimeForm({ onClose }: Props) {
                 setEndDate(e.target.value)
               }
             }}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">End date</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">End date</label>
           <input
             type="date"
             value={endDate}
             min={startDate}
             onChange={(e) => setEndDate(e.target.value)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Block type</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Block type</label>
         <select
           value={blockType}
           onChange={(e) => setBlockType(e.target.value as ProtectedBlockType)}
-          className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-white"
+          className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-surface"
         >
           <option value="protected_personal">Protected Personal Time</option>
           <option value="rest">Rest Day</option>
@@ -106,7 +106,7 @@ export function ProtectedTimeForm({ onClose }: Props) {
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 rounded-lg bg-red-50 border border-red-100 px-3 py-2">
+        <p className="text-sm text-red-600 rounded-lg bg-red-950 border border-red-100 px-3 py-2">
           {error}
         </p>
       )}

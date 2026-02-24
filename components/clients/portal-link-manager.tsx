@@ -35,7 +35,12 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
   }
 
   async function handleRevoke() {
-    if (!confirm('Revoke this portal link? The client will no longer be able to access their portal with the current link.')) return
+    if (
+      !confirm(
+        'Revoke this portal link? The client will no longer be able to access their portal with the current link.'
+      )
+    )
+      return
     setLoading(true)
     try {
       await revokeClientPortalToken(clientId)
@@ -61,7 +66,7 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="text-xs font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50"
+          className="text-xs font-medium text-brand-600 hover:text-brand-400 disabled:opacity-50"
         >
           {loading ? 'Generating…' : 'Generate portal link'}
         </button>
@@ -73,21 +78,25 @@ export function PortalLinkManager({ clientId, initialToken, initialCreatedAt }: 
     <div className="space-y-1.5">
       <div className="flex items-center gap-2">
         <Link2 className="h-4 w-4 text-emerald-500 shrink-0" />
-        <span className="text-xs font-medium text-stone-700">Client Portal Active</span>
+        <span className="text-xs font-medium text-stone-300">Client Portal Active</span>
         {createdAt && (
           <span className="text-[10px] text-stone-400">
             Generated {new Date(createdAt).toLocaleDateString()}
           </span>
         )}
       </div>
-      <div className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-md px-3 py-1.5">
+      <div className="flex items-center gap-2 bg-stone-800 border border-stone-700 rounded-md px-3 py-1.5">
         <span className="text-xs text-stone-500 truncate flex-1 min-w-0">{portalUrl}</span>
         <button
           onClick={handleCopy}
-          className="shrink-0 text-stone-400 hover:text-stone-700 transition-colors"
+          className="shrink-0 text-stone-400 hover:text-stone-300 transition-colors"
           title="Copy link"
         >
-          {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+          {copied ? (
+            <Check className="h-3.5 w-3.5 text-emerald-500" />
+          ) : (
+            <Copy className="h-3.5 w-3.5" />
+          )}
         </button>
         <button
           onClick={handleGenerate}

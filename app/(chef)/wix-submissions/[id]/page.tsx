@@ -6,11 +6,11 @@ import { getWixSubmission, retryWixSubmission } from '@/lib/wix/submission-actio
 export const metadata: Metadata = { title: 'Wix Submission - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  pending: 'bg-amber-100 text-amber-800',
-  processing: 'bg-blue-100 text-blue-800',
-  completed: 'bg-green-100 text-green-800',
-  failed: 'bg-red-100 text-red-800',
-  duplicate: 'bg-stone-100 text-stone-600',
+  pending: 'bg-amber-900 text-amber-800',
+  processing: 'bg-blue-900 text-blue-800',
+  completed: 'bg-green-900 text-green-800',
+  failed: 'bg-red-900 text-red-800',
+  duplicate: 'bg-stone-800 text-stone-400',
 }
 
 export default async function WixSubmissionPage({ params }: { params: { id: string } }) {
@@ -27,13 +27,17 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-sm text-stone-500 mb-1">
-          <Link href="/inbox" className="hover:text-stone-700">Inbox</Link>
+          <Link href="/inbox" className="hover:text-stone-300">
+            Inbox
+          </Link>
           <span>/</span>
           <span>Wix Submission</span>
         </div>
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-stone-900">Wix Form Submission</h1>
-          <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${STATUS_STYLES[submission.status] ?? 'bg-stone-100 text-stone-600'}`}>
+          <h1 className="text-2xl font-bold text-stone-100">Wix Form Submission</h1>
+          <span
+            className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${STATUS_STYLES[submission.status] ?? 'bg-stone-800 text-stone-400'}`}
+          >
             {submission.status}
           </span>
         </div>
@@ -45,10 +49,14 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
 
       {/* Linked inquiry */}
       {submission.inquiry_id && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+        <div className="bg-green-950 border border-green-200 rounded-lg p-4 flex items-center justify-between">
           <div>
-            <p className="text-sm font-medium text-green-800">Inquiry created from this submission</p>
-            <p className="text-xs text-emerald-600 mt-0.5">This submission was processed and an inquiry was created.</p>
+            <p className="text-sm font-medium text-green-800">
+              Inquiry created from this submission
+            </p>
+            <p className="text-xs text-emerald-600 mt-0.5">
+              This submission was processed and an inquiry was created.
+            </p>
           </div>
           <Link
             href={`/inquiries/${submission.inquiry_id}`}
@@ -61,7 +69,7 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
 
       {/* Processing error */}
       {submission.status === 'failed' && submission.error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-950 border border-red-200 rounded-lg p-4">
           <p className="text-sm font-medium text-red-800">Processing failed</p>
           <p className="text-xs text-red-600 mt-1 font-mono">{submission.error}</p>
           <p className="text-xs text-red-500 mt-1">
@@ -89,7 +97,8 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
           </button>
           {submission.status === 'pending' && (
             <p className="text-xs text-stone-500 text-center mt-1.5">
-              This submission is waiting to be processed. You can trigger it now or it will run automatically within 5 minutes.
+              This submission is waiting to be processed. You can trigger it now or it will run
+              automatically within 5 minutes.
             </p>
           )}
         </form>
@@ -97,18 +106,21 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
 
       {/* Submitter info */}
       {(submission.submitter_name || submission.submitter_email || submission.submitter_phone) && (
-        <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 space-y-2">
-          <h2 className="text-sm font-semibold text-stone-700">Submitter</h2>
+        <div className="bg-stone-800 border border-stone-700 rounded-lg p-4 space-y-2">
+          <h2 className="text-sm font-semibold text-stone-300">Submitter</h2>
           {submission.submitter_name && (
             <div className="flex gap-2 text-sm">
               <span className="text-stone-500 w-14 shrink-0">Name</span>
-              <span className="text-stone-900">{submission.submitter_name}</span>
+              <span className="text-stone-100">{submission.submitter_name}</span>
             </div>
           )}
           {submission.submitter_email && (
             <div className="flex gap-2 text-sm">
               <span className="text-stone-500 w-14 shrink-0">Email</span>
-              <a href={`mailto:${submission.submitter_email}`} className="text-brand-600 hover:underline">
+              <a
+                href={`mailto:${submission.submitter_email}`}
+                className="text-brand-600 hover:underline"
+              >
                 {submission.submitter_email}
               </a>
             </div>
@@ -116,24 +128,24 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
           {submission.submitter_phone && (
             <div className="flex gap-2 text-sm">
               <span className="text-stone-500 w-14 shrink-0">Phone</span>
-              <span className="text-stone-900">{submission.submitter_phone}</span>
+              <span className="text-stone-100">{submission.submitter_phone}</span>
             </div>
           )}
         </div>
       )}
 
       {/* Raw payload */}
-      <div className="border border-stone-200 rounded-lg overflow-hidden">
-        <div className="bg-stone-100 border-b border-stone-200 px-4 py-2.5">
-          <h2 className="text-sm font-semibold text-stone-700">Raw Form Data</h2>
+      <div className="border border-stone-700 rounded-lg overflow-hidden">
+        <div className="bg-stone-800 border-b border-stone-700 px-4 py-2.5">
+          <h2 className="text-sm font-semibold text-stone-300">Raw Form Data</h2>
         </div>
-        <pre className="p-4 text-xs text-stone-700 overflow-x-auto bg-white leading-relaxed">
+        <pre className="p-4 text-xs text-stone-300 overflow-x-auto bg-surface leading-relaxed">
           {JSON.stringify(submission.raw_payload, null, 2)}
         </pre>
       </div>
 
       <div className="flex justify-start">
-        <Link href="/inbox" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/inbox" className="text-sm text-stone-500 hover:text-stone-300">
           ← Back to inbox
         </Link>
       </div>

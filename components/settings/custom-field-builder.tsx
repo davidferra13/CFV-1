@@ -135,11 +135,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
     <div className="space-y-6">
       {/* Add Field Button */}
       <div className="flex justify-end">
-        <Button
-          variant="primary"
-          onClick={() => setShowForm((v) => !v)}
-          disabled={isPending}
-        >
+        <Button variant="primary" onClick={() => setShowForm((v) => !v)} disabled={isPending}>
           {showForm ? (
             <>
               <ChevronUp className="h-4 w-4 mr-2" />
@@ -163,9 +159,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
           <CardContent className="space-y-4">
             {/* Entity type */}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                Attach to
-              </label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Attach to</label>
               <div className="flex gap-2">
                 {ENTITY_TYPES.map((et) => (
                   <button
@@ -175,7 +169,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
                     className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
                       entityType === et
                         ? 'bg-stone-900 text-white border-stone-900'
-                        : 'bg-white text-stone-700 border-stone-300 hover:border-stone-500'
+                        : 'bg-surface text-stone-300 border-stone-600 hover:border-stone-500'
                     }`}
                   >
                     {ENTITY_LABELS[et]}
@@ -186,28 +180,24 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
 
             {/* Field name */}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                Field Name
-              </label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Field Name</label>
               <input
                 type="text"
                 value={fieldName}
                 onChange={(e) => setFieldName(e.target.value)}
                 placeholder="e.g. Dietary Restrictions"
                 maxLength={100}
-                className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500"
+                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500"
               />
             </div>
 
             {/* Field type */}
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                Field Type
-              </label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Field Type</label>
               <select
                 value={fieldType}
                 onChange={(e) => setFieldType(e.target.value as CustomFieldType)}
-                className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500"
+                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500"
               >
                 {FIELD_TYPES.map((ft) => (
                   <option key={ft} value={ft}>
@@ -220,16 +210,15 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
             {/* Options (select / multi_select only) */}
             {needsOptions && (
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
-                  Options{' '}
-                  <span className="text-stone-400 font-normal">(comma-separated)</span>
+                <label className="block text-sm font-medium text-stone-300 mb-1">
+                  Options <span className="text-stone-400 font-normal">(comma-separated)</span>
                 </label>
                 <input
                   type="text"
                   value={optionsRaw}
                   onChange={(e) => setOptionsRaw(e.target.value)}
                   placeholder="e.g. Option A, Option B, Option C"
-                  className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500"
+                  className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500"
                 />
               </div>
             )}
@@ -241,9 +230,9 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
                 type="checkbox"
                 checked={isRequired}
                 onChange={(e) => setIsRequired(e.target.checked)}
-                className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-500"
+                className="h-4 w-4 rounded border-stone-600 text-stone-100 focus:ring-stone-500"
               />
-              <label htmlFor="is-required" className="text-sm text-stone-700 cursor-pointer">
+              <label htmlFor="is-required" className="text-sm text-stone-300 cursor-pointer">
                 Required field
               </label>
             </div>
@@ -280,20 +269,15 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
                   No custom fields yet. Click &quot;Add Custom Field&quot; above.
                 </p>
               ) : (
-                <div className="divide-y divide-stone-100">
+                <div className="divide-y divide-stone-800">
                   {fields.map((def) => (
-                    <div
-                      key={def.id}
-                      className="flex items-center justify-between py-3 gap-3"
-                    >
+                    <div key={def.id} className="flex items-center justify-between py-3 gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-medium text-stone-900 truncate">
+                          <span className="text-sm font-medium text-stone-100 truncate">
                             {def.field_name}
                           </span>
-                          {def.is_required && (
-                            <Badge variant="warning">Required</Badge>
-                          )}
+                          {def.is_required && <Badge variant="warning">Required</Badge>}
                         </div>
                         <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                           <span className="text-xs text-stone-500">
@@ -311,7 +295,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
                         size="sm"
                         onClick={() => handleDelete(def)}
                         disabled={isPending}
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50 shrink-0"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-950 shrink-0"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

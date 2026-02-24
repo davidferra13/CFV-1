@@ -69,7 +69,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       <div className="flex justify-between items-start">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold text-stone-900">{partner.name}</h1>
+            <h1 className="text-3xl font-bold text-stone-100">{partner.name}</h1>
             <Badge variant="info">
               {TYPE_LABELS[partner.partner_type] || partner.partner_type}
             </Badge>
@@ -77,7 +77,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
             {partner.status === 'inactive' && <Badge variant="error">Inactive</Badge>}
           </div>
           {partner.contact_name && (
-            <p className="text-stone-600 mt-1">Contact: {partner.contact_name}</p>
+            <p className="text-stone-400 mt-1">Contact: {partner.contact_name}</p>
           )}
           {partner.description && (
             <p className="text-stone-500 mt-2 max-w-2xl">{partner.description}</p>
@@ -127,7 +127,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       {/* Contact & Booking Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Contact Info</h2>
+          <h2 className="text-lg font-semibold text-stone-100 mb-4">Contact Info</h2>
           <div className="space-y-2 text-sm">
             {partner.email && (
               <p>
@@ -175,19 +175,19 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
         </Card>
 
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Internal Notes</h2>
+          <h2 className="text-lg font-semibold text-stone-100 mb-4">Internal Notes</h2>
           <div className="space-y-3 text-sm">
             {partner.notes ? (
-              <p className="text-stone-700 whitespace-pre-wrap">{partner.notes}</p>
+              <p className="text-stone-300 whitespace-pre-wrap">{partner.notes}</p>
             ) : (
               <p className="text-stone-400 italic">No relationship notes</p>
             )}
             {partner.commission_notes && (
-              <div className="pt-3 border-t border-stone-100">
+              <div className="pt-3 border-t border-stone-800">
                 <p className="text-xs font-medium text-stone-500 mb-1">
                   Commission / Referral Arrangement
                 </p>
-                <p className="text-stone-700">{partner.commission_notes}</p>
+                <p className="text-stone-300">{partner.commission_notes}</p>
               </div>
             )}
           </div>
@@ -197,8 +197,8 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       {/* Acquisition origin — captures the client→event→partner story */}
       {((partner as any).origin_client_id || (partner as any).acquisition_source) && (
         <Card className="p-6">
-          <h2 className="text-base font-semibold text-stone-900 mb-3">Partnership Origin</h2>
-          <div className="space-y-2 text-sm text-stone-600">
+          <h2 className="text-base font-semibold text-stone-100 mb-3">Partnership Origin</h2>
+          <div className="space-y-2 text-sm text-stone-400">
             {(partner as any).acquisition_source && (
               <p>
                 <span className="font-medium text-stone-500">Source:</span>{' '}
@@ -226,7 +226,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       {/* Locations */}
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-stone-900">
+          <h2 className="text-lg font-semibold text-stone-100">
             Locations ({partner.partner_locations?.length || 0})
           </h2>
         </div>
@@ -246,7 +246,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       <Card className="p-6">
         <div className="flex justify-between items-center mb-4">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">Assign Past Events</h2>
+            <h2 className="text-lg font-semibold text-stone-100">Assign Past Events</h2>
             <p className="text-sm text-stone-500 mt-1">
               Tag historical events to this partner and location for accurate reporting.
             </p>
@@ -267,7 +267,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
       {/* Service History */}
       {partnerEvents.length > 0 && (
         <Card className="p-6">
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">
+          <h2 className="text-lg font-semibold text-stone-100 mb-4">
             Service History ({partnerEvents.length} event{partnerEvents.length === 1 ? '' : 's'})
           </h2>
 
@@ -284,7 +284,7 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-stone-400" />
-                    <span className="font-medium text-stone-800">{loc.name}</span>
+                    <span className="font-medium text-stone-200">{loc.name}</span>
                     {(loc.city || loc.state) && (
                       <span className="text-sm text-stone-400">
                         {[loc.city, loc.state].filter(Boolean).join(', ')}
@@ -296,8 +296,8 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                     {revenue > 0 && ` · ${formatCents(revenue)}`}
                   </div>
                 </div>
-                <table className="w-full text-sm border border-stone-200 rounded-lg overflow-hidden">
-                  <thead className="bg-stone-50">
+                <table className="w-full text-sm border border-stone-700 rounded-lg overflow-hidden">
+                  <thead className="bg-stone-800">
                     <tr>
                       <th className="text-left px-3 py-2 text-stone-500 font-medium">Date</th>
                       <th className="text-left px-3 py-2 text-stone-500 font-medium">Occasion</th>
@@ -306,14 +306,14 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                       <th className="text-right px-3 py-2 text-stone-500 font-medium">Link</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-stone-100">
+                  <tbody className="divide-y divide-stone-800">
                     {evts.map((evt) => (
-                      <tr key={evt.id} className="hover:bg-stone-50">
-                        <td className="px-3 py-2 text-stone-700">
+                      <tr key={evt.id} className="hover:bg-stone-800">
+                        <td className="px-3 py-2 text-stone-300">
                           {format(new Date(evt.event_date), 'MMM d, yyyy')}
                         </td>
-                        <td className="px-3 py-2 text-stone-700">{evt.occasion || '—'}</td>
-                        <td className="px-3 py-2 text-right text-stone-700">{evt.guest_count}</td>
+                        <td className="px-3 py-2 text-stone-300">{evt.occasion || '—'}</td>
+                        <td className="px-3 py-2 text-right text-stone-300">{evt.guest_count}</td>
                         <td className="px-3 py-2">
                           <Badge variant={evt.status === 'completed' ? 'success' : 'default'}>
                             {evt.status}
@@ -340,12 +340,12 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
             <div
               className={
                 activeLocations.some((l: any) => (eventsByLocation[l.id] || []).length > 0)
-                  ? 'mt-6 pt-6 border-t border-stone-200'
+                  ? 'mt-6 pt-6 border-t border-stone-700'
                   : ''
               }
             >
               <div className="flex items-center justify-between mb-2">
-                <span className="font-medium text-stone-700 text-sm">
+                <span className="font-medium text-stone-300 text-sm">
                   {activeLocations.length > 0 ? 'No specific location' : 'All events'}
                 </span>
                 <span className="text-sm text-stone-500">
@@ -353,8 +353,8 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                   {unspecifiedEvents.reduce((s, e) => s + e.guest_count, 0)} guests
                 </span>
               </div>
-              <table className="w-full text-sm border border-stone-200 rounded-lg overflow-hidden">
-                <thead className="bg-stone-50">
+              <table className="w-full text-sm border border-stone-700 rounded-lg overflow-hidden">
+                <thead className="bg-stone-800">
                   <tr>
                     <th className="text-left px-3 py-2 text-stone-500 font-medium">Date</th>
                     <th className="text-left px-3 py-2 text-stone-500 font-medium">Occasion</th>
@@ -363,14 +363,14 @@ export default async function PartnerDetailPage({ params }: { params: { id: stri
                     <th className="text-right px-3 py-2 text-stone-500 font-medium">Link</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100">
+                <tbody className="divide-y divide-stone-800">
                   {unspecifiedEvents.map((evt) => (
-                    <tr key={evt.id} className="hover:bg-stone-50">
-                      <td className="px-3 py-2 text-stone-700">
+                    <tr key={evt.id} className="hover:bg-stone-800">
+                      <td className="px-3 py-2 text-stone-300">
                         {format(new Date(evt.event_date), 'MMM d, yyyy')}
                       </td>
-                      <td className="px-3 py-2 text-stone-700">{evt.occasion || '—'}</td>
-                      <td className="px-3 py-2 text-right text-stone-700">{evt.guest_count}</td>
+                      <td className="px-3 py-2 text-stone-300">{evt.occasion || '—'}</td>
+                      <td className="px-3 py-2 text-right text-stone-300">{evt.guest_count}</td>
                       <td className="px-3 py-2">
                         <Badge variant={evt.status === 'completed' ? 'success' : 'default'}>
                           {evt.status}

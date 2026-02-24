@@ -88,22 +88,24 @@ export function JourneyOverviewForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 border border-stone-200 rounded-lg p-4">
-      <h3 className="text-sm font-semibold text-stone-900">Journal Overview</h3>
+    <form onSubmit={handleSubmit} className="space-y-4 border border-stone-700 rounded-lg p-4">
+      <h3 className="text-sm font-semibold text-stone-100">Journal Overview</h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Input
           label="Journal Title"
           value={state.title}
-          onChange={event => setState(prev => ({ ...prev, title: event.target.value }))}
+          onChange={(event) => setState((prev) => ({ ...prev, title: event.target.value }))}
           required
         />
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">Status</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1.5">Status</label>
           <select
             value={state.status}
-            onChange={event => setState(prev => ({ ...prev, status: event.target.value as ChefJourneyStatus }))}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+            onChange={(event) =>
+              setState((prev) => ({ ...prev, status: event.target.value as ChefJourneyStatus }))
+            }
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
           >
             <option value="planning">Planning</option>
             <option value="in_progress">In Progress</option>
@@ -114,45 +116,53 @@ export function JourneyOverviewForm({
         <Input
           label="City"
           value={state.destination_city}
-          onChange={event => setState(prev => ({ ...prev, destination_city: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, destination_city: event.target.value }))
+          }
           placeholder="Rome"
         />
         <Input
           label="Region"
           value={state.destination_region}
-          onChange={event => setState(prev => ({ ...prev, destination_region: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, destination_region: event.target.value }))
+          }
           placeholder="Lazio"
         />
         <Input
           label="Country"
           value={state.destination_country}
-          onChange={event => setState(prev => ({ ...prev, destination_country: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, destination_country: event.target.value }))
+          }
           placeholder="Italy"
         />
         <Input
           label="Collaborators"
           value={state.collaborators_text}
-          onChange={event => setState(prev => ({ ...prev, collaborators_text: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, collaborators_text: event.target.value }))
+          }
           placeholder="One per line or comma separated"
         />
         <Input
           label="Start Date"
           type="date"
           value={state.started_on}
-          onChange={event => setState(prev => ({ ...prev, started_on: event.target.value }))}
+          onChange={(event) => setState((prev) => ({ ...prev, started_on: event.target.value }))}
         />
         <Input
           label="End Date"
           type="date"
           value={state.ended_on}
-          onChange={event => setState(prev => ({ ...prev, ended_on: event.target.value }))}
+          onChange={(event) => setState((prev) => ({ ...prev, ended_on: event.target.value }))}
         />
       </div>
 
       <Textarea
         label="Trip Summary"
         value={state.trip_summary}
-        onChange={event => setState(prev => ({ ...prev, trip_summary: event.target.value }))}
+        onChange={(event) => setState((prev) => ({ ...prev, trip_summary: event.target.value }))}
         rows={4}
       />
 
@@ -160,13 +170,15 @@ export function JourneyOverviewForm({
         <Textarea
           label="Favorite Meal"
           value={state.favorite_meal}
-          onChange={event => setState(prev => ({ ...prev, favorite_meal: event.target.value }))}
+          onChange={(event) => setState((prev) => ({ ...prev, favorite_meal: event.target.value }))}
           rows={3}
         />
         <Textarea
           label="Favorite Experience"
           value={state.favorite_experience}
-          onChange={event => setState(prev => ({ ...prev, favorite_experience: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, favorite_experience: event.target.value }))
+          }
           rows={3}
         />
       </div>
@@ -175,28 +187,34 @@ export function JourneyOverviewForm({
         <Textarea
           label="Key Learnings"
           value={state.key_learnings_text}
-          onChange={event => setState(prev => ({ ...prev, key_learnings_text: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, key_learnings_text: event.target.value }))
+          }
           rows={5}
           placeholder="One per line"
         />
         <Textarea
           label="Ideas to Bring Back"
           value={state.inspiration_ideas_text}
-          onChange={event => setState(prev => ({ ...prev, inspiration_ideas_text: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, inspiration_ideas_text: event.target.value }))
+          }
           rows={5}
           placeholder="One per line"
         />
         <Textarea
           label="Focus Tags"
           value={state.culinary_focus_tags_text}
-          onChange={event => setState(prev => ({ ...prev, culinary_focus_tags_text: event.target.value }))}
+          onChange={(event) =>
+            setState((prev) => ({ ...prev, culinary_focus_tags_text: event.target.value }))
+          }
           rows={5}
           placeholder="One per line"
         />
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+        <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
           {error}
         </div>
       )}

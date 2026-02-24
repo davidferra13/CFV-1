@@ -24,13 +24,13 @@ export default async function ClientsPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Clients</h1>
-          <p className="text-stone-600 mt-1">Manage your client relationships and invitations</p>
+          <h1 className="text-3xl font-bold text-stone-100">Clients</h1>
+          <p className="text-stone-400 mt-1">Manage your client relationships and invitations</p>
         </div>
         <div className="flex gap-2">
           <a
             href="/clients/export"
-            className="inline-flex items-center justify-center px-3 py-2 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors font-medium text-sm"
+            className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
           >
             Export CSV
           </a>
@@ -49,7 +49,7 @@ export default async function ClientsPage() {
           </Suspense>
 
           <div className="border-t pt-6">
-            <h3 className="text-sm font-medium text-stone-900 mb-4">Pending Invitations</h3>
+            <h3 className="text-sm font-medium text-stone-100 mb-4">Pending Invitations</h3>
             <Suspense
               fallback={<div className="text-sm text-stone-500">Loading invitations...</div>}
             >

@@ -28,7 +28,7 @@ export default async function ReceiptsPage({ params }: { params: { id: string } 
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-xl font-bold text-stone-900">Receipt Summary</h1>
+          <h1 className="text-xl font-bold text-stone-100">Receipt Summary</h1>
           <p className="text-stone-500 text-sm mt-1">
             {event.occasion || 'Untitled Event'} ·{' '}
             {format(new Date(event.event_date), 'MMM d, yyyy')}
@@ -42,8 +42,8 @@ export default async function ReceiptsPage({ params }: { params: { id: string } 
       </div>
 
       {/* Instructions */}
-      <Card className="p-4 bg-stone-50 border-stone-200">
-        <p className="text-sm text-stone-600">
+      <Card className="p-4 bg-stone-800 border-stone-700">
+        <p className="text-sm text-stone-400">
           Upload receipt photos from your event purchases. Use <strong>Auto-Extract</strong> to
           automatically read line items, then review and tag each item as <em>business</em> or{' '}
           <em>personal</em>. Approving a receipt adds all business items to your event expenses.

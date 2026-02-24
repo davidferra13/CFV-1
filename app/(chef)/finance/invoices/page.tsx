@@ -14,37 +14,37 @@ const STAGES = [
     href: '/finance/invoices/draft',
     label: 'Draft',
     description: 'Events not yet sent to client',
-    style: 'bg-stone-100 text-stone-600',
+    style: 'bg-stone-800 text-stone-400',
   },
   {
     href: '/finance/invoices/sent',
     label: 'Sent',
     description: 'Awaiting client acceptance',
-    style: 'bg-amber-100 text-amber-700',
+    style: 'bg-amber-900 text-amber-700',
   },
   {
     href: '/finance/invoices/paid',
     label: 'Paid',
     description: 'Accepted and payment underway',
-    style: 'bg-green-100 text-green-700',
+    style: 'bg-green-900 text-green-700',
   },
   {
     href: '/finance/invoices/overdue',
     label: 'Overdue',
     description: 'Past event date, unresolved',
-    style: 'bg-red-100 text-red-600',
+    style: 'bg-red-900 text-red-600',
   },
   {
     href: '/finance/invoices/refunded',
     label: 'Refunded',
     description: 'Events with refund entries',
-    style: 'bg-purple-100 text-purple-700',
+    style: 'bg-purple-900 text-purple-700',
   },
   {
     href: '/finance/invoices/cancelled',
     label: 'Cancelled',
     description: 'Cancelled events',
-    style: 'bg-stone-200 text-stone-500',
+    style: 'bg-stone-700 text-stone-500',
   },
 ]
 
@@ -77,11 +77,11 @@ export default async function InvoicesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
           ← Finance
         </Link>
         <div className="flex items-center justify-between mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Invoices</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Invoices</h1>
           <Link href="/events/new">
             <Button size="sm">+ Create Event / Invoice</Button>
           </Link>
@@ -93,7 +93,7 @@ export default async function InvoicesPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{events.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{events.length}</p>
           <p className="text-sm text-stone-500 mt-1">Total events / invoices</p>
         </Card>
         <Card className="p-4">
@@ -113,7 +113,7 @@ export default async function InvoicesPage() {
             <Link key={stage.href} href={stage.href}>
               <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer">
                 <div className="flex items-center justify-between mb-1">
-                  <h2 className="font-semibold text-stone-900">{stage.label}</h2>
+                  <h2 className="font-semibold text-stone-100">{stage.label}</h2>
                   <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${stage.style}`}>
                     {count}
                   </span>

@@ -10,10 +10,10 @@ interface InboxFiltersProps {
 }
 
 const SOURCE_CONFIG: Record<InboxSource, { label: string; color: string }> = {
-  chat: { label: 'Chat', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  message: { label: 'Messages', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
-  wix: { label: 'Wix', color: 'bg-purple-100 text-purple-700 border-purple-200' },
-  notification: { label: 'Notifications', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+  chat: { label: 'Chat', color: 'bg-blue-900 text-blue-700 border-blue-200' },
+  message: { label: 'Messages', color: 'bg-emerald-900 text-emerald-700 border-emerald-200' },
+  wix: { label: 'Wix', color: 'bg-purple-900 text-purple-700 border-purple-200' },
+  notification: { label: 'Notifications', color: 'bg-amber-900 text-amber-700 border-amber-200' },
 }
 
 export function InboxFilters({ activeSources, onToggle, stats }: InboxFiltersProps) {
@@ -31,19 +31,18 @@ export function InboxFilters({ activeSources, onToggle, stats }: InboxFiltersPro
             className={`
               inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium
               border transition-all
-              ${isActive
-                ? config.color
-                : 'bg-stone-50 text-stone-400 border-stone-200 opacity-60'
-              }
+              ${isActive ? config.color : 'bg-stone-800 text-stone-400 border-stone-700 opacity-60'}
               hover:opacity-100
             `}
           >
             {config.label}
             {count > 0 && (
-              <span className={`
+              <span
+                className={`
                 inline-block min-w-[18px] text-center px-1 py-0.5 rounded-full text-[10px]
-                ${isActive ? 'bg-white/50' : 'bg-stone-200/50'}
-              `}>
+                ${isActive ? 'bg-stone-900/50' : 'bg-stone-700/50'}
+              `}
+              >
                 {count}
               </span>
             )}

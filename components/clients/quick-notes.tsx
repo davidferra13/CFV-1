@@ -12,11 +12,11 @@ import type { ClientNote, NoteCategory } from '@/lib/notes/actions'
 import { QuickNoteForm } from './quick-note-form'
 
 const CATEGORY_STYLES: Record<NoteCategory, { bg: string; text: string; label: string }> = {
-  general: { bg: 'bg-stone-100', text: 'text-stone-700', label: 'General' },
-  dietary: { bg: 'bg-red-100', text: 'text-red-700', label: 'Dietary' },
-  preference: { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Preference' },
-  logistics: { bg: 'bg-green-100', text: 'text-green-700', label: 'Logistics' },
-  relationship: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Relationship' },
+  general: { bg: 'bg-stone-800', text: 'text-stone-300', label: 'General' },
+  dietary: { bg: 'bg-red-900', text: 'text-red-700', label: 'Dietary' },
+  preference: { bg: 'bg-blue-900', text: 'text-blue-700', label: 'Preference' },
+  logistics: { bg: 'bg-green-900', text: 'text-green-700', label: 'Logistics' },
+  relationship: { bg: 'bg-purple-900', text: 'text-purple-700', label: 'Relationship' },
 }
 
 interface QuickNotesProps {
@@ -48,9 +48,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
   ) => {
     startTransition(async () => {
       const result = await updateClientNote(noteId, data)
-      setNotes((prev) =>
-        prev.map((n) => (n.id === noteId ? result.note : n))
-      )
+      setNotes((prev) => prev.map((n) => (n.id === noteId ? result.note : n)))
       setEditingId(null)
     })
   }
@@ -66,9 +64,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
     startTransition(async () => {
       const result = await toggleNotePin(noteId)
       setNotes((prev) => {
-        const updated = prev.map((n) =>
-          n.id === noteId ? { ...n, pinned: result.pinned } : n
-        )
+        const updated = prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n))
         // Re-sort: pinned first, then by created_at desc
         return updated.sort((a, b) => {
           if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
@@ -81,12 +77,12 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
   const pinnedCount = notes.filter((n) => n.pinned).length
 
   return (
-    <div className="border border-stone-200 rounded-xl bg-white">
+    <div className="border border-stone-700 rounded-xl bg-surface">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-stone-800">
         <div className="flex items-center gap-2">
           <StickyNote className="w-4 h-4 text-stone-500" />
-          <h3 className="font-semibold text-stone-900">Notes</h3>
+          <h3 className="font-semibold text-stone-100">Notes</h3>
           <span className="text-xs text-stone-400">
             {notes.length} note{notes.length !== 1 ? 's' : ''}
             {pinnedCount > 0 && ` (${pinnedCount} pinned)`}
@@ -95,7 +91,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
         <button
           type="button"
           onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors"
+          className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-400 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           Add Note
@@ -104,7 +100,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
 
       {/* Add form */}
       {showForm && (
-        <div className="px-5 py-3 border-b border-stone-100 bg-stone-50">
+        <div className="px-5 py-3 border-b border-stone-800 bg-stone-800">
           <QuickNoteForm
             onSubmit={handleAdd}
             onCancel={() => setShowForm(false)}
@@ -141,9 +137,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
 
                 {/* Note content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-stone-800 whitespace-pre-wrap">
-                    {note.note_text}
-                  </p>
+                  <p className="text-sm text-stone-200 whitespace-pre-wrap">{note.note_text}</p>
                   <p className="text-[10px] text-stone-400 mt-1">
                     {new Date(note.created_at).toLocaleDateString('en-US', {
                       month: 'short',
@@ -161,7 +155,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
                   <button
                     type="button"
                     onClick={() => handleTogglePin(note.id)}
-                    className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                    className="p-1 text-stone-400 hover:text-stone-400 transition-colors"
                     title={note.pinned ? 'Unpin' : 'Pin'}
                   >
                     {note.pinned ? (
@@ -173,7 +167,7 @@ export function QuickNotes({ clientId, initialNotes }: QuickNotesProps) {
                   <button
                     type="button"
                     onClick={() => setEditingId(note.id)}
-                    className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                    className="p-1 text-stone-400 hover:text-stone-400 transition-colors"
                     title="Edit"
                   >
                     <Edit3 className="w-3.5 h-3.5" />

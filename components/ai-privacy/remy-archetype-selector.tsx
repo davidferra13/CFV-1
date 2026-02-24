@@ -39,7 +39,7 @@ export function RemyArchetypeSelector({ currentArchetype, onSaved }: Props) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-stone-900">Remy&apos;s Personality</h3>
+        <h3 className="text-lg font-semibold text-stone-100">Remy&apos;s Personality</h3>
         <p className="text-sm text-stone-500 mt-1">
           Choose how Remy talks to you. This changes tone and energy — not what Remy knows or can
           do.
@@ -56,20 +56,20 @@ export function RemyArchetypeSelector({ currentArchetype, onSaved }: Props) {
               disabled={saving}
               className={`relative text-left rounded-xl border-2 p-4 transition-all ${
                 isSelected
-                  ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-300'
-                  : 'border-stone-200 bg-white hover:border-stone-300 hover:shadow-sm'
+                  ? 'border-brand-500 bg-brand-950 ring-1 ring-brand-600'
+                  : 'border-stone-700 bg-surface hover:border-stone-600 hover:shadow-sm'
               } ${saving ? 'opacity-70 cursor-wait' : 'cursor-pointer'}`}
             >
               {isSelected && (
                 <div className="absolute top-3 right-3">
-                  <div className="w-5 h-5 rounded-full bg-brand-500 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded-full bg-brand-9500 flex items-center justify-center">
                     <Check className="w-3 h-3 text-white" />
                   </div>
                 </div>
               )}
 
               <div className="text-2xl mb-2">{arch.emoji}</div>
-              <div className="font-semibold text-stone-900 text-sm">{arch.name}</div>
+              <div className="font-semibold text-stone-100 text-sm">{arch.name}</div>
               <div className="text-xs text-brand-600 font-medium mt-0.5">{arch.tagline}</div>
               <p className="text-xs text-stone-500 mt-2 leading-relaxed">{arch.description}</p>
             </button>

@@ -27,7 +27,7 @@ export default async function PartnerLayout({ children }: { children: React.Reac
   const partnerName = partner?.name ?? 'Partner'
 
   return (
-    <div className="min-h-screen bg-stone-50 flex">
+    <div className="min-h-screen bg-stone-800 flex">
       <ToastProvider />
       <PartnerSidebar partnerName={partnerName} />
 

@@ -26,23 +26,23 @@ function ConfidenceBadge({ score }: { score: number | null }) {
     score >= 0.8 ? 'High confidence' : score >= 0.5 ? 'Medium confidence' : 'Low confidence'
   const cls =
     score >= 0.8
-      ? 'bg-green-100 text-green-700'
+      ? 'bg-green-900 text-green-700'
       : score >= 0.5
-        ? 'bg-amber-100 text-amber-700'
-        : 'bg-red-100 text-red-700'
+        ? 'bg-amber-900 text-amber-700'
+        : 'bg-red-900 text-red-700'
   return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cls}`}>{label}</span>
 }
 
 function StatusBadge({ status }: { status: AllReceiptPhoto['uploadStatus'] }) {
   const map: Record<string, string> = {
-    approved: 'bg-green-100 text-green-700',
-    extracted: 'bg-sky-100 text-sky-700',
-    processing: 'bg-amber-100 text-amber-700',
-    pending: 'bg-stone-100 text-stone-500',
+    approved: 'bg-green-900 text-green-700',
+    extracted: 'bg-sky-900 text-sky-700',
+    processing: 'bg-amber-900 text-amber-700',
+    pending: 'bg-stone-800 text-stone-500',
   }
   return (
     <span
-      className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[status] ?? 'bg-stone-100'}`}
+      className={`text-xs font-medium px-2 py-0.5 rounded-full ${map[status] ?? 'bg-stone-800'}`}
     >
       {status}
     </span>
@@ -121,11 +121,11 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
     : 'Standalone receipt'
 
   return (
-    <Card className={`p-4 ${approved ? 'border-green-200 bg-green-50' : ''}`}>
+    <Card className={`p-4 ${approved ? 'border-green-200 bg-green-950' : ''}`}>
       <div className="flex gap-4">
         {/* Thumbnail */}
         <a href={receipt.photoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
-          <div className="w-16 h-20 bg-stone-100 rounded border border-stone-200 overflow-hidden flex items-center justify-center">
+          <div className="w-16 h-20 bg-stone-800 rounded border border-stone-700 overflow-hidden flex items-center justify-center">
             <Image
               src={receipt.photoUrl}
               alt="Receipt"
@@ -148,7 +148,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
           <div className="flex justify-between items-start mb-1">
             <div>
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="font-semibold text-stone-900 text-sm">
+                <h3 className="font-semibold text-stone-100 text-sm">
                   {extraction?.storeName ?? 'Unknown Store'}
                 </h3>
                 <StatusBadge status={receipt.uploadStatus} />
@@ -167,7 +167,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
               {receipt.notes && <p className="text-xs text-stone-400 mt-0.5">{receipt.notes}</p>}
             </div>
             <div className="text-right shrink-0 ml-4">
-              <div className="text-sm font-bold text-stone-900">
+              <div className="text-sm font-bold text-stone-100">
                 {formatCents(extraction?.totalCents ?? null)}
               </div>
               {extraction?.subtotalCents != null && (
@@ -193,7 +193,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
             <div className="mb-3 overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-stone-200">
+                  <tr className="border-b border-stone-700">
                     <th className="text-xs font-medium text-stone-400 pb-1 pr-3">Item</th>
                     <th className="text-xs font-medium text-stone-400 pb-1 pr-3 text-right">
                       Price
@@ -206,12 +206,12 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                   {lineItems.map((item) => (
                     <tr
                       key={item.id}
-                      className={`border-b border-stone-100 last:border-0 ${
+                      className={`border-b border-stone-800 last:border-0 ${
                         item.expenseTag === 'personal' ? 'opacity-50' : ''
                       }`}
                     >
-                      <td className="py-1.5 pr-3 text-sm text-stone-800">{item.description}</td>
-                      <td className="py-1.5 pr-3 text-sm text-stone-700 text-right whitespace-nowrap">
+                      <td className="py-1.5 pr-3 text-sm text-stone-200">{item.description}</td>
+                      <td className="py-1.5 pr-3 text-sm text-stone-300 text-right whitespace-nowrap">
                         {formatCents(item.priceCents)}
                       </td>
                       <td className="py-1.5 pr-3">
@@ -224,7 +224,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                               e.target.value || null
                             )
                           }
-                          className="text-xs border border-stone-200 rounded px-1 py-0.5 text-stone-600 bg-white"
+                          className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-surface"
                         >
                           <option value="">—</option>
                           <option value="protein">Protein</option>
@@ -243,9 +243,9 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                           onChange={(e) =>
                             handleLineItemUpdate(item.id, 'expenseTag', e.target.value)
                           }
-                          className={`text-xs border rounded px-1 py-0.5 bg-white ${
+                          className={`text-xs border rounded px-1 py-0.5 bg-surface ${
                             item.expenseTag === 'personal'
-                              ? 'border-stone-200 text-stone-400'
+                              ? 'border-stone-700 text-stone-400'
                               : item.expenseTag === 'business'
                                 ? 'border-green-200 text-green-700'
                                 : 'border-amber-200 text-amber-700'
@@ -267,7 +267,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
           {businessTotal > 0 && (
             <div className="text-xs text-stone-500 mb-3">
               Business total:{' '}
-              <span className="font-semibold text-stone-700">{formatCents(businessTotal)}</span>
+              <span className="font-semibold text-stone-300">{formatCents(businessTotal)}</span>
             </div>
           )}
 
@@ -296,7 +296,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
           {receipt.eventId && (
             <a
               href={`/events/${receipt.eventId}/receipts`}
-              className="text-xs text-stone-400 hover:text-stone-600 mt-2 block"
+              className="text-xs text-stone-400 hover:text-stone-400 mt-2 block"
             >
               View in event receipts →
             </a>
@@ -340,13 +340,13 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
     <div className="space-y-4">
       {/* Filter bar */}
       {(events.length > 0 || clients.length > 0) && (
-        <div className="flex flex-wrap gap-3 items-center bg-stone-50 rounded-lg px-4 py-3 border border-stone-200">
+        <div className="flex flex-wrap gap-3 items-center bg-stone-800 rounded-lg px-4 py-3 border border-stone-700">
           <span className="text-xs font-medium text-stone-500 shrink-0">Filter:</span>
 
           <select
             value={filterEventId}
             onChange={(e) => setFilterEventId(e.target.value)}
-            className="text-xs border border-stone-200 rounded px-2 py-1 bg-white text-stone-700"
+            className="text-xs border border-stone-700 rounded px-2 py-1 bg-surface text-stone-300"
           >
             <option value="">All events</option>
             <option value="__standalone__">Standalone (no event)</option>
@@ -361,7 +361,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
             <select
               value={filterClientId}
               onChange={(e) => setFilterClientId(e.target.value)}
-              className="text-xs border border-stone-200 rounded px-2 py-1 bg-white text-stone-700"
+              className="text-xs border border-stone-700 rounded px-2 py-1 bg-surface text-stone-300"
             >
               <option value="">All clients</option>
               {clients.map((c) => (
@@ -375,7 +375,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="text-xs border border-stone-200 rounded px-2 py-1 bg-white text-stone-700"
+            className="text-xs border border-stone-700 rounded px-2 py-1 bg-surface text-stone-300"
           >
             <option value="all">All statuses</option>
             <option value="pending">Pending</option>
@@ -390,7 +390,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
                 setFilterClientId('')
                 setFilterStatus('all')
               }}
-              className="text-xs text-stone-400 hover:text-stone-600 underline"
+              className="text-xs text-stone-400 hover:text-stone-400 underline"
             >
               Clear
             </button>
@@ -400,7 +400,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
 
       {/* Summary bar */}
       {filtered.length > 0 && (
-        <div className="flex flex-wrap gap-4 text-sm text-stone-600 bg-white border border-stone-200 rounded-lg px-4 py-3">
+        <div className="flex flex-wrap gap-4 text-sm text-stone-400 bg-surface border border-stone-700 rounded-lg px-4 py-3">
           <span>
             <strong>{filtered.length}</strong> receipt{filtered.length !== 1 ? 's' : ''}
           </span>
@@ -415,7 +415,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
             </span>
           )}
           {totalBusinessCents > 0 && (
-            <span className="ml-auto font-medium text-stone-800">
+            <span className="ml-auto font-medium text-stone-200">
               ${(totalBusinessCents / 100).toFixed(2)} business spend
             </span>
           )}

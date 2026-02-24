@@ -18,10 +18,10 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
   const holdText: string | null = task.status === 'held' && task.holdReason ? task.holdReason : null
 
   const tierColors = {
-    done: 'border-emerald-200 bg-emerald-50 dark:border-emerald-800 dark:bg-emerald-950',
-    pending: 'border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950',
-    held: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950',
-    error: 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-950',
+    done: 'border-emerald-200 bg-emerald-950 dark:border-emerald-800 dark:bg-emerald-950',
+    pending: 'border-amber-200 bg-amber-950 dark:border-amber-800 dark:bg-amber-950',
+    held: 'border-red-200 bg-red-950 dark:border-red-800 dark:bg-red-950',
+    error: 'border-red-200 bg-red-950 dark:border-red-800 dark:bg-red-950',
   }
 
   const statusIcons = {
@@ -44,7 +44,7 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           {statusIcons[task.status]}
-          <span className="font-medium text-stone-900 dark:text-stone-100">{task.name}</span>
+          <span className="font-medium text-stone-100 dark:text-stone-100">{task.name}</span>
         </div>
         <span className="text-xs text-stone-500 dark:text-stone-400">
           {statusLabels[task.status]}
@@ -80,13 +80,13 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
             <>
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="mt-2 flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+                className="mt-2 flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 dark:text-stone-400 dark:hover:text-stone-200"
               >
                 {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                 {expanded ? 'Hide details' : 'Show details'}
               </button>
               {expanded && (
-                <div className="mt-2 rounded bg-white/60 dark:bg-stone-800/60 p-2">
+                <div className="mt-2 rounded bg-surface/60 dark:bg-stone-800/60 p-2">
                   <TaskDataRenderer taskType={task.taskType} data={task.data} />
                 </div>
               )}
@@ -350,7 +350,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
       return (
         <div className="text-xs">
           <p className="font-medium mb-1">Draft for {d.clientName}:</p>
-          <pre className="whitespace-pre-wrap font-sans text-stone-600 dark:text-stone-300 bg-white/50 dark:bg-stone-900/50 rounded p-2">
+          <pre className="whitespace-pre-wrap font-sans text-stone-400 dark:text-stone-300 bg-stone-900/50 dark:bg-stone-900/50 rounded p-2">
             {d.draftText}
           </pre>
         </div>
@@ -389,7 +389,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
                 {r.title}
               </a>
               <p className="text-stone-500 dark:text-stone-400 mt-0.5 line-clamp-2">{r.snippet}</p>
-              <p className="text-stone-300 dark:text-stone-600 text-[10px] truncate">{r.url}</p>
+              <p className="text-stone-300 dark:text-stone-400 text-[10px] truncate">{r.url}</p>
             </div>
           ))}
         </div>
@@ -408,7 +408,7 @@ function TaskDataRenderer({ taskType, data }: { taskType: string; data: unknown 
           >
             {d.title}
           </a>
-          <p className="text-stone-600 dark:text-stone-300 mt-1 whitespace-pre-wrap line-clamp-6">
+          <p className="text-stone-400 dark:text-stone-300 mt-1 whitespace-pre-wrap line-clamp-6">
             {d.summary}
           </p>
         </div>

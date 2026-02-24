@@ -35,11 +35,11 @@ export function CoolingAlertWidget({ coolingClients }: CoolingAlertWidgetProps) 
         {coolingClients.length === 0 ? (
           <p className="text-sm text-stone-500 py-2">All client relationships are active.</p>
         ) : (
-          <ul className="divide-y divide-stone-100">
+          <ul className="divide-y divide-stone-800">
             {coolingClients.map((client) => (
               <li key={client.clientId} className="py-3 flex items-center justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm text-stone-900 truncate">{client.name}</p>
+                  <p className="font-medium text-sm text-stone-100 truncate">{client.name}</p>
                   <p className="text-xs text-stone-500 mt-0.5">
                     {client.lastEventDate
                       ? `Last event ${client.daysSinceLastEvent} days ago`
@@ -52,7 +52,7 @@ export function CoolingAlertWidget({ coolingClients }: CoolingAlertWidgetProps) 
 
                 <Link
                   href={`/clients/${client.clientId}?tab=messages`}
-                  className="flex-shrink-0 text-xs font-medium text-brand-600 hover:text-brand-700 underline underline-offset-2"
+                  className="flex-shrink-0 text-xs font-medium text-brand-600 hover:text-brand-400 underline underline-offset-2"
                 >
                   {client.suggestedAction}
                 </Link>

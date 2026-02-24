@@ -22,7 +22,7 @@ export default async function GiftCardStorePage({ params }: Props) {
   const { chef } = data
 
   return (
-    <div className="min-h-screen bg-stone-50 py-12 px-4">
+    <div className="min-h-screen bg-stone-800 py-12 px-4">
       <div className="max-w-lg mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
@@ -34,13 +34,13 @@ export default async function GiftCardStorePage({ params }: Props) {
               className="w-16 h-16 rounded-full object-cover mx-auto mb-4 ring-4 ring-white shadow"
             />
           )}
-          <h1 className="text-3xl font-bold text-stone-900">Gift a Private Chef Experience</h1>
-          <p className="text-stone-600 mt-2">
+          <h1 className="text-3xl font-bold text-stone-100">Gift a Private Chef Experience</h1>
+          <p className="text-stone-400 mt-2">
             Send someone a gift card redeemable for {chef.display_name}&apos;s services.
           </p>
           <a
             href={`/chef/${params.slug}`}
-            className="text-sm text-brand-600 hover:text-brand-700 mt-2 inline-block"
+            className="text-sm text-brand-600 hover:text-brand-400 mt-2 inline-block"
           >
             ← Back to chef profile
           </a>

@@ -100,7 +100,7 @@ export function ServiceMixCalculator({
   return (
     <div className="space-y-5">
       {/* Already-booked banner */}
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <p className="text-xs font-semibold text-amber-700 uppercase tracking-wide">
@@ -135,7 +135,7 @@ export function ServiceMixCalculator({
         <>
           {/* Auto-suggest + instruction */}
           <div className="flex items-center justify-between gap-3 flex-wrap">
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-stone-400">
               Set quantities below to plan your path to{' '}
               <strong>{formatDollars(goal.targetValue)}</strong>.
             </p>
@@ -160,13 +160,13 @@ export function ServiceMixCalculator({
                 <div
                   key={st.id}
                   className={`rounded-lg border px-4 py-3 transition-colors ${
-                    qty > 0 ? 'border-brand-200 bg-brand-50' : 'border-stone-200 bg-white'
+                    qty > 0 ? 'border-brand-700 bg-brand-950' : 'border-stone-700 bg-surface'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-wrap">
                     {/* Service info */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-stone-900 text-sm">{st.name}</p>
+                      <p className="font-medium text-stone-100 text-sm">{st.name}</p>
                       <p className="text-xs text-stone-500">
                         {formatDollars(st.effectivePriceCents)} each
                         {st.typicalGuestCount > 1 ? ` · ${st.typicalGuestCount} guests` : ''}
@@ -178,17 +178,17 @@ export function ServiceMixCalculator({
                       <button
                         onClick={() => setQty(st.id, -1)}
                         disabled={qty === 0}
-                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-300 text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-600 text-stone-400 hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                         aria-label={`Decrease ${st.name}`}
                       >
                         <Minus className="h-3.5 w-3.5" />
                       </button>
-                      <span className="w-6 text-center text-sm font-semibold text-stone-900">
+                      <span className="w-6 text-center text-sm font-semibold text-stone-100">
                         {qty}
                       </span>
                       <button
                         onClick={() => setQty(st.id, 1)}
-                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors"
+                        className="rounded-full w-7 h-7 flex items-center justify-center border border-stone-600 text-stone-400 hover:bg-stone-700 transition-colors"
                         aria-label={`Increase ${st.name}`}
                       >
                         <Plus className="h-3.5 w-3.5" />
@@ -198,7 +198,7 @@ export function ServiceMixCalculator({
                     {/* Line revenue */}
                     <div className="w-24 text-right shrink-0">
                       <p
-                        className={`text-sm font-semibold ${qty > 0 ? 'text-brand-700' : 'text-stone-300'}`}
+                        className={`text-sm font-semibold ${qty > 0 ? 'text-brand-400' : 'text-stone-300'}`}
                       >
                         {qty > 0 ? formatDollars(lineRevenue) : '—'}
                       </p>
@@ -228,7 +228,7 @@ export function ServiceMixCalculator({
           {/* Running total section */}
           <div
             className={`rounded-lg border-2 px-4 py-4 space-y-3 ${
-              goalMet ? 'border-emerald-300 bg-emerald-50' : 'border-stone-200 bg-stone-50'
+              goalMet ? 'border-emerald-300 bg-emerald-950' : 'border-stone-700 bg-stone-800'
             }`}
           >
             <div className="flex items-center justify-between gap-3">
@@ -237,7 +237,7 @@ export function ServiceMixCalculator({
                   Planned revenue
                 </p>
                 <p
-                  className={`text-2xl font-bold mt-0.5 ${goalMet ? 'text-emerald-700' : 'text-stone-900'}`}
+                  className={`text-2xl font-bold mt-0.5 ${goalMet ? 'text-emerald-700' : 'text-stone-100'}`}
                 >
                   {formatDollars(plan.totalPlannedCents)}
                 </p>
@@ -286,10 +286,10 @@ export function ServiceMixCalculator({
                 <span>0</span>
                 <span>{formatDollars(plan.gapCents)} gap</span>
               </div>
-              <div className="h-2.5 rounded-full bg-stone-200 overflow-hidden">
+              <div className="h-2.5 rounded-full bg-stone-700 overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-300 ${
-                    goalMet ? 'bg-emerald-500' : 'bg-brand-500'
+                    goalMet ? 'bg-emerald-9500' : 'bg-brand-9500'
                   }`}
                   style={{ width: `${goalPercent}%` }}
                 />
@@ -306,7 +306,7 @@ export function ServiceMixCalculator({
                 <button
                   onClick={handleAutoSuggest}
                   disabled={autoSuggestPending}
-                  className="font-medium text-brand-600 hover:text-brand-700 underline"
+                  className="font-medium text-brand-600 hover:text-brand-400 underline"
                 >
                   Auto-suggest mix
                 </button>{' '}
@@ -317,10 +317,10 @@ export function ServiceMixCalculator({
 
           {/* Summary breakdown (when anything is planned) */}
           {plan.items.length > 0 && (
-            <div className="rounded-md border border-stone-200 overflow-hidden">
+            <div className="rounded-md border border-stone-700 overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="bg-stone-50 border-b border-stone-200">
+                  <tr className="bg-stone-800 border-b border-stone-700">
                     <th className="text-left px-3 py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
                       Service
                     </th>
@@ -332,32 +332,32 @@ export function ServiceMixCalculator({
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100">
+                <tbody className="divide-y divide-stone-800">
                   {plan.items.map((item) => (
                     <tr key={item.serviceType.id}>
-                      <td className="px-3 py-2 text-stone-800">{item.serviceType.name}</td>
-                      <td className="px-3 py-2 text-center text-stone-600">{item.quantity}</td>
-                      <td className="px-3 py-2 text-right font-medium text-stone-900">
+                      <td className="px-3 py-2 text-stone-200">{item.serviceType.name}</td>
+                      <td className="px-3 py-2 text-center text-stone-400">{item.quantity}</td>
+                      <td className="px-3 py-2 text-right font-medium text-stone-100">
                         {formatDollars(item.lineRevenueCents)}
                       </td>
                     </tr>
                   ))}
-                  <tr className="bg-stone-50 border-t border-stone-200 font-semibold">
-                    <td className="px-3 py-2 text-stone-800">Plan total</td>
+                  <tr className="bg-stone-800 border-t border-stone-700 font-semibold">
+                    <td className="px-3 py-2 text-stone-200">Plan total</td>
                     <td />
-                    <td className="px-3 py-2 text-right text-stone-900">
+                    <td className="px-3 py-2 text-right text-stone-100">
                       {formatDollars(plan.totalPlannedCents)}
                     </td>
                   </tr>
-                  <tr className="bg-stone-50 font-semibold">
-                    <td className="px-3 py-2 text-stone-800">Already booked</td>
+                  <tr className="bg-stone-800 font-semibold">
+                    <td className="px-3 py-2 text-stone-200">Already booked</td>
                     <td />
-                    <td className="px-3 py-2 text-right text-stone-900">
+                    <td className="px-3 py-2 text-right text-stone-100">
                       {formatDollars(alreadyBookedCents)}
                     </td>
                   </tr>
                   <tr
-                    className={`font-bold ${goalMet ? 'bg-emerald-50 text-emerald-800' : 'bg-amber-50 text-amber-800'}`}
+                    className={`font-bold ${goalMet ? 'bg-emerald-950 text-emerald-800' : 'bg-amber-950 text-amber-800'}`}
                   >
                     <td className="px-3 py-2">Projected total</td>
                     <td />

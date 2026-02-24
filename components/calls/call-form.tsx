@@ -4,7 +4,13 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { createCall, updateCall, type CreateCallInput, type ScheduledCall, type CallType } from '@/lib/calls/actions'
+import {
+  createCall,
+  updateCall,
+  type CreateCallInput,
+  type ScheduledCall,
+  type CallType,
+} from '@/lib/calls/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -19,21 +25,21 @@ import {
 } from '@/components/ui/select'
 
 const CALL_TYPE_OPTIONS: { value: CallType; label: string }[] = [
-  { value: 'discovery',            label: 'Discovery' },
-  { value: 'follow_up',            label: 'Follow-up' },
+  { value: 'discovery', label: 'Discovery' },
+  { value: 'follow_up', label: 'Follow-up' },
   { value: 'proposal_walkthrough', label: 'Proposal Walkthrough' },
-  { value: 'pre_event_logistics',  label: 'Pre-Event Logistics' },
-  { value: 'vendor_supplier',      label: 'Vendor / Supplier' },
-  { value: 'partner',              label: 'Partner' },
-  { value: 'general',              label: 'General' },
+  { value: 'pre_event_logistics', label: 'Pre-Event Logistics' },
+  { value: 'vendor_supplier', label: 'Vendor / Supplier' },
+  { value: 'partner', label: 'Partner' },
+  { value: 'general', label: 'General' },
 ]
 
 const DURATION_OPTIONS = [
-  { value: '15',  label: '15 min' },
-  { value: '30',  label: '30 min' },
-  { value: '45',  label: '45 min' },
-  { value: '60',  label: '1 hour' },
-  { value: '90',  label: '1.5 hours' },
+  { value: '15', label: '15 min' },
+  { value: '30', label: '30 min' },
+  { value: '45', label: '45 min' },
+  { value: '60', label: '1 hour' },
+  { value: '90', label: '1.5 hours' },
   { value: '120', label: '2 hours' },
 ]
 
@@ -60,20 +66,22 @@ function localToIso(value: string): string {
  */
 function isoToLocal(iso: string): string {
   const d = new Date(iso)
-  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16)
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16)
 }
 
-export function CallForm({ existing, defaultClientId, defaultClientName, defaultInquiryId, defaultEventId }: Props) {
+export function CallForm({
+  existing,
+  defaultClientId,
+  defaultClientName,
+  defaultInquiryId,
+  defaultEventId,
+}: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
   const [callType, setCallType] = useState<CallType>(existing?.call_type ?? 'general')
-  const [scheduledAt, setScheduledAt] = useState(
-    existing ? isoToLocal(existing.scheduled_at) : ''
-  )
+  const [scheduledAt, setScheduledAt] = useState(existing ? isoToLocal(existing.scheduled_at) : '')
   const [duration, setDuration] = useState(String(existing?.duration_minutes ?? 30))
   const [title, setTitle] = useState(existing?.title ?? '')
   const [contactName, setContactName] = useState(existing?.contact_name ?? defaultClientName ?? '')
@@ -139,13 +147,15 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
       {/* Call type */}
       <div className="space-y-1.5">
         <Label htmlFor="call_type">Call type</Label>
-        <Select value={callType} onValueChange={v => setCallType(v as CallType)}>
+        <Select value={callType} onValueChange={(v) => setCallType(v as CallType)}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {CALL_TYPE_OPTIONS.map(opt => (
-              <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+            {CALL_TYPE_OPTIONS.map((opt) => (
+              <SelectItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
@@ -159,7 +169,7 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
             id="scheduled_at"
             type="datetime-local"
             value={scheduledAt}
-            onChange={e => setScheduledAt(e.target.value)}
+            onChange={(e) => setScheduledAt(e.target.value)}
             required
           />
         </div>
@@ -170,8 +180,10 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {DURATION_OPTIONS.map(opt => (
-                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+              {DURATION_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -180,11 +192,13 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
 
       {/* Optional title */}
       <div className="space-y-1.5">
-        <Label htmlFor="title">Title <span className="text-gray-400 font-normal">(optional)</span></Label>
+        <Label htmlFor="title">
+          Title <span className="text-gray-400 font-normal">(optional)</span>
+        </Label>
         <Input
           id="title"
           value={title}
-          onChange={e => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="e.g. Initial consultation with the Hendersons"
           maxLength={200}
         />
@@ -199,7 +213,7 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
             <Input
               id="contact_name"
               value={contactName}
-              onChange={e => setContactName(e.target.value)}
+              onChange={(e) => setContactName(e.target.value)}
               placeholder="Full name"
               maxLength={200}
             />
@@ -209,7 +223,7 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
             <Input
               id="contact_phone"
               value={contactPhone}
-              onChange={e => setContactPhone(e.target.value)}
+              onChange={(e) => setContactPhone(e.target.value)}
               placeholder="+1 (555) 000-0000"
               type="tel"
               maxLength={50}
@@ -217,11 +231,13 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="contact_company">Company / occasion <span className="text-gray-400 font-normal">(optional)</span></Label>
+          <Label htmlFor="contact_company">
+            Company / occasion <span className="text-gray-400 font-normal">(optional)</span>
+          </Label>
           <Input
             id="contact_company"
             value={contactCompany}
-            onChange={e => setContactCompany(e.target.value)}
+            onChange={(e) => setContactCompany(e.target.value)}
             placeholder="e.g. Whole Foods, The Hendersons' wedding"
             maxLength={200}
           />
@@ -230,11 +246,13 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
 
       {/* Prep notes */}
       <div className="space-y-1.5">
-        <Label htmlFor="prep_notes">Prep notes <span className="text-gray-400 font-normal">(optional)</span></Label>
+        <Label htmlFor="prep_notes">
+          Prep notes <span className="text-gray-400 font-normal">(optional)</span>
+        </Label>
         <Textarea
           id="prep_notes"
           value={prepNotes}
-          onChange={e => setPrepNotes(e.target.value)}
+          onChange={(e) => setPrepNotes(e.target.value)}
           placeholder="Anything you want to remember or prepare before this call…"
           rows={3}
           maxLength={5000}
@@ -244,11 +262,7 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
       {/* Notify client toggle — only if this is a client call */}
       {clientId && (
         <div className="flex items-center gap-3">
-          <Switch
-            id="notify_client"
-            checked={notifyClient}
-            onCheckedChange={setNotifyClient}
-          />
+          <Switch id="notify_client" checked={notifyClient} onCheckedChange={setNotifyClient} />
           <Label htmlFor="notify_client" className="cursor-pointer">
             Send client a notification email about this call
           </Label>
@@ -256,9 +270,7 @@ export function CallForm({ existing, defaultClientId, defaultClientName, default
       )}
 
       {/* Error */}
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 bg-red-950 px-3 py-2 rounded">{error}</p>}
 
       {/* Actions */}
       <div className="flex gap-3">

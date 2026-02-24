@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
 }
 
 export default function InboxLoading() {
@@ -14,7 +14,7 @@ export default function InboxLoading() {
       </div>
 
       {/* Tab bar */}
-      <div className="flex gap-2 border-b border-stone-200 pb-0">
+      <div className="flex gap-2 border-b border-stone-700 pb-0">
         {[1, 2, 3, 4].map((i) => (
           <Bone key={i} className="h-9 w-28 rounded-t rounded-b-none" />
         ))}

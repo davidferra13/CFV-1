@@ -104,12 +104,12 @@ export function InquiryRecipeLinker({
   // ============================================================
 
   return (
-    <div className="border border-stone-200 rounded-xl bg-white">
+    <div className="border border-stone-700 rounded-xl bg-surface">
       {/* Header */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-stone-800">
         <div className="flex items-center gap-2">
           <ChefHat className="w-4 h-4 text-stone-500" />
-          <h3 className="font-semibold text-stone-900">Recipe Ideas</h3>
+          <h3 className="font-semibold text-stone-100">Recipe Ideas</h3>
           <span className="text-xs text-stone-400">
             {links.length} recipe{links.length !== 1 ? 's' : ''} linked
           </span>
@@ -122,7 +122,7 @@ export function InquiryRecipeLinker({
             setSearch('')
             setPendingNote('')
           }}
-          className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors"
+          className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-400 transition-colors"
         >
           <Plus className="w-3.5 h-3.5" />
           Link Recipe
@@ -131,7 +131,7 @@ export function InquiryRecipeLinker({
 
       {/* Recipe picker */}
       {showPicker && (
-        <div className="px-5 py-3 border-b border-stone-100 bg-stone-50 space-y-3">
+        <div className="px-5 py-3 border-b border-stone-800 bg-stone-800 space-y-3">
           {!selectedRecipeId ? (
             <>
               {/* Search */}
@@ -143,7 +143,7 @@ export function InquiryRecipeLinker({
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   autoFocus
-                  className="w-full text-sm border border-stone-300 rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                  className="w-full text-sm border border-stone-600 rounded-lg pl-8 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                 />
               </div>
 
@@ -161,22 +161,22 @@ export function InquiryRecipeLinker({
                       key={recipe.id}
                       type="button"
                       onClick={() => handleSelectRecipe(recipe.id)}
-                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white border border-transparent hover:border-stone-200 text-left transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-stone-800 border border-transparent hover:border-stone-700 text-left transition-colors"
                     >
                       {recipe.photo_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={recipe.photo_url}
                           alt={recipe.name}
-                          className="w-8 h-8 rounded object-cover flex-shrink-0 border border-stone-200"
+                          className="w-8 h-8 rounded object-cover flex-shrink-0 border border-stone-700"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded bg-stone-200 flex items-center justify-center flex-shrink-0">
+                        <div className="w-8 h-8 rounded bg-stone-700 flex items-center justify-center flex-shrink-0">
                           <ChefHat className="w-4 h-4 text-stone-400" />
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-stone-900 truncate">{recipe.name}</p>
+                        <p className="text-sm font-medium text-stone-100 truncate">{recipe.name}</p>
                         <p className="text-[10px] text-stone-400">
                           {formatCategory(recipe.category)}
                         </p>
@@ -190,7 +190,7 @@ export function InquiryRecipeLinker({
                 <button
                   type="button"
                   onClick={() => setShowPicker(false)}
-                  className="text-xs text-stone-500 hover:text-stone-700"
+                  className="text-xs text-stone-500 hover:text-stone-300"
                 >
                   Cancel
                 </button>
@@ -204,11 +204,11 @@ export function InquiryRecipeLinker({
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Link2 className="w-3.5 h-3.5 text-brand-500" />
-                    <span className="text-sm font-medium text-stone-900">{recipe.name}</span>
+                    <span className="text-sm font-medium text-stone-100">{recipe.name}</span>
                     <button
                       type="button"
                       onClick={() => setSelectedRecipeId(null)}
-                      className="ml-auto text-stone-400 hover:text-stone-600"
+                      className="ml-auto text-stone-400 hover:text-stone-400"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -219,7 +219,7 @@ export function InquiryRecipeLinker({
                     onChange={(e) => setPendingNote(e.target.value)}
                     placeholder="Optional note (e.g. scale to 8 portions, use wild mushroom variation...)"
                     rows={2}
-                    className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                    className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
                   />
 
                   {error && <p className="text-xs text-red-500">{error}</p>}
@@ -231,7 +231,7 @@ export function InquiryRecipeLinker({
                         setSelectedRecipeId(null)
                         setError(null)
                       }}
-                      className="text-xs text-stone-500 hover:text-stone-700"
+                      className="text-xs text-stone-500 hover:text-stone-300"
                     >
                       Back
                     </button>
@@ -267,18 +267,18 @@ export function InquiryRecipeLinker({
               <img
                 src={link.recipe.photo_url}
                 alt={link.recipe.name}
-                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-stone-200"
+                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-stone-700"
               />
             ) : (
-              <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-stone-800 flex items-center justify-center flex-shrink-0">
                 <ChefHat className="w-5 h-5 text-stone-400" />
               </div>
             )}
 
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-stone-900">{link.recipe.name}</p>
+              <p className="text-sm font-medium text-stone-100">{link.recipe.name}</p>
               <p className="text-[10px] text-stone-400">{formatCategory(link.recipe.category)}</p>
-              {link.note && <p className="text-xs text-stone-600 mt-0.5 italic">{link.note}</p>}
+              {link.note && <p className="text-xs text-stone-400 mt-0.5 italic">{link.note}</p>}
             </div>
 
             <button

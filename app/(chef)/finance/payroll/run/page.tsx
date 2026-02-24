@@ -24,10 +24,10 @@ export default async function RunPayrollPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/payroll" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance/payroll" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Payroll
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Run Payroll</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Run Payroll</h1>
         <p className="text-stone-500 mt-1">Record a pay period for a W-2 employee.</p>
       </div>
 
@@ -42,7 +42,7 @@ export default async function RunPayrollPage() {
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200">
+                <tr className="border-b border-stone-700">
                   <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">
                     Employee
                   </th>
@@ -57,20 +57,20 @@ export default async function RunPayrollPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {records.slice(0, 10).map((r) => (
-                  <tr key={r.id} className="hover:bg-stone-50">
-                    <td className="px-6 py-3 font-medium text-stone-800">
+                  <tr key={r.id} className="hover:bg-stone-800">
+                    <td className="px-6 py-3 font-medium text-stone-200">
                       {r.employeeName ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-stone-500 text-xs">
                       {r.payPeriodStart} → {r.payPeriodEnd}
                       <span className="block">Paid {r.payDate}</span>
                     </td>
-                    <td className="px-4 py-3 text-right text-stone-600">
+                    <td className="px-4 py-3 text-right text-stone-400">
                       {formatCurrency(r.grossPayCents)}
                     </td>
-                    <td className="px-6 py-3 text-right font-semibold text-stone-900">
+                    <td className="px-6 py-3 text-right font-semibold text-stone-100">
                       {formatCurrency(r.netPayCents)}
                     </td>
                   </tr>

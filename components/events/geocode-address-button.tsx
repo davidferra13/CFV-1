@@ -38,7 +38,7 @@ export function GeocodeAddressButton({ eventId }: GeocodeAddressButtonProps) {
         size="sm"
         onClick={handleGeocode}
         disabled={isPending}
-        className="text-xs h-7 px-2 text-stone-500 hover:text-stone-700"
+        className="text-xs h-7 px-2 text-stone-500 hover:text-stone-300"
       >
         {isPending ? 'Finding location…' : '📍 Add map location'}
       </Button>

@@ -44,20 +44,16 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
   return (
     <div className="space-y-6">
       {/* Status card */}
-      <div className="bg-white rounded-xl border border-stone-200 p-6">
+      <div className="bg-surface rounded-xl border border-stone-700 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-semibold text-stone-900">Connection Status</h2>
-          <Badge
-            variant={
-              status.connected ? 'success' : status.pending ? 'warning' : 'default'
-            }
-          >
+          <h2 className="text-base font-semibold text-stone-100">Connection Status</h2>
+          <Badge variant={status.connected ? 'success' : status.pending ? 'warning' : 'default'}>
             {status.connected ? 'Connected' : status.pending ? 'In Progress' : 'Not Connected'}
           </Badge>
         </div>
 
         {status.connected && (
-          <div className="space-y-2 text-sm text-stone-600">
+          <div className="space-y-2 text-sm text-stone-400">
             <div className="flex items-center gap-2">
               <span className="text-green-500">✓</span>
               <span>Charges enabled — you can accept payments</span>
@@ -67,18 +63,16 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
               <span>Payouts enabled — funds transfer to your bank</span>
             </div>
             {status.accountId && (
-              <p className="text-xs text-stone-400 mt-2">
-                Account ID: {status.accountId}
-              </p>
+              <p className="text-xs text-stone-400 mt-2">Account ID: {status.accountId}</p>
             )}
           </div>
         )}
 
         {status.pending && (
-          <div className="text-sm text-stone-600 space-y-3">
+          <div className="text-sm text-stone-400 space-y-3">
             <p>
-              Your Stripe account has been created but onboarding is not yet
-              complete. Click below to continue where you left off.
+              Your Stripe account has been created but onboarding is not yet complete. Click below
+              to continue where you left off.
             </p>
             <Button variant="primary" onClick={handleConnect} loading={loading}>
               Continue Stripe Setup
@@ -87,10 +81,10 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
         )}
 
         {!status.connected && !status.pending && (
-          <div className="text-sm text-stone-600 space-y-3">
+          <div className="text-sm text-stone-400 space-y-3">
             <p>
-              Connect your Stripe account to receive payments directly. Stripe
-              uses bank-level security and takes just a few minutes to set up.
+              Connect your Stripe account to receive payments directly. Stripe uses bank-level
+              security and takes just a few minutes to set up.
             </p>
             <ul className="space-y-1 text-stone-500">
               <li className="flex items-center gap-2">
@@ -112,23 +106,16 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
           </div>
         )}
 
-        {error && (
-          <p className="mt-3 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
 
       {/* Refresh status */}
       {status.accountId && !status.connected && (
-        <div className="bg-stone-50 rounded-xl border border-stone-200 p-4 flex items-center justify-between gap-4">
-          <p className="text-sm text-stone-600">
+        <div className="bg-stone-800 rounded-xl border border-stone-700 p-4 flex items-center justify-between gap-4">
+          <p className="text-sm text-stone-400">
             Just completed your Stripe setup? Refresh to update your status.
           </p>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={handleRefresh}
-            loading={refreshing}
-          >
+          <Button variant="secondary" size="sm" onClick={handleRefresh} loading={refreshing}>
             Refresh Status
           </Button>
         </div>
@@ -136,16 +123,16 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
 
       {/* Connected — manage in Stripe Dashboard */}
       {status.connected && (
-        <div className="bg-stone-50 rounded-xl border border-stone-200 p-4">
-          <p className="text-sm text-stone-600 mb-3">
-            Manage payouts, view payout history, and update your bank account
-            directly in your Stripe Dashboard.
+        <div className="bg-stone-800 rounded-xl border border-stone-700 p-4">
+          <p className="text-sm text-stone-400 mb-3">
+            Manage payouts, view payout history, and update your bank account directly in your
+            Stripe Dashboard.
           </p>
           <a
             href="https://dashboard.stripe.com/login"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700"
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400"
           >
             Open Stripe Dashboard →
           </a>

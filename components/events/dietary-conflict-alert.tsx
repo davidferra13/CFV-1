@@ -28,7 +28,7 @@ type Props = {
 
 const SEVERITY_CONFIG = {
   critical: {
-    banner: 'border-red-300 bg-red-50',
+    banner: 'border-red-300 bg-red-950',
     icon: AlertTriangle,
     iconColor: 'text-red-600',
     textColor: 'text-red-900',
@@ -37,7 +37,7 @@ const SEVERITY_CONFIG = {
     label: 'Critical',
   },
   warning: {
-    banner: 'border-amber-300 bg-amber-50',
+    banner: 'border-amber-300 bg-amber-950',
     icon: AlertCircle,
     iconColor: 'text-amber-600',
     textColor: 'text-amber-900',
@@ -46,7 +46,7 @@ const SEVERITY_CONFIG = {
     label: 'Warning',
   },
   info: {
-    banner: 'border-sky-300 bg-sky-50',
+    banner: 'border-sky-300 bg-sky-950',
     icon: Info,
     iconColor: 'text-sky-600',
     textColor: 'text-sky-900',
@@ -124,9 +124,7 @@ export function DietaryConflictAlert({ conflicts: initialConflicts, eventId }: P
         </h3>
       </div>
 
-      {error && (
-        <p className="text-xs text-red-600 mb-2">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 mb-2">{error}</p>}
 
       {/* Conflict list */}
       <div className="space-y-2">
@@ -137,16 +135,12 @@ export function DietaryConflictAlert({ conflicts: initialConflicts, eventId }: P
             <div
               key={conflict.id}
               className={`flex items-start justify-between gap-3 rounded-md px-3 py-2 ${
-                conflict.acknowledged
-                  ? 'bg-white/60 opacity-60'
-                  : 'bg-white/80'
+                conflict.acknowledged ? 'bg-stone-900/60 opacity-60' : 'bg-stone-900/80'
               }`}
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-sm font-medium text-stone-900">
-                    {conflict.guestName}
-                  </span>
+                  <span className="text-sm font-medium text-stone-100">{conflict.guestName}</span>
                   <Badge variant={config.badgeVariant}>{config.label}</Badge>
                   {conflict.acknowledged && (
                     <span className="inline-flex items-center gap-0.5 text-xs text-emerald-600 font-medium">
@@ -155,9 +149,8 @@ export function DietaryConflictAlert({ conflicts: initialConflicts, eventId }: P
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-stone-600 mt-0.5">
-                  <span className="font-medium">{conflict.allergy}</span>
-                  {' '}conflicts with{' '}
+                <p className="text-xs text-stone-400 mt-0.5">
+                  <span className="font-medium">{conflict.allergy}</span> conflicts with{' '}
                   <span className="font-medium">{conflict.conflictingDish}</span>
                 </p>
               </div>

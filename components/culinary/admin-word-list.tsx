@@ -40,22 +40,22 @@ export function AdminWordList() {
       <p className="text-sm text-stone-500 mb-3">
         {words.length} word{words.length !== 1 ? 's' : ''} submitted by users
       </p>
-      <div className="border border-stone-200 rounded-lg overflow-hidden">
+      <div className="border border-stone-700 rounded-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-stone-50 border-b border-stone-200">
-              <th className="text-left px-4 py-2 font-medium text-stone-700">Word</th>
-              <th className="text-left px-4 py-2 font-medium text-stone-700">Category</th>
-              <th className="text-left px-4 py-2 font-medium text-stone-700">Tier</th>
-              <th className="text-left px-4 py-2 font-medium text-stone-700">Added</th>
+            <tr className="bg-stone-800 border-b border-stone-700">
+              <th className="text-left px-4 py-2 font-medium text-stone-300">Word</th>
+              <th className="text-left px-4 py-2 font-medium text-stone-300">Category</th>
+              <th className="text-left px-4 py-2 font-medium text-stone-300">Tier</th>
+              <th className="text-left px-4 py-2 font-medium text-stone-300">Added</th>
             </tr>
           </thead>
           <tbody>
             {words.map((w) => (
-              <tr key={w.id} className="border-b border-stone-100 last:border-0">
-                <td className="px-4 py-2 font-medium text-stone-900">{w.word}</td>
-                <td className="px-4 py-2 text-stone-600">{CATEGORY_LABELS[w.category]}</td>
-                <td className="px-4 py-2 text-stone-600">T{w.tier}</td>
+              <tr key={w.id} className="border-b border-stone-800 last:border-0">
+                <td className="px-4 py-2 font-medium text-stone-100">{w.word}</td>
+                <td className="px-4 py-2 text-stone-400">{CATEGORY_LABELS[w.category]}</td>
+                <td className="px-4 py-2 text-stone-400">T{w.tier}</td>
                 <td className="px-4 py-2 text-stone-500">
                   {new Date(w.createdAt).toLocaleDateString()}
                 </td>

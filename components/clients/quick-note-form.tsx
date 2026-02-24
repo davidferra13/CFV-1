@@ -42,14 +42,14 @@ export function QuickNoteForm({
         placeholder="Write a note..."
         rows={2}
         autoFocus
-        className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+        className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
       />
 
       <div className="flex items-center justify-between">
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as NoteCategory)}
-          className="text-xs border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="text-xs border border-stone-600 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
           {CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>
@@ -63,7 +63,7 @@ export function QuickNoteForm({
             type="button"
             onClick={onCancel}
             disabled={submitting}
-            className="px-3 py-1 text-xs text-stone-600 hover:text-stone-800 disabled:opacity-50"
+            className="px-3 py-1 text-xs text-stone-400 hover:text-stone-200 disabled:opacity-50"
           >
             Cancel
           </button>

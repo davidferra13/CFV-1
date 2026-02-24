@@ -4,7 +4,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getMenus, getAllComponents } from '@/lib/menus/actions'
 import { getRecipes } from '@/lib/recipes/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 
 export const metadata: Metadata = { title: 'Menu Cost - ChefFlow' }
 
@@ -30,7 +37,7 @@ export default async function MenuCostPage() {
     compsByMenu.get(comp.menu_id)!.push(comp)
   }
 
-  const menuData = menus.map(menu => {
+  const menuData = menus.map((menu) => {
     const menuComponents = compsByMenu.get(menu.id) ?? []
     const componentCount = menuComponents.length
 
@@ -55,16 +62,18 @@ export default async function MenuCostPage() {
     return { menu, componentCount, estimatedCostCents, pricedCount, costPerGuest }
   })
 
-  const withCost = menuData.filter(m => m.estimatedCostCents > 0)
-  const noCost = menuData.filter(m => m.estimatedCostCents === 0)
+  const withCost = menuData.filter((m) => m.estimatedCostCents > 0)
+  const noCost = menuData.filter((m) => m.estimatedCostCents === 0)
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/costing" className="text-sm text-stone-500 hover:text-stone-700">← Costing</Link>
+        <Link href="/culinary/costing" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Costing
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Menu Cost</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Menu Cost</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {menus.length} menus
           </span>
         </div>
@@ -73,8 +82,8 @@ export default async function MenuCostPage() {
         </p>
       </div>
 
-      <Card className="p-4 bg-stone-50 border-stone-200">
-        <p className="text-sm text-stone-600">
+      <Card className="p-4 bg-stone-800 border-stone-700">
+        <p className="text-sm text-stone-400">
           Menu cost is estimated by summing the ingredient costs of each recipe linked to a menu
           component. Recipes without full ingredient pricing will show partial estimates. Set a
           target guest count on a menu to see cost-per-guest.
@@ -83,8 +92,11 @@ export default async function MenuCostPage() {
 
       {menus.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No menus yet</p>
-          <Link href="/culinary/menus" className="text-brand-600 hover:underline text-sm mt-3 inline-block">
+          <p className="text-stone-400 font-medium">No menus yet</p>
+          <Link
+            href="/culinary/menus"
+            className="text-brand-600 hover:underline text-sm mt-3 inline-block"
+          >
             Create a menu →
           </Link>
         </Card>
@@ -107,17 +119,20 @@ export default async function MenuCostPage() {
                 .map(({ menu, componentCount, estimatedCostCents, pricedCount, costPerGuest }) => (
                   <TableRow key={menu.id}>
                     <TableCell className="font-medium">
-                      <Link href={`/culinary/menus/${menu.id}`} className="text-brand-600 hover:underline">
+                      <Link
+                        href={`/culinary/menus/${menu.id}`}
+                        className="text-brand-600 hover:underline"
+                      >
                         {menu.name}
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full capitalize">
                         {menu.status}
                       </span>
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">{componentCount}</TableCell>
-                    <TableCell className="font-semibold text-stone-900">
+                    <TableCell className="font-semibold text-stone-100">
                       {estimatedCostCents > 0 ? (
                         <span>
                           ${(estimatedCostCents / 100).toFixed(2)}
@@ -132,7 +147,7 @@ export default async function MenuCostPage() {
                     <TableCell className="text-stone-500 text-sm">
                       {menu.target_guest_count ?? <span className="text-stone-300">—</span>}
                     </TableCell>
-                    <TableCell className="text-stone-700 text-sm font-medium">
+                    <TableCell className="text-stone-300 text-sm font-medium">
                       {costPerGuest != null ? (
                         `$${(costPerGuest / 100).toFixed(2)}`
                       ) : (

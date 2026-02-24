@@ -33,9 +33,9 @@ function formatCents(cents: number): string {
 
 function ConfidenceBadge({ confidence }: { confidence: string }) {
   const colors: Record<string, string> = {
-    high: 'bg-green-100 text-green-800',
-    medium: 'bg-yellow-100 text-yellow-800',
-    low: 'bg-red-100 text-red-800',
+    high: 'bg-green-900 text-green-800',
+    medium: 'bg-yellow-900 text-yellow-800',
+    low: 'bg-red-900 text-red-800',
   }
   return (
     <span
@@ -111,7 +111,7 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
   if (phase === 'done' && result) {
     return (
       <div className="space-y-4">
-        <div className="rounded-lg border border-green-200 bg-green-50 p-5">
+        <div className="rounded-lg border border-green-200 bg-green-950 p-5">
           <div className="flex items-start gap-3">
             <span className="text-2xl">✓</span>
             <div>
@@ -162,7 +162,7 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
       )}
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-stone-700">
+        <label className="text-sm font-medium text-stone-300">
           Paste your Take a Chef booking notification
         </label>
         <p className="text-xs text-stone-500">
@@ -181,11 +181,11 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
       </div>
 
       {/* Commission Settings */}
-      <Card className="p-4 bg-stone-50 border-stone-200">
-        <p className="text-sm font-medium text-stone-700 mb-3">Platform Commission</p>
+      <Card className="p-4 bg-stone-800 border-stone-700">
+        <p className="text-sm font-medium text-stone-300 mb-3">Platform Commission</p>
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-stone-600 w-36">Commission %</label>
+            <label className="text-sm text-stone-400 w-36">Commission %</label>
             <div className="flex items-center gap-2">
               <input
                 type="number"
@@ -196,18 +196,18 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
                 onChange={(e) =>
                   setCommissionPercent(Math.max(0, Math.min(50, Number(e.target.value))))
                 }
-                className="w-20 px-3 py-1.5 border border-stone-200 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-20 px-3 py-1.5 border border-stone-700 rounded-md text-sm text-center focus:outline-none focus:ring-2 focus:ring-brand-500"
                 disabled={phase === 'saving'}
               />
               <span className="text-sm text-stone-500">% (typical: 20–30%)</span>
             </div>
           </div>
-          <label className="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-stone-400 cursor-pointer">
             <input
               type="checkbox"
               checked={logCommission}
               onChange={(e) => setLogCommission(e.target.checked)}
-              className="rounded border-stone-300"
+              className="rounded border-stone-600"
               disabled={phase === 'saving'}
             />
             Log commission as business expense
@@ -254,9 +254,9 @@ export function TakeAChefImport({ aiConfigured }: { aiConfigured: boolean }) {
       </div>
 
       {/* Helper callout */}
-      <div className="rounded-lg border border-brand-100 bg-brand-50 p-4 text-sm text-stone-600">
-        <p className="font-medium text-stone-800 mb-1">What gets created</p>
-        <ul className="space-y-1 text-xs text-stone-600 list-disc pl-4">
+      <div className="rounded-lg border border-brand-100 bg-brand-950 p-4 text-sm text-stone-400">
+        <p className="font-medium text-stone-200 mb-1">What gets created</p>
+        <ul className="space-y-1 text-xs text-stone-400 list-disc pl-4">
           <li>Client record tagged as &quot;Take a Chef&quot; acquisition source</li>
           <li>Inquiry with channel = Take a Chef (tracked in your pipeline)</li>
           <li>Draft event pre-filled with all extracted details</li>

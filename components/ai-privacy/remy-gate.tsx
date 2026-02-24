@@ -31,7 +31,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
   if (status === 'loading') {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="h-6 w-6 border-2 border-brand-200 border-t-brand-500 rounded-full animate-spin" />
+        <div className="h-6 w-6 border-2 border-brand-700 border-t-brand-500 rounded-full animate-spin" />
       </div>
     )
   }
@@ -43,21 +43,21 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
   // ─── Gated: show the setup prompt ─────────────────────────
   return (
     <div className="max-w-lg mx-auto py-12 px-6 text-center space-y-6">
-      <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-100 flex items-center justify-center">
+      <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-900 flex items-center justify-center">
         <Shield className="h-8 w-8 text-brand-600" />
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-xl font-bold text-stone-900">Set Up Remy</h2>
+        <h2 className="text-xl font-bold text-stone-100">Set Up Remy</h2>
         <p className="text-stone-500 text-sm leading-relaxed">
           Before using Remy, take a quick look at how it works. Remy runs on ChefFlow&apos;s private
           infrastructure — your conversations are never sent to external AI services.
         </p>
       </div>
 
-      <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-3 text-left">
-        <p className="text-sm font-medium text-stone-900">Quick setup covers:</p>
-        <ul className="text-sm text-stone-600 space-y-1.5">
+      <div className="rounded-xl border border-stone-700 bg-stone-800 p-4 space-y-3 text-left">
+        <p className="text-sm font-medium text-stone-100">Quick setup covers:</p>
+        <ul className="text-sm text-stone-400 space-y-1.5">
           <li className="flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-brand-500 shrink-0" />
             What Remy can help you with
@@ -79,7 +79,7 @@ export function RemyGate({ children }: { children: React.ReactNode }) {
 
       <Link
         href="/settings/ai-privacy"
-        className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-6 py-3
+        className="inline-flex items-center gap-2 rounded-xl bg-brand-9500 px-6 py-3
                    text-sm font-semibold text-white hover:bg-brand-600
                    shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all"
       >

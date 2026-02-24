@@ -94,19 +94,11 @@ function formatMinutes(minutes: number): string {
 
 // ─── Stat Card ────────────────────────────────────────
 
-function StatCard({
-  label,
-  value,
-  sub,
-}: {
-  label: string
-  value: string | number
-  sub?: string
-}) {
+function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
   return (
-    <div className="bg-stone-50 rounded-xl p-4 border border-stone-100">
+    <div className="bg-stone-800 rounded-xl p-4 border border-stone-800">
       <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">{label}</p>
-      <p className="text-2xl font-bold text-stone-900 mt-1">{value}</p>
+      <p className="text-2xl font-bold text-stone-100 mt-1">{value}</p>
       {sub && <p className="text-xs text-stone-400 mt-0.5">{sub}</p>}
     </div>
   )
@@ -126,7 +118,7 @@ function ChartCard({
   return (
     <Card className="p-5">
       <div className="mb-4">
-        <h3 className="font-semibold text-stone-900">{title}</h3>
+        <h3 className="font-semibold text-stone-100">{title}</h3>
         {subtitle && <p className="text-xs text-stone-500 mt-0.5">{subtitle}</p>}
       </div>
       {children}
@@ -142,7 +134,10 @@ function ClienteleTab({
   serviceStyles,
   guestCounts,
   dietary,
-}: Pick<InsightsClientProps, 'dinnerTime' | 'occasions' | 'serviceStyles' | 'guestCounts' | 'dietary'>) {
+}: Pick<
+  InsightsClientProps,
+  'dinnerTime' | 'occasions' | 'serviceStyles' | 'guestCounts' | 'dietary'
+>) {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -160,10 +155,7 @@ function ClienteleTab({
           <GuestCountHistogram data={guestCounts} />
         </ChartCard>
 
-        <ChartCard
-          title="Most Common Occasions"
-          subtitle="What your clients are celebrating"
-        >
+        <ChartCard title="Most Common Occasions" subtitle="What your clients are celebrating">
           <OccasionChart data={occasions} />
         </ChartCard>
 
@@ -272,15 +264,8 @@ function ClientBaseTab({
           value={`${retention.repeatRate}%`}
           sub="clients with 2+ events"
         />
-        <StatCard
-          label="Avg Events / Client"
-          value={retention.avgEventsPerClient}
-        />
-        <StatCard
-          label="Dormant Clients"
-          value={retention.dormant}
-          sub="no booking in 6+ months"
-        />
+        <StatCard label="Avg Events / Client" value={retention.avgEventsPerClient} />
+        <StatCard label="Dormant Clients" value={retention.dormant} sub="no booking in 6+ months" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -291,17 +276,11 @@ function ClientBaseTab({
           <AcquisitionSourcePieChart data={acquisitionStats.bySource} />
         </ChartCard>
 
-        <ChartCard
-          title="Client Status Breakdown"
-          subtitle="Active · Repeat Ready · VIP · Dormant"
-        >
+        <ChartCard title="Client Status Breakdown" subtitle="Active · Repeat Ready · VIP · Dormant">
           <ClientStatusChart data={acquisitionStats.byStatus} />
         </ChartCard>
 
-        <ChartCard
-          title="Events per Client"
-          subtitle="How many times has each client booked?"
-        >
+        <ChartCard title="Events per Client" subtitle="How many times has each client booked?">
           <EventsPerClientHistogram data={retention.eventsPerClientHistogram} />
         </ChartCard>
 
@@ -344,18 +323,14 @@ function OperationsTab({
         <StatCard
           label="Service Min / Guest"
           value={
-            phaseStats.avgServiceMinPerGuest > 0
-              ? `${phaseStats.avgServiceMinPerGuest}m`
-              : '—'
+            phaseStats.avgServiceMinPerGuest > 0 ? `${phaseStats.avgServiceMinPerGuest}m` : '—'
           }
           sub="avg service time per guest"
         />
         <StatCard
           label="Avg Event Value"
           value={
-            financialStats.avgEventValue > 0
-              ? formatCurrency(financialStats.avgEventValue)
-              : '—'
+            financialStats.avgEventValue > 0 ? formatCurrency(financialStats.avgEventValue) : '—'
           }
           sub="completed events only"
         />
@@ -415,11 +390,13 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
 
   if (!hasData) {
     return (
-      <div className="rounded-xl border border-dashed border-stone-200 p-10 text-center">
+      <div className="rounded-xl border border-dashed border-stone-700 p-10 text-center">
         <p className="text-3xl mb-3">🍽️</p>
-        <p className="font-semibold text-stone-700 text-lg">No Take a Chef clients yet</p>
+        <p className="font-semibold text-stone-300 text-lg">No Take a Chef clients yet</p>
         <p className="text-stone-500 text-sm mt-2 max-w-md mx-auto">
-          When you capture a Take a Chef booking via Smart Import, the ROI analytics will appear here — showing how many platform clients have converted to direct bookings and how much commission you&apos;ve saved.
+          When you capture a Take a Chef booking via Smart Import, the ROI analytics will appear
+          here — showing how many platform clients have converted to direct bookings and how much
+          commission you&apos;ve saved.
         </p>
         <a
           href="/import?mode=take-a-chef"
@@ -435,11 +412,7 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard
-          label="TAC Clients"
-          value={roi.tacClientCount}
-          sub="acquired via platform"
-        />
+        <StatCard label="TAC Clients" value={roi.tacClientCount} sub="acquired via platform" />
         <StatCard
           label="Platform Bookings"
           value={roi.platformBookingsCount}
@@ -461,12 +434,20 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <StatCard
           label="Commission Logged"
-          value={roi.estimatedCommissionPaidCents > 0 ? formatCurrency(roi.estimatedCommissionPaidCents) : '—'}
+          value={
+            roi.estimatedCommissionPaidCents > 0
+              ? formatCurrency(roi.estimatedCommissionPaidCents)
+              : '—'
+          }
           sub="tracked as business expenses"
         />
         <StatCard
           label="Est. Commission Saved"
-          value={roi.estimatedCommissionSavedCents > 0 ? formatCurrency(roi.estimatedCommissionSavedCents) : '—'}
+          value={
+            roi.estimatedCommissionSavedCents > 0
+              ? formatCurrency(roi.estimatedCommissionSavedCents)
+              : '—'
+          }
           sub="on direct repeat bookings (25% est.)"
         />
         <StatCard
@@ -479,42 +460,56 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
       {/* Top Clients Table */}
       {roi.topTacClients.length > 0 && (
         <Card className="p-5">
-          <h3 className="font-semibold text-stone-900 mb-4">Top Take a Chef Clients</h3>
+          <h3 className="font-semibold text-stone-100 mb-4">Top Take a Chef Clients</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-100">
-                  <th className="text-left py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">Client</th>
-                  <th className="text-right py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">Total Events</th>
-                  <th className="text-right py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">Direct Events</th>
-                  <th className="text-right py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">Direct Rate</th>
+                <tr className="border-b border-stone-800">
+                  <th className="text-left py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                    Client
+                  </th>
+                  <th className="text-right py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                    Total Events
+                  </th>
+                  <th className="text-right py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                    Direct Events
+                  </th>
+                  <th className="text-right py-2 text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                    Direct Rate
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {roi.topTacClients.map((client) => {
-                  const directRate = client.totalEvents > 0
-                    ? Math.round((client.directEvents / client.totalEvents) * 100)
-                    : 0
+                  const directRate =
+                    client.totalEvents > 0
+                      ? Math.round((client.directEvents / client.totalEvents) * 100)
+                      : 0
                   return (
-                    <tr key={client.clientId} className="border-b border-stone-50 hover:bg-stone-50">
+                    <tr
+                      key={client.clientId}
+                      className="border-b border-stone-50 hover:bg-stone-800"
+                    >
                       <td className="py-2.5">
                         <a
                           href={`/clients/${client.clientId}`}
-                          className="font-medium text-stone-800 hover:text-brand-600"
+                          className="font-medium text-stone-200 hover:text-brand-600"
                         >
                           {client.name}
                         </a>
                       </td>
-                      <td className="py-2.5 text-right text-stone-600">{client.totalEvents}</td>
-                      <td className="py-2.5 text-right text-stone-600">{client.directEvents}</td>
+                      <td className="py-2.5 text-right text-stone-400">{client.totalEvents}</td>
+                      <td className="py-2.5 text-right text-stone-400">{client.directEvents}</td>
                       <td className="py-2.5 text-right">
-                        <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
-                          directRate >= 50
-                            ? 'bg-green-100 text-green-800'
-                            : directRate > 0
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-stone-100 text-stone-600'
-                        }`}>
+                        <span
+                          className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${
+                            directRate >= 50
+                              ? 'bg-green-900 text-green-800'
+                              : directRate > 0
+                                ? 'bg-amber-900 text-amber-800'
+                                : 'bg-stone-800 text-stone-400'
+                          }`}
+                        >
                           {directRate}%
                         </span>
                       </td>
@@ -528,9 +523,13 @@ function TakeAChefROITab({ roi }: { roi: TakeAChefROI }) {
       )}
 
       {/* Explainer */}
-      <div className="rounded-lg bg-stone-50 border border-stone-100 p-4 text-sm text-stone-600">
-        <p className="font-medium text-stone-800 mb-1">How this works</p>
-        <p>Take a Chef finds your clients. ChefFlow builds the direct relationship. Every time a client who first found you on Take a Chef books you directly, you save the platform commission — typically 20–30% of the booking value. This panel tracks that flywheel.</p>
+      <div className="rounded-lg bg-stone-800 border border-stone-800 p-4 text-sm text-stone-400">
+        <p className="font-medium text-stone-200 mb-1">How this works</p>
+        <p>
+          Take a Chef finds your clients. ChefFlow builds the direct relationship. Every time a
+          client who first found you on Take a Chef books you directly, you save the platform
+          commission — typically 20–30% of the booking value. This panel tracks that flywheel.
+        </p>
       </div>
     </div>
   )
@@ -560,15 +559,15 @@ export function InsightsClient({
   return (
     <div>
       {/* Tab bar */}
-      <div className="flex gap-0.5 border-b border-stone-200 mb-6 overflow-x-auto">
-        {TABS.map(tab => (
+      <div className="flex gap-0.5 border-b border-stone-700 mb-6 overflow-x-auto">
+        {TABS.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={`px-4 py-2.5 text-sm font-medium whitespace-nowrap transition-colors rounded-t-lg ${
               activeTab === tab.id
-                ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-50/50'
-                : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'
+                ? 'text-violet-700 border-b-2 border-violet-600 bg-violet-950/50'
+                : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
             }`}
           >
             {tab.label}
@@ -607,9 +606,7 @@ export function InsightsClient({
           financialStats={financialStats}
         />
       )}
-      {activeTab === 'take-a-chef' && (
-        <TakeAChefROITab roi={tacROI} />
-      )}
+      {activeTab === 'take-a-chef' && <TakeAChefROITab roi={tacROI} />}
     </div>
   )
 }

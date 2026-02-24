@@ -42,7 +42,14 @@ const STATUS_LABELS: Record<string, string> = {
   in_progress: 'In Progress',
 }
 
-const ACTIVE_COLUMNS = ['draft', 'proposed', 'accepted', 'paid', 'confirmed', 'in_progress'] as const
+const ACTIVE_COLUMNS = [
+  'draft',
+  'proposed',
+  'accepted',
+  'paid',
+  'confirmed',
+  'in_progress',
+] as const
 
 // Top border color per column
 const COLUMN_COLORS: Record<string, string> = {
@@ -85,7 +92,7 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
   )
 
   // The card currently being dragged (used for DragOverlay)
-  const activeEvent = activeId ? events.find((e) => e.id === activeId) ?? null : null
+  const activeEvent = activeId ? (events.find((e) => e.id === activeId) ?? null) : null
 
   // Split events by status
   function eventsForStatus(status: string): KanbanEvent[] {
@@ -122,27 +129,26 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
     const allowed = ALLOWED_TRANSITIONS[fromStatus] ?? []
     if (!allowed.includes(targetStatus)) {
       // Give contextual feedback
-      const isBackwards = ACTIVE_COLUMNS.indexOf(targetStatus as typeof ACTIVE_COLUMNS[number]) <
-        ACTIVE_COLUMNS.indexOf(fromStatus as typeof ACTIVE_COLUMNS[number])
+      const isBackwards =
+        ACTIVE_COLUMNS.indexOf(targetStatus as (typeof ACTIVE_COLUMNS)[number]) <
+        ACTIVE_COLUMNS.indexOf(fromStatus as (typeof ACTIVE_COLUMNS)[number])
 
       if (isBackwards) {
         toast.error('Cannot move events backwards in the pipeline.')
       } else if (targetStatus === 'in_progress' && fromStatus !== 'confirmed') {
         toast.error('Event must be confirmed before it can be started.')
-      } else if (!ACTIVE_COLUMNS.includes(targetStatus as typeof ACTIVE_COLUMNS[number])) {
+      } else if (!ACTIVE_COLUMNS.includes(targetStatus as (typeof ACTIVE_COLUMNS)[number])) {
         toast.error('Cannot drop events into terminal columns from the board.')
       } else {
-        toast.error(`Transition from ${STATUS_LABELS[fromStatus] ?? fromStatus} to ${STATUS_LABELS[targetStatus] ?? targetStatus} is not allowed. Events must move one step at a time.`)
+        toast.error(
+          `Transition from ${STATUS_LABELS[fromStatus] ?? fromStatus} to ${STATUS_LABELS[targetStatus] ?? targetStatus} is not allowed. Events must move one step at a time.`
+        )
       }
       return
     }
 
     // Optimistic update — move card immediately
-    setEvents((prev) =>
-      prev.map((e) =>
-        e.id === draggedId ? { ...e, status: targetStatus } : e
-      )
-    )
+    setEvents((prev) => prev.map((e) => (e.id === draggedId ? { ...e, status: targetStatus } : e)))
 
     // Call server action inside transition
     startTransition(async () => {
@@ -159,13 +165,10 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
       } catch (err: unknown) {
         // Revert optimistic update
         setEvents((prev) =>
-          prev.map((e) =>
-            e.id === draggedId ? { ...e, status: fromStatus } : e
-          )
+          prev.map((e) => (e.id === draggedId ? { ...e, status: fromStatus } : e))
         )
 
-        const message =
-          err instanceof Error ? err.message : 'Failed to update event status.'
+        const message = err instanceof Error ? err.message : 'Failed to update event status.'
         toast.error(message)
       }
     })
@@ -175,7 +178,7 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
     <div className="relative">
       {/* Loading overlay */}
       {isPending && (
-        <div className="absolute inset-0 bg-white/50 z-10 rounded-xl pointer-events-none" />
+        <div className="absolute inset-0 bg-stone-900/50 z-10 rounded-xl pointer-events-none" />
       )}
 
       <DndContext
@@ -225,8 +228,8 @@ function TerminalStatusPill({
   variant: 'success' | 'error'
 }) {
   return (
-    <div className="flex items-center gap-2 bg-white border border-stone-200 rounded-lg px-4 py-2 shadow-sm">
-      <span className="text-sm text-stone-600 font-medium">{label}</span>
+    <div className="flex items-center gap-2 bg-surface border border-stone-700 rounded-lg px-4 py-2 shadow-sm">
+      <span className="text-sm text-stone-400 font-medium">{label}</span>
       <Badge variant={variant}>{count}</Badge>
     </div>
   )

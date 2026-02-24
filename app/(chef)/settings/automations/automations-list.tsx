@@ -11,7 +11,13 @@ import { BuiltInSettings } from '@/components/automations/built-in-settings'
 import { ExecutionLog } from '@/components/automations/execution-log'
 import { toggleAutomationRule, deleteAutomationRule } from '@/lib/automations/actions'
 import { TRIGGER_LABELS, ACTION_LABELS } from '@/lib/automations/types'
-import type { AutomationRule, AutomationExecution, TriggerEvent, ActionType, ChefAutomationSettings } from '@/lib/automations/types'
+import type {
+  AutomationRule,
+  AutomationExecution,
+  TriggerEvent,
+  ActionType,
+  ChefAutomationSettings,
+} from '@/lib/automations/types'
 
 interface AutomationsListProps {
   rules: AutomationRule[]
@@ -57,7 +63,6 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
 
   return (
     <div className="space-y-6">
-
       {/* ── Built-in Automations ─────────────────────────────────────────── */}
       <BuiltInSettings settings={settings} />
 
@@ -72,47 +77,29 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
               </p>
             </div>
             {!showBuilder && !editingRule && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowBuilder(true)}
-              >
+              <Button variant="primary" size="sm" onClick={() => setShowBuilder(true)}>
                 + New Rule
               </Button>
             )}
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-
           {/* New rule builder */}
-          {showBuilder && (
-            <RuleBuilder onClose={() => setShowBuilder(false)} />
-          )}
+          {showBuilder && <RuleBuilder onClose={() => setShowBuilder(false)} />}
 
           {/* Edit rule builder */}
-          {editingRule && (
-            <RuleBuilder
-              initialRule={editingRule}
-              onClose={handleEditClose}
-            />
-          )}
+          {editingRule && <RuleBuilder initialRule={editingRule} onClose={handleEditClose} />}
 
           {/* Empty state */}
           {rules.length === 0 && !showBuilder && !editingRule && (
             <div className="text-center py-8 space-y-3">
-              <p className="text-sm text-stone-400">
-                No custom rules yet.
-              </p>
+              <p className="text-sm text-stone-400">No custom rules yet.</p>
               <p className="text-xs text-stone-400 max-w-sm mx-auto">
                 Custom rules let you build additional automations on top of the built-ins above —
                 like getting a special alert for large-party inquiries, or logging a note whenever
                 an event is confirmed.
               </p>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowBuilder(true)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setShowBuilder(true)}>
                 + Create your first rule
               </Button>
             </div>
@@ -123,13 +110,15 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
             <div
               key={rule.id}
               className={`border rounded-lg p-3 transition-colors ${
-                rule.is_active ? 'border-stone-200 bg-white' : 'border-stone-100 bg-stone-50 opacity-70'
+                rule.is_active
+                  ? 'border-stone-700 bg-surface'
+                  : 'border-stone-800 bg-stone-800 opacity-70'
               }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-sm text-stone-800">{rule.name}</span>
+                    <span className="font-medium text-sm text-stone-200">{rule.name}</span>
                     <Badge variant={rule.is_active ? 'success' : 'info'}>
                       {rule.is_active ? 'Active' : 'Paused'}
                     </Badge>
@@ -138,19 +127,20 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
                     <p className="text-xs text-stone-500 mb-1">{rule.description}</p>
                   )}
                   <div className="flex flex-wrap gap-1 text-[10px]">
-                    <span className="bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">
-                      When: {TRIGGER_LABELS[rule.trigger_event as TriggerEvent] || rule.trigger_event}
+                    <span className="bg-blue-950 text-blue-700 px-1.5 py-0.5 rounded">
+                      When:{' '}
+                      {TRIGGER_LABELS[rule.trigger_event as TriggerEvent] || rule.trigger_event}
                     </span>
-                    <span className="bg-emerald-50 text-emerald-700 px-1.5 py-0.5 rounded">
+                    <span className="bg-emerald-950 text-emerald-700 px-1.5 py-0.5 rounded">
                       Do: {ACTION_LABELS[rule.action_type as ActionType] || rule.action_type}
                     </span>
                     {rule.total_fires > 0 && (
-                      <span className="bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded">
+                      <span className="bg-stone-800 text-stone-400 px-1.5 py-0.5 rounded">
                         Fired {rule.total_fires}×
                       </span>
                     )}
                     {rule.last_fired_at && (
-                      <span className="bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded">
+                      <span className="bg-stone-800 text-stone-500 px-1.5 py-0.5 rounded">
                         Last: {new Date(rule.last_fired_at).toLocaleDateString()}
                       </span>
                     )}
@@ -163,7 +153,7 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
                       setShowBuilder(false)
                       setEditingRule(rule)
                     }}
-                    className="text-xs text-stone-400 hover:text-stone-700 px-2 py-1"
+                    className="text-xs text-stone-400 hover:text-stone-300 px-2 py-1"
                   >
                     Edit
                   </button>
@@ -171,7 +161,7 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
                     type="button"
                     onClick={() => handleToggle(rule.id, rule.is_active)}
                     disabled={toggling === rule.id}
-                    className="text-xs text-stone-400 hover:text-stone-600 px-2 py-1"
+                    className="text-xs text-stone-400 hover:text-stone-400 px-2 py-1"
                   >
                     {toggling === rule.id ? '…' : rule.is_active ? 'Pause' : 'Enable'}
                   </button>
@@ -187,7 +177,6 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
               </div>
             </div>
           ))}
-
         </CardContent>
       </Card>
 
@@ -201,7 +190,6 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
           <ExecutionLog executions={executions} />
         </CardContent>
       </Card>
-
     </div>
   )
 }

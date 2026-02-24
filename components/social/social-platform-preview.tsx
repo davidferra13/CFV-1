@@ -32,7 +32,13 @@ type Props = {
   accountName?: string | null
 }
 
-export function SocialPlatformPreview({ platform, caption, hashtags, mediaUrl, accountName }: Props) {
+export function SocialPlatformPreview({
+  platform,
+  caption,
+  hashtags,
+  mediaUrl,
+  accountName,
+}: Props) {
   const charLimit = PLATFORM_CHAR_LIMITS[platform]
   const hashtagLimit = PLATFORM_HASHTAG_LIMITS[platform]
   const platformLabel = SOCIAL_PLATFORM_LABELS[platform]
@@ -43,27 +49,29 @@ export function SocialPlatformPreview({ platform, caption, hashtags, mediaUrl, a
   const visibleHashtags = hashtagLimit > 0 ? hashtags.slice(0, hashtagLimit) : hashtags.slice(0, 5)
 
   return (
-    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+    <div className="bg-surface rounded-xl border border-stone-700 overflow-hidden">
       {/* Platform header */}
-      <div className="flex items-center justify-between px-3 py-2 bg-stone-50 border-b border-stone-100">
+      <div className="flex items-center justify-between px-3 py-2 bg-stone-800 border-b border-stone-800">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-stone-200 flex items-center justify-center text-[10px] font-bold text-stone-600">
+          <div className="w-6 h-6 rounded-full bg-stone-700 flex items-center justify-center text-[10px] font-bold text-stone-400">
             {accountName ? accountName[0].toUpperCase() : '?'}
           </div>
           <div>
-            <div className="text-xs font-semibold text-stone-800">
+            <div className="text-xs font-semibold text-stone-200">
               {accountName ?? 'Your Account'}
             </div>
             <div className="text-[10px] text-stone-400">{platformLabel}</div>
           </div>
         </div>
-        <div className={`text-[10px] font-medium ${isOverLimit ? 'text-red-500' : 'text-stone-400'}`}>
+        <div
+          className={`text-[10px] font-medium ${isOverLimit ? 'text-red-500' : 'text-stone-400'}`}
+        >
           {charCount}/{charLimit}
         </div>
       </div>
 
       {/* Media preview */}
-      <div className="aspect-square bg-stone-100 flex items-center justify-center">
+      <div className="aspect-square bg-stone-800 flex items-center justify-center">
         {mediaUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -86,7 +94,7 @@ export function SocialPlatformPreview({ platform, caption, hashtags, mediaUrl, a
       {/* Caption */}
       <div className="px-3 py-2 space-y-1">
         {previewCaption ? (
-          <p className="text-xs text-stone-700 leading-relaxed">{previewCaption}</p>
+          <p className="text-xs text-stone-300 leading-relaxed">{previewCaption}</p>
         ) : (
           <p className="text-xs text-stone-400 italic">No caption yet</p>
         )}

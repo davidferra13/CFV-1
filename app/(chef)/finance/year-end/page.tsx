@@ -4,22 +4,35 @@ import { requireChef } from '@/lib/auth/get-user'
 import { computeProfitAndLoss } from '@/lib/ledger/compute'
 import { createServerClient } from '@/lib/supabase/server'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { YearEndClientControls } from './year-end-client'
 
 export const metadata: Metadata = { title: 'Year-End Summary - ChefFlow' }
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 
-export default async function YearEndPage({
-  searchParams,
-}: {
-  searchParams: { year?: string }
-}) {
+export default async function YearEndPage({ searchParams }: { searchParams: { year?: string } }) {
   const user = await requireChef()
 
   const currentYear = new Date().getFullYear()
@@ -45,15 +58,20 @@ export default async function YearEndPage({
   ])
 
   const events = eventsResult.data || []
-  const completedEvents = events.filter(e => e.status === 'completed')
-  const cancelledEvents = events.filter(e => e.status === 'cancelled')
+  const completedEvents = events.filter((e) => e.status === 'completed')
+  const cancelledEvents = events.filter((e) => e.status === 'cancelled')
   const totalEvents = events.length
 
   // Monthly revenue data — fill all 12 months
   const monthlyData = MONTH_NAMES.map((name, i) => {
     const key = `${validYear}-${String(i + 1).padStart(2, '0')}`
-    return { month: name, shortMonth: name.slice(0, 3), key, revenueCents: pl.monthlyRevenue[key] ?? 0 }
-  }).filter(m => m.revenueCents > 0)
+    return {
+      month: name,
+      shortMonth: name.slice(0, 3),
+      key,
+      revenueCents: pl.monthlyRevenue[key] ?? 0,
+    }
+  }).filter((m) => m.revenueCents > 0)
 
   // Top 3 revenue months
   const topMonths = [...monthlyData].sort((a, b) => b.revenueCents - a.revenueCents).slice(0, 3)
@@ -64,20 +82,19 @@ export default async function YearEndPage({
     .sort((a, b) => b.amount - a.amount)
 
   // Avg revenue per completed event
-  const avgRevenuePerEvent = completedEvents.length > 0
-    ? Math.round(pl.netRevenueCents / completedEvents.length)
-    : 0
+  const avgRevenuePerEvent =
+    completedEvents.length > 0 ? Math.round(pl.netRevenueCents / completedEvents.length) : 0
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
           ← Finance
         </Link>
         <div className="flex items-center justify-between mt-1">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900">Year-End Summary</h1>
+            <h1 className="text-3xl font-bold text-stone-100">Year-End Summary</h1>
             <p className="text-stone-500 mt-1">
               Complete annual financial summary for {validYear} — ready for your accountant
             </p>
@@ -94,12 +111,12 @@ export default async function YearEndPage({
 
       {/* Business Summary */}
       <Card className="p-5">
-        <h2 className="text-sm font-semibold text-stone-700 uppercase tracking-wide mb-4">
+        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-4">
           Business Summary — {validYear}
         </h2>
         <div className="grid grid-cols-4 gap-6">
           <div>
-            <p className="text-2xl font-bold text-stone-900">{totalEvents}</p>
+            <p className="text-2xl font-bold text-stone-100">{totalEvents}</p>
             <p className="text-sm text-stone-500 mt-0.5">Total events</p>
           </div>
           <div>
@@ -111,7 +128,9 @@ export default async function YearEndPage({
             <p className="text-sm text-stone-500 mt-0.5">Cancelled</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-stone-700">{formatCurrency(avgRevenuePerEvent)}</p>
+            <p className="text-2xl font-bold text-stone-300">
+              {formatCurrency(avgRevenuePerEvent)}
+            </p>
             <p className="text-sm text-stone-500 mt-0.5">Avg. per event</p>
           </div>
         </div>
@@ -119,27 +138,32 @@ export default async function YearEndPage({
 
       {/* Revenue Section */}
       <Card className="p-5">
-        <h2 className="text-sm font-semibold text-stone-700 uppercase tracking-wide mb-4">
+        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-4">
           Revenue
         </h2>
         <div className="grid grid-cols-3 gap-6 mb-5">
           <div>
-            <p className="text-2xl font-bold text-green-700">{formatCurrency(pl.netRevenueCents)}</p>
+            <p className="text-2xl font-bold text-green-700">
+              {formatCurrency(pl.netRevenueCents)}
+            </p>
             <p className="text-sm text-stone-500 mt-0.5">Net revenue</p>
             {pl.totalRefundsCents > 0 && (
               <p className="text-xs text-stone-400 mt-0.5">
-                Gross {formatCurrency(pl.totalRevenueCents)} minus {formatCurrency(pl.totalRefundsCents)} refunds
+                Gross {formatCurrency(pl.totalRevenueCents)} minus{' '}
+                {formatCurrency(pl.totalRefundsCents)} refunds
               </p>
             )}
           </div>
           {pl.totalTipsCents > 0 && (
             <div>
-              <p className="text-2xl font-bold text-emerald-600">{formatCurrency(pl.totalTipsCents)}</p>
+              <p className="text-2xl font-bold text-emerald-600">
+                {formatCurrency(pl.totalTipsCents)}
+              </p>
               <p className="text-sm text-stone-500 mt-0.5">Total tips</p>
             </div>
           )}
           <div>
-            <p className="text-2xl font-bold text-stone-700">
+            <p className="text-2xl font-bold text-stone-300">
               {formatCurrency(pl.netRevenueCents + pl.totalTipsCents)}
             </p>
             <p className="text-sm text-stone-500 mt-0.5">Revenue incl. tips</p>
@@ -154,17 +178,19 @@ export default async function YearEndPage({
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <tbody>
-                  {monthlyData.map(row => {
-                    const maxRevenue = Math.max(...monthlyData.map(m => m.revenueCents), 1)
+                  {monthlyData.map((row) => {
+                    const maxRevenue = Math.max(...monthlyData.map((m) => m.revenueCents), 1)
                     const pct = Math.round((row.revenueCents / maxRevenue) * 100)
                     return (
                       <tr key={row.key}>
-                        <td className="py-1 pr-3 text-stone-600 font-medium w-28">{row.shortMonth}</td>
-                        <td className="py-1 pr-4 text-stone-900 font-semibold w-28 text-right">
+                        <td className="py-1 pr-3 text-stone-400 font-medium w-28">
+                          {row.shortMonth}
+                        </td>
+                        <td className="py-1 pr-4 text-stone-100 font-semibold w-28 text-right">
                           {formatCurrency(row.revenueCents)}
                         </td>
                         <td className="py-1 w-full">
-                          <div className="w-full bg-stone-100 rounded-full h-2">
+                          <div className="w-full bg-stone-800 rounded-full h-2">
                             <div
                               className="bg-green-400 h-2 rounded-full"
                               style={{ width: `${pct}%` }}
@@ -179,7 +205,7 @@ export default async function YearEndPage({
             </div>
 
             {topMonths.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-stone-100">
+              <div className="mt-4 pt-4 border-t border-stone-800">
                 <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
                   Top Months
                 </p>
@@ -187,8 +213,10 @@ export default async function YearEndPage({
                   {topMonths.map((m, i) => (
                     <div key={m.key} className="flex items-baseline gap-1">
                       <span className="text-xs text-stone-400">{i + 1}.</span>
-                      <span className="text-sm font-semibold text-stone-700">{m.shortMonth}</span>
-                      <span className="text-sm text-stone-500">{formatCurrency(m.revenueCents)}</span>
+                      <span className="text-sm font-semibold text-stone-300">{m.shortMonth}</span>
+                      <span className="text-sm text-stone-500">
+                        {formatCurrency(m.revenueCents)}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -204,7 +232,7 @@ export default async function YearEndPage({
 
       {/* Expenses by Category */}
       <Card className="p-5">
-        <h2 className="text-sm font-semibold text-stone-700 uppercase tracking-wide mb-4">
+        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-4">
           Expenses by Category
         </h2>
         {expenseRows.length === 0 ? (
@@ -219,9 +247,9 @@ export default async function YearEndPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenseRows.map(row => (
+              {expenseRows.map((row) => (
                 <TableRow key={row.category}>
-                  <TableCell className="text-stone-700 font-medium text-sm capitalize">
+                  <TableCell className="text-stone-300 font-medium text-sm capitalize">
                     {row.category.replace(/_/g, ' ')}
                   </TableCell>
                   <TableCell className="text-red-600 font-semibold text-sm">
@@ -235,7 +263,7 @@ export default async function YearEndPage({
                 </TableRow>
               ))}
               <TableRow>
-                <TableCell className="font-bold text-stone-900 text-sm">Total Expenses</TableCell>
+                <TableCell className="font-bold text-stone-100 text-sm">Total Expenses</TableCell>
                 <TableCell className="font-bold text-red-700 text-sm">
                   {formatCurrency(pl.totalExpensesCents)}
                 </TableCell>
@@ -252,37 +280,46 @@ export default async function YearEndPage({
 
       {/* Tax Prep Section */}
       <Card className="p-5 border-l-4 border-l-amber-400">
-        <h2 className="text-sm font-semibold text-stone-700 uppercase tracking-wide mb-1">
+        <h2 className="text-sm font-semibold text-stone-300 uppercase tracking-wide mb-1">
           Tax Preparation
         </h2>
         <p className="text-xs text-stone-500 mb-4">
-          These are estimated figures for reference only. Consult your accountant for official tax filings.
+          These are estimated figures for reference only. Consult your accountant for official tax
+          filings.
         </p>
         <div className="space-y-2 max-w-sm">
           <div className="flex justify-between">
-            <span className="text-sm text-stone-600">Gross business income</span>
-            <span className="text-sm font-semibold text-green-700">{formatCurrency(pl.totalRevenueCents)}</span>
+            <span className="text-sm text-stone-400">Gross business income</span>
+            <span className="text-sm font-semibold text-green-700">
+              {formatCurrency(pl.totalRevenueCents)}
+            </span>
           </div>
           {pl.totalRefundsCents > 0 && (
             <div className="flex justify-between">
-              <span className="text-sm text-stone-600">Refunds issued</span>
-              <span className="text-sm font-semibold text-stone-600">&minus;{formatCurrency(pl.totalRefundsCents)}</span>
+              <span className="text-sm text-stone-400">Refunds issued</span>
+              <span className="text-sm font-semibold text-stone-400">
+                &minus;{formatCurrency(pl.totalRefundsCents)}
+              </span>
             </div>
           )}
           <div className="flex justify-between">
-            <span className="text-sm text-stone-600">Business expenses (deductible)</span>
-            <span className="text-sm font-semibold text-stone-600">&minus;{formatCurrency(pl.totalExpensesCents)}</span>
+            <span className="text-sm text-stone-400">Business expenses (deductible)</span>
+            <span className="text-sm font-semibold text-stone-400">
+              &minus;{formatCurrency(pl.totalExpensesCents)}
+            </span>
           </div>
-          <div className="flex justify-between pt-2 border-t border-stone-200">
-            <span className="text-sm font-bold text-stone-900">Estimated net income</span>
-            <span className={`text-sm font-bold ${pl.netProfitCents >= 0 ? 'text-stone-900' : 'text-red-600'}`}>
+          <div className="flex justify-between pt-2 border-t border-stone-700">
+            <span className="text-sm font-bold text-stone-100">Estimated net income</span>
+            <span
+              className={`text-sm font-bold ${pl.netProfitCents >= 0 ? 'text-stone-100' : 'text-red-600'}`}
+            >
               {formatCurrency(pl.netProfitCents)}
             </span>
           </div>
         </div>
-        <p className="text-xs text-amber-700 bg-amber-50 rounded px-3 py-2 mt-4">
-          This is the figure your accountant typically needs for Schedule C (self-employment income).
-          Always verify with a licensed tax professional.
+        <p className="text-xs text-amber-700 bg-amber-950 rounded px-3 py-2 mt-4">
+          This is the figure your accountant typically needs for Schedule C (self-employment
+          income). Always verify with a licensed tax professional.
         </p>
       </Card>
     </div>

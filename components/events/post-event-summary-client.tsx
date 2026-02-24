@@ -122,15 +122,15 @@ export function PostEventSummaryClient({
       <div className="mb-6">
         <Link
           href={`/my-events/${event.id}`}
-          className="text-brand-600 hover:text-brand-700 flex items-center gap-2 mb-4 text-sm"
+          className="text-brand-600 hover:text-brand-400 flex items-center gap-2 mb-4 text-sm"
         >
           <ChevronRight className="w-4 h-4 rotate-180" />
           Back to Event
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-stone-900 mb-1">Event Summary</h1>
-            <p className="text-stone-600 text-sm">
+            <h1 className="text-2xl font-bold text-stone-100 mb-1">Event Summary</h1>
+            <p className="text-stone-400 text-sm">
               {occasion} · {format(new Date(event.event_date), 'MMMM d, yyyy')}
               {event.guest_count ? ` · ${event.guest_count} guests` : ''}
             </p>
@@ -144,12 +144,12 @@ export function PostEventSummaryClient({
 
       {/* Financial Snapshot */}
       {financial && (
-        <Card className="mb-4 border-emerald-200 bg-emerald-50">
+        <Card className="mb-4 border-emerald-200 bg-emerald-950">
           <CardContent className="p-4">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <div className="text-xs text-stone-500 mb-0.5">Total Price</div>
-                <div className="text-lg font-bold text-stone-900">
+                <div className="text-lg font-bold text-stone-100">
                   {formatCurrency(financial.quotedPriceCents)}
                 </div>
               </div>
@@ -196,25 +196,25 @@ export function PostEventSummaryClient({
           <CardContent className="space-y-4">
             {menus.map((menu) => (
               <div key={menu.id}>
-                <p className="font-semibold text-stone-900">{menu.name}</p>
+                <p className="font-semibold text-stone-100">{menu.name}</p>
                 {menu.service_style && (
                   <Badge variant="info" className="text-xs mt-1">
                     {menu.service_style}
                   </Badge>
                 )}
                 {menu.description && (
-                  <p className="text-sm text-stone-600 mt-1.5 leading-relaxed">
+                  <p className="text-sm text-stone-400 mt-1.5 leading-relaxed">
                     {menu.description}
                   </p>
                 )}
               </div>
             ))}
             {/* Printable menu link */}
-            <div className="pt-2 border-t border-stone-100">
+            <div className="pt-2 border-t border-stone-800">
               <Link
                 href={`/api/documents/foh-menu/${event.id}`}
                 target="_blank"
-                className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium"
+                className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-400 font-medium"
               >
                 <FileText className="w-4 h-4" />
                 Download Printable Menu
@@ -236,7 +236,7 @@ export function PostEventSummaryClient({
               <Link
                 href={`/api/documents/receipt/${event.id}`}
                 target="_blank"
-                className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                className="text-xs text-brand-600 hover:text-brand-400 font-medium"
               >
                 Download Receipt
               </Link>
@@ -249,12 +249,12 @@ export function PostEventSummaryClient({
                 className="flex justify-between items-center py-1.5 border-b last:border-b-0"
               >
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{entry.description}</p>
+                  <p className="text-sm font-medium text-stone-100">{entry.description}</p>
                   <p className="text-xs text-stone-500">
                     {format(parseISO(entry.created_at), 'PPP')}
                   </p>
                 </div>
-                <span className="text-sm font-semibold text-stone-900">
+                <span className="text-sm font-semibold text-stone-100">
                   {formatCurrency(entry.amount_cents)}
                 </span>
               </div>
@@ -276,8 +276,8 @@ export function PostEventSummaryClient({
             <div className="space-y-2">
               {timeline.map((item, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
-                  <span className="font-medium text-stone-700">{item.label}</span>
+                  <div className="w-2 h-2 rounded-full bg-emerald-9500 flex-shrink-0" />
+                  <span className="font-medium text-stone-300">{item.label}</span>
                   <span className="text-stone-400 text-xs ml-auto">
                     {format(parseISO(item.at), 'MMM d, h:mm a')}
                   </span>
@@ -290,7 +290,7 @@ export function PostEventSummaryClient({
 
       {/* Photos Available */}
       {hasPhotos && (
-        <Card className="mb-4 border-purple-100 bg-purple-50">
+        <Card className="mb-4 border-purple-100 bg-purple-950">
           <CardContent className="p-4 text-center">
             <p className="text-sm font-medium text-purple-900 mb-2">
               Your chef uploaded photos from the event!
@@ -306,8 +306,8 @@ export function PostEventSummaryClient({
       )}
 
       {/* Review CTA */}
-      <div className="text-center mt-8 p-6 bg-stone-50 rounded-xl border border-stone-200">
-        <p className="text-stone-700 font-medium mb-1">How was your experience?</p>
+      <div className="text-center mt-8 p-6 bg-stone-800 rounded-xl border border-stone-700">
+        <p className="text-stone-300 font-medium mb-1">How was your experience?</p>
         <p className="text-stone-500 text-sm mb-4">
           Your feedback helps the chef continue to grow and improve.
         </p>

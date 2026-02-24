@@ -79,7 +79,9 @@ export function JourneyRecipeLinksPanel({
   recipeOptions: RecipeOption[]
   onRecipeLinksChange?: (recipeLinks: ChefJourneyRecipeLink[]) => void
 }) {
-  const [recipeLinks, setRecipeLinks] = useState<ChefJourneyRecipeLink[]>(sortRecipeLinks(initialRecipeLinks))
+  const [recipeLinks, setRecipeLinks] = useState<ChefJourneyRecipeLink[]>(
+    sortRecipeLinks(initialRecipeLinks)
+  )
   const [form, setForm] = useState<RecipeLinkFormState>(EMPTY_FORM)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(initialRecipeLinks.length === 0)
@@ -89,9 +91,12 @@ export function JourneyRecipeLinksPanel({
   const entryOptions = useMemo(
     () =>
       entries
-        .map(entry => ({ id: entry.id, label: `${formatDisplayDate(entry.entry_date)} - ${entry.title}` }))
+        .map((entry) => ({
+          id: entry.id,
+          label: `${formatDisplayDate(entry.entry_date)} - ${entry.title}`,
+        }))
         .sort((a, b) => a.label.localeCompare(b.label)),
-    [entries],
+    [entries]
   )
 
   const entryLookup = useMemo(() => {
@@ -107,12 +112,12 @@ export function JourneyRecipeLinksPanel({
   }, [recipeOptions])
 
   const repeatCount = useMemo(
-    () => recipeLinks.filter(link => link.would_repeat).length,
-    [recipeLinks],
+    () => recipeLinks.filter((link) => link.would_repeat).length,
+    [recipeLinks]
   )
   const averageRating = useMemo(() => {
     const ratings = recipeLinks
-      .map(link => link.outcome_rating)
+      .map((link) => link.outcome_rating)
       .filter((rating): rating is number => rating !== null)
     if (ratings.length === 0) return null
     const total = ratings.reduce((sum, rating) => sum + rating, 0)
@@ -148,8 +153,10 @@ export function JourneyRecipeLinksPanel({
 
         if (editingId) {
           const result = await updateChefJourneyRecipeLink(editingId, payload)
-          setRecipeLinks(prev => {
-            const next = sortRecipeLinks(prev.map(item => item.id === result.recipeLink.id ? result.recipeLink : item))
+          setRecipeLinks((prev) => {
+            const next = sortRecipeLinks(
+              prev.map((item) => (item.id === result.recipeLink.id ? result.recipeLink : item))
+            )
             onRecipeLinksChange?.(next)
             return next
           })
@@ -158,7 +165,7 @@ export function JourneyRecipeLinksPanel({
             journey_id: journeyId,
             ...payload,
           })
-          setRecipeLinks(prev => {
+          setRecipeLinks((prev) => {
             const next = sortRecipeLinks([result.recipeLink, ...prev])
             onRecipeLinksChange?.(next)
             return next
@@ -187,13 +194,15 @@ export function JourneyRecipeLinksPanel({
     startTransition(async () => {
       try {
         await deleteChefJourneyRecipeLink(link.id)
-        setRecipeLinks(prev => {
-          const next = prev.filter(existing => existing.id !== link.id)
+        setRecipeLinks((prev) => {
+          const next = prev.filter((existing) => existing.id !== link.id)
           onRecipeLinksChange?.(next)
           return next
         })
       } catch (deleteError) {
-        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete recipe link')
+        setError(
+          deleteError instanceof Error ? deleteError.message : 'Failed to delete recipe link'
+        )
       }
     })
   }
@@ -212,7 +221,7 @@ export function JourneyRecipeLinksPanel({
           onClick={() => {
             setEditingId(null)
             setForm(EMPTY_FORM)
-            setShowForm(prev => !prev)
+            setShowForm((prev) => !prev)
           }}
         >
           <Plus className="w-4 h-4" />
@@ -221,32 +230,43 @@ export function JourneyRecipeLinksPanel({
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="border border-stone-200 rounded-lg p-4 space-y-4 bg-stone-50/50">
+        <form
+          onSubmit={handleSubmit}
+          className="border border-stone-700 rounded-lg p-4 space-y-4 bg-stone-800/50"
+        >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Recipe</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Recipe</label>
               <select
                 value={form.recipe_id}
-                onChange={event => setForm(prev => ({ ...prev, recipe_id: event.target.value }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, recipe_id: event.target.value }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                 required
               >
                 <option value="">Select recipe</option>
-                {recipeOptions.map(recipe => (
-                  <option key={recipe.id} value={recipe.id}>{recipe.name}</option>
+                {recipeOptions.map((recipe) => (
+                  <option key={recipe.id} value={recipe.id}>
+                    {recipe.name}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Linked Entry (optional)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Linked Entry (optional)
+              </label>
               <select
                 value={form.entry_id}
-                onChange={event => setForm(prev => ({ ...prev, entry_id: event.target.value }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) => setForm((prev) => ({ ...prev, entry_id: event.target.value }))}
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="">None</option>
-                {entryOptions.map(option => (
-                  <option key={option.id} value={option.id}>{option.label}</option>
+                {entryOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -257,14 +277,20 @@ export function JourneyRecipeLinksPanel({
               label="First Tested On"
               type="date"
               value={form.first_tested_on}
-              onChange={event => setForm(prev => ({ ...prev, first_tested_on: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, first_tested_on: event.target.value }))
+              }
             />
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Outcome Rating</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Outcome Rating
+              </label>
               <select
                 value={form.outcome_rating}
-                onChange={event => setForm(prev => ({ ...prev, outcome_rating: event.target.value }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, outcome_rating: event.target.value }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="">Not rated</option>
                 <option value="1">1 - Poor</option>
@@ -280,37 +306,45 @@ export function JourneyRecipeLinksPanel({
             <Textarea
               label="Adaptation Notes"
               value={form.adaptation_notes}
-              onChange={event => setForm(prev => ({ ...prev, adaptation_notes: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, adaptation_notes: event.target.value }))
+              }
               rows={3}
               placeholder="What changed from the original recipe?"
             />
             <Textarea
               label="Outcome Notes"
               value={form.outcome_notes}
-              onChange={event => setForm(prev => ({ ...prev, outcome_notes: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, outcome_notes: event.target.value }))
+              }
               rows={3}
               placeholder="How did service, flavor, and execution go?"
             />
           </div>
 
-          <label className="inline-flex items-center gap-2 text-sm text-stone-700">
+          <label className="inline-flex items-center gap-2 text-sm text-stone-300">
             <input
               type="checkbox"
               checked={form.would_repeat}
-              onChange={event => setForm(prev => ({ ...prev, would_repeat: event.target.checked }))}
-              className="rounded border-stone-300"
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, would_repeat: event.target.checked }))
+              }
+              className="rounded border-stone-600"
             />
             I would repeat this recipe variation
           </label>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
               {error}
             </div>
           )}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={resetForm}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={isPending}>
               {isPending ? 'Saving...' : editingId ? 'Update Link' : 'Link Recipe'}
             </Button>
@@ -320,12 +354,12 @@ export function JourneyRecipeLinksPanel({
 
       <div className="space-y-3">
         {recipeLinks.length === 0 ? (
-          <div className="border border-dashed border-stone-300 rounded-lg p-8 text-center text-sm text-stone-600">
+          <div className="border border-dashed border-stone-600 rounded-lg p-8 text-center text-sm text-stone-400">
             No recipe progression yet. Link recipes and rate how each adaptation performed.
           </div>
         ) : (
-          recipeLinks.map(link => (
-            <div key={link.id} className="border border-stone-200 rounded-lg p-4 space-y-3">
+          recipeLinks.map((link) => (
+            <div key={link.id} className="border border-stone-700 rounded-lg p-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -333,19 +367,27 @@ export function JourneyRecipeLinksPanel({
                       <Repeat className="w-3 h-3 mr-1" />
                       {link.would_repeat ? 'Repeat' : 'Rework'}
                     </Badge>
-                    <Badge variant={link.outcome_rating && link.outcome_rating >= 4 ? 'success' : 'default'}>
+                    <Badge
+                      variant={
+                        link.outcome_rating && link.outcome_rating >= 4 ? 'success' : 'default'
+                      }
+                    >
                       <Star className="w-3 h-3 mr-1" />
                       {ratingLabel(link.outcome_rating)}
                     </Badge>
                     {link.first_tested_on && (
-                      <span className="text-xs text-stone-500">Tested {formatDisplayDate(link.first_tested_on)}</span>
+                      <span className="text-xs text-stone-500">
+                        Tested {formatDisplayDate(link.first_tested_on)}
+                      </span>
                     )}
                   </div>
-                  <p className="font-semibold text-stone-900">
+                  <p className="font-semibold text-stone-100">
                     {link.recipe_name || recipeLookup.get(link.recipe_id) || 'Recipe'}
                   </p>
                   {link.entry_id && (
-                    <p className="text-xs text-stone-500">From entry: {entryLookup.get(link.entry_id) || 'Entry'}</p>
+                    <p className="text-xs text-stone-500">
+                      From entry: {entryLookup.get(link.entry_id) || 'Entry'}
+                    </p>
                   )}
                 </div>
 
@@ -357,7 +399,7 @@ export function JourneyRecipeLinksPanel({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-950"
                     onClick={() => handleDelete(link)}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -366,19 +408,25 @@ export function JourneyRecipeLinksPanel({
               </div>
 
               {link.adaptation_notes && (
-                <div className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Adaptation Notes</p>
-                  <p className="text-sm text-stone-700 mt-1 whitespace-pre-wrap">{link.adaptation_notes}</p>
+                <div className="rounded-lg border border-stone-700 bg-stone-800 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-stone-500">
+                    Adaptation Notes
+                  </p>
+                  <p className="text-sm text-stone-300 mt-1 whitespace-pre-wrap">
+                    {link.adaptation_notes}
+                  </p>
                 </div>
               )}
 
               {link.outcome_notes && (
-                <div className="rounded-lg border border-stone-200 bg-stone-50 px-3 py-2">
+                <div className="rounded-lg border border-stone-700 bg-stone-800 px-3 py-2">
                   <p className="text-[11px] uppercase tracking-wide text-stone-500 flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Outcome Notes
                   </p>
-                  <p className="text-sm text-stone-700 mt-1 whitespace-pre-wrap">{link.outcome_notes}</p>
+                  <p className="text-sm text-stone-300 mt-1 whitespace-pre-wrap">
+                    {link.outcome_notes}
+                  </p>
                 </div>
               )}
             </div>

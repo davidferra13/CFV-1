@@ -19,7 +19,7 @@ export default async function MyKitchenPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">My Kitchen</h1>
+        <h1 className="text-2xl font-bold text-stone-100">My Kitchen</h1>
         <p className="text-sm text-stone-500 mt-1">
           Your creative space for experimenting with new dishes and techniques.
         </p>
@@ -29,7 +29,7 @@ export default async function MyKitchenPage() {
 
       {experimenting.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-stone-800 mb-3">Experimenting</h2>
+          <h2 className="text-lg font-semibold text-stone-200 mb-3">Experimenting</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {experimenting.map((p: any) => (
               <CreativeProjectCard key={p.id} project={p} />
@@ -40,7 +40,7 @@ export default async function MyKitchenPage() {
 
       {nearlyThere.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-stone-800 mb-3">Nearly There</h2>
+          <h2 className="text-lg font-semibold text-stone-200 mb-3">Nearly There</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {nearlyThere.map((p: any) => (
               <CreativeProjectCard key={p.id} project={p} />

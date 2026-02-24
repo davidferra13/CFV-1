@@ -10,7 +10,7 @@ import { EventOpsComposition } from '@/lib/remotion/event-ops-composition'
 
 export function EventOpsPlayer() {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={EventOpsComposition}
         compositionWidth={640}

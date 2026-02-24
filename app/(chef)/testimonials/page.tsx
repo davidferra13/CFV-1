@@ -20,7 +20,7 @@ export default async function TestimonialsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">Testimonials</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">Testimonials</h1>
         <p className="text-stone-500 mt-1">
           Guest reviews from your events. Approve and feature your favorites.
         </p>

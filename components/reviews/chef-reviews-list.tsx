@@ -31,41 +31,26 @@ function safeFormatDate(value: string) {
   return format(parsed, 'PPP')
 }
 
-export function ChefReviewsList({
-  reviews,
-}: {
-  reviews: UnifiedChefReviewItem[]
-}) {
+export function ChefReviewsList({ reviews }: { reviews: UnifiedChefReviewItem[] }) {
   const rated = reviews.filter((review) => typeof review.rating === 'number')
-  const averageRating = rated.length > 0
-    ? rated.reduce((sum, review) => sum + Number(review.rating), 0) / rated.length
-    : 0
+  const averageRating =
+    rated.length > 0
+      ? rated.reduce((sum, review) => sum + Number(review.rating), 0) / rated.length
+      : 0
   const externalCount = reviews.filter((review) => review.kind === 'external_review').length
   const linkedCount = reviews.filter((review) => !!review.sourceUrl).length
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <StatCard
-          label="Total Entries"
-          value={reviews.length.toString()}
-          icon={MessageSquare}
-        />
+        <StatCard label="Total Entries" value={reviews.length.toString()} icon={MessageSquare} />
         <StatCard
           label="Avg Rating"
           value={averageRating > 0 ? averageRating.toFixed(1) : '--'}
           icon={Star}
         />
-        <StatCard
-          label="External Sync"
-          value={externalCount.toString()}
-          icon={Link2}
-        />
-        <StatCard
-          label="Source Links"
-          value={linkedCount.toString()}
-          icon={ExternalLink}
-        />
+        <StatCard label="External Sync" value={externalCount.toString()} icon={Link2} />
+        <StatCard label="Source Links" value={linkedCount.toString()} icon={ExternalLink} />
       </div>
 
       {reviews.length === 0 ? (
@@ -83,7 +68,7 @@ export function ChefReviewsList({
               <CardContent className="pt-5">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div>
-                    <p className="font-medium text-stone-900">{review.reviewerName}</p>
+                    <p className="font-medium text-stone-100">{review.reviewerName}</p>
                     {review.contextLine && (
                       <p className="text-sm text-stone-500 mt-0.5">{review.contextLine}</p>
                     )}
@@ -101,23 +86,23 @@ export function ChefReviewsList({
 
                 {typeof review.rating === 'number' && <StarDisplay rating={review.rating} />}
 
-                <p className="text-stone-700 text-sm mt-3 whitespace-pre-wrap">{review.reviewText}</p>
+                <p className="text-stone-300 text-sm mt-3 whitespace-pre-wrap">
+                  {review.reviewText}
+                </p>
 
                 {review.sourceUrl && (
                   <a
                     href={review.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 mt-2"
+                    className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 mt-2"
                   >
                     <ExternalLink className="w-3 h-3" />
                     View original source
                   </a>
                 )}
 
-                <p className="text-xs text-stone-400 mt-3">
-                  {safeFormatDate(review.reviewDate)}
-                </p>
+                <p className="text-xs text-stone-400 mt-3">{safeFormatDate(review.reviewDate)}</p>
               </CardContent>
             </Card>
           ))}

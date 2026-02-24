@@ -10,11 +10,7 @@ import { SplitBillingForm } from '@/components/operations/split-billing-form'
 
 export const metadata: Metadata = { title: 'Split Billing - ChefFlow' }
 
-export default async function SplitBillingPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function SplitBillingPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
   const supabase = createServerClient()
 
@@ -25,7 +21,11 @@ export default async function SplitBillingPage({
     splitData = null
   }
 
-  let eventResult: { id: string; quoted_price_cents: number | null; occasion: string | null } | null = null
+  let eventResult: {
+    id: string
+    quoted_price_cents: number | null
+    occasion: string | null
+  } | null = null
   try {
     const { data } = await supabase
       .from('events')
@@ -54,7 +54,7 @@ export default async function SplitBillingPage({
   const eventOccasion = eventResult?.occasion ?? 'Event'
 
   // Map full_name -> name to match SplitBillingForm's Client interface
-  const clients = rawClients.map(c => ({ id: c.id, name: c.full_name }))
+  const clients = rawClients.map((c) => ({ id: c.id, name: c.full_name }))
 
   return (
     <div className="space-y-6">
@@ -62,12 +62,12 @@ export default async function SplitBillingPage({
         <div>
           <Link
             href={`/events/${params.id}`}
-            className="text-sm text-stone-500 hover:text-stone-700"
+            className="text-sm text-stone-500 hover:text-stone-300"
           >
             &larr; Back to Event
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Split Billing</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Split Billing</h1>
+          <p className="text-stone-400 mt-1">
             Divide the cost of &ldquo;{eventOccasion}&rdquo; across multiple payers.
           </p>
         </div>

@@ -57,35 +57,38 @@ export function CreateRewardForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="p-3 rounded-lg bg-red-50 text-red-700 text-sm">{error}</div>
-      )}
+      {error && <div className="p-3 rounded-lg bg-red-950 text-red-700 text-sm">{error}</div>}
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="name" className="block text-sm font-medium text-stone-300 mb-1">
           Reward Name
         </label>
         <Input id="name" name="name" required placeholder="e.g., Complimentary appetizer course" />
       </div>
 
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="description" className="block text-sm font-medium text-stone-300 mb-1">
           Description
         </label>
         <Input id="description" name="description" placeholder="Brief description of the reward" />
       </div>
 
       <div>
-        <label htmlFor="points_required" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="points_required" className="block text-sm font-medium text-stone-300 mb-1">
           Points Required
         </label>
-        <Input id="points_required" name="points_required" type="number" required min="1" placeholder="e.g., 100" />
+        <Input
+          id="points_required"
+          name="points_required"
+          type="number"
+          required
+          min="1"
+          placeholder="e.g., 100"
+        />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
-          Reward Type
-        </label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">Reward Type</label>
         <div className="grid grid-cols-2 gap-2">
           {REWARD_TYPES.map((type) => (
             <button
@@ -94,8 +97,8 @@ export function CreateRewardForm() {
               onClick={() => setRewardType(type.value)}
               className={`px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
                 rewardType === type.value
-                  ? 'border-brand-500 bg-brand-50 text-brand-700'
-                  : 'border-stone-200 text-stone-600 hover:bg-stone-50'
+                  ? 'border-brand-500 bg-brand-950 text-brand-400'
+                  : 'border-stone-700 text-stone-400 hover:bg-stone-800'
               }`}
             >
               {type.label}
@@ -106,19 +109,35 @@ export function CreateRewardForm() {
 
       {rewardType === 'discount_fixed' && (
         <div>
-          <label htmlFor="reward_value" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="reward_value" className="block text-sm font-medium text-stone-300 mb-1">
             Discount Amount ($)
           </label>
-          <Input id="reward_value" name="reward_value" type="number" step="0.01" min="0.01" required placeholder="e.g., 25.00" />
+          <Input
+            id="reward_value"
+            name="reward_value"
+            type="number"
+            step="0.01"
+            min="0.01"
+            required
+            placeholder="e.g., 25.00"
+          />
         </div>
       )}
 
       {rewardType === 'discount_percent' && (
         <div>
-          <label htmlFor="reward_percent" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="reward_percent" className="block text-sm font-medium text-stone-300 mb-1">
             Discount Percentage
           </label>
-          <Input id="reward_percent" name="reward_percent" type="number" min="1" max="100" required placeholder="e.g., 15" />
+          <Input
+            id="reward_percent"
+            name="reward_percent"
+            type="number"
+            min="1"
+            max="100"
+            required
+            placeholder="e.g., 15"
+          />
         </div>
       )}
 

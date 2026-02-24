@@ -18,24 +18,28 @@ export default async function SentQuotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/quotes" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/quotes" className="text-sm text-stone-500 hover:text-stone-300">
           ← All Quotes
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Sent Quotes</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Sent Quotes</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {quotes.length}
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Quotes delivered to the client, awaiting their decision</p>
+        <p className="text-stone-500 mt-1">
+          Quotes delivered to the client, awaiting their decision
+        </p>
       </div>
 
       {quotes.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No sent quotes</p>
+          <p className="text-stone-400 font-medium mb-1">No sent quotes</p>
           <p className="text-stone-400 text-sm mb-4">Quotes sent to clients will appear here</p>
           <Link href="/quotes">
-            <Button variant="secondary" size="sm">View All Quotes</Button>
+            <Button variant="secondary" size="sm">
+              View All Quotes
+            </Button>
           </Link>
         </Card>
       ) : (
@@ -46,19 +50,19 @@ export default async function SentQuotesPage() {
               <Link
                 key={quote.id}
                 href={`/quotes/${quote.id}`}
-                className="block rounded-lg border border-l-4 border-l-brand-500 bg-brand-50/50 p-4 hover:shadow-sm transition-all hover:bg-brand-50"
+                className="block rounded-lg border border-l-4 border-l-brand-500 bg-brand-950/50 p-4 hover:shadow-sm transition-all hover:bg-brand-950"
               >
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-stone-900">{clientName}</span>
+                      <span className="font-medium text-stone-100">{clientName}</span>
                       <QuoteStatusBadge status={quote.status as any} />
                       {quote.pricing_model && (
                         <PricingModelBadge model={quote.pricing_model as any} />
                       )}
                     </div>
                     {quote.quote_name && (
-                      <p className="text-sm text-stone-600 mt-1">{quote.quote_name}</p>
+                      <p className="text-sm text-stone-400 mt-1">{quote.quote_name}</p>
                     )}
                     {quote.inquiry?.confirmed_occasion && (
                       <p className="text-xs text-stone-500 mt-1">
@@ -67,12 +71,13 @@ export default async function SentQuotesPage() {
                     )}
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-lg font-semibold text-stone-900">
+                    <p className="text-lg font-semibold text-stone-100">
                       {formatCurrency(quote.total_quoted_cents)}
                     </p>
                     {quote.price_per_person_cents && quote.guest_count_estimated && (
                       <p className="text-xs text-stone-500">
-                        {formatCurrency(quote.price_per_person_cents)}/person x {quote.guest_count_estimated}
+                        {formatCurrency(quote.price_per_person_cents)}/person x{' '}
+                        {quote.guest_count_estimated}
                       </p>
                     )}
                     <p className="text-xs text-stone-400 mt-1">

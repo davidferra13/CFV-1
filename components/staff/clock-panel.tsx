@@ -74,17 +74,17 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
   const [, setTick] = useState(0)
 
   // Active entries (clocked in but not yet clocked out)
-  const activeEntries = entries.filter(e => e.status === 'clocked_in' && !e.clockOutAt)
-  const completedEntries = entries.filter(e => e.status === 'completed' || e.clockOutAt)
+  const activeEntries = entries.filter((e) => e.status === 'clocked_in' && !e.clockOutAt)
+  const completedEntries = entries.filter((e) => e.status === 'completed' || e.clockOutAt)
 
   // Set of staff IDs currently clocked in (prevent double clock-in)
-  const clockedInStaffIds = new Set(activeEntries.map(e => e.staffMemberId))
+  const clockedInStaffIds = new Set(activeEntries.map((e) => e.staffMemberId))
 
   // Available staff for clock-in (not already clocked in)
-  const availableStaff = staffMembers.filter(s => !clockedInStaffIds.has(s.id))
+  const availableStaff = staffMembers.filter((s) => !clockedInStaffIds.has(s.id))
 
   // Build name lookup from staffMembers prop
-  const staffNameMap = new Map(staffMembers.map(s => [s.id, s.name]))
+  const staffNameMap = new Map(staffMembers.map((s) => [s.id, s.name]))
 
   function getStaffName(entry: ClockEntry): string {
     return entry.staffName || staffNameMap.get(entry.staffMemberId) || 'Unknown'
@@ -93,7 +93,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
   // Tick every 30 seconds to update elapsed times
   useEffect(() => {
     if (activeEntries.length === 0) return
-    const interval = setInterval(() => setTick(t => t + 1), 30000)
+    const interval = setInterval(() => setTick((t) => t + 1), 30000)
     return () => clearInterval(interval)
   }, [activeEntries.length])
 
@@ -103,7 +103,7 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
     startTransition(async () => {
       try {
         const entry = await clockIn(staffId, eventId)
-        setEntries(prev => [
+        setEntries((prev) => [
           {
             id: entry.id,
             staffMemberId: entry.staffMemberId,
@@ -125,8 +125,8 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
     startTransition(async () => {
       try {
         const updated = await clockOut(entryId)
-        setEntries(prev =>
-          prev.map(e =>
+        setEntries((prev) =>
+          prev.map((e) =>
             e.id === entryId
               ? {
                   ...e,
@@ -168,12 +168,12 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
       <CardContent>
         {/* Staff Picker Dropdown */}
         {showStaffPicker && (
-          <div className="mb-4 p-3 bg-stone-50 rounded-lg border border-stone-200">
+          <div className="mb-4 p-3 bg-stone-800 rounded-lg border border-stone-700">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-stone-700">Select staff member</span>
+              <span className="text-sm font-medium text-stone-300">Select staff member</span>
               <button
                 onClick={() => setShowStaffPicker(false)}
-                className="text-stone-400 hover:text-stone-600"
+                className="text-stone-400 hover:text-stone-400"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -182,12 +182,12 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
               <p className="text-sm text-stone-500">All staff members are currently clocked in.</p>
             ) : (
               <div className="space-y-1">
-                {availableStaff.map(staff => (
+                {availableStaff.map((staff) => (
                   <button
                     key={staff.id}
                     onClick={() => handleClockIn(staff.id)}
                     disabled={isPending}
-                    className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-white hover:shadow-sm transition-colors text-stone-700 disabled:opacity-50"
+                    className="w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-stone-800 hover:shadow-sm transition-colors text-stone-300 disabled:opacity-50"
                   >
                     {staff.name}
                   </button>
@@ -201,17 +201,15 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
         {activeEntries.length > 0 && (
           <div className="space-y-2 mb-4">
             <h4 className="text-xs font-medium text-stone-500 uppercase tracking-wider">Active</h4>
-            {activeEntries.map(entry => (
+            {activeEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-lg"
+                className="flex items-center justify-between p-3 bg-emerald-950 border border-emerald-200 rounded-lg"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-emerald-9500 animate-pulse" />
                   <div>
-                    <div className="text-sm font-medium text-stone-900">
-                      {getStaffName(entry)}
-                    </div>
+                    <div className="text-sm font-medium text-stone-100">{getStaffName(entry)}</div>
                     <div className="text-xs text-stone-500">
                       In at {formatTime(entry.clockInAt)}
                       {' \u2022 '}
@@ -246,18 +244,18 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
         {/* Completed Entries */}
         {completedEntries.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-xs font-medium text-stone-500 uppercase tracking-wider">Completed</h4>
-            {completedEntries.map(entry => (
+            <h4 className="text-xs font-medium text-stone-500 uppercase tracking-wider">
+              Completed
+            </h4>
+            {completedEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="flex items-center justify-between p-3 bg-stone-50 border border-stone-200 rounded-lg"
+                className="flex items-center justify-between p-3 bg-stone-800 border border-stone-700 rounded-lg"
               >
                 <div className="flex items-center gap-3">
                   <div className="w-2 h-2 rounded-full bg-stone-400" />
                   <div>
-                    <div className="text-sm font-medium text-stone-700">
-                      {getStaffName(entry)}
-                    </div>
+                    <div className="text-sm font-medium text-stone-300">{getStaffName(entry)}</div>
                     <div className="text-xs text-stone-500">
                       {formatTime(entry.clockInAt)}
                       {entry.clockOutAt && ` \u2013 ${formatTime(entry.clockOutAt)}`}
@@ -292,15 +290,13 @@ export function ClockPanel({ entries: initialEntries, staffMembers, eventId }: C
 
         {/* Summary */}
         {completedEntries.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between">
+          <div className="mt-4 pt-4 border-t border-stone-800 flex items-center justify-between">
             <span className="text-xs text-stone-500">
               {completedEntries.length} completed shift{completedEntries.length !== 1 ? 's' : ''}
             </span>
-            <span className="text-sm font-medium text-stone-700">
+            <span className="text-sm font-medium text-stone-300">
               Total:{' '}
-              {formatDuration(
-                completedEntries.reduce((sum, e) => sum + (e.totalMinutes ?? 0), 0)
-              )}
+              {formatDuration(completedEntries.reduce((sum, e) => sum + (e.totalMinutes ?? 0), 0))}
             </span>
           </div>
         )}

@@ -20,27 +20,30 @@ export default async function YearEndTaxPage({
   const taxData = await getYearEndTaxPackage(taxYear)
 
   const availableYears = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3]
-  const netIncome = Math.max(0, taxData.grossRevenueCents + taxData.tipsCents - taxData.totalDeductibleExpensesCents)
+  const netIncome = Math.max(
+    0,
+    taxData.grossRevenueCents + taxData.tipsCents - taxData.totalDeductibleExpensesCents
+  )
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">{taxYear} Tax Package</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">{taxYear} Tax Package</h1>
+          <p className="text-stone-400 mt-1">
             Comprehensive year-end financial summary for your accountant
           </p>
           {/* Year Selector */}
           <div className="flex items-center gap-2 mt-3">
             <span className="text-xs text-stone-500">Year:</span>
-            {availableYears.map(y => (
+            {availableYears.map((y) => (
               <Link
                 key={y}
                 href={`/finance/tax/year-end?year=${y}`}
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   y === taxYear
                     ? 'bg-brand-600 border-brand-600 text-white'
-                    : 'border-stone-300 text-stone-600 hover:border-brand-400 hover:text-brand-600'
+                    : 'border-stone-600 text-stone-400 hover:border-brand-400 hover:text-brand-600'
                 }`}
               >
                 {y}
@@ -60,25 +63,23 @@ export default async function YearEndTaxPage({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <p className="text-sm text-stone-500">Total Gross Revenue</p>
-              <p className="text-2xl font-bold text-stone-900">
+              <p className="text-2xl font-bold text-stone-100">
                 {formatCurrency(taxData.grossRevenueCents)}
               </p>
             </div>
             <div>
               <p className="text-sm text-stone-500">Total Events Completed</p>
-              <p className="text-2xl font-bold text-stone-900">{taxData.completedEventCount}</p>
+              <p className="text-2xl font-bold text-stone-100">{taxData.completedEventCount}</p>
             </div>
             <div>
               <p className="text-sm text-stone-500">Tips Received</p>
-              <p className="text-2xl font-bold text-stone-900">
+              <p className="text-2xl font-bold text-stone-100">
                 {formatCurrency(taxData.tipsCents)}
               </p>
             </div>
             <div>
               <p className="text-sm text-stone-500">Net Income (Est.)</p>
-              <p className="text-2xl font-bold text-green-700">
-                {formatCurrency(netIncome)}
-              </p>
+              <p className="text-2xl font-bold text-green-700">{formatCurrency(netIncome)}</p>
             </div>
           </div>
         </CardContent>
@@ -91,18 +92,16 @@ export default async function YearEndTaxPage({
         </CardHeader>
         <CardContent>
           {taxData.expensesByCategory.length === 0 ? (
-            <p className="text-stone-500 text-sm py-4">
-              No expenses recorded for {taxYear}.
-            </p>
+            <p className="text-stone-500 text-sm py-4">No expenses recorded for {taxYear}.</p>
           ) : (
             <div className="space-y-2">
-              {taxData.expensesByCategory.map(cat => (
+              {taxData.expensesByCategory.map((cat) => (
                 <div
                   key={cat.category}
-                  className="flex justify-between items-center py-2 border-b border-stone-100"
+                  className="flex justify-between items-center py-2 border-b border-stone-800"
                 >
                   <div>
-                    <p className="font-medium text-stone-800">{cat.label}</p>
+                    <p className="font-medium text-stone-200">{cat.label}</p>
                     <p className="text-xs text-stone-500">{cat.irsCategoryCode}</p>
                   </div>
                   <div className="text-right">
@@ -113,15 +112,18 @@ export default async function YearEndTaxPage({
               ))}
               {/* Mileage deduction as a line item */}
               {taxData.mileage.totalMiles > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-stone-100">
+                <div className="flex justify-between items-center py-2 border-b border-stone-800">
                   <div>
-                    <p className="font-medium text-stone-800">Mileage Deduction</p>
+                    <p className="font-medium text-stone-200">Mileage Deduction</p>
                     <p className="text-xs text-stone-500">
-                      Line 9 — {taxData.mileage.totalMiles.toFixed(1)} mi × ${(taxData.mileage.irsRateCentsPerMile / 100).toFixed(2)}/mi
+                      Line 9 — {taxData.mileage.totalMiles.toFixed(1)} mi × $
+                      {(taxData.mileage.irsRateCentsPerMile / 100).toFixed(2)}/mi
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">{formatCurrency(taxData.mileage.totalDeductionCents)}</p>
+                    <p className="font-medium">
+                      {formatCurrency(taxData.mileage.totalDeductionCents)}
+                    </p>
                   </div>
                 </div>
               )}
@@ -145,10 +147,7 @@ export default async function YearEndTaxPage({
           {taxData.mileage.totalMiles === 0 ? (
             <div className="space-y-3">
               <p className="text-stone-500 text-sm">No mileage logged for {taxYear}.</p>
-              <Link
-                href="/finance/tax"
-                className="text-sm text-brand-600 hover:underline"
-              >
+              <Link href="/finance/tax" className="text-sm text-brand-600 hover:underline">
                 Log mileage in the Tax Center →
               </Link>
             </div>
@@ -156,13 +155,13 @@ export default async function YearEndTaxPage({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <p className="text-sm text-stone-500">Total Miles Driven</p>
-                <p className="text-2xl font-bold text-stone-900">
+                <p className="text-2xl font-bold text-stone-100">
                   {taxData.mileage.totalMiles.toFixed(1)}
                 </p>
               </div>
               <div>
                 <p className="text-sm text-stone-500">IRS Rate ({taxYear})</p>
-                <p className="text-2xl font-bold text-stone-900">
+                <p className="text-2xl font-bold text-stone-100">
                   ${(taxData.mileage.irsRateCentsPerMile / 100).toFixed(2)}/mi
                 </p>
               </div>
@@ -187,9 +186,9 @@ export default async function YearEndTaxPage({
             Estimates based on 25% effective tax rate. Consult your accountant for exact amounts.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {taxData.quarterlyEstimates.map(q => (
-              <div key={q.quarter} className="bg-amber-50 rounded-lg p-3">
-                <p className="text-sm text-stone-600 font-medium">{q.quarter}</p>
+            {taxData.quarterlyEstimates.map((q) => (
+              <div key={q.quarter} className="bg-amber-950 rounded-lg p-3">
+                <p className="text-sm text-stone-400 font-medium">{q.quarter}</p>
                 <p className="text-lg font-bold text-amber-800">
                   {formatCurrency(q.estimatedTaxCents)}
                 </p>
@@ -198,9 +197,7 @@ export default async function YearEndTaxPage({
             ))}
           </div>
           <div className="mt-4">
-            <Badge variant="warning">
-              Estimates only — consult a licensed tax professional
-            </Badge>
+            <Badge variant="warning">Estimates only — consult a licensed tax professional</Badge>
           </div>
         </CardContent>
       </Card>

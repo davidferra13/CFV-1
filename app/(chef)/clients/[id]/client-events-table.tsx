@@ -1,7 +1,14 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -28,7 +35,7 @@ export function ClientEventsTable({ events }: ClientEventsTableProps) {
     if (statusFilter === 'all') {
       return events
     }
-    return events.filter(event => event.status === statusFilter)
+    return events.filter((event) => event.status === statusFilter)
   }, [events, statusFilter])
 
   function getStatusBadgeVariant(status: string) {
@@ -48,13 +55,13 @@ export function ClientEventsTable({ events }: ClientEventsTableProps) {
   }
 
   // Get unique statuses for filter
-  const uniqueStatuses = Array.from(new Set(events.map(e => e.status)))
+  const uniqueStatuses = Array.from(new Set(events.map((e) => e.status)))
 
   return (
     <div className="space-y-4">
       {/* Status Filter */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-sm font-medium text-stone-700">Filter by status:</span>
+        <span className="text-sm font-medium text-stone-300">Filter by status:</span>
         <Button
           variant={statusFilter === 'all' ? 'primary' : 'ghost'}
           size="sm"
@@ -62,8 +69,8 @@ export function ClientEventsTable({ events }: ClientEventsTableProps) {
         >
           All ({events.length})
         </Button>
-        {uniqueStatuses.map(status => {
-          const count = events.filter(e => e.status === status).length
+        {uniqueStatuses.map((status) => {
+          const count = events.filter((e) => e.status === status).length
           return (
             <Button
               key={status}
@@ -100,10 +107,10 @@ export function ClientEventsTable({ events }: ClientEventsTableProps) {
             filteredEvents.map((event) => (
               <TableRow key={event.id}>
                 <TableCell className="font-medium">{event.occasion || 'Untitled Event'}</TableCell>
-                <TableCell className="text-stone-600">
+                <TableCell className="text-stone-400">
                   {format(new Date(event.event_date), 'PPP')}
                 </TableCell>
-                <TableCell className="text-stone-600">{event.guest_count}</TableCell>
+                <TableCell className="text-stone-400">{event.guest_count}</TableCell>
                 <TableCell>
                   <Badge variant={getStatusBadgeVariant(event.status)}>
                     {event.status.charAt(0).toUpperCase() + event.status.slice(1)}

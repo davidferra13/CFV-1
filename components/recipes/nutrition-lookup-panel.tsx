@@ -18,9 +18,9 @@ type Tab = 'off' | 'usda'
 function NutriRow({ label, value, unit }: { label: string; value: number | null; unit: string }) {
   if (value == null) return null
   return (
-    <div className="flex justify-between text-sm py-1 border-b border-stone-100 last:border-0">
-      <span className="text-stone-600">{label}</span>
-      <span className="font-medium text-stone-900">
+    <div className="flex justify-between text-sm py-1 border-b border-stone-800 last:border-0">
+      <span className="text-stone-400">{label}</span>
+      <span className="font-medium text-stone-100">
         {value % 1 === 0 ? value : value.toFixed(1)} {unit}
       </span>
     </div>
@@ -63,18 +63,18 @@ function NutritionDetail({
     <div className="mt-4">
       <div className="flex items-center justify-between mb-2">
         <div>
-          <p className="text-sm font-semibold text-stone-900">{data.name}</p>
+          <p className="text-sm font-semibold text-stone-100">{data.name}</p>
           {data.brand && <p className="text-xs text-stone-500">{data.brand}</p>}
         </div>
         <div className="flex items-center gap-2">
           {data.nutriscore && <NutriscoreBadge grade={data.nutriscore} />}
-          <button onClick={onBack} className="text-xs text-stone-400 hover:text-stone-600">
+          <button onClick={onBack} className="text-xs text-stone-400 hover:text-stone-400">
             ← Back
           </button>
         </div>
       </div>
       <p className="text-xs text-stone-400 mb-2">Per 100 g</p>
-      <div className="border border-stone-200 rounded-md px-3 py-1">
+      <div className="border border-stone-700 rounded-md px-3 py-1">
         <NutriRow label="Calories" value={data.per100g.calories} unit="kcal" />
         <NutriRow label="Protein" value={data.per100g.protein} unit="g" />
         <NutriRow label="Fat" value={data.per100g.fat} unit="g" />
@@ -113,7 +113,7 @@ function OffTab({ defaultQuery }: { defaultQuery: string }) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search packaged food or dish…"
-          className="flex-1 rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 rounded-md border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <Button variant="primary" onClick={handleSearch} disabled={isPending}>
           {isPending ? 'Searching…' : 'Search'}
@@ -125,12 +125,12 @@ function OffTab({ defaultQuery }: { defaultQuery: string }) {
       )}
 
       {results.length > 0 && !selected && (
-        <ul className="divide-y divide-stone-100 border border-stone-200 rounded-md overflow-hidden">
+        <ul className="divide-y divide-stone-800 border border-stone-700 rounded-md overflow-hidden">
           {results.map((r, i) => (
             <li key={i}>
               <button
                 onClick={() => setSelected(r)}
-                className="w-full text-left px-3 py-2 hover:bg-stone-50 flex items-center gap-3 transition-colors"
+                className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center gap-3 transition-colors"
               >
                 {r.imageUrl && (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -143,7 +143,7 @@ function OffTab({ defaultQuery }: { defaultQuery: string }) {
                   />
                 )}
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-stone-900 truncate">{r.name}</p>
+                  <p className="text-sm font-medium text-stone-100 truncate">{r.name}</p>
                   {r.brand && <p className="text-xs text-stone-500 truncate">{r.brand}</p>}
                 </div>
                 {r.nutriscore && (
@@ -193,7 +193,7 @@ function UsdaTab({ defaultQuery }: { defaultQuery: string }) {
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           placeholder="Search whole ingredient (e.g. chicken breast)…"
-          className="flex-1 rounded-md border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 rounded-md border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <Button variant="primary" onClick={handleSearch} disabled={isPending}>
           {isPending ? 'Searching…' : 'Search'}
@@ -205,15 +205,15 @@ function UsdaTab({ defaultQuery }: { defaultQuery: string }) {
       )}
 
       {results.length > 0 && !selected && (
-        <ul className="divide-y divide-stone-100 border border-stone-200 rounded-md overflow-hidden">
+        <ul className="divide-y divide-stone-800 border border-stone-700 rounded-md overflow-hidden">
           {results.map((r, i) => (
             <li key={i}>
               <button
                 onClick={() => setSelected(r)}
-                className="w-full text-left px-3 py-2 hover:bg-stone-50 flex items-start gap-3 transition-colors"
+                className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-start gap-3 transition-colors"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-stone-900 truncate">{r.name}</p>
+                  <p className="text-sm font-medium text-stone-100 truncate">{r.name}</p>
                   <p className="text-xs text-stone-400">{r.dataType}</p>
                 </div>
                 {r.per100g.calories != null && (
@@ -250,21 +250,21 @@ export function NutritionLookupPanel({ defaultQuery = '' }: NutritionLookupPanel
 
   return (
     <Card className="p-5">
-      <h3 className="text-base font-semibold text-stone-900 mb-1">Nutrition Lookup</h3>
+      <h3 className="text-base font-semibold text-stone-100 mb-1">Nutrition Lookup</h3>
       <p className="text-xs text-stone-500 mb-4">
         Per-100 g nutritional data from two free databases — no API key required
       </p>
 
       {/* Tab bar */}
-      <div className="flex gap-1 mb-4 border-b border-stone-200">
+      <div className="flex gap-1 mb-4 border-b border-stone-700">
         {tabs.map((t) => (
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
             className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors ${
               tab === t.id
-                ? 'bg-white border border-b-white border-stone-200 text-stone-900 -mb-px'
-                : 'text-stone-500 hover:text-stone-700'
+                ? 'bg-surface border border-b-white border-stone-700 text-stone-100 -mb-px'
+                : 'text-stone-500 hover:text-stone-300'
             }`}
           >
             {t.label}

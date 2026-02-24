@@ -28,16 +28,16 @@ export default async function Form1099NECPage({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/contractors" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance/contractors" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; 1099 Contractors
         </Link>
         <div className="flex items-start justify-between mt-1">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900">1099-NEC Report</h1>
+            <h1 className="text-3xl font-bold text-stone-100">1099-NEC Report</h1>
             <p className="text-stone-500 mt-1">Nonemployee compensation summary for tax filing</p>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-stone-600">Tax Year:</label>
+            <label className="text-sm text-stone-400">Tax Year:</label>
             <div className="flex gap-1">
               {years.map((y) => (
                 <Link
@@ -46,7 +46,7 @@ export default async function Form1099NECPage({
                   className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${
                     y === taxYear
                       ? 'bg-stone-900 text-white'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                      : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
                   }`}
                 >
                   {y}

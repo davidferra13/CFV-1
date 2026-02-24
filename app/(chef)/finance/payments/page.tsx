@@ -8,10 +8,34 @@ import { formatCurrency } from '@/lib/utils/currency'
 export const metadata: Metadata = { title: 'Payments - ChefFlow' }
 
 const VIEWS = [
-  { href: '/finance/payments/deposits', label: 'Deposits', icon: '⬇️', description: 'Deposit payments received', entryType: 'deposit' },
-  { href: '/finance/payments/installments', label: 'Installments', icon: '📆', description: 'Installment and partial payments', entryType: 'installment' },
-  { href: '/finance/payments/refunds', label: 'Refunds', icon: '↩️', description: 'Payments refunded to clients', entryType: 'refund' },
-  { href: '/finance/payments/failed', label: 'Failed / Pending', icon: '⚠️', description: 'Accepted events awaiting payment', entryType: null },
+  {
+    href: '/finance/payments/deposits',
+    label: 'Deposits',
+    icon: '⬇️',
+    description: 'Deposit payments received',
+    entryType: 'deposit',
+  },
+  {
+    href: '/finance/payments/installments',
+    label: 'Installments',
+    icon: '📆',
+    description: 'Installment and partial payments',
+    entryType: 'installment',
+  },
+  {
+    href: '/finance/payments/refunds',
+    label: 'Refunds',
+    icon: '↩️',
+    description: 'Payments refunded to clients',
+    entryType: 'refund',
+  },
+  {
+    href: '/finance/payments/failed',
+    label: 'Failed / Pending',
+    icon: '⚠️',
+    description: 'Accepted events awaiting payment',
+    entryType: null,
+  },
 ]
 
 export default async function PaymentsPage() {
@@ -37,37 +61,45 @@ export default async function PaymentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">← Finance</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Payments</h1>
-        <p className="text-stone-500 mt-1">All payment activity — inbound receipts and outbound refunds</p>
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Finance
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Payments</h1>
+        <p className="text-stone-500 mt-1">
+          All payment activity — inbound receipts and outbound refunds
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
           <p className="text-2xl font-bold text-green-700">{formatCurrency(totalReceived)}</p>
-          <p className="text-sm text-stone-500 mt-1">Total received ({allInbound.length} entries)</p>
+          <p className="text-sm text-stone-500 mt-1">
+            Total received ({allInbound.length} entries)
+          </p>
         </Card>
         <Card className="p-4">
           <p className="text-2xl font-bold text-red-600">{formatCurrency(totalRefunded)}</p>
           <p className="text-sm text-stone-500 mt-1">Total refunded ({refunds.length})</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{formatCurrency(totalReceived - totalRefunded)}</p>
+          <p className="text-2xl font-bold text-stone-100">
+            {formatCurrency(totalReceived - totalRefunded)}
+          </p>
           <p className="text-sm text-stone-500 mt-1">Net received</p>
         </Card>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {VIEWS.map(view => (
+        {VIEWS.map((view) => (
           <Link key={view.href} href={view.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
               <div className="flex items-start justify-between mb-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xl">{view.icon}</span>
-                  <h2 className="font-semibold text-stone-900">{view.label}</h2>
+                  <h2 className="font-semibold text-stone-100">{view.label}</h2>
                 </div>
                 {view.entryType && (
-                  <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full">
                     {counts[view.entryType as keyof typeof counts] ?? 0}
                   </span>
                 )}

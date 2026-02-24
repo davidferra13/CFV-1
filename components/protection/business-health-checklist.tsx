@@ -36,7 +36,7 @@ export function BusinessHealthChecklist({ items }: { items: HealthItem[] }) {
       </div>
 
       <Card>
-        <CardContent className="py-4 divide-y divide-stone-100">
+        <CardContent className="py-4 divide-y divide-stone-800">
           {items.map((item) => (
             <div key={item.id} className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
               {item.completed ? (
@@ -46,7 +46,7 @@ export function BusinessHealthChecklist({ items }: { items: HealthItem[] }) {
               )}
               <div className="flex-1 min-w-0">
                 <p
-                  className={`text-sm ${item.completed ? 'text-stone-400 line-through' : 'text-stone-700'}`}
+                  className={`text-sm ${item.completed ? 'text-stone-400 line-through' : 'text-stone-300'}`}
                 >
                   {item.title ?? item.label ?? 'Untitled item'}
                 </p>

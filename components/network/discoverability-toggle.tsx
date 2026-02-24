@@ -32,7 +32,7 @@ export function DiscoverabilityToggle({ currentValue }: DiscoverabilityTogglePro
     <div className="border rounded-lg p-4">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <p className="font-medium text-stone-900">Network Discovery</p>
+          <p className="font-medium text-stone-100">Network Discovery</p>
           <p className="text-sm text-stone-500 mt-1">
             {enabled
               ? 'You are visible in the chef directory. Other chefs can find you by name and see your city/state.'
@@ -51,12 +51,12 @@ export function DiscoverabilityToggle({ currentValue }: DiscoverabilityTogglePro
             relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
             transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2
             focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-50
-            ${enabled ? 'bg-brand-600' : 'bg-stone-200'}
+            ${enabled ? 'bg-brand-600' : 'bg-stone-700'}
           `}
         >
           <span
             className={`
-              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0
+              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0
               transition duration-200 ease-in-out
               ${enabled ? 'translate-x-5' : 'translate-x-0'}
             `}
@@ -64,9 +64,7 @@ export function DiscoverabilityToggle({ currentValue }: DiscoverabilityTogglePro
         </button>
       </div>
 
-      {error && (
-        <p className="mt-2 text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
     </div>
   )
 }

@@ -71,15 +71,15 @@ export function ActivityFilters({
   return (
     <div className="space-y-3">
       {/* Tabs */}
-      <div className="flex gap-1 bg-stone-100 rounded-lg p-1">
+      <div className="flex gap-1 bg-stone-800 rounded-lg p-1">
         {TAB_OPTIONS.map((tab) => (
           <button
             key={tab.value}
             onClick={() => onTabChange(tab.value)}
             className={`flex-1 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
               activeTab === tab.value
-                ? 'bg-white text-stone-800 shadow-sm'
-                : 'text-stone-500 hover:text-stone-700'
+                ? 'bg-surface text-stone-200 shadow-sm'
+                : 'text-stone-500 hover:text-stone-300'
             }`}
           >
             {tab.label}
@@ -97,7 +97,7 @@ export function ActivityFilters({
                 className={`text-[11px] font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
                   activeDomain === null
                     ? 'bg-stone-800 text-white'
-                    : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                    : 'bg-stone-800 text-stone-500 hover:bg-stone-700'
                 }`}
               >
                 All
@@ -112,7 +112,7 @@ export function ActivityFilters({
                     className={`text-[11px] font-medium px-2 py-1 rounded-full whitespace-nowrap transition-colors ${
                       activeDomain === domain
                         ? `${config.bgColor} ${config.color}`
-                        : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                        : 'bg-stone-800 text-stone-500 hover:bg-stone-700'
                     }`}
                   >
                     {config.label}
@@ -129,7 +129,7 @@ export function ActivityFilters({
             <select
               value={actorFilter}
               onChange={(e) => onActorFilterChange(e.target.value as ActivityActorFilter)}
-              className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white"
+              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-surface"
             >
               {ACTOR_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -141,7 +141,7 @@ export function ActivityFilters({
           <select
             value={timeRange}
             onChange={(e) => onTimeRangeChange(e.target.value as TimeRange)}
-            className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white shrink-0"
+            className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-surface shrink-0"
           >
             {TIME_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>

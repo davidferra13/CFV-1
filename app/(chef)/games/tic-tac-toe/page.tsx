@@ -287,7 +287,7 @@ export default function TicTacToe() {
             onClick={() => changeSize(s)}
             className={`rounded-lg border px-4 py-1.5 text-sm font-medium transition-colors ${
               size === s
-                ? 'border-brand-500 bg-brand-500/10 text-brand-500'
+                ? 'border-brand-500 bg-brand-9500/10 text-brand-500'
                 : 'border-border hover:border-brand-500/50'
             }`}
           >
@@ -325,10 +325,10 @@ export default function TicTacToe() {
                 disabled={!!cell || !!winner || !isPlayerTurn || thinking}
                 className={`${cellSize} flex items-center justify-center rounded-lg border-2 transition-all ${
                   isWinCell
-                    ? 'border-brand-500 bg-brand-500/15 scale-105'
+                    ? 'border-brand-500 bg-brand-9500/15 scale-105'
                     : cell
                       ? 'border-border bg-card'
-                      : 'border-border bg-card hover:border-brand-500/50 hover:bg-brand-500/5 cursor-pointer'
+                      : 'border-border bg-card hover:border-brand-500/50 hover:bg-brand-9500/5 cursor-pointer'
                 }`}
               >
                 {cell && (
@@ -352,7 +352,7 @@ export default function TicTacToe() {
           </div>
           <button
             onClick={() => resetBoard()}
-            className="rounded-lg bg-brand-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
+            className="rounded-lg bg-brand-9500 px-6 py-2.5 text-sm font-bold text-white hover:bg-brand-600"
           >
             Play Again
           </button>

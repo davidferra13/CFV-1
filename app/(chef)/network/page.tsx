@@ -67,7 +67,7 @@ export default async function NetworkPage({
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Chef Community</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Chef Community</h1>
           <p className="text-stone-500 mt-1 text-sm">
             Connect, share, and grow with private chefs everywhere
           </p>
@@ -75,21 +75,21 @@ export default async function NetworkPage({
         <div className="flex items-center gap-2">
           <Link
             href="/network/notifications"
-            className="p-2 rounded-xl text-stone-500 hover:bg-stone-100 transition-colors border border-stone-200"
+            className="p-2 rounded-xl text-stone-500 hover:bg-stone-700 transition-colors border border-stone-700"
             title="Social notifications"
           >
             <Bell className="h-5 w-5" />
           </Link>
           <Link
             href="/network/saved"
-            className="p-2 rounded-xl text-stone-500 hover:bg-stone-100 transition-colors border border-stone-200"
+            className="p-2 rounded-xl text-stone-500 hover:bg-stone-700 transition-colors border border-stone-700"
             title="Saved posts"
           >
             <Bookmark className="h-5 w-5" />
           </Link>
           <Link
             href="/settings/profile"
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-700 bg-white border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-300 bg-surface border border-stone-700 rounded-xl hover:bg-stone-800 transition-colors shadow-sm"
           >
             <Settings className="h-4 w-4" />
             Profile
@@ -99,7 +99,7 @@ export default async function NetworkPage({
 
       {/* Privacy notice */}
       {!discoverable && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
+        <div className="bg-amber-950 border border-amber-200 rounded-xl p-4 flex items-start gap-3">
           <ShieldOff className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-800">
@@ -118,7 +118,7 @@ export default async function NetworkPage({
 
       {/* Pending connection requests badge */}
       {pending.length > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
+        <div className="bg-blue-950 border border-blue-200 rounded-xl p-3 flex items-center justify-between">
           <p className="text-sm text-blue-800 font-medium">
             {pending.filter((p) => p.direction === 'received').length} pending connection request(s)
           </p>
@@ -132,8 +132,8 @@ export default async function NetworkPage({
       )}
 
       {/* Tab navigation */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-        <nav className="flex border-b border-stone-100">
+      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
+        <nav className="flex border-b border-stone-800">
           {[
             { id: 'feed', label: 'Feed', icon: Rss },
             { id: 'channels', label: 'Channels', icon: Hash },
@@ -145,8 +145,8 @@ export default async function NetworkPage({
               href={`?tab=${id}`}
               className={`flex-1 flex items-center justify-center gap-1.5 py-3.5 text-sm font-medium transition-colors ${
                 tab === id
-                  ? 'text-amber-700 border-b-2 border-amber-500 bg-amber-50/50'
-                  : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'
+                  ? 'text-amber-700 border-b-2 border-amber-500 bg-amber-950/50'
+                  : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
               }`}
             >
               <Icon className="h-4 w-4" />
@@ -229,13 +229,13 @@ async function DiscoverTab() {
     <div className="space-y-6">
       {/* Trending hashtags full list */}
       <div>
-        <h3 className="text-sm font-semibold text-stone-700 mb-3">Trending Hashtags</h3>
+        <h3 className="text-sm font-semibold text-stone-300 mb-3">Trending Hashtags</h3>
         <div className="flex flex-wrap gap-2">
           {trendingHashtags.map((item) => (
             <Link
               key={item.tag}
               href={`?tab=feed&mode=global&tag=${encodeURIComponent(item.tag)}`}
-              className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full text-sm font-medium hover:bg-amber-100 transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 bg-amber-950 text-amber-700 rounded-full text-sm font-medium hover:bg-amber-900 transition-colors"
             >
               #{item.tag}
               <span className="text-amber-500 text-xs">{item.post_count}</span>
@@ -253,16 +253,16 @@ async function DiscoverTab() {
       {/* Trending posts */}
       {trending.length > 0 && (
         <div>
-          <h3 className="text-sm font-semibold text-stone-700 mb-3">Trending Posts This Week</h3>
+          <h3 className="text-sm font-semibold text-stone-300 mb-3">Trending Posts This Week</h3>
           <div className="space-y-3">
             {trending.map((post) => {
               const authorName = post.author.display_name ?? post.author.business_name
               return (
-                <div key={post.id} className="border border-stone-200 rounded-xl p-3 space-y-1">
+                <div key={post.id} className="border border-stone-700 rounded-xl p-3 space-y-1">
                   <div className="flex items-center gap-2 text-xs text-stone-500">
                     <Link
                       href={`/network/${post.chef_id}`}
-                      className="font-medium text-stone-700 hover:underline"
+                      className="font-medium text-stone-300 hover:underline"
                     >
                       {authorName}
                     </Link>
@@ -278,7 +278,7 @@ async function DiscoverTab() {
                       </>
                     )}
                   </div>
-                  <p className="text-sm text-stone-700 line-clamp-2">{post.content}</p>
+                  <p className="text-sm text-stone-300 line-clamp-2">{post.content}</p>
                   <div className="flex items-center gap-3 text-xs text-stone-400">
                     <span>🔥 {post.reactions_count}</span>
                     <span>💬 {post.comments_count}</span>

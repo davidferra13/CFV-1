@@ -218,11 +218,11 @@ export function InquiryForm({
         )}
 
         {/* === SMART FILL === */}
-        <div className="flex items-center gap-2 pb-2 border-b border-stone-100">
+        <div className="flex items-center gap-2 pb-2 border-b border-stone-800">
           <button
             type="button"
             onClick={handleSmartFillOpen}
-            className="text-sm text-brand-600 hover:text-brand-800 underline underline-offset-2"
+            className="text-sm text-brand-600 hover:text-brand-300 underline underline-offset-2"
           >
             Paste from text
           </button>
@@ -244,7 +244,7 @@ export function InquiryForm({
 
         {/* === REQUIRED SECTION === */}
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-wider">
+          <h3 className="text-sm font-semibold text-stone-100 uppercase tracking-wider">
             Required
           </h3>
 

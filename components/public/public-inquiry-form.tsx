@@ -282,9 +282,9 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
 
   if (showSuccess) {
     return (
-      <Card className="bg-white/90">
+      <Card className="bg-stone-900/90">
         <CardContent className="py-12 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg
               className="w-8 h-8 text-emerald-600"
               fill="none"
@@ -299,8 +299,8 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
               />
             </svg>
           </div>
-          <h2 className="text-2xl font-bold text-stone-900 mb-2">Inquiry Submitted!</h2>
-          <p className="text-stone-600 mb-6">
+          <h2 className="text-2xl font-bold text-stone-100 mb-2">Inquiry Submitted!</h2>
+          <p className="text-stone-400 mb-6">
             Thank you for your interest. {chefName} will review your inquiry and get back to you
             within 24 hours.
           </p>
@@ -318,17 +318,17 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
   }
 
   return (
-    <Card className="bg-white/90">
+    <Card className="bg-stone-900/90">
       <CardContent className="p-6 md:p-8">
         {submitError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="mb-6 p-4 bg-red-950 border border-red-200 rounded-md">
             <p className="text-red-700 text-sm">{submitError}</p>
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center">
-            <h2 className="text-3xl font-semibold text-stone-900">Book Now</h2>
+            <h2 className="text-3xl font-semibold text-stone-100">Book Now</h2>
             <p className="text-base text-stone-500 mt-2">
               Fill out the details below and we&apos;ll be in touch.
             </p>
@@ -355,7 +355,7 @@ export function PublicInquiryForm({ chefSlug, chefName, primaryColor }: Props) {
           />
 
           <div className="space-y-2">
-            <h3 className="text-base font-medium text-stone-800">Date and Serving Time</h3>
+            <h3 className="text-base font-medium text-stone-200">Date and Serving Time</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <Select
                 label="Month"

@@ -52,13 +52,13 @@ export default async function StocksPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-300">
           ← Components
         </Link>
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Stocks &amp; Broths</h1>
-            <span className="bg-amber-100 text-amber-700 text-sm px-2 py-0.5 rounded-full">
+            <h1 className="text-3xl font-bold text-stone-100">Stocks &amp; Broths</h1>
+            <span className="bg-amber-900 text-amber-700 text-sm px-2 py-0.5 rounded-full">
               {stockRecipes.length + stockComponents.length}
             </span>
           </div>
@@ -69,8 +69,8 @@ export default async function StocksPage() {
         </p>
       </div>
 
-      <Card className="p-4 bg-stone-50 border-stone-200">
-        <p className="text-sm text-stone-600">
+      <Card className="p-4 bg-stone-800 border-stone-700">
+        <p className="text-sm text-stone-400">
           Stocks are matched by name — any recipe or menu component containing &quot;stock&quot;,
           &quot;broth&quot;, &quot;fond&quot;, &quot;jus&quot;, or similar terms appears here.
         </p>
@@ -78,7 +78,7 @@ export default async function StocksPage() {
 
       {stockRecipes.length > 0 && (
         <>
-          <h2 className="text-base font-semibold text-stone-700">Recipes</h2>
+          <h2 className="text-base font-semibold text-stone-300">Recipes</h2>
           <Card>
             <Table>
               <TableHeader>
@@ -121,7 +121,7 @@ export default async function StocksPage() {
 
       {stockComponents.length > 0 && (
         <>
-          <h2 className="text-base font-semibold text-stone-700">Menu Components</h2>
+          <h2 className="text-base font-semibold text-stone-300">Menu Components</h2>
           <Card>
             <Table>
               <TableHeader>
@@ -135,7 +135,7 @@ export default async function StocksPage() {
               <TableBody>
                 {stockComponents.map((comp) => (
                   <TableRow key={comp.id}>
-                    <TableCell className="font-medium text-stone-900">{comp.name}</TableCell>
+                    <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
                     <TableCell className="text-stone-500 text-sm">
                       {comp.dish_name ?? '—'}
                     </TableCell>
@@ -155,7 +155,7 @@ export default async function StocksPage() {
                       {comp.recipe_id ? (
                         <Link
                           href={`/culinary/recipes/${comp.recipe_id}`}
-                          className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full"
+                          className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full"
                         >
                           Linked
                         </Link>
@@ -173,7 +173,7 @@ export default async function StocksPage() {
 
       {stockRecipes.length === 0 && stockComponents.length === 0 && (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No stocks or broths found</p>
+          <p className="text-stone-400 font-medium">No stocks or broths found</p>
           <p className="text-stone-400 text-sm mt-1">
             Create recipes or menu components with &quot;stock&quot;, &quot;broth&quot;, or
             &quot;fond&quot; in the name

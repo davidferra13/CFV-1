@@ -11,7 +11,7 @@ import { format } from 'date-fns'
 export function AdminTimeLogForm({ eventId }: { eventId?: string }) {
   const router = useRouter()
   const [form, setForm] = useState({
-    category: 'email' as typeof ADMIN_TIME_CATEGORIES[0]['value'],
+    category: 'email' as (typeof ADMIN_TIME_CATEGORIES)[0]['value'],
     log_date: format(new Date(), 'yyyy-MM-dd'),
     hours: '',
     minutes_extra: '',
@@ -26,8 +26,7 @@ export function AdminTimeLogForm({ eventId }: { eventId?: string }) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const totalMinutes =
-      (parseInt(form.hours || '0') * 60) + parseInt(form.minutes_extra || '0')
+    const totalMinutes = parseInt(form.hours || '0') * 60 + parseInt(form.minutes_extra || '0')
     if (totalMinutes <= 0) {
       setError('Enter at least 1 minute')
       return
@@ -55,19 +54,21 @@ export function AdminTimeLogForm({ eventId }: { eventId?: string }) {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Category</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Category</label>
           <select
             value={form.category}
             onChange={(e) => update('category', e.target.value)}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
           >
             {ADMIN_TIME_CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
+              <option key={c.value} value={c.value}>
+                {c.label}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Date</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Date</label>
           <Input
             type="date"
             value={form.log_date}
@@ -79,7 +80,7 @@ export function AdminTimeLogForm({ eventId }: { eventId?: string }) {
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Hours</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Hours</label>
           <Input
             type="number"
             min="0"
@@ -89,7 +90,7 @@ export function AdminTimeLogForm({ eventId }: { eventId?: string }) {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Minutes</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Minutes</label>
           <Input
             type="number"
             min="0"
@@ -102,7 +103,7 @@ export function AdminTimeLogForm({ eventId }: { eventId?: string }) {
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Notes (optional)</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Notes (optional)</label>
         <Input
           value={form.notes}
           onChange={(e) => update('notes', e.target.value)}

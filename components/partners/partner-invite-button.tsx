@@ -23,7 +23,7 @@ export function PartnerInviteButton({ partnerId, isClaimed, partnerName }: Props
 
   if (isClaimed) {
     return (
-      <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+      <div className="flex items-center gap-2 text-sm text-green-700 bg-green-950 border border-green-200 rounded-lg px-3 py-2">
         <Check size={14} />
         <span>{partnerName} has claimed their partner account</span>
       </div>
@@ -60,7 +60,7 @@ export function PartnerInviteButton({ partnerId, isClaimed, partnerName }: Props
           <input
             readOnly
             value={inviteUrl}
-            className="flex-1 rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 text-xs font-mono text-stone-700 select-all"
+            className="flex-1 rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 text-xs font-mono text-stone-300 select-all"
             onClick={(e) => (e.target as HTMLInputElement).select()}
           />
           <Button variant="secondary" onClick={handleCopy}>
@@ -77,7 +77,7 @@ export function PartnerInviteButton({ partnerId, isClaimed, partnerName }: Props
   return (
     <div className="space-y-2">
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-sm text-red-700 bg-red-950 border border-red-200 rounded-lg px-3 py-2">
           <AlertCircle size={14} />
           {error}
         </div>

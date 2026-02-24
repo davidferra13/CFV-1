@@ -16,17 +16,17 @@ type Severity = 'info' | 'warning' | 'error' | 'critical'
 // ============================================
 
 const SEVERITY_COLORS: Record<Severity, string> = {
-  critical: 'bg-red-100 text-red-800 border-red-200',
-  error: 'bg-orange-100 text-orange-800 border-orange-200',
-  warning: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  info: 'bg-blue-100 text-blue-800 border-blue-200',
+  critical: 'bg-red-900 text-red-800 border-red-200',
+  error: 'bg-orange-900 text-orange-800 border-orange-200',
+  warning: 'bg-yellow-900 text-yellow-800 border-yellow-200',
+  info: 'bg-blue-900 text-blue-800 border-blue-200',
 }
 
 const SEVERITY_DOT: Record<Severity, string> = {
-  critical: 'bg-red-500',
-  error: 'bg-orange-500',
-  warning: 'bg-yellow-500',
-  info: 'bg-blue-500',
+  critical: 'bg-red-9500',
+  error: 'bg-orange-9500',
+  warning: 'bg-yellow-9500',
+  info: 'bg-blue-9500',
 }
 
 const SYSTEM_LABELS: Record<string, string> = {
@@ -101,11 +101,11 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
     <div className="space-y-6">
       {/* ── Stats Overview ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Total" value={data.total} color="bg-stone-50 border-stone-200" />
+        <StatCard label="Total" value={data.total} color="bg-stone-800 border-stone-700" />
         <StatCard
           label="Critical"
           value={data.bySeverity.critical}
-          color="bg-red-50 border-red-200"
+          color="bg-red-950 border-red-200"
           highlight={data.bySeverity.critical > 0}
           onClick={() => applyFilter('severity', activeSeverity === 'critical' ? '' : 'critical')}
           active={activeSeverity === 'critical'}
@@ -113,14 +113,14 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
         <StatCard
           label="Errors"
           value={data.bySeverity.error}
-          color="bg-orange-50 border-orange-200"
+          color="bg-orange-950 border-orange-200"
           onClick={() => applyFilter('severity', activeSeverity === 'error' ? '' : 'error')}
           active={activeSeverity === 'error'}
         />
         <StatCard
           label="Warnings"
           value={data.bySeverity.warning}
-          color="bg-yellow-50 border-yellow-200"
+          color="bg-yellow-950 border-yellow-200"
           onClick={() => applyFilter('severity', activeSeverity === 'warning' ? '' : 'warning')}
           active={activeSeverity === 'warning'}
         />
@@ -138,7 +138,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
             className={`inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full border transition-colors ${
               activeSystem === system
                 ? 'bg-stone-900 text-white border-stone-900'
-                : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                : 'bg-surface text-stone-300 border-stone-700 hover:border-stone-400'
             }`}
           >
             <span>{SYSTEM_ICONS[system] || '📎'}</span>
@@ -152,7 +152,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
           <select
             value={activeDate}
             onChange={(e) => applyFilter('date', e.target.value)}
-            className="px-3 py-1 text-sm rounded-full border border-stone-200 bg-white text-stone-700"
+            className="px-3 py-1 text-sm rounded-full border border-stone-700 bg-surface text-stone-300"
           >
             <option value="">All dates</option>
             {data.dates.map((d) => (
@@ -166,7 +166,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
         {hasFilters && (
           <button
             onClick={clearFilters}
-            className="px-3 py-1 text-sm rounded-full border border-stone-300 text-stone-500 hover:bg-stone-100 transition-colors"
+            className="px-3 py-1 text-sm rounded-full border border-stone-600 text-stone-500 hover:bg-stone-700 transition-colors"
           >
             Clear all
           </button>
@@ -175,9 +175,9 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
 
       {/* ── Incident List ── */}
       {data.incidents.length === 0 ? (
-        <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
+        <div className="rounded-xl border border-stone-700 bg-surface p-8 text-center">
           <div className="text-4xl mb-3">✅</div>
-          <h3 className="text-lg font-semibold text-stone-900">No incidents</h3>
+          <h3 className="text-lg font-semibold text-stone-100">No incidents</h3>
           <p className="text-stone-500 mt-1 text-sm">
             {hasFilters
               ? 'No incidents match these filters. Try clearing them.'
@@ -193,14 +193,14 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
             return (
               <div
                 key={incident.file}
-                className={`rounded-lg border bg-white overflow-hidden transition-all ${
-                  isExpanded ? 'border-stone-400 shadow-sm' : 'border-stone-200'
+                className={`rounded-lg border bg-surface overflow-hidden transition-all ${
+                  isExpanded ? 'border-stone-400 shadow-sm' : 'border-stone-700'
                 }`}
               >
                 {/* Summary row */}
                 <button
                   onClick={() => toggleExpand(incident.file, incident.fullPath)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors"
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-800 transition-colors"
                 >
                   {/* Severity dot */}
                   <div
@@ -213,7 +213,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
                   </span>
 
                   {/* Title */}
-                  <span className="font-medium text-stone-900 flex-1 truncate">
+                  <span className="font-medium text-stone-100 flex-1 truncate">
                     {incident.title}
                   </span>
 
@@ -243,11 +243,11 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
 
                 {/* Expanded content */}
                 {isExpanded && (
-                  <div className="border-t border-stone-200 px-4 py-4 bg-stone-50">
+                  <div className="border-t border-stone-700 px-4 py-4 bg-stone-800">
                     {loadingContent ? (
                       <div className="text-sm text-stone-500 animate-pulse">Loading report...</div>
                     ) : (
-                      <pre className="text-sm text-stone-700 whitespace-pre-wrap font-mono leading-relaxed overflow-x-auto">
+                      <pre className="text-sm text-stone-300 whitespace-pre-wrap font-mono leading-relaxed overflow-x-auto">
                         {expandedContent}
                       </pre>
                     )}
@@ -289,7 +289,7 @@ function StatCard({
         onClick ? 'cursor-pointer hover:shadow-sm' : ''
       } ${active ? 'ring-2 ring-stone-900 ring-offset-1' : ''}`}
     >
-      <div className={`text-2xl font-bold ${highlight ? 'text-red-700' : 'text-stone-900'}`}>
+      <div className={`text-2xl font-bold ${highlight ? 'text-red-700' : 'text-stone-100'}`}>
         {value}
       </div>
       <div className="text-xs text-stone-500 mt-0.5">{label}</div>

@@ -9,14 +9,14 @@ interface Props {
 }
 
 export function QueueSummaryBar({ summary }: Props) {
-  const domainsActive = Object.values(summary.byDomain).filter(n => n > 0).length
+  const domainsActive = Object.values(summary.byDomain).filter((n) => n > 0).length
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       <Card>
         <CardContent className="pt-6">
           <div className="text-sm font-medium text-stone-500">Total Items</div>
-          <div className="text-3xl font-bold text-stone-900 mt-2">{summary.totalItems}</div>
+          <div className="text-3xl font-bold text-stone-100 mt-2">{summary.totalItems}</div>
         </CardContent>
       </Card>
       <Card>

@@ -96,7 +96,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <h3 className="text-sm font-semibold text-stone-900">
+      <h3 className="text-sm font-semibold text-stone-100">
         {isEditing ? 'Edit Policy' : 'Add Insurance Policy'}
       </h3>
 
@@ -107,7 +107,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
             value={form.policy_type}
             onChange={(e) => update('policy_type', e.target.value)}
             title="Policy Type"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           >
             {POLICY_TYPES.map((t) => (
               <option key={t.value} value={t.value}>
@@ -125,7 +125,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
             onChange={(e) => update('carrier', e.target.value)}
             placeholder="e.g. Nationwide, Hiscox"
             required
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           />
         </div>
 
@@ -136,7 +136,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
             value={form.policy_number}
             onChange={(e) => update('policy_number', e.target.value)}
             placeholder="Optional"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           />
         </div>
 
@@ -151,7 +151,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
             placeholder="e.g. 1000000"
             min="0"
             step="1"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           />
         </div>
 
@@ -163,7 +163,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
             onChange={(e) => update('effective_date', e.target.value)}
             title="Effective Date"
             placeholder="Effective date"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           />
         </div>
 
@@ -175,7 +175,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
             onChange={(e) => update('expiry_date', e.target.value)}
             title="Expiry Date"
             placeholder="Expiry date"
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
           />
         </div>
       </div>
@@ -187,7 +187,7 @@ export function InsurancePolicyForm({ policy, onClose, onSuccess }: InsurancePol
           onChange={(e) => update('notes', e.target.value)}
           placeholder="Any additional notes..."
           rows={2}
-          className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
+          className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
         />
       </div>
 

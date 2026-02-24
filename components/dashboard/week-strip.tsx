@@ -8,23 +8,23 @@ import { ArrowRight, AlertTriangle } from 'lucide-react'
 import type { WeekSchedule, DayType } from '@/lib/scheduling/types'
 
 const DAY_STYLES: Record<DayType, string> = {
-  event: 'bg-brand-50 border-brand-200 border',
-  prep: 'bg-amber-50 border-amber-200 border border-dashed',
-  admin: 'bg-stone-100 border-stone-200 border',
-  free: 'bg-white border-stone-200 border',
+  event: 'bg-brand-950 border-brand-700 border',
+  prep: 'bg-amber-950 border-amber-200 border border-dashed',
+  admin: 'bg-stone-800 border-stone-700 border',
+  free: 'bg-surface border-stone-700 border',
 }
 
 const PREP_DOT: Record<string, string> = {
-  ready: 'bg-green-500',
-  partial: 'bg-amber-500',
+  ready: 'bg-green-9500',
+  partial: 'bg-amber-9500',
   not_started: 'bg-stone-300',
 }
 
 export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
   const today = new Date().toISOString().split('T')[0]
-  const eventDayCount = schedule.days.filter(d => d.dayType === 'event').length
+  const eventDayCount = schedule.days.filter((d) => d.dayType === 'event').length
   const totalWeekGuests = schedule.days
-    .flatMap(d => d.events)
+    .flatMap((d) => d.events)
     .reduce((sum, e) => sum + (e.guestCount || 0), 0)
 
   return (
@@ -42,7 +42,7 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
           </div>
           <Link
             href="/schedule"
-            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
           >
             Full Schedule <ArrowRight className="h-3.5 w-3.5" />
           </Link>
@@ -50,7 +50,7 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-7 gap-2">
-          {schedule.days.map(day => {
+          {schedule.days.map((day) => {
             const isToday = day.date === today
             const event = day.events[0]
             const extraEvents = day.events.length - 1
@@ -63,7 +63,9 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
                 <div className="text-[11px] font-medium text-stone-400 uppercase tracking-wide">
                   {day.dayOfWeek.slice(0, 3)}
                 </div>
-                <div className={`text-sm font-semibold ${isToday ? 'text-brand-700' : 'text-stone-700'}`}>
+                <div
+                  className={`text-sm font-semibold ${isToday ? 'text-brand-400' : 'text-stone-300'}`}
+                >
                   {format(new Date(day.date + 'T12:00:00'), 'd')}
                 </div>
 
@@ -71,8 +73,10 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
                 {event && (
                   <div className="mt-auto space-y-0.5">
                     <div className="flex items-center justify-center gap-1">
-                      <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${PREP_DOT[event.prepStatus]}`} />
-                      <span className="text-[10px] font-medium text-stone-700 truncate">
+                      <div
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${PREP_DOT[event.prepStatus]}`}
+                      />
+                      <span className="text-[10px] font-medium text-stone-300 truncate">
                         {event.clientName.split(' ')[0]}
                       </span>
                     </div>
@@ -80,7 +84,9 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
                       {event.guestCount}g &middot; {event.serveTime}
                     </div>
                     {extraEvents > 0 && (
-                      <div className="text-[9px] text-brand-600 font-medium">+{extraEvents} more</div>
+                      <div className="text-[9px] text-brand-600 font-medium">
+                        +{extraEvents} more
+                      </div>
                     )}
                   </div>
                 )}
@@ -106,10 +112,10 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
         {/* Legend */}
         <div className="flex items-center gap-4 mt-3 text-[10px] text-stone-400">
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-green-500" /> Ready
+            <span className="w-2 h-2 rounded-full bg-green-9500" /> Ready
           </span>
           <span className="flex items-center gap-1">
-            <span className="w-2 h-2 rounded-full bg-amber-500" /> Partial
+            <span className="w-2 h-2 rounded-full bg-amber-9500" /> Partial
           </span>
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-stone-300" /> Not started
@@ -120,7 +126,10 @@ export function WeekStrip({ schedule }: { schedule: WeekSchedule }) {
         {schedule.warnings.length > 0 && (
           <div className="mt-3 space-y-1">
             {schedule.warnings.map((warning, i) => (
-              <div key={i} className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 rounded-lg p-2">
+              <div
+                key={i}
+                className="flex items-start gap-2 text-xs text-amber-700 bg-amber-950 rounded-lg p-2"
+              >
                 <AlertTriangle className="h-3.5 w-3.5 mt-0.5 shrink-0" />
                 <span>{warning}</span>
               </div>

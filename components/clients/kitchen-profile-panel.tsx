@@ -136,12 +136,12 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
       <button
         type="button"
         onClick={() => setIsOpen((o) => !o)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-50 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-800 transition-colors"
       >
         <div className="flex items-center gap-3">
-          <span className="text-base font-semibold text-stone-900">Kitchen Profile</span>
+          <span className="text-base font-semibold text-stone-100">Kitchen Profile</span>
           {!hasAnyNotes && (
-            <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-0.5">
+            <span className="text-xs text-amber-600 bg-amber-950 border border-amber-200 rounded px-2 py-0.5">
               No notes yet
             </span>
           )}
@@ -155,7 +155,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
       </button>
 
       {isOpen && (
-        <div className="px-5 pb-5 border-t border-stone-100 space-y-4 pt-4">
+        <div className="px-5 pb-5 border-t border-stone-800 space-y-4 pt-4">
           {isEditing ? (
             <>
               {/* Kitchen size */}
@@ -168,7 +168,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                   value={draft.kitchen_size ?? ''}
                   onChange={(e) => updateDraftField('kitchen_size', e.target.value)}
                   placeholder="Small, medium, large, galley..."
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
                 />
               </div>
 
@@ -184,7 +184,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                       onChange={(e) => updateDraftField(f.key, e.target.value)}
                       placeholder={f.placeholder}
                       rows={2}
-                      className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
+                      className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
                     />
                   </div>
                 ))}
@@ -243,7 +243,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                       }))
                     }
                     placeholder="How many?"
-                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                    className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
                   />
                 </div>
                 <div>
@@ -257,7 +257,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                       updateDraftField('nearest_grocery_store' as any, e.target.value)
                     }
                     placeholder="Name and distance"
-                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                    className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
                   />
                 </div>
                 <div>
@@ -269,7 +269,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                     value={draft.water_quality_notes ?? ''}
                     onChange={(e) => updateDraftField('water_quality_notes' as any, e.target.value)}
                     placeholder="Well, city, filtered..."
-                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                    className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
                   />
                 </div>
               </div>
@@ -282,7 +282,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                   onChange={(e) => updateDraftField('outdoor_cooking_notes' as any, e.target.value)}
                   placeholder="Grill, smoker, pizza oven, fire pit..."
                   rows={2}
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
                 />
               </div>
 
@@ -296,7 +296,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                   onChange={(e) => updateDraftField('kitchen_constraints', e.target.value)}
                   placeholder="Anything else to know about this kitchen..."
                   rows={2}
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none"
                 />
               </div>
 
@@ -316,7 +316,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                   {data.kitchen_size && (
                     <div>
                       <p className="text-xs font-medium text-stone-500">Size</p>
-                      <p className="text-sm text-stone-800">{data.kitchen_size}</p>
+                      <p className="text-sm text-stone-200">{data.kitchen_size}</p>
                     </div>
                   )}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -326,7 +326,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                       return (
                         <div key={f.key}>
                           <p className="text-xs font-medium text-stone-500">{f.label}</p>
-                          <p className="text-sm text-stone-800">{val}</p>
+                          <p className="text-sm text-stone-200">{val}</p>
                         </div>
                       )
                     })}
@@ -334,7 +334,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                   {data.kitchen_constraints && (
                     <div>
                       <p className="text-xs font-medium text-stone-500">General notes</p>
-                      <p className="text-sm text-stone-800">{data.kitchen_constraints}</p>
+                      <p className="text-sm text-stone-200">{data.kitchen_constraints}</p>
                     </div>
                   )}
                   {/* Extended fields */}
@@ -342,7 +342,7 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                     {data.has_dishwasher !== null && (
                       <div>
                         <p className="text-xs font-medium text-stone-500">Dishwasher</p>
-                        <p className="text-sm text-stone-800">
+                        <p className="text-sm text-stone-200">
                           {data.has_dishwasher ? 'Yes' : 'No'}
                         </p>
                       </div>
@@ -350,26 +350,26 @@ export function KitchenProfilePanel({ clientId, initialData }: KitchenProfilePan
                     {data.available_place_settings !== null && (
                       <div>
                         <p className="text-xs font-medium text-stone-500">Place settings</p>
-                        <p className="text-sm text-stone-800">{data.available_place_settings}</p>
+                        <p className="text-sm text-stone-200">{data.available_place_settings}</p>
                       </div>
                     )}
                     {data.nearest_grocery_store && (
                       <div>
                         <p className="text-xs font-medium text-stone-500">Nearest grocery</p>
-                        <p className="text-sm text-stone-800">{data.nearest_grocery_store}</p>
+                        <p className="text-sm text-stone-200">{data.nearest_grocery_store}</p>
                       </div>
                     )}
                     {data.water_quality_notes && (
                       <div>
                         <p className="text-xs font-medium text-stone-500">Water quality</p>
-                        <p className="text-sm text-stone-800">{data.water_quality_notes}</p>
+                        <p className="text-sm text-stone-200">{data.water_quality_notes}</p>
                       </div>
                     )}
                   </div>
                   {data.outdoor_cooking_notes && (
                     <div>
                       <p className="text-xs font-medium text-stone-500">Outdoor cooking</p>
-                      <p className="text-sm text-stone-800">{data.outdoor_cooking_notes}</p>
+                      <p className="text-sm text-stone-200">{data.outdoor_cooking_notes}</p>
                     </div>
                   )}
                 </div>

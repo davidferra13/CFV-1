@@ -13,17 +13,17 @@ export default async function InactiveClientsPage() {
 
   const allClients = await getClientsWithStats()
   // "dormant" is the DB status for inactive clients
-  const clients = allClients.filter(c => c.status === 'dormant')
+  const clients = allClients.filter((c) => c.status === 'dormant')
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-300">
           ← All Clients
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Inactive Clients</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Inactive Clients</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {clients.length}
           </span>
         </div>
@@ -32,10 +32,12 @@ export default async function InactiveClientsPage() {
 
       {clients.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No inactive clients</p>
+          <p className="text-stone-400 font-medium mb-1">No inactive clients</p>
           <p className="text-stone-400 text-sm mb-4">Clients marked as dormant will appear here</p>
           <Link href="/clients">
-            <Button variant="secondary" size="sm">View All Clients</Button>
+            <Button variant="secondary" size="sm">
+              View All Clients
+            </Button>
           </Link>
         </Card>
       ) : (

@@ -37,21 +37,28 @@ export default async function ClientPreferencesPage() {
   await requireChef()
   const clients = await getClientsWithStats()
 
-  const withDietary = clients.filter(c => c.dietary_restrictions && (c.dietary_restrictions as string[]).length > 0).length
-  const withAllergies = clients.filter(c => c.allergies && (c.allergies as string[]).length > 0).length
-  const withPreferences = clients.filter(c =>
-    (c.favorite_dishes && (c.favorite_dishes as string[]).length > 0) ||
-    (c.dislikes && (c.dislikes as string[]).length > 0)
+  const withDietary = clients.filter(
+    (c) => c.dietary_restrictions && (c.dietary_restrictions as string[]).length > 0
+  ).length
+  const withAllergies = clients.filter(
+    (c) => c.allergies && (c.allergies as string[]).length > 0
+  ).length
+  const withPreferences = clients.filter(
+    (c) =>
+      (c.favorite_dishes && (c.favorite_dishes as string[]).length > 0) ||
+      (c.dislikes && (c.dislikes as string[]).length > 0)
   ).length
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-300">
           ← Clients
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Client Preferences</h1>
-        <p className="text-stone-500 mt-1">Dietary requirements, allergies, and taste profiles for every client</p>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Client Preferences</h1>
+        <p className="text-stone-500 mt-1">
+          Dietary requirements, allergies, and taste profiles for every client
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -70,11 +77,11 @@ export default async function ClientPreferencesPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {VIEWS.map(view => (
+        {VIEWS.map((view) => (
           <Link key={view.href} href={view.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
               <div className="text-2xl mb-2">{view.icon}</div>
-              <h2 className="font-semibold text-stone-900">{view.label}</h2>
+              <h2 className="font-semibold text-stone-100">{view.label}</h2>
               <p className="text-sm text-stone-500 mt-1">{view.description}</p>
             </Card>
           </Link>

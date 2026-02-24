@@ -15,15 +15,15 @@ export default async function NewEventFromTextPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Quick Event Entry</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Quick Event Entry</h1>
+        <p className="text-stone-400 mt-1">
           Describe the event in your own words — ChefFlow will parse the details for you.
         </p>
       </div>
 
       <p className="text-sm text-stone-500">
         Prefer a structured form?{' '}
-        <Link href="/events/new" className="text-brand-600 hover:text-brand-700 font-medium">
+        <Link href="/events/new" className="text-brand-600 hover:text-brand-400 font-medium">
           Use the step-by-step form &rarr;
         </Link>
       </p>

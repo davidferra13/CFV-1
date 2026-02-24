@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -33,19 +40,26 @@ export default async function ManualPaymentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/payouts" className="text-sm text-stone-500 hover:text-stone-700">← Payouts</Link>
+        <Link href="/finance/payouts" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Payouts
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Manual Payments</h1>
-          <span className="bg-green-100 text-green-700 text-sm px-2 py-0.5 rounded-full">{allEntries.length}</span>
+          <h1 className="text-3xl font-bold text-stone-100">Manual Payments</h1>
+          <span className="bg-green-900 text-green-700 text-sm px-2 py-0.5 rounded-full">
+            {allEntries.length}
+          </span>
         </div>
-        <p className="text-stone-500 mt-1">All recorded payment ledger entries — cash, Venmo, Zelle, card, and other methods</p>
+        <p className="text-stone-500 mt-1">
+          All recorded payment ledger entries — cash, Venmo, Zelle, card, and other methods
+        </p>
       </div>
 
-      <Card className="p-4 bg-sky-50 border-sky-200">
+      <Card className="p-4 bg-sky-950 border-sky-200">
         <p className="text-sm text-sky-800 font-medium">About this view</p>
         <p className="text-sm text-sky-700 mt-1">
-          This shows all inbound payment ledger entries. Offline payments (cash, Venmo, Zelle) recorded via the
-          &quot;Record Payment&quot; button on event pages appear here alongside Stripe-processed payments.
+          This shows all inbound payment ledger entries. Offline payments (cash, Venmo, Zelle)
+          recorded via the &quot;Record Payment&quot; button on event pages appear here alongside
+          Stripe-processed payments.
         </p>
       </Card>
 
@@ -55,15 +69,17 @@ export default async function ManualPaymentsPage() {
           <p className="text-sm text-stone-500 mt-1">Total received</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{allEntries.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{allEntries.length}</p>
           <p className="text-sm text-stone-500 mt-1">Payment entries</p>
         </Card>
       </div>
 
       {allEntries.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No payment entries recorded</p>
-          <p className="text-stone-400 text-sm mt-1">Use &quot;Record Payment&quot; on any event to log a manual payment</p>
+          <p className="text-stone-400 font-medium">No payment entries recorded</p>
+          <p className="text-stone-400 text-sm mt-1">
+            Use &quot;Record Payment&quot; on any event to log a manual payment
+          </p>
         </Card>
       ) : (
         <Card>
@@ -78,23 +94,32 @@ export default async function ManualPaymentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {allEntries.map(entry => (
+              {allEntries.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell className="text-stone-500 text-sm">{format(new Date(entry.created_at), 'MMM d, yyyy')}</TableCell>
+                  <TableCell className="text-stone-500 text-sm">
+                    {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                  </TableCell>
                   <TableCell>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 capitalize">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-900 text-green-700 capitalize">
                       {entry.entry_type.replace(/_/g, ' ')}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-400 text-sm">
                     {entry.event ? (
-                      <Link href={`/events/${entry.event.id}`} className="text-brand-600 hover:underline capitalize">
+                      <Link
+                        href={`/events/${entry.event.id}`}
+                        className="text-brand-600 hover:underline capitalize"
+                      >
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-green-700 font-semibold text-sm">+{formatCurrency(entry.amount_cents)}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>
+                  <TableCell className="text-green-700 font-semibold text-sm">
+                    +{formatCurrency(entry.amount_cents)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

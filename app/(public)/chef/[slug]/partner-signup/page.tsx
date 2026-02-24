@@ -24,12 +24,12 @@ export default async function PartnerSignupPage({ params }: Props) {
   const backgroundImageUrl = data.chef.portal_background_image_url
   const pageBackgroundStyle = backgroundImageUrl
     ? {
-      backgroundColor,
-      backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundAttachment: 'fixed' as const,
-    }
+        backgroundColor,
+        backgroundImage: `linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.92)), url(${backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed' as const,
+      }
     : { backgroundColor }
 
   return (
@@ -37,8 +37,8 @@ export default async function PartnerSignupPage({ params }: Props) {
       <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-stone-900">Create Partner Profile</h1>
-            <p className="text-stone-600 mt-2">
+            <h1 className="text-3xl font-bold text-stone-100">Create Partner Profile</h1>
+            <p className="text-stone-400 mt-2">
               Submit your profile to be listed as a referral partner for {data.chef.display_name}.
             </p>
           </div>

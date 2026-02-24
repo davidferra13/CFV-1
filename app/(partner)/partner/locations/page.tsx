@@ -14,14 +14,14 @@ export default async function PartnerLocationsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">My Locations</h1>
+        <h1 className="text-2xl font-bold text-stone-100">My Locations</h1>
         <p className="mt-1 text-sm text-stone-500">
           These are the spaces your chef works with under your partnership.
         </p>
       </div>
 
       {activeLocations.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-stone-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-stone-600 bg-surface p-10 text-center">
           <MapPin size={32} className="mx-auto text-stone-300 mb-3" />
           <p className="text-sm text-stone-500">No locations added yet. Your chef will add them.</p>
         </div>
@@ -40,11 +40,11 @@ export default async function PartnerLocationsPage() {
               <Link
                 key={location.id}
                 href={`/partner/locations/${location.id}`}
-                className="flex items-center gap-4 rounded-xl border border-stone-200 bg-white p-4 hover:border-stone-300 hover:shadow-sm transition-all"
+                className="flex items-center gap-4 rounded-xl border border-stone-700 bg-surface p-4 hover:border-stone-600 hover:shadow-sm transition-all"
               >
                 {/* Thumbnail */}
                 {coverImg ? (
-                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-100">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-stone-800">
                     <img
                       src={coverImg}
                       alt={location.name}
@@ -52,14 +52,14 @@ export default async function PartnerLocationsPage() {
                     />
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-lg bg-stone-100 shrink-0 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-lg bg-stone-800 shrink-0 flex items-center justify-center">
                     <MapPin size={20} className="text-stone-300" />
                   </div>
                 )}
 
                 {/* Details */}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-stone-900 truncate">{location.name}</h3>
+                  <h3 className="font-semibold text-stone-100 truncate">{location.name}</h3>
                   {(location.city || location.state) && (
                     <p className="text-sm text-stone-500">
                       {[location.city, location.state].filter(Boolean).join(', ')}

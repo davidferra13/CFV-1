@@ -33,7 +33,7 @@ export function CreateMenuForm() {
         name,
         description: description || undefined,
         cuisine_type: cuisineType || undefined,
-        service_style: serviceStyle ? serviceStyle as any : undefined
+        service_style: serviceStyle ? (serviceStyle as any) : undefined,
       })
 
       router.push(`/menus/${result.menu.id}`)
@@ -45,11 +45,7 @@ export function CreateMenuForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <Alert variant="error">
-          {error}
-        </Alert>
-      )}
+      {error && <Alert variant="error">{error}</Alert>}
 
       <Card>
         <CardHeader>
@@ -57,7 +53,7 @@ export function CreateMenuForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Menu Name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -70,9 +66,7 @@ export function CreateMenuForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
-              Description
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Description</label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -82,9 +76,7 @@ export function CreateMenuForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
-              Cuisine Type
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Cuisine Type</label>
             <Input
               type="text"
               value={cuisineType}
@@ -94,11 +86,9 @@ export function CreateMenuForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
-              Service Style
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Service Style</label>
             <select
-              className="w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+              className="w-full px-3 py-2 border border-stone-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
               value={serviceStyle}
               onChange={(e) => setServiceStyle(e.target.value)}
               aria-label="Service style"
@@ -116,12 +106,7 @@ export function CreateMenuForm() {
       </Card>
 
       <div className="flex justify-end gap-3">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => router.back()}
-          disabled={loading}
-        >
+        <Button type="button" variant="ghost" onClick={() => router.back()} disabled={loading}>
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>

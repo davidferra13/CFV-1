@@ -29,7 +29,9 @@ export function BookingPageSettings({ initialSettings }: Props) {
     initialSettings.booking_model ?? 'inquiry_first'
   )
   const [basePriceCents, setBasePriceCents] = useState(
-    initialSettings.booking_base_price_cents ? String(initialSettings.booking_base_price_cents / 100) : ''
+    initialSettings.booking_base_price_cents
+      ? String(initialSettings.booking_base_price_cents / 100)
+      : ''
   )
   const [pricingType, setPricingType] = useState<'flat_rate' | 'per_person'>(
     initialSettings.booking_pricing_type ?? 'flat_rate'
@@ -41,7 +43,9 @@ export function BookingPageSettings({ initialSettings }: Props) {
     String(initialSettings.booking_deposit_percent ?? 30)
   )
   const [depositFixedCents, setDepositFixedCents] = useState(
-    initialSettings.booking_deposit_fixed_cents ? String(initialSettings.booking_deposit_fixed_cents / 100) : ''
+    initialSettings.booking_deposit_fixed_cents
+      ? String(initialSettings.booking_deposit_fixed_cents / 100)
+      : ''
   )
 
   const [saving, setSaving] = useState(false)
@@ -64,13 +68,17 @@ export function BookingPageSettings({ initialSettings }: Props) {
         booking_bio_short: bio || undefined,
         booking_min_notice_days: parseInt(minNotice) || 7,
         booking_model: bookingModel,
-        booking_base_price_cents: basePriceCents ? Math.round(parseFloat(basePriceCents) * 100) : null,
+        booking_base_price_cents: basePriceCents
+          ? Math.round(parseFloat(basePriceCents) * 100)
+          : null,
         booking_pricing_type: pricingType,
         booking_deposit_type: depositType,
-        booking_deposit_percent: depositType === 'percent' ? parseFloat(depositPercent) || null : null,
-        booking_deposit_fixed_cents: depositType === 'fixed' && depositFixedCents
-          ? Math.round(parseFloat(depositFixedCents) * 100)
-          : null,
+        booking_deposit_percent:
+          depositType === 'percent' ? parseFloat(depositPercent) || null : null,
+        booking_deposit_fixed_cents:
+          depositType === 'fixed' && depositFixedCents
+            ? Math.round(parseFloat(depositFixedCents) * 100)
+            : null,
       })
 
       if (result.success) {
@@ -102,9 +110,9 @@ export function BookingPageSettings({ initialSettings }: Props) {
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="w-4 h-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+          className="w-4 h-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
         />
-        <span className="text-sm font-medium text-stone-700">Enable public booking page</span>
+        <span className="text-sm font-medium text-stone-300">Enable public booking page</span>
       </label>
 
       {enabled && (
@@ -115,7 +123,9 @@ export function BookingPageSettings({ initialSettings }: Props) {
             placeholder="your-name"
             value={slug}
             onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-            helperText={bookingUrl ? `Your link: ${bookingUrl}` : 'Set a slug to generate your link'}
+            helperText={
+              bookingUrl ? `Your link: ${bookingUrl}` : 'Set a slug to generate your link'
+            }
           />
 
           {bookingUrl && (
@@ -124,14 +134,14 @@ export function BookingPageSettings({ initialSettings }: Props) {
                 href={bookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-brand-600 hover:text-brand-700 underline"
+                className="text-xs text-brand-600 hover:text-brand-400 underline"
               >
                 Preview booking page
               </a>
               <button
                 type="button"
                 onClick={copyLink}
-                className="text-xs text-stone-500 hover:text-stone-700 border border-stone-200 rounded px-2 py-1"
+                className="text-xs text-stone-500 hover:text-stone-300 border border-stone-700 rounded px-2 py-1"
               >
                 {copied ? 'Copied!' : 'Copy link'}
               </button>
@@ -166,7 +176,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
 
           {/* Booking Model Selection */}
           <Card className="p-4 space-y-4">
-            <p className="text-sm font-medium text-stone-700">Booking model</p>
+            <p className="text-sm font-medium text-stone-300">Booking model</p>
 
             <div className="space-y-2">
               <label className="flex items-start gap-3 cursor-pointer">
@@ -178,7 +188,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
                   className="mt-0.5 w-4 h-4 text-brand-600 focus:ring-brand-500"
                 />
                 <div>
-                  <span className="text-sm font-medium text-stone-900">Inquiry first</span>
+                  <span className="text-sm font-medium text-stone-100">Inquiry first</span>
                   <p className="text-xs text-stone-500">
                     Clients submit a request. You review and send a proposal before they pay.
                   </p>
@@ -194,9 +204,10 @@ export function BookingPageSettings({ initialSettings }: Props) {
                   className="mt-0.5 w-4 h-4 text-brand-600 focus:ring-brand-500"
                 />
                 <div>
-                  <span className="text-sm font-medium text-stone-900">Instant book</span>
+                  <span className="text-sm font-medium text-stone-100">Instant book</span>
                   <p className="text-xs text-stone-500">
-                    Clients pay a deposit upfront and book instantly. You are notified of new bookings.
+                    Clients pay a deposit upfront and book instantly. You are notified of new
+                    bookings.
                   </p>
                 </div>
               </label>
@@ -204,15 +215,17 @@ export function BookingPageSettings({ initialSettings }: Props) {
 
             {/* Instant-book pricing settings */}
             {bookingModel === 'instant_book' && (
-              <div className="space-y-3 pt-2 border-t border-stone-100">
+              <div className="space-y-3 pt-2 border-t border-stone-800">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Pricing type</label>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Pricing type
+                    </label>
                     <select
                       value={pricingType}
                       onChange={(e) => setPricingType(e.target.value as 'flat_rate' | 'per_person')}
                       title="Pricing type"
-                      className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     >
                       <option value="flat_rate">Flat rate</option>
                       <option value="per_person">Per person</option>
@@ -232,12 +245,14 @@ export function BookingPageSettings({ initialSettings }: Props) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Deposit type</label>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Deposit type
+                    </label>
                     <select
                       value={depositType}
                       onChange={(e) => setDepositType(e.target.value as 'percent' | 'fixed')}
                       title="Deposit type"
-                      className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     >
                       <option value="percent">Percentage of total</option>
                       <option value="fixed">Fixed amount</option>
@@ -272,7 +287,8 @@ export function BookingPageSettings({ initialSettings }: Props) {
                 </div>
 
                 <p className="text-xs text-stone-400">
-                  Requires Stripe Connect to be set up. Clients will be redirected to Stripe Checkout to pay the deposit.
+                  Requires Stripe Connect to be set up. Clients will be redirected to Stripe
+                  Checkout to pay the deposit.
                 </p>
               </div>
             )}
@@ -280,8 +296,16 @@ export function BookingPageSettings({ initialSettings }: Props) {
         </div>
       )}
 
-      {error && <Alert variant="error" title="Save failed">{error}</Alert>}
-      {success && <Alert variant="success" title="Saved">Booking page settings updated.</Alert>}
+      {error && (
+        <Alert variant="error" title="Save failed">
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" title="Saved">
+          Booking page settings updated.
+        </Alert>
+      )}
 
       <Button
         type="button"

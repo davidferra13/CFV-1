@@ -42,7 +42,10 @@ const TRANSPORT_LABELS: Record<TransportCategory, string> = {
   liquid: 'Liquid (upright, sealed)',
 }
 
-const TRANSPORT_BADGE_COLORS: Record<TransportCategory, 'default' | 'info' | 'warning' | 'error' | 'success'> = {
+const TRANSPORT_BADGE_COLORS: Record<
+  TransportCategory,
+  'default' | 'info' | 'warning' | 'error' | 'success'
+> = {
   cold: 'info',
   frozen: 'info',
   room_temp: 'default',
@@ -100,7 +103,7 @@ function ComponentForm({
   const [pending, startTransition] = useTransition()
 
   const set = (key: keyof typeof form, value: string | boolean) =>
-    setForm(prev => ({ ...prev, [key]: value }))
+    setForm((prev) => ({ ...prev, [key]: value }))
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,14 +124,16 @@ function ComponentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-3 pt-2">
       {error && (
-        <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1">{error}</p>
+        <p className="text-xs text-red-600 bg-red-950 border border-red-200 rounded px-2 py-1">
+          {error}
+        </p>
       )}
 
       {/* Name + Category */}
       <div className="flex gap-2">
         <Input
           value={form.name}
-          onChange={e => set('name', e.target.value)}
+          onChange={(e) => set('name', e.target.value)}
           placeholder="Component name (e.g. Sherry Pan Sauce)"
           className="flex-1 text-sm"
           disabled={disabled || pending}
@@ -136,13 +141,15 @@ function ComponentForm({
         />
         <select
           value={form.category}
-          onChange={e => set('category', e.target.value)}
+          onChange={(e) => set('category', e.target.value)}
           title="Component category"
-          className="text-sm border border-stone-300 rounded-lg px-2 py-1.5 bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-surface text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
           disabled={disabled || pending}
         >
-          {COMPONENT_CATEGORIES.map(cat => (
-            <option key={cat} value={cat}>{CATEGORY_LABELS[cat]}</option>
+          {COMPONENT_CATEGORIES.map((cat) => (
+            <option key={cat} value={cat}>
+              {CATEGORY_LABELS[cat]}
+            </option>
           ))}
         </select>
       </div>
@@ -152,11 +159,11 @@ function ComponentForm({
         <input
           type="checkbox"
           checked={form.is_make_ahead}
-          onChange={e => set('is_make_ahead', e.target.checked)}
+          onChange={(e) => set('is_make_ahead', e.target.checked)}
           disabled={disabled || pending}
           className="w-4 h-4 rounded border-stone-400 text-brand-600 focus:ring-brand-500"
         />
-        <span className="text-sm text-stone-700">Make-ahead (prep at home, transport to site)</span>
+        <span className="text-sm text-stone-300">Make-ahead (prep at home, transport to site)</span>
       </label>
 
       {/* Transport + Window — only visible when make_ahead */}
@@ -166,13 +173,15 @@ function ComponentForm({
             <label className="block text-xs text-stone-500 mb-1">Transport zone</label>
             <select
               value={form.transport_category}
-              onChange={e => set('transport_category', e.target.value)}
+              onChange={(e) => set('transport_category', e.target.value)}
               title="Transport zone"
-              className="w-full text-sm border border-stone-300 rounded-lg px-2 py-1.5 bg-white text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-surface text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
               disabled={disabled || pending}
             >
-              {TRANSPORT_CATEGORIES.map(tc => (
-                <option key={tc} value={tc}>{TRANSPORT_LABELS[tc]}</option>
+              {TRANSPORT_CATEGORIES.map((tc) => (
+                <option key={tc} value={tc}>
+                  {TRANSPORT_LABELS[tc]}
+                </option>
               ))}
             </select>
           </div>
@@ -181,7 +190,7 @@ function ComponentForm({
             <Input
               type="number"
               value={form.make_ahead_window_hours}
-              onChange={e => set('make_ahead_window_hours', e.target.value)}
+              onChange={(e) => set('make_ahead_window_hours', e.target.value)}
               placeholder="e.g. 4"
               min="1"
               step="1"
@@ -197,25 +206,27 @@ function ComponentForm({
         <label className="block text-xs text-stone-500 mb-1">On-site execution notes</label>
         <textarea
           value={form.execution_notes}
-          onChange={e => set('execution_notes', e.target.value)}
+          onChange={(e) => set('execution_notes', e.target.value)}
           placeholder="What needs to happen when you arrive (e.g. Sear to order, finish with butter)"
           rows={2}
           disabled={disabled || pending}
-          className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 bg-white text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+          className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 bg-surface text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
         />
       </div>
 
       {/* Storage notes — only visible when make_ahead */}
       {form.is_make_ahead && (
         <div>
-          <label className="block text-xs text-stone-500 mb-1">Storage notes (after prepping)</label>
+          <label className="block text-xs text-stone-500 mb-1">
+            Storage notes (after prepping)
+          </label>
           <textarea
             value={form.storage_notes}
-            onChange={e => set('storage_notes', e.target.value)}
+            onChange={(e) => set('storage_notes', e.target.value)}
             placeholder="e.g. Refrigerate covered, up to 48h. Label with date."
             rows={2}
             disabled={disabled || pending}
-            className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 bg-white text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 bg-surface text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
           />
         </div>
       )}
@@ -263,13 +274,13 @@ function ComponentRow({
       transport_category: form.is_make_ahead
         ? (form.transport_category as TransportCategory)
         : null,
-      make_ahead_window_hours: form.is_make_ahead && form.make_ahead_window_hours
-        ? parseInt(form.make_ahead_window_hours, 10)
-        : null,
+      make_ahead_window_hours:
+        form.is_make_ahead && form.make_ahead_window_hours
+          ? parseInt(form.make_ahead_window_hours, 10)
+          : null,
       execution_notes: form.execution_notes.trim() || undefined,
-      storage_notes: form.is_make_ahead && form.storage_notes.trim()
-        ? form.storage_notes.trim()
-        : undefined,
+      storage_notes:
+        form.is_make_ahead && form.storage_notes.trim() ? form.storage_notes.trim() : undefined,
     })
     setEditing(false)
   }
@@ -277,7 +288,7 @@ function ComponentRow({
   if (editing) {
     const tc = (component.transport_category ?? 'room_temp') as TransportCategory
     return (
-      <div className="border border-brand-200 rounded-lg p-3 bg-brand-50">
+      <div className="border border-brand-700 rounded-lg p-3 bg-brand-950">
         <ComponentForm
           initial={{
             name: component.name,
@@ -298,18 +309,30 @@ function ComponentRow({
   }
 
   return (
-    <div className={`flex items-start gap-3 py-2 px-1 rounded group ${deleting ? 'opacity-50' : ''}`}>
+    <div
+      className={`flex items-start gap-3 py-2 px-1 rounded group ${deleting ? 'opacity-50' : ''}`}
+    >
       <div className="flex-1 min-w-0 space-y-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-stone-900">{component.name}</span>
-          <Badge variant="default">{CATEGORY_LABELS[(component.category ?? 'other') as ComponentCategory]}</Badge>
+          <span className="text-sm font-medium text-stone-100">{component.name}</span>
+          <Badge variant="default">
+            {CATEGORY_LABELS[(component.category ?? 'other') as ComponentCategory]}
+          </Badge>
           {component.is_make_ahead && (
-            <Badge variant={TRANSPORT_BADGE_COLORS[(component.transport_category ?? 'room_temp') as TransportCategory]}>
+            <Badge
+              variant={
+                TRANSPORT_BADGE_COLORS[
+                  (component.transport_category ?? 'room_temp') as TransportCategory
+                ]
+              }
+            >
               {TRANSPORT_LABELS[(component.transport_category ?? 'room_temp') as TransportCategory]}
             </Badge>
           )}
           {component.is_make_ahead && component.make_ahead_window_hours && (
-            <span className="text-xs text-stone-400">{component.make_ahead_window_hours}h lead</span>
+            <span className="text-xs text-stone-400">
+              {component.make_ahead_window_hours}h lead
+            </span>
           )}
         </div>
         {component.execution_notes && (
@@ -321,7 +344,7 @@ function ComponentRow({
           <button
             type="button"
             onClick={() => setEditing(true)}
-            className="text-xs text-stone-400 hover:text-stone-700 px-2 py-1 rounded hover:bg-stone-100"
+            className="text-xs text-stone-400 hover:text-stone-300 px-2 py-1 rounded hover:bg-stone-700"
           >
             Edit
           </button>
@@ -329,7 +352,7 @@ function ComponentRow({
             type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+            className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-950"
           >
             {deleting ? '…' : 'Delete'}
           </button>
@@ -370,7 +393,8 @@ function DishCard({
   }
 
   const handleDeleteDish = () => {
-    if (!confirm(`Delete Course ${dish.course_number}? All components will also be deleted.`)) return
+    if (!confirm(`Delete Course ${dish.course_number}? All components will also be deleted.`))
+      return
     startDelete(async () => {
       await deleteDish(dish.id)
       onDeleted()
@@ -387,16 +411,16 @@ function DishCard({
       transport_category: form.is_make_ahead
         ? (form.transport_category as TransportCategory)
         : undefined,
-      make_ahead_window_hours: form.is_make_ahead && form.make_ahead_window_hours
-        ? parseInt(form.make_ahead_window_hours, 10)
-        : undefined,
+      make_ahead_window_hours:
+        form.is_make_ahead && form.make_ahead_window_hours
+          ? parseInt(form.make_ahead_window_hours, 10)
+          : undefined,
       execution_notes: form.execution_notes.trim() || undefined,
-      storage_notes: form.is_make_ahead && form.storage_notes.trim()
-        ? form.storage_notes.trim()
-        : undefined,
+      storage_notes:
+        form.is_make_ahead && form.storage_notes.trim() ? form.storage_notes.trim() : undefined,
     })
     setAddingComponent(false)
-    forceRefresh(n => n + 1)
+    forceRefresh((n) => n + 1)
   }
 
   return (
@@ -412,7 +436,7 @@ function DishCard({
               <div className="space-y-2">
                 <Input
                   value={dishName}
-                  onChange={e => setDishName(e.target.value)}
+                  onChange={(e) => setDishName(e.target.value)}
                   placeholder="Course name (e.g. Amuse-Bouche, First Course, Main)"
                   className="text-sm font-medium"
                   disabled={saving}
@@ -420,7 +444,7 @@ function DishCard({
                 />
                 <Input
                   value={dishDesc}
-                  onChange={e => setDishDesc(e.target.value)}
+                  onChange={(e) => setDishDesc(e.target.value)}
                   placeholder="Description (shown to client, optional)"
                   className="text-sm"
                   disabled={saving}
@@ -439,7 +463,11 @@ function DishCard({
                     type="button"
                     size="sm"
                     variant="ghost"
-                    onClick={() => { setDishName(dish.course_name); setDishDesc(dish.description ?? ''); setEditingDish(false) }}
+                    onClick={() => {
+                      setDishName(dish.course_name)
+                      setDishDesc(dish.description ?? '')
+                      setEditingDish(false)
+                    }}
                     disabled={saving}
                   >
                     Cancel
@@ -449,14 +477,16 @@ function DishCard({
             ) : (
               <div className="group flex items-start gap-2">
                 <div className="flex-1">
-                  <p className="font-semibold text-stone-900">{dish.course_name}</p>
+                  <p className="font-semibold text-stone-100">{dish.course_name}</p>
                   {dish.description && (
                     <p className="text-sm text-stone-500 mt-0.5">{dish.description}</p>
                   )}
                   {dish.allergen_flags && dish.allergen_flags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-1">
-                      {dish.allergen_flags.map(flag => (
-                        <Badge key={flag} variant="error">{flag}</Badge>
+                      {dish.allergen_flags.map((flag) => (
+                        <Badge key={flag} variant="error">
+                          {flag}
+                        </Badge>
                       ))}
                     </div>
                   )}
@@ -466,7 +496,7 @@ function DishCard({
                     <button
                       type="button"
                       onClick={() => setEditingDish(true)}
-                      className="text-xs text-stone-400 hover:text-stone-700 px-2 py-1 rounded hover:bg-stone-100"
+                      className="text-xs text-stone-400 hover:text-stone-300 px-2 py-1 rounded hover:bg-stone-700"
                     >
                       Edit
                     </button>
@@ -474,7 +504,7 @@ function DishCard({
                       type="button"
                       onClick={handleDeleteDish}
                       disabled={deleting}
-                      className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                      className="text-xs text-red-400 hover:text-red-700 px-2 py-1 rounded hover:bg-red-950"
                     >
                       {deleting ? '…' : 'Delete'}
                     </button>
@@ -487,13 +517,13 @@ function DishCard({
 
         {/* Components */}
         {dish.components.length > 0 && (
-          <div className="border-t border-stone-100 pt-2 divide-y divide-stone-50">
-            {dish.components.map(comp => (
+          <div className="border-t border-stone-800 pt-2 divide-y divide-stone-50">
+            {dish.components.map((comp) => (
               <ComponentRow
                 key={comp.id}
                 component={comp}
                 locked={locked}
-                onDeleted={() => forceRefresh(n => n + 1)}
+                onDeleted={() => forceRefresh((n) => n + 1)}
               />
             ))}
           </div>
@@ -503,7 +533,7 @@ function DishCard({
         {!locked && (
           <div className="pt-1">
             {addingComponent ? (
-              <div className="border border-stone-200 rounded-lg p-3 bg-stone-50">
+              <div className="border border-stone-700 rounded-lg p-3 bg-stone-800">
                 <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-2">
                   New component
                 </p>
@@ -519,7 +549,7 @@ function DishCard({
               <button
                 type="button"
                 onClick={() => setAddingComponent(true)}
-                className="text-sm text-stone-400 hover:text-stone-700 border border-dashed border-stone-300 hover:border-stone-400 rounded-lg px-3 py-2 w-full text-left transition-colors"
+                className="text-sm text-stone-400 hover:text-stone-300 border border-dashed border-stone-600 hover:border-stone-400 rounded-lg px-3 py-2 w-full text-left transition-colors"
               >
                 + Add component
               </button>
@@ -563,7 +593,7 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
         })
         setNewCourseName('')
         setAddingCourse(false)
-        forceRefresh(n => n + 1)
+        forceRefresh((n) => n + 1)
       } catch (err: any) {
         setAddError(err.message || 'Failed to add course')
       }
@@ -575,18 +605,23 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
       {/* Menu header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">{menu.name}</h1>
+          <h1 className="text-2xl font-bold text-stone-100">{menu.name}</h1>
           {menu.cuisine_type && (
             <p className="text-stone-500 text-sm mt-0.5">{menu.cuisine_type}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={
-            menu.status === 'locked' ? 'error'
-            : menu.status === 'shared' ? 'info'
-            : menu.status === 'archived' ? 'default'
-            : 'warning'
-          }>
+          <Badge
+            variant={
+              menu.status === 'locked'
+                ? 'error'
+                : menu.status === 'shared'
+                  ? 'info'
+                  : menu.status === 'archived'
+                    ? 'default'
+                    : 'warning'
+            }
+          >
             {menu.status}
           </Badge>
           {menu.target_guest_count && (
@@ -596,23 +631,23 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
       </div>
 
       {locked && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-2 text-sm text-amber-800">
           This menu is locked. Unlock it by transitioning to draft before making changes.
         </div>
       )}
 
       {/* Course cards */}
       {menu.dishes && menu.dishes.length > 0 ? (
-        menu.dishes.map(dish => (
+        menu.dishes.map((dish) => (
           <DishCard
             key={dish.id}
             dish={dish}
             locked={locked}
-            onDeleted={() => forceRefresh(n => n + 1)}
+            onDeleted={() => forceRefresh((n) => n + 1)}
           />
         ))
       ) : (
-        <div className="text-center py-10 text-stone-400 border border-dashed border-stone-200 rounded-xl">
+        <div className="text-center py-10 text-stone-400 border border-dashed border-stone-700 rounded-xl">
           <p className="text-sm">No courses yet.</p>
           <p className="text-xs mt-1">Add the first course to start building this menu.</p>
         </div>
@@ -622,16 +657,17 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
       {!locked && (
         <div>
           {addingCourse ? (
-            <form onSubmit={handleAddCourse} className="border border-stone-200 rounded-xl p-4 space-y-2 bg-white">
+            <form
+              onSubmit={handleAddCourse}
+              className="border border-stone-700 rounded-xl p-4 space-y-2 bg-surface"
+            >
               <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
                 Course {nextCourseNumber}
               </p>
-              {addError && (
-                <p className="text-xs text-red-600">{addError}</p>
-              )}
+              {addError && <p className="text-xs text-red-600">{addError}</p>}
               <Input
                 value={newCourseName}
-                onChange={e => setNewCourseName(e.target.value)}
+                onChange={(e) => setNewCourseName(e.target.value)}
                 placeholder="Course name (e.g. Amuse-Bouche, Appetizer, Main, Dessert)"
                 className="text-sm"
                 disabled={addingPending}
@@ -645,7 +681,11 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
                   type="button"
                   size="sm"
                   variant="ghost"
-                  onClick={() => { setNewCourseName(''); setAddingCourse(false); setAddError('') }}
+                  onClick={() => {
+                    setNewCourseName('')
+                    setAddingCourse(false)
+                    setAddError('')
+                  }}
                   disabled={addingPending}
                 >
                   Cancel
@@ -656,7 +696,7 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
             <button
               type="button"
               onClick={() => setAddingCourse(true)}
-              className="w-full border-2 border-dashed border-stone-300 hover:border-brand-400 rounded-xl py-4 text-sm text-stone-400 hover:text-brand-600 transition-colors"
+              className="w-full border-2 border-dashed border-stone-600 hover:border-brand-400 rounded-xl py-4 text-sm text-stone-400 hover:text-brand-600 transition-colors"
             >
               + Add Course {nextCourseNumber}
             </button>

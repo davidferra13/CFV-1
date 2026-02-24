@@ -16,16 +16,18 @@ export default async function AdminPresencePage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-green-50 rounded-lg">
+        <div className="p-2 bg-green-950 rounded-lg">
           <Radio size={18} className="text-green-600" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Live Presence</h1>
-          <p className="text-sm text-slate-500">Everyone on the site right now — anonymous visitors, logged-in chefs and clients</p>
+          <p className="text-sm text-slate-500">
+            Everyone on the site right now — anonymous visitors, logged-in chefs and clients
+          </p>
         </div>
         {/* Live indicator */}
         <div className="ml-auto flex items-center gap-2 text-xs text-green-600 font-medium">
-          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-green-9500 animate-pulse" />
           LIVE
         </div>
       </div>

@@ -24,7 +24,7 @@ export default async function MyEventsHistoryPage() {
   let pastWithBalance: Set<string> = new Set()
 
   if (past.length > 0) {
-    const pastIds = past.map(e => e.id)
+    const pastIds = past.map((e) => e.id)
     const { data: balanceRows } = await supabase
       .from('event_financial_summary')
       .select('event_id, outstanding_balance_cents')
@@ -33,8 +33,8 @@ export default async function MyEventsHistoryPage() {
 
     pastWithBalance = new Set(
       (balanceRows ?? [])
-        .filter(r => (r.outstanding_balance_cents ?? 0) > 0 && r.event_id !== null)
-        .map(r => r.event_id as string)
+        .filter((r) => (r.outstanding_balance_cents ?? 0) > 0 && r.event_id !== null)
+        .map((r) => r.event_id as string)
     )
   }
 
@@ -48,22 +48,24 @@ export default async function MyEventsHistoryPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Past Events</h1>
-          <p className="text-stone-600 mt-1">{pastTotalCount} completed event{pastTotalCount !== 1 ? 's' : ''}</p>
+          <h1 className="text-3xl font-bold text-stone-100">Past Events</h1>
+          <p className="text-stone-400 mt-1">
+            {pastTotalCount} completed event{pastTotalCount !== 1 ? 's' : ''}
+          </p>
         </div>
       </div>
 
       {past.length === 0 ? (
         <Card>
-          <CardContent className="p-12 text-center text-stone-500">
-            No past events yet.
-          </CardContent>
+          <CardContent className="p-12 text-center text-stone-500">No past events yet.</CardContent>
         </Card>
       ) : (
         <div className="space-y-4">
-          {past.map(event => {
+          {past.map((event) => {
             const hasBalance = pastWithBalance.has(event.id)
-            const location = [event.location_address, event.location_city].filter(Boolean).join(', ')
+            const location = [event.location_address, event.location_city]
+              .filter(Boolean)
+              .join(', ')
             return (
               <Card key={event.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
@@ -73,7 +75,7 @@ export default async function MyEventsHistoryPage() {
                         <Badge variant="default">Completed</Badge>
                         {hasBalance && <Badge variant="error">Balance Due</Badge>}
                       </div>
-                      <h3 className="text-lg font-semibold text-stone-900 mb-1">
+                      <h3 className="text-lg font-semibold text-stone-100 mb-1">
                         {event.occasion || 'Untitled Event'}
                       </h3>
                       <p className="text-sm text-stone-500">
@@ -82,7 +84,7 @@ export default async function MyEventsHistoryPage() {
                         {event.guest_count ? ` · ${event.guest_count} guests` : ''}
                       </p>
                       {(event.quoted_price_cents ?? 0) > 0 && (
-                        <p className="text-sm text-stone-600 mt-1">
+                        <p className="text-sm text-stone-400 mt-1">
                           {formatCurrency(event.quoted_price_cents ?? 0)}
                         </p>
                       )}
@@ -90,14 +92,20 @@ export default async function MyEventsHistoryPage() {
                     <div className="flex gap-2">
                       {hasBalance && (
                         <Link href={`/my-events/${event.id}/pay`}>
-                          <Button variant="primary" size="sm">Pay Balance</Button>
+                          <Button variant="primary" size="sm">
+                            Pay Balance
+                          </Button>
                         </Link>
                       )}
                       <Link href={`/my-events/${event.id}`}>
-                        <Button variant="ghost" size="sm">View</Button>
+                        <Button variant="ghost" size="sm">
+                          View
+                        </Button>
                       </Link>
                       <Link href={`/my-events/${event.id}#review`}>
-                        <Button variant="secondary" size="sm">Review</Button>
+                        <Button variant="secondary" size="sm">
+                          Review
+                        </Button>
                       </Link>
                     </div>
                   </div>

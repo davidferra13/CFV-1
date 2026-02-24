@@ -23,11 +23,11 @@ export default async function DemandForecastPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-700">
+          <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Analytics
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Demand Forecast</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Demand Forecast</h1>
+          <p className="text-stone-400 mt-1">
             Seasonal booking patterns to help you plan capacity, pricing, and outreach.
           </p>
         </div>
@@ -36,7 +36,7 @@ export default async function DemandForecastPage() {
       {heatmapData ? (
         <DemandHeatmap data={heatmapData} />
       ) : (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
           <p className="text-stone-500 text-sm">
             Not enough historical data to generate a demand forecast. Complete more events across
             different months to see seasonal patterns.

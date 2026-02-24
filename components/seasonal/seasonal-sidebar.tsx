@@ -18,9 +18,10 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
   const endingMicroWindows = getEndingMicroWindows(palette)
   const accentClass = SEASON_ACCENT[palette.season_name] || 'border-l-stone-400'
 
-  const isEmpty = !palette.sensory_anchor
-    && palette.micro_windows.length === 0
-    && palette.proven_wins.length === 0
+  const isEmpty =
+    !palette.sensory_anchor &&
+    palette.micro_windows.length === 0 &&
+    palette.proven_wins.length === 0
 
   return (
     <div className={`space-y-4 border-l-4 ${accentClass} pl-4`}>
@@ -28,24 +29,25 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
       <Card>
         <CardContent className="p-4">
           <div className="flex justify-between items-start">
-            <h3 className="font-semibold text-stone-900">
+            <h3 className="font-semibold text-stone-100">
               {palette.season_name} ({formatRange(palette.start_month_day, palette.end_month_day)})
             </h3>
             <Link
               href={`/settings/repertoire/${palette.id}`}
-              className="text-xs text-brand-600 hover:text-brand-700"
+              className="text-xs text-brand-600 hover:text-brand-400"
             >
               Edit
             </Link>
           </div>
           {palette.sensory_anchor ? (
-            <p className="text-sm text-stone-600 mt-2">
-              {palette.sensory_anchor}
-            </p>
+            <p className="text-sm text-stone-400 mt-2">{palette.sensory_anchor}</p>
           ) : (
             <p className="text-sm text-stone-400 mt-2">
               No notes yet.{' '}
-              <Link href={`/settings/repertoire/${palette.id}`} className="text-brand-600 hover:text-brand-700">
+              <Link
+                href={`/settings/repertoire/${palette.id}`}
+                className="text-brand-600 hover:text-brand-400"
+              >
                 Add notes
               </Link>
             </p>
@@ -75,21 +77,21 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
           </CardHeader>
           <CardContent className="pt-0 space-y-2">
             {activeMicroWindows.map((w, i) => {
-              const isEnding = endingMicroWindows.some(e => e.ingredient === w.ingredient)
+              const isEnding = endingMicroWindows.some((e) => e.ingredient === w.ingredient)
               return (
                 <div
                   key={i}
                   className={`flex items-start gap-2 text-sm p-2 rounded-lg ${
-                    isEnding
-                      ? 'bg-amber-50 border border-amber-100'
-                      : 'bg-stone-50'
+                    isEnding ? 'bg-amber-950 border border-amber-100' : 'bg-stone-800'
                   }`}
                 >
                   <div className="flex-1">
-                    <span className="font-medium text-stone-900">{w.ingredient}</span>
+                    <span className="font-medium text-stone-100">{w.ingredient}</span>
                     <p className="text-xs text-stone-500 mt-0.5">
                       {w.start_date} to {w.end_date}
-                      {isEnding && <span className="text-amber-600 font-medium"> &mdash; ending soon</span>}
+                      {isEnding && (
+                        <span className="text-amber-600 font-medium"> &mdash; ending soon</span>
+                      )}
                     </p>
                     {w.notes && <p className="text-xs text-stone-400 mt-0.5">{w.notes}</p>}
                   </div>
@@ -98,11 +100,14 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
             })}
             {/* Show ending-only not already shown */}
             {endingMicroWindows
-              .filter(e => !activeMicroWindows.some(a => a.ingredient === e.ingredient))
+              .filter((e) => !activeMicroWindows.some((a) => a.ingredient === e.ingredient))
               .map((w, i) => (
-                <div key={`ending-${i}`} className="flex items-start gap-2 text-sm p-2 rounded-lg bg-amber-50 border border-amber-100">
+                <div
+                  key={`ending-${i}`}
+                  className="flex items-start gap-2 text-sm p-2 rounded-lg bg-amber-950 border border-amber-100"
+                >
                   <div className="flex-1">
-                    <span className="font-medium text-stone-900">{w.ingredient}</span>
+                    <span className="font-medium text-stone-100">{w.ingredient}</span>
                     <p className="text-xs text-amber-600 font-medium mt-0.5">Ending soon</p>
                   </div>
                 </div>
@@ -123,7 +128,7 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
                 <li key={i} className="flex items-start gap-2 text-sm">
                   <span className="text-brand-500 mt-0.5">&#x2022;</span>
                   <div>
-                    <span className="font-medium text-stone-900">{pw.dish_name}</span>
+                    <span className="font-medium text-stone-100">{pw.dish_name}</span>
                     {pw.notes && <span className="text-stone-500"> &mdash; {pw.notes}</span>}
                   </div>
                 </li>
@@ -137,7 +142,20 @@ export function SeasonalSidebar({ palette }: { palette: SeasonalPalette }) {
 }
 
 function formatRange(start: string, end: string): string {
-  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const MONTHS = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   const [sm, sd] = start.split('-').map(Number)
   const [em, ed] = end.split('-').map(Number)
   return `${MONTHS[sm - 1]} ${sd} \u2013 ${MONTHS[em - 1]} ${ed}`

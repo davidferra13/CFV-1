@@ -44,7 +44,7 @@ function DraftField({
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs font-medium text-stone-400 uppercase tracking-wide">{label}</span>
-      <span className={`text-sm font-medium ${uncertain ? 'text-amber-700' : 'text-stone-800'}`}>
+      <span className={`text-sm font-medium ${uncertain ? 'text-amber-700' : 'text-stone-200'}`}>
         {value}
         {uncertain && <span className="ml-1 text-amber-500 text-xs">(uncertain)</span>}
       </span>
@@ -198,7 +198,7 @@ export function EventNLForm({ clients }: Props) {
       {draft && (
         <Card className="p-6 space-y-5">
           <div className="flex items-center justify-between">
-            <h2 className="text-base font-semibold text-stone-800">Parsed Draft</h2>
+            <h2 className="text-base font-semibold text-stone-200">Parsed Draft</h2>
             {draft.confidence_notes && (
               <span className="text-xs text-stone-400">{draft.confidence_notes}</span>
             )}
@@ -206,7 +206,7 @@ export function EventNLForm({ clients }: Props) {
 
           {/* Read-only summary row */}
           {(draft.quoted_price_cents !== null || draft.deposit_amount_cents !== null) && (
-            <div className="flex flex-wrap gap-6 p-3 bg-stone-50 rounded-lg">
+            <div className="flex flex-wrap gap-6 p-3 bg-stone-800 rounded-lg">
               <DraftField
                 label="Quoted Price"
                 value={formatCents(draft.quoted_price_cents)}
@@ -247,23 +247,23 @@ export function EventNLForm({ clients }: Props) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Event Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Serve Time <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="time"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={serveTime}
                   onChange={(e) => setServeTime(e.target.value)}
                 />
@@ -272,22 +272,22 @@ export function EventNLForm({ clients }: Props) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Guest Count <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
                   min="1"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={guestCount}
                   onChange={(e) => setGuestCount(e.target.value)}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Occasion</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Occasion</label>
                 <input
                   type="text"
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   value={occasion}
                   onChange={(e) => setOccasion(e.target.value)}
                 />
@@ -295,12 +295,12 @@ export function EventNLForm({ clients }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Location / Address
               </label>
               <input
                 type="text"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 value={locationDescription}
                 onChange={(e) => setLocationDescription(e.target.value)}
                 placeholder="Full address (you can update this on the event page)"
@@ -308,12 +308,12 @@ export function EventNLForm({ clients }: Props) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Notes / Dietary
               </label>
               <textarea
                 rows={3}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />

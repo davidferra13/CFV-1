@@ -10,7 +10,12 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { createPartner, updatePartner, type CreatePartnerInput, type UpdatePartnerInput } from '@/lib/partners/actions'
+import {
+  createPartner,
+  updatePartner,
+  type CreatePartnerInput,
+  type UpdatePartnerInput,
+} from '@/lib/partners/actions'
 
 type PartnerType = 'airbnb_host' | 'business' | 'platform' | 'individual' | 'venue' | 'other'
 
@@ -100,11 +105,11 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
 
       {/* Basic Info */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Partner Info</h2>
+        <h2 className="text-lg font-semibold text-stone-100">Partner Info</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Partner Name <span className="text-red-500">*</span>
             </label>
             <Input
@@ -116,34 +121,38 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Type</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Type</label>
             <Select name="partner_type" defaultValue={partner?.partner_type || 'individual'}>
-              {PARTNER_TYPE_OPTIONS.map(opt => (
-                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              {PARTNER_TYPE_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
               ))}
             </Select>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Description</label>
           <Textarea
             name="description"
             defaultValue={partner?.description || ''}
             placeholder="Public-facing description for the showcase page"
             rows={3}
           />
-          <p className="text-xs text-stone-400 mt-1">Shown on your public profile if showcase is enabled</p>
+          <p className="text-xs text-stone-400 mt-1">
+            Shown on your public profile if showcase is enabled
+          </p>
         </div>
       </Card>
 
       {/* Contact Info */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Contact Details</h2>
+        <h2 className="text-lg font-semibold text-stone-100">Contact Details</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Contact Person</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Contact Person</label>
             <Input
               name="contact_name"
               defaultValue={partner?.contact_name || ''}
@@ -152,7 +161,7 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Email</label>
             <Input
               name="email"
               type="email"
@@ -162,16 +171,12 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Phone</label>
-            <Input
-              name="phone"
-              defaultValue={partner?.phone || ''}
-              placeholder="(555) 123-4567"
-            />
+            <label className="block text-sm font-medium text-stone-300 mb-1">Phone</label>
+            <Input name="phone" defaultValue={partner?.phone || ''} placeholder="(555) 123-4567" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Website</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Website</label>
             <Input
               name="website"
               defaultValue={partner?.website || ''}
@@ -183,16 +188,18 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
 
       {/* Showcase & Booking */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Showcase & Booking</h2>
+        <h2 className="text-lg font-semibold text-stone-100">Showcase & Booking</h2>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Booking URL</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Booking URL</label>
           <Input
             name="booking_url"
             defaultValue={partner?.booking_url || ''}
             placeholder="https://airbnb.com/rooms/..."
           />
-          <p className="text-xs text-stone-400 mt-1">Visitors can click through to book this venue from your public profile</p>
+          <p className="text-xs text-stone-400 mt-1">
+            Visitors can click through to book this venue from your public profile
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -201,9 +208,9 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
             id="is_showcase_visible"
             name="is_showcase_visible"
             defaultChecked={partner?.is_showcase_visible || false}
-            className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+            className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
           />
-          <label htmlFor="is_showcase_visible" className="text-sm font-medium text-stone-700">
+          <label htmlFor="is_showcase_visible" className="text-sm font-medium text-stone-300">
             Show on public profile showcase
           </label>
         </div>
@@ -211,11 +218,13 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
 
       {/* Internal Notes */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Internal Notes</h2>
+        <h2 className="text-lg font-semibold text-stone-100">Internal Notes</h2>
         <p className="text-xs text-stone-400">These notes are never shown publicly</p>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Relationship Notes</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">
+            Relationship Notes
+          </label>
           <Textarea
             name="notes"
             defaultValue={partner?.notes || ''}
@@ -225,7 +234,9 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Commission / Referral Notes</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">
+            Commission / Referral Notes
+          </label>
           <Textarea
             name="commission_notes"
             defaultValue={partner?.commission_notes || ''}
@@ -241,7 +252,13 @@ export function PartnerForm({ partner }: { partner?: ExistingPartner }) {
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>
-          {loading ? (isEdit ? 'Saving...' : 'Creating...') : (isEdit ? 'Save Changes' : 'Create Partner')}
+          {loading
+            ? isEdit
+              ? 'Saving...'
+              : 'Creating...'
+            : isEdit
+              ? 'Save Changes'
+              : 'Create Partner'}
         </Button>
       </div>
     </form>

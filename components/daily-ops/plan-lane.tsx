@@ -18,27 +18,27 @@ const LANE_ICONS: Record<string, typeof Zap> = {
 const LANE_COLORS: Record<string, { border: string; bg: string; text: string; badge: string }> = {
   quick_admin: {
     border: 'border-amber-200',
-    bg: 'bg-amber-50/30',
+    bg: 'bg-amber-950/30',
     text: 'text-amber-700',
-    badge: 'bg-amber-100 text-amber-700',
+    badge: 'bg-amber-900 text-amber-700',
   },
   event_prep: {
-    border: 'border-brand-200',
-    bg: 'bg-brand-50/30',
-    text: 'text-brand-700',
-    badge: 'bg-brand-100 text-brand-700',
+    border: 'border-brand-700',
+    bg: 'bg-brand-950/30',
+    text: 'text-brand-400',
+    badge: 'bg-brand-900 text-brand-400',
   },
   creative: {
     border: 'border-purple-200',
-    bg: 'bg-purple-50/30',
+    bg: 'bg-purple-950/30',
     text: 'text-purple-700',
-    badge: 'bg-purple-100 text-purple-700',
+    badge: 'bg-purple-900 text-purple-700',
   },
   relationship: {
     border: 'border-sky-200',
-    bg: 'bg-sky-50/30',
+    bg: 'bg-sky-950/30',
     text: 'text-sky-700',
-    badge: 'bg-sky-100 text-sky-700',
+    badge: 'bg-sky-900 text-sky-700',
   },
 }
 

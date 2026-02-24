@@ -35,9 +35,9 @@ export function ChatImageUpload({ onUpload, onCancel }: ChatImageUploadProps) {
   }
 
   return (
-    <div className="border-t border-stone-200 bg-white p-4">
+    <div className="border-t border-stone-700 bg-surface p-4">
       {!file ? (
-        <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-300 rounded-lg p-6 cursor-pointer hover:border-brand-400 transition-colors">
+        <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-600 rounded-lg p-6 cursor-pointer hover:border-brand-400 transition-colors">
           <Upload className="w-8 h-8 text-stone-400 mb-2" />
           <span className="text-sm text-stone-500">Click to select an image</span>
           <span className="text-xs text-stone-400 mt-1">JPEG, PNG, WebP, HEIC - max 10MB</span>
@@ -83,7 +83,7 @@ export function ChatImageUpload({ onUpload, onCancel }: ChatImageUploadProps) {
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Add a caption (optional)"
-            className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
 
           {/* Actions */}
@@ -91,7 +91,7 @@ export function ChatImageUpload({ onUpload, onCancel }: ChatImageUploadProps) {
             <button
               onClick={onCancel}
               disabled={uploading}
-              className="px-4 py-2 text-sm text-stone-600 hover:text-stone-800 disabled:opacity-50"
+              className="px-4 py-2 text-sm text-stone-400 hover:text-stone-200 disabled:opacity-50"
             >
               Cancel
             </button>

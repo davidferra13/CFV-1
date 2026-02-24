@@ -25,11 +25,11 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Apple className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-stone-700">Menu Nutritional Summary</span>
+            <span className="text-sm font-medium text-stone-300">Menu Nutritional Summary</span>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
@@ -53,11 +53,11 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Apple className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-medium text-stone-700">Menu Nutrition</span>
+          <span className="text-sm font-medium text-stone-300">Menu Nutrition</span>
         </div>
         <Button variant="ghost" onClick={run} disabled={loading}>
           {loading ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Refresh'}
@@ -72,8 +72,8 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
             { label: 'Carbs', value: result.totalCarbsG, unit: 'g' },
             { label: 'Fat', value: result.totalFatG, unit: 'g' },
           ].map(({ label, value, unit }) => (
-            <div key={label} className="bg-stone-50 rounded p-2">
-              <div className="text-base font-semibold text-stone-800">{value ?? '?'}</div>
+            <div key={label} className="bg-stone-800 rounded p-2">
+              <div className="text-base font-semibold text-stone-200">{value ?? '?'}</div>
               <div className="text-[10px] text-stone-500">{unit}</div>
               <div className="text-[10px] text-stone-400">{label}</div>
             </div>
@@ -91,10 +91,10 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
               <span className="text-stone-500 w-20 flex-shrink-0 text-[11px]">
                 {course.courseName}
               </span>
-              <span className="text-stone-700 flex-1">{course.dishName}</span>
+              <span className="text-stone-300 flex-1">{course.dishName}</span>
               <span className="text-stone-500">{course.calories ?? '?'} kcal</span>
               <span
-                className={`text-[10px] px-1 rounded ${course.confidence === 'high' ? 'bg-green-50 text-green-700' : course.confidence === 'medium' ? 'bg-amber-50 text-amber-700' : 'bg-stone-100 text-stone-500'}`}
+                className={`text-[10px] px-1 rounded ${course.confidence === 'high' ? 'bg-green-950 text-green-700' : course.confidence === 'medium' ? 'bg-amber-950 text-amber-700' : 'bg-stone-800 text-stone-500'}`}
               >
                 {course.confidence}
               </span>
@@ -104,7 +104,7 @@ export function MenuNutritionalPanel({ eventId }: { eventId: string }) {
       )}
 
       {result.highlights.length > 0 && (
-        <div className="text-xs text-stone-600 space-y-0.5">
+        <div className="text-xs text-stone-400 space-y-0.5">
           {result.highlights.map((h, i) => (
             <div key={i}>• {h}</div>
           ))}

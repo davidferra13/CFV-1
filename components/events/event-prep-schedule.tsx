@@ -33,16 +33,16 @@ import { PREP_BLOCK_TYPE_LABELS } from '@/lib/scheduling/types'
 // ============================================
 
 const BLOCK_TYPE_COLORS: Record<PrepBlockType, string> = {
-  grocery_run: 'bg-green-100 text-green-800',
-  specialty_sourcing: 'bg-emerald-100 text-emerald-800',
-  prep_session: 'bg-orange-100 text-orange-800',
-  packing: 'bg-blue-100 text-blue-800',
-  travel_to_event: 'bg-purple-100 text-purple-800',
-  mental_prep: 'bg-pink-100 text-pink-800',
-  equipment_prep: 'bg-yellow-100 text-yellow-800',
+  grocery_run: 'bg-green-900 text-green-800',
+  specialty_sourcing: 'bg-emerald-900 text-emerald-800',
+  prep_session: 'bg-orange-900 text-orange-800',
+  packing: 'bg-blue-900 text-blue-800',
+  travel_to_event: 'bg-purple-900 text-purple-800',
+  mental_prep: 'bg-pink-900 text-pink-800',
+  equipment_prep: 'bg-yellow-900 text-yellow-800',
   admin: 'bg-gray-100 text-gray-700',
   cleanup: 'bg-slate-100 text-slate-700',
-  custom: 'bg-indigo-100 text-indigo-800',
+  custom: 'bg-indigo-900 text-indigo-800',
 }
 
 function formatBlockTime(block: PrepBlock): string {
@@ -130,7 +130,7 @@ function SuggestionPanel({
   const includedCount = edits.filter((e) => e.included).length
 
   return (
-    <div className="border border-amber-200 bg-amber-50 rounded-lg p-4 space-y-3">
+    <div className="border border-amber-200 bg-amber-950 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <p className="font-semibold text-amber-900">
           Review Suggestions ({suggestions.length} prep blocks)
@@ -142,7 +142,7 @@ function SuggestionPanel({
         {suggestions.map((s, i) => (
           <div
             key={i}
-            className={`bg-white rounded border p-3 text-sm ${
+            className={`bg-surface rounded border p-3 text-sm ${
               edits[i].included ? 'border-amber-300' : 'border-gray-200 opacity-50'
             }`}
           >
@@ -185,7 +185,9 @@ function SuggestionPanel({
                     />
                   </div>
                   <div className="flex items-end">
-                    <span className="text-xs text-gray-400">~{s.estimated_duration_minutes}min</span>
+                    <span className="text-xs text-gray-400">
+                      ~{s.estimated_duration_minutes}min
+                    </span>
                   </div>
                 </div>
               </div>
@@ -201,7 +203,9 @@ function SuggestionPanel({
           onClick={handleConfirm}
           disabled={isPending || includedCount === 0}
         >
-          {isPending ? 'Saving…' : `Confirm ${includedCount} Block${includedCount !== 1 ? 's' : ''}`}
+          {isPending
+            ? 'Saving…'
+            : `Confirm ${includedCount} Block${includedCount !== 1 ? 's' : ''}`}
         </Button>
         <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
           Cancel
@@ -386,8 +390,8 @@ function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps
     <div
       className={`flex items-start gap-3 p-3 rounded-lg border text-sm ${
         block.is_completed
-          ? 'bg-green-50 border-green-200 opacity-75'
-          : 'bg-white border-gray-200'
+          ? 'bg-green-950 border-green-200 opacity-75'
+          : 'bg-surface border-gray-200'
       }`}
     >
       <button
@@ -527,11 +531,7 @@ export function EventPrepSchedule({ eventId, initialBlocks }: Props) {
           >
             {suggestLoading ? 'Generating…' : 'Auto-schedule'}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowAddForm((v) => !v)}
-          >
+          <Button variant="ghost" size="sm" onClick={() => setShowAddForm((v) => !v)}>
             + Add Block
           </Button>
         </div>
@@ -550,7 +550,7 @@ export function EventPrepSchedule({ eventId, initialBlocks }: Props) {
 
       {/* Error */}
       {suggestError && (
-        <p className="text-xs text-red-600 bg-red-50 border border-red-100 rounded px-3 py-2">
+        <p className="text-xs text-red-600 bg-red-950 border border-red-100 rounded px-3 py-2">
           {suggestError}
         </p>
       )}

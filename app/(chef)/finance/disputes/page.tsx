@@ -14,9 +14,13 @@ export default async function DisputesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">&larr; Finance</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Payment Disputes</h1>
-        <p className="text-stone-500 mt-1">Track and respond to chargebacks, refund requests, and payment disputes</p>
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
+          &larr; Finance
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Payment Disputes</h1>
+        <p className="text-stone-500 mt-1">
+          Track and respond to chargebacks, refund requests, and payment disputes
+        </p>
       </div>
 
       <DisputeTracker initialDisputes={disputes ?? []} />

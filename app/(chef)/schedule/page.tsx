@@ -34,10 +34,8 @@ export default async function SchedulePage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Schedule</h1>
-        <p className="text-stone-500 mt-1">
-          Your events at a glance. Click any event for details.
-        </p>
+        <h1 className="text-3xl font-bold text-stone-100">Schedule</h1>
+        <p className="text-stone-500 mt-1">Your events at a glance. Click any event for details.</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">

@@ -256,7 +256,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
             />
           </div>
 
-          <div className="text-sm text-stone-500 bg-stone-50 rounded-lg p-3">
+          <div className="text-sm text-stone-500 bg-stone-800 rounded-lg p-3">
             <span className="font-medium">Email:</span> {profile.email}
             <span className="ml-2 text-stone-400">(contact your chef to change)</span>
           </div>
@@ -287,7 +287,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
 
           {/* Dietary Protocols — fixed set, toggled as pills */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">
+            <label className="block text-sm font-medium text-stone-300 mb-2">
               Dietary Protocols
             </label>
             <p className="text-xs text-stone-500 mb-3">
@@ -312,7 +312,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
                     className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                       selected
                         ? 'bg-brand-600 text-white border-brand-600'
-                        : 'bg-white text-stone-700 border-stone-300 hover:border-brand-400 hover:text-brand-700'
+                        : 'bg-surface text-stone-300 border-stone-600 hover:border-brand-400 hover:text-brand-400'
                     }`}
                   >
                     {protocol.label}

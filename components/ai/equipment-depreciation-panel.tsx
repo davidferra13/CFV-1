@@ -28,11 +28,11 @@ export function EquipmentDepreciationPanel() {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Wrench className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Equipment Depreciation Guide</span>
+            <span className="text-sm font-medium text-stone-300">Equipment Depreciation Guide</span>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
@@ -56,11 +56,11 @@ export function EquipmentDepreciationPanel() {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Wrench className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Equipment Depreciation</span>
+          <span className="text-sm font-medium text-stone-300">Equipment Depreciation</span>
           <Badge variant="info">${result.totalAnnualDeductionDollars.toFixed(0)}/yr total</Badge>
         </div>
         <Button variant="ghost" onClick={run} disabled={loading}>
@@ -68,13 +68,13 @@ export function EquipmentDepreciationPanel() {
         </Button>
       </div>
 
-      <p className="text-xs text-stone-600">{result.currentYearSummary}</p>
+      <p className="text-xs text-stone-400">{result.currentYearSummary}</p>
 
       <div className="space-y-2">
         {result.items.map((item, i) => (
-          <div key={i} className="border border-stone-100 rounded p-3 space-y-1">
+          <div key={i} className="border border-stone-800 rounded p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-stone-700">{item.itemName}</span>
+              <span className="text-sm font-medium text-stone-300">{item.itemName}</span>
               <span className="text-xs text-green-700 font-medium">
                 ${item.annualDeductionDollars.toFixed(0)}/yr
               </span>
@@ -84,15 +84,15 @@ export function EquipmentDepreciationPanel() {
               {item.fullyDepreciatedDate} · Remaining value: $
               {item.remainingValueDollars.toFixed(0)}
             </div>
-            <p className="text-xs text-stone-600">{item.plainEnglishExplanation}</p>
+            <p className="text-xs text-stone-400">{item.plainEnglishExplanation}</p>
             {item.bonusDepreciationNote && (
-              <p className="text-xs text-brand-700">{item.bonusDepreciationNote}</p>
+              <p className="text-xs text-brand-400">{item.bonusDepreciationNote}</p>
             )}
           </div>
         ))}
       </div>
 
-      <div className="flex items-start gap-2 text-[11px] text-stone-600 bg-stone-50 border border-stone-200 rounded p-2">
+      <div className="flex items-start gap-2 text-[11px] text-stone-400 bg-stone-800 border border-stone-700 rounded p-2">
         <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0 text-amber-500" />
         {result.disclaimer}
       </div>

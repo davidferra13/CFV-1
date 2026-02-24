@@ -17,19 +17,19 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_BADGE_COLORS: Record<string, string> = {
-  draft: 'bg-stone-100 text-stone-600',
-  proposed: 'bg-blue-100 text-blue-700',
-  accepted: 'bg-yellow-100 text-yellow-700',
-  paid: 'bg-emerald-100 text-emerald-700',
-  confirmed: 'bg-brand-100 text-brand-700',
-  in_progress: 'bg-brand-50 text-brand-800',
-  completed: 'bg-green-100 text-green-700',
+  draft: 'bg-stone-800 text-stone-400',
+  proposed: 'bg-blue-900 text-blue-700',
+  accepted: 'bg-yellow-900 text-yellow-700',
+  paid: 'bg-emerald-900 text-emerald-700',
+  confirmed: 'bg-brand-900 text-brand-400',
+  in_progress: 'bg-brand-950 text-brand-300',
+  completed: 'bg-green-900 text-green-700',
 }
 
 const PREP_DOT: Record<string, string> = {
-  ready: 'bg-green-500',
-  partial: 'bg-yellow-500',
-  not_started: 'bg-red-500',
+  ready: 'bg-green-9500',
+  partial: 'bg-yellow-9500',
+  not_started: 'bg-red-9500',
 }
 
 interface AgendaDay {
@@ -56,7 +56,7 @@ function groupEventsByDay(events: CalendarEvent[]): AgendaDay[] {
   // Sort by date
   const sortedDates = [...dayMap.keys()].sort()
 
-  return sortedDates.map(date => {
+  return sortedDates.map((date) => {
     const d = new Date(date + 'T12:00:00')
     return {
       date,
@@ -96,27 +96,49 @@ export function AgendaView({
 
   if (agendaDays.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-12 text-center">
-        <div className="w-16 h-16 rounded-full bg-stone-100 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+      <div className="bg-surface rounded-xl border border-stone-700 shadow-sm p-12 text-center">
+        <div className="w-16 h-16 rounded-full bg-stone-800 flex items-center justify-center mx-auto mb-4">
+          <svg
+            className="w-8 h-8 text-stone-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+            />
           </svg>
         </div>
-        <h3 className="text-lg font-semibold text-stone-900 mb-1">No events this period</h3>
-        <p className="text-sm text-stone-500">Your schedule is clear. Navigate to a different month or create a new event.</p>
+        <h3 className="text-lg font-semibold text-stone-100 mb-1">No events this period</h3>
+        <p className="text-sm text-stone-500">
+          Your schedule is clear. Navigate to a different month or create a new event.
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+    <div className="bg-surface rounded-xl border border-stone-700 shadow-sm overflow-hidden">
       {/* Header */}
-      <div className="px-5 py-3 bg-surface-muted border-b border-stone-200 flex items-center justify-between">
+      <div className="px-5 py-3 bg-surface-muted border-b border-stone-700 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <svg className="w-5 h-5 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+          <svg
+            className="w-5 h-5 text-brand-500"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+            />
           </svg>
-          <h3 className="text-sm font-semibold text-stone-700">Agenda</h3>
+          <h3 className="text-sm font-semibold text-stone-300">Agenda</h3>
         </div>
         <span className="text-xs text-stone-500">
           {agendaDays.length} day{agendaDays.length !== 1 ? 's' : ''} booked
@@ -124,7 +146,7 @@ export function AgendaView({
       </div>
 
       {/* Month groups */}
-      <div className="divide-y divide-stone-100">
+      <div className="divide-y divide-stone-800">
         {monthGroups.map(({ month, days }) => (
           <div key={month}>
             {/* Month header */}
@@ -134,11 +156,11 @@ export function AgendaView({
 
             {/* Day entries */}
             <div className="divide-y divide-stone-50">
-              {days.map(day => (
+              {days.map((day) => (
                 <div
                   key={day.date}
                   className={`flex gap-4 px-5 py-3 transition-colors hover:bg-surface-muted ${
-                    day.isToday ? 'bg-brand-50/30' : ''
+                    day.isToday ? 'bg-brand-950/30' : ''
                   }`}
                 >
                   {/* Date column */}
@@ -149,8 +171,8 @@ export function AgendaView({
                     <div
                       className={`text-xl font-bold leading-tight ${
                         day.isToday
-                          ? 'text-white bg-brand-500 rounded-full w-9 h-9 flex items-center justify-center mx-auto'
-                          : 'text-stone-900'
+                          ? 'text-white bg-brand-9500 rounded-full w-9 h-9 flex items-center justify-center mx-auto'
+                          : 'text-stone-100'
                       }`}
                     >
                       {day.dayNum}
@@ -159,24 +181,31 @@ export function AgendaView({
 
                   {/* Events column */}
                   <div className="flex-1 min-w-0 space-y-2">
-                    {day.events.map(event => {
+                    {day.events.map((event) => {
                       const props = event.extendedProps
                       const isPrep = props.dayType === 'prep'
-                      const time = !isPrep && event.start.includes('T')
-                        ? new Date(event.start).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-                        : null
+                      const time =
+                        !isPrep && event.start.includes('T')
+                          ? new Date(event.start).toLocaleTimeString('en-US', {
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })
+                          : null
 
                       return (
                         <div
                           key={event.id}
                           className={`group rounded-lg border p-3 cursor-pointer transition-all hover:shadow-sm ${
                             isPrep
-                              ? 'border-amber-200 bg-amber-50/50 hover:bg-amber-50'
-                              : 'border-stone-200 bg-white hover:bg-surface-muted'
+                              ? 'border-amber-200 bg-amber-950/50 hover:bg-amber-950'
+                              : 'border-stone-700 bg-surface hover:bg-surface-muted'
                           }`}
                           onClick={(e) => {
                             if (onEventClick) {
-                              onEventClick(event, (e.currentTarget as HTMLElement).getBoundingClientRect())
+                              onEventClick(
+                                event,
+                                (e.currentTarget as HTMLElement).getBoundingClientRect()
+                              )
                             }
                           }}
                         >
@@ -184,8 +213,10 @@ export function AgendaView({
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${PREP_DOT[props.prepStatus] || 'bg-stone-400'}`} />
-                                <span className="font-medium text-sm text-stone-900 truncate">
+                                <span
+                                  className={`w-2 h-2 rounded-full flex-shrink-0 ${PREP_DOT[props.prepStatus] || 'bg-stone-400'}`}
+                                />
+                                <span className="font-medium text-sm text-stone-100 truncate">
                                   {event.title}
                                 </span>
                               </div>
@@ -193,9 +224,11 @@ export function AgendaView({
                                 {props.clientName}
                               </div>
                             </div>
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
-                              STATUS_BADGE_COLORS[props.status] || 'bg-stone-100 text-stone-600'
-                            }`}>
+                            <span
+                              className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0 ${
+                                STATUS_BADGE_COLORS[props.status] || 'bg-stone-800 text-stone-400'
+                              }`}
+                            >
                               {STATUS_LABELS[props.status] || props.status}
                             </span>
                           </div>
@@ -204,28 +237,60 @@ export function AgendaView({
                           <div className="flex items-center gap-3 mt-2 ml-4 text-xs text-stone-500">
                             {time && (
                               <span className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                                  />
                                 </svg>
                                 {time}
                               </span>
                             )}
-                            {isPrep && (
-                              <span className="text-amber-600 font-medium">Prep Day</span>
-                            )}
+                            {isPrep && <span className="text-amber-600 font-medium">Prep Day</span>}
                             {props.guestCount > 0 && (
                               <span className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                                <svg
+                                  className="w-3 h-3"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+                                  />
                                 </svg>
                                 {props.guestCount}
                               </span>
                             )}
                             {props.locationCity && (
                               <span className="flex items-center gap-1 truncate">
-                                <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                                <svg
+                                  className="w-3 h-3 flex-shrink-0"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                  strokeWidth={2}
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                                  />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                                  />
                                 </svg>
                                 {props.locationCity}
                               </span>
@@ -236,7 +301,7 @@ export function AgendaView({
                           <div className="mt-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity">
                             <Link
                               href={`/events/${props.eventId}`}
-                              className="text-xs font-medium text-brand-600 hover:text-brand-700"
+                              className="text-xs font-medium text-brand-600 hover:text-brand-400"
                               onClick={(e) => e.stopPropagation()}
                             >
                               View details →

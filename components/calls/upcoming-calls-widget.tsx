@@ -15,7 +15,7 @@ function getContactLabel(call: ScheduledCall): string {
 
 export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
   return (
-    <div className="rounded-xl border bg-white shadow-sm">
+    <div className="rounded-xl border bg-surface shadow-sm">
       <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2">
           <Phone className="w-4 h-4 text-blue-500" />
@@ -42,7 +42,7 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
         </div>
       ) : (
         <ul className="divide-y divide-gray-50">
-          {calls.map(call => (
+          {calls.map((call) => (
             <li key={call.id}>
               <Link
                 href={`/calls/${call.id}`}
@@ -75,7 +75,8 @@ export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
                 {call.agenda_items.length > 0 && (
                   <div className="flex-shrink-0 text-right">
                     <span className="text-xs text-gray-400">
-                      {call.agenda_items.filter(i => i.completed).length}/{call.agenda_items.length}
+                      {call.agenda_items.filter((i) => i.completed).length}/
+                      {call.agenda_items.length}
                     </span>
                   </div>
                 )}

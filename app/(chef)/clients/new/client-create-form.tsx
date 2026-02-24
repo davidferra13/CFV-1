@@ -28,16 +28,16 @@ function Section({
   const [open, setOpen] = useState(defaultOpen)
 
   return (
-    <div className="border border-stone-200 rounded-lg overflow-hidden">
+    <div className="border border-stone-700 rounded-lg overflow-hidden">
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full px-4 py-3 text-left bg-stone-50 hover:bg-stone-100 transition-colors"
+        className="flex items-center justify-between w-full px-4 py-3 text-left bg-stone-800 hover:bg-stone-700 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="font-medium text-stone-800">{title}</span>
+          <span className="font-medium text-stone-200">{title}</span>
           {badge && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-stone-200 text-stone-600">
+            <span className="text-xs px-2 py-0.5 rounded-full bg-stone-700 text-stone-400">
               {badge}
             </span>
           )}
@@ -52,11 +52,11 @@ function Section({
         </svg>
       </button>
       {description && !open && (
-        <p className="px-4 py-1.5 text-xs text-stone-400 bg-stone-50 border-t border-stone-100">
+        <p className="px-4 py-1.5 text-xs text-stone-400 bg-stone-800 border-t border-stone-800">
           {description}
         </p>
       )}
-      {open && <div className="p-4 space-y-4 bg-white">{children}</div>}
+      {open && <div className="p-4 space-y-4 bg-surface">{children}</div>}
     </div>
   )
 }
@@ -88,7 +88,7 @@ function PetManager({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-stone-700">Pets</label>
+      <label className="block text-sm font-medium text-stone-300">Pets</label>
       {value.map((pet, i) => (
         <div key={i} className="flex gap-2 items-start">
           <Input
@@ -161,7 +161,7 @@ function ChildrenManager({
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-medium text-stone-700">Children</label>
+      <label className="block text-sm font-medium text-stone-300">Children</label>
       {value.map((child, i) => (
         <div key={i} className="flex gap-2">
           <Input
@@ -498,8 +498,8 @@ export function ClientCreateForm() {
           onClick={() => setMode('quick')}
           className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
             mode === 'quick'
-              ? 'bg-brand-500 text-white'
-              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              ? 'bg-brand-9500 text-white'
+              : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
           }`}
         >
           Quick Add
@@ -509,8 +509,8 @@ export function ClientCreateForm() {
           onClick={() => setMode('full')}
           className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors ${
             mode === 'full'
-              ? 'bg-brand-500 text-white'
-              : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+              ? 'bg-brand-9500 text-white'
+              : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
           }`}
         >
           Full Profile
@@ -797,7 +797,7 @@ export function ClientCreateForm() {
                   <option value="professional">Professional — commercial-grade</option>
                 </Select>
                 <div className="flex items-end gap-4 pb-1">
-                  <label className="text-sm font-medium text-stone-700">Dishwasher?</label>
+                  <label className="text-sm font-medium text-stone-300">Dishwasher?</label>
                   <div className="flex gap-3">
                     <label className="flex items-center gap-1.5 text-sm">
                       <input
@@ -930,7 +930,7 @@ export function ClientCreateForm() {
                 </Select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">
                   Preferred Event Days
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -1071,7 +1071,7 @@ export function ClientCreateForm() {
               description="Business intelligence — referral potential, red flags, acquisition cost"
               badge="Chef Only"
             >
-              <p className="text-xs text-stone-500 bg-stone-50 rounded-lg p-3">
+              <p className="text-xs text-stone-500 bg-stone-800 rounded-lg p-3">
                 These fields are strictly for your internal use. Clients will never see any of this
                 information.
               </p>
@@ -1104,7 +1104,7 @@ export function ClientCreateForm() {
         )}
 
         {/* ─── Submit ──────────────────────────────────────────────────── */}
-        <div className="flex gap-2 pt-4 border-t border-stone-200">
+        <div className="flex gap-2 pt-4 border-t border-stone-700">
           <Button type="submit" loading={loading}>
             {mode === 'quick' ? 'Add Client' : 'Create Full Profile'}
           </Button>

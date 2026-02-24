@@ -64,8 +64,8 @@ export default async function InsightsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Clientele Insights</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Clientele Insights</h1>
+        <p className="text-stone-400 mt-1">
           Patterns from your events, clients, and history — so you can work smarter
         </p>
       </div>

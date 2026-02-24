@@ -102,7 +102,7 @@ export function VendorInvoiceMatcher({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-stone-600" />
+            <FileText className="h-5 w-5 text-stone-400" />
             Invoice Matcher
           </CardTitle>
           <Badge variant={invoice.status === 'matched' ? 'success' : 'default'}>
@@ -113,34 +113,33 @@ export function VendorInvoiceMatcher({
           {invoice.vendorName && <span>Vendor: {invoice.vendorName}</span>}
           <span>Invoice #{invoice.invoiceNumber}</span>
           <span>{new Date(invoice.invoiceDate).toLocaleDateString()}</span>
-          <span className="font-medium text-stone-700">
+          <span className="font-medium text-stone-300">
             Total: {formatMoney(invoice.totalCents)}
           </span>
         </div>
       </CardHeader>
 
       <CardContent className="p-0">
-        <div className="divide-y divide-stone-100">
+        <div className="divide-y divide-stone-800">
           {invoice.items.map((item) => {
             const matchedId = matches[item.id]
             const knownPrice = matchedId
               ? knownPrices.find((kp) => kp.ingredientId === matchedId)
               : null
             const hasPriceChange =
-              item.priceChanged ||
-              (knownPrice && knownPrice.lastPriceCents !== item.unitPriceCents)
+              item.priceChanged || (knownPrice && knownPrice.lastPriceCents !== item.unitPriceCents)
 
             return (
               <div
                 key={item.id}
                 className={`px-6 py-4 grid grid-cols-1 lg:grid-cols-2 gap-4 ${
-                  hasPriceChange ? 'bg-amber-50/50' : ''
+                  hasPriceChange ? 'bg-amber-950/50' : ''
                 }`}
               >
                 {/* Left side: Invoice item details */}
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-stone-900">{item.itemName}</span>
+                    <span className="font-medium text-stone-100">{item.itemName}</span>
                     {hasPriceChange && (
                       <Badge variant="warning">
                         <AlertTriangle className="h-3 w-3 mr-1" />
@@ -157,14 +156,14 @@ export function VendorInvoiceMatcher({
                   <div className="flex gap-4 text-sm text-stone-500">
                     <span>Qty: {item.quantity}</span>
                     <span>Unit: {formatMoney(item.unitPriceCents)}</span>
-                    <span className="font-medium text-stone-700">
+                    <span className="font-medium text-stone-300">
                       Line Total: {formatMoney(item.totalCents)}
                     </span>
                   </div>
                   {hasPriceChange && knownPrice && (
                     <p className="mt-1 text-xs text-amber-700">
-                      Previous price: {formatMoney(knownPrice.lastPriceCents)} per unit
-                      {' '}({item.unitPriceCents > knownPrice.lastPriceCents ? '+' : ''}
+                      Previous price: {formatMoney(knownPrice.lastPriceCents)} per unit (
+                      {item.unitPriceCents > knownPrice.lastPriceCents ? '+' : ''}
                       {formatMoney(item.unitPriceCents - knownPrice.lastPriceCents)})
                     </p>
                   )}
@@ -206,9 +205,7 @@ export function VendorInvoiceMatcher({
           {matchedCount} of {totalItems} items matched
         </p>
         <div className="flex items-center gap-3">
-          {saved && (
-            <span className="text-sm text-emerald-600">Matches saved.</span>
-          )}
+          {saved && <span className="text-sm text-emerald-600">Matches saved.</span>}
           <Button
             variant="primary"
             onClick={handleSave}

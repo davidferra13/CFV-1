@@ -86,25 +86,25 @@ export function VersionHistory({ versions, entityType, entityId }: VersionHistor
                 <div
                   key={version.id}
                   className={`flex items-center gap-3 rounded-lg p-3 transition-colors ${
-                    isCurrent
-                      ? 'bg-brand-50 border border-brand-200'
-                      : 'hover:bg-stone-50'
+                    isCurrent ? 'bg-brand-950 border border-brand-700' : 'hover:bg-stone-800'
                   }`}
                 >
                   {/* Timeline indicator */}
                   <div className="flex flex-col items-center flex-shrink-0">
-                    <div className={`w-3 h-3 rounded-full ${
-                      isCurrent ? 'bg-brand-600' : 'bg-stone-300'
-                    }`} />
+                    <div
+                      className={`w-3 h-3 rounded-full ${
+                        isCurrent ? 'bg-brand-600' : 'bg-stone-300'
+                      }`}
+                    />
                     {index < sortedVersions.length - 1 && (
-                      <div className="w-px h-6 bg-stone-200 mt-1" />
+                      <div className="w-px h-6 bg-stone-700 mt-1" />
                     )}
                   </div>
 
                   {/* Version info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-stone-900">
+                      <span className="text-sm font-medium text-stone-100">
                         Version {version.versionNumber}
                       </span>
                       {isLatest && <Badge variant="success">Latest</Badge>}

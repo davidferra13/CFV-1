@@ -57,9 +57,9 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
   }
 
   const POTENTIAL_COLORS: Record<string, string> = {
-    high: 'bg-green-100 text-green-700',
-    medium: 'bg-amber-100 text-amber-700',
-    low: 'bg-stone-100 text-stone-600',
+    high: 'bg-green-900 text-green-700',
+    medium: 'bg-amber-900 text-amber-700',
+    low: 'bg-stone-800 text-stone-400',
   }
 
   const hasData =
@@ -74,11 +74,11 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
 
   if (!editing) {
     return (
-      <div className="rounded-lg border border-stone-200 overflow-hidden">
-        <div className="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+      <div className="rounded-lg border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium text-stone-800">Chef&apos;s Internal Assessment</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-500 font-medium">
+            <h3 className="font-medium text-stone-200">Chef&apos;s Internal Assessment</h3>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-stone-700 text-stone-500 font-medium">
               Chef Only
             </span>
           </div>
@@ -103,7 +103,7 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
               </div>
             )}
             {redFlags && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+              <div className="bg-red-950 border border-red-200 rounded-lg p-3">
                 <span className="text-xs font-medium text-red-700 uppercase">Red Flags</span>
                 <p className="text-sm text-red-800 mt-1">{redFlags}</p>
               </div>
@@ -112,37 +112,37 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
               {paymentBehavior && (
                 <>
                   <span className="text-stone-500">Payment Behavior</span>
-                  <span className="text-stone-800">{paymentBehavior}</span>
+                  <span className="text-stone-200">{paymentBehavior}</span>
                 </>
               )}
               {tippingPattern && (
                 <>
                   <span className="text-stone-500">Tipping Pattern</span>
-                  <span className="text-stone-800">{tippingPattern}</span>
+                  <span className="text-stone-200">{tippingPattern}</span>
                 </>
               )}
               {wowFactors && (
                 <>
                   <span className="text-stone-500">Wow Factors</span>
-                  <span className="text-stone-800">{wowFactors}</span>
+                  <span className="text-stone-200">{wowFactors}</span>
                 </>
               )}
               {farewellStyle && (
                 <>
                   <span className="text-stone-500">Farewell Style</span>
-                  <span className="text-stone-800">{farewellStyle}</span>
+                  <span className="text-stone-200">{farewellStyle}</span>
                 </>
               )}
               {complaintHandling && (
                 <>
                   <span className="text-stone-500">Complaint Handling</span>
-                  <span className="text-stone-800">{complaintHandling}</span>
+                  <span className="text-stone-200">{complaintHandling}</span>
                 </>
               )}
               {acquisitionCost && (
                 <>
                   <span className="text-stone-500">Acquisition Cost</span>
-                  <span className="text-stone-800">${acquisitionCost}</span>
+                  <span className="text-stone-200">${acquisitionCost}</span>
                 </>
               )}
             </div>
@@ -157,12 +157,12 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-brand-200 overflow-hidden">
-      <div className="px-4 py-3 bg-brand-50 border-b border-brand-200">
-        <h3 className="font-medium text-stone-800">Chef&apos;s Internal Assessment</h3>
+    <div className="rounded-lg border border-brand-700 overflow-hidden">
+      <div className="px-4 py-3 bg-brand-950 border-b border-brand-700">
+        <h3 className="font-medium text-stone-200">Chef&apos;s Internal Assessment</h3>
       </div>
       <div className="p-4 space-y-4">
-        <p className="text-xs text-stone-500 bg-stone-50 rounded-lg p-3">
+        <p className="text-xs text-stone-500 bg-stone-800 rounded-lg p-3">
           Clients will never see this information. This is strictly for your internal business
           intelligence.
         </p>

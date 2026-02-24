@@ -29,8 +29,8 @@ export default async function IncidentsPage({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">System Incidents</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">System Incidents</h1>
+        <p className="text-stone-400 mt-1">
           Automatic failure reports from Ollama, the task queue, circuit breakers, and health
           checks. Only real problems show up here — retries and expected offline states are filtered
           out.

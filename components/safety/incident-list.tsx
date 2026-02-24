@@ -64,7 +64,7 @@ export function IncidentList({ incidents }: { incidents: Incident[] }) {
                     {format(new Date(incident.incident_date), 'MMM d, yyyy h:mm a')}
                   </span>
                 </div>
-                <p className="text-sm text-stone-700 line-clamp-2">{incident.description}</p>
+                <p className="text-sm text-stone-300 line-clamp-2">{incident.description}</p>
               </div>
               <Link href={`/safety/incidents/${incident.id}`}>
                 <Button variant="ghost" size="sm">

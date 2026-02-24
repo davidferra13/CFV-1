@@ -18,8 +18,8 @@ export default async function ProposalsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Proposals</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">Proposals</h1>
+          <p className="text-stone-400 mt-1">
             Manage your proposal templates and add-on packages for client presentations.
           </p>
         </div>
@@ -52,7 +52,8 @@ export default async function ProposalsPage() {
             </CardHeader>
             <CardContent className="p-0">
               <p className="text-sm text-stone-500">
-                Create upsell options like premium wine pairings, extra courses, or tableside experiences.
+                Create upsell options like premium wine pairings, extra courses, or tableside
+                experiences.
               </p>
             </CardContent>
           </Card>
@@ -67,11 +68,12 @@ export default async function ProposalsPage() {
         {(templates as any[]).length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-stone-500 text-sm">
-              No proposal templates yet. Create your first template to start sending polished proposals.
+              No proposal templates yet. Create your first template to start sending polished
+              proposals.
             </p>
             <Link
               href="/proposals/templates"
-              className="inline-block mt-4 text-sm text-brand-600 hover:text-brand-700 font-medium"
+              className="inline-block mt-4 text-sm text-brand-600 hover:text-brand-400 font-medium"
             >
               Create your first template
             </Link>
@@ -81,7 +83,7 @@ export default async function ProposalsPage() {
             {(templates as any[]).map((template: any) => (
               <Link key={template.id} href={`/proposals/templates?edit=${template.id}`}>
                 <Card className="p-4 hover:shadow-md transition-shadow cursor-pointer h-full">
-                  <h3 className="font-semibold text-stone-900 mb-1">
+                  <h3 className="font-semibold text-stone-100 mb-1">
                     {template.name || 'Untitled Template'}
                   </h3>
                   {template.description && (

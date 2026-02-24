@@ -40,7 +40,7 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
   return (
     <div className="space-y-6">
       {/* Disclaimer */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-blue-200 bg-blue-950">
         <CardContent className="py-3">
           <p className="text-sm text-blue-800 font-medium">Reference Report Only</p>
           <p className="text-xs text-blue-700 mt-1">
@@ -56,7 +56,7 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Total Contractors</p>
-            <p className="text-2xl font-semibold text-stone-900">{summary.totalContractors}</p>
+            <p className="text-2xl font-semibold text-stone-100">{summary.totalContractors}</p>
           </CardContent>
         </Card>
         <Card>
@@ -78,7 +78,7 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Total NEC Paid</p>
-            <p className="text-2xl font-semibold text-stone-900">
+            <p className="text-2xl font-semibold text-stone-100">
               {formatCents(summary.totalNecCents)}
             </p>
           </CardContent>
@@ -87,7 +87,7 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
 
       {/* Missing W-9 Alert */}
       {summary.missingW9Count > 0 && (
-        <Card className="border-red-200 bg-red-50">
+        <Card className="border-red-200 bg-red-950">
           <CardContent className="py-3">
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 shrink-0" />
@@ -133,7 +133,7 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200">
+              <tr className="border-b border-stone-700">
                 <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">
                   Recipient
                 </th>
@@ -154,11 +154,11 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-stone-800">
               {reports.map((r) => (
                 <tr key={r.staffMemberId}>
                   <td className="px-6 py-3">
-                    <p className="font-medium text-stone-900">{r.recipientName}</p>
+                    <p className="font-medium text-stone-100">{r.recipientName}</p>
                     {r.recipientBusinessName && (
                       <p className="text-xs text-stone-500">{r.recipientBusinessName}</p>
                     )}
@@ -166,10 +166,10 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
                       {r.paymentCount} payment{r.paymentCount !== 1 ? 's' : ''}
                     </p>
                   </td>
-                  <td className="px-6 py-3 text-stone-600 text-xs max-w-xs truncate">
+                  <td className="px-6 py-3 text-stone-400 text-xs max-w-xs truncate">
                     {r.recipientAddress}
                   </td>
-                  <td className="px-6 py-3 font-mono text-xs text-stone-600">
+                  <td className="px-6 py-3 font-mono text-xs text-stone-400">
                     {r.recipientTinDisplay}
                     {r.recipientTinType && (
                       <span className="ml-1 font-sans text-stone-400">
@@ -177,7 +177,7 @@ export function Form1099NecPanel({ reports, summary, taxYear }: Props) {
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-3 text-right font-medium text-stone-900">
+                  <td className="px-6 py-3 text-right font-medium text-stone-100">
                     {formatCents(r.box1NecCents)}
                   </td>
                   <td className="px-6 py-3 text-center">

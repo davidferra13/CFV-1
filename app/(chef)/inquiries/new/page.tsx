@@ -10,13 +10,13 @@ import { InquiryForm } from '@/components/inquiries/inquiry-form'
 export default async function NewInquiryPage() {
   await requireChef()
 
-  const [clients, partners] = await Promise.all([
-    getClients(),
-    getPartners({ status: 'active' }),
-  ])
+  const [clients, partners] = await Promise.all([getClients(), getPartners({ status: 'active' })])
 
   // Build partner locations map for cascading dropdown
-  const partnerLocations: Record<string, { id: string; name: string; city: string | null; state: string | null }[]> = {}
+  const partnerLocations: Record<
+    string,
+    { id: string; name: string; city: string | null; state: string | null }[]
+  > = {}
   for (const partner of partners) {
     if (partner.partner_locations && partner.partner_locations.length > 0) {
       partnerLocations[partner.id] = partner.partner_locations
@@ -33,15 +33,15 @@ export default async function NewInquiryPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Log New Inquiry</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Log New Inquiry</h1>
+        <p className="text-stone-400 mt-1">
           Capture the lead now, fill in details later. Only channel and name are required.
         </p>
       </div>
 
       <InquiryForm
         clients={clients}
-        partners={partners.map(p => ({ id: p.id, name: p.name, partner_type: p.partner_type }))}
+        partners={partners.map((p) => ({ id: p.id, name: p.name, partner_type: p.partner_type }))}
         partnerLocations={partnerLocations}
       />
     </div>

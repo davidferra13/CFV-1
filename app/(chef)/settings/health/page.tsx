@@ -24,16 +24,16 @@ interface HealthCheck {
 }
 
 const STATUS_COLORS: Record<StatusLevel, string> = {
-  ok: 'text-emerald-700 bg-emerald-50 border-emerald-200',
-  warning: 'text-amber-700 bg-amber-50 border-amber-200',
-  error: 'text-red-700 bg-red-50 border-red-200',
-  unknown: 'text-stone-500 bg-stone-50 border-stone-200',
+  ok: 'text-emerald-700 bg-emerald-950 border-emerald-200',
+  warning: 'text-amber-700 bg-amber-950 border-amber-200',
+  error: 'text-red-700 bg-red-950 border-red-200',
+  unknown: 'text-stone-500 bg-stone-800 border-stone-700',
 }
 
 const STATUS_DOT: Record<StatusLevel, string> = {
-  ok: 'bg-emerald-500',
-  warning: 'bg-amber-500 animate-pulse',
-  error: 'bg-red-500 animate-pulse',
+  ok: 'bg-emerald-9500',
+  warning: 'bg-amber-9500 animate-pulse',
+  error: 'bg-red-9500 animate-pulse',
   unknown: 'bg-stone-400',
 }
 
@@ -222,10 +222,10 @@ export default async function SystemHealthPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-300">
           ← Settings
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">System Health</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">System Health</h1>
         <p className="text-stone-500 mt-1">
           Connection and service status for your ChefFlow account
         </p>

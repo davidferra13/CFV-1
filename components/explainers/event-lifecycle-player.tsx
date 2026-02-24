@@ -10,7 +10,7 @@ import { EventLifecycleComposition } from '@/lib/remotion/event-lifecycle-compos
 
 export function EventLifecyclePlayer() {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={EventLifecycleComposition}
         compositionWidth={640}

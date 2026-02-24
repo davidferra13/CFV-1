@@ -56,7 +56,16 @@ export function AddressManager({
     const updated = [...addresses, form]
     await handleSave(updated)
     setIsAdding(false)
-    setForm({ label: '', address: '', city: '', state: '', zip: '', access_instructions: '', kitchen_notes: '', equipment_available: [] })
+    setForm({
+      label: '',
+      address: '',
+      city: '',
+      state: '',
+      zip: '',
+      access_instructions: '',
+      kitchen_notes: '',
+      equipment_available: [],
+    })
   }
 
   async function handleRemove(index: number) {
@@ -78,20 +87,28 @@ export function AddressManager({
       </CardHeader>
       <CardContent>
         {addresses.length === 0 && !isAdding && (
-          <p className="text-sm text-stone-500">No additional addresses. Add locations like parents&apos; house, vacation home, or other venues.</p>
+          <p className="text-sm text-stone-500">
+            No additional addresses. Add locations like parents&apos; house, vacation home, or other
+            venues.
+          </p>
         )}
 
         {addresses.length > 0 && (
           <div className="space-y-3 mb-4">
             {addresses.map((addr, i) => (
-              <div key={i} className="flex items-start justify-between py-3 border-b border-stone-100 last:border-0">
+              <div
+                key={i}
+                className="flex items-start justify-between py-3 border-b border-stone-800 last:border-0"
+              >
                 <div>
-                  <span className="text-sm font-medium text-stone-900">{addr.label}</span>
+                  <span className="text-sm font-medium text-stone-100">{addr.label}</span>
                   <p className="text-xs text-stone-500 mt-0.5">
                     {[addr.address, addr.city, addr.state, addr.zip].filter(Boolean).join(', ')}
                   </p>
                   {addr.access_instructions && (
-                    <p className="text-xs text-stone-500 mt-0.5">Access: {addr.access_instructions}</p>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      Access: {addr.access_instructions}
+                    </p>
                   )}
                   {addr.kitchen_notes && (
                     <p className="text-xs text-stone-500 mt-0.5">Kitchen: {addr.kitchen_notes}</p>
@@ -112,42 +129,78 @@ export function AddressManager({
         )}
 
         {isAdding && (
-          <div className="space-y-3 border rounded-lg p-4 bg-stone-50">
+          <div className="space-y-3 border rounded-lg p-4 bg-stone-800">
             <div>
-              <label className="text-xs font-medium text-stone-600">Label</label>
-              <Input placeholder="e.g., Parents' house, Vacation home" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
+              <label className="text-xs font-medium text-stone-400">Label</label>
+              <Input
+                placeholder="e.g., Parents' house, Vacation home"
+                value={form.label}
+                onChange={(e) => setForm({ ...form, label: e.target.value })}
+              />
             </div>
             <div>
-              <label className="text-xs font-medium text-stone-600">Address</label>
-              <Input placeholder="Street address" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+              <label className="text-xs font-medium text-stone-400">Address</label>
+              <Input
+                placeholder="Street address"
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+              />
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="text-xs font-medium text-stone-600">City</label>
-                <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+                <label className="text-xs font-medium text-stone-400">City</label>
+                <Input
+                  value={form.city}
+                  onChange={(e) => setForm({ ...form, city: e.target.value })}
+                />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">State</label>
-                <Input value={form.state} onChange={(e) => setForm({ ...form, state: e.target.value })} />
+                <label className="text-xs font-medium text-stone-400">State</label>
+                <Input
+                  value={form.state}
+                  onChange={(e) => setForm({ ...form, state: e.target.value })}
+                />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">ZIP</label>
-                <Input value={form.zip} onChange={(e) => setForm({ ...form, zip: e.target.value })} />
+                <label className="text-xs font-medium text-stone-400">ZIP</label>
+                <Input
+                  value={form.zip}
+                  onChange={(e) => setForm({ ...form, zip: e.target.value })}
+                />
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-stone-600">Access Instructions</label>
-              <Textarea placeholder="Gate code, parking, entry notes..." value={form.access_instructions} onChange={(e) => setForm({ ...form, access_instructions: e.target.value })} rows={2} />
+              <label className="text-xs font-medium text-stone-400">Access Instructions</label>
+              <Textarea
+                placeholder="Gate code, parking, entry notes..."
+                value={form.access_instructions}
+                onChange={(e) => setForm({ ...form, access_instructions: e.target.value })}
+                rows={2}
+              />
             </div>
             <div>
-              <label className="text-xs font-medium text-stone-600">Kitchen Notes</label>
-              <Textarea placeholder="Kitchen size, constraints, what's available..." value={form.kitchen_notes} onChange={(e) => setForm({ ...form, kitchen_notes: e.target.value })} rows={2} />
+              <label className="text-xs font-medium text-stone-400">Kitchen Notes</label>
+              <Textarea
+                placeholder="Kitchen size, constraints, what's available..."
+                value={form.kitchen_notes}
+                onChange={(e) => setForm({ ...form, kitchen_notes: e.target.value })}
+                rows={2}
+              />
             </div>
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleAdd} disabled={saving || !form.label || !form.address}>
+              <Button
+                size="sm"
+                onClick={handleAdd}
+                disabled={saving || !form.label || !form.address}
+              >
                 {saving ? 'Saving...' : 'Add Address'}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setIsAdding(false)} disabled={saving}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAdding(false)}
+                disabled={saving}
+              >
                 Cancel
               </Button>
             </div>

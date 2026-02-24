@@ -43,7 +43,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
   // All caught up — show a quiet success state
   if (components.length === 0) {
     return (
-      <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+      <div className="flex items-center gap-3 bg-green-950 border border-green-200 rounded-lg px-4 py-3">
         <BookOpen className="h-5 w-5 text-emerald-600 shrink-0" />
         <p className="text-sm font-medium text-green-900">All recipes recorded for this event</p>
       </div>
@@ -110,7 +110,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-amber-50 hover:bg-amber-100 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3 bg-amber-950 hover:bg-amber-900 transition-colors"
       >
         <div className="flex items-center gap-2">
           <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
@@ -138,7 +138,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
 
       {/* Expanded list of unrecorded components */}
       {expanded && (
-        <div className="bg-white border-t border-amber-200 p-4 space-y-3">
+        <div className="bg-surface border-t border-amber-200 p-4 space-y-3">
           {error && <Alert variant="error">{error}</Alert>}
           {success && <Alert variant="success">{success}</Alert>}
 
@@ -147,10 +147,10 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
           </p>
 
           {components.map((comp) => (
-            <div key={comp.id} className="border border-stone-200 rounded-lg p-3">
+            <div key={comp.id} className="border border-stone-700 rounded-lg p-3">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-medium text-stone-900 truncate">{comp.name}</span>
+                  <span className="font-medium text-stone-100 truncate">{comp.name}</span>
                   {comp.category && <Badge variant="default">{comp.category}</Badge>}
                 </div>
                 <div className="flex gap-2 shrink-0">

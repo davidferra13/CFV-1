@@ -15,8 +15,18 @@ type Props = {
 }
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -39,18 +49,26 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
         }
       })
       .catch(() => {})
-      .finally(() => { if (!cancelled) setLoading(false) })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
 
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [chefSlug, year, month])
 
   function prevMonth() {
-    if (month === 1) { setYear(y => y - 1); setMonth(12) }
-    else setMonth(m => m - 1)
+    if (month === 1) {
+      setYear((y) => y - 1)
+      setMonth(12)
+    } else setMonth((m) => m - 1)
   }
   function nextMonth() {
-    if (month === 12) { setYear(y => y + 1); setMonth(1) }
-    else setMonth(m => m + 1)
+    if (month === 12) {
+      setYear((y) => y + 1)
+      setMonth(1)
+    } else setMonth((m) => m + 1)
   }
 
   // Build calendar grid
@@ -70,19 +88,19 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
         <button
           type="button"
           onClick={prevMonth}
-          className="p-1.5 rounded-md hover:bg-stone-100 text-stone-600"
+          className="p-1.5 rounded-md hover:bg-stone-700 text-stone-400"
           aria-label="Previous month"
         >
           ←
         </button>
-        <span className="text-sm font-semibold text-stone-900">
+        <span className="text-sm font-semibold text-stone-100">
           {MONTH_NAMES[month - 1]} {year}
           {loading && <span className="ml-2 text-xs text-stone-400">Loading…</span>}
         </span>
         <button
           type="button"
           onClick={nextMonth}
-          className="p-1.5 rounded-md hover:bg-stone-100 text-stone-600"
+          className="p-1.5 rounded-md hover:bg-stone-700 text-stone-400"
           aria-label="Next month"
         >
           →
@@ -92,7 +110,9 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
       {/* Weekday headers */}
       <div className="grid grid-cols-7 text-center">
         {DOW.map((d) => (
-          <div key={d} className="text-[11px] font-semibold text-stone-400 py-1">{d}</div>
+          <div key={d} className="text-[11px] font-semibold text-stone-400 py-1">
+            {d}
+          </div>
         ))}
       </div>
 
@@ -104,24 +124,25 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
           const status: DateStatus = availability[dateStr] ?? 'loading'
           const isSelected = dateStr === selectedDate
 
-          const base = 'aspect-square flex items-center justify-center text-sm rounded-lg transition-all font-medium'
+          const base =
+            'aspect-square flex items-center justify-center text-sm rounded-lg transition-all font-medium'
 
           let cls = base
           let clickable = false
 
           if (isSelected) {
-            cls += ' bg-brand-600 text-white ring-2 ring-brand-300'
+            cls += ' bg-brand-600 text-white ring-2 ring-brand-600'
             clickable = true
           } else if (status === 'available') {
-            cls += ' bg-green-100 text-green-800 hover:bg-green-200 cursor-pointer'
+            cls += ' bg-green-900 text-green-800 hover:bg-green-200 cursor-pointer'
             clickable = true
           } else if (status === 'blocked') {
-            cls += ' bg-stone-100 text-stone-300 cursor-not-allowed'
+            cls += ' bg-stone-800 text-stone-300 cursor-not-allowed'
           } else if (status === 'unavailable') {
-            cls += ' bg-stone-50 text-stone-300 cursor-not-allowed'
+            cls += ' bg-stone-800 text-stone-300 cursor-not-allowed'
           } else {
             // loading / unknown
-            cls += ' bg-stone-50 text-stone-300'
+            cls += ' bg-stone-800 text-stone-300'
           }
 
           return (
@@ -132,9 +153,11 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
               disabled={!clickable}
               onClick={() => clickable && onSelectDate(dateStr)}
               title={
-                status === 'unavailable' ? 'Too soon — insufficient notice'
-                : status === 'blocked' ? 'Not available'
-                : undefined
+                status === 'unavailable'
+                  ? 'Too soon — insufficient notice'
+                  : status === 'blocked'
+                    ? 'Not available'
+                    : undefined
               }
             >
               {day}
@@ -149,7 +172,7 @@ export function BookingCalendar({ chefSlug, onSelectDate, selectedDate }: Props)
           <span className="w-3 h-3 rounded bg-green-200" /> Available
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-stone-200" /> Unavailable
+          <span className="w-3 h-3 rounded bg-stone-700" /> Unavailable
         </span>
       </div>
     </div>

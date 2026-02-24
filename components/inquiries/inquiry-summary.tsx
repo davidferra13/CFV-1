@@ -126,7 +126,7 @@ function FactItem({
       </div>
       <p
         className={`text-sm font-medium leading-snug ${
-          empty ? 'text-stone-400 italic' : 'text-stone-900'
+          empty ? 'text-stone-400 italic' : 'text-stone-100'
         }`}
       >
         {value}
@@ -156,13 +156,13 @@ export function InquirySummary({ data, variant }: Props) {
   return (
     <div className="space-y-4">
       {/* ── Hero card ────────────────────────────────────────────── */}
-      <Card className="overflow-hidden border-stone-200">
+      <Card className="overflow-hidden border-stone-700">
         {/* Subtle gradient top strip */}
         <div className="h-1 w-full bg-gradient-to-r from-brand-400 via-brand-500 to-brand-600" />
         <div className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <h2 className="text-2xl font-bold text-stone-900 leading-tight">
+              <h2 className="text-2xl font-bold text-stone-100 leading-tight">
                 {data.confirmed_occasion || 'Catering Inquiry'}
               </h2>
               <div className="flex items-center gap-2 mt-2.5 flex-wrap">
@@ -171,7 +171,7 @@ export function InquirySummary({ data, variant }: Props) {
                   <InquiryChannelBadge channel={data.channel} />
                 )}
                 {data.converted_to_event_id && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-700 border border-emerald-200">
                     Booked
                   </span>
                 )}
@@ -205,18 +205,14 @@ export function InquirySummary({ data, variant }: Props) {
           <FactItem
             label="Date"
             value={
-              data.confirmed_date
-                ? format(new Date(data.confirmed_date), 'MMM d, yyyy')
-                : 'TBD'
+              data.confirmed_date ? format(new Date(data.confirmed_date), 'MMM d, yyyy') : 'TBD'
             }
             icon={<Calendar className="w-3.5 h-3.5" />}
             empty={!data.confirmed_date}
           />
           <FactItem
             label="Guests"
-            value={
-              data.confirmed_guest_count ? `${data.confirmed_guest_count} guests` : 'TBD'
-            }
+            value={data.confirmed_guest_count ? `${data.confirmed_guest_count} guests` : 'TBD'}
             icon={<Users className="w-3.5 h-3.5" />}
             empty={!data.confirmed_guest_count}
           />
@@ -230,9 +226,7 @@ export function InquirySummary({ data, variant }: Props) {
             <FactItem
               label="Budget"
               value={
-                data.confirmed_budget_cents
-                  ? formatCurrency(data.confirmed_budget_cents)
-                  : 'TBD'
+                data.confirmed_budget_cents ? formatCurrency(data.confirmed_budget_cents) : 'TBD'
               }
               icon={<DollarSign className="w-3.5 h-3.5" />}
               empty={!data.confirmed_budget_cents}
@@ -258,19 +252,17 @@ export function InquirySummary({ data, variant }: Props) {
                   <div className="flex flex-col items-center shrink-0">
                     <div className="w-2.5 h-2.5 rounded-full bg-stone-300 mt-0.5" />
                     {i < data.transitions.length - 1 && (
-                      <div className="w-px flex-1 bg-stone-200 mt-1 min-h-[16px]" />
+                      <div className="w-px flex-1 bg-stone-700 mt-1 min-h-[16px]" />
                     )}
                   </div>
                   <div className="pb-1">
-                    <p className="text-sm font-medium text-stone-800 capitalize">
+                    <p className="text-sm font-medium text-stone-200 capitalize">
                       {t.to_status.replace(/_/g, ' ')}
                     </p>
                     <p className="text-xs text-stone-400 mt-0.5">
                       {format(new Date(t.transitioned_at), 'MMM d, yyyy')}
                     </p>
-                    {t.reason && (
-                      <p className="text-xs text-stone-500 mt-0.5">{t.reason}</p>
-                    )}
+                    {t.reason && <p className="text-xs text-stone-500 mt-0.5">{t.reason}</p>}
                   </div>
                 </div>
               ))
@@ -281,9 +273,7 @@ export function InquirySummary({ data, variant }: Props) {
           <div className="flex items-start">
             {steps.map((step, i) => {
               const reached = isStepReached(step.status, data.status)
-              const isCurrent = statusInSteps
-                ? data.status === step.status
-                : i === lastReachedIdx
+              const isCurrent = statusInSteps ? data.status === step.status : i === lastReachedIdx
               const isLast = i === steps.length - 1
               const lineAfterFilled =
                 !isLast && getStatusIndex(data.status) > getStatusIndex(step.status)
@@ -296,7 +286,7 @@ export function InquirySummary({ data, variant }: Props) {
                       {i > 0 && (
                         <div
                           className={`flex-1 h-0.5 transition-colors ${
-                            reached ? 'bg-brand-500' : 'bg-stone-200'
+                            reached ? 'bg-brand-9500' : 'bg-stone-700'
                           }`}
                         />
                       )}
@@ -305,14 +295,14 @@ export function InquirySummary({ data, variant }: Props) {
                           isCurrent
                             ? 'bg-brand-600 border-brand-600 ring-2 ring-brand-100'
                             : reached
-                            ? 'bg-brand-500 border-brand-500'
-                            : 'bg-white border-stone-300'
+                              ? 'bg-brand-9500 border-brand-500'
+                              : 'bg-surface border-stone-600'
                         }`}
                       />
                       {!isLast && (
                         <div
                           className={`flex-1 h-0.5 transition-colors ${
-                            lineAfterFilled ? 'bg-brand-500' : 'bg-stone-200'
+                            lineAfterFilled ? 'bg-brand-9500' : 'bg-stone-700'
                           }`}
                         />
                       )}
@@ -321,10 +311,10 @@ export function InquirySummary({ data, variant }: Props) {
                     <p
                       className={`mt-2 text-center text-[10px] leading-tight px-0.5 ${
                         isCurrent
-                          ? 'text-brand-700 font-semibold'
+                          ? 'text-brand-400 font-semibold'
                           : reached
-                          ? 'text-stone-600 font-medium'
-                          : 'text-stone-400'
+                            ? 'text-stone-400 font-medium'
+                            : 'text-stone-400'
                       }`}
                     >
                       {step.label}
@@ -355,7 +345,7 @@ export function InquirySummary({ data, variant }: Props) {
                     {data.confirmed_dietary_restrictions.map((r) => (
                       <span
                         key={r}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-800 border border-amber-200"
                       >
                         {r}
                       </span>
@@ -366,7 +356,7 @@ export function InquirySummary({ data, variant }: Props) {
             {data.confirmed_service_expectations && (
               <div>
                 <p className="text-xs font-medium text-stone-500 mb-1">Service Expectations</p>
-                <p className="text-sm text-stone-700 leading-relaxed">
+                <p className="text-sm text-stone-300 leading-relaxed">
                   {data.confirmed_service_expectations}
                 </p>
               </div>
@@ -386,19 +376,19 @@ export function InquirySummary({ data, variant }: Props) {
               <Link
                 key={quote.id}
                 href={variant === 'chef' ? `/quotes/${quote.id}` : `/my-quotes/${quote.id}`}
-                className="flex items-center justify-between p-3 rounded-lg border border-stone-200 hover:bg-stone-50 hover:border-stone-300 transition-colors group"
+                className="flex items-center justify-between p-3 rounded-lg border border-stone-700 hover:bg-stone-800 hover:border-stone-600 transition-colors group"
               >
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-sm font-medium text-stone-900 truncate">
+                  <span className="text-sm font-medium text-stone-100 truncate">
                     {quote.quote_name || 'Quote'}
                   </span>
                   <QuoteStatusBadge status={quote.status as QuoteStatus} />
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-sm font-semibold text-stone-900">
+                  <span className="text-sm font-semibold text-stone-100">
                     {formatCurrency(quote.total_quoted_cents)}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-stone-600 transition-colors" />
+                  <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-stone-400 transition-colors" />
                 </div>
               </Link>
             ))}
@@ -415,8 +405,8 @@ export function InquirySummary({ data, variant }: Props) {
               Original Message
             </p>
           </div>
-          <blockquote className="border-l-4 border-brand-200 pl-4 py-2 pr-2 bg-stone-50 rounded-r-lg">
-            <p className="text-sm text-stone-700 whitespace-pre-wrap leading-relaxed">
+          <blockquote className="border-l-4 border-brand-700 pl-4 py-2 pr-2 bg-stone-800 rounded-r-lg">
+            <p className="text-sm text-stone-300 whitespace-pre-wrap leading-relaxed">
               {data.source_message}
             </p>
           </blockquote>

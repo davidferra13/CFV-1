@@ -62,7 +62,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                       ? 'bg-emerald-500 border-emerald-500 text-white'
                       : step.isCurrent
                         ? 'bg-brand-600 border-brand-600 text-white animate-pulse'
-                        : 'bg-white border-stone-300 text-stone-300'
+                        : 'bg-surface border-stone-600 text-stone-300'
                   }`}
                 >
                   {step.completedAt && !step.isFuture ? (
@@ -78,8 +78,8 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                     step.isFuture
                       ? 'text-stone-400'
                       : step.isCurrent
-                        ? 'text-brand-700'
-                        : 'text-stone-700'
+                        ? 'text-brand-400'
+                        : 'text-stone-300'
                   }`}
                 >
                   {step.label}
@@ -116,7 +116,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                       ? 'bg-emerald-400'
                       : steps[i + 1].isCurrent
                         ? 'bg-brand-400'
-                        : 'bg-stone-200'
+                        : 'bg-stone-700'
                   }`}
                 />
               )}
@@ -137,7 +137,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                     ? 'bg-emerald-500 border-emerald-500 text-white'
                     : step.isCurrent
                       ? 'bg-brand-600 border-brand-600 text-white animate-pulse'
-                      : 'bg-white border-stone-300 text-stone-300'
+                      : 'bg-surface border-stone-600 text-stone-300'
                 }`}
               >
                 {step.completedAt && !step.isFuture ? (
@@ -153,7 +153,7 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                       ? 'bg-emerald-300'
                       : steps[i + 1].isCurrent
                         ? 'bg-brand-400'
-                        : 'bg-stone-200'
+                        : 'bg-stone-700'
                   }`}
                 />
               )}
@@ -166,8 +166,8 @@ export function EventJourneyStepper({ steps }: { steps: JourneyStep[] }) {
                   step.isFuture
                     ? 'text-stone-400'
                     : step.isCurrent
-                      ? 'text-brand-700'
-                      : 'text-stone-800'
+                      ? 'text-brand-400'
+                      : 'text-stone-200'
                 }`}
               >
                 {step.label}

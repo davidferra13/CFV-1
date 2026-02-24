@@ -9,8 +9,8 @@ export default async function NewPartnerPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Add New Partner</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Add New Partner</h1>
+        <p className="text-stone-400 mt-1">
           Track an Airbnb host, hotel, business, or individual who refers clients to you.
         </p>
       </div>

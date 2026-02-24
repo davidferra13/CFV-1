@@ -10,9 +10,19 @@ import { Select } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
-import { createQuote, updateQuote, type CreateQuoteInput, type UpdateQuoteInput } from '@/lib/quotes/actions'
+import {
+  createQuote,
+  updateQuote,
+  type CreateQuoteInput,
+  type UpdateQuoteInput,
+} from '@/lib/quotes/actions'
 import { parseCurrencyToCents, formatCurrency } from '@/lib/utils/currency'
-import { computePricing, formatCentsAsDollars, type ServiceType, type PricingBreakdown } from '@/lib/pricing/compute'
+import {
+  computePricing,
+  formatCentsAsDollars,
+  type ServiceType,
+  type PricingBreakdown,
+} from '@/lib/pricing/compute'
 import { PricingSuggestionPanel } from '@/components/analytics/pricing-suggestion-panel'
 import type { PricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 
@@ -83,15 +93,19 @@ export function QuoteForm({
   const [quoteName, setQuoteName] = useState(existingQuote?.quote_name || prefilledOccasion || '')
   const [pricingModel, setPricingModel] = useState(existingQuote?.pricing_model || 'flat_rate')
   const [totalAmount, setTotalAmount] = useState(
-    existingQuote ? (existingQuote.total_quoted_cents / 100).toFixed(2) :
-    prefilledBudgetCents ? (prefilledBudgetCents / 100).toFixed(2) : ''
+    existingQuote
+      ? (existingQuote.total_quoted_cents / 100).toFixed(2)
+      : prefilledBudgetCents
+        ? (prefilledBudgetCents / 100).toFixed(2)
+        : ''
   )
   const [pricePerPerson, setPricePerPerson] = useState(
-    existingQuote?.price_per_person_cents ? (existingQuote.price_per_person_cents / 100).toFixed(2) : ''
+    existingQuote?.price_per_person_cents
+      ? (existingQuote.price_per_person_cents / 100).toFixed(2)
+      : ''
   )
   const [guestCount, setGuestCount] = useState(
-    existingQuote?.guest_count_estimated?.toString() ||
-    prefilledGuestCount?.toString() || ''
+    existingQuote?.guest_count_estimated?.toString() || prefilledGuestCount?.toString() || ''
   )
   const [depositRequired, setDepositRequired] = useState(existingQuote?.deposit_required ?? false)
   const [depositAmount, setDepositAmount] = useState(
@@ -231,9 +245,9 @@ export function QuoteForm({
     }
   }
 
-  const clientOptions = clients.map(c => ({
+  const clientOptions = clients.map((c) => ({
     value: c.id,
-    label: `${c.full_name} (${c.email})`
+    label: `${c.full_name} (${c.email})`,
   }))
 
   const pricingModelOptions = [
@@ -246,20 +260,22 @@ export function QuoteForm({
     <div className="space-y-6">
       {/* Pricing History Intelligence */}
       {pricingHistory && pricingHistory.length > 0 && (
-        <Card className="p-6 bg-brand-50 border-brand-200">
-          <h3 className="text-sm font-semibold text-brand-900 mb-3">
-            Client Pricing History ({pricingHistory.length} accepted {pricingHistory.length === 1 ? 'quote' : 'quotes'})
+        <Card className="p-6 bg-brand-950 border-brand-700">
+          <h3 className="text-sm font-semibold text-brand-200 mb-3">
+            Client Pricing History ({pricingHistory.length} accepted{' '}
+            {pricingHistory.length === 1 ? 'quote' : 'quotes'})
           </h3>
           <div className="space-y-2">
             {pricingHistory.slice(0, 3).map((entry) => (
               <div key={entry.id} className="flex justify-between items-center text-sm">
                 <div>
-                  <span className="text-brand-800 font-medium">
+                  <span className="text-brand-300 font-medium">
                     {formatCurrency(entry.total_quoted_cents)}
                   </span>
                   {entry.price_per_person_cents && entry.guest_count_estimated && (
                     <span className="text-brand-600 ml-2">
-                      ({formatCurrency(entry.price_per_person_cents)}/person x {entry.guest_count_estimated})
+                      ({formatCurrency(entry.price_per_person_cents)}/person x{' '}
+                      {entry.guest_count_estimated})
                     </span>
                   )}
                 </div>
@@ -279,27 +295,32 @@ export function QuoteForm({
       <Card className="overflow-hidden">
         <button
           type="button"
-          onClick={() => setCalcOpen(v => !v)}
-          className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-50 transition-colors"
+          onClick={() => setCalcOpen((v) => !v)}
+          className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-800 transition-colors"
         >
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-stone-900">Price Calculator</span>
+            <span className="text-sm font-semibold text-stone-100">Price Calculator</span>
             <span className="text-xs text-stone-500">Auto-fill from your rate sheet</span>
           </div>
           <span className="text-stone-400 text-sm">{calcOpen ? '▲' : '▼'}</span>
         </button>
 
         {calcOpen && (
-          <div className="px-5 pb-5 border-t border-stone-100 space-y-4 pt-4">
+          <div className="px-5 pb-5 border-t border-stone-800 space-y-4 pt-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="calc-service-type" className="text-xs font-medium text-stone-600 block mb-1">Service Type</label>
+                <label
+                  htmlFor="calc-service-type"
+                  className="text-xs font-medium text-stone-400 block mb-1"
+                >
+                  Service Type
+                </label>
                 <select
                   id="calc-service-type"
                   title="Service type"
                   value={calcServiceType}
                   onChange={(e) => setCalcServiceType(e.target.value as ServiceType)}
-                  className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
                   <option value="private_dinner">Private Dinner</option>
                   <option value="pizza_experience">Pizza Experience</option>
@@ -311,13 +332,18 @@ export function QuoteForm({
               </div>
               {calcServiceType === 'private_dinner' && (
                 <div>
-                  <label htmlFor="calc-course-count" className="text-xs font-medium text-stone-600 block mb-1">Courses</label>
+                  <label
+                    htmlFor="calc-course-count"
+                    className="text-xs font-medium text-stone-400 block mb-1"
+                  >
+                    Courses
+                  </label>
                   <select
                     id="calc-course-count"
                     title="Number of courses"
                     value={calcCourseCount}
                     onChange={(e) => setCalcCourseCount(e.target.value)}
-                    className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   >
                     <option value="3">3-course</option>
                     <option value="4">4-course</option>
@@ -329,18 +355,28 @@ export function QuoteForm({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label htmlFor="calc-event-date" className="text-xs font-medium text-stone-600 block mb-1">Event Date</label>
+                <label
+                  htmlFor="calc-event-date"
+                  className="text-xs font-medium text-stone-400 block mb-1"
+                >
+                  Event Date
+                </label>
                 <input
                   id="calc-event-date"
                   type="date"
                   title="Event date for pricing calculation"
                   value={calcEventDate}
                   onChange={(e) => setCalcEventDate(e.target.value)}
-                  className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
               <div>
-                <label htmlFor="calc-distance" className="text-xs font-medium text-stone-600 block mb-1">Distance (miles)</label>
+                <label
+                  htmlFor="calc-distance"
+                  className="text-xs font-medium text-stone-400 block mb-1"
+                >
+                  Distance (miles)
+                </label>
                 <input
                   id="calc-distance"
                   type="number"
@@ -349,7 +385,7 @@ export function QuoteForm({
                   placeholder="0"
                   value={calcDistance}
                   onChange={(e) => setCalcDistance(e.target.value)}
-                  className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
@@ -360,19 +396,23 @@ export function QuoteForm({
                 id="calc-weekend"
                 checked={calcWeekendPremium}
                 onChange={(e) => setCalcWeekendPremium(e.target.checked)}
-                className="rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                className="rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
-              <label htmlFor="calc-weekend" className="text-sm text-stone-700 cursor-pointer">Apply weekend premium (Fri/Sat)</label>
+              <label htmlFor="calc-weekend" className="text-sm text-stone-300 cursor-pointer">
+                Apply weekend premium (Fri/Sat)
+              </label>
             </div>
 
             <div className="space-y-1.5">
               {!guestCount || parseInt(guestCount) <= 0 ? (
-                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-                  Fill in &ldquo;Number of Guests&rdquo; in the main form first — the calculator uses that count.
+                <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
+                  Fill in &ldquo;Number of Guests&rdquo; in the main form first — the calculator
+                  uses that count.
                 </p>
               ) : (
                 <p className="text-xs text-stone-400">
-                  Calculating for {guestCount} guest{parseInt(guestCount) !== 1 ? 's' : ''} (from guest count above)
+                  Calculating for {guestCount} guest{parseInt(guestCount) !== 1 ? 's' : ''} (from
+                  guest count above)
                 </p>
               )}
               <div className="flex items-center gap-3">
@@ -389,46 +429,60 @@ export function QuoteForm({
             </div>
 
             {calcResult && (
-              <div className="rounded-lg bg-stone-50 border border-stone-200 p-4 space-y-2">
+              <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
                 {calcResult.requiresCustomPricing ? (
-                  <p className="text-sm text-amber-700 font-medium">Requires custom pricing — use the notes fields below.</p>
+                  <p className="text-sm text-amber-700 font-medium">
+                    Requires custom pricing — use the notes fields below.
+                  </p>
                 ) : (
                   <>
                     <div className="space-y-1 text-sm">
                       {calcResult.serviceFeeCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-600">Service fee</span>
-                          <span className="font-medium">{formatCentsAsDollars(calcResult.serviceFeeCents)}</span>
+                          <span className="text-stone-400">Service fee</span>
+                          <span className="font-medium">
+                            {formatCentsAsDollars(calcResult.serviceFeeCents)}
+                          </span>
                         </div>
                       )}
                       {calcResult.weekendPremiumCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-600">Weekend premium</span>
-                          <span className="font-medium">+{formatCentsAsDollars(calcResult.weekendPremiumCents)}</span>
+                          <span className="text-stone-400">Weekend premium</span>
+                          <span className="font-medium">
+                            +{formatCentsAsDollars(calcResult.weekendPremiumCents)}
+                          </span>
                         </div>
                       )}
                       {calcResult.holidayPremiumCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-600">{calcResult.holidayName} premium</span>
-                          <span className="font-medium">+{formatCentsAsDollars(calcResult.holidayPremiumCents)}</span>
+                          <span className="text-stone-400">{calcResult.holidayName} premium</span>
+                          <span className="font-medium">
+                            +{formatCentsAsDollars(calcResult.holidayPremiumCents)}
+                          </span>
                         </div>
                       )}
                       {calcResult.nearHolidayPremiumCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-600">Near-holiday ({calcResult.nearHolidayName})</span>
-                          <span className="font-medium">+{formatCentsAsDollars(calcResult.nearHolidayPremiumCents)}</span>
+                          <span className="text-stone-400">
+                            Near-holiday ({calcResult.nearHolidayName})
+                          </span>
+                          <span className="font-medium">
+                            +{formatCentsAsDollars(calcResult.nearHolidayPremiumCents)}
+                          </span>
                         </div>
                       )}
                       {calcResult.travelFeeCents > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-stone-600">Travel</span>
-                          <span className="font-medium">+{formatCentsAsDollars(calcResult.travelFeeCents)}</span>
+                          <span className="text-stone-400">Travel</span>
+                          <span className="font-medium">
+                            +{formatCentsAsDollars(calcResult.travelFeeCents)}
+                          </span>
                         </div>
                       )}
                       {calcResult.minimumApplied && (
                         <div className="text-xs text-amber-700">Minimum booking floor applied</div>
                       )}
-                      <div className="flex justify-between border-t border-stone-200 pt-1 font-semibold text-stone-900">
+                      <div className="flex justify-between border-t border-stone-700 pt-1 font-semibold text-stone-100">
                         <span>Total</span>
                         <span>{formatCentsAsDollars(calcResult.totalServiceCents)}</span>
                       </div>
@@ -437,7 +491,12 @@ export function QuoteForm({
                         <span>{formatCentsAsDollars(calcResult.depositCents)}</span>
                       </div>
                     </div>
-                    <Button type="button" onClick={handleUsePrice} variant="primary" className="w-full mt-2">
+                    <Button
+                      type="button"
+                      onClick={handleUsePrice}
+                      variant="primary"
+                      className="w-full mt-2"
+                    >
                       Use This Price →
                     </Button>
                   </>
@@ -458,12 +517,18 @@ export function QuoteForm({
 
           {/* Inquiry context banner */}
           {prefilledInquiryId && (prefilledOccasion || prefilledEventDate) && (
-            <div className="rounded-lg bg-stone-50 border border-stone-200 px-4 py-3 text-sm text-stone-600">
-              <span className="font-medium text-stone-900">From inquiry: </span>
+            <div className="rounded-lg bg-stone-800 border border-stone-700 px-4 py-3 text-sm text-stone-400">
+              <span className="font-medium text-stone-100">From inquiry: </span>
               {prefilledOccasion && <span>{prefilledOccasion}</span>}
               {prefilledOccasion && prefilledEventDate && <span> · </span>}
               {prefilledEventDate && (
-                <span>{new Date(prefilledEventDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                <span>
+                  {new Date(prefilledEventDate).toLocaleDateString('en-US', {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </span>
               )}
             </div>
           )}
@@ -471,7 +536,7 @@ export function QuoteForm({
           {/* Client Selection (create only) */}
           {!isEditing && (
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-wider">
+              <h3 className="text-sm font-semibold text-stone-100 uppercase tracking-wider">
                 Client
               </h3>
               <Select
@@ -480,14 +545,18 @@ export function QuoteForm({
                 options={clientOptions}
                 value={clientId}
                 onChange={(e) => setClientId(e.target.value)}
-                helperText={prefilledClientId ? 'Pre-selected from inquiry' : 'Select the client for this quote'}
+                helperText={
+                  prefilledClientId
+                    ? 'Pre-selected from inquiry'
+                    : 'Select the client for this quote'
+                }
               />
             </div>
           )}
 
           {/* Quote Details */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-stone-900 uppercase tracking-wider">
+            <h3 className="text-sm font-semibold text-stone-100 uppercase tracking-wider">
               Quote Details
             </h3>
 
@@ -541,29 +610,36 @@ export function QuoteForm({
                 placeholder="e.g., 2500.00"
                 value={totalAmount}
                 onChange={(e) => setTotalAmount(e.target.value)}
-                helperText={pricingModel === 'per_person' ? 'Auto-calculated from per-person x guests' : undefined}
+                helperText={
+                  pricingModel === 'per_person'
+                    ? 'Auto-calculated from per-person x guests'
+                    : undefined
+                }
               />
-              {pricingSuggestion?.status === 'ok' && totalAmount && parseFloat(totalAmount) > 0 && (() => {
-                const enteredCents = Math.round(parseFloat(totalAmount) * 100)
-                const { minCents, medianCents, maxCents } = pricingSuggestion
-                const isAboveMedian = enteredCents >= medianCents
-                const isAboveMin = enteredCents >= minCents
-                const label = isAboveMedian
-                  ? 'Above median — strong pricing'
-                  : isAboveMin
-                  ? 'Below median — consider increasing'
-                  : 'Below typical minimum — check pricing'
-                const colorClass = isAboveMedian
-                  ? 'text-emerald-600'
-                  : isAboveMin
-                  ? 'text-amber-600'
-                  : 'text-red-600'
-                return (
-                  <p className={`text-xs mt-1 font-medium ${colorClass}`}>
-                    {label} · range: {formatCurrency(minCents)}–{formatCurrency(maxCents)}
-                  </p>
-                )
-              })()}
+              {pricingSuggestion?.status === 'ok' &&
+                totalAmount &&
+                parseFloat(totalAmount) > 0 &&
+                (() => {
+                  const enteredCents = Math.round(parseFloat(totalAmount) * 100)
+                  const { minCents, medianCents, maxCents } = pricingSuggestion
+                  const isAboveMedian = enteredCents >= medianCents
+                  const isAboveMin = enteredCents >= minCents
+                  const label = isAboveMedian
+                    ? 'Above median — strong pricing'
+                    : isAboveMin
+                      ? 'Below median — consider increasing'
+                      : 'Below typical minimum — check pricing'
+                  const colorClass = isAboveMedian
+                    ? 'text-emerald-600'
+                    : isAboveMin
+                      ? 'text-amber-600'
+                      : 'text-red-600'
+                  return (
+                    <p className={`text-xs mt-1 font-medium ${colorClass}`}>
+                      {label} · range: {formatCurrency(minCents)}–{formatCurrency(maxCents)}
+                    </p>
+                  )
+                })()}
             </div>
           </div>
 
@@ -578,9 +654,9 @@ export function QuoteForm({
                 type="checkbox"
                 checked={depositRequired}
                 onChange={(e) => setDepositRequired(e.target.checked)}
-                className="rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                className="rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
-              <span className="text-sm text-stone-700">Deposit required</span>
+              <span className="text-sm text-stone-300">Deposit required</span>
             </label>
 
             {depositRequired && (

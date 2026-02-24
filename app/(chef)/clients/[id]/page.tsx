@@ -72,10 +72,10 @@ import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { KitchenProfilePanel } from '@/components/clients/kitchen-profile-panel'
 
 const TIER_COLORS: Record<string, string> = {
-  bronze: 'bg-amber-100 text-amber-800',
-  silver: 'bg-stone-200 text-stone-800',
-  gold: 'bg-yellow-100 text-yellow-800',
-  platinum: 'bg-purple-100 text-purple-800',
+  bronze: 'bg-amber-900 text-amber-800',
+  silver: 'bg-stone-700 text-stone-200',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-purple-900 text-purple-800',
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -169,12 +169,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <div>
           <Link
             href="/clients"
-            className="text-sm text-brand-600 hover:text-brand-700 mb-2 inline-block"
+            className="text-sm text-brand-600 hover:text-brand-400 mb-2 inline-block"
           >
             ← Back to Clients
           </Link>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">{client.full_name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">{client.full_name}</h1>
             <ClientStatusBadge
               clientId={client.id}
               initialStatus={(client as any).status ?? 'active'}
@@ -188,7 +188,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               />
             )}
           </div>
-          <p className="text-stone-600 mt-1">{client.email}</p>
+          <p className="text-stone-400 mt-1">{client.email}</p>
           {/* Tags */}
           <div className="mt-2">
             <ClientTags clientId={client.id} initialTags={clientTags} suggestedTags={allUsedTags} />
@@ -209,7 +209,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Dormancy Warning */}
       {dormancyInfo?.isDormant && (
-        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
           <span className="text-amber-600 text-lg">⏳</span>
           <div className="flex-1">
             <p className="text-sm font-semibold text-amber-900">
@@ -240,9 +240,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         const completeness = getClientProfileCompleteness(client as any)
         if (completeness.score >= 85) return null // Don't show when complete
         return (
-          <div className="rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
+          <div className="rounded-lg border border-stone-700 bg-stone-800 px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-medium text-stone-700">Profile completeness</p>
+              <p className="text-sm font-medium text-stone-300">Profile completeness</p>
               <span
                 className={`text-xs font-semibold ${
                   completeness.tier === 'good'
@@ -255,14 +255,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 {completeness.score}%
               </span>
             </div>
-            <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-stone-700 rounded-full overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all ${
                   completeness.score >= 60
-                    ? 'bg-emerald-500'
+                    ? 'bg-emerald-9500'
                     : completeness.score >= 35
-                      ? 'bg-amber-500'
-                      : 'bg-red-500'
+                      ? 'bg-amber-9500'
+                      : 'bg-red-9500'
                 } ${
                   completeness.score >= 90
                     ? 'w-full'
@@ -302,19 +302,19 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <p className="text-sm font-medium text-stone-500">Full Name</p>
-              <p className="text-lg text-stone-900 mt-1">{client.full_name}</p>
+              <p className="text-lg text-stone-100 mt-1">{client.full_name}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-stone-500">Email</p>
-              <p className="text-lg text-stone-900 mt-1">{client.email}</p>
+              <p className="text-lg text-stone-100 mt-1">{client.email}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-stone-500">Phone</p>
-              <p className="text-lg text-stone-900 mt-1">{client.phone || 'Not provided'}</p>
+              <p className="text-lg text-stone-100 mt-1">{client.phone || 'Not provided'}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-stone-500">Client Since</p>
-              <p className="text-lg text-stone-900 mt-1">
+              <p className="text-lg text-stone-100 mt-1">
                 {format(new Date(client.created_at), 'PPPP')}
               </p>
             </div>
@@ -347,7 +347,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Total Events</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">
+            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
               {client.totalEvents}
             </div>
           </CardContent>
@@ -356,7 +356,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Completed Events</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">
+            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
               {client.completedEvents}
             </div>
           </CardContent>
@@ -365,7 +365,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Total Spent</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">
+            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
               {formatCurrency(client.totalSpentCents)}
             </div>
           </CardContent>
@@ -374,7 +374,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Average Event Value</div>
-            <div className="text-2xl sm:text-3xl font-bold text-stone-900 mt-2">
+            <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
               {formatCurrency(client.averageEventValueCents)}
             </div>
           </CardContent>
@@ -394,12 +394,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 <span
                   className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     profitabilityHistory.trend === 'improving'
-                      ? 'bg-emerald-100 text-emerald-700'
+                      ? 'bg-emerald-900 text-emerald-700'
                       : profitabilityHistory.trend === 'declining'
-                        ? 'bg-red-100 text-red-700'
+                        ? 'bg-red-900 text-red-700'
                         : profitabilityHistory.trend === 'stable'
-                          ? 'bg-stone-100 text-stone-600'
-                          : 'bg-stone-50 text-stone-400'
+                          ? 'bg-stone-800 text-stone-400'
+                          : 'bg-stone-800 text-stone-400'
                   }`}
                 >
                   {profitabilityHistory.trend === 'improving'
@@ -430,7 +430,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Avg Food Cost</p>
-                  <p className="text-xl font-bold text-stone-900 mt-0.5">
+                  <p className="text-xl font-bold text-stone-100 mt-0.5">
                     {profitabilityHistory.avgFoodCostPercent !== null
                       ? `${profitabilityHistory.avgFoodCostPercent}%`
                       : '—'}
@@ -438,7 +438,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Avg $/hr</p>
-                  <p className="text-xl font-bold text-stone-900 mt-0.5">
+                  <p className="text-xl font-bold text-stone-100 mt-0.5">
                     {profitabilityHistory.avgHourlyRateCents !== null
                       ? `${formatCurrency(profitabilityHistory.avgHourlyRateCents)}`
                       : '—'}
@@ -446,7 +446,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                 </div>
               </div>
               {profitabilityHistory.events.length >= 3 && (
-                <div className="mt-4 pt-3 border-t border-stone-100">
+                <div className="mt-4 pt-3 border-t border-stone-800">
                   <p className="text-xs text-stone-400 mb-2">
                     Per-event margins ({profitabilityHistory.eventCount} events)
                   </p>
@@ -548,25 +548,25 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <dl className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div>
               <dt className="text-sm font-medium text-stone-500">Points Balance</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                 {loyaltyProfile.pointsBalance.toLocaleString()}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Lifetime Earned</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                 {loyaltyProfile.lifetimePointsEarned.toLocaleString()}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Events Completed</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                 {loyaltyProfile.totalEventsCompleted}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Guests Served</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                 {loyaltyProfile.totalGuestsServed}
               </dd>
             </div>
@@ -574,16 +574,16 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
           {/* Progress to Next Tier */}
           {loyaltyProfile.nextTierName && loyaltyProfile.pointsToNextTier > 0 && (
-            <div className="mb-6 p-3 rounded-lg bg-stone-50">
+            <div className="mb-6 p-3 rounded-lg bg-stone-800">
               <div className="flex justify-between text-sm mb-1">
-                <span className="text-stone-600">Progress to {loyaltyProfile.nextTierName}</span>
-                <span className="font-medium text-stone-900">
+                <span className="text-stone-400">Progress to {loyaltyProfile.nextTierName}</span>
+                <span className="font-medium text-stone-100">
                   {loyaltyProfile.pointsToNextTier} pts to go
                 </span>
               </div>
-              <div className="w-full bg-stone-200 rounded-full h-2">
+              <div className="w-full bg-stone-700 rounded-full h-2">
                 <div
-                  className="bg-brand-500 h-2 rounded-full transition-all"
+                  className="bg-brand-9500 h-2 rounded-full transition-all"
                   style={{
                     width: `${Math.min(100, Math.max(5, (loyaltyProfile.lifetimePointsEarned / (loyaltyProfile.lifetimePointsEarned + loyaltyProfile.pointsToNextTier)) * 100))}%`,
                   }}
@@ -604,12 +604,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           {/* Available Rewards */}
           {loyaltyProfile.availableRewards.length > 0 && (
             <div className="mb-4">
-              <h3 className="text-sm font-medium text-stone-700 mb-2">Available Rewards</h3>
+              <h3 className="text-sm font-medium text-stone-300 mb-2">Available Rewards</h3>
               <div className="space-y-2">
                 {loyaltyProfile.availableRewards.map((reward) => (
                   <div
                     key={reward.id}
-                    className="flex items-center justify-between py-2 px-3 rounded-lg bg-green-50 border border-green-100"
+                    className="flex items-center justify-between py-2 px-3 rounded-lg bg-green-950 border border-green-100"
                   >
                     <div>
                       <p className="text-sm font-medium text-green-900">{reward.name}</p>
@@ -627,12 +627,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
           {/* Recent Transactions */}
           {loyaltyProfile.transactionHistory.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-stone-100">
-              <h3 className="text-sm font-medium text-stone-700 mb-2">Recent Activity</h3>
+            <div className="mt-4 pt-4 border-t border-stone-800">
+              <h3 className="text-sm font-medium text-stone-300 mb-2">Recent Activity</h3>
               <div className="space-y-1">
                 {loyaltyProfile.transactionHistory.slice(0, 5).map((tx) => (
                   <div key={tx.id} className="flex items-center justify-between text-sm py-1">
-                    <span className="text-stone-600">{tx.description}</span>
+                    <span className="text-stone-400">{tx.description}</span>
                     <span
                       className={`font-medium ${tx.points > 0 ? 'text-emerald-600' : 'text-red-600'}`}
                     >
@@ -764,7 +764,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <CardContent>
           <SentimentBadge clientId={params.id} />
           <MessageThread messages={messages} showEntityLinks />
-          <div className="mt-4 pt-4 border-t border-stone-200">
+          <div className="mt-4 pt-4 border-t border-stone-700">
             <MessageLogForm clientId={client.id} templates={templates} />
           </div>
         </CardContent>
@@ -823,7 +823,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               <CardTitle>Client Feedback</CardTitle>
               {avgRating !== null && (
                 <div className="flex items-center gap-1.5">
-                  <span className="text-2xl font-bold text-stone-900">{avgRating}</span>
+                  <span className="text-2xl font-bold text-stone-100">{avgRating}</span>
                   <span className="text-stone-400">/5</span>
                   <span className="text-xs text-stone-500 ml-1">
                     ({clientReviews.length} {clientReviews.length === 1 ? 'review' : 'reviews'})
@@ -837,7 +837,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               {clientReviews.map((review: any) => (
                 <div
                   key={review.id}
-                  className="border-b border-stone-100 pb-4 last:border-0 last:pb-0"
+                  className="border-b border-stone-800 pb-4 last:border-0 last:pb-0"
                 >
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex gap-0.5">
@@ -858,16 +858,16 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
                     </span>
                   </div>
                   {review.what_they_loved && (
-                    <p className="text-sm text-stone-700 mt-1">
+                    <p className="text-sm text-stone-300 mt-1">
                       <span className="font-medium text-emerald-700">Loved: </span>
                       {review.what_they_loved}
                     </p>
                   )}
                   {review.feedback_text && (
-                    <p className="text-sm text-stone-600 mt-1">{review.feedback_text}</p>
+                    <p className="text-sm text-stone-400 mt-1">{review.feedback_text}</p>
                   )}
                   {review.what_could_improve && (
-                    <p className="text-sm text-stone-600 mt-1">
+                    <p className="text-sm text-stone-400 mt-1">
                       <span className="font-medium text-amber-700">Improve: </span>
                       {review.what_could_improve}
                     </p>

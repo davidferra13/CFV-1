@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -14,7 +21,7 @@ export default async function CancelledInvoicesPage() {
   const events = await getEvents()
 
   const cancelled = events
-    .filter(e => e.status === 'cancelled')
+    .filter((e) => e.status === 'cancelled')
     .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
   const totalLost = cancelled.reduce((s, e) => s + (e.quoted_price_cents ?? 0), 0)
@@ -22,10 +29,14 @@ export default async function CancelledInvoicesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/invoices" className="text-sm text-stone-500 hover:text-stone-700">← Invoices</Link>
+        <Link href="/finance/invoices" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Invoices
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Cancelled Invoices</h1>
-          <span className="bg-stone-200 text-stone-500 text-sm px-2 py-0.5 rounded-full">{cancelled.length}</span>
+          <h1 className="text-3xl font-bold text-stone-100">Cancelled Invoices</h1>
+          <span className="bg-stone-700 text-stone-500 text-sm px-2 py-0.5 rounded-full">
+            {cancelled.length}
+          </span>
         </div>
         <p className="text-stone-500 mt-1">Events that were cancelled before completion</p>
       </div>
@@ -45,7 +56,7 @@ export default async function CancelledInvoicesPage() {
 
       {cancelled.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No cancelled invoices</p>
+          <p className="text-stone-400 font-medium">No cancelled invoices</p>
           <p className="text-stone-400 text-sm mt-1">Cancelled events will appear here</p>
         </Card>
       ) : (
@@ -62,22 +73,39 @@ export default async function CancelledInvoicesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {cancelled.map(event => (
+              {cancelled.map((event) => (
                 <TableRow key={event.id} className="opacity-75">
-                  <TableCell className="text-stone-500 text-sm">{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="font-medium text-stone-600">
-                    {event.client ? (
-                      <Link href={`/clients/${event.client.id}`} className="text-brand-600 hover:underline">{event.client.full_name}</Link>
-                    ) : '—'}
+                  <TableCell className="text-stone-500 text-sm">
+                    {format(new Date(event.event_date), 'MMM d, yyyy')}
                   </TableCell>
-                  <TableCell className="text-stone-500 text-sm capitalize">{event.occasion?.replace(/_/g, ' ') ?? '—'}</TableCell>
-                  <TableCell className="text-stone-500 text-sm">{event.guest_count ?? '—'}</TableCell>
+                  <TableCell className="font-medium text-stone-400">
+                    {event.client ? (
+                      <Link
+                        href={`/clients/${event.client.id}`}
+                        className="text-brand-600 hover:underline"
+                      >
+                        {event.client.full_name}
+                      </Link>
+                    ) : (
+                      '—'
+                    )}
+                  </TableCell>
+                  <TableCell className="text-stone-500 text-sm capitalize">
+                    {event.occasion?.replace(/_/g, ' ') ?? '—'}
+                  </TableCell>
+                  <TableCell className="text-stone-500 text-sm">
+                    {event.guest_count ?? '—'}
+                  </TableCell>
                   <TableCell className="text-stone-500 font-semibold text-sm line-through">
-                    {event.quoted_price_cents != null ? formatCurrency(event.quoted_price_cents) : '—'}
+                    {event.quoted_price_cents != null
+                      ? formatCurrency(event.quoted_price_cents)
+                      : '—'}
                   </TableCell>
                   <TableCell>
                     <Link href={`/events/${event.id}`}>
-                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">View</span>
+                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">
+                        View
+                      </span>
                     </Link>
                   </TableCell>
                 </TableRow>

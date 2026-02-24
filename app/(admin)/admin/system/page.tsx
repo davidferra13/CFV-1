@@ -21,14 +21,12 @@ export default async function AdminSystemPage() {
     console.error('[Admin] System health error:', err)
   }
 
-  const hasIssues = health
-    ? health.zombieEventCount > 0 || health.orphanedClientCount > 0
-    : false
+  const hasIssues = health ? health.zombieEventCount > 0 || health.orphanedClientCount > 0 : false
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className={`p-2 rounded-lg ${hasIssues ? 'bg-red-50' : 'bg-green-50'}`}>
+        <div className={`p-2 rounded-lg ${hasIssues ? 'bg-red-950' : 'bg-green-950'}`}>
           <Activity size={18} className={hasIssues ? 'text-red-600' : 'text-green-600'} />
         </div>
         <div>
@@ -36,18 +34,24 @@ export default async function AdminSystemPage() {
           <p className="text-sm text-slate-500">Database row counts and data integrity signals</p>
         </div>
         {!error && health && (
-          <div className={`ml-auto flex items-center gap-1.5 text-xs font-medium ${hasIssues ? 'text-red-500' : 'text-green-600'}`}>
+          <div
+            className={`ml-auto flex items-center gap-1.5 text-xs font-medium ${hasIssues ? 'text-red-500' : 'text-green-600'}`}
+          >
             {hasIssues ? (
-              <><AlertTriangle size={12} /> Issues detected</>
+              <>
+                <AlertTriangle size={12} /> Issues detected
+              </>
             ) : (
-              <><CheckCircle size={12} /> All clear</>
+              <>
+                <CheckCircle size={12} /> All clear
+              </>
             )}
           </div>
         )}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
@@ -55,7 +59,7 @@ export default async function AdminSystemPage() {
       {health && (
         <>
           {/* Table Row Counts */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="bg-surface rounded-xl border border-slate-200 p-5">
             <h2 className="text-sm font-semibold text-slate-700 mb-4">Database Row Counts</h2>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {Object.entries(health.tableRowCounts).map(([table, count]) => (
@@ -68,24 +72,32 @@ export default async function AdminSystemPage() {
           </div>
 
           {/* Signal Panel */}
-          <div className="bg-white rounded-xl border border-slate-200 p-5">
+          <div className="bg-surface rounded-xl border border-slate-200 p-5">
             <h2 className="text-sm font-semibold text-slate-700 mb-4">Integrity Signals</h2>
             <div className="space-y-3">
-              <div className={`flex items-center justify-between p-3 rounded-lg ${health.zombieEventCount > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
+              <div
+                className={`flex items-center justify-between p-3 rounded-lg ${health.zombieEventCount > 0 ? 'bg-red-950' : 'bg-green-950'}`}
+              >
                 <div className="flex items-center gap-2">
                   {health.zombieEventCount > 0 ? (
                     <AlertTriangle size={14} className="text-red-500" />
                   ) : (
                     <CheckCircle size={14} className="text-green-500" />
                   )}
-                  <span className="text-sm text-slate-700">Zombie events (non-terminal &gt; 30 days)</span>
+                  <span className="text-sm text-slate-700">
+                    Zombie events (non-terminal &gt; 30 days)
+                  </span>
                 </div>
-                <span className={`text-sm font-bold ${health.zombieEventCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                <span
+                  className={`text-sm font-bold ${health.zombieEventCount > 0 ? 'text-red-600' : 'text-green-600'}`}
+                >
                   {health.zombieEventCount}
                 </span>
               </div>
 
-              <div className={`flex items-center justify-between p-3 rounded-lg ${health.orphanedClientCount > 0 ? 'bg-red-50' : 'bg-green-50'}`}>
+              <div
+                className={`flex items-center justify-between p-3 rounded-lg ${health.orphanedClientCount > 0 ? 'bg-red-950' : 'bg-green-950'}`}
+              >
                 <div className="flex items-center gap-2">
                   {health.orphanedClientCount > 0 ? (
                     <AlertTriangle size={14} className="text-red-500" />
@@ -94,7 +106,9 @@ export default async function AdminSystemPage() {
                   )}
                   <span className="text-sm text-slate-700">Orphaned clients (no tenant)</span>
                 </div>
-                <span className={`text-sm font-bold ${health.orphanedClientCount > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                <span
+                  className={`text-sm font-bold ${health.orphanedClientCount > 0 ? 'text-red-600' : 'text-green-600'}`}
+                >
                   {health.orphanedClientCount}
                 </span>
               </div>
@@ -116,7 +130,7 @@ export default async function AdminSystemPage() {
       )}
 
       {/* External Links */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="bg-surface rounded-xl border border-slate-200 p-5">
         <h2 className="text-sm font-semibold text-slate-700 mb-4">External Dashboards</h2>
         <div className="space-y-2">
           <a

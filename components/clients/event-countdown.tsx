@@ -46,10 +46,10 @@ export function EventCountdown({ eventName, eventDate, status, countdownEnabled 
   })
 
   return (
-    <Card className="bg-gradient-to-br from-brand-50 to-white border-brand-200">
+    <Card className="bg-gradient-to-br from-brand-50 to-white border-brand-700">
       <CardContent className="py-6 text-center">
         <CalendarDays className="h-8 w-8 text-brand-500 mx-auto mb-3" />
-        <h3 className="text-lg font-semibold text-stone-900 mb-1">{eventName}</h3>
+        <h3 className="text-lg font-semibold text-stone-100 mb-1">{eventName}</h3>
         <p className="text-sm text-stone-500 mb-4">{formattedDate}</p>
 
         {countdown.isPast ? (

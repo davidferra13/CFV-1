@@ -86,7 +86,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Total Collected</p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {formatCurrency(summary.collectedCents)}
             </p>
             <p className="text-xs text-stone-400 mt-1">{summary.eventCount} events</p>
@@ -101,7 +101,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
             <p className="text-xs text-stone-400 mt-1">{summary.remittedEventCount} events</p>
           </CardContent>
         </Card>
-        <Card className={summary.outstandingCents > 0 ? 'border-amber-200 bg-amber-50' : ''}>
+        <Card className={summary.outstandingCents > 0 ? 'border-amber-200 bg-amber-950' : ''}>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Outstanding</p>
             <p
@@ -131,7 +131,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
         </CardHeader>
         <CardContent>
           {unremittedEvents.length === 0 ? (
-            <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-4 py-3">
               <CheckCircle className="h-4 w-4" />
               All collected sales tax has been remitted.
             </div>
@@ -140,10 +140,10 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
               {unremittedEvents.map((ev) => (
                 <div
                   key={ev.eventId}
-                  className="flex items-center justify-between py-3 border-b border-stone-100 last:border-0"
+                  className="flex items-center justify-between py-3 border-b border-stone-800 last:border-0"
                 >
                   <div>
-                    <p className="text-sm font-medium text-stone-800">
+                    <p className="text-sm font-medium text-stone-200">
                       Event{' '}
                       <span className="font-mono text-xs text-stone-500">
                         {ev.eventId.slice(0, 8)}…
@@ -212,8 +212,8 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
         </CardHeader>
         <CardContent>
           {showRemitForm && (
-            <div className="mb-6 p-4 rounded-lg border border-stone-200 bg-stone-50 space-y-4">
-              <p className="text-sm font-medium text-stone-700">Record Tax Remittance</p>
+            <div className="mb-6 p-4 rounded-lg border border-stone-700 bg-stone-800 space-y-4">
+              <p className="text-sm font-medium text-stone-300">Record Tax Remittance</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   label="Period Label (e.g. Q2 2026)"
@@ -280,7 +280,7 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200">
+                <tr className="border-b border-stone-700">
                   <th className="text-left px-0 py-2 text-xs font-medium text-stone-500 uppercase">
                     Period
                   </th>
@@ -295,19 +295,19 @@ export function SalesTaxPanel({ summary, unremittedEvents, remittances }: Props)
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {remittances.map((r) => (
                   <tr key={r.id}>
-                    <td className="py-3 font-medium text-stone-900">
+                    <td className="py-3 font-medium text-stone-100">
                       {r.period}
                       <span className="block text-xs text-stone-500 font-normal">
                         Remitted {r.remittedAt}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-stone-600 text-xs">
+                    <td className="px-4 py-3 text-stone-400 text-xs">
                       {r.periodStart} → {r.periodEnd}
                     </td>
-                    <td className="py-3 text-right font-semibold text-stone-900">
+                    <td className="py-3 text-right font-semibold text-stone-100">
                       {formatCurrency(r.amountRemittedCents)}
                     </td>
                     <td className="px-4 py-3 text-stone-500 font-mono text-xs">

@@ -31,10 +31,10 @@ export function AvailabilitySignalToggle({ initialEnabled }: Props) {
   }
 
   return (
-    <div className="border border-stone-200 rounded-xl p-4 space-y-3">
+    <div className="border border-stone-700 rounded-xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-medium text-stone-900">Public Availability Signals</p>
+          <p className="font-medium text-stone-100">Public Availability Signals</p>
           <p className="text-sm text-stone-500 mt-0.5">
             When enabled, dates you mark as &quot;Seeking a booking&quot; in your calendar will
             appear on your public profile. Clients can click directly to inquire for that date.
@@ -47,12 +47,12 @@ export function AvailabilitySignalToggle({ initialEnabled }: Props) {
           onClick={handleToggle}
           className={[
             'relative flex-shrink-0 inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2',
-            enabled ? 'bg-brand-600' : 'bg-stone-200',
+            enabled ? 'bg-brand-600' : 'bg-stone-700',
           ].join(' ')}
         >
           <span
             className={[
-              'inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow',
+              'inline-block h-4 w-4 transform rounded-full bg-surface transition-transform shadow',
               enabled ? 'translate-x-6' : 'translate-x-1',
             ].join(' ')}
           />
@@ -60,15 +60,13 @@ export function AvailabilitySignalToggle({ initialEnabled }: Props) {
       </div>
 
       {enabled && (
-        <p className="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2">
-          Active — your public target booking dates will appear on your profile. Use the Calendar
-          to mark specific dates as publicly visible.
+        <p className="text-xs text-green-700 bg-green-950 rounded-lg px-3 py-2">
+          Active — your public target booking dates will appear on your profile. Use the Calendar to
+          mark specific dates as publicly visible.
         </p>
       )}
 
-      {error && (
-        <p className="text-xs text-red-600">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   )
 }

@@ -6,12 +6,16 @@
 import { useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
-import type { ActiveClientWithContext, ActivityEvent, ActivityEventType } from '@/lib/activity/types'
+import type {
+  ActiveClientWithContext,
+  ActivityEvent,
+  ActivityEventType,
+} from '@/lib/activity/types'
 import { EngagementBadge } from './engagement-badge'
 
 // Presence windows
-const ONLINE_WINDOW_MS = 5 * 60 * 1000   // < 5 min = "Online Now"
-const RECENT_WINDOW_MS = 60 * 60 * 1000  // up to 60 min shown on this page
+const ONLINE_WINDOW_MS = 5 * 60 * 1000 // < 5 min = "Online Now"
+const RECENT_WINDOW_MS = 60 * 60 * 1000 // up to 60 min shown on this page
 
 // Max events to keep in the live stream
 const MAX_STREAM_EVENTS = 50
@@ -97,11 +101,11 @@ export function ClientPresenceMonitor({
   const [clients, setClients] = useState<ActiveClientWithContext[]>(initialClients)
 
   // Build initial stream with resolved client names from the initial clients list
-  const initialNameMap = new Map(initialClients.map(c => [c.client_id, c.client_name]))
+  const initialNameMap = new Map(initialClients.map((c) => [c.client_id, c.client_name]))
   const [stream, setStream] = useState<StreamItem[]>(
     initialActivity
-      .filter(e => !HIDDEN_FROM_STREAM.has(e.event_type))
-      .map(e => ({
+      .filter((e) => !HIDDEN_FROM_STREAM.has(e.event_type))
+      .map((e) => ({
         event: e,
         clientName: (e.client_id && initialNameMap.get(e.client_id)) || 'Client',
       }))
@@ -109,7 +113,7 @@ export function ClientPresenceMonitor({
 
   // Cache of client names so Realtime rows can be enriched without a round-trip
   const clientNamesRef = useRef<Map<string, string>>(
-    new Map(initialClients.map(c => [c.client_id, c.client_name]))
+    new Map(initialClients.map((c) => [c.client_id, c.client_name]))
   )
 
   useEffect(() => {
@@ -147,11 +151,11 @@ export function ClientPresenceMonitor({
             const now = Date.now()
 
             // Update the presence list
-            setClients(prev => {
+            setClients((prev) => {
               const stillVisible = prev.filter(
-                c => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
+                (c) => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
               )
-              const existing = stillVisible.find(c => c.client_id === clientId)
+              const existing = stillVisible.find((c) => c.client_id === clientId)
               const updatedEntry: ActiveClientWithContext = existing
                 ? {
                     ...existing,
@@ -174,7 +178,7 @@ export function ClientPresenceMonitor({
                     entity_title: null,
                   }
 
-              const withoutClient = stillVisible.filter(c => c.client_id !== clientId)
+              const withoutClient = stillVisible.filter((c) => c.client_id !== clientId)
               return [updatedEntry, ...withoutClient].sort(
                 (a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
               )
@@ -194,7 +198,7 @@ export function ClientPresenceMonitor({
                 metadata: row.metadata ?? {},
                 created_at: row.created_at,
               }
-              setStream(prev =>
+              setStream((prev) =>
                 [{ event: newEvent, clientName: resolvedName }, ...prev].slice(0, MAX_STREAM_EVENTS)
               )
             }
@@ -224,18 +228,18 @@ export function ClientPresenceMonitor({
     }
   }, [tenantId])
 
-  const onlineNow = clients.filter(c => isOnlineNow(c.last_activity))
-  const recentlyActive = clients.filter(c => !isOnlineNow(c.last_activity))
+  const onlineNow = clients.filter((c) => isOnlineNow(c.last_activity))
+  const recentlyActive = clients.filter((c) => !isOnlineNow(c.last_activity))
 
   return (
     <div className="space-y-6">
       {/* ── Active Clients ── */}
-      <div className="border border-stone-200 rounded-lg overflow-hidden">
-        <div className="flex items-center justify-between px-4 py-3 bg-stone-50 border-b border-stone-200">
-          <h2 className="text-sm font-semibold text-stone-700">Active Clients</h2>
+      <div className="border border-stone-700 rounded-lg overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-stone-800 border-b border-stone-700">
+          <h2 className="text-sm font-semibold text-stone-300">Active Clients</h2>
           {onlineNow.length > 0 && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-9500 animate-pulse" />
               {onlineNow.length} online now
             </span>
           )}
@@ -243,18 +247,21 @@ export function ClientPresenceMonitor({
 
         {clients.length === 0 ? (
           <div className="px-4 py-8 text-center text-stone-400 text-sm">
-            No clients active in the last hour. Activity will appear here as clients browse the portal.
+            No clients active in the last hour. Activity will appear here as clients browse the
+            portal.
           </div>
         ) : (
           <div>
             {/* Online Now */}
             {onlineNow.length > 0 && (
               <div>
-                <div className="px-4 py-2 bg-emerald-50 border-b border-emerald-100">
-                  <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide">Online Now</p>
+                <div className="px-4 py-2 bg-emerald-950 border-b border-emerald-100">
+                  <p className="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide">
+                    Online Now
+                  </p>
                 </div>
-                <div className="divide-y divide-stone-100">
-                  {onlineNow.map(client => (
+                <div className="divide-y divide-stone-800">
+                  {onlineNow.map((client) => (
                     <ClientPresenceRow key={client.client_id} client={client} isOnline />
                   ))}
                 </div>
@@ -264,13 +271,13 @@ export function ClientPresenceMonitor({
             {/* Recently Active */}
             {recentlyActive.length > 0 && (
               <div>
-                <div className="px-4 py-2 bg-stone-50 border-b border-stone-100">
+                <div className="px-4 py-2 bg-stone-800 border-b border-stone-800">
                   <p className="text-[11px] font-semibold text-stone-400 uppercase tracking-wide">
                     Recently Active (last hour)
                   </p>
                 </div>
-                <div className="divide-y divide-stone-100">
-                  {recentlyActive.map(client => (
+                <div className="divide-y divide-stone-800">
+                  {recentlyActive.map((client) => (
                     <ClientPresenceRow key={client.client_id} client={client} isOnline={false} />
                   ))}
                 </div>
@@ -281,10 +288,12 @@ export function ClientPresenceMonitor({
       </div>
 
       {/* ── Live Activity Stream ── */}
-      <div className="border border-stone-200 rounded-lg overflow-hidden">
-        <div className="px-4 py-3 bg-stone-50 border-b border-stone-200">
-          <h2 className="text-sm font-semibold text-stone-700">Live Activity Stream</h2>
-          <p className="text-xs text-stone-400 mt-0.5">All client portal actions in the past 24 hours</p>
+      <div className="border border-stone-700 rounded-lg overflow-hidden">
+        <div className="px-4 py-3 bg-stone-800 border-b border-stone-700">
+          <h2 className="text-sm font-semibold text-stone-300">Live Activity Stream</h2>
+          <p className="text-xs text-stone-400 mt-0.5">
+            All client portal actions in the past 24 hours
+          </p>
         </div>
 
         {stream.length === 0 ? (
@@ -292,8 +301,8 @@ export function ClientPresenceMonitor({
             No client activity in the past 24 hours.
           </div>
         ) : (
-          <div className="divide-y divide-stone-100">
-            {stream.map(item => (
+          <div className="divide-y divide-stone-800">
+            {stream.map((item) => (
               <StreamRow key={item.event.id} item={item} />
             ))}
           </div>
@@ -317,33 +326,35 @@ function ClientPresenceRow({
   return (
     <Link
       href={`/clients/${client.client_id}`}
-      className={`flex items-center gap-3 px-4 py-3 hover:bg-stone-50 transition-colors ${
+      className={`flex items-center gap-3 px-4 py-3 hover:bg-stone-800 transition-colors ${
         isOnline ? '' : 'opacity-70'
       }`}
     >
       {/* Avatar */}
       <div className="relative shrink-0">
-        <span className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-          isHighIntent
-            ? 'bg-amber-100 text-amber-700'
-            : 'bg-brand-100 text-brand-700'
-        }`}>
+        <span
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
+            isHighIntent ? 'bg-amber-900 text-amber-700' : 'bg-brand-900 text-brand-400'
+          }`}
+        >
           {client.client_name.charAt(0).toUpperCase()}
         </span>
         {isOnline && (
-          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" />
+          <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-9500 border-2 border-white" />
         )}
       </div>
 
       {/* Name + activity */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-stone-800 truncate">{client.client_name}</span>
+          <span className="text-sm font-medium text-stone-200 truncate">{client.client_name}</span>
           {client.engagement_level !== 'none' && (
             <EngagementBadge level={client.engagement_level} signals={client.engagement_signals} />
           )}
         </div>
-        <p className={`text-xs truncate mt-0.5 ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-400'}`}>
+        <p
+          className={`text-xs truncate mt-0.5 ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-400'}`}
+        >
           {getLabel(client.event_type)}
           {client.entity_title && (
             <span className="text-stone-400 font-normal"> — {client.entity_title}</span>
@@ -367,10 +378,12 @@ function StreamRow({ item }: { item: StreamItem }) {
   const href = event.client_id ? `/clients/${event.client_id}` : null
 
   const content = (
-    <div className={`flex items-center gap-3 px-4 py-2.5 ${isHighIntent ? 'bg-amber-50' : ''}`}>
-      <span className={`w-2 h-2 rounded-full shrink-0 ${isHighIntent ? 'bg-amber-400' : 'bg-stone-300'}`} />
+    <div className={`flex items-center gap-3 px-4 py-2.5 ${isHighIntent ? 'bg-amber-950' : ''}`}>
+      <span
+        className={`w-2 h-2 rounded-full shrink-0 ${isHighIntent ? 'bg-amber-400' : 'bg-stone-300'}`}
+      />
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-stone-700 truncate">
+        <p className="text-sm text-stone-300 truncate">
           <span className="font-medium">{clientName}</span>
           <span className="text-stone-400"> — </span>
           {label}
@@ -382,7 +395,7 @@ function StreamRow({ item }: { item: StreamItem }) {
 
   if (href) {
     return (
-      <Link href={href} className="block hover:bg-stone-50 transition-colors">
+      <Link href={href} className="block hover:bg-stone-800 transition-colors">
         {content}
       </Link>
     )

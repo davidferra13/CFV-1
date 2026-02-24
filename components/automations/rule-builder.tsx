@@ -10,7 +10,11 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
-import { createAutomationRule, updateAutomationRule, getTemplatesForAutomations } from '@/lib/automations/actions'
+import {
+  createAutomationRule,
+  updateAutomationRule,
+  getTemplatesForAutomations,
+} from '@/lib/automations/actions'
 import { TRIGGER_LABELS, ACTION_LABELS, TRIGGER_CONTEXT_FIELDS } from '@/lib/automations/types'
 import type { TriggerEvent, ActionType, Condition, AutomationRule } from '@/lib/automations/types'
 
@@ -55,7 +59,8 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
       conditions: [{ field: 'days_since_last_contact', op: 'gte', value: '3' }],
       action_type: 'create_follow_up_task',
       action_config: {
-        description: 'Send a follow-up to {{client_name}} — no response in {{days_since_last_contact}} days',
+        description:
+          'Send a follow-up to {{client_name}} — no response in {{days_since_last_contact}} days',
         due_hours: '4',
       },
     },
@@ -94,7 +99,8 @@ const QUICK_START_TEMPLATES: QuickStartTemplate[] = [
     description: 'Create a follow-up task to send a thank-you note when an event is paid.',
     rule: {
       name: 'Payment received — thank-you task',
-      description: 'Creates a follow-up task to draft a thank-you message after deposit or full payment is received.',
+      description:
+        'Creates a follow-up task to draft a thank-you message after deposit or full payment is received.',
       trigger_event: 'event_status_changed',
       conditions: [{ field: 'new_status', op: 'eq', value: 'paid' }],
       action_type: 'create_follow_up_task',
@@ -230,16 +236,16 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
   const contextFields = TRIGGER_CONTEXT_FIELDS[triggerEvent] ?? []
 
   return (
-    <div className="border border-stone-200 rounded-lg bg-white overflow-hidden">
+    <div className="border border-stone-700 rounded-lg bg-surface overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-stone-100 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-stone-800">
+      <div className="px-4 py-3 border-b border-stone-800 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-stone-200">
           {isEditing ? 'Edit Rule' : 'New Automation Rule'}
         </h3>
         {!isEditing && (
           <button
             onClick={() => setShowQuickStart(!showQuickStart)}
-            className="text-xs text-brand-600 hover:text-brand-700"
+            className="text-xs text-brand-600 hover:text-brand-400"
           >
             {showQuickStart ? 'Build from scratch ↓' : '⚡ Quick-start templates'}
           </button>
@@ -248,8 +254,8 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
 
       {/* Quick-start gallery */}
       {showQuickStart && !isEditing && (
-        <div className="px-4 py-3 bg-amber-50 border-b border-amber-100">
-          <p className="text-xs font-medium text-stone-600 mb-2">
+        <div className="px-4 py-3 bg-amber-950 border-b border-amber-100">
+          <p className="text-xs font-medium text-stone-400 mb-2">
             Start with a pre-built rule — you can customise it after:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -258,9 +264,9 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
                 key={tpl.label}
                 type="button"
                 onClick={() => applyQuickStart(tpl)}
-                className="text-left border border-amber-200 rounded-md px-3 py-2 bg-white hover:border-brand-400 hover:bg-brand-50 transition-colors group"
+                className="text-left border border-amber-200 rounded-md px-3 py-2 bg-surface hover:border-brand-400 hover:bg-brand-950 transition-colors group"
               >
-                <p className="text-xs font-medium text-stone-800 group-hover:text-brand-700">
+                <p className="text-xs font-medium text-stone-200 group-hover:text-brand-400">
                   {tpl.label}
                 </p>
                 <p className="text-[11px] text-stone-500 mt-0.5">{tpl.description}</p>
@@ -270,7 +276,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
           <button
             type="button"
             onClick={() => setShowQuickStart(false)}
-            className="mt-2 text-xs text-stone-400 hover:text-stone-600"
+            className="mt-2 text-xs text-stone-400 hover:text-stone-400"
           >
             Skip — build from scratch
           </button>
@@ -282,7 +288,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
 
         {/* Name */}
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">
+          <label className="block text-xs font-medium text-stone-400 mb-1">
             Rule Name <span className="text-red-400">*</span>
           </label>
           <input
@@ -290,13 +296,13 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g., Alert me on new Wix leads"
-            className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">
+          <label className="block text-xs font-medium text-stone-400 mb-1">
             Description <span className="text-stone-400 font-normal">(optional)</span>
           </label>
           <input
@@ -304,23 +310,25 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What does this rule do?"
-            className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         {/* Trigger */}
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">
+          <label className="block text-xs font-medium text-stone-400 mb-1">
             When this happens…
           </label>
           <select
             aria-label="Trigger event"
             value={triggerEvent}
             onChange={(e) => handleTriggerChange(e.target.value as TriggerEvent)}
-            className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             {Object.entries(TRIGGER_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+              <option key={key} value={key}>
+                {label}
+              </option>
             ))}
           </select>
         </div>
@@ -328,19 +336,19 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
         {/* Conditions */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <label className="text-xs font-medium text-stone-600">
+            <label className="text-xs font-medium text-stone-400">
               And only if… <span className="text-stone-400 font-normal">(optional filter)</span>
             </label>
             <button
               type="button"
               onClick={addCondition}
-              className="text-xs text-brand-600 hover:text-brand-700"
+              className="text-xs text-brand-600 hover:text-brand-400"
             >
               + Add condition
             </button>
           </div>
           {conditions.length === 0 ? (
-            <p className="text-xs text-stone-400 border border-dashed border-stone-200 rounded px-3 py-2">
+            <p className="text-xs text-stone-400 border border-dashed border-stone-700 rounded px-3 py-2">
               No filter — rule fires every time the trigger happens
             </p>
           ) : (
@@ -352,10 +360,12 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
                     aria-label={`Condition ${i + 1} field`}
                     value={cond.field}
                     onChange={(e) => updateCondition(i, { field: e.target.value })}
-                    className="flex-1 border border-stone-300 rounded px-2 py-1 text-xs min-w-0"
+                    className="flex-1 border border-stone-600 rounded px-2 py-1 text-xs min-w-0"
                   >
                     {contextFields.map((f) => (
-                      <option key={f.field} value={f.field}>{f.label}</option>
+                      <option key={f.field} value={f.field}>
+                        {f.label}
+                      </option>
                     ))}
                   </select>
                   {/* Operator */}
@@ -363,7 +373,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
                     aria-label={`Condition ${i + 1} operator`}
                     value={cond.op}
                     onChange={(e) => updateCondition(i, { op: e.target.value as Condition['op'] })}
-                    className="border border-stone-300 rounded px-2 py-1 text-xs"
+                    className="border border-stone-600 rounded px-2 py-1 text-xs"
                   >
                     <option value="eq">equals</option>
                     <option value="neq">not</option>
@@ -379,8 +389,8 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
                     aria-label={`Condition ${i + 1} value`}
                     value={String(cond.value)}
                     onChange={(e) => updateCondition(i, { value: e.target.value })}
-                    placeholder={contextFields.find(f => f.field === cond.field)?.hint ?? 'value'}
-                    className="flex-1 border border-stone-300 rounded px-2 py-1 text-xs min-w-0"
+                    placeholder={contextFields.find((f) => f.field === cond.field)?.hint ?? 'value'}
+                    className="flex-1 border border-stone-600 rounded px-2 py-1 text-xs min-w-0"
                   />
                   <button
                     type="button"
@@ -398,9 +408,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
 
         {/* Action */}
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">
-            Then do this…
-          </label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Then do this…</label>
           <select
             aria-label="Action type"
             value={actionType}
@@ -408,10 +416,12 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
               setActionType(e.target.value as ActionType)
               setActionConfig({})
             }}
-            className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             {Object.entries(ACTION_LABELS).map(([key, label]) => (
-              <option key={key} value={key}>{label}</option>
+              <option key={key} value={key}>
+                {label}
+              </option>
             ))}
           </select>
         </div>
@@ -426,7 +436,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
         />
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 pt-2 border-t border-stone-100">
+        <div className="flex justify-end gap-2 pt-2 border-t border-stone-800">
           <Button variant="secondary" size="sm" onClick={onClose}>
             Cancel
           </Button>
@@ -454,9 +464,10 @@ function ActionConfigForm({
   templates: { id: string; name: string }[]
   contextFields: { field: string; label: string }[]
 }) {
-  const fieldHint = contextFields.length > 0
-    ? `Dynamic values: ${contextFields.map(f => `{{${f.field}}}`).join(', ')}`
-    : 'Use {{field_name}} for dynamic values'
+  const fieldHint =
+    contextFields.length > 0
+      ? `Dynamic values: ${contextFields.map((f) => `{{${f.field}}}`).join(', ')}`
+      : 'Use {{field_name}} for dynamic values'
 
   switch (actionType) {
     case 'create_notification':
@@ -470,7 +481,7 @@ function ActionConfigForm({
               value={config.title || ''}
               onChange={(e) => onChange({ ...config, title: e.target.value })}
               placeholder="e.g., New lead: {{client_name}}"
-              className="w-full border border-stone-300 rounded px-2 py-1 text-xs"
+              className="w-full border border-stone-600 rounded px-2 py-1 text-xs"
             />
           </div>
           <div>
@@ -480,7 +491,7 @@ function ActionConfigForm({
               value={config.body || ''}
               onChange={(e) => onChange({ ...config, body: e.target.value })}
               placeholder="e.g., {{client_name}} wants {{occasion}} for {{guest_count}} guests"
-              className="w-full border border-stone-300 rounded px-2 py-1 text-xs"
+              className="w-full border border-stone-600 rounded px-2 py-1 text-xs"
             />
           </div>
         </div>
@@ -497,7 +508,7 @@ function ActionConfigForm({
               value={config.description || ''}
               onChange={(e) => onChange({ ...config, description: e.target.value })}
               placeholder="e.g., Follow up with {{client_name}} about {{occasion}}"
-              className="w-full border border-stone-300 rounded px-2 py-1 text-xs"
+              className="w-full border border-stone-600 rounded px-2 py-1 text-xs"
             />
           </div>
           <div>
@@ -508,7 +519,7 @@ function ActionConfigForm({
               max={720}
               value={config.due_hours || '48'}
               onChange={(e) => onChange({ ...config, due_hours: e.target.value })}
-              className="w-28 border border-stone-300 rounded px-2 py-1 text-xs"
+              className="w-28 border border-stone-600 rounded px-2 py-1 text-xs"
             />
           </div>
         </div>
@@ -524,7 +535,7 @@ function ActionConfigForm({
             onChange={(e) => onChange({ ...config, note: e.target.value })}
             placeholder="e.g., Auto-flagged: status changed to {{status}}"
             rows={2}
-            className="w-full border border-stone-300 rounded px-2 py-1 text-xs"
+            className="w-full border border-stone-600 rounded px-2 py-1 text-xs"
           />
         </div>
       )
@@ -547,11 +558,13 @@ function ActionConfigForm({
                 aria-label="Response template"
                 value={config.template_id || ''}
                 onChange={(e) => onChange({ ...config, template_id: e.target.value })}
-                className="w-full border border-stone-300 rounded px-2 py-1 text-xs"
+                className="w-full border border-stone-600 rounded px-2 py-1 text-xs"
               >
                 <option value="">Select a template…</option>
                 {templates.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
                 ))}
               </select>
             )}

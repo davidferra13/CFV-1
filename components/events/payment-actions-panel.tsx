@@ -37,7 +37,7 @@ export function RecordPaymentPanel({
 
   return (
     <>
-      <Card className="p-6 border-amber-200 bg-amber-50">
+      <Card className="p-6 border-amber-200 bg-amber-950">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h3 className="font-semibold text-amber-900">
@@ -91,7 +91,7 @@ export function ProcessRefundPanel({
 
   return (
     <>
-      <Card className="p-6 border-blue-200 bg-blue-50">
+      <Card className="p-6 border-blue-200 bg-blue-950">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h3 className="font-semibold text-blue-900">Refund Available</h3>

@@ -15,17 +15,14 @@ import { InquiryNoteForm } from './inquiry-note-form'
 // Category styles + filter tabs
 // ============================================================
 
-const CATEGORY_META: Record<
-  InquiryNoteCategory,
-  { bg: string; text: string; label: string }
-> = {
-  general:      { bg: 'bg-stone-100',  text: 'text-stone-700',  label: 'General' },
-  inspiration:  { bg: 'bg-pink-100',   text: 'text-pink-700',   label: 'Inspiration' },
-  menu_planning:{ bg: 'bg-amber-100',  text: 'text-amber-700',  label: 'Menu Planning' },
-  sourcing:     { bg: 'bg-green-100',  text: 'text-green-700',  label: 'Sourcing' },
-  logistics:    { bg: 'bg-blue-100',   text: 'text-blue-700',   label: 'Logistics' },
-  staffing:     { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Staffing' },
-  post_event:   { bg: 'bg-teal-100',   text: 'text-teal-700',   label: 'Post-Event' },
+const CATEGORY_META: Record<InquiryNoteCategory, { bg: string; text: string; label: string }> = {
+  general: { bg: 'bg-stone-800', text: 'text-stone-300', label: 'General' },
+  inspiration: { bg: 'bg-pink-900', text: 'text-pink-700', label: 'Inspiration' },
+  menu_planning: { bg: 'bg-amber-900', text: 'text-amber-700', label: 'Menu Planning' },
+  sourcing: { bg: 'bg-green-900', text: 'text-green-700', label: 'Sourcing' },
+  logistics: { bg: 'bg-blue-900', text: 'text-blue-700', label: 'Logistics' },
+  staffing: { bg: 'bg-purple-900', text: 'text-purple-700', label: 'Staffing' },
+  post_event: { bg: 'bg-teal-900', text: 'text-teal-700', label: 'Post-Event' },
 }
 
 const ALL_CATEGORIES = Object.keys(CATEGORY_META) as InquiryNoteCategory[]
@@ -58,9 +55,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
   })
 
   const visibleNotes =
-    activeFilter === 'all'
-      ? sortedNotes
-      : sortedNotes.filter((n) => n.category === activeFilter)
+    activeFilter === 'all' ? sortedNotes : sortedNotes.filter((n) => n.category === activeFilter)
 
   const pinnedCount = notes.filter((n) => n.pinned).length
 
@@ -107,9 +102,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
   const handleTogglePin = async (noteId: string) => {
     startTransition(async () => {
       const result = await toggleInquiryNotePinned(noteId)
-      setNotes((prev) =>
-        prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n))
-      )
+      setNotes((prev) => prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n)))
     })
   }
 
@@ -119,12 +112,12 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
 
   return (
     <>
-      <div className="border border-stone-200 rounded-xl bg-white">
+      <div className="border border-stone-700 rounded-xl bg-surface">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-stone-100">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-stone-800">
           <div className="flex items-center gap-2">
             <StickyNote className="w-4 h-4 text-stone-500" />
-            <h3 className="font-semibold text-stone-900">Notes</h3>
+            <h3 className="font-semibold text-stone-100">Notes</h3>
             <span className="text-xs text-stone-400">
               {notes.length} note{notes.length !== 1 ? 's' : ''}
               {pinnedCount > 0 && ` · ${pinnedCount} pinned`}
@@ -132,8 +125,11 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
           </div>
           <button
             type="button"
-            onClick={() => { setShowForm(!showForm); setEditingId(null) }}
-            className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 transition-colors"
+            onClick={() => {
+              setShowForm(!showForm)
+              setEditingId(null)
+            }}
+            className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-400 transition-colors"
           >
             <Plus className="w-3.5 h-3.5" />
             Add Note
@@ -142,14 +138,14 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
 
         {/* Category filter tabs */}
         {notes.length > 0 && (
-          <div className="flex gap-1 px-5 py-2 border-b border-stone-100 overflow-x-auto scrollbar-none">
+          <div className="flex gap-1 px-5 py-2 border-b border-stone-800 overflow-x-auto scrollbar-none">
             <button
               type="button"
               onClick={() => setActiveFilter('all')}
               className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
                 activeFilter === 'all'
                   ? 'bg-stone-800 text-white'
-                  : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                  : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
               }`}
             >
               All ({notes.length})
@@ -165,7 +161,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                   className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-colors ${
                     activeFilter === cat
                       ? `${meta.bg} ${meta.text} ring-1 ring-current`
-                      : 'bg-stone-100 text-stone-500 hover:bg-stone-200'
+                      : 'bg-stone-800 text-stone-500 hover:bg-stone-700'
                   }`}
                 >
                   {meta.label} ({count})
@@ -177,7 +173,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
 
         {/* Add form */}
         {showForm && (
-          <div className="px-5 py-3 border-b border-stone-100 bg-stone-50">
+          <div className="px-5 py-3 border-b border-stone-800 bg-stone-800">
             <InquiryNoteForm
               inquiryId={inquiryId}
               onSubmit={handleAdd}
@@ -223,9 +219,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
 
                   {/* Note content */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm text-stone-800 whitespace-pre-wrap">
-                      {note.note_text}
-                    </p>
+                    <p className="text-sm text-stone-200 whitespace-pre-wrap">{note.note_text}</p>
 
                     {/* Attachment image */}
                     {note.attachment_url && (
@@ -239,7 +233,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                         <img
                           src={note.attachment_url}
                           alt={note.attachment_filename || 'Attachment'}
-                          className="h-24 w-auto rounded-lg object-cover border border-stone-200 hover:opacity-90 transition-opacity"
+                          className="h-24 w-auto rounded-lg object-cover border border-stone-700 hover:opacity-90 transition-opacity"
                         />
                       </button>
                     )}
@@ -250,9 +244,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                         day: 'numeric',
                         year: 'numeric',
                       })}
-                      {note.pinned && (
-                        <span className="ml-1.5 text-brand-500">Pinned</span>
-                      )}
+                      {note.pinned && <span className="ml-1.5 text-brand-500">Pinned</span>}
                     </p>
                   </div>
 
@@ -261,7 +253,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                     <button
                       type="button"
                       onClick={() => handleTogglePin(note.id)}
-                      className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                      className="p-1 text-stone-400 hover:text-stone-400 transition-colors"
                       title={note.pinned ? 'Unpin' : 'Pin'}
                     >
                       {note.pinned ? (
@@ -275,7 +267,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                         href={note.attachment_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                        className="p-1 text-stone-400 hover:text-stone-400 transition-colors"
                         title="Open image in new tab"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
@@ -283,8 +275,11 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
                     )}
                     <button
                       type="button"
-                      onClick={() => { setEditingId(note.id); setShowForm(false) }}
-                      className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+                      onClick={() => {
+                        setEditingId(note.id)
+                        setShowForm(false)
+                      }}
+                      className="p-1 text-stone-400 hover:text-stone-400 transition-colors"
                       title="Edit"
                     >
                       <Edit3 className="w-3.5 h-3.5" />

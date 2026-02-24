@@ -34,10 +34,8 @@ export function ClientEventPhotoGallery({ photos }: Props) {
 
   const openLightbox = (index: number) => setLightboxIndex(index)
   const closeLightbox = () => setLightboxIndex(null)
-  const prevPhoto = () =>
-    setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : photos.length - 1))
-  const nextPhoto = () =>
-    setLightboxIndex((i) => (i !== null && i < photos.length - 1 ? i + 1 : 0))
+  const prevPhoto = () => setLightboxIndex((i) => (i !== null && i > 0 ? i - 1 : photos.length - 1))
+  const nextPhoto = () => setLightboxIndex((i) => (i !== null && i < photos.length - 1 ? i + 1 : 0))
 
   return (
     <>
@@ -45,11 +43,13 @@ export function ClientEventPhotoGallery({ photos }: Props) {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Dinner Photos</CardTitle>
-            <span className="text-sm text-stone-500">{photos.length} photo{photos.length !== 1 ? 's' : ''}</span>
+            <span className="text-sm text-stone-500">
+              {photos.length} photo{photos.length !== 1 ? 's' : ''}
+            </span>
           </div>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-stone-600 mb-4">
+          <p className="text-sm text-stone-400 mb-4">
             Photos from your dinner, shared by your chef.
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -57,7 +57,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
               <button
                 key={photo.id}
                 onClick={() => openLightbox(index)}
-                className="group relative aspect-square rounded-lg overflow-hidden bg-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
+                className="group relative aspect-square rounded-lg overflow-hidden bg-stone-800 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1"
                 title={photo.caption ?? photo.filename_original ?? 'Dinner photo'}
               >
                 {photo.signedUrl ? (
@@ -82,9 +82,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
               </button>
             ))}
           </div>
-          <p className="mt-3 text-xs text-stone-400">
-            Tap any photo to view full size.
-          </p>
+          <p className="mt-3 text-xs text-stone-400">Tap any photo to view full size.</p>
         </CardContent>
       </Card>
 
@@ -97,23 +95,36 @@ export function ClientEventPhotoGallery({ photos }: Props) {
           {/* Close button */}
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
+            className="absolute top-4 right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-2 transition"
             title="Close"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
           {/* Previous */}
           {photos.length > 1 && (
             <button
-              onClick={(e) => { e.stopPropagation(); prevPhoto() }}
-              className="absolute left-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition"
+              onClick={(e) => {
+                e.stopPropagation()
+                prevPhoto()
+              }}
+              className="absolute left-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
               title="Previous"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
             </button>
           )}
@@ -128,7 +139,11 @@ export function ClientEventPhotoGallery({ photos }: Props) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photos[lightboxIndex].signedUrl}
-                  alt={photos[lightboxIndex].caption ?? photos[lightboxIndex].filename_original ?? 'Dinner photo'}
+                  alt={
+                    photos[lightboxIndex].caption ??
+                    photos[lightboxIndex].filename_original ??
+                    'Dinner photo'
+                  }
                   className="max-w-full max-h-[80vh] object-contain mx-auto rounded-lg"
                 />
               </div>
@@ -148,12 +163,20 @@ export function ClientEventPhotoGallery({ photos }: Props) {
           {/* Next */}
           {photos.length > 1 && (
             <button
-              onClick={(e) => { e.stopPropagation(); nextPhoto() }}
-              className="absolute right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition"
+              onClick={(e) => {
+                e.stopPropagation()
+                nextPhoto()
+              }}
+              className="absolute right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
               title="Next"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           )}

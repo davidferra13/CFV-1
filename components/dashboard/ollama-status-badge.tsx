@@ -162,10 +162,10 @@ function DualEndpointBadge({ health }: { health: HealthResponse }) {
   if (health.status === 'all_healthy') {
     return (
       <span
-        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
+        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-950 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
         title={`Private AI — conversations stay in your browser\nPC: ${pc?.latencyMs ?? '?'}ms (${pc?.configuredModel})\nPi: ${pi?.latencyMs ?? '?'}ms (${pi?.configuredModel})`}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-9500 animate-pulse" />
         <span className="hidden sm:inline">PC · {pc?.latencyMs ?? '?'}ms</span>
         <span className="hidden sm:inline text-emerald-400">|</span>
         <span className="hidden sm:inline">Pi · {pi?.latencyMs ?? '?'}ms</span>
@@ -178,10 +178,10 @@ function DualEndpointBadge({ health }: { health: HealthResponse }) {
   if (health.status === 'degraded') {
     return (
       <span
-        className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 shrink-0"
+        className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-950 px-2.5 py-1 text-xs font-medium text-amber-700 shrink-0"
         title={`AI system degraded\n${health.summary}`}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+        <span className="h-1.5 w-1.5 rounded-full bg-amber-9500 animate-pulse" />
         <span className="hidden sm:inline">
           <EndpointChip ep={pc} />
           <span className="text-amber-400 mx-0.5">|</span>
@@ -195,10 +195,10 @@ function DualEndpointBadge({ health }: { health: HealthResponse }) {
   // Offline — all endpoints down
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
+      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-950 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
       title={`All AI endpoints offline — private AI features unavailable.\n${health.summary}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      <span className="h-1.5 w-1.5 rounded-full bg-red-9500" />
       AI Offline
     </span>
   )
@@ -236,10 +236,10 @@ function SingleEndpointBadge({ status }: { status: LegacyStatus }) {
       : 'Private AI — conversations stay in your browser'
     return (
       <span
-        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
+        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-950 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
         title={tooltip}
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-9500 animate-pulse" />
         {latencyLabel}
       </span>
     )
@@ -248,7 +248,7 @@ function SingleEndpointBadge({ status }: { status: LegacyStatus }) {
   if (status.online && status.modelReady === false) {
     return (
       <span
-        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 shrink-0"
+        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-950 px-2.5 py-1 text-xs font-medium text-blue-700 shrink-0"
         title={`Ollama is running but model "${status.model}" is loading...`}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
@@ -263,10 +263,10 @@ function SingleEndpointBadge({ status }: { status: LegacyStatus }) {
     : `Private AI offline — start Ollama to restore Remy. Error: ${status.error ?? 'unreachable'}`
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
+      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-950 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
       title={offlineTooltip}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      <span className="h-1.5 w-1.5 rounded-full bg-red-9500" />
       {offlineLabel}
     </span>
   )
@@ -278,10 +278,10 @@ function SingleEndpointBadgeFromHealth({ endpoint: ep }: { endpoint: EndpointHea
   if (ep.online && ep.modelReady) {
     return (
       <span
-        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
+        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-950 px-2.5 py-1 text-xs font-medium text-emerald-700 shrink-0"
         title="Private AI — conversations stay in your browser"
       >
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-9500 animate-pulse" />
         Local · {ep.latencyMs ?? '?'}ms
       </span>
     )
@@ -290,7 +290,7 @@ function SingleEndpointBadgeFromHealth({ endpoint: ep }: { endpoint: EndpointHea
   if (ep.online && !ep.modelReady) {
     return (
       <span
-        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 shrink-0"
+        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-950 px-2.5 py-1 text-xs font-medium text-blue-700 shrink-0"
         title={`Model "${ep.configuredModel}" is loading...`}
       >
         <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
@@ -301,10 +301,10 @@ function SingleEndpointBadgeFromHealth({ endpoint: ep }: { endpoint: EndpointHea
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
+      className="inline-flex items-center gap-1.5 rounded-full border border-red-300 bg-red-950 px-2.5 py-1 text-xs font-medium text-red-700 shrink-0"
       title={`Local AI offline — ${ep.error ?? 'unreachable'}`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+      <span className="h-1.5 w-1.5 rounded-full bg-red-9500" />
       AI Offline
     </span>
   )

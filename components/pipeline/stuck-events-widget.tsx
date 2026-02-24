@@ -24,22 +24,20 @@ export function StuckEventsWidget({ events }: Props) {
     <Card className="p-5">
       <div className="flex items-center gap-2 mb-3">
         <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-        <h3 className="font-semibold text-stone-900 text-sm">Stuck Events</h3>
+        <h3 className="font-semibold text-stone-100 text-sm">Stuck Events</h3>
         <span className="text-xs text-stone-400 ml-auto">{events.length} flagged</span>
       </div>
       <div className="space-y-2">
-        {events.map(e => {
-          const urgency = e.stuckDays >= e.thresholdDays * 2
-            ? 'text-red-600'
-            : 'text-amber-600'
+        {events.map((e) => {
+          const urgency = e.stuckDays >= e.thresholdDays * 2 ? 'text-red-600' : 'text-amber-600'
           return (
             <Link
               key={e.id}
               href={`/events/${e.id}`}
-              className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-1 transition-colors group"
+              className="flex items-center justify-between hover:bg-stone-800 rounded-md px-1 py-1 transition-colors group"
             >
               <div className="min-w-0">
-                <p className="text-sm font-medium text-stone-900 truncate">
+                <p className="text-sm font-medium text-stone-100 truncate">
                   {e.occasion || 'Untitled Event'}
                 </p>
                 <p className="text-xs text-stone-500">

@@ -18,7 +18,13 @@ type Props = {
   eventId: string
 }
 
-export function MenuApprovalClient({ requestId, menuSnapshot, status, revisionNotes, eventId }: Props) {
+export function MenuApprovalClient({
+  requestId,
+  menuSnapshot,
+  status,
+  revisionNotes,
+  eventId,
+}: Props) {
   const router = useRouter()
   const [showRevisionForm, setShowRevisionForm] = useState(false)
   const [revisionText, setRevisionText] = useState('')
@@ -55,7 +61,7 @@ export function MenuApprovalClient({ requestId, menuSnapshot, status, revisionNo
   // Already responded
   if (status === 'approved') {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center space-y-2">
+      <div className="rounded-xl border border-green-200 bg-green-950 p-6 text-center space-y-2">
         <div className="text-3xl">✓</div>
         <p className="font-semibold text-green-800">Menu approved</p>
         <p className="text-sm text-green-700">Your chef has been notified.</p>
@@ -68,7 +74,7 @@ export function MenuApprovalClient({ requestId, menuSnapshot, status, revisionNo
 
   if (status === 'revision_requested') {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 space-y-3">
+      <div className="rounded-xl border border-amber-200 bg-amber-950 p-6 space-y-3">
         <p className="font-semibold text-amber-800">Revision request sent</p>
         <p className="text-sm text-amber-700">Your note: &ldquo;{revisionNotes}&rdquo;</p>
         <p className="text-xs text-stone-500">Your chef will reach out with an updated menu.</p>
@@ -83,20 +89,22 @@ export function MenuApprovalClient({ requestId, menuSnapshot, status, revisionNo
     <div className="space-y-5">
       {/* Menu display */}
       {menuSnapshot.length > 0 ? (
-        <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
+        <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
           {menuSnapshot.map((menu, i) => (
             <div key={i}>
-              <h3 className="text-sm font-semibold text-stone-800 mb-1">{menu.menu_name}</h3>
+              <h3 className="text-sm font-semibold text-stone-200 mb-1">{menu.menu_name}</h3>
               <ul className="space-y-1">
                 {menu.dishes.map((dish, j) => (
-                  <li key={j} className="text-sm text-stone-600">• {dish}</li>
+                  <li key={j} className="text-sm text-stone-400">
+                    • {dish}
+                  </li>
                 ))}
               </ul>
             </div>
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <div className="rounded-xl border border-stone-700 bg-surface p-5">
           <p className="text-sm text-stone-500">
             Menu details are being finalized. Contact your chef for the full list.
           </p>
@@ -120,14 +128,14 @@ export function MenuApprovalClient({ requestId, menuSnapshot, status, revisionNo
         </div>
       ) : (
         <div className="space-y-3">
-          <label className="block text-sm font-medium text-stone-700">
+          <label className="block text-sm font-medium text-stone-300">
             What would you like changed?
           </label>
           <textarea
             value={revisionText}
             onChange={(e) => setRevisionText(e.target.value)}
             rows={4}
-            className="w-full rounded-lg border border-stone-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full rounded-lg border border-stone-600 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
             placeholder="e.g. Could we swap the salmon for halibut? One guest is vegetarian."
           />
           <div className="flex gap-2">

@@ -52,7 +52,7 @@ export function PreferenceInsights({ clientName, patterns }: Props) {
       <div className="flex items-center gap-2">
         <Brain className="h-5 w-5 text-stone-400" />
         <div>
-          <h2 className="text-lg font-semibold text-stone-900">Client Preferences</h2>
+          <h2 className="text-lg font-semibold text-stone-100">Client Preferences</h2>
           <p className="text-sm text-stone-500">Learned from {clientName}&apos;s past events</p>
         </div>
       </div>
@@ -81,7 +81,9 @@ export function PreferenceInsights({ clientName, patterns }: Props) {
                   .map((item, i) => (
                     <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-stone-900">{item.patternValue}</span>
+                        <span className="text-sm font-medium text-stone-100">
+                          {item.patternValue}
+                        </span>
                         <Badge variant={confidenceBadge(item.confidence)}>
                           {confidenceLabel(item.confidence)}
                         </Badge>

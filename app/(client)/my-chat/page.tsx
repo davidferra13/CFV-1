@@ -14,8 +14,8 @@ export default async function ClientChatInboxPage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-stone-900">Messages</h1>
-        <p className="text-stone-600 mt-1">Chat with your chef</p>
+        <h1 className="text-3xl font-bold text-stone-100">Messages</h1>
+        <p className="text-stone-400 mt-1">Chat with your chef</p>
       </div>
 
       <ChatInbox

@@ -51,8 +51,8 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
 
   if (!editing) {
     return (
-      <div className="rounded-lg border border-stone-200 overflow-hidden">
-        <div className="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
+      <div className="rounded-lg border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <svg
               className="w-4 h-4 text-stone-500"
@@ -67,8 +67,8 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
                 d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
               />
             </svg>
-            <h3 className="font-medium text-stone-800">Security & Access</h3>
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">
+            <h3 className="font-medium text-stone-200">Security & Access</h3>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-900 text-amber-700 font-medium">
               Sensitive
             </span>
           </div>
@@ -77,7 +77,7 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
               <button
                 type="button"
                 onClick={() => setShowSensitive(!showSensitive)}
-                className="text-xs text-stone-500 hover:text-stone-700"
+                className="text-xs text-stone-500 hover:text-stone-300"
               >
                 {showSensitive ? 'Hide' : 'Show'}
               </button>
@@ -96,37 +96,37 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
             {gateCode && (
               <>
                 <span className="text-stone-500">Gate Code</span>
-                <span className="text-stone-800 font-mono">{mask(gateCode)}</span>
+                <span className="text-stone-200 font-mono">{mask(gateCode)}</span>
               </>
             )}
             {wifiPassword && (
               <>
                 <span className="text-stone-500">WiFi Password</span>
-                <span className="text-stone-800 font-mono">{mask(wifiPassword)}</span>
+                <span className="text-stone-200 font-mono">{mask(wifiPassword)}</span>
               </>
             )}
             {securityNotes && (
               <>
                 <span className="text-stone-500">Security</span>
-                <span className="text-stone-800">{securityNotes}</span>
+                <span className="text-stone-200">{securityNotes}</span>
               </>
             )}
             {parking && (
               <>
                 <span className="text-stone-500">Parking</span>
-                <span className="text-stone-800">{parking}</span>
+                <span className="text-stone-200">{parking}</span>
               </>
             )}
             {access && (
               <>
                 <span className="text-stone-500">Access</span>
-                <span className="text-stone-800">{access}</span>
+                <span className="text-stone-200">{access}</span>
               </>
             )}
             {houseRules && (
               <>
                 <span className="text-stone-500">House Rules</span>
-                <span className="text-stone-800">{houseRules}</span>
+                <span className="text-stone-200">{houseRules}</span>
               </>
             )}
           </div>
@@ -140,9 +140,9 @@ export function SecurityAccessPanel({ clientId, ...initial }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-brand-200 overflow-hidden">
-      <div className="px-4 py-3 bg-brand-50 border-b border-brand-200">
-        <h3 className="font-medium text-stone-800">Security & Access</h3>
+    <div className="rounded-lg border border-brand-700 overflow-hidden">
+      <div className="px-4 py-3 bg-brand-950 border-b border-brand-700">
+        <h3 className="font-medium text-stone-200">Security & Access</h3>
       </div>
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -28,21 +28,21 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
         <CardContent>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-stone-600">Leads captured</span>
-              <span className="text-sm font-semibold text-stone-900">{tacLeadCount}</span>
+              <span className="text-sm text-stone-400">Leads captured</span>
+              <span className="text-sm font-semibold text-stone-100">{tacLeadCount}</span>
             </div>
             {lastSyncAt && (
               <div className="flex items-center justify-between">
-                <span className="text-sm text-stone-600">Last synced</span>
+                <span className="text-sm text-stone-400">Last synced</span>
                 <span className="text-sm text-stone-500">
                   {new Date(lastSyncAt).toLocaleString()}
                 </span>
               </div>
             )}
-            <div className="pt-2 border-t border-stone-100">
+            <div className="pt-2 border-t border-stone-800">
               <button
                 type="button"
-                className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
+                className="text-xs text-stone-400 hover:text-stone-400 transition-colors"
                 onClick={() => {
                   /* placeholder — disconnect not yet implemented */
                 }}
@@ -77,7 +77,7 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
                 />
               </svg>
             </div>
-            <p className="text-sm text-stone-600 leading-relaxed">
+            <p className="text-sm text-stone-400 leading-relaxed">
               We&apos;re scanning your inbox for TakeAChef emails. New leads will appear on your
               dashboard within 5 minutes.
             </p>
@@ -104,7 +104,7 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
               1
             </div>
             <div className="flex-1 space-y-2">
-              <h4 className="text-sm font-semibold text-stone-900">Connect your Gmail</h4>
+              <h4 className="text-sm font-semibold text-stone-100">Connect your Gmail</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
                 ChefFlow will scan for TakeAChef notification emails so we can turn them into leads
                 automatically.
@@ -125,11 +125,11 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
 
           {/* Step 2: Automatic processing */}
           <li className="flex gap-4">
-            <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-200 text-stone-600 text-xs font-bold">
+            <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-700 text-stone-400 text-xs font-bold">
               2
             </div>
             <div className="flex-1 space-y-2">
-              <h4 className="text-sm font-semibold text-stone-900">We do the rest</h4>
+              <h4 className="text-sm font-semibold text-stone-100">We do the rest</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
                 ChefFlow automatically detects new TakeAChef emails, deduplicates contacts, and
                 creates leads in your pipeline. No manual entry needed.
@@ -139,11 +139,11 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
 
           {/* Step 3: Commission rate */}
           <li className="flex gap-4">
-            <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-200 text-stone-600 text-xs font-bold">
+            <div className="flex-shrink-0 flex items-center justify-center h-7 w-7 rounded-full bg-stone-700 text-stone-400 text-xs font-bold">
               3
             </div>
             <div className="flex-1 space-y-2">
-              <h4 className="text-sm font-semibold text-stone-900">Set commission rate</h4>
+              <h4 className="text-sm font-semibold text-stone-100">Set commission rate</h4>
               <p className="text-sm text-stone-500 leading-relaxed">
                 TakeAChef takes a percentage of each booking. Set it here so ChefFlow can calculate
                 your net revenue accurately.
@@ -157,7 +157,7 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
                   onChange={(e) =>
                     setCommissionRate(Math.min(100, Math.max(0, Number(e.target.value))))
                   }
-                  className="w-20 h-9 px-3 text-sm text-stone-900 bg-white border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  className="w-20 h-9 px-3 text-sm text-stone-100 bg-surface border border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 />
                 <span className="text-sm text-stone-500">%</span>
               </div>

@@ -30,7 +30,7 @@ export function CallStatusActions({ call }: { call: ScheduledCall }) {
           variant="secondary"
           disabled={isPending}
           onClick={() => transition('confirmed')}
-          className="border-green-300 text-green-700 hover:bg-green-50"
+          className="border-green-300 text-green-700 hover:bg-green-950"
         >
           Mark confirmed
         </Button>
@@ -39,7 +39,7 @@ export function CallStatusActions({ call }: { call: ScheduledCall }) {
           variant="secondary"
           disabled={isPending}
           onClick={() => transition('cancelled')}
-          className="border-red-200 text-red-500 hover:bg-red-50"
+          className="border-red-200 text-red-500 hover:bg-red-950"
         >
           Cancel call
         </Button>
@@ -55,7 +55,7 @@ export function CallStatusActions({ call }: { call: ScheduledCall }) {
           variant="secondary"
           disabled={isPending}
           onClick={() => transition('cancelled')}
-          className="border-red-200 text-red-500 hover:bg-red-50"
+          className="border-red-200 text-red-500 hover:bg-red-950"
         >
           Cancel call
         </Button>

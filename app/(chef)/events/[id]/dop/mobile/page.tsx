@@ -44,10 +44,12 @@ export default async function DopMobilePage({ params }: Props) {
 
   if (!schedule) {
     return (
-      <div className="min-h-screen bg-stone-50 flex items-center justify-center p-8">
+      <div className="min-h-screen bg-stone-800 flex items-center justify-center p-8">
         <div className="text-center">
-          <p className="text-stone-600 font-medium">No DOP schedule available.</p>
-          <p className="text-sm text-stone-400 mt-1">Ensure the event has a date and serve time set.</p>
+          <p className="text-stone-400 font-medium">No DOP schedule available.</p>
+          <p className="text-sm text-stone-400 mt-1">
+            Ensure the event has a date and serve time set.
+          </p>
         </div>
       </div>
     )

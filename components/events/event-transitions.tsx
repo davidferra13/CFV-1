@@ -14,7 +14,7 @@ import {
   confirmEvent,
   startEvent,
   completeEvent,
-  cancelEvent
+  cancelEvent,
 } from '@/lib/events/transitions'
 import type { ReadinessResult, GateResult } from '@/lib/events/readiness'
 
@@ -38,14 +38,14 @@ type Event = {
 function GateList({ blockers }: { blockers: GateResult[] }) {
   if (blockers.length === 0) return null
 
-  const hardBlocks = blockers.filter(g => g.isHardBlock)
-  const softWarnings = blockers.filter(g => !g.isHardBlock)
+  const hardBlocks = blockers.filter((g) => g.isHardBlock)
+  const softWarnings = blockers.filter((g) => !g.isHardBlock)
 
   return (
     <div className="space-y-2">
       {/* Hard blocks — must be resolved before proceeding */}
       {hardBlocks.length > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 space-y-1.5">
+        <div className="rounded-lg border border-red-200 bg-red-950 p-3 space-y-1.5">
           <p className="text-xs font-semibold text-red-900">Required before proceeding:</p>
           {hardBlocks.map((g) => (
             <div key={g.gate} className="flex items-start gap-2">
@@ -64,7 +64,7 @@ function GateList({ blockers }: { blockers: GateResult[] }) {
 
       {/* Soft warnings — you can still proceed, but these are recommended */}
       {softWarnings.length > 0 && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-1.5">
+        <div className="rounded-lg border border-amber-200 bg-amber-950 p-3 space-y-1.5">
           <p className="text-xs font-semibold text-amber-900">
             Recommended before proceeding (you can still continue):
           </p>
@@ -162,16 +162,12 @@ export function EventTransitions({
 
       <div className="space-y-4">
         {/* Readiness gate warnings — shown for transitions that have blockers */}
-        {blockers.length > 0 && (
-          <GateList blockers={blockers} />
-        )}
+        {blockers.length > 0 && <GateList blockers={blockers} />}
 
         {/* Cancel Dialog */}
         {showCancelDialog && (
-          <div className="border border-red-200 rounded-lg p-4 bg-red-50">
-            <h3 className="text-sm font-semibold text-red-900 mb-3">
-              Cancel Event
-            </h3>
+          <div className="border border-red-200 rounded-lg p-4 bg-red-950">
+            <h3 className="text-sm font-semibold text-red-900 mb-3">Cancel Event</h3>
             <Input
               label="Cancellation Reason"
               required
@@ -242,10 +238,9 @@ export function EventTransitions({
 
           {event.status === 'in_progress' && (
             <Button
-              onClick={() => handleTransition(
-                () => completeEvent(event.id),
-                `/events/${event.id}/close-out`
-              )}
+              onClick={() =>
+                handleTransition(() => completeEvent(event.id), `/events/${event.id}/close-out`)
+              }
               loading={loading}
               disabled={loading || isHardBlocked}
               title={isHardBlocked ? 'Resolve required items above before completing' : undefined}
@@ -256,18 +251,14 @@ export function EventTransitions({
 
           {/* Cancel button available for all non-terminal states */}
           {!showCancelDialog && (
-            <Button
-              variant="danger"
-              onClick={() => setShowCancelDialog(true)}
-              disabled={loading}
-            >
+            <Button variant="danger" onClick={() => setShowCancelDialog(true)} disabled={loading}>
               Cancel Event
             </Button>
           )}
         </div>
 
         {/* Status-specific help text */}
-        <div className="text-sm text-stone-600 mt-4">
+        <div className="text-sm text-stone-400 mt-4">
           {event.status === 'draft' && (
             <p>
               Once proposed, the client will be able to view and accept this event. Make sure all
@@ -282,24 +273,18 @@ export function EventTransitions({
           )}
           {event.status === 'accepted' && (
             <p>
-              Client has accepted. Waiting for payment to be processed. The event will
-              automatically move to &ldquo;Paid&rdquo; status once payment succeeds.
+              Client has accepted. Waiting for payment to be processed. The event will automatically
+              move to &ldquo;Paid&rdquo; status once payment succeeds.
             </p>
           )}
           {event.status === 'paid' && (
-            <p>
-              Payment received! Confirm the event to move forward with preparations.
-            </p>
+            <p>Payment received! Confirm the event to move forward with preparations.</p>
           )}
           {event.status === 'confirmed' && (
-            <p>
-              Event is confirmed. Mark as &ldquo;In Progress&rdquo; when the event begins.
-            </p>
+            <p>Event is confirmed. Mark as &ldquo;In Progress&rdquo; when the event begins.</p>
           )}
           {event.status === 'in_progress' && (
-            <p>
-              Event is currently in progress. Mark as completed when finished.
-            </p>
+            <p>Event is currently in progress. Mark as completed when finished.</p>
           )}
         </div>
       </div>

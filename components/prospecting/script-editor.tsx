@@ -81,26 +81,26 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+          <div className="rounded-lg bg-red-950 px-4 py-3 text-sm text-red-700">{error}</div>
         )}
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-stone-700">Script Name</label>
+          <label className="text-sm font-medium text-stone-300">Script Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Yacht Club Intro, General Cold Call"
-            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-stone-700">Category (optional)</label>
+          <label className="text-sm font-medium text-stone-300">Category (optional)</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm"
           >
             <option value="">No specific category</option>
             {PROSPECT_CATEGORIES.map((cat) => (
@@ -115,13 +115,13 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium text-stone-700">Script Body</label>
+          <label className="text-sm font-medium text-stone-300">Script Body</label>
           <textarea
             value={scriptBody}
             onChange={(e) => setScriptBody(e.target.value)}
             placeholder={`"Hi, this is [Chef Name] — I'm a private chef here in [Region]. I work with several [clubs/families/venues] in the area and I was reaching out because..."\n\nWrite your full cold-calling script here. Include:\n• Opening hook\n• Value proposition\n• Key talking points\n• Objection handling\n• Close / next step ask`}
             rows={14}
-            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm font-mono focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
@@ -131,9 +131,9 @@ export function ScriptEditor({ script, onSaved }: ScriptEditorProps) {
             id="is-default"
             checked={isDefault}
             onChange={(e) => setIsDefault(e.target.checked)}
-            className="rounded border-stone-300 text-brand-500 focus:ring-brand-500"
+            className="rounded border-stone-600 text-brand-500 focus:ring-brand-500"
           />
-          <label htmlFor="is-default" className="text-sm text-stone-700">
+          <label htmlFor="is-default" className="text-sm text-stone-300">
             Set as default script (used when no category-specific script exists)
           </label>
         </div>
@@ -178,7 +178,7 @@ interface ScriptListProps {
 export function ScriptList({ scripts, onSelect, selectedId }: ScriptListProps) {
   if (scripts.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-stone-500">
+      <div className="rounded-lg border border-dashed border-stone-600 p-8 text-center text-stone-500">
         <p className="text-sm">No call scripts yet.</p>
         <p className="text-xs mt-1">Create your first cold-calling script to get started.</p>
       </div>
@@ -193,14 +193,14 @@ export function ScriptList({ scripts, onSelect, selectedId }: ScriptListProps) {
           onClick={() => onSelect(script)}
           className={`w-full text-left rounded-lg border p-3 transition-colors ${
             selectedId === script.id
-              ? 'border-brand-500 bg-brand-50'
-              : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50'
+              ? 'border-brand-500 bg-brand-950'
+              : 'border-stone-700 hover:border-stone-600 hover:bg-stone-800'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-stone-900">{script.name}</span>
+            <span className="text-sm font-medium text-stone-100">{script.name}</span>
             {script.is_default && (
-              <span className="rounded-full bg-brand-100 px-2 py-0.5 text-xs font-medium text-brand-700">
+              <span className="rounded-full bg-brand-900 px-2 py-0.5 text-xs font-medium text-brand-400">
                 Default
               </span>
             )}

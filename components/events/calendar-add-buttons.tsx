@@ -11,8 +11,8 @@ import { CalendarPlus } from 'lucide-react'
 type Props = {
   eventId: string
   occasion: string
-  eventDate: string    // 'YYYY-MM-DD'
-  startTime?: string   // 'HH:MM' 24-hour
+  eventDate: string // 'YYYY-MM-DD'
+  startTime?: string // 'HH:MM' 24-hour
   location?: string
 }
 
@@ -29,15 +29,15 @@ function buildGoogleCalendarUrl({
   // Default: 6pm–10pm if no times provided
   const startHHMM = startTime ?? '18:00'
   const [startH, startM] = startHHMM.split(':').map(Number)
-  const endH = Math.min(startH + 3, 23)  // 3-hour duration cap at 11pm
+  const endH = Math.min(startH + 3, 23) // 3-hour duration cap at 11pm
 
   const start = `${datePart}T${String(startH).padStart(2, '0')}${String(startM).padStart(2, '0')}00`
-  const end   = `${datePart}T${String(endH).padStart(2, '0')}${String(startM).padStart(2, '0')}00`
+  const end = `${datePart}T${String(endH).padStart(2, '0')}${String(startM).padStart(2, '0')}00`
 
   const params = new URLSearchParams({
-    action:  'TEMPLATE',
-    text:    occasion,
-    dates:   `${start}/${end}`,
+    action: 'TEMPLATE',
+    text: occasion,
+    dates: `${start}/${end}`,
     details: 'Event booked via ChefFlow',
   })
 
@@ -48,7 +48,7 @@ function buildGoogleCalendarUrl({
 
 export function CalendarAddButtons({ eventId, occasion, eventDate, startTime, location }: Props) {
   const googleUrl = buildGoogleCalendarUrl({ occasion, eventDate, startTime, location })
-  const icsUrl    = `/api/calendar/event/${eventId}`
+  const icsUrl = `/api/calendar/event/${eventId}`
 
   return (
     <div className="space-y-2">
@@ -60,7 +60,7 @@ export function CalendarAddButtons({ eventId, occasion, eventDate, startTime, lo
           href={googleUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-white text-stone-700 border border-stone-300 hover:bg-stone-50 transition-all duration-150"
+          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-surface text-stone-300 border border-stone-600 hover:bg-stone-800 transition-all duration-150"
         >
           <CalendarPlus className="w-3.5 h-3.5" />
           Google Calendar
@@ -69,7 +69,7 @@ export function CalendarAddButtons({ eventId, occasion, eventDate, startTime, lo
         <a
           href={icsUrl}
           download={`${occasion.replace(/\s+/g, '-').toLowerCase()}.ics`}
-          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-white text-stone-700 border border-stone-300 hover:bg-stone-50 transition-all duration-150"
+          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-surface text-stone-300 border border-stone-600 hover:bg-stone-800 transition-all duration-150"
         >
           <CalendarPlus className="w-3.5 h-3.5" />
           Apple / Outlook (.ics)

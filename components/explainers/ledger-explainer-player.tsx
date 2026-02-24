@@ -10,7 +10,7 @@ import { LedgerExplainerComposition } from '@/lib/remotion/ledger-explainer-comp
 
 export function LedgerExplainerPlayer() {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={LedgerExplainerComposition}
         compositionWidth={640}

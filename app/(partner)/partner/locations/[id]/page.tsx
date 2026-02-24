@@ -26,13 +26,13 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
   return (
     <div className="space-y-8">
       {/* Back nav */}
-      <Link href="/partner/locations" className="text-sm text-stone-500 hover:text-stone-800">
+      <Link href="/partner/locations" className="text-sm text-stone-500 hover:text-stone-200">
         ← All Locations
       </Link>
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">{location.name}</h1>
+        <h1 className="text-2xl font-bold text-stone-100">{location.name}</h1>
         {(location.city || location.state) && (
           <p className="flex items-center gap-1.5 mt-1 text-stone-500">
             <MapPin size={14} />
@@ -46,16 +46,16 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
       {/* Stats strip */}
       <div className="flex gap-6">
         <div className="text-center">
-          <p className="text-2xl font-bold text-stone-900">{completedEvents.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{completedEvents.length}</p>
           <p className="text-xs text-stone-500">Events</p>
         </div>
         <div className="text-center">
-          <p className="text-2xl font-bold text-stone-900">{totalGuests.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-stone-100">{totalGuests.toLocaleString()}</p>
           <p className="text-xs text-stone-500">Guests served</p>
         </div>
         {location.max_guest_count && (
           <div className="text-center">
-            <p className="text-2xl font-bold text-stone-900">{location.max_guest_count}</p>
+            <p className="text-2xl font-bold text-stone-100">{location.max_guest_count}</p>
             <p className="text-xs text-stone-500">Capacity</p>
           </div>
         )}
@@ -63,21 +63,21 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
 
       {/* Description */}
       {location.description && (
-        <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <div className="rounded-xl border border-stone-700 bg-surface p-5">
           <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-2">
             About this space
           </h2>
-          <p className="text-stone-700 text-sm whitespace-pre-wrap">{location.description}</p>
+          <p className="text-stone-300 text-sm whitespace-pre-wrap">{location.description}</p>
         </div>
       )}
 
       {/* Photos */}
       {images.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-stone-900 mb-3">Photos</h2>
+          <h2 className="text-lg font-semibold text-stone-100 mb-3">Photos</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {images.map((img) => (
-              <div key={img.id} className="rounded-xl overflow-hidden aspect-square bg-stone-100">
+              <div key={img.id} className="rounded-xl overflow-hidden aspect-square bg-stone-800">
                 <img
                   src={img.image_url}
                   alt={img.caption ?? location.name}
@@ -91,19 +91,19 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
 
       {/* Event history */}
       <div>
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">
+        <h2 className="text-lg font-semibold text-stone-100 mb-4">
           Event History ({completedEvents.length})
         </h2>
 
         {completedEvents.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-stone-200 p-8 text-center">
+          <div className="rounded-xl border border-dashed border-stone-700 p-8 text-center">
             <Calendar size={24} className="mx-auto text-stone-300 mb-2" />
             <p className="text-sm text-stone-500">No completed events yet at this location.</p>
           </div>
         ) : (
-          <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+          <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-stone-50 border-b border-stone-200">
+              <thead className="bg-stone-800 border-b border-stone-700">
                 <tr>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium">Date</th>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium">Occasion</th>
@@ -112,14 +112,14 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {completedEvents.map((evt) => (
                   <tr key={evt.id}>
-                    <td className="px-4 py-3 text-stone-700">
+                    <td className="px-4 py-3 text-stone-300">
                       {format(new Date(evt.event_date), 'MMM d, yyyy')}
                     </td>
-                    <td className="px-4 py-3 text-stone-700">{evt.occasion ?? '—'}</td>
-                    <td className="px-4 py-3 text-right text-stone-700">
+                    <td className="px-4 py-3 text-stone-300">{evt.occasion ?? '—'}</td>
+                    <td className="px-4 py-3 text-right text-stone-300">
                       {evt.guest_count ?? '—'}
                     </td>
                   </tr>

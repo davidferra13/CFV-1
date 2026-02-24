@@ -83,20 +83,20 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
   return (
     <div
       className={`border rounded-lg p-4 transition-colors ${
-        approved ? 'border-green-200 bg-green-50' : 'border-stone-200 bg-white'
+        approved ? 'border-green-200 bg-green-950' : 'border-stone-700 bg-surface'
       }`}
     >
       {/* Header row */}
       <div className="flex items-start gap-3">
         {/* Avatar */}
-        <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-semibold shrink-0">
+        <div className="w-9 h-9 rounded-full bg-brand-900 text-brand-400 flex items-center justify-center text-sm font-semibold shrink-0">
           {initials || '?'}
         </div>
 
         {/* Name + status */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-stone-800 truncate">{displayName}</span>
+            <span className="text-sm font-medium text-stone-200 truncate">{displayName}</span>
             {approved && <Badge variant="success">Approved</Badge>}
             {!hasDraft && !approved && <Badge variant="warning">No draft yet</Badge>}
           </div>
@@ -109,7 +109,7 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
         {hasDraft && (
           <button
             onClick={() => setExpanded((e) => !e)}
-            className="text-stone-400 hover:text-stone-600 shrink-0"
+            className="text-stone-400 hover:text-stone-400 shrink-0"
             aria-label={expanded ? 'Collapse' : 'Expand'}
           >
             {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -130,7 +130,7 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
                   type="text"
                   value={editSubject}
                   onChange={(e) => setEditSubject(e.target.value)}
-                  className="mt-0.5 w-full text-sm border border-stone-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                  className="mt-0.5 w-full text-sm border border-stone-600 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
                 />
               </div>
               <div>
@@ -141,23 +141,23 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
                   value={editBody}
                   onChange={(e) => setEditBody(e.target.value)}
                   rows={6}
-                  className="mt-0.5 w-full text-sm border border-stone-300 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400 resize-y"
+                  className="mt-0.5 w-full text-sm border border-stone-600 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400 resize-y"
                 />
               </div>
             </>
           ) : (
             <>
-              <div className="bg-stone-50 rounded p-2.5">
+              <div className="bg-stone-800 rounded p-2.5">
                 <div className="text-[11px] text-stone-400 font-medium uppercase tracking-wide mb-1">
                   Subject
                 </div>
-                <div className="text-sm text-stone-700">{recipient.draft_subject}</div>
+                <div className="text-sm text-stone-300">{recipient.draft_subject}</div>
               </div>
-              <div className="bg-stone-50 rounded p-2.5">
+              <div className="bg-stone-800 rounded p-2.5">
                 <div className="text-[11px] text-stone-400 font-medium uppercase tracking-wide mb-1">
                   Message
                 </div>
-                <div className="text-sm text-stone-700 whitespace-pre-wrap">
+                <div className="text-sm text-stone-300 whitespace-pre-wrap">
                   {recipient.draft_body}
                 </div>
               </div>

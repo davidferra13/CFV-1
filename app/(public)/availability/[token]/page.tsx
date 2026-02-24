@@ -20,7 +20,7 @@ export default async function PublicAvailabilityPage({
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-800">
             <svg
               className="h-7 w-7 text-stone-400"
               fill="none"
@@ -35,7 +35,7 @@ export default async function PublicAvailabilityPage({
               />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-stone-900">Link Not Found</h1>
+          <h1 className="text-xl font-bold text-stone-100">Link Not Found</h1>
           <p className="text-sm text-stone-500 mt-2">
             This availability link is invalid or has been revoked.
           </p>
@@ -51,7 +51,7 @@ export default async function PublicAvailabilityPage({
     return (
       <div className="min-h-[60vh] flex items-center justify-center px-4">
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-100">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-stone-800">
             <svg
               className="h-7 w-7 text-stone-400"
               fill="none"
@@ -66,7 +66,7 @@ export default async function PublicAvailabilityPage({
               />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-stone-900">Link Expired</h1>
+          <h1 className="text-xl font-bold text-stone-100">Link Expired</h1>
           <p className="text-sm text-stone-500 mt-2">
             This availability link has expired. Please request a new one from your chef.
           </p>
@@ -105,7 +105,7 @@ export default async function PublicAvailabilityPage({
   return (
     <div className="max-w-2xl mx-auto py-12 px-4 space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-stone-900">{chefName}&apos;s Availability</h1>
+        <h1 className="text-2xl font-bold text-stone-100">{chefName}&apos;s Availability</h1>
         <p className="text-sm text-stone-500 mt-1">Next 60 days</p>
       </div>
 
@@ -113,7 +113,7 @@ export default async function PublicAvailabilityPage({
         <CardContent className="py-4">
           <div className="flex gap-4 mb-4 text-xs text-stone-500">
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-white border border-stone-200" />
+              <div className="w-3 h-3 rounded bg-surface border border-stone-700" />
               <span>Available</span>
             </div>
             <div className="flex items-center gap-1">
@@ -138,7 +138,7 @@ export default async function PublicAvailabilityPage({
                 className={`py-2 rounded text-xs ${
                   day.busy
                     ? 'bg-stone-300 text-stone-500'
-                    : 'bg-white border border-stone-200 text-stone-700'
+                    : 'bg-surface border border-stone-700 text-stone-300'
                 }`}
               >
                 {new Date(day.date + 'T12:00:00').getDate()}

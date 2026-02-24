@@ -24,10 +24,10 @@ const config: Config = {
           950: '#3e200f',
         },
         surface: {
-          DEFAULT: '#ffffff',
-          muted: '#faf9f7',
-          accent: '#f5f3ef',
-          page: '#ede9e4',
+          DEFAULT: '#1c1917',
+          muted: '#292524',
+          accent: '#292524',
+          page: '#0c0a09',
         },
       },
       fontFamily: {

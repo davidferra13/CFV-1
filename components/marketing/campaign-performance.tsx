@@ -40,7 +40,7 @@ export function CampaignPerformance({ campaigns }: CampaignPerformanceProps) {
   const avgClickRate = totalSent > 0 ? ((totalClicks / totalSent) * 100).toFixed(1) : '0.0'
 
   // Chart data
-  const chartData = campaigns.map(c => ({
+  const chartData = campaigns.map((c) => ({
     name: c.name.length > 20 ? c.name.slice(0, 18) + '...' : c.name,
     Opens: c.openCount,
     Clicks: c.clickCount,
@@ -125,34 +125,45 @@ export function CampaignPerformance({ campaigns }: CampaignPerformanceProps) {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-200">
-                    <th className="text-left py-2 px-3 font-medium text-stone-600">Campaign</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-600">Sent</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-600">Opens</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-600">Open Rate</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-600">Clicks</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-600">CTR</th>
-                    <th className="text-right py-2 px-3 font-medium text-stone-600">Revenue</th>
+                  <tr className="border-b border-stone-700">
+                    <th className="text-left py-2 px-3 font-medium text-stone-400">Campaign</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-400">Sent</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-400">Opens</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-400">Open Rate</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-400">Clicks</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-400">CTR</th>
+                    <th className="text-right py-2 px-3 font-medium text-stone-400">Revenue</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {campaigns.map(campaign => {
-                    const openRate = campaign.sentCount > 0
-                      ? ((campaign.openCount / campaign.sentCount) * 100).toFixed(1)
-                      : '0.0'
-                    const ctr = campaign.sentCount > 0
-                      ? ((campaign.clickCount / campaign.sentCount) * 100).toFixed(1)
-                      : '0.0'
+                  {campaigns.map((campaign) => {
+                    const openRate =
+                      campaign.sentCount > 0
+                        ? ((campaign.openCount / campaign.sentCount) * 100).toFixed(1)
+                        : '0.0'
+                    const ctr =
+                      campaign.sentCount > 0
+                        ? ((campaign.clickCount / campaign.sentCount) * 100).toFixed(1)
+                        : '0.0'
 
                     return (
-                      <tr key={campaign.id} className="border-b border-stone-100 hover:bg-stone-50">
-                        <td className="py-2 px-3 font-medium text-stone-900">{campaign.name}</td>
-                        <td className="py-2 px-3 text-right text-stone-700">{campaign.sentCount.toLocaleString()}</td>
-                        <td className="py-2 px-3 text-right text-stone-700">{campaign.openCount.toLocaleString()}</td>
-                        <td className="py-2 px-3 text-right text-stone-700">{openRate}%</td>
-                        <td className="py-2 px-3 text-right text-stone-700">{campaign.clickCount.toLocaleString()}</td>
-                        <td className="py-2 px-3 text-right text-stone-700">{ctr}%</td>
-                        <td className="py-2 px-3 text-right font-medium text-stone-900">
+                      <tr
+                        key={campaign.id}
+                        className="border-b border-stone-800 hover:bg-stone-800"
+                      >
+                        <td className="py-2 px-3 font-medium text-stone-100">{campaign.name}</td>
+                        <td className="py-2 px-3 text-right text-stone-300">
+                          {campaign.sentCount.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 text-right text-stone-300">
+                          {campaign.openCount.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 text-right text-stone-300">{openRate}%</td>
+                        <td className="py-2 px-3 text-right text-stone-300">
+                          {campaign.clickCount.toLocaleString()}
+                        </td>
+                        <td className="py-2 px-3 text-right text-stone-300">{ctr}%</td>
+                        <td className="py-2 px-3 text-right font-medium text-stone-100">
                           ${(campaign.revenueCents / 100).toFixed(2)}
                         </td>
                       </tr>
@@ -184,7 +195,7 @@ function SummaryCard({
       <CardContent className="flex items-center gap-3 py-4">
         <div className="flex-shrink-0">{icon}</div>
         <div>
-          <p className="text-2xl font-bold text-stone-900">{value}</p>
+          <p className="text-2xl font-bold text-stone-100">{value}</p>
           <p className="text-xs text-stone-500">{label}</p>
         </div>
       </CardContent>

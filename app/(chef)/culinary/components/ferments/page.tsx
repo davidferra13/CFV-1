@@ -50,13 +50,13 @@ export default async function FermentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-300">
           ← Components
         </Link>
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Ferments</h1>
-            <span className="bg-teal-100 text-teal-700 text-sm px-2 py-0.5 rounded-full">
+            <h1 className="text-3xl font-bold text-stone-100">Ferments</h1>
+            <span className="bg-teal-900 text-teal-700 text-sm px-2 py-0.5 rounded-full">
               {fermentRecipes.length + fermentComponents.length}
             </span>
           </div>
@@ -65,8 +65,8 @@ export default async function FermentsPage() {
         <p className="text-stone-500 mt-1">Fermented, pickled, and cured preparations</p>
       </div>
 
-      <Card className="p-4 bg-stone-50 border-stone-200">
-        <p className="text-sm text-stone-600">
+      <Card className="p-4 bg-stone-800 border-stone-700">
+        <p className="text-sm text-stone-400">
           Ferments are matched by name — recipes and components containing &quot;ferment&quot;,
           &quot;pickle&quot;, &quot;kimchi&quot;, &quot;miso&quot;, &quot;lacto&quot;,
           &quot;cured&quot;, or similar terms appear here.
@@ -75,7 +75,7 @@ export default async function FermentsPage() {
 
       {fermentRecipes.length === 0 && fermentComponents.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No fermented preparations found</p>
+          <p className="text-stone-400 font-medium">No fermented preparations found</p>
           <p className="text-stone-400 text-sm mt-1">
             Create recipes or menu components with fermentation-related names to see them here
           </p>
@@ -84,7 +84,7 @@ export default async function FermentsPage() {
         <>
           {fermentRecipes.length > 0 && (
             <>
-              <h2 className="text-base font-semibold text-stone-700">
+              <h2 className="text-base font-semibold text-stone-300">
                 Recipes ({fermentRecipes.length})
               </h2>
               <div className="grid grid-cols-2 gap-3">
@@ -97,7 +97,7 @@ export default async function FermentsPage() {
                       {recipe.name}
                     </Link>
                     <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-xs bg-stone-800 text-stone-500 px-2 py-0.5 rounded-full capitalize">
                         {recipe.category}
                       </span>
                       {recipe.cook_time_minutes && (
@@ -112,7 +112,7 @@ export default async function FermentsPage() {
 
           {fermentComponents.length > 0 && (
             <>
-              <h2 className="text-base font-semibold text-stone-700">
+              <h2 className="text-base font-semibold text-stone-300">
                 Menu Components ({fermentComponents.length})
               </h2>
               <Card>
@@ -127,7 +127,7 @@ export default async function FermentsPage() {
                   <TableBody>
                     {fermentComponents.map((comp) => (
                       <TableRow key={comp.id}>
-                        <TableCell className="font-medium text-stone-900">{comp.name}</TableCell>
+                        <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
                         <TableCell className="text-stone-500 text-sm">
                           {comp.dish_name ?? '—'}
                         </TableCell>

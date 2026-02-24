@@ -45,8 +45,8 @@ type Assignment = {
 
 type Props = {
   eventId: string
-  roster: StaffMember[]         // available staff from chef's roster
-  assignments: Assignment[]      // current event assignments
+  roster: StaffMember[] // available staff from chef's roster
+  assignments: Assignment[] // current event assignments
 }
 
 function formatRate(cents: number) {
@@ -106,7 +106,10 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
     if (!actualHoursInput) return
     setLoading(true)
     try {
-      await recordStaffHours({ assignment_id: assignmentId, actual_hours: parseFloat(actualHoursInput) })
+      await recordStaffHours({
+        assignment_id: assignmentId,
+        actual_hours: parseFloat(actualHoursInput),
+      })
       setRecordingHoursFor(null)
       setActualHoursInput('')
       router.refresh()
@@ -127,9 +130,12 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
             const member = a.staff_members
             const role = ROLE_LABELS[a.role_override ?? member?.role ?? 'other'] ?? 'Other'
             return (
-              <div key={a.id} className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-3 py-2">
+              <div
+                key={a.id}
+                className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface px-3 py-2"
+              >
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{member?.name}</p>
+                  <p className="text-sm font-medium text-stone-100">{member?.name}</p>
                   <p className="text-xs text-stone-500">
                     {role} · {member ? formatRate(member.hourly_rate_cents) : ''}
                     {a.scheduled_hours ? ` · ${a.scheduled_hours}h scheduled` : ''}
@@ -151,7 +157,12 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
                     </Button>
                   )}
                   {a.status === 'scheduled' && (
-                    <Button size="sm" variant="ghost" onClick={() => handleRemove(a.id)} disabled={loading}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleRemove(a.id)}
+                      disabled={loading}
+                    >
                       ×
                     </Button>
                   )}
@@ -170,7 +181,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
 
       {/* Log hours inline */}
       {recordingHoursFor && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
+        <div className="rounded-lg border border-amber-200 bg-amber-950 p-3 space-y-2">
           <label className="text-sm font-medium text-amber-800">Actual hours worked</label>
           <div className="flex gap-2">
             <input
@@ -179,10 +190,14 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
               step="0.25"
               value={actualHoursInput}
               onChange={(e) => setActualHoursInput(e.target.value)}
-              className="w-24 rounded border border-stone-300 px-2 py-1 text-sm"
+              className="w-24 rounded border border-stone-600 px-2 py-1 text-sm"
               placeholder="6.5"
             />
-            <Button size="sm" onClick={() => handleRecordHours(recordingHoursFor)} disabled={loading}>
+            <Button
+              size="sm"
+              onClick={() => handleRecordHours(recordingHoursFor)}
+              disabled={loading}
+            >
               Save
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setRecordingHoursFor(null)}>
@@ -200,11 +215,11 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
       )}
 
       {showAddForm && (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 space-y-2">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-3 space-y-2">
           <select
             value={selectedStaffId}
             onChange={(e) => setSelectedStaffId(e.target.value)}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
           >
             <option value="">Select staff member…</option>
             {availableToAdd.map((s) => (
@@ -220,7 +235,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
             value={scheduledHours}
             onChange={(e) => setScheduledHours(e.target.value)}
             placeholder="Scheduled hours (optional)"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
           />
           <div className="flex gap-2">
             <Button size="sm" onClick={handleAssign} disabled={loading || !selectedStaffId}>

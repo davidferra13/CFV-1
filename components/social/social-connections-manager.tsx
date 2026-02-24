@@ -23,7 +23,7 @@ const PLATFORMS: PlatformMeta[] = [
     id: 'instagram',
     label: 'Instagram',
     description: 'Feed posts, Reels, and carousels via Meta Content Publishing API.',
-    bgClass: 'bg-pink-500',
+    bgClass: 'bg-pink-9500',
     textClass: 'text-pink-700',
     docsUrl: 'https://developers.facebook.com/docs/instagram-api/content-publishing',
     requirement: 'Requires a Business or Creator Instagram account linked to a Facebook Page.',
@@ -42,7 +42,7 @@ const PLATFORMS: PlatformMeta[] = [
     label: 'TikTok',
     description: 'Video posts via TikTok Content Posting API.',
     bgClass: 'bg-stone-900',
-    textClass: 'text-stone-700',
+    textClass: 'text-stone-300',
     docsUrl: 'https://developers.tiktok.com/doc/content-posting-api-get-started',
     requirement: 'Requires a TikTok Business account. Video content only.',
   },
@@ -52,7 +52,8 @@ const PLATFORMS: PlatformMeta[] = [
     description: 'Posts to your personal profile or a company page.',
     bgClass: 'bg-sky-700',
     textClass: 'text-sky-700',
-    docsUrl: 'https://learn.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/ugc-post-api',
+    docsUrl:
+      'https://learn.microsoft.com/en-us/linkedin/marketing/integrations/community-management/shares/ugc-post-api',
     requirement: 'Requires LinkedIn Marketing Developer Platform access.',
   },
   {
@@ -77,7 +78,7 @@ const PLATFORMS: PlatformMeta[] = [
     id: 'youtube_shorts',
     label: 'YouTube Shorts',
     description: 'Vertical videos under 60 seconds via YouTube Data API.',
-    bgClass: 'bg-red-500',
+    bgClass: 'bg-red-9500',
     textClass: 'text-red-700',
     docsUrl: 'https://developers.google.com/youtube/v3/guides/uploading_a_video',
     requirement: 'Requires a Google account with a YouTube channel. Vertical video ≤ 60s.',
@@ -99,7 +100,9 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
   const [disconnecting, setDisconnecting] = useState<string | null>(null)
 
   async function handleDisconnect(platform: string) {
-    if (!confirm(`Disconnect ${platform}? ChefFlow will no longer be able to post to this account.`)) {
+    if (
+      !confirm(`Disconnect ${platform}? ChefFlow will no longer be able to post to this account.`)
+    ) {
       return
     }
     setDisconnecting(platform)
@@ -121,9 +124,9 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
   return (
     <div className="space-y-6">
       {/* Explainer banner */}
-      <div className="bg-brand-50 border border-brand-100 rounded-xl px-5 py-4">
-        <h3 className="font-semibold text-brand-900 mb-1">How platform connections work</h3>
-        <p className="text-sm text-brand-700 leading-relaxed">
+      <div className="bg-brand-950 border border-brand-100 rounded-xl px-5 py-4">
+        <h3 className="font-semibold text-brand-200 mb-1">How platform connections work</h3>
+        <p className="text-sm text-brand-400 leading-relaxed">
           Connect your accounts once with a secure OAuth flow — ChefFlow never stores your password.
           Once connected, posts you mark as <strong>Queued</strong> will automatically publish at
           their scheduled time. You can disconnect any platform at any time.
@@ -132,7 +135,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 
       {/* Just-connected flash */}
       {justConnected && (
-        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-800">
+        <div className="flex items-center gap-2 bg-emerald-950 border border-emerald-200 rounded-xl px-4 py-3 text-sm text-emerald-800">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-emerald-600" />
           <span>
             <strong className="capitalize">{justConnected.replace('_', ' ')}</strong> connected
@@ -151,7 +154,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
           return (
             <div
               key={platform.id}
-              className="bg-white rounded-xl border border-stone-200 p-5 space-y-3"
+              className="bg-surface rounded-xl border border-stone-700 p-5 space-y-3"
             >
               {/* Header row */}
               <div className="flex items-start gap-3">
@@ -161,7 +164,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-stone-900">{platform.label}</span>
+                    <span className="font-semibold text-stone-100">{platform.label}</span>
                     <ConnectionBadge conn={conn ?? null} />
                   </div>
 
@@ -187,7 +190,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 
               {/* Error notice */}
               {isConnected && conn?.lastError && conn.errorCount > 0 && (
-                <div className="flex items-start gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                <div className="flex items-start gap-2 bg-amber-950 border border-amber-100 rounded-lg px-3 py-2">
                   <AlertCircle className="w-3.5 h-3.5 mt-0.5 text-amber-600 flex-shrink-0" />
                   <p className="text-xs text-amber-800 leading-snug">
                     {conn.lastError} ({conn.errorCount} error{conn.errorCount !== 1 ? 's' : ''}).
@@ -198,7 +201,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 
               {/* Token expiry warning */}
               {isConnected && conn?.tokenExpiresAt && isExpiringSoon(conn.tokenExpiresAt) && (
-                <div className="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                <div className="flex items-center gap-2 bg-amber-950 border border-amber-100 rounded-lg px-3 py-2">
                   <RefreshCw className="w-3.5 h-3.5 text-amber-600 flex-shrink-0" />
                   <p className="text-xs text-amber-800">
                     Access token expires {formatRelativeDate(conn.tokenExpiresAt)}. Reconnect to
@@ -209,7 +212,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 
               {/* Requirements note (shown only when not connected) */}
               {!isConnected && (
-                <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 leading-snug">
+                <p className="text-xs text-amber-700 bg-amber-950 border border-amber-100 rounded-lg px-3 py-2 leading-snug">
                   {platform.requirement}
                 </p>
               )}
@@ -221,7 +224,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
                     {/* Reconnect button */}
                     <a
                       href={`/api/integrations/social/connect/${platform.id}`}
-                      className="flex-1 text-center text-sm font-medium py-2 rounded-lg border border-stone-300 text-stone-700 bg-white hover:bg-stone-50 transition-colors"
+                      className="flex-1 text-center text-sm font-medium py-2 rounded-lg border border-stone-600 text-stone-300 bg-surface hover:bg-stone-800 transition-colors"
                     >
                       Reconnect
                     </a>
@@ -230,7 +233,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
                       type="button"
                       onClick={() => handleDisconnect(platform.id)}
                       disabled={isDisconnecting}
-                      className="flex items-center gap-1 text-sm font-medium py-2 px-3 rounded-lg border border-red-200 text-red-600 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 text-sm font-medium py-2 px-3 rounded-lg border border-red-200 text-red-600 bg-red-950 hover:bg-red-900 transition-colors disabled:opacity-50"
                     >
                       <Unlink className="w-3.5 h-3.5" />
                       {isDisconnecting ? 'Disconnecting…' : 'Disconnect'}
@@ -249,7 +252,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
                   href={platform.docsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-xs text-stone-400 hover:text-stone-600 transition-colors flex-shrink-0"
+                  className="flex items-center gap-1 text-xs text-stone-400 hover:text-stone-400 transition-colors flex-shrink-0"
                   aria-label={`${platform.label} API documentation`}
                 >
                   Docs
@@ -269,7 +272,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
 function ConnectionBadge({ conn }: { conn: SocialConnectionStatus | null }) {
   if (!conn?.isConnected) {
     return (
-      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-stone-100 text-stone-500">
+      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-stone-800 text-stone-500">
         Not connected
       </span>
     )
@@ -280,14 +283,14 @@ function ConnectionBadge({ conn }: { conn: SocialConnectionStatus | null }) {
 
   if (hasErrors || expiringSoon) {
     return (
-      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200">
+      <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800">
         Needs attention
       </span>
     )
   }
 
   return (
-    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200">
+    <span className="text-[10px] px-2 py-0.5 rounded-full font-medium bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800">
       Connected
     </span>
   )

@@ -4,10 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  upsertContingencyNote,
-  deleteContingencyNote,
-} from '@/lib/contingency/actions'
+import { upsertContingencyNote, deleteContingencyNote } from '@/lib/contingency/actions'
 import { SCENARIO_LABELS } from '@/lib/contingency/constants'
 
 type Contact = { id: string; name: string; relationship: string; phone: string | null }
@@ -30,20 +27,20 @@ export function ContingencyPanel({
   initialNotes: ContingencyNote[]
   emergencyContacts: Contact[]
 }) {
-  const router  = useRouter()
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<string | null>(null) // scenario_type being edited
   const [form, setForm] = useState({ mitigation_notes: '', backup_contact_id: '' })
   const [saving, setSaving] = useState(false)
-  const [error, setError]   = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const noteMap = Object.fromEntries(initialNotes.map((n) => [n.scenario_type, n]))
 
   function startEdit(scenario_type: string) {
     const existing = noteMap[scenario_type]
     setForm({
-      mitigation_notes:  existing?.mitigation_notes   ?? '',
-      backup_contact_id: existing?.backup_contact_id  ?? '',
+      mitigation_notes: existing?.mitigation_notes ?? '',
+      backup_contact_id: existing?.backup_contact_id ?? '',
     })
     setEditing(scenario_type)
     setError(null)
@@ -54,11 +51,12 @@ export function ContingencyPanel({
       setError('Please enter a mitigation plan.')
       return
     }
-    setSaving(true); setError(null)
+    setSaving(true)
+    setError(null)
     try {
       await upsertContingencyNote(eventId, {
-        scenario_type:     editing as Parameters<typeof upsertContingencyNote>[1]['scenario_type'],
-        mitigation_notes:  form.mitigation_notes,
+        scenario_type: editing as Parameters<typeof upsertContingencyNote>[1]['scenario_type'],
+        mitigation_notes: form.mitigation_notes,
         backup_contact_id: form.backup_contact_id || undefined,
       })
       setEditing(null)
@@ -74,20 +72,20 @@ export function ContingencyPanel({
     try {
       await deleteContingencyNote(id)
       router.refresh()
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   }
 
   return (
     <div className="space-y-2">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-stone-900 transition-colors"
+        className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-100 transition-colors"
       >
         <span>{open ? '▾' : '▸'}</span>
         Contingency Plans
-        {initialNotes.length > 0 && (
-          <Badge variant="default">{initialNotes.length}</Badge>
-        )}
+        {initialNotes.length > 0 && <Badge variant="default">{initialNotes.length}</Badge>}
       </button>
 
       {open && (
@@ -98,11 +96,16 @@ export function ContingencyPanel({
             const contact = existing?.chef_emergency_contacts
 
             return (
-              <div key={type} className="border border-stone-200 rounded-lg p-3 space-y-2">
+              <div key={type} className="border border-stone-700 rounded-lg p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-stone-800">{label}</span>
+                  <span className="text-sm font-medium text-stone-200">{label}</span>
                   {!isEditing && (
-                    <Button variant="ghost" size="sm" className="text-xs" onClick={() => startEdit(type)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => startEdit(type)}
+                    >
                       {existing ? 'Edit' : '+ Add plan'}
                     </Button>
                   )}
@@ -110,10 +113,11 @@ export function ContingencyPanel({
 
                 {existing && !isEditing && (
                   <div>
-                    <p className="text-sm text-stone-700">{existing.mitigation_notes}</p>
+                    <p className="text-sm text-stone-300">{existing.mitigation_notes}</p>
                     {contact && (
                       <p className="text-xs text-stone-400 mt-0.5">
-                        Backup: {contact.name} ({contact.relationship}){contact.phone ? ` — ${contact.phone}` : ''}
+                        Backup: {contact.name} ({contact.relationship})
+                        {contact.phone ? ` — ${contact.phone}` : ''}
                       </p>
                     )}
                     <button
@@ -128,33 +132,47 @@ export function ContingencyPanel({
                 {isEditing && (
                   <div className="space-y-2">
                     <div>
-                      <label className="block text-xs font-medium text-stone-600 mb-1">Mitigation plan *</label>
+                      <label className="block text-xs font-medium text-stone-400 mb-1">
+                        Mitigation plan *
+                      </label>
                       <textarea
-                        className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm min-h-[72px] resize-y"
+                        className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[72px] resize-y"
                         value={form.mitigation_notes}
-                        onChange={(e) => setForm((p) => ({ ...p, mitigation_notes: e.target.value }))}
+                        onChange={(e) =>
+                          setForm((p) => ({ ...p, mitigation_notes: e.target.value }))
+                        }
                         placeholder="What will you do if this happens?"
                       />
                     </div>
                     {emergencyContacts.length > 0 && (
                       <div>
-                        <label className="block text-xs font-medium text-stone-600 mb-1">Backup contact</label>
+                        <label className="block text-xs font-medium text-stone-400 mb-1">
+                          Backup contact
+                        </label>
                         <select
-                          className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm"
+                          className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
                           value={form.backup_contact_id}
-                          onChange={(e) => setForm((p) => ({ ...p, backup_contact_id: e.target.value }))}
+                          onChange={(e) =>
+                            setForm((p) => ({ ...p, backup_contact_id: e.target.value }))
+                          }
                         >
                           <option value="">— None —</option>
                           {emergencyContacts.map((c) => (
-                            <option key={c.id} value={c.id}>{c.name} ({c.relationship})</option>
+                            <option key={c.id} value={c.id}>
+                              {c.name} ({c.relationship})
+                            </option>
                           ))}
                         </select>
                       </div>
                     )}
                     {error && <p className="text-xs text-red-600">{error}</p>}
                     <div className="flex gap-2">
-                      <Button size="sm" disabled={saving} onClick={handleSave}>{saving ? 'Saving…' : 'Save'}</Button>
-                      <Button variant="ghost" size="sm" onClick={() => setEditing(null)}>Cancel</Button>
+                      <Button size="sm" disabled={saving} onClick={handleSave}>
+                        {saving ? 'Saving…' : 'Save'}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setEditing(null)}>
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 )}

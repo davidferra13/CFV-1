@@ -7,10 +7,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientInquiryById } from '@/lib/inquiries/client-actions'
-import {
-  InquirySummary,
-  type InquirySummaryData,
-} from '@/components/inquiries/inquiry-summary'
+import { InquirySummary, type InquirySummaryData } from '@/components/inquiries/inquiry-summary'
 import type { InquiryStatus } from '@/components/inquiries/inquiry-status-badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -22,11 +19,7 @@ export const metadata: Metadata = {
   title: 'Inquiry Details - ChefFlow',
 }
 
-export default async function ClientInquiryDetailPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function ClientInquiryDetailPage({ params }: { params: { id: string } }) {
   await requireClient()
 
   const inquiry = await getClientInquiryById(params.id)
@@ -70,7 +63,7 @@ export default async function ClientInquiryDetailPage({
       {/* Back link */}
       <Link
         href="/my-inquiries"
-        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-800 transition-colors"
+        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-200 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" />
         Back to My Inquiries
@@ -94,7 +87,7 @@ export default async function ClientInquiryDetailPage({
       {/* Confirmed — link to the resulting event */}
       {inquiry.converted_to_event_id && (
         <Card className="p-5">
-          <p className="text-sm text-stone-600 mb-3">
+          <p className="text-sm text-stone-400 mb-3">
             This inquiry has been confirmed and converted into a booking.
           </p>
           <Link href={`/my-events/${inquiry.converted_to_event_id}`}>

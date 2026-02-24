@@ -2,8 +2,18 @@ import Link from 'next/link'
 import type { SocialPost } from '@/lib/social/types'
 
 const MONTH_NAMES = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ]
 
 type Props = {
@@ -24,17 +34,17 @@ export function SocialMonthCell({ month, year, posts }: Props) {
 
   return (
     <Link href={`/social/planner/${month}`} className="block group">
-      <div className="bg-white rounded-xl border border-stone-200 p-4 hover:border-brand-300 hover:shadow-sm transition-all cursor-pointer">
+      <div className="bg-surface rounded-xl border border-stone-700 p-4 hover:border-brand-600 hover:shadow-sm transition-all cursor-pointer">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-sm font-semibold text-stone-800">{MONTH_NAMES[month - 1]}</span>
+          <span className="text-sm font-semibold text-stone-200">{MONTH_NAMES[month - 1]}</span>
           <span className="text-xs text-stone-400">{total} posts</span>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full h-1.5 bg-stone-100 rounded-full overflow-hidden mb-3">
+        <div className="w-full h-1.5 bg-stone-800 rounded-full overflow-hidden mb-3">
           {total > 0 && (
             <div
-              className="h-full bg-emerald-500 rounded-full transition-all"
+              className="h-full bg-emerald-9500 rounded-full transition-all"
               style={{ width: `${readyPct}%` }}
             />
           )}
@@ -43,35 +53,33 @@ export function SocialMonthCell({ month, year, posts }: Props) {
         {/* Status mini-pills */}
         <div className="flex flex-wrap gap-1">
           {published > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-700 font-medium">
               {published} done
             </span>
           )}
           {queued > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-50 text-violet-700 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-violet-950 text-violet-700 font-medium">
               {queued} queued
             </span>
           )}
           {approved > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-sky-950 text-sky-700 font-medium">
               {approved} approved
             </span>
           )}
           {draft > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-950 text-amber-700 font-medium">
               {draft} drafts
             </span>
           )}
           {ideas > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-500 font-medium">
               {ideas} ideas
             </span>
           )}
         </div>
 
-        {total === 0 && (
-          <p className="text-xs text-stone-400 italic">No posts planned</p>
-        )}
+        {total === 0 && <p className="text-xs text-stone-400 italic">No posts planned</p>}
       </div>
     </Link>
   )

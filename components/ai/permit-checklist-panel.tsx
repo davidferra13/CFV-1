@@ -28,11 +28,11 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ClipboardCheck className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Permit Renewal Checklist</span>
+            <span className="text-sm font-medium text-stone-300">Permit Renewal Checklist</span>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
@@ -56,11 +56,11 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ClipboardCheck className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">{result.permitType}</span>
+          <span className="text-sm font-medium text-stone-300">{result.permitType}</span>
           {result.renewalStartDate && (
             <Badge variant="warning">Start by {result.renewalStartDate}</Badge>
           )}
@@ -71,16 +71,16 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
       </div>
 
       <div className="grid grid-cols-3 gap-2 text-xs text-center">
-        <div className="bg-stone-50 rounded p-2">
-          <div className="font-medium text-stone-700">{result.jurisdiction}</div>
+        <div className="bg-stone-800 rounded p-2">
+          <div className="font-medium text-stone-300">{result.jurisdiction}</div>
           <div className="text-stone-400">Jurisdiction</div>
         </div>
-        <div className="bg-stone-50 rounded p-2">
-          <div className="font-medium text-stone-700">{result.expiryDate ?? 'Unknown'}</div>
+        <div className="bg-stone-800 rounded p-2">
+          <div className="font-medium text-stone-300">{result.expiryDate ?? 'Unknown'}</div>
           <div className="text-stone-400">Expiry Date</div>
         </div>
-        <div className="bg-stone-50 rounded p-2">
-          <div className="font-medium text-stone-700">{result.estimatedCostRange}</div>
+        <div className="bg-stone-800 rounded p-2">
+          <div className="font-medium text-stone-300">{result.estimatedCostRange}</div>
           <div className="text-stone-400">Est. Cost</div>
         </div>
       </div>
@@ -89,13 +89,13 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
         {result.checklist.map((item) => (
           <div
             key={item.step}
-            className={`flex items-start gap-2 text-xs p-2 rounded ${item.isRequired ? 'bg-stone-50' : 'bg-stone-50 opacity-75'}`}
+            className={`flex items-start gap-2 text-xs p-2 rounded ${item.isRequired ? 'bg-stone-800' : 'bg-stone-800 opacity-75'}`}
           >
-            <div className="w-5 h-5 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-[10px] font-medium flex-shrink-0 mt-0.5">
+            <div className="w-5 h-5 rounded-full bg-brand-900 text-brand-400 flex items-center justify-center text-[10px] font-medium flex-shrink-0 mt-0.5">
               {item.step}
             </div>
             <div className="flex-1">
-              <div className="text-stone-700 font-medium">{item.task}</div>
+              <div className="text-stone-300 font-medium">{item.task}</div>
               <div className="text-stone-400 text-[11px]">
                 {item.leadTimeDays} days before expiry{item.notes ? ' · ' + item.notes : ''}
               </div>
@@ -107,9 +107,9 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
         ))}
       </div>
 
-      <div className="text-xs text-stone-600 bg-stone-50 rounded p-2">{result.keyContacts}</div>
+      <div className="text-xs text-stone-400 bg-stone-800 rounded p-2">{result.keyContacts}</div>
 
-      <div className="flex items-start gap-2 text-[11px] text-amber-800 bg-amber-50 border border-amber-200 rounded p-2">
+      <div className="flex items-start gap-2 text-[11px] text-amber-800 bg-amber-950 border border-amber-200 rounded p-2">
         <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
         {result.disclaimer}
       </div>

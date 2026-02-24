@@ -37,16 +37,14 @@ export function PendingRequests({ requests: initialRequests }: PendingRequestsPr
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="bg-red-950 border border-red-200 rounded-lg p-3">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {received.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">
-            Received ({received.length})
-          </h4>
+          <h4 className="text-sm font-medium text-stone-300">Received ({received.length})</h4>
           {received.map((req) => (
             <div key={req.id}>
               <ChefCard
@@ -84,9 +82,7 @@ export function PendingRequests({ requests: initialRequests }: PendingRequestsPr
 
       {sent.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">
-            Sent ({sent.length})
-          </h4>
+          <h4 className="text-sm font-medium text-stone-300">Sent ({sent.length})</h4>
           {sent.map((req) => (
             <ChefCard
               key={req.id}

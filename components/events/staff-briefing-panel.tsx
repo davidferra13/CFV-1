@@ -23,7 +23,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <div className="space-y-1">
       <h3 className="text-xs font-semibold uppercase tracking-wider text-stone-400">{title}</h3>
-      <div className="text-sm text-stone-900 space-y-1">{children}</div>
+      <div className="text-sm text-stone-100 space-y-1">{children}</div>
     </div>
   )
 }
@@ -131,7 +131,7 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
   if (!briefing) {
     return (
       <div className="space-y-2">
-        <p className="text-sm text-stone-600">
+        <p className="text-sm text-stone-400">
           Generate a one-page briefing with timeline, menu, allergies, and staff roles — ready to
           paste into a group text or print.
         </p>
@@ -149,10 +149,10 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs text-stone-400 uppercase tracking-wider">Staff Briefing</p>
-          <h3 className="text-base font-semibold text-stone-900">
+          <h3 className="text-base font-semibold text-stone-100">
             {briefing.occasion ?? 'Private Event'}
           </h3>
-          {briefing.eventDate && <p className="text-sm text-stone-600">{briefing.eventDate}</p>}
+          {briefing.eventDate && <p className="text-sm text-stone-400">{briefing.eventDate}</p>}
         </div>
         <div className="flex gap-2 print:hidden shrink-0">
           <Button size="sm" variant="secondary" onClick={handleCopy}>
@@ -167,7 +167,7 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
         </div>
       </div>
 
-      <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 space-y-4">
+      <div className="rounded-lg border border-stone-700 bg-stone-800 p-4 space-y-4">
         {/* Timeline */}
         <Section title="Timeline">
           <div className="grid grid-cols-2 gap-x-4 gap-y-1">
@@ -191,7 +191,7 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
           <Section title="Menu">
             <ul className="space-y-0.5">
               {briefing.menuItems.map((item, i) => (
-                <li key={i} className="text-stone-800">
+                <li key={i} className="text-stone-200">
                   • {item}
                 </li>
               ))}
@@ -226,14 +226,14 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
         {/* Special Requests / Client Notes */}
         {briefing.specialRequests && (
           <Section title="Special Requests / Client Notes">
-            <p className="text-stone-700 whitespace-pre-line">{briefing.specialRequests}</p>
+            <p className="text-stone-300 whitespace-pre-line">{briefing.specialRequests}</p>
           </Section>
         )}
 
         {/* Kitchen Notes */}
         {briefing.kitchenNotes && (
           <Section title="Kitchen Notes">
-            <p className="text-stone-700 whitespace-pre-line">{briefing.kitchenNotes}</p>
+            <p className="text-stone-300 whitespace-pre-line">{briefing.kitchenNotes}</p>
           </Section>
         )}
 
@@ -253,7 +253,7 @@ export function StaffBriefingPanel({ eventId, hasStaff }: Props) {
                   {s.phone && (
                     <a
                       href={`tel:${s.phone}`}
-                      className="text-stone-500 hover:text-stone-800 text-xs"
+                      className="text-stone-500 hover:text-stone-200 text-xs"
                     >
                       {s.phone}
                     </a>

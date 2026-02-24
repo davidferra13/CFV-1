@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -16,15 +23,19 @@ export default async function RefundsPage() {
   const totalRefunded = refunds.reduce((s, e) => s + e.amount_cents, 0)
 
   // Count unique events with refunds
-  const uniqueEvents = new Set(refunds.map(e => e.event_id).filter(Boolean)).size
+  const uniqueEvents = new Set(refunds.map((e) => e.event_id).filter(Boolean)).size
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/payments" className="text-sm text-stone-500 hover:text-stone-700">← Payments</Link>
+        <Link href="/finance/payments" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Payments
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Refunds</h1>
-          <span className={`text-sm px-2 py-0.5 rounded-full ${refunds.length > 0 ? 'bg-red-100 text-red-600' : 'bg-stone-100 text-stone-600'}`}>
+          <h1 className="text-3xl font-bold text-stone-100">Refunds</h1>
+          <span
+            className={`text-sm px-2 py-0.5 rounded-full ${refunds.length > 0 ? 'bg-red-900 text-red-600' : 'bg-stone-800 text-stone-400'}`}
+          >
             {refunds.length}
           </span>
         </div>
@@ -37,19 +48,21 @@ export default async function RefundsPage() {
           <p className="text-sm text-stone-500 mt-1">Total refunded</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{refunds.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{refunds.length}</p>
           <p className="text-sm text-stone-500 mt-1">Refund entries</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-600">{uniqueEvents}</p>
+          <p className="text-2xl font-bold text-stone-400">{uniqueEvents}</p>
           <p className="text-sm text-stone-500 mt-1">Events with refunds</p>
         </Card>
       </div>
 
       {refunds.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No refunds recorded</p>
-          <p className="text-stone-400 text-sm mt-1">Refund entries will appear here when processed</p>
+          <p className="text-stone-400 font-medium">No refunds recorded</p>
+          <p className="text-stone-400 text-sm mt-1">
+            Refund entries will appear here when processed
+          </p>
         </Card>
       ) : (
         <Card>
@@ -63,18 +76,27 @@ export default async function RefundsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {refunds.map(entry => (
+              {refunds.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell className="text-stone-500 text-sm">{format(new Date(entry.created_at), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-500 text-sm">
+                    {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                  </TableCell>
+                  <TableCell className="text-stone-400 text-sm">
                     {entry.event ? (
-                      <Link href={`/events/${entry.event.id}`} className="text-brand-600 hover:underline capitalize">
+                      <Link
+                        href={`/events/${entry.event.id}`}
+                        className="text-brand-600 hover:underline capitalize"
+                      >
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-red-600 font-semibold text-sm">−{formatCurrency(entry.amount_cents)}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>
+                  <TableCell className="text-red-600 font-semibold text-sm">
+                    −{formatCurrency(entry.amount_cents)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

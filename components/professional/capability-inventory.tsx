@@ -85,22 +85,22 @@ const CONFIDENCE_OPTIONS = [
   {
     value: 'expert',
     label: 'Expert',
-    color: 'bg-green-100 text-green-800 border-green-300 hover:bg-green-200',
+    color: 'bg-green-900 text-green-800 border-green-300 hover:bg-green-200',
   },
   {
     value: 'proficient',
     label: 'Proficient',
-    color: 'bg-blue-100 text-blue-800 border-blue-300 hover:bg-blue-200',
+    color: 'bg-blue-900 text-blue-800 border-blue-300 hover:bg-blue-200',
   },
   {
     value: 'learning',
     label: 'Learning',
-    color: 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200',
+    color: 'bg-amber-900 text-amber-800 border-amber-300 hover:bg-amber-200',
   },
   {
     value: 'not_my_specialty',
     label: 'Not My Specialty',
-    color: 'bg-stone-100 text-stone-600 border-stone-300 hover:bg-stone-200',
+    color: 'bg-stone-800 text-stone-400 border-stone-600 hover:bg-stone-700',
   },
 ]
 
@@ -111,9 +111,9 @@ function confidenceSelected(value: string): string {
     case 'proficient':
       return 'bg-blue-600 text-white border-blue-700'
     case 'learning':
-      return 'bg-amber-500 text-white border-amber-600'
+      return 'bg-amber-9500 text-white border-amber-600'
     case 'not_my_specialty':
-      return 'bg-stone-500 text-white border-stone-600'
+      return 'bg-stone-8000 text-white border-stone-600'
     default:
       return ''
   }
@@ -141,8 +141,8 @@ function CapabilityItem({
   }
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-stone-100 last:border-0">
-      <span className="text-sm font-medium text-stone-700 sm:w-44 shrink-0">{capabilityKey}</span>
+    <div className="flex flex-col sm:flex-row sm:items-center gap-2 py-2 border-b border-stone-800 last:border-0">
+      <span className="text-sm font-medium text-stone-300 sm:w-44 shrink-0">{capabilityKey}</span>
       <div className="flex flex-wrap gap-1">
         {CONFIDENCE_OPTIONS.map((opt) => {
           const isSelected = currentConfidence === opt.value
@@ -173,9 +173,9 @@ export function CapabilityInventory({ capabilities }: CapabilityInventoryProps) 
   return (
     <div className="space-y-8">
       {SECTIONS.map((section) => (
-        <div key={section.type} className="bg-white rounded-xl border border-stone-200 shadow-sm">
-          <div className="px-6 py-4 border-b border-stone-100">
-            <h2 className="text-base font-semibold text-stone-900">{section.label}</h2>
+        <div key={section.type} className="bg-surface rounded-xl border border-stone-700 shadow-sm">
+          <div className="px-6 py-4 border-b border-stone-800">
+            <h2 className="text-base font-semibold text-stone-100">{section.label}</h2>
             <p className="text-xs text-stone-500 mt-0.5">
               Click to rate your confidence level for each item.
             </p>

@@ -144,18 +144,18 @@ async function InquiryList({
             href={`/inquiries/${inquiry.id}`}
             className={`block rounded-lg border p-4 hover:shadow-sm transition-all ${
               isStale
-                ? 'border-l-4 border-l-red-500 bg-red-50/50 hover:bg-red-50'
+                ? 'border-l-4 border-l-red-500 bg-red-950/50 hover:bg-red-950'
                 : isUrgent
-                  ? 'border-l-4 border-l-orange-500 bg-orange-50/50 hover:bg-orange-50'
+                  ? 'border-l-4 border-l-orange-500 bg-orange-950/50 hover:bg-orange-950'
                   : isNew
-                    ? 'border-l-4 border-l-amber-500 bg-amber-50/50 hover:bg-amber-50'
-                    : 'border-stone-200 hover:bg-stone-50'
+                    ? 'border-l-4 border-l-amber-500 bg-amber-950/50 hover:bg-amber-950'
+                    : 'border-stone-700 hover:bg-stone-800'
             }`}
           >
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-stone-900">{name}</span>
+                  <span className="font-medium text-stone-100">{name}</span>
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
                   {isTacNew && (
@@ -184,7 +184,7 @@ async function InquiryList({
                   {leadScore && <LeadScoreBadge score={leadScore} />}
                 </div>
                 {inquiry.confirmed_occasion && (
-                  <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
+                  <p className="text-sm text-stone-400 mt-1">{inquiry.confirmed_occasion}</p>
                 )}
                 {inquiry.next_action_required && (
                   <p className="text-xs text-brand-600 mt-1">
@@ -194,7 +194,7 @@ async function InquiryList({
               </div>
               <div className="text-right flex-shrink-0">
                 {inquiry.confirmed_date && (
-                  <p className="text-sm font-medium text-stone-900">
+                  <p className="text-sm font-medium text-stone-100">
                     {format(new Date(inquiry.confirmed_date), 'MMM d, yyyy')}
                   </p>
                 )}
@@ -254,8 +254,8 @@ export default async function InquiriesPage({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Inquiry Pipeline</h1>
-          <p className="text-stone-600 mt-1">Track every lead from first contact to booked event</p>
+          <h1 className="text-3xl font-bold text-stone-100">Inquiry Pipeline</h1>
+          <p className="text-stone-400 mt-1">Track every lead from first contact to booked event</p>
         </div>
         <Link href="/inquiries/new">
           <Button>+ Log New Inquiry</Button>

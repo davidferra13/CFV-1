@@ -9,13 +9,13 @@ import { AVAILABLE_TOKENS } from '@/lib/marketing/tokens'
 
 type Step = {
   step_number: number
-  delay_days:  number
-  subject:     string
-  body_html:   string
+  delay_days: number
+  subject: string
+  body_html: string
 }
 
 const TRIGGER_OPTIONS = [
-  { value: 'birthday',   label: 'Birthday — fires N days before client birthday' },
+  { value: 'birthday', label: 'Birthday — fires N days before client birthday' },
   { value: 'dormant_90', label: 'Re-engagement — fires when client hits 90 days dormant' },
   { value: 'post_event', label: 'Post-event — fires N days after event completes' },
 ]
@@ -23,17 +23,17 @@ const TRIGGER_OPTIONS = [
 export function SequenceBuilderClient() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
-  const [error, setError]   = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  const [name, setName]               = useState('')
+  const [name, setName] = useState('')
   const [triggerType, setTriggerType] = useState('birthday')
-  const [daysBefore, setDaysBefore]   = useState(7)
-  const [steps, setSteps]             = useState<Step[]>([
+  const [daysBefore, setDaysBefore] = useState(7)
+  const [steps, setSteps] = useState<Step[]>([
     { step_number: 1, delay_days: 0, subject: '', body_html: '' },
   ])
 
   function updateStep(index: number, field: keyof Step, value: string | number) {
-    setSteps((prev) => prev.map((s, i) => i === index ? { ...s, [field]: value } : s))
+    setSteps((prev) => prev.map((s, i) => (i === index ? { ...s, [field]: value } : s)))
   }
 
   function addStep() {
@@ -46,9 +46,7 @@ export function SequenceBuilderClient() {
 
   function removeStep(index: number) {
     setSteps((prev) =>
-      prev
-        .filter((_, i) => i !== index)
-        .map((s, i) => ({ ...s, step_number: i + 1 }))
+      prev.filter((_, i) => i !== index).map((s, i) => ({ ...s, step_number: i + 1 }))
     )
   }
 
@@ -58,11 +56,12 @@ export function SequenceBuilderClient() {
       setError('All steps need a subject and body.')
       return
     }
-    setSaving(true); setError(null)
+    setSaving(true)
+    setError(null)
     try {
       await createSequence({
         name,
-        trigger_type:        triggerType as any,
+        trigger_type: triggerType as any,
         days_before_trigger: daysBefore,
         steps,
       })
@@ -83,7 +82,7 @@ export function SequenceBuilderClient() {
       {/* Name + trigger */}
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-stone-600 mb-1">Sequence name *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Sequence name *</label>
           <Input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -92,21 +91,25 @@ export function SequenceBuilderClient() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Trigger</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Trigger</label>
           <select
             title="Trigger type"
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
             value={triggerType}
             onChange={(e) => setTriggerType(e.target.value)}
           >
             {TRIGGER_OPTIONS.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
             ))}
           </select>
         </div>
         {triggerType === 'birthday' && (
           <div>
-            <label className="block text-xs font-medium text-stone-600 mb-1">Days before birthday</label>
+            <label className="block text-xs font-medium text-stone-400 mb-1">
+              Days before birthday
+            </label>
             <Input
               type="number"
               min={1}
@@ -121,16 +124,16 @@ export function SequenceBuilderClient() {
       {/* Steps */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-xs font-medium text-stone-600 uppercase tracking-wide">Email steps</p>
+          <p className="text-xs font-medium text-stone-400 uppercase tracking-wide">Email steps</p>
           <p className="text-xs text-stone-400">
             Tokens: {AVAILABLE_TOKENS.map((t) => t.token).join(', ')}
           </p>
         </div>
 
         {steps.map((step, i) => (
-          <div key={i} className="rounded-lg border border-stone-200 p-4 space-y-3">
+          <div key={i} className="rounded-lg border border-stone-700 p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-stone-700">Step {step.step_number}</p>
+              <p className="text-xs font-semibold text-stone-300">Step {step.step_number}</p>
               {steps.length > 1 && (
                 <button
                   type="button"
@@ -143,7 +146,7 @@ export function SequenceBuilderClient() {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-medium text-stone-600 mb-1">
+                <label className="block text-xs font-medium text-stone-400 mb-1">
                   {i === 0 ? 'Delay from trigger (days)' : 'Delay from previous (days)'}
                 </label>
                 <Input
@@ -154,7 +157,7 @@ export function SequenceBuilderClient() {
                 />
               </div>
               <div className="col-span-2">
-                <label className="block text-xs font-medium text-stone-600 mb-1">Subject *</label>
+                <label className="block text-xs font-medium text-stone-400 mb-1">Subject *</label>
                 <Input
                   value={step.subject}
                   onChange={(e) => updateStep(i, 'subject', e.target.value)}
@@ -163,9 +166,9 @@ export function SequenceBuilderClient() {
                 />
               </div>
               <div className="col-span-3">
-                <label className="block text-xs font-medium text-stone-600 mb-1">Body *</label>
+                <label className="block text-xs font-medium text-stone-400 mb-1">Body *</label>
                 <textarea
-                  className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm min-h-[100px] resize-y font-mono"
+                  className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[100px] resize-y font-mono"
                   value={step.body_html}
                   onChange={(e) => updateStep(i, 'body_html', e.target.value)}
                   placeholder={`Hi {{first_name}},\n\nWrite your message here.\n\n{{chef_name}}`}
@@ -179,7 +182,7 @@ export function SequenceBuilderClient() {
         <button
           type="button"
           onClick={addStep}
-          className="text-xs text-stone-500 hover:text-stone-700 underline"
+          className="text-xs text-stone-500 hover:text-stone-300 underline"
         >
           + Add another step
         </button>

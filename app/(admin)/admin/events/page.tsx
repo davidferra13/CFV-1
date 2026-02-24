@@ -12,13 +12,13 @@ function formatCents(cents: number | null): string {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-slate-100 text-slate-600',
-  proposed: 'bg-yellow-100 text-yellow-700',
-  accepted: 'bg-blue-100 text-blue-700',
-  paid: 'bg-indigo-100 text-indigo-700',
-  confirmed: 'bg-purple-100 text-purple-700',
-  in_progress: 'bg-orange-100 text-orange-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  proposed: 'bg-yellow-900 text-yellow-700',
+  accepted: 'bg-blue-900 text-blue-700',
+  paid: 'bg-indigo-900 text-indigo-700',
+  confirmed: 'bg-purple-900 text-purple-700',
+  in_progress: 'bg-orange-900 text-orange-700',
+  completed: 'bg-green-900 text-green-700',
+  cancelled: 'bg-red-900 text-red-700',
 }
 
 export default async function AdminEventsPage() {
@@ -46,36 +46,41 @@ export default async function AdminEventsPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-orange-50 rounded-lg">
+        <div className="p-2 bg-orange-950 rounded-lg">
           <CalendarRange size={18} className="text-orange-600" />
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">All Events</h1>
           <p className="text-sm text-slate-500">
-            {events.length} event{events.length !== 1 ? 's' : ''} · {formatCents(totalValue)} total value
+            {events.length} event{events.length !== 1 ? 's' : ''} · {formatCents(totalValue)} total
+            value
           </p>
         </div>
       </div>
 
       {/* Status distribution */}
       {Object.keys(statusCounts).length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 px-4 py-4">
-          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-3">Status Distribution</p>
+        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-3">
+            Status Distribution
+          </p>
           <div className="flex flex-wrap gap-2">
-            {Object.entries(statusCounts).sort(([, a], [, b]) => b - a).map(([status, count]) => (
-              <span
-                key={status}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[status] ?? 'bg-slate-100 text-slate-600'}`}
-              >
-                {status} <span className="font-bold">{count}</span>
-              </span>
-            ))}
+            {Object.entries(statusCounts)
+              .sort(([, a], [, b]) => b - a)
+              .map(([status, count]) => (
+                <span
+                  key={status}
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${STATUS_COLORS[status] ?? 'bg-slate-100 text-slate-600'}`}
+                >
+                  {status} <span className="font-bold">{count}</span>
+                </span>
+              ))}
           </div>
         </div>
       )}
 
       {/* Events table */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         {events.length === 0 ? (
           <div className="py-12 text-center text-slate-400 text-sm">No events found.</div>
         ) : (
@@ -83,12 +88,24 @@ export default async function AdminEventsPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Event</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Chef</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Date</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Guests</th>
-                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Value</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Event
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Chef
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Status
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Date
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Guests
+                  </th>
+                  <th className="text-right px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Value
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -101,14 +118,18 @@ export default async function AdminEventsPage() {
                       {event.chefBusinessName ?? '—'}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[event.status] ?? 'bg-slate-100 text-slate-600'}`}>
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${STATUS_COLORS[event.status] ?? 'bg-slate-100 text-slate-600'}`}
+                      >
                         {event.status}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-400">
                       {event.event_date ? new Date(event.event_date).toLocaleDateString() : '—'}
                     </td>
-                    <td className="px-4 py-3 text-right text-slate-700">{event.guest_count ?? '—'}</td>
+                    <td className="px-4 py-3 text-right text-slate-700">
+                      {event.guest_count ?? '—'}
+                    </td>
                     <td className="px-4 py-3 text-right font-medium text-slate-900">
                       {formatCents(event.quoted_price_cents)}
                     </td>

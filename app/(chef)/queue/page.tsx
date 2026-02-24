@@ -18,14 +18,14 @@ export default async function QueuePage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Priority Queue</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">Priority Queue</h1>
+          <p className="text-stone-400 mt-1">
             Everything that needs your attention, ranked by urgency.
           </p>
         </div>
         <Link
           href="/dashboard"
-          className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium"
+          className="inline-flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-400 font-medium"
         >
           <ArrowLeft className="h-4 w-4" /> Dashboard
         </Link>
@@ -33,11 +33,7 @@ export default async function QueuePage() {
 
       <QueueSummaryBar summary={queue.summary} />
 
-      {queue.summary.allCaughtUp ? (
-        <QueueEmpty />
-      ) : (
-        <QueueList items={queue.items} />
-      )}
+      {queue.summary.allCaughtUp ? <QueueEmpty /> : <QueueList items={queue.items} />}
     </div>
   )
 }

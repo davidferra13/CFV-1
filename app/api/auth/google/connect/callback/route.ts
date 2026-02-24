@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
   const stateParam = searchParams.get('state')
   const errorParam = searchParams.get('error')
-  const origin = request.nextUrl.origin
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || request.nextUrl.origin
 
   // Google may redirect with an error (user denied consent, etc.)
   if (errorParam) {

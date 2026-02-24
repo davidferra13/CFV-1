@@ -287,14 +287,14 @@ export function ActivityPageClient({
 
       {/* View Mode Toggle — Summary vs Retrace */}
       <div className="flex items-center gap-2">
-        <div className="flex gap-1 bg-stone-100 rounded-lg p-1">
+        <div className="flex gap-1 bg-stone-800 rounded-lg p-1">
           <button
             type="button"
             onClick={() => setViewMode('summary')}
             className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
               viewMode === 'summary'
-                ? 'bg-white text-stone-800 shadow-sm'
-                : 'text-stone-500 hover:text-stone-700'
+                ? 'bg-surface text-stone-200 shadow-sm'
+                : 'text-stone-500 hover:text-stone-300'
             }`}
           >
             Summary
@@ -304,8 +304,8 @@ export function ActivityPageClient({
             onClick={() => setViewMode('retrace')}
             className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
               viewMode === 'retrace'
-                ? 'bg-white text-stone-800 shadow-sm'
-                : 'text-stone-500 hover:text-stone-700'
+                ? 'bg-surface text-stone-200 shadow-sm'
+                : 'text-stone-500 hover:text-stone-300'
             }`}
           >
             Retrace My Steps
@@ -335,7 +335,7 @@ export function ActivityPageClient({
 
           {/* Activity Heat Map */}
           {activeTab === 'my' && chefActivity.length > 0 && (
-            <div className="border border-stone-200 rounded-lg p-4 bg-white">
+            <div className="border border-stone-700 rounded-lg p-4 bg-surface">
               <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">
                 When you&apos;re most active
               </p>
@@ -398,10 +398,10 @@ export function ActivityPageClient({
             </div>
           )}
 
-          <div className="border border-stone-200 rounded-lg overflow-hidden">
+          <div className="border border-stone-700 rounded-lg overflow-hidden">
             <div className="max-h-[600px] overflow-y-auto p-3">
               {error && (
-                <div className="mb-3 text-xs text-red-600 bg-red-50 border border-red-200 rounded px-2 py-1.5">
+                <div className="mb-3 text-xs text-red-600 bg-red-950 border border-red-200 rounded px-2 py-1.5">
                   {error}
                 </div>
               )}
@@ -423,7 +423,7 @@ export function ActivityPageClient({
                 type="button"
                 onClick={() => void loadFeed({ append: true })}
                 disabled={loadingMore}
-                className="text-xs font-medium border border-stone-200 rounded-md px-3 py-1.5 text-stone-600 bg-white hover:bg-stone-50 disabled:opacity-50"
+                className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-surface hover:bg-stone-800 disabled:opacity-50"
               >
                 {loadingMore ? 'Loading...' : 'Load more'}
               </button>
@@ -442,7 +442,7 @@ export function ActivityPageClient({
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as TimeRange)}
               aria-label="Time range for retrace view"
-              className="text-xs border border-stone-200 rounded-md px-2 py-1 text-stone-600 bg-white"
+              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-surface"
             >
               <option value="1">Today</option>
               <option value="7">This Week</option>
@@ -485,9 +485,9 @@ function ActivityLogToggle({ enabled }: { enabled: boolean }) {
   }
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-3">
+    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface px-4 py-3">
       <div>
-        <p className="text-sm font-medium text-stone-800">Activity Tracking</p>
+        <p className="text-sm font-medium text-stone-200">Activity Tracking</p>
         <p className="text-xs text-stone-500 mt-0.5">
           {localEnabled
             ? 'Enabled — your actions are being recorded to this timeline.'
@@ -507,7 +507,7 @@ function ActivityLogToggle({ enabled }: { enabled: boolean }) {
         }`}
       >
         <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0 transition duration-200 ease-in-out ${
             localEnabled ? 'translate-x-5' : 'translate-x-0'
           }`}
         />
@@ -560,14 +560,14 @@ function AllTimelineRow({
     const config = DOMAIN_CONFIG[entry.domain] || DOMAIN_CONFIG.operational
     const href = getChefEntityHref(entry)
     const content = (
-      <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-50 transition-colors">
+      <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-800 transition-colors">
         <span
           className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
         >
           {config.label}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-stone-700 leading-snug">{entry.summary}</p>
+          <p className="text-sm text-stone-300 leading-snug">{entry.summary}</p>
         </div>
         <span className="text-xs text-stone-400 shrink-0 mt-0.5">
           {formatTimeAgo(entry.created_at)}
@@ -588,12 +588,12 @@ function AllTimelineRow({
     // session_heartbeat is written to DB for engagement scoring but never shown in feeds
     if (event.event_type === 'session_heartbeat') return null
     return (
-      <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-50 transition-colors">
-        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-blue-100 text-blue-700">
+      <div className="flex items-start gap-2.5 py-2 px-2 rounded-md hover:bg-stone-800 transition-colors">
+        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 mt-0.5 bg-blue-900 text-blue-700">
           Client
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm text-stone-700 leading-snug">
+          <p className="text-sm text-stone-300 leading-snug">
             {CLIENT_EVENT_LABELS[event.event_type] || event.event_type}
           </p>
           {event.entity_type && (

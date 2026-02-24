@@ -39,9 +39,9 @@ type Props = {
   defaultEventId?: string
 }
 
-const CATEGORY_GROUPS = EXPENSE_CATEGORY_GROUPS.map(g => ({
+const CATEGORY_GROUPS = EXPENSE_CATEGORY_GROUPS.map((g) => ({
   label: g.label,
-  options: g.categories.map(c => ({ value: c.value, label: c.label })),
+  options: g.categories.map((c) => ({ value: c.value, label: c.label })),
 }))
 
 const PAYMENT_METHOD_OPTIONS = [
@@ -91,7 +91,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
   const [extraction, setExtraction] = useState<any>(null)
   const [lineItems, setLineItems] = useState<ReceiptLineItem[]>([])
 
-  const eventOptions = events.map(e => ({
+  const eventOptions = events.map((e) => ({
     value: e.id,
     label: `${e.occasion || 'Untitled'} - ${format(new Date(e.event_date), 'MMM d')}${e.client ? ` (${e.client.full_name})` : ''}`,
   }))
@@ -143,7 +143,14 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
       if (result.purchaseDate) setExpenseDate(result.purchaseDate)
       if (result.paymentMethod) {
         const method = result.paymentMethod.toLowerCase()
-        if (method.includes('visa') || method.includes('mastercard') || method.includes('amex') || method.includes('card') || method.includes('debit') || method.includes('credit')) {
+        if (
+          method.includes('visa') ||
+          method.includes('mastercard') ||
+          method.includes('amex') ||
+          method.includes('card') ||
+          method.includes('debit') ||
+          method.includes('credit')
+        ) {
           setPaymentMethod('card')
         } else if (method.includes('cash')) {
           setPaymentMethod('cash')
@@ -157,27 +164,27 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
   }
 
   const toggleLineItemBusiness = (index: number) => {
-    setLineItems(prev =>
-      prev.map((item, i) =>
-        i === index ? { ...item, isBusiness: !item.isBusiness } : item
-      )
+    setLineItems((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, isBusiness: !item.isBusiness } : item))
     )
   }
 
   const updateLineItemCategory = (index: number, newCategory: string) => {
-    setLineItems(prev =>
+    setLineItems((prev) =>
       prev.map((item, i) =>
-        i === index ? { ...item, category: newCategory, isBusiness: newCategory !== 'personal' } : item
+        i === index
+          ? { ...item, category: newCategory, isBusiness: newCategory !== 'personal' }
+          : item
       )
     )
   }
 
   const businessTotal = lineItems
-    .filter(item => item.isBusiness)
+    .filter((item) => item.isBusiness)
     .reduce((sum, item) => sum + item.totalPriceCents, 0)
 
   const personalTotal = lineItems
-    .filter(item => !item.isBusiness)
+    .filter((item) => !item.isBusiness)
     .reduce((sum, item) => sum + item.totalPriceCents, 0)
 
   const handleSubmitManual = async (e: React.FormEvent) => {
@@ -230,10 +237,11 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
     try {
       // Create one expense for business items
       if (businessTotal > 0) {
-        const businessItems = lineItems.filter(i => i.isBusiness)
-        const businessDesc = businessItems.length <= 3
-          ? businessItems.map(i => i.description).join(', ')
-          : `${businessItems.length} items from ${vendorName || extraction?.storeName || 'store'}`
+        const businessItems = lineItems.filter((i) => i.isBusiness)
+        const businessDesc =
+          businessItems.length <= 3
+            ? businessItems.map((i) => i.description).join(', ')
+            : `${businessItems.length} items from ${vendorName || extraction?.storeName || 'store'}`
 
         await createExpense({
           event_id: eventId,
@@ -250,10 +258,11 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
 
       // Create a separate expense for personal items (tracked but excluded from profit)
       if (personalTotal > 0) {
-        const personalItems = lineItems.filter(i => !i.isBusiness)
-        const personalDesc = personalItems.length <= 3
-          ? personalItems.map(i => i.description).join(', ')
-          : `${personalItems.length} personal items from ${vendorName || extraction?.storeName || 'store'}`
+        const personalItems = lineItems.filter((i) => !i.isBusiness)
+        const personalDesc =
+          personalItems.length <= 3
+            ? personalItems.map((i) => i.description).join(', ')
+            : `${personalItems.length} personal items from ${vendorName || extraction?.storeName || 'store'}`
 
         await createExpense({
           event_id: eventId,
@@ -381,12 +390,14 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
 
             {/* Business/Personal Toggle */}
             <div className="flex items-center gap-3">
-              <label className="text-sm font-medium text-stone-700">Type:</label>
+              <label className="text-sm font-medium text-stone-300">Type:</label>
               <button
                 type="button"
                 onClick={() => setIsBusiness(true)}
                 className={`px-3 py-1 rounded text-sm font-medium ${
-                  isBusiness ? 'bg-brand-100 text-brand-800 ring-1 ring-brand-300' : 'bg-stone-100 text-stone-600'
+                  isBusiness
+                    ? 'bg-brand-900 text-brand-300 ring-1 ring-brand-600'
+                    : 'bg-stone-800 text-stone-400'
                 }`}
               >
                 Business
@@ -395,7 +406,9 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                 type="button"
                 onClick={() => setIsBusiness(false)}
                 className={`px-3 py-1 rounded text-sm font-medium ${
-                  !isBusiness ? 'bg-amber-100 text-amber-800 ring-1 ring-amber-300' : 'bg-stone-100 text-stone-600'
+                  !isBusiness
+                    ? 'bg-amber-900 text-amber-800 ring-1 ring-amber-300'
+                    : 'bg-stone-800 text-stone-400'
                 }`}
               >
                 Personal
@@ -424,7 +437,9 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
             )}
 
             <div className="flex gap-2 pt-4">
-              <Button type="submit" loading={loading}>Save Expense</Button>
+              <Button type="submit" loading={loading}>
+                Save Expense
+              </Button>
               <Button type="button" variant="secondary" onClick={() => router.push('/expenses')}>
                 Cancel
               </Button>
@@ -438,15 +453,17 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
         <div className="space-y-6">
           <Card className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-2">Receipt Photo</label>
+              <label className="block text-sm font-medium text-stone-300 mb-2">Receipt Photo</label>
               <input
                 type="file"
                 accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
                 capture="environment"
                 onChange={handleFileChange}
-                className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
+                className="block w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-brand-950 file:text-brand-400 hover:file:bg-brand-900"
               />
-              <p className="text-xs text-stone-500 mt-1">On mobile, opens camera directly. JPEG, PNG, HEIC, or WebP. Max 10MB.</p>
+              <p className="text-xs text-stone-500 mt-1">
+                On mobile, opens camera directly. JPEG, PNG, HEIC, or WebP. Max 10MB.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -484,7 +501,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                   <img
                     src={receiptPreview}
                     alt="Receipt"
-                    className="w-full rounded border border-stone-200"
+                    className="w-full rounded border border-stone-700"
                   />
                 )}
               </Card>
@@ -492,18 +509,23 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
               {/* Right: Extracted Data */}
               <Card className="p-4 space-y-4">
                 <Alert variant="info" title="Parsed Data">
-                  These line items were parsed automatically. Please review amounts and categories before saving.
+                  These line items were parsed automatically. Please review amounts and categories
+                  before saving.
                 </Alert>
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-medium text-stone-500">Extracted Data</h3>
                     <Badge variant="info">Parsed</Badge>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded font-medium ${
-                    extraction.confidence === 'high' ? 'bg-green-100 text-green-800' :
-                    extraction.confidence === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-red-100 text-red-800'
-                  }`}>
+                  <span
+                    className={`text-xs px-2 py-0.5 rounded font-medium ${
+                      extraction.confidence === 'high'
+                        ? 'bg-green-900 text-green-800'
+                        : extraction.confidence === 'medium'
+                          ? 'bg-yellow-900 text-yellow-800'
+                          : 'bg-red-900 text-red-800'
+                    }`}
+                  >
                     {extraction.confidence} confidence
                   </span>
                 </div>
@@ -532,7 +554,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
 
                 {/* Line Items */}
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-stone-700">
+                  <p className="text-sm font-medium text-stone-300">
                     {lineItems.length} items - mark each as business or personal
                   </p>
                   <div className="max-h-96 overflow-y-auto space-y-2">
@@ -540,22 +562,28 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                       <div
                         key={idx}
                         className={`flex items-center gap-2 p-2 rounded border text-sm ${
-                          item.isBusiness ? 'border-stone-200 bg-white' : 'border-amber-200 bg-amber-50'
+                          item.isBusiness
+                            ? 'border-stone-700 bg-surface'
+                            : 'border-amber-200 bg-amber-950'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{item.description}</p>
                           <p className="text-xs text-stone-500">
-                            {item.quantity > 1 ? `${item.quantity} × $${(item.unitPriceCents / 100).toFixed(2)}` : ''}
+                            {item.quantity > 1
+                              ? `${item.quantity} × $${(item.unitPriceCents / 100).toFixed(2)}`
+                              : ''}
                           </p>
                         </div>
                         <select
                           value={item.category}
                           onChange={(e) => updateLineItemCategory(idx, e.target.value)}
-                          className="text-xs border-stone-300 rounded px-1 py-0.5"
+                          className="text-xs border-stone-600 rounded px-1 py-0.5"
                         >
-                          {LINE_ITEM_CATEGORY_OPTIONS.map(o => (
-                            <option key={o.value} value={o.value}>{o.label}</option>
+                          {LINE_ITEM_CATEGORY_OPTIONS.map((o) => (
+                            <option key={o.value} value={o.value}>
+                              {o.label}
+                            </option>
                           ))}
                         </select>
                         <span className="font-medium whitespace-nowrap">
@@ -566,8 +594,8 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                           onClick={() => toggleLineItemBusiness(idx)}
                           className={`text-xs px-2 py-0.5 rounded font-medium ${
                             item.isBusiness
-                              ? 'bg-brand-100 text-brand-800'
-                              : 'bg-amber-100 text-amber-800'
+                              ? 'bg-brand-900 text-brand-300'
+                              : 'bg-amber-900 text-amber-800'
                           }`}
                         >
                           {item.isBusiness ? 'Biz' : 'Personal'}
@@ -578,15 +606,19 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                 </div>
 
                 {/* Totals */}
-                <div className="border-t border-stone-200 pt-3 space-y-1 text-sm">
+                <div className="border-t border-stone-700 pt-3 space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-stone-600">Business items</span>
+                    <span className="text-stone-400">Business items</span>
                     <span className="font-medium">${(businessTotal / 100).toFixed(2)}</span>
                   </div>
                   {personalTotal > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-amber-600">Personal items (excluded from food cost)</span>
-                      <span className="font-medium text-amber-600">${(personalTotal / 100).toFixed(2)}</span>
+                      <span className="text-amber-600">
+                        Personal items (excluded from food cost)
+                      </span>
+                      <span className="font-medium text-amber-600">
+                        ${(personalTotal / 100).toFixed(2)}
+                      </span>
                     </div>
                   )}
                   <div className="flex justify-between font-bold pt-1 border-t">
@@ -600,7 +632,11 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                   <Button onClick={handleSubmitReceipt} loading={loading} disabled={loading}>
                     Confirm & Save
                   </Button>
-                  <Button variant="secondary" onClick={() => router.push('/expenses')} disabled={loading}>
+                  <Button
+                    variant="secondary"
+                    onClick={() => router.push('/expenses')}
+                    disabled={loading}
+                  >
                     Cancel
                   </Button>
                 </div>

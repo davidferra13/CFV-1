@@ -121,8 +121,8 @@ export function IngredientsClient({ ingredients }: Props) {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Ingredient Library</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">Ingredient Library</h1>
+          <p className="text-stone-400 mt-1">
             {ingredients.length} ingredient{ingredients.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -143,15 +143,19 @@ export function IngredientsClient({ ingredients }: Props) {
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
-          <Button variant="secondary" onClick={handleSearch}>Search</Button>
+          <Button variant="secondary" onClick={handleSearch}>
+            Search
+          </Button>
         </div>
         <select
           value={currentCategory}
           onChange={(e) => updateFilters('category', e.target.value)}
-          className="border border-stone-300 rounded-md px-3 py-2 text-sm bg-white"
+          className="border border-stone-600 rounded-md px-3 py-2 text-sm bg-surface"
         >
-          {CATEGORY_OPTIONS.map(opt => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          {CATEGORY_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
       </div>
@@ -162,7 +166,9 @@ export function IngredientsClient({ ingredients }: Props) {
           {ingredients.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-stone-500">No ingredients found.</p>
-              <p className="text-sm text-stone-400 mt-1">Ingredients are created automatically when you add them to recipes.</p>
+              <p className="text-sm text-stone-400 mt-1">
+                Ingredients are created automatically when you add them to recipes.
+              </p>
             </div>
           ) : (
             <Table>
@@ -182,30 +188,57 @@ export function IngredientsClient({ ingredients }: Props) {
                     {editingId === ing.id ? (
                       <>
                         <TableCell>
-                          <Input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                          <Input
+                            type="text"
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                          />
                         </TableCell>
                         <TableCell>
                           <select
                             value={editCategory}
                             onChange={(e) => setEditCategory(e.target.value)}
-                            className="border border-stone-300 rounded-md px-2 py-1 text-sm bg-white w-full"
+                            className="border border-stone-600 rounded-md px-2 py-1 text-sm bg-surface w-full"
                           >
-                            {CATEGORY_OPTIONS.filter(o => o.value).map(opt => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            {CATEGORY_OPTIONS.filter((o) => o.value).map((opt) => (
+                              <option key={opt.value} value={opt.value}>
+                                {opt.label}
+                              </option>
                             ))}
                           </select>
                         </TableCell>
                         <TableCell>
-                          <Input type="text" value={editUnit} onChange={(e) => setEditUnit(e.target.value)} />
+                          <Input
+                            type="text"
+                            value={editUnit}
+                            onChange={(e) => setEditUnit(e.target.value)}
+                          />
                         </TableCell>
                         <TableCell>
-                          <Input type="number" value={editPrice} onChange={(e) => setEditPrice(e.target.value)} step="0.01" placeholder="0.00" />
+                          <Input
+                            type="number"
+                            value={editPrice}
+                            onChange={(e) => setEditPrice(e.target.value)}
+                            step="0.01"
+                            placeholder="0.00"
+                          />
                         </TableCell>
-                        <TableCell>{ing.usage_count} recipe{ing.usage_count !== 1 ? 's' : ''}</TableCell>
+                        <TableCell>
+                          {ing.usage_count} recipe{ing.usage_count !== 1 ? 's' : ''}
+                        </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
-                            <Button size="sm" onClick={saveEdit} disabled={loading}>Save</Button>
-                            <Button size="sm" variant="ghost" onClick={cancelEdit} disabled={loading}>Cancel</Button>
+                            <Button size="sm" onClick={saveEdit} disabled={loading}>
+                              Save
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={cancelEdit}
+                              disabled={loading}
+                            >
+                              Cancel
+                            </Button>
                           </div>
                         </TableCell>
                       </>
@@ -217,14 +250,19 @@ export function IngredientsClient({ ingredients }: Props) {
                         </TableCell>
                         <TableCell>{ing.default_unit}</TableCell>
                         <TableCell>
-                          {ing.average_price_cents != null
-                            ? `$${(ing.average_price_cents / 100).toFixed(2)}`
-                            : <span className="text-stone-400">--</span>
-                          }
+                          {ing.average_price_cents != null ? (
+                            `$${(ing.average_price_cents / 100).toFixed(2)}`
+                          ) : (
+                            <span className="text-stone-400">--</span>
+                          )}
                         </TableCell>
-                        <TableCell>{ing.usage_count} recipe{ing.usage_count !== 1 ? 's' : ''}</TableCell>
                         <TableCell>
-                          <Button size="sm" variant="ghost" onClick={() => startEdit(ing)}>Edit</Button>
+                          {ing.usage_count} recipe{ing.usage_count !== 1 ? 's' : ''}
+                        </TableCell>
+                        <TableCell>
+                          <Button size="sm" variant="ghost" onClick={() => startEdit(ing)}>
+                            Edit
+                          </Button>
                         </TableCell>
                       </>
                     )}

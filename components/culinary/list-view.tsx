@@ -15,10 +15,10 @@ type ListViewProps = {
 }
 
 const TIER_BADGE_COLORS: Record<WordTier, string> = {
-  1: 'bg-amber-100 text-amber-800 border-amber-300',
-  2: 'bg-blue-100 text-blue-800 border-blue-300',
-  3: 'bg-stone-100 text-stone-700 border-stone-300',
-  4: 'bg-purple-100 text-purple-800 border-purple-300',
+  1: 'bg-amber-900 text-amber-800 border-amber-300',
+  2: 'bg-blue-900 text-blue-800 border-blue-300',
+  3: 'bg-stone-800 text-stone-300 border-stone-600',
+  4: 'bg-purple-900 text-purple-800 border-purple-300',
 }
 
 export function ListView({ words }: ListViewProps) {
@@ -70,7 +70,7 @@ export function ListView({ words }: ListViewProps) {
 
         return (
           <section key={cat}>
-            <h3 className="text-lg font-semibold text-stone-900 mb-3 flex items-center gap-2">
+            <h3 className="text-lg font-semibold text-stone-100 mb-3 flex items-center gap-2">
               <span>{CATEGORY_ICONS[cat]}</span>
               <span>{CATEGORY_LABELS[cat]}</span>
               <span className="text-sm font-normal text-stone-400">({catWords.length})</span>
@@ -95,7 +95,7 @@ export function ListView({ words }: ListViewProps) {
       })}
 
       {/* Legend */}
-      <div className="border-t border-stone-200 pt-4 mt-8">
+      <div className="border-t border-stone-700 pt-4 mt-8">
         <p className="text-xs text-stone-500 font-medium mb-2">Tier Legend</p>
         <div className="flex flex-wrap gap-3">
           {([1, 2, 3, 4] as WordTier[]).map((t) => (

@@ -25,12 +25,12 @@ export default async function RevenuePathPage() {
       <div>
         <Link
           href="/goals"
-          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 mb-4"
+          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Goals
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900">Revenue Path</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Revenue Path</h1>
         <p className="text-stone-500 mt-1">
           Build a concrete mix of services to hit your monthly revenue goal — no mystery, just math.
         </p>

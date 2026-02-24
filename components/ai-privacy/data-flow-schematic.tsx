@@ -16,16 +16,16 @@ export function DataFlowSchematic() {
     <div className="space-y-8">
       {/* Title */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-stone-900">Where Does Your Data Go?</h2>
+        <h2 className="text-xl font-bold text-stone-100">Where Does Your Data Go?</h2>
         <p className="text-sm text-stone-500 mt-1">
           Your conversations with Remy stay within ChefFlow. Here&apos;s exactly how.
         </p>
       </div>
 
       {/* ─── Private Loop Diagram ────────────────────────────── */}
-      <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/50 p-5 space-y-4">
+      <div className="rounded-xl border-2 border-emerald-200 bg-emerald-950/50 p-5 space-y-4">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center">
+          <div className="h-8 w-8 rounded-full bg-emerald-900 flex items-center justify-center">
             <Shield className="h-4 w-4 text-emerald-600" />
           </div>
           <div>
@@ -326,8 +326,8 @@ export function DataFlowSchematic() {
       </div>
 
       {/* ─── What Remy Can & Cannot Do ───────────────────────── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5">
-        <h3 className="font-semibold text-stone-900 mb-4 text-center">
+      <div className="rounded-xl border border-stone-700 bg-surface p-5">
+        <h3 className="font-semibold text-stone-100 mb-4 text-center">
           What Remy Can &amp; Cannot Do
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -344,7 +344,7 @@ export function DataFlowSchematic() {
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
                 <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-stone-700">{item}</span>
+                <span className="text-sm text-stone-300">{item}</span>
               </div>
             ))}
           </div>
@@ -361,7 +361,7 @@ export function DataFlowSchematic() {
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
                 <X className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                <span className="text-sm text-stone-700">{item}</span>
+                <span className="text-sm text-stone-300">{item}</span>
               </div>
             ))}
           </div>

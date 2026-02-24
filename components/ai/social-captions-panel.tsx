@@ -44,20 +44,20 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Share2 className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Social Captions</span>
+            <span className="text-sm font-medium text-stone-300">Social Captions</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-stone-100 rounded p-0.5">
+            <div className="flex items-center gap-1 bg-stone-800 rounded p-0.5">
               {TONES.map((t) => (
                 <button
                   key={t.value}
                   onClick={() => setTone(t.value)}
-                  className={`text-xs px-2 py-0.5 rounded ${tone === t.value ? 'bg-white shadow-sm font-medium' : 'text-stone-500'}`}
+                  className={`text-xs px-2 py-0.5 rounded ${tone === t.value ? 'bg-surface shadow-sm font-medium' : 'text-stone-500'}`}
                 >
                   {t.label}
                 </button>
@@ -86,18 +86,18 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Share2 className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Social Captions</span>
+          <span className="text-sm font-medium text-stone-300">Social Captions</span>
         </div>
         <div className="flex items-center gap-1">
           {(['instagram', 'facebook', 'twitter'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPlatform(p)}
-              className={`text-xs px-2 py-1 rounded capitalize ${platform === p ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+              className={`text-xs px-2 py-1 rounded capitalize ${platform === p ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
             >
               {p === 'twitter' ? 'X/Twitter' : p}
             </button>
@@ -110,7 +110,7 @@ export function SocialCaptionsPanel({ eventId }: { eventId: string }) {
 
       {currentCaption && (
         <div className="space-y-2">
-          <div className="bg-stone-50 rounded p-3 text-sm text-stone-800 leading-relaxed">
+          <div className="bg-stone-800 rounded p-3 text-sm text-stone-200 leading-relaxed">
             {currentCaption.caption}
             {currentCaption.hashtags.length > 0 && (
               <div className="text-brand-600 mt-2">{currentCaption.hashtags.join(' ')}</div>

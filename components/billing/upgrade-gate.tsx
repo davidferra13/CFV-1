@@ -45,7 +45,7 @@ export async function UpgradeGate({ chefId, featureSlug, children, mode = 'block
         <div className="pointer-events-none select-none blur-sm opacity-60" aria-hidden="true">
           {children}
         </div>
-        <div className="absolute inset-0 flex items-center justify-center bg-white/30">
+        <div className="absolute inset-0 flex items-center justify-center bg-surface/30">
           <UpgradePrompt label={feature?.label} description={feature?.description} />
         </div>
       </div>

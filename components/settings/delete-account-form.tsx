@@ -55,7 +55,7 @@ export function DeleteAccountForm() {
           {error && <Alert variant="error">{error}</Alert>}
 
           <div>
-            <p className="text-sm text-stone-700 mb-2">
+            <p className="text-sm text-stone-300 mb-2">
               Type <strong>DELETE</strong> to confirm you want to permanently delete your account:
             </p>
             <Input
@@ -79,12 +79,7 @@ export function DeleteAccountForm() {
             autoComplete="current-password"
           />
 
-          <Button
-            type="submit"
-            variant="danger"
-            loading={isPending}
-            disabled={!isConfirmed}
-          >
+          <Button type="submit" variant="danger" loading={isPending} disabled={!isConfirmed}>
             Permanently Delete Account
           </Button>
         </CardContent>

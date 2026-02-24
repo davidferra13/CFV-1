@@ -45,36 +45,21 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
     quotedPriceCents,
   } = guardrail
 
-  const spentPercent = maxGrocerySpendCents > 0
-    ? Math.min(Math.round((currentSpendCents / maxGrocerySpendCents) * 100), 100)
-    : 0
+  const spentPercent =
+    maxGrocerySpendCents > 0
+      ? Math.min(Math.round((currentSpendCents / maxGrocerySpendCents) * 100), 100)
+      : 0
   const isOver = status === 'over'
   const isNear = status === 'near'
 
-  const barColor = isOver
-    ? 'bg-red-500'
-    : isNear
-    ? 'bg-yellow-500'
-    : 'bg-green-500'
+  const barColor = isOver ? 'bg-red-9500' : isNear ? 'bg-yellow-9500' : 'bg-green-9500'
 
   const statusLabel = isOver ? 'OVER BUDGET' : isNear ? 'NEAR LIMIT' : 'ON TRACK'
-  const statusColor = isOver
-    ? 'text-red-700'
-    : isNear
-    ? 'text-yellow-700'
-    : 'text-green-700'
+  const statusColor = isOver ? 'text-red-700' : isNear ? 'text-yellow-700' : 'text-green-700'
 
-  const borderColor = isOver
-    ? 'border-red-200'
-    : isNear
-    ? 'border-yellow-200'
-    : 'border-green-200'
+  const borderColor = isOver ? 'border-red-200' : isNear ? 'border-yellow-200' : 'border-green-200'
 
-  const bgColor = isOver
-    ? 'bg-red-50'
-    : isNear
-    ? 'bg-yellow-50'
-    : 'bg-green-50'
+  const bgColor = isOver ? 'bg-red-950' : isNear ? 'bg-yellow-950' : 'bg-green-950'
 
   function handleEditStart() {
     // Pre-fill with the current budget in dollars
@@ -134,11 +119,11 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
                 min="0"
                 step="1"
                 value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
+                onChange={(e) => setInputValue(e.target.value)}
                 className="w-32 h-8 text-sm"
                 placeholder="380"
                 autoFocus
-                onKeyDown={e => {
+                onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSave()
                   if (e.key === 'Escape') handleCancel()
                 }}
@@ -182,12 +167,20 @@ export function BudgetTracker({ eventId, guardrail }: BudgetTrackerProps) {
               </div>
 
               <div className="flex gap-4 text-sm text-gray-600">
-                <span>Spent: <strong>{formatCurrency(currentSpendCents)}</strong></span>
                 <span>
-                  {isOver
-                    ? <span className="text-red-700 font-semibold">Over by {formatCurrency(Math.abs(remainingBudgetCents))}</span>
-                    : <>Remaining: <strong>{formatCurrency(Math.max(0, remainingBudgetCents))}</strong></>
-                  }
+                  Spent: <strong>{formatCurrency(currentSpendCents)}</strong>
+                </span>
+                <span>
+                  {isOver ? (
+                    <span className="text-red-700 font-semibold">
+                      Over by {formatCurrency(Math.abs(remainingBudgetCents))}
+                    </span>
+                  ) : (
+                    <>
+                      Remaining:{' '}
+                      <strong>{formatCurrency(Math.max(0, remainingBudgetCents))}</strong>
+                    </>
+                  )}
                 </span>
                 <span className="text-gray-400">{spentPercent}%</span>
               </div>

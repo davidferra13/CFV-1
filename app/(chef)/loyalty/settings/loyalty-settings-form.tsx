@@ -32,7 +32,7 @@ function NumberField({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
+      <label className="block text-sm font-medium text-stone-300 mb-1">{label}</label>
       <div className="flex items-center gap-2">
         <Input
           name={name}
@@ -67,9 +67,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
   const [largePartyThreshold, setLargePartyThreshold] = useState(
     config.bonus_large_party_threshold ?? 10
   )
-  const [largePartyBonus, setLargePartyBonus] = useState(
-    config.bonus_large_party_points ?? 50
-  )
+  const [largePartyBonus, setLargePartyBonus] = useState(config.bonus_large_party_points ?? 50)
   const [largePartyEnabled, setLargePartyEnabled] = useState(
     (config.bonus_large_party_points ?? 0) > 0
   )
@@ -94,9 +92,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
       setError(`A milestone already exists for the ${events}th event.`)
       return
     }
-    setMilestones((prev) =>
-      [...prev, { events, bonus }].sort((a, b) => a.events - b.events)
-    )
+    setMilestones((prev) => [...prev, { events, bonus }].sort((a, b) => a.events - b.events))
     setNewMilestoneEvents('')
     setNewMilestoneBonus('')
     setError(null)
@@ -144,14 +140,14 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
 
   return (
     <div className="space-y-10">
-
       {/* ── Program Toggle ──────────────────────────────────────────────── */}
       <section>
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">Program Status</h2>
+            <h2 className="text-lg font-semibold text-stone-100">Program Status</h2>
             <p className="text-sm text-stone-500 mt-0.5">
-              When paused, no new points are awarded. Existing balances and pending deliveries are preserved.
+              When paused, no new points are awarded. Existing balances and pending deliveries are
+              preserved.
             </p>
           </div>
           <button
@@ -162,7 +158,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
             }`}
           >
             <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+              className={`inline-block h-5 w-5 transform rounded-full bg-surface shadow transition-transform ${
                 isActive ? 'translate-x-8' : 'translate-x-1'
               }`}
             />
@@ -173,11 +169,11 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
         </Badge>
       </section>
 
-      <hr className="border-stone-200" />
+      <hr className="border-stone-700" />
 
       {/* ── Earn Rates ──────────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-lg font-semibold text-stone-900 mb-1">Earn Rates</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-1">Earn Rates</h2>
         <p className="text-sm text-stone-500 mb-5">
           How many points clients earn from different activities. All automatic.
         </p>
@@ -212,13 +208,13 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
         </div>
       </section>
 
-      <hr className="border-stone-200" />
+      <hr className="border-stone-700" />
 
       {/* ── Large Party Bonus ────────────────────────────────────────────── */}
       <section>
         <div className="flex items-center justify-between mb-1">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">Large Party Bonus</h2>
+            <h2 className="text-lg font-semibold text-stone-100">Large Party Bonus</h2>
             <p className="text-sm text-stone-500 mt-0.5">
               Extra points when a client hosts a bigger group.
             </p>
@@ -231,7 +227,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
             }`}
           >
             <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+              className={`inline-block h-5 w-5 transform rounded-full bg-surface shadow transition-transform ${
                 largePartyEnabled ? 'translate-x-8' : 'translate-x-1'
               }`}
             />
@@ -262,14 +258,14 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
         )}
       </section>
 
-      <hr className="border-stone-200" />
+      <hr className="border-stone-700" />
 
       {/* ── Milestone Bonuses ────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-lg font-semibold text-stone-900 mb-1">Milestone Bonuses</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-1">Milestone Bonuses</h2>
         <p className="text-sm text-stone-500 mb-4">
-          Award bonus points when a client reaches a specific number of completed dinners.
-          A client on their 9th dinner will be excited to book the 10th to unlock the milestone.
+          Award bonus points when a client reaches a specific number of completed dinners. A client
+          on their 9th dinner will be excited to book the 10th to unlock the milestone.
         </p>
 
         {/* Existing milestones */}
@@ -278,12 +274,12 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
             {milestones.map((m) => (
               <div
                 key={m.events}
-                className="flex items-center justify-between px-4 py-3 rounded-lg bg-stone-50 border border-stone-200"
+                className="flex items-center justify-between px-4 py-3 rounded-lg bg-stone-800 border border-stone-700"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">🏆</span>
                   <div>
-                    <p className="text-sm font-medium text-stone-900">
+                    <p className="text-sm font-medium text-stone-100">
                       {ordinal(m.events)} dinner completed
                     </p>
                     <p className="text-xs text-stone-500">+{m.bonus} bonus points</p>
@@ -304,8 +300,8 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
         )}
 
         {/* Add new milestone */}
-        <div className="p-4 rounded-lg border border-dashed border-stone-300 bg-stone-50">
-          <p className="text-sm font-medium text-stone-700 mb-3">Add a milestone</p>
+        <div className="p-4 rounded-lg border border-dashed border-stone-600 bg-stone-800">
+          <p className="text-sm font-medium text-stone-300 mb-3">Add a milestone</p>
           <div className="flex items-end gap-3 flex-wrap">
             <div>
               <label className="block text-xs text-stone-500 mb-1">After dinner #</label>
@@ -345,18 +341,18 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
         </div>
       </section>
 
-      <hr className="border-stone-200" />
+      <hr className="border-stone-700" />
 
       {/* ── Tier Thresholds ──────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-lg font-semibold text-stone-900 mb-1">Tier Thresholds</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-1">Tier Thresholds</h2>
         <p className="text-sm text-stone-500 mb-5">
           Lifetime points required to reach each tier. Tiers are based on total points ever earned —
           they never go down when a client redeems rewards.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               <span className="inline-flex items-center gap-1">
                 <span className="inline-block w-3 h-3 rounded-full bg-stone-400"></span>
                 Silver minimum
@@ -374,7 +370,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               <span className="inline-flex items-center gap-1">
                 <span className="inline-block w-3 h-3 rounded-full bg-yellow-400"></span>
                 Gold minimum
@@ -392,7 +388,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               <span className="inline-flex items-center gap-1">
                 <span className="inline-block w-3 h-3 rounded-full bg-purple-400"></span>
                 Platinum minimum
@@ -411,12 +407,12 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
           </div>
         </div>
         <p className="text-xs text-stone-400 mt-3">
-          Bronze is 0–{silverMin - 1} pts · Silver is {silverMin}–{goldMin - 1} pts ·
-          Gold is {goldMin}–{platinumMin - 1} pts · Platinum is {platinumMin}+ pts
+          Bronze is 0–{silverMin - 1} pts · Silver is {silverMin}–{goldMin - 1} pts · Gold is{' '}
+          {goldMin}–{platinumMin - 1} pts · Platinum is {platinumMin}+ pts
         </p>
       </section>
 
-      <hr className="border-stone-200" />
+      <hr className="border-stone-700" />
 
       {/* ── Save ─────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-4">
@@ -427,13 +423,9 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
           Back to Dashboard
         </Button>
         {saved && (
-          <span className="text-sm text-emerald-700 font-medium">
-            Settings saved successfully.
-          </span>
+          <span className="text-sm text-emerald-700 font-medium">Settings saved successfully.</span>
         )}
-        {error && (
-          <span className="text-sm text-red-600">{error}</span>
-        )}
+        {error && <span className="text-sm text-red-600">{error}</span>}
       </div>
     </div>
   )

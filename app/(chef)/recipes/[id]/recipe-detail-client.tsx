@@ -24,7 +24,9 @@ const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info'
   salad: 'success',
 }
 
-type RecipeDetail = NonNullable<Awaited<ReturnType<typeof import('@/lib/recipes/actions').getRecipeById>>>
+type RecipeDetail = NonNullable<
+  Awaited<ReturnType<typeof import('@/lib/recipes/actions').getRecipeById>>
+>
 
 type Props = {
   recipe: RecipeDetail
@@ -99,14 +101,10 @@ export function RecipeDetailClient({ recipe }: Props) {
       <div className="flex justify-between items-start">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">{recipe.name}</h1>
-            <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>
-              {recipe.category}
-            </Badge>
+            <h1 className="text-3xl font-bold text-stone-100">{recipe.name}</h1>
+            <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>{recipe.category}</Badge>
           </div>
-          {recipe.description && (
-            <p className="text-stone-600 mt-1">{recipe.description}</p>
-          )}
+          {recipe.description && <p className="text-stone-400 mt-1">{recipe.description}</p>}
         </div>
         <div className="flex gap-2">
           <Link href={`/recipes/${recipe.id}/edit`}>
@@ -117,7 +115,10 @@ export function RecipeDetailClient({ recipe }: Props) {
           </Button>
           <Button
             variant="secondary"
-            onClick={() => { setShowShareModal(true); setShareSuccess(null) }}
+            onClick={() => {
+              setShowShareModal(true)
+              setShareSuccess(null)
+            }}
             disabled={loading}
           >
             Share
@@ -148,7 +149,9 @@ export function RecipeDetailClient({ recipe }: Props) {
           recipeName={recipe.name}
           onSuccess={(chefName) => {
             setShowShareModal(false)
-            setShareSuccess(`Recipe shared with ${chefName}. They'll receive an invitation to accept.`)
+            setShareSuccess(
+              `Recipe shared with ${chefName}. They'll receive an invitation to accept.`
+            )
           }}
           onCancel={() => setShowShareModal(false)}
         />
@@ -160,7 +163,9 @@ export function RecipeDetailClient({ recipe }: Props) {
           <div className="flex justify-between items-center">
             <CardTitle>Ingredients ({recipe.ingredients.length})</CardTitle>
             <Link href={`/recipes/${recipe.id}/edit`}>
-              <Button size="sm" variant="secondary">Edit Ingredients</Button>
+              <Button size="sm" variant="secondary">
+                Edit Ingredients
+              </Button>
             </Link>
           </div>
         </CardHeader>
@@ -170,21 +175,27 @@ export function RecipeDetailClient({ recipe }: Props) {
           ) : (
             <div className="space-y-2">
               {recipe.ingredients.map((ri) => (
-                <div key={ri.id} className="flex justify-between items-center py-1 border-b border-stone-50 last:border-0">
+                <div
+                  key={ri.id}
+                  className="flex justify-between items-center py-1 border-b border-stone-50 last:border-0"
+                >
                   <div className="flex items-center gap-2">
-                    <span className="text-stone-900">
+                    <span className="text-stone-100">
                       {ri.quantity} {ri.unit} {ri.ingredient.name}
                     </span>
                     {ri.preparation_notes && (
                       <span className="text-sm text-stone-500">({ri.preparation_notes})</span>
                     )}
                     {ri.is_optional && (
-                      <span className="text-xs px-1.5 py-0.5 bg-stone-100 text-stone-500 rounded">optional</span>
+                      <span className="text-xs px-1.5 py-0.5 bg-stone-800 text-stone-500 rounded">
+                        optional
+                      </span>
                     )}
                   </div>
                   {ri.ingredient.average_price_cents != null && (
                     <span className="text-sm text-stone-500">
-                      ${(ri.ingredient.average_price_cents / 100).toFixed(2)}/{ri.ingredient.default_unit}
+                      ${(ri.ingredient.average_price_cents / 100).toFixed(2)}/
+                      {ri.ingredient.default_unit}
                     </span>
                   )}
                 </div>
@@ -204,11 +215,13 @@ export function RecipeDetailClient({ recipe }: Props) {
             <CardTitle>Method</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-stone-900 whitespace-pre-wrap">{recipe.method}</p>
+            <p className="text-stone-100 whitespace-pre-wrap">{recipe.method}</p>
             {recipe.method_detailed && (
-              <div className="mt-4 pt-4 border-t border-stone-100">
+              <div className="mt-4 pt-4 border-t border-stone-800">
                 <p className="text-sm font-medium text-stone-500 mb-1">Detailed Method</p>
-                <p className="text-sm text-stone-700 whitespace-pre-wrap">{recipe.method_detailed}</p>
+                <p className="text-sm text-stone-300 whitespace-pre-wrap">
+                  {recipe.method_detailed}
+                </p>
               </div>
             )}
           </CardContent>
@@ -225,7 +238,7 @@ export function RecipeDetailClient({ recipe }: Props) {
             {recipe.yield_quantity && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Yield</dt>
-                <dd className="text-stone-900 mt-1">
+                <dd className="text-stone-100 mt-1">
                   {recipe.yield_quantity} {recipe.yield_unit || 'servings'}
                 </dd>
               </div>
@@ -233,38 +246,40 @@ export function RecipeDetailClient({ recipe }: Props) {
             {recipe.prep_time_minutes && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Prep Time</dt>
-                <dd className="text-stone-900 mt-1">{recipe.prep_time_minutes} min</dd>
+                <dd className="text-stone-100 mt-1">{recipe.prep_time_minutes} min</dd>
               </div>
             )}
             {recipe.cook_time_minutes && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Cook Time</dt>
-                <dd className="text-stone-900 mt-1">{recipe.cook_time_minutes} min</dd>
+                <dd className="text-stone-100 mt-1">{recipe.cook_time_minutes} min</dd>
               </div>
             )}
             {recipe.times_cooked > 0 && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Times Cooked</dt>
-                <dd className="text-stone-900 mt-1">{recipe.times_cooked}</dd>
+                <dd className="text-stone-100 mt-1">{recipe.times_cooked}</dd>
               </div>
             )}
           </div>
 
           {recipe.dietary_tags && recipe.dietary_tags.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-stone-100">
+            <div className="mt-4 pt-4 border-t border-stone-800">
               <p className="text-sm font-medium text-stone-500 mb-2">Dietary Tags</p>
               <div className="flex flex-wrap gap-1">
-                {recipe.dietary_tags.map(tag => (
-                  <Badge key={tag} variant="success">{tag}</Badge>
+                {recipe.dietary_tags.map((tag) => (
+                  <Badge key={tag} variant="success">
+                    {tag}
+                  </Badge>
                 ))}
               </div>
             </div>
           )}
 
           {recipe.notes && (
-            <div className="mt-4 pt-4 border-t border-stone-100">
+            <div className="mt-4 pt-4 border-t border-stone-800">
               <p className="text-sm font-medium text-stone-500 mb-1">Notes</p>
-              <p className="text-sm text-stone-700 whitespace-pre-wrap">{recipe.notes}</p>
+              <p className="text-sm text-stone-300 whitespace-pre-wrap">{recipe.notes}</p>
             </div>
           )}
         </CardContent>
@@ -281,7 +296,7 @@ export function RecipeDetailClient({ recipe }: Props) {
               {recipe.costSummary.totalCostCents != null && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Total Cost</dt>
-                  <dd className="text-2xl font-bold text-stone-900 mt-1">
+                  <dd className="text-2xl font-bold text-stone-100 mt-1">
                     ${(recipe.costSummary.totalCostCents / 100).toFixed(2)}
                   </dd>
                 </div>
@@ -289,7 +304,7 @@ export function RecipeDetailClient({ recipe }: Props) {
               {recipe.costSummary.costPerPortionCents != null && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Cost per Portion</dt>
-                  <dd className="text-2xl font-bold text-stone-900 mt-1">
+                  <dd className="text-2xl font-bold text-stone-100 mt-1">
                     ${(recipe.costSummary.costPerPortionCents / 100).toFixed(2)}
                   </dd>
                 </div>
@@ -326,11 +341,13 @@ export function RecipeDetailClient({ recipe }: Props) {
                 <Link
                   key={event.eventId}
                   href={`/events/${event.eventId}`}
-                  className="block border border-stone-200 rounded-lg p-3 hover:border-brand-300 hover:shadow-sm transition-all"
+                  className="block border border-stone-700 rounded-lg p-3 hover:border-brand-600 hover:shadow-sm transition-all"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-medium text-stone-900">{event.occasion || 'Untitled Event'}</h4>
+                      <h4 className="font-medium text-stone-100">
+                        {event.occasion || 'Untitled Event'}
+                      </h4>
                       <p className="text-sm text-stone-500">
                         {format(new Date(event.eventDate), 'PPP')}
                         {event.clientName && ` for ${event.clientName}`}
@@ -364,8 +381,14 @@ function RecipeShareModal({
   const [isPending, startTransition] = useTransition()
   const [search, setSearch] = useState('')
   const [searching, setSearching] = useState(false)
-  const [results, setResults] = useState<Array<{ id: string; business_name: string; display_name: string | null }>>([])
-  const [selectedChef, setSelectedChef] = useState<{ id: string; business_name: string; display_name: string | null } | null>(null)
+  const [results, setResults] = useState<
+    Array<{ id: string; business_name: string; display_name: string | null }>
+  >([])
+  const [selectedChef, setSelectedChef] = useState<{
+    id: string
+    business_name: string
+    display_name: string | null
+  } | null>(null)
   const [note, setNote] = useState('')
   const [modalError, setModalError] = useState<string | null>(null)
 
@@ -396,9 +419,11 @@ function RecipeShareModal({
   }
 
   return (
-    <div className="rounded-lg border border-brand-200 bg-brand-50/40 p-4 space-y-3">
-      <p className="text-sm font-semibold text-stone-800">Share &ldquo;{recipeName}&rdquo; with a Chef</p>
-      <p className="text-xs text-stone-600">
+    <div className="rounded-lg border border-brand-700 bg-brand-950/40 p-4 space-y-3">
+      <p className="text-sm font-semibold text-stone-200">
+        Share &ldquo;{recipeName}&rdquo; with a Chef
+      </p>
+      <p className="text-xs text-stone-400">
         They&apos;ll receive an invitation to accept. If accepted, they get their own editable copy.
         Only chefs you&apos;re connected with in the Chef Network can receive shares.
       </p>
@@ -411,56 +436,72 @@ function RecipeShareModal({
             <input
               type="text"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Search your connected chefs..."
-              className="flex-1 rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="flex-1 rounded-md border border-stone-600 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
             <Button variant="secondary" size="sm" onClick={handleSearch} disabled={searching}>
               {searching ? '...' : 'Search'}
             </Button>
           </div>
-          {results.map(chef => (
+          {results.map((chef) => (
             <button
               key={chef.id}
               type="button"
               onClick={() => setSelectedChef(chef)}
-              className="w-full text-left flex items-center gap-3 rounded-md border border-stone-200 bg-white px-3 py-2 hover:bg-stone-50 transition-colors text-sm"
+              className="w-full text-left flex items-center gap-3 rounded-md border border-stone-700 bg-surface px-3 py-2 hover:bg-stone-800 transition-colors text-sm"
             >
-              <div className="h-7 w-7 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600 flex-shrink-0">
+              <div className="h-7 w-7 rounded-full bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-400 flex-shrink-0">
                 {(chef.display_name || chef.business_name).charAt(0).toUpperCase()}
               </div>
-              <span className="font-medium text-stone-900">{chef.display_name || chef.business_name}</span>
+              <span className="font-medium text-stone-100">
+                {chef.display_name || chef.business_name}
+              </span>
             </button>
           ))}
           {results.length === 0 && search && !searching && (
-            <p className="text-xs text-stone-500">No connected chefs found matching &ldquo;{search}&rdquo;.</p>
+            <p className="text-xs text-stone-500">
+              No connected chefs found matching &ldquo;{search}&rdquo;.
+            </p>
           )}
           <div className="flex justify-end">
-            <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={onCancel}>
+              Cancel
+            </Button>
           </div>
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center gap-3 rounded-md bg-white border border-stone-200 px-3 py-2">
-            <div className="h-7 w-7 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600">
+          <div className="flex items-center gap-3 rounded-md bg-surface border border-stone-700 px-3 py-2">
+            <div className="h-7 w-7 rounded-full bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-400">
               {(selectedChef.display_name || selectedChef.business_name).charAt(0).toUpperCase()}
             </div>
-            <p className="text-sm font-medium text-stone-900 flex-1">{selectedChef.display_name || selectedChef.business_name}</p>
-            <button type="button" onClick={() => setSelectedChef(null)} className="text-xs text-stone-400 hover:text-stone-600">Change</button>
+            <p className="text-sm font-medium text-stone-100 flex-1">
+              {selectedChef.display_name || selectedChef.business_name}
+            </p>
+            <button
+              type="button"
+              onClick={() => setSelectedChef(null)}
+              className="text-xs text-stone-400 hover:text-stone-400"
+            >
+              Change
+            </button>
           </div>
           <input
             type="text"
             value={note}
-            onChange={e => setNote(e.target.value)}
+            onChange={(e) => setNote(e.target.value)}
             placeholder="Optional note (e.g. try this with brown butter)"
-            className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
           <div className="flex gap-2">
             <Button variant="primary" size="sm" onClick={handleSend} disabled={isPending}>
               {isPending ? 'Sending...' : 'Send Share'}
             </Button>
-            <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={onCancel}>
+              Cancel
+            </Button>
           </div>
         </div>
       )}

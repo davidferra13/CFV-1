@@ -30,7 +30,7 @@ export default async function EventBoardPage() {
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Event Board</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Event Board</h1>
           <p className="text-stone-500 mt-1 text-sm">
             Drag events between stages to advance them through the pipeline
           </p>

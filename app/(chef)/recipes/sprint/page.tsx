@@ -25,21 +25,21 @@ export default async function RecipeSprintPage() {
         <div>
           <div className="flex items-center gap-2">
             <BookOpen className="h-6 w-6 text-brand-600" />
-            <h1 className="text-2xl font-bold text-stone-900">Recipe Sprint</h1>
+            <h1 className="text-2xl font-bold text-stone-100">Recipe Sprint</h1>
           </div>
-          <p className="text-stone-600 mt-1">
+          <p className="text-stone-400 mt-1">
             {items.length > 0
               ? `${items.length} dish${items.length !== 1 ? 'es' : ''} from past events with no recipe recorded — let's fix that.`
               : 'All dish components have recipes recorded.'}
           </p>
         </div>
-        <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-700 font-medium">
+        <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-300 font-medium">
           View Recipe Book
         </Link>
       </div>
 
       {!aiConfigured && items.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
           <strong>Auto-parsing not configured.</strong> Set GEMINI_API_KEY in your environment for
           automatic ingredient and method extraction. Descriptions will be saved as method text —
           you can edit the full recipe after.

@@ -79,12 +79,12 @@ export function ProfileForm({ profile }: ProfileFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="bg-red-950 border border-red-200 rounded-lg p-4">
               <p className="text-sm text-red-700">{error}</p>
             </div>
           )}
           {success && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+            <div className="bg-emerald-950 border border-emerald-200 rounded-lg p-4">
               <p className="text-sm text-emerald-700">Profile updated successfully.</p>
             </div>
           )}
@@ -98,37 +98,34 @@ export function ProfileForm({ profile }: ProfileFormProps) {
           />
 
           <div className="w-full">
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              Bio
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">Bio</label>
             <textarea
               placeholder="Tell other chefs a bit about yourself..."
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               maxLength={500}
               rows={3}
-              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             />
             <p className="mt-1.5 text-sm text-stone-500">{bio.length}/500 characters</p>
           </div>
 
           <div className="w-full">
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              Profile Photo
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">Profile Photo</label>
             <input
               type="file"
               accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
               onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
             />
             <p className="mt-1.5 text-sm text-stone-500">
-              Upload a JPEG, PNG, HEIC, or WebP image (max 10MB). New upload replaces your current photo.
+              Upload a JPEG, PNG, HEIC, or WebP image (max 10MB). New upload replaces your current
+              photo.
             </p>
             {profileImageUrl && !selectedImageFile && (
               <button
                 type="button"
-                className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+                className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
                 onClick={() => setProfileImageUrl('')}
               >
                 Remove current photo
@@ -137,22 +134,22 @@ export function ProfileForm({ profile }: ProfileFormProps) {
           </div>
 
           {/* Preview */}
-          <div className="pt-2 border-t border-stone-100">
-            <p className="text-sm font-medium text-stone-700 mb-2">Preview</p>
-            <div className="flex items-center gap-3 p-3 bg-stone-50 rounded-lg">
-              {(imagePreviewUrl || profileImageUrl) ? (
+          <div className="pt-2 border-t border-stone-800">
+            <p className="text-sm font-medium text-stone-300 mb-2">Preview</p>
+            <div className="flex items-center gap-3 p-3 bg-stone-800 rounded-lg">
+              {imagePreviewUrl || profileImageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={imagePreviewUrl || profileImageUrl}
                   alt="Preview"
                   className="h-10 w-10 rounded-full object-cover"
                   onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none'
+                    ;(e.target as HTMLImageElement).style.display = 'none'
                   }}
                 />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-brand-100 flex items-center justify-center">
-                  <span className="text-xs font-semibold text-brand-700">
+                <div className="h-10 w-10 rounded-full bg-brand-900 flex items-center justify-center">
+                  <span className="text-xs font-semibold text-brand-400">
                     {(displayName || profile.business_name)
                       .split(/\s+/)
                       .slice(0, 2)
@@ -163,12 +160,10 @@ export function ProfileForm({ profile }: ProfileFormProps) {
                 </div>
               )}
               <div>
-                <p className="text-sm font-semibold text-stone-900">
+                <p className="text-sm font-semibold text-stone-100">
                   {displayName.trim() || profile.business_name}
                 </p>
-                {bio.trim() && (
-                  <p className="text-xs text-stone-500 line-clamp-1">{bio.trim()}</p>
-                )}
+                {bio.trim() && <p className="text-xs text-stone-500 line-clamp-1">{bio.trim()}</p>}
               </div>
             </div>
           </div>

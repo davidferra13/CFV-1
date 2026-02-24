@@ -12,11 +12,14 @@ export default async function NewRewardPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <Link href="/loyalty" className="text-sm text-brand-600 hover:text-brand-700 mb-2 inline-block">
+        <Link
+          href="/loyalty"
+          className="text-sm text-brand-600 hover:text-brand-400 mb-2 inline-block"
+        >
           ← Back to Loyalty
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900">Create Reward</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Create Reward</h1>
+        <p className="text-stone-400 mt-1">
           Add a new service-denominated reward to your loyalty catalog
         </p>
       </div>

@@ -26,7 +26,7 @@ export default async function CulinaryBoardPage() {
       <link rel="stylesheet" href={BOARD_FONTS_URL} />
 
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold text-stone-900">Culinary Board</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Culinary Board</h1>
         <CulinaryBoard userWords={userWords} isAdmin={admin} />
       </div>
     </>

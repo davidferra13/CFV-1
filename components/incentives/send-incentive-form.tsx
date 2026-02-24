@@ -51,15 +51,15 @@ export function SendIncentiveForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-stone-50 rounded-lg px-4 py-3 border border-stone-200">
+      <div className="bg-stone-800 rounded-lg px-4 py-3 border border-stone-700">
         <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">Sending code</p>
-        <p className="font-mono font-semibold text-stone-900 mt-0.5">{incentiveCode}</p>
-        <p className="text-sm text-stone-600">{incentiveTitle}</p>
+        <p className="font-mono font-semibold text-stone-100 mt-0.5">{incentiveCode}</p>
+        <p className="text-sm text-stone-400">{incentiveTitle}</p>
       </div>
 
       {/* Delivery channel */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">Delivery Method</label>
+        <label className="block text-sm font-medium text-stone-300 mb-2">Delivery Method</label>
         <div className="flex gap-3">
           {(['email', 'manual'] as const).map((ch) => (
             <button
@@ -69,7 +69,7 @@ export function SendIncentiveForm({
               className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
                 deliveryChannel === ch
                   ? 'bg-brand-600 text-white border-brand-600'
-                  : 'bg-white text-stone-700 border-stone-300 hover:border-brand-400'
+                  : 'bg-surface text-stone-300 border-stone-600 hover:border-brand-400'
               }`}
             >
               {ch === 'email' ? 'Send Email' : 'Manual (log only)'}
@@ -85,7 +85,7 @@ export function SendIncentiveForm({
 
       {/* Recipient email */}
       <div>
-        <label htmlFor="recipientEmail" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="recipientEmail" className="block text-sm font-medium text-stone-300 mb-1">
           Recipient Email <span className="text-red-500">*</span>
         </label>
         <input
@@ -94,14 +94,14 @@ export function SendIncentiveForm({
           value={recipientEmail}
           onChange={(e) => setRecipientEmail(e.target.value)}
           placeholder="client@example.com"
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           required
         />
       </div>
 
       {/* Recipient name */}
       <div>
-        <label htmlFor="recipientName" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="recipientName" className="block text-sm font-medium text-stone-300 mb-1">
           Recipient Name <span className="text-stone-400 font-normal">(optional)</span>
         </label>
         <input
@@ -110,14 +110,14 @@ export function SendIncentiveForm({
           value={recipientName}
           onChange={(e) => setRecipientName(e.target.value)}
           placeholder="Sarah"
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
       {/* Personal message */}
       {deliveryChannel === 'email' && (
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="message" className="block text-sm font-medium text-stone-300 mb-1">
             Personal Message <span className="text-stone-400 font-normal">(optional)</span>
           </label>
           <textarea
@@ -126,13 +126,13 @@ export function SendIncentiveForm({
             onChange={(e) => setMessage(e.target.value)}
             rows={3}
             placeholder="Enjoy this gift card for your next event!"
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
           />
         </div>
       )}
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <p className="text-sm text-red-600 bg-red-950 border border-red-200 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
@@ -142,7 +142,7 @@ export function SendIncentiveForm({
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-2 px-4 rounded-lg border border-stone-300 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="flex-1 py-2 px-4 rounded-lg border border-stone-600 text-sm font-medium text-stone-300 hover:bg-stone-800"
           >
             Cancel
           </button>

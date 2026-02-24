@@ -15,9 +15,9 @@ function formatDollars(cents: number) {
 }
 
 const MATCH_COLORS: Record<string, string> = {
-  exact: 'bg-green-50 border-green-200',
-  partial: 'bg-blue-50 border-blue-200',
-  substitution: 'bg-amber-50 border-amber-200',
+  exact: 'bg-green-950 border-green-200',
+  partial: 'bg-blue-950 border-blue-200',
+  substitution: 'bg-amber-950 border-amber-200',
 }
 
 export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
@@ -38,11 +38,11 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Recycle className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-stone-700">Carry-Forward Match</span>
+            <span className="text-sm font-medium text-stone-300">Carry-Forward Match</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -67,11 +67,11 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Recycle className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-medium text-stone-700">Carry-Forward Matches</span>
+          <span className="text-sm font-medium text-stone-300">Carry-Forward Matches</span>
           <Badge variant={result.matches.length > 0 ? 'success' : 'default'}>
             {result.matches.length} found
           </Badge>
@@ -89,7 +89,7 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
         </div>
       </div>
 
-      <p className="text-xs text-stone-600">{result.summary}</p>
+      <p className="text-xs text-stone-400">{result.summary}</p>
 
       {result.matches.length > 0 && (
         <div className="space-y-1.5">
@@ -99,11 +99,11 @@ export function CarryForwardMatchPanel({ eventId }: { eventId: string }) {
               className={`border rounded p-2 space-y-0.5 ${MATCH_COLORS[match.matchType]}`}
             >
               <div className="flex items-center gap-2 text-xs">
-                <span className="font-medium text-stone-700">{match.leftoverItem}</span>
+                <span className="font-medium text-stone-300">{match.leftoverItem}</span>
                 <span className="text-stone-400">→</span>
-                <span className="text-stone-600">{match.neededIngredient}</span>
+                <span className="text-stone-400">{match.neededIngredient}</span>
                 <span
-                  className={`text-[10px] px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-100 text-green-700' : match.matchType === 'partial' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}
+                  className={`text-[10px] px-1 rounded ml-auto ${match.matchType === 'exact' ? 'bg-green-900 text-green-700' : match.matchType === 'partial' ? 'bg-blue-900 text-blue-700' : 'bg-amber-900 text-amber-700'}`}
                 >
                   {match.matchType}
                 </span>

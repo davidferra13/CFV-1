@@ -48,7 +48,7 @@ export function SocialChannelCard({ channel }: { channel: SocialChannel }) {
   function toggleMembership() {
     const next = !isMember
     setIsMember(next)
-    setMemberCount((c) => next ? c + 1 : Math.max(0, c - 1))
+    setMemberCount((c) => (next ? c + 1 : Math.max(0, c - 1)))
 
     startTransition(async () => {
       if (next) {
@@ -61,7 +61,7 @@ export function SocialChannelCard({ channel }: { channel: SocialChannel }) {
 
   return (
     <div
-      className="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 flex items-start gap-4 hover:shadow-md transition-shadow"
+      className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4 flex items-start gap-4 hover:shadow-md transition-shadow"
       style={{ borderLeft: channel.color ? `3px solid ${channel.color}` : undefined }}
     >
       {/* Icon */}
@@ -77,12 +77,12 @@ export function SocialChannelCard({ channel }: { channel: SocialChannel }) {
         <div className="flex items-center gap-2">
           <Link
             href={`/network/channels/${channel.slug}`}
-            className="font-semibold text-stone-900 hover:underline text-sm"
+            className="font-semibold text-stone-100 hover:underline text-sm"
           >
             {channel.name}
           </Link>
           {channel.is_official && (
-            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
+            <span className="text-xs bg-amber-900 text-amber-700 px-1.5 py-0.5 rounded-full font-medium">
               Official
             </span>
           )}

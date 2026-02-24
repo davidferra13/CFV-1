@@ -25,13 +25,14 @@ export default async function AdminCommunicationsPage() {
     currentText = ann?.text ?? ''
     currentType = ann?.type ?? 'info'
   } catch {
-    announcementError = 'platform_settings table not yet applied. Run the latest migrations to enable this feature.'
+    announcementError =
+      'platform_settings table not yet applied. Run the latest migrations to enable this feature.'
   }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-amber-50 rounded-lg">
+        <div className="p-2 bg-amber-950 rounded-lg">
           <Megaphone size={18} className="text-amber-600" />
         </div>
         <div>
@@ -41,21 +42,22 @@ export default async function AdminCommunicationsPage() {
       </div>
 
       {/* Announcement Banner */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="bg-surface rounded-xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-1">
           <Megaphone size={16} className="text-amber-500" />
           <h2 className="text-sm font-semibold text-slate-700">Platform Announcement Banner</h2>
           {currentText && (
-            <span className="ml-auto text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+            <span className="ml-auto text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full font-medium">
               Active
             </span>
           )}
         </div>
         <p className="text-sm text-slate-500 mb-4">
-          Set a message that appears at the top of every logged-in chef&apos;s portal. Leave blank to clear.
+          Set a message that appears at the top of every logged-in chef&apos;s portal. Leave blank
+          to clear.
         </p>
         {announcementError ? (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-800">
+          <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2.5 text-sm text-amber-800">
             {announcementError}
           </div>
         ) : (
@@ -64,7 +66,7 @@ export default async function AdminCommunicationsPage() {
       </div>
 
       {/* Direct Email */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="bg-surface rounded-xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Mail size={16} className="text-blue-500" />
           <h2 className="text-sm font-semibold text-slate-700">Direct Email</h2>
@@ -76,13 +78,14 @@ export default async function AdminCommunicationsPage() {
       </div>
 
       {/* Broadcast */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5">
+      <div className="bg-surface rounded-xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Send size={16} className="text-purple-500" />
           <h2 className="text-sm font-semibold text-slate-700">Broadcast Email</h2>
         </div>
         <p className="text-sm text-slate-500 mb-4">
-          Send a message to all chefs, or all inactive chefs (no activity in 60+ days). Emails are sent via BCC so recipients cannot see each other.
+          Send a message to all chefs, or all inactive chefs (no activity in 60+ days). Emails are
+          sent via BCC so recipients cannot see each other.
         </p>
         <BroadcastEmailForm />
       </div>

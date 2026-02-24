@@ -155,12 +155,12 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       <div className="max-w-2xl mx-auto">
         <div className="text-center py-12">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 bg-emerald-900 rounded-full flex items-center justify-center">
               <CheckCircle className="w-8 h-8 text-emerald-600" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-stone-900 mb-2">All Set, {firstName}!</h2>
-          <p className="text-stone-600 mb-6">
+          <h2 className="text-2xl font-bold text-stone-100 mb-2">All Set, {firstName}!</h2>
+          <p className="text-stone-400 mb-6">
             Your details have been confirmed. The chef has everything they need for a perfect event.
           </p>
           <Link href={`/my-events/${event.id}`}>
@@ -177,13 +177,13 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       <div className="mb-6">
         <Link
           href={`/my-events/${event.id}`}
-          className="text-brand-600 hover:text-brand-700 flex items-center gap-2 mb-4 text-sm"
+          className="text-brand-600 hover:text-brand-400 flex items-center gap-2 mb-4 text-sm"
         >
           <ChevronRight className="w-4 h-4 rotate-180" />
           Back to Event
         </Link>
-        <h1 className="text-2xl font-bold text-stone-900 mb-1">Pre-Event Checklist</h1>
-        <p className="text-stone-600">
+        <h1 className="text-2xl font-bold text-stone-100 mb-1">Pre-Event Checklist</h1>
+        <p className="text-stone-400">
           Confirm your details are correct so the chef can prepare perfectly for{' '}
           <span className="font-medium">{event.occasion || 'your event'}</span> on{' '}
           <span className="font-medium">{format(new Date(event.event_date), 'MMMM d, yyyy')}</span>.
@@ -191,23 +191,23 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       </div>
 
       {/* Event Summary */}
-      <Card className="mb-4 border-brand-100 bg-brand-50">
+      <Card className="mb-4 border-brand-100 bg-brand-950">
         <CardContent className="p-4">
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
               <div className="text-stone-500 text-xs mb-0.5">Date</div>
-              <div className="font-medium text-stone-900">
+              <div className="font-medium text-stone-100">
                 {format(new Date(event.event_date), 'PPP')}
               </div>
             </div>
             <div>
               <div className="text-stone-500 text-xs mb-0.5">Guest Count</div>
-              <div className="font-medium text-stone-900">{event.guest_count ?? '—'} guests</div>
+              <div className="font-medium text-stone-100">{event.guest_count ?? '—'} guests</div>
             </div>
             {event.location_city && (
               <div className="col-span-2">
                 <div className="text-stone-500 text-xs mb-0.5">Location</div>
-                <div className="font-medium text-stone-900">
+                <div className="font-medium text-stone-100">
                   {[event.location_address, event.location_city, event.location_state]
                     .filter(Boolean)
                     .join(', ')}
@@ -232,7 +232,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
             <CardTitle className="text-base">Your Dietary Preferences</CardTitle>
             <Link
               href="/my-profile"
-              className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+              className="text-xs text-brand-600 hover:text-brand-400 font-medium"
             >
               Update Profile →
             </Link>
@@ -241,13 +241,13 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
         <CardContent className="space-y-3">
           {dietaryItems.map((item) => (
             <div key={item.label} className="flex items-start justify-between gap-4">
-              <span className="text-sm text-stone-600 flex-shrink-0">{item.label}</span>
+              <span className="text-sm text-stone-400 flex-shrink-0">{item.label}</span>
               {item.empty ? (
                 <Badge variant="default" className="text-xs">
                   Not set
                 </Badge>
               ) : (
-                <span className="text-sm font-medium text-stone-900 text-right">{item.value}</span>
+                <span className="text-sm font-medium text-stone-100 text-right">{item.value}</span>
               )}
             </div>
           ))}
@@ -272,7 +272,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
             <CardTitle className="text-base">Kitchen & Access</CardTitle>
             <Link
               href="/my-profile"
-              className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+              className="text-xs text-brand-600 hover:text-brand-400 font-medium"
             >
               Update Profile →
             </Link>
@@ -281,13 +281,13 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
         <CardContent className="space-y-3">
           {kitchenItems.map((item) => (
             <div key={item.label} className="flex items-start justify-between gap-4">
-              <span className="text-sm text-stone-600 flex-shrink-0">{item.label}</span>
+              <span className="text-sm text-stone-400 flex-shrink-0">{item.label}</span>
               {item.empty ? (
                 <Badge variant="default" className="text-xs">
                   Not set
                 </Badge>
               ) : (
-                <span className="text-sm font-medium text-stone-900 text-right max-w-[60%]">
+                <span className="text-sm font-medium text-stone-100 text-right max-w-[60%]">
                   {item.value}
                 </span>
               )}
@@ -304,14 +304,14 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
               <CardTitle className="text-base">Special Requests</CardTitle>
               <Link
                 href="/my-chat"
-                className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                className="text-xs text-brand-600 hover:text-brand-400 font-medium"
               >
                 Message Chef to Update →
               </Link>
             </div>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-stone-900">{event.special_requests}</p>
+            <p className="text-sm text-stone-100">{event.special_requests}</p>
           </CardContent>
         </Card>
       )}
@@ -327,8 +327,8 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       )}
 
       {/* Confirm Button */}
-      <div className="bg-white border border-stone-200 rounded-xl p-6 text-center">
-        <p className="text-stone-700 mb-4 text-sm">
+      <div className="bg-surface border border-stone-700 rounded-xl p-6 text-center">
+        <p className="text-stone-300 mb-4 text-sm">
           Everything above looks correct and the chef has everything they need for a perfect
           evening.
         </p>

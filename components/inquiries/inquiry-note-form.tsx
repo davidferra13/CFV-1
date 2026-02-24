@@ -6,13 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import type { InquiryNoteCategory } from '@/lib/inquiries/note-actions'
 
 const CATEGORIES: { value: InquiryNoteCategory; label: string }[] = [
-  { value: 'general',      label: 'General' },
-  { value: 'inspiration',  label: 'Inspiration' },
+  { value: 'general', label: 'General' },
+  { value: 'inspiration', label: 'Inspiration' },
   { value: 'menu_planning', label: 'Menu Planning' },
-  { value: 'sourcing',     label: 'Sourcing' },
-  { value: 'logistics',    label: 'Logistics' },
-  { value: 'staffing',     label: 'Staffing' },
-  { value: 'post_event',   label: 'Post-Event' },
+  { value: 'sourcing', label: 'Sourcing' },
+  { value: 'logistics', label: 'Logistics' },
+  { value: 'staffing', label: 'Staffing' },
+  { value: 'post_event', label: 'Post-Event' },
 ]
 
 interface InquiryNoteFormProps {
@@ -41,9 +41,7 @@ export function InquiryNoteForm({
   submitting = false,
 }: InquiryNoteFormProps) {
   const [noteText, setNoteText] = useState(initialData?.note_text || '')
-  const [category, setCategory] = useState<InquiryNoteCategory>(
-    initialData?.category || 'general'
-  )
+  const [category, setCategory] = useState<InquiryNoteCategory>(initialData?.category || 'general')
   const [attachmentUrl, setAttachmentUrl] = useState<string | null>(
     initialData?.attachment_url || null
   )
@@ -74,9 +72,7 @@ export function InquiryNoteForm({
         throw new Error(error.message)
       }
 
-      const { data: urlData } = supabase.storage
-        .from('inquiry-note-attachments')
-        .getPublicUrl(path)
+      const { data: urlData } = supabase.storage.from('inquiry-note-attachments').getPublicUrl(path)
 
       setAttachmentUrl(urlData.publicUrl)
       setAttachmentFilename(file.name)
@@ -116,7 +112,7 @@ export function InquiryNoteForm({
         placeholder="Write a note..."
         rows={3}
         autoFocus
-        className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+        className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
       />
 
       {/* Attachment area */}
@@ -126,12 +122,12 @@ export function InquiryNoteForm({
           <img
             src={attachmentUrl}
             alt={attachmentFilename || 'Attachment'}
-            className="h-20 w-auto rounded-lg object-cover border border-stone-200"
+            className="h-20 w-auto rounded-lg object-cover border border-stone-700"
           />
           <button
             type="button"
             onClick={handleRemoveAttachment}
-            className="absolute -top-1.5 -right-1.5 bg-white border border-stone-300 rounded-full p-0.5 hover:bg-red-50 hover:border-red-300 transition-colors"
+            className="absolute -top-1.5 -right-1.5 bg-surface border border-stone-600 rounded-full p-0.5 hover:bg-red-950 hover:border-red-300 transition-colors"
             title="Remove image"
           >
             <X className="w-3 h-3 text-stone-500 hover:text-red-500" />
@@ -152,7 +148,7 @@ export function InquiryNoteForm({
           />
           <label
             htmlFor="note-attachment-input"
-            className={`inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-700 cursor-pointer transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
+            className={`inline-flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-300 cursor-pointer transition-colors ${uploading ? 'opacity-50 pointer-events-none' : ''}`}
           >
             {uploading ? (
               <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -161,9 +157,7 @@ export function InquiryNoteForm({
             )}
             {uploading ? 'Uploading...' : 'Add image'}
           </label>
-          {uploadError && (
-            <p className="text-xs text-red-500 mt-1">{uploadError}</p>
-          )}
+          {uploadError && <p className="text-xs text-red-500 mt-1">{uploadError}</p>}
         </div>
       )}
 
@@ -171,7 +165,7 @@ export function InquiryNoteForm({
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value as InquiryNoteCategory)}
-          className="text-xs border border-stone-300 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="text-xs border border-stone-600 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
         >
           {CATEGORIES.map((c) => (
             <option key={c.value} value={c.value}>
@@ -185,7 +179,7 @@ export function InquiryNoteForm({
             type="button"
             onClick={onCancel}
             disabled={isWorking}
-            className="px-3 py-1 text-xs text-stone-600 hover:text-stone-800 disabled:opacity-50"
+            className="px-3 py-1 text-xs text-stone-400 hover:text-stone-200 disabled:opacity-50"
           >
             Cancel
           </button>

@@ -10,7 +10,11 @@ import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { formatCurrency } from '@/lib/utils/currency'
 import { updateMenu, deleteMenu, duplicateMenu } from '@/lib/menus/actions'
-import { searchRecipes, linkRecipeToComponent, unlinkRecipeFromComponent } from '@/lib/recipes/actions'
+import {
+  searchRecipes,
+  linkRecipeToComponent,
+  unlinkRecipeFromComponent,
+} from '@/lib/recipes/actions'
 import { format } from 'date-fns'
 import Link from 'next/link'
 
@@ -71,11 +75,14 @@ type Props = {
   recipeMap?: Record<string, RecipeInfo>
 }
 
-const STATUS_BADGE: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'info' }> = {
+const STATUS_BADGE: Record<
+  string,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'info' }
+> = {
   draft: { label: 'Draft', variant: 'default' },
   shared: { label: 'Shared', variant: 'info' },
   locked: { label: 'Locked', variant: 'warning' },
-  archived: { label: 'Archived', variant: 'default' }
+  archived: { label: 'Archived', variant: 'default' },
 }
 
 export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: Props) {
@@ -88,7 +95,9 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
   // Recipe link modal state
   const [linkingComponentId, setLinkingComponentId] = useState<string | null>(null)
   const [recipeSearch, setRecipeSearch] = useState('')
-  const [recipeResults, setRecipeResults] = useState<{ id: string; name: string; category: string }[]>([])
+  const [recipeResults, setRecipeResults] = useState<
+    { id: string; name: string; category: string }[]
+  >([])
   const [searchLoading, setSearchLoading] = useState(false)
 
   // Edit form state
@@ -117,7 +126,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
 
       await updateMenu(menu.id, {
         name,
-        description: description || undefined
+        description: description || undefined,
       })
 
       router.refresh()
@@ -205,27 +214,20 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">{menu.name}</h1>
-          <p className="text-stone-600 mt-1">Menu Details</p>
+          <h1 className="text-3xl font-bold text-stone-100">{menu.name}</h1>
+          <p className="text-stone-400 mt-1">Menu Details</p>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={() => router.back()}>
             Back
           </Button>
-          <Button
-            variant="primary"
-            onClick={() => router.push(`/menus/${menu.id}/editor`)}
-          >
+          <Button variant="primary" onClick={() => router.push(`/menus/${menu.id}/editor`)}>
             Open Editor
           </Button>
         </div>
       </div>
 
-      {error && (
-        <Alert variant="error">
-          {error}
-        </Alert>
-      )}
+      {error && <Alert variant="error">{error}</Alert>}
 
       {!isEditing ? (
         <>
@@ -240,7 +242,12 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                       Edit Menu
                     </Button>
                   )}
-                  <Button size="sm" variant="secondary" onClick={handleDuplicate} disabled={loading}>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={handleDuplicate}
+                    disabled={loading}
+                  >
                     Duplicate
                   </Button>
                   {!event && menu.status === 'draft' && (
@@ -254,38 +261,40 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
             <CardContent className="space-y-4">
               <div>
                 <label className="text-sm font-medium text-stone-500">Name</label>
-                <p className="text-stone-900 mt-1">{menu.name}</p>
+                <p className="text-stone-100 mt-1">{menu.name}</p>
               </div>
 
               {menu.description && (
                 <div>
                   <label className="text-sm font-medium text-stone-500">Description</label>
-                  <p className="text-stone-900 mt-1">{menu.description}</p>
+                  <p className="text-stone-100 mt-1">{menu.description}</p>
                 </div>
               )}
 
               {menu.cuisine_type && (
                 <div>
                   <label className="text-sm font-medium text-stone-500">Cuisine Type</label>
-                  <p className="text-stone-900 mt-1">{menu.cuisine_type}</p>
+                  <p className="text-stone-100 mt-1">{menu.cuisine_type}</p>
                 </div>
               )}
 
               {menu.service_style && (
                 <div>
                   <label className="text-sm font-medium text-stone-500">Service Style</label>
-                  <p className="text-stone-900 mt-1 capitalize">{menu.service_style.replace('_', ' ')}</p>
+                  <p className="text-stone-100 mt-1 capitalize">
+                    {menu.service_style.replace('_', ' ')}
+                  </p>
                 </div>
               )}
 
               <div>
                 <label className="text-sm font-medium text-stone-500">Status</label>
                 <div className="mt-1">
-                  <Badge variant={statusBadge.variant}>
-                    {statusBadge.label}
-                  </Badge>
+                  <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                   {menu.is_template && (
-                    <Badge variant="info" className="ml-2">Template</Badge>
+                    <Badge variant="info" className="ml-2">
+                      Template
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -303,12 +312,12 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
               ) : (
                 <div className="space-y-4">
                   {menu.dishes.map((dish) => (
-                    <div key={dish.id} className="border border-stone-200 rounded-lg p-4">
+                    <div key={dish.id} className="border border-stone-700 rounded-lg p-4">
                       <div className="flex justify-between items-start">
-                        <h4 className="font-semibold text-stone-900">{dish.course_name}</h4>
+                        <h4 className="font-semibold text-stone-100">{dish.course_name}</h4>
                       </div>
                       {dish.description && (
-                        <p className="text-sm text-stone-600 mt-1">{dish.description}</p>
+                        <p className="text-sm text-stone-400 mt-1">{dish.description}</p>
                       )}
                       {dish.dietary_tags && dish.dietary_tags.length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
@@ -320,19 +329,24 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                         </div>
                       )}
                       {dish.components.length > 0 && (
-                        <div className="mt-3 pl-4 border-l-2 border-stone-100">
+                        <div className="mt-3 pl-4 border-l-2 border-stone-800">
                           <p className="text-xs font-medium text-stone-500 mb-1">Components:</p>
-                          {dish.components.map(comp => {
+                          {dish.components.map((comp) => {
                             const linkedRecipe = comp.recipe_id ? recipeMap[comp.recipe_id] : null
                             return (
                               <div key={comp.id} className="flex items-center justify-between py-1">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm text-stone-600">
+                                  <span className="text-sm text-stone-400">
                                     {comp.name}
-                                    {comp.category && <span className="text-stone-400 ml-1">({comp.category})</span>}
+                                    {comp.category && (
+                                      <span className="text-stone-400 ml-1">({comp.category})</span>
+                                    )}
                                   </span>
                                   {linkedRecipe ? (
-                                    <Link href={`/recipes/${linkedRecipe.id}`} className="text-xs text-emerald-600 hover:underline">
+                                    <Link
+                                      href={`/recipes/${linkedRecipe.id}`}
+                                      className="text-xs text-emerald-600 hover:underline"
+                                    >
                                       Recipe
                                     </Link>
                                   ) : (
@@ -354,7 +368,9 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          setLinkingComponentId(linkingComponentId === comp.id ? null : comp.id)
+                                          setLinkingComponentId(
+                                            linkingComponentId === comp.id ? null : comp.id
+                                          )
                                           setRecipeSearch('')
                                           setRecipeResults([])
                                         }}
@@ -376,37 +392,44 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                           })}
 
                           {/* Recipe search modal (inline) */}
-                          {linkingComponentId && dish.components.some(c => c.id === linkingComponentId) && (
-                            <div className="mt-2 p-3 bg-stone-50 rounded-md border border-stone-200">
-                              <Input
-                                type="text"
-                                placeholder="Search recipes by name..."
-                                value={recipeSearch}
-                                onChange={(e) => handleRecipeSearch(e.target.value)}
-                                autoFocus
-                              />
-                              {searchLoading && <p className="text-xs text-stone-400 mt-1">Searching...</p>}
-                              {recipeResults.length > 0 && (
-                                <div className="mt-2 space-y-1">
-                                  {recipeResults.map(recipe => (
-                                    <button
-                                      type="button"
-                                      key={recipe.id}
-                                      onClick={() => handleLinkRecipe(recipe.id, linkingComponentId)}
-                                      className="w-full text-left px-2 py-1.5 text-sm hover:bg-brand-50 rounded flex justify-between items-center"
-                                      disabled={loading}
-                                    >
-                                      <span>{recipe.name}</span>
-                                      <Badge variant="default">{recipe.category}</Badge>
-                                    </button>
-                                  ))}
-                                </div>
-                              )}
-                              {recipeSearch.length >= 2 && recipeResults.length === 0 && !searchLoading && (
-                                <p className="text-xs text-stone-400 mt-1">No recipes found</p>
-                              )}
-                            </div>
-                          )}
+                          {linkingComponentId &&
+                            dish.components.some((c) => c.id === linkingComponentId) && (
+                              <div className="mt-2 p-3 bg-stone-800 rounded-md border border-stone-700">
+                                <Input
+                                  type="text"
+                                  placeholder="Search recipes by name..."
+                                  value={recipeSearch}
+                                  onChange={(e) => handleRecipeSearch(e.target.value)}
+                                  autoFocus
+                                />
+                                {searchLoading && (
+                                  <p className="text-xs text-stone-400 mt-1">Searching...</p>
+                                )}
+                                {recipeResults.length > 0 && (
+                                  <div className="mt-2 space-y-1">
+                                    {recipeResults.map((recipe) => (
+                                      <button
+                                        type="button"
+                                        key={recipe.id}
+                                        onClick={() =>
+                                          handleLinkRecipe(recipe.id, linkingComponentId)
+                                        }
+                                        className="w-full text-left px-2 py-1.5 text-sm hover:bg-brand-950 rounded flex justify-between items-center"
+                                        disabled={loading}
+                                      >
+                                        <span>{recipe.name}</span>
+                                        <Badge variant="default">{recipe.category}</Badge>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                                {recipeSearch.length >= 2 &&
+                                  recipeResults.length === 0 &&
+                                  !searchLoading && (
+                                    <p className="text-xs text-stone-400 mt-1">No recipes found</p>
+                                  )}
+                              </div>
+                            )}
                         </div>
                       )}
                     </div>
@@ -425,11 +448,13 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
               <CardContent>
                 <Link
                   href={`/events/${event.id}`}
-                  className="block border border-stone-200 rounded-lg p-3 hover:border-brand-300 hover:shadow-sm transition-all"
+                  className="block border border-stone-700 rounded-lg p-3 hover:border-brand-600 hover:shadow-sm transition-all"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h4 className="font-medium text-stone-900">{event.occasion || 'Untitled Event'}</h4>
+                      <h4 className="font-medium text-stone-100">
+                        {event.occasion || 'Untitled Event'}
+                      </h4>
                       <p className="text-sm text-stone-500">
                         {format(new Date(event.event_date), 'PPP')}
                       </p>
@@ -437,7 +462,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                     <div className="text-right">
                       <Badge>{event.status}</Badge>
                       {event.quoted_price_cents != null && (
-                        <p className="text-sm font-medium text-stone-900 mt-1">
+                        <p className="text-sm font-medium text-stone-100 mt-1">
                           {formatCurrency(event.quoted_price_cents)}
                         </p>
                       )}
@@ -457,7 +482,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Menu Name <span className="text-red-500">*</span>
                 </label>
                 <Input
@@ -469,9 +494,7 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
-                  Description
-                </label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Description</label>
                 <Textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}

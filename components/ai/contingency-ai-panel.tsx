@@ -8,9 +8,9 @@ import { generateContingencyPlans, type ContingencyAIResult } from '@/lib/ai/con
 import { toast } from 'sonner'
 
 const RISK_COLORS: Record<string, string> = {
-  critical: 'border-red-200 bg-red-50',
-  high: 'border-amber-200 bg-amber-50',
-  medium: 'border-stone-200 bg-stone-50',
+  critical: 'border-red-200 bg-red-950',
+  high: 'border-amber-200 bg-amber-950',
+  medium: 'border-stone-700 bg-stone-800',
 }
 
 export function ContingencyAIPanel({ eventId }: { eventId: string }) {
@@ -31,11 +31,11 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Contingency Plans</span>
+            <span className="text-sm font-medium text-stone-300">Contingency Plans</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -60,11 +60,11 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Contingency Plans</span>
+          <span className="text-sm font-medium text-stone-300">Contingency Plans</span>
           <Badge variant="warning">Draft</Badge>
         </div>
         <Button variant="ghost" onClick={run} disabled={loading}>
@@ -73,7 +73,7 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
       </div>
 
       {result.topRisk && (
-        <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-800">
+        <div className="flex items-start gap-2 bg-amber-950 border border-amber-200 rounded p-2 text-xs text-amber-800">
           <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
           <span>
             <span className="font-medium">Top risk:</span> {result.topRisk}
@@ -86,16 +86,16 @@ export function ContingencyAIPanel({ eventId }: { eventId: string }) {
           <div key={i} className={`border rounded p-3 space-y-1.5 ${RISK_COLORS[plan.riskLevel]}`}>
             <div className="flex items-center gap-2">
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${plan.riskLevel === 'critical' ? 'bg-red-200 text-red-800' : plan.riskLevel === 'high' ? 'bg-amber-200 text-amber-800' : 'bg-stone-200 text-stone-700'}`}
+                className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${plan.riskLevel === 'critical' ? 'bg-red-200 text-red-800' : plan.riskLevel === 'high' ? 'bg-amber-200 text-amber-800' : 'bg-stone-700 text-stone-300'}`}
               >
                 {plan.riskLevel}
               </span>
-              <span className="text-xs font-medium text-stone-700">{plan.scenarioLabel}</span>
+              <span className="text-xs font-medium text-stone-300">{plan.scenarioLabel}</span>
               {plan.timeImpact && (
                 <span className="text-[11px] text-stone-500 ml-auto">{plan.timeImpact}</span>
               )}
             </div>
-            <p className="text-xs text-stone-700">{plan.mitigationNotes}</p>
+            <p className="text-xs text-stone-300">{plan.mitigationNotes}</p>
             <p className="text-[11px] text-stone-500">
               <span className="font-medium">Prevention:</span> {plan.preventionTip}
             </p>

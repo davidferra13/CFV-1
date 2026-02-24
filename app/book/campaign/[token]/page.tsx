@@ -26,7 +26,7 @@ export default async function PublicBookingPage({ params }: Props) {
     : null
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col items-center justify-start py-12 px-4">
+    <div className="min-h-screen bg-stone-800 flex flex-col items-center justify-start py-12 px-4">
       <div className="w-full max-w-md space-y-6">
         {/* Chef / dinner header */}
         <div className="text-center space-y-1">
@@ -34,18 +34,18 @@ export default async function PublicBookingPage({ params }: Props) {
             {dinner.chef_name}
             {dinner.chef_business_name ? ` · ${dinner.chef_business_name}` : ''}
           </p>
-          <h1 className="text-2xl font-bold text-stone-800">{dinner.campaign_name}</h1>
+          <h1 className="text-2xl font-bold text-stone-200">{dinner.campaign_name}</h1>
           {dinner.occasion && dinner.occasion !== dinner.campaign_name && (
             <p className="text-sm text-stone-500">{dinner.occasion}</p>
           )}
         </div>
 
         {/* Key details */}
-        <div className="bg-white border border-stone-200 rounded-2xl p-5 space-y-3">
+        <div className="bg-surface border border-stone-700 rounded-2xl p-5 space-y-3">
           {(dateDisplay || timeDisplay) && (
             <div className="flex items-center gap-3 text-sm">
               <Calendar className="w-4 h-4 text-brand-500 shrink-0" />
-              <span className="text-stone-700">
+              <span className="text-stone-300">
                 {dateDisplay}
                 {timeDisplay ? ` at ${timeDisplay}` : ''}
               </span>
@@ -54,13 +54,13 @@ export default async function PublicBookingPage({ params }: Props) {
           {priceDisplay && (
             <div className="flex items-center gap-3 text-sm">
               <DollarSign className="w-4 h-4 text-brand-500 shrink-0" />
-              <span className="text-stone-700">{priceDisplay}</span>
+              <span className="text-stone-300">{priceDisplay}</span>
             </div>
           )}
           {(dinner.guest_count_min || dinner.guest_count_max) && (
             <div className="flex items-center gap-3 text-sm">
               <Users className="w-4 h-4 text-brand-500 shrink-0" />
-              <span className="text-stone-700">
+              <span className="text-stone-300">
                 {dinner.guest_count_min && dinner.guest_count_max
                   ? `Up to ${dinner.guest_count_max} guests`
                   : dinner.guest_count_max
@@ -72,8 +72,8 @@ export default async function PublicBookingPage({ params }: Props) {
 
           {/* Concept description */}
           {dinner.concept_description && (
-            <div className="pt-2 border-t border-stone-100">
-              <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-wrap">
+            <div className="pt-2 border-t border-stone-800">
+              <p className="text-sm text-stone-400 leading-relaxed whitespace-pre-wrap">
                 {dinner.concept_description}
               </p>
             </div>
@@ -81,14 +81,14 @@ export default async function PublicBookingPage({ params }: Props) {
 
           {/* Menu preview */}
           {dinner.menu_preview.length > 0 && (
-            <div className="pt-2 border-t border-stone-100 space-y-1.5">
+            <div className="pt-2 border-t border-stone-800 space-y-1.5">
               <p className="text-xs text-stone-400 font-medium uppercase tracking-wide">Menu</p>
               {dinner.menu_preview.map((course, i) => (
                 <div key={i} className="text-sm">
                   {course.course_name && (
                     <span className="text-stone-400 text-xs mr-1.5">{course.course_name}</span>
                   )}
-                  <span className="text-stone-700">{course.name}</span>
+                  <span className="text-stone-300">{course.name}</span>
                 </div>
               ))}
             </div>
@@ -97,16 +97,16 @@ export default async function PublicBookingPage({ params }: Props) {
 
         {/* Fully booked state */}
         {dinner.is_full ? (
-          <div className="bg-white border border-stone-200 rounded-2xl p-6 text-center space-y-2">
-            <p className="text-base font-semibold text-stone-700">This dinner is fully booked.</p>
+          <div className="bg-surface border border-stone-700 rounded-2xl p-6 text-center space-y-2">
+            <p className="text-base font-semibold text-stone-300">This dinner is fully booked.</p>
             <p className="text-sm text-stone-400">
               Contact {dinner.chef_name} directly to be added to a waitlist.
             </p>
           </div>
         ) : (
           /* Booking form */
-          <div className="bg-white border border-stone-200 rounded-2xl p-6">
-            <h2 className="text-base font-semibold text-stone-800 mb-4 text-center">
+          <div className="bg-surface border border-stone-700 rounded-2xl p-6">
+            <h2 className="text-base font-semibold text-stone-200 mb-4 text-center">
               Reserve your spot
             </h2>
             <CampaignBookingForm token={params.token} dinner={dinner} />

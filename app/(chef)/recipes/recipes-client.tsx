@@ -79,8 +79,8 @@ export function RecipeLibraryClient({ recipes }: Props) {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Recipe Book</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">Recipe Book</h1>
+          <p className="text-stone-400 mt-1">
             {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your collection
           </p>
         </div>
@@ -112,7 +112,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
         <select
           value={currentCategory}
           onChange={(e) => updateFilters('category', e.target.value)}
-          className="border border-stone-300 rounded-md px-3 py-2 text-sm bg-white"
+          className="border border-stone-600 rounded-md px-3 py-2 text-sm bg-surface"
         >
           {CATEGORY_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -128,8 +128,8 @@ export function RecipeLibraryClient({ recipes }: Props) {
               onClick={() => updateFilters('sort', opt.value)}
               className={`px-3 py-1.5 text-sm rounded-md border ${
                 currentSort === opt.value
-                  ? 'border-brand-500 bg-brand-50 text-brand-700 font-medium'
-                  : 'border-stone-300 text-stone-600 hover:bg-stone-50'
+                  ? 'border-brand-500 bg-brand-950 text-brand-400 font-medium'
+                  : 'border-stone-600 text-stone-400 hover:bg-stone-800'
               }`}
             >
               {opt.label}
@@ -160,17 +160,17 @@ export function RecipeLibraryClient({ recipes }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {recipes.map((recipe) => (
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
-              <Card className="hover:border-brand-300 hover:shadow-sm transition-all cursor-pointer h-full">
+              <Card className="hover:border-brand-600 hover:shadow-sm transition-all cursor-pointer h-full">
                 <CardContent className="p-4">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-stone-900 leading-tight">{recipe.name}</h3>
+                    <h3 className="font-semibold text-stone-100 leading-tight">{recipe.name}</h3>
                     <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>
                       {recipe.category}
                     </Badge>
                   </div>
 
                   {recipe.method && (
-                    <p className="text-sm text-stone-600 line-clamp-2 mb-3">{recipe.method}</p>
+                    <p className="text-sm text-stone-400 line-clamp-2 mb-3">{recipe.method}</p>
                   )}
 
                   <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500">
@@ -194,7 +194,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
                       {recipe.dietary_tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 rounded"
+                          className="text-xs px-1.5 py-0.5 bg-green-950 text-green-700 rounded"
                         >
                           {tag}
                         </span>

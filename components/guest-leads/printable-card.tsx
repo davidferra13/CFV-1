@@ -28,11 +28,11 @@ export function PrintableCard({
     : null
 
   return (
-    <div className="min-h-screen bg-stone-100">
+    <div className="min-h-screen bg-stone-800">
       {/* Print button (hidden when printing) */}
-      <div className="print:hidden flex items-center justify-between px-6 py-4 bg-white border-b">
+      <div className="print:hidden flex items-center justify-between px-6 py-4 bg-surface border-b">
         <div>
-          <h1 className="text-lg font-semibold text-stone-900">Table Card Preview</h1>
+          <h1 className="text-lg font-semibold text-stone-100">Table Card Preview</h1>
           <p className="text-sm text-stone-500">
             Print this card and place it on the dinner table at your events.
           </p>
@@ -46,7 +46,7 @@ export function PrintableCard({
           </button>
           <button
             onClick={() => window.history.back()}
-            className="px-4 py-2 border border-stone-300 text-stone-700 rounded-lg font-medium hover:bg-stone-50"
+            className="px-4 py-2 border border-stone-600 text-stone-300 rounded-lg font-medium hover:bg-stone-800"
           >
             Back
           </button>
@@ -56,7 +56,7 @@ export function PrintableCard({
       {/* Card — optimized for 4x6 print */}
       <div className="flex items-center justify-center p-8 print:p-0">
         <div
-          className="bg-white rounded-2xl shadow-lg print:shadow-none print:rounded-none overflow-hidden"
+          className="bg-surface rounded-2xl shadow-lg print:shadow-none print:rounded-none overflow-hidden"
           style={{ width: '4in', height: '6in' }}
         >
           <div className="h-full flex flex-col items-center justify-center p-8 text-center">
@@ -69,7 +69,7 @@ export function PrintableCard({
                 className="w-20 h-20 rounded-full object-cover mb-4 ring-2 ring-stone-200"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-stone-100 flex items-center justify-center mb-4 ring-2 ring-stone-200">
+              <div className="w-20 h-20 rounded-full bg-stone-800 flex items-center justify-center mb-4 ring-2 ring-stone-200">
                 <span className="text-2xl font-bold text-stone-400">
                   {chefName.charAt(0).toUpperCase()}
                 </span>
@@ -77,7 +77,7 @@ export function PrintableCard({
             )}
 
             {/* Chef name */}
-            <h2 className="text-xl font-bold text-stone-900">{chefName}</h2>
+            <h2 className="text-xl font-bold text-stone-100">{chefName}</h2>
             <p className="text-sm text-stone-500 mt-0.5">{tagline}</p>
 
             {/* Occasion + date */}
@@ -90,10 +90,10 @@ export function PrintableCard({
             )}
 
             {/* Divider */}
-            <div className="w-12 h-px bg-stone-200 my-5" />
+            <div className="w-12 h-px bg-stone-700 my-5" />
 
             {/* CTA */}
-            <p className="text-sm text-stone-600 mb-4 max-w-[2.5in] leading-relaxed">
+            <p className="text-sm text-stone-400 mb-4 max-w-[2.5in] leading-relaxed">
               Enjoying tonight? Scan below to book your own private dining experience.
             </p>
 

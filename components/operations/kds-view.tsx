@@ -25,12 +25,15 @@ interface KDSViewProps {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const STATUS_STYLES: Record<string, { bg: string; border: string; badge: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
-  pending: { bg: 'bg-stone-50', border: 'border-stone-300', badge: 'default' },
-  fired: { bg: 'bg-amber-50', border: 'border-amber-400', badge: 'warning' },
-  plated: { bg: 'bg-sky-50', border: 'border-sky-400', badge: 'info' },
-  served: { bg: 'bg-emerald-50', border: 'border-emerald-400', badge: 'success' },
-  eighty_sixed: { bg: 'bg-red-50', border: 'border-red-400', badge: 'error' },
+const STATUS_STYLES: Record<
+  string,
+  { bg: string; border: string; badge: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
+  pending: { bg: 'bg-stone-800', border: 'border-stone-600', badge: 'default' },
+  fired: { bg: 'bg-amber-950', border: 'border-amber-400', badge: 'warning' },
+  plated: { bg: 'bg-sky-950', border: 'border-sky-400', badge: 'info' },
+  served: { bg: 'bg-emerald-950', border: 'border-emerald-400', badge: 'success' },
+  eighty_sixed: { bg: 'bg-red-950', border: 'border-red-400', badge: 'error' },
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -38,7 +41,7 @@ const STATUS_LABELS: Record<string, string> = {
   fired: 'Fired',
   plated: 'Plated',
   served: 'Served',
-  eighty_sixed: '86\'d',
+  eighty_sixed: "86'd",
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -50,8 +53,8 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
   const [eightySixTarget, setEightySixTarget] = useState<KDSCourse | null>(null)
 
   function handleStatusUpdate(courseId: string, newStatus: string) {
-    setCourses(prev =>
-      prev.map(c => {
+    setCourses((prev) =>
+      prev.map((c) => {
         if (c.id !== courseId) return c
         const updates: Partial<KDSCourse> = { status: newStatus as KDSCourse['status'] }
         if (newStatus === 'fired') updates.firedAt = new Date().toISOString()
@@ -62,10 +65,8 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
   }
 
   function handleEightySixed(courseId: string) {
-    setCourses(prev =>
-      prev.map(c =>
-        c.id === courseId ? { ...c, status: 'eighty_sixed' as const } : c
-      )
+    setCourses((prev) =>
+      prev.map((c) => (c.id === courseId ? { ...c, status: 'eighty_sixed' as const } : c))
     )
     setEightySixTarget(null)
   }
@@ -82,11 +83,11 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Utensils className="h-5 w-5 text-brand-600" />
-          <h2 className="text-lg font-semibold text-stone-900">Kitchen Display</h2>
+          <h2 className="text-lg font-semibold text-stone-100">Kitchen Display</h2>
         </div>
         <div className="flex gap-2">
           {Object.entries(STATUS_LABELS).map(([status, label]) => {
-            const count = courses.filter(c => c.status === status).length
+            const count = courses.filter((c) => c.status === status).length
             if (count === 0) return null
             return (
               <Badge key={status} variant={STATUS_STYLES[status].badge}>
@@ -99,7 +100,7 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
 
       {/* Course Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {courses.map(course => {
+        {courses.map((course) => {
           const styles = STATUS_STYLES[course.status] || STATUS_STYLES.pending
 
           return (
@@ -114,13 +115,11 @@ export function KDSView({ courses: initialCourses, eventId }: KDSViewProps) {
                     <span className="text-xs font-medium text-stone-500 uppercase tracking-wider">
                       Course {course.courseNumber}
                     </span>
-                    <h3 className="text-xl font-bold text-stone-900 mt-1 leading-tight">
+                    <h3 className="text-xl font-bold text-stone-100 mt-1 leading-tight">
                       {course.courseName}
                     </h3>
                   </div>
-                  <Badge variant={styles.badge}>
-                    {STATUS_LABELS[course.status]}
-                  </Badge>
+                  <Badge variant={styles.badge}>{STATUS_LABELS[course.status]}</Badge>
                 </div>
 
                 {/* Timestamps */}

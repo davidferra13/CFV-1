@@ -49,20 +49,20 @@ function Section({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-50 transition-colors"
+        className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-stone-800 transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="text-xl" aria-hidden="true">
             {icon}
           </span>
           <div>
-            <span className="font-semibold text-stone-900">{title}</span>
+            <span className="font-semibold text-stone-100">{title}</span>
             {subtitle && <p className="text-xs text-stone-500 mt-0.5">{subtitle}</p>}
           </div>
         </div>
         <div className="flex items-center gap-2">
           {saved && (
-            <span className="text-xs font-medium text-green-700 bg-green-100 rounded-full px-2 py-0.5">
+            <span className="text-xs font-medium text-green-700 bg-green-900 rounded-full px-2 py-0.5">
               Saved
             </span>
           )}
@@ -70,7 +70,7 @@ function Section({
         </div>
       </button>
 
-      {open && <div className="px-5 pb-5 border-t border-stone-100">{children}</div>}
+      {open && <div className="px-5 pb-5 border-t border-stone-800">{children}</div>}
     </Card>
   )
 }
@@ -129,7 +129,7 @@ function TagInput({
         {value.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 text-xs bg-stone-100 text-stone-700 rounded-full px-2.5 py-1"
+            className="inline-flex items-center gap-1 text-xs bg-stone-800 text-stone-300 rounded-full px-2.5 py-1"
           >
             {tag}
             <button
@@ -155,7 +155,7 @@ function TagInput({
             }
           }}
           placeholder={placeholder || 'Type and press Enter'}
-          className="flex-1 text-sm border border-stone-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 text-sm border border-stone-700 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <Button type="button" size="sm" variant="secondary" onClick={commit}>
           Add
@@ -369,10 +369,10 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
               const saveState = recipeSaveStates[recipe.id] ?? 'idle'
 
               return (
-                <div key={recipe.id} className="border border-stone-100 rounded-lg p-4 space-y-3">
+                <div key={recipe.id} className="border border-stone-800 rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="font-medium text-stone-900">{recipe.name}</p>
+                      <p className="font-medium text-stone-100">{recipe.name}</p>
                       <p className="text-xs text-stone-400 capitalize">{recipe.category}</p>
                     </div>
                     <div className="flex items-center gap-3">
@@ -403,7 +403,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                           }))
                         }
                         placeholder="What worked, what surprised you, what you'd change..."
-                        className="mt-1 w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                        className="mt-1 w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                       />
                     </div>
                   )}
@@ -421,7 +421,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                           }))
                         }
                         placeholder="Full step-by-step method..."
-                        className="mt-1 w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                        className="mt-1 w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                       />
                     </div>
                   )}
@@ -442,7 +442,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                               [recipe.id]: { ...s[recipe.id], prep_time_minutes: e.target.value },
                             }))
                           }
-                          className="mt-1 w-full text-sm border border-stone-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                          className="mt-1 w-full text-sm border border-stone-700 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                         />
                       </div>
                       <div className="flex-1">
@@ -459,7 +459,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                               [recipe.id]: { ...s[recipe.id], cook_time_minutes: e.target.value },
                             }))
                           }
-                          className="mt-1 w-full text-sm border border-stone-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                          className="mt-1 w-full text-sm border border-stone-700 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                         />
                       </div>
                     </div>
@@ -494,7 +494,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                     {milestones.map((m, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between text-sm bg-stone-50 rounded-md px-3 py-2"
+                        className="flex items-center justify-between text-sm bg-stone-800 rounded-md px-3 py-2"
                       >
                         <span>
                           <span className="font-medium capitalize">{m.type}</span>
@@ -519,7 +519,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   <select
                     value={newMilestone.type}
                     onChange={(e) => setNewMilestone((m) => ({ ...m, type: e.target.value }))}
-                    className="text-sm border border-stone-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="text-sm border border-stone-700 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   >
                     <option value="birthday">Birthday</option>
                     <option value="anniversary">Anniversary</option>
@@ -530,7 +530,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                     value={newMilestone.date}
                     onChange={(e) => setNewMilestone((m) => ({ ...m, date: e.target.value }))}
                     placeholder="e.g. March 15"
-                    className="text-sm border border-stone-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="text-sm border border-stone-700 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                   <input
                     type="text"
@@ -539,7 +539,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                       setNewMilestone((m) => ({ ...m, description: e.target.value }))
                     }
                     placeholder="Note (optional)"
-                    className="text-sm border border-stone-200 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="text-sm border border-stone-700 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <Button
@@ -598,7 +598,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   value={preferredName}
                   onChange={(e) => setPreferredName(e.target.value)}
                   placeholder="e.g. Mike, Ellie..."
-                  className="w-full text-sm border border-stone-200 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full text-sm border border-stone-700 rounded-md px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             )}
@@ -616,7 +616,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   value={vibeNotes}
                   onChange={(e) => setVibeNotes(e.target.value)}
                   placeholder="e.g. Very relaxed, love chatting with the chef, ask lots of questions about the sourcing..."
-                  className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                  className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                 />
               </div>
             )}
@@ -632,7 +632,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                 <div className="space-y-3">
                   {blanks.client.missingFunQA.slice(0, 4).map((q) => (
                     <div key={q.questionKey}>
-                      <label className="text-xs text-stone-600 font-medium">
+                      <label className="text-xs text-stone-400 font-medium">
                         {q.emoji} {q.questionText}
                       </label>
                       <textarea
@@ -642,7 +642,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                           setQaAnswers((a) => ({ ...a, [q.questionKey]: e.target.value }))
                         }
                         placeholder="Leave blank to skip"
-                        className="mt-1 w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                        className="mt-1 w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                       />
                     </div>
                   ))}
@@ -650,7 +650,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-2 border-t border-stone-100">
+            <div className="flex items-center justify-between pt-2 border-t border-stone-800">
               <SaveFeedback state={clientSaveState} />
               <Button onClick={saveClient} disabled={clientSaveState === 'saving'}>
                 Save Client Insights
@@ -687,7 +687,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                   type="button"
                   onClick={handleAIDraft}
                   disabled={draftState === 'loading'}
-                  className="text-xs text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1 disabled:opacity-50"
+                  className="text-xs text-brand-600 hover:text-brand-400 font-medium flex items-center gap-1 disabled:opacity-50"
                 >
                   {draftState === 'loading' ? (
                     <>⏳ Drafting...</>
@@ -712,7 +712,7 @@ export function EventDebriefClient({ eventId, blanks, initialPhotos }: Props) {
                 }
               }}
               placeholder="Timing was tight on the third course. The client loved the saffron. Remember to bring the hand blender next time..."
-              className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             />
           </div>
 

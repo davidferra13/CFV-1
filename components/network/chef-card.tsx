@@ -41,16 +41,10 @@ export function ChefCard({
       <div className="flex-shrink-0">
         {profileImageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={profileImageUrl}
-            alt={name}
-            className="h-12 w-12 rounded-full object-cover"
-          />
+          <img src={profileImageUrl} alt={name} className="h-12 w-12 rounded-full object-cover" />
         ) : (
-          <div className="h-12 w-12 rounded-full bg-brand-100 flex items-center justify-center">
-            <span className="text-sm font-semibold text-brand-700">
-              {getInitials(name)}
-            </span>
+          <div className="h-12 w-12 rounded-full bg-brand-900 flex items-center justify-center">
+            <span className="text-sm font-semibold text-brand-700">{getInitials(name)}</span>
           </div>
         )}
       </div>
@@ -67,17 +61,11 @@ export function ChefCard({
             {location}
           </p>
         )}
-        {bio && (
-          <p className="text-xs text-stone-500 mt-1 line-clamp-2">{bio}</p>
-        )}
+        {bio && <p className="text-xs text-stone-500 mt-1 line-clamp-2">{bio}</p>}
       </div>
 
       {/* Actions slot */}
-      {actions && (
-        <div className="flex-shrink-0 flex items-center gap-2">
-          {actions}
-        </div>
-      )}
+      {actions && <div className="flex-shrink-0 flex items-center gap-2">{actions}</div>}
     </div>
   )
 }

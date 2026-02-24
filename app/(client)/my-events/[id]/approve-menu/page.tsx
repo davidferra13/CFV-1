@@ -26,13 +26,13 @@ export default async function MenuApprovalPage({
     (request as any).menu_snapshot ?? []
 
   return (
-    <div className="min-h-screen bg-stone-50 py-10 px-4">
+    <div className="min-h-screen bg-stone-800 py-10 px-4">
       <div className="max-w-lg mx-auto space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Menu Review</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Menu Review</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Review the menu below and let your chef know if it looks great or if you&apos;d like
-            any changes.
+            Review the menu below and let your chef know if it looks great or if you&apos;d like any
+            changes.
           </p>
         </div>
 

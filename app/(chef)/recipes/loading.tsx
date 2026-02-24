@@ -2,14 +2,14 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
 }
 
 export default function RecipesLoading() {
   return (
     <div className="space-y-6">
       {/* Seasonal banner */}
-      <Card className="bg-stone-50">
+      <Card className="bg-stone-800">
         <CardContent className="py-5 px-6 space-y-2">
           <Bone className="h-5 w-48" />
           <Bone className="h-3 w-full max-w-xl" />
@@ -38,7 +38,7 @@ export default function RecipesLoading() {
           <Bone className="h-5 w-32" />
         </CardHeader>
         <CardContent className="p-0">
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="flex items-center gap-4 px-6 py-4">
                 <div className="flex-1 space-y-1.5">

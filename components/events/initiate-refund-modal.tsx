@@ -46,9 +46,10 @@ export function InitiateRefundModal({
   const netPaidCents = totalPaidCents - totalRefundedCents
   const maxRefundCents = netPaidCents
 
-  const defaultAmountDollars = recommendation.refundAmountCents > 0
-    ? (recommendation.refundAmountCents / 100).toFixed(2)
-    : '0.00'
+  const defaultAmountDollars =
+    recommendation.refundAmountCents > 0
+      ? (recommendation.refundAmountCents / 100).toFixed(2)
+      : '0.00'
 
   const [amountDollars, setAmountDollars] = useState(defaultAmountDollars)
   const [refundDepositAlso, setRefundDepositAlso] = useState(recommendation.depositRefundCents > 0)
@@ -57,9 +58,9 @@ export function InitiateRefundModal({
   const [success, setSuccess] = useState(false)
 
   const tierBadge: Record<PolicyTier, { label: string; color: string }> = {
-    full_refund: { label: 'Full refund eligible', color: 'bg-green-100 text-green-800' },
-    full_refund_24hr: { label: 'Full refund (24-hr window)', color: 'bg-green-100 text-green-800' },
-    no_refund: { label: 'No refund per policy', color: 'bg-red-100 text-red-800' },
+    full_refund: { label: 'Full refund eligible', color: 'bg-green-900 text-green-800' },
+    full_refund_24hr: { label: 'Full refund (24-hr window)', color: 'bg-green-900 text-green-800' },
+    no_refund: { label: 'No refund per policy', color: 'bg-red-900 text-red-800' },
   }
 
   const badge = tierBadge[recommendation.policyTier]
@@ -109,8 +110,10 @@ export function InitiateRefundModal({
       <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
         <Card className="p-8 max-w-sm w-full text-center">
           <div className="text-5xl mb-4">✓</div>
-          <p className="text-lg font-semibold text-stone-900">Refund initiated</p>
-          <p className="text-sm text-stone-500 mt-1">Client has been notified. Page refreshing...</p>
+          <p className="text-lg font-semibold text-stone-100">Refund initiated</p>
+          <p className="text-sm text-stone-500 mt-1">
+            Client has been notified. Page refreshing...
+          </p>
         </Card>
       </div>
     )
@@ -120,10 +123,10 @@ export function InitiateRefundModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <Card className="p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-stone-900">Process Refund</h2>
+          <h2 className="text-xl font-semibold text-stone-100">Process Refund</h2>
           <button
             onClick={onClose}
-            className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+            className="text-stone-400 hover:text-stone-400 text-xl leading-none"
             aria-label="Close"
           >
             ×
@@ -131,13 +134,13 @@ export function InitiateRefundModal({
         </div>
 
         {/* Policy recommendation */}
-        <div className="mb-6 p-4 bg-stone-50 rounded-lg border border-stone-200">
+        <div className="mb-6 p-4 bg-stone-800 rounded-lg border border-stone-700">
           <div className="flex items-center gap-2 mb-2">
             <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${badge.color}`}>
               {badge.label}
             </span>
           </div>
-          <p className="text-sm text-stone-600">{recommendation.description}</p>
+          <p className="text-sm text-stone-400">{recommendation.description}</p>
 
           <div className="mt-3 space-y-1 text-sm">
             <div className="flex justify-between">
@@ -147,7 +150,9 @@ export function InitiateRefundModal({
             {totalRefundedCents > 0 && (
               <div className="flex justify-between">
                 <span className="text-stone-500">Already refunded</span>
-                <span className="font-medium text-red-600">-{formatCurrency(totalRefundedCents)}</span>
+                <span className="font-medium text-red-600">
+                  -{formatCurrency(totalRefundedCents)}
+                </span>
               </div>
             )}
             {depositPaidCents > 0 && (
@@ -156,14 +161,14 @@ export function InitiateRefundModal({
                 <span className="font-medium">{formatCurrency(depositPaidCents)}</span>
               </div>
             )}
-            <div className="flex justify-between pt-1 border-t border-stone-200">
-              <span className="text-stone-700 font-medium">Net refundable</span>
+            <div className="flex justify-between pt-1 border-t border-stone-700">
+              <span className="text-stone-300 font-medium">Net refundable</span>
               <span className="font-bold">{formatCurrency(maxRefundCents)}</span>
             </div>
           </div>
 
           {recommendation.depositNonRefundableWarning && (
-            <p className="mt-3 text-xs text-amber-700 bg-amber-50 px-3 py-2 rounded">
+            <p className="mt-3 text-xs text-amber-700 bg-amber-950 px-3 py-2 rounded">
               The deposit ({formatCurrency(depositPaidCents)}) is non-refundable per policy.
               Override below only with client agreement.
             </p>
@@ -173,9 +178,7 @@ export function InitiateRefundModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Amount */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
-              Refund amount
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Refund amount</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500">$</span>
               <input
@@ -184,8 +187,8 @@ export function InitiateRefundModal({
                 min="0"
                 max={(maxRefundCents / 100).toFixed(2)}
                 value={amountDollars}
-                onChange={e => setAmountDollars(e.target.value)}
-                className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-md text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                onChange={(e) => setAmountDollars(e.target.value)}
+                className="w-full pl-7 pr-3 py-2 border border-stone-600 rounded-md text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 placeholder="0.00"
                 required
               />
@@ -202,10 +205,10 @@ export function InitiateRefundModal({
                 type="checkbox"
                 id="refundDeposit"
                 checked={refundDepositAlso}
-                onChange={e => setRefundDepositAlso(e.target.checked)}
-                className="h-4 w-4 text-brand-600 rounded border-stone-300"
+                onChange={(e) => setRefundDepositAlso(e.target.checked)}
+                className="h-4 w-4 text-brand-600 rounded border-stone-600"
               />
-              <label htmlFor="refundDeposit" className="text-sm text-stone-700">
+              <label htmlFor="refundDeposit" className="text-sm text-stone-300">
                 Also refund deposit ({formatCurrency(depositPaidCents)}) — chef discretion override
               </label>
             </div>
@@ -213,25 +216,29 @@ export function InitiateRefundModal({
 
           {/* Reason */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Reason <span className="text-red-500">*</span>
             </label>
             <textarea
               value={reason}
-              onChange={e => setReason(e.target.value)}
+              onChange={(e) => setReason(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 border border-stone-300 rounded-md text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              className="w-full px-3 py-2 border border-stone-600 rounded-md text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
               placeholder="e.g. Client cancelled 20 days before event — full balance refund per policy"
               required
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 bg-red-950 px-3 py-2 rounded-md">{error}</p>}
 
           <div className="flex gap-3 pt-2">
-            <Button type="button" variant="ghost" onClick={onClose} className="flex-1" disabled={isPending}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onClose}
+              className="flex-1"
+              disabled={isPending}
+            >
               Cancel
             </Button>
             <Button type="submit" className="flex-1" disabled={isPending || maxRefundCents === 0}>
@@ -241,8 +248,8 @@ export function InitiateRefundModal({
         </form>
 
         <p className="text-xs text-stone-400 mt-4 text-center">
-          The client will receive a refund confirmation email automatically.
-          Stripe refunds typically take 3–5 business days.
+          The client will receive a refund confirmation email automatically. Stripe refunds
+          typically take 3–5 business days.
         </p>
       </Card>
     </div>

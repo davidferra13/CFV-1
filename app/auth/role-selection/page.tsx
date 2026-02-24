@@ -37,8 +37,8 @@ export default function RoleSelectionPage() {
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-900">One Last Step</h1>
-          <p className="text-stone-600 mt-2">How will you be using ChefFlow?</p>
+          <h1 className="text-3xl font-bold text-stone-100">One Last Step</h1>
+          <p className="text-stone-400 mt-2">How will you be using ChefFlow?</p>
         </div>
 
         <Card>
@@ -47,7 +47,7 @@ export default function RoleSelectionPage() {
           </CardHeader>
           <CardContent>
             {error && <Alert variant="error">{error}</Alert>}
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-stone-400">
               This helps us tailor your experience. This selection cannot be changed later.
             </p>
           </CardContent>

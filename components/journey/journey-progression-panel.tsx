@@ -40,44 +40,55 @@ export function JourneyProgressPanel({
   recipeLinks: ChefJourneyRecipeLink[]
   onJumpToTab: (tab: JourneyTabId) => void
 }) {
-  const entryTypes = new Set(entries.map(entry => entry.entry_type))
+  const entryTypes = new Set(entries.map((entry) => entry.entry_type))
   const mappedTimelineItems = [
-    ...entries.filter(entry => entry.latitude !== null && entry.longitude !== null).map(entry => entry.id),
-    ...media.filter(item => item.latitude !== null && item.longitude !== null).map(item => item.id),
+    ...entries
+      .filter((entry) => entry.latitude !== null && entry.longitude !== null)
+      .map((entry) => entry.id),
+    ...media
+      .filter((item) => item.latitude !== null && item.longitude !== null)
+      .map((item) => item.id),
   ].length
   const reflectiveEntries = entries.filter(
-    entry => entry.mistakes_made.length > 0 || entry.proud_moments.length > 0 || entry.what_to_change_next_time.length > 0,
+    (entry) =>
+      entry.mistakes_made.length > 0 ||
+      entry.proud_moments.length > 0 ||
+      entry.what_to_change_next_time.length > 0
   ).length
-  const hasCoverMemory = media.some(item => item.is_cover)
-  const ratedRecipeTests = recipeLinks.filter(link => link.outcome_rating !== null).length
-  const adoptedIdeas = ideas.filter(idea => idea.status === 'adopted').length
+  const hasCoverMemory = media.some((item) => item.is_cover)
+  const ratedRecipeTests = recipeLinks.filter((link) => link.outcome_rating !== null).length
+  const adoptedIdeas = ideas.filter((idea) => idea.status === 'adopted').length
 
   const tasks: ProgressTask[] = [
     {
       id: 'overview-story',
       label: 'Craft the Journey Story',
-      description: 'Fill the overview with a clear trip summary and core motivation for the journey.',
+      description:
+        'Fill the overview with a clear trip summary and core motivation for the journey.',
       complete: journey.trip_summary.trim().length >= 60,
       tab: 'entries',
     },
     {
       id: 'timeline-depth',
       label: 'Build Timeline Depth',
-      description: 'Log at least six timeline entries so this journey reads like a full narrative arc.',
+      description:
+        'Log at least six timeline entries so this journey reads like a full narrative arc.',
       complete: entries.length >= 6,
       tab: 'entries',
     },
     {
       id: 'timeline-variety',
       label: 'Capture Different Entry Types',
-      description: 'Include at least four entry types: meals, techniques, lessons, destinations, and reflections.',
+      description:
+        'Include at least four entry types: meals, techniques, lessons, destinations, and reflections.',
       complete: entryTypes.size >= 4,
       tab: 'entries',
     },
     {
       id: 'reflection-honesty',
       label: 'Document Mistakes and Wins',
-      description: 'Capture honest retrospectives in at least three entries to make growth measurable.',
+      description:
+        'Capture honest retrospectives in at least three entries to make growth measurable.',
       complete: reflectiveEntries >= 3,
       tab: 'entries',
     },
@@ -118,27 +129,27 @@ export function JourneyProgressPanel({
     },
   ]
 
-  const completedCount = tasks.filter(task => task.complete).length
+  const completedCount = tasks.filter((task) => task.complete).length
   const percent = completionPercent(completedCount, tasks.length)
-  const remaining = tasks.filter(task => !task.complete).slice(0, 3)
+  const remaining = tasks.filter((task) => !task.complete).slice(0, 3)
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+      <div className="rounded-lg border border-stone-700 bg-stone-800 p-4">
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-semibold text-stone-900">Career Journal Completion</p>
-            <p className="text-sm text-stone-600">
+            <p className="text-sm font-semibold text-stone-100">Career Journal Completion</p>
+            <p className="text-sm text-stone-400">
               {completedCount}/{tasks.length} milestones complete
             </p>
           </div>
-          <div className="inline-flex items-center gap-1 rounded-full bg-white border border-stone-200 px-2.5 py-1 text-xs text-stone-700">
+          <div className="inline-flex items-center gap-1 rounded-full bg-surface border border-stone-700 px-2.5 py-1 text-xs text-stone-300">
             <Compass className="w-3.5 h-3.5 text-brand-600" />
             {percent}% complete
           </div>
         </div>
 
-        <div className="mt-3 h-2 rounded-full bg-stone-200 overflow-hidden">
+        <div className="mt-3 h-2 rounded-full bg-stone-700 overflow-hidden">
           <div
             className="h-full bg-brand-600 transition-all duration-300"
             style={{ width: `${percent}%` }}
@@ -147,13 +158,11 @@ export function JourneyProgressPanel({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        {tasks.map(task => (
+        {tasks.map((task) => (
           <div
             key={task.id}
             className={`rounded-lg border p-3 ${
-              task.complete
-                ? 'border-emerald-200 bg-emerald-50/70'
-                : 'border-stone-200 bg-white'
+              task.complete ? 'border-emerald-200 bg-emerald-950/70' : 'border-stone-700 bg-surface'
             }`}
           >
             <div className="flex items-start justify-between gap-2">
@@ -164,8 +173,8 @@ export function JourneyProgressPanel({
                   <Circle className="w-4 h-4 text-stone-400 mt-0.5" />
                 )}
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{task.label}</p>
-                  <p className="text-xs text-stone-600 mt-0.5">{task.description}</p>
+                  <p className="text-sm font-medium text-stone-100">{task.label}</p>
+                  <p className="text-xs text-stone-400 mt-0.5">{task.description}</p>
                 </div>
               </div>
               {!task.complete && (
@@ -183,7 +192,7 @@ export function JourneyProgressPanel({
         ))}
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
         <p className="text-sm font-medium text-amber-900 flex items-center gap-2">
           <Sparkles className="w-4 h-4" />
           Next Momentum Moves
@@ -194,7 +203,7 @@ export function JourneyProgressPanel({
           </p>
         ) : (
           <div className="mt-2 space-y-1">
-            {remaining.map(task => (
+            {remaining.map((task) => (
               <p key={task.id} className="text-sm text-amber-900">
                 - {task.label}
               </p>

@@ -14,11 +14,13 @@ async function getEventForTravel(eventId: string, tenantId: string) {
   const supabase = createServerClient()
   const { data } = await supabase
     .from('events')
-    .select(`
+    .select(
+      `
       id, occasion, event_date, status,
       location_address, location_city, location_state,
       clients (full_name)
-    `)
+    `
+    )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
     .single()
@@ -36,11 +38,7 @@ async function getChefHomeAddress(chefId: string) {
   return [data.home_address, data.home_city, data.home_state].filter(Boolean).join(', ')
 }
 
-export default async function EventTravelPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function EventTravelPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
 
   const [event, plan, homeAddress] = await Promise.all([
@@ -51,11 +49,7 @@ export default async function EventTravelPage({
 
   if (!event) notFound()
 
-  const venueAddress = [
-    event.location_address,
-    event.location_city,
-    event.location_state,
-  ]
+  const venueAddress = [event.location_address, event.location_city, event.location_state]
     .filter(Boolean)
     .join(', ')
 
@@ -71,12 +65,12 @@ export default async function EventTravelPage({
           </Button>
         </Link>
         <span className="text-stone-400">/</span>
-        <span className="text-sm text-stone-600">Travel Plan</span>
+        <span className="text-sm text-stone-400">Travel Plan</span>
       </div>
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Travel Plan</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Travel Plan</h1>
         <div className="flex flex-wrap gap-3 mt-1 text-sm text-stone-500">
           <span>
             {new Date(event.event_date).toLocaleDateString('en-US', {

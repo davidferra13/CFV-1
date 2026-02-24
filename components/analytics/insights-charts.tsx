@@ -38,9 +38,20 @@ import type {
 // â”€â”€â”€ Shared Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const COLORS = [
-  '#8b5cf6', '#06b6d4', '#f59e0b', '#10b981', '#ef4444',
-  '#ec4899', '#6366f1', '#14b8a6', '#f97316', '#64748b',
-  '#a855f7', '#0ea5e9', '#84cc16', '#f43f5e',
+  '#8b5cf6',
+  '#06b6d4',
+  '#f59e0b',
+  '#10b981',
+  '#ef4444',
+  '#ec4899',
+  '#6366f1',
+  '#14b8a6',
+  '#f97316',
+  '#64748b',
+  '#a855f7',
+  '#0ea5e9',
+  '#84cc16',
+  '#f43f5e',
 ]
 
 function formatCurrency(cents: number): string {
@@ -71,7 +82,7 @@ function EmptyChart({ message }: { message: string }) {
 
 // Dinner time histogram (11amâ€“11pm)
 export function DinnerTimeChart({ data }: { data: DinnerTimeSlot[] }) {
-  const hasData = data.some(d => d.count > 0)
+  const hasData = data.some((d) => d.count > 0)
   if (!hasData) return <EmptyChart message="No event time data yet" />
 
   return (
@@ -101,7 +112,11 @@ export function DinnerTimeChart({ data }: { data: DinnerTimeSlot[] }) {
 }
 
 // Occasion breakdown (horizontal bar) â€” count as bar, revenue details in custom tooltip
-function OccasionTooltip({ active, payload, label }: {
+function OccasionTooltip({
+  active,
+  payload,
+  label,
+}: {
   active?: boolean
   payload?: { payload: OccasionStat }[]
   label?: string
@@ -109,12 +124,14 @@ function OccasionTooltip({ active, payload, label }: {
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-3 shadow-sm text-sm">
-      <p className="font-semibold text-stone-900 mb-1">{label}</p>
-      <p className="text-stone-600">{d.count} event{d.count !== 1 ? 's' : ''}</p>
+    <div className="rounded-lg border border-stone-700 bg-surface p-3 shadow-sm text-sm">
+      <p className="font-semibold text-stone-100 mb-1">{label}</p>
+      <p className="text-stone-400">
+        {d.count} event{d.count !== 1 ? 's' : ''}
+      </p>
       {d.avg_revenue_cents > 0 && (
         <>
-          <p className="text-stone-600">{formatCurrency(d.avg_revenue_cents)} avg</p>
+          <p className="text-stone-400">{formatCurrency(d.avg_revenue_cents)} avg</p>
           <p className="text-stone-400 text-xs">{formatCurrency(d.total_revenue_cents)} total</p>
         </>
       )}
@@ -177,7 +194,7 @@ export function ServiceStylePieChart({ data }: { data: ServiceStyleStat[] }) {
 
 // Guest count histogram
 export function GuestCountHistogram({ data }: { data: GuestCountBucket[] }) {
-  const hasData = data.some(d => d.count > 0)
+  const hasData = data.some((d) => d.count > 0)
   if (!hasData) return <EmptyChart message="No guest count data yet" />
 
   return (
@@ -225,7 +242,7 @@ export function DietaryFrequencyChart({ data }: { data: DietaryFrequency[] }) {
 
 // Monthly volume: bars (events) + line (revenue) â€” dual Y axis
 export function MonthlyVolumeChart({ data }: { data: MonthlyVolume[] }) {
-  const hasData = data.some(d => d.events > 0)
+  const hasData = data.some((d) => d.events > 0)
   if (!hasData) return <EmptyChart message="No event history yet" />
 
   return (
@@ -238,7 +255,13 @@ export function MonthlyVolumeChart({ data }: { data: MonthlyVolume[] }) {
           orientation="left"
           tick={{ fontSize: 11, fill: '#78716c' }}
           allowDecimals={false}
-          label={{ value: 'Events', angle: -90, position: 'insideLeft', offset: 10, style: { fontSize: 10, fill: '#a8a29e' } }}
+          label={{
+            value: 'Events',
+            angle: -90,
+            position: 'insideLeft',
+            offset: 10,
+            style: { fontSize: 10, fill: '#a8a29e' },
+          }}
         />
         <YAxis
           yAxisId="right"
@@ -248,13 +271,17 @@ export function MonthlyVolumeChart({ data }: { data: MonthlyVolume[] }) {
         />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={((value: number | undefined, name: string | undefined) => {
-            if (name === 'revenue_cents') return [formatCurrency(value ?? 0), 'Revenue']
-            if (name === 'events') return [value, 'Total Events']
-            return [value, name]
-          }) as any}
+          formatter={
+            ((value: number | undefined, name: string | undefined) => {
+              if (name === 'revenue_cents') return [formatCurrency(value ?? 0), 'Revenue']
+              if (name === 'events') return [value, 'Total Events']
+              return [value, name]
+            }) as any
+          }
         />
-        <Legend formatter={(v) => (v === 'revenue_cents' ? 'Revenue' : v === 'events' ? 'Events' : v)} />
+        <Legend
+          formatter={(v) => (v === 'revenue_cents' ? 'Revenue' : v === 'events' ? 'Events' : v)}
+        />
         <Bar yAxisId="left" dataKey="events" fill="#c4b5fd" radius={[4, 4, 0, 0]} name="events" />
         <Line
           yAxisId="right"
@@ -272,7 +299,7 @@ export function MonthlyVolumeChart({ data }: { data: MonthlyVolume[] }) {
 
 // Day of week distribution
 export function DayOfWeekChart({ data }: { data: DayOfWeekStat[] }) {
-  const hasData = data.some(d => d.count > 0)
+  const hasData = data.some((d) => d.count > 0)
   if (!hasData) return <EmptyChart message="No event data yet" />
 
   return (
@@ -300,7 +327,7 @@ export function DayOfWeekChart({ data }: { data: DayOfWeekStat[] }) {
 
 // 18-month revenue trend (area chart)
 export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
-  const hasData = data.some(d => d.revenue_cents > 0)
+  const hasData = data.some((d) => d.revenue_cents > 0)
   if (!hasData) return <EmptyChart message="No revenue data yet" />
 
   return (
@@ -313,7 +340,13 @@ export function RevenueTrendChart({ data }: { data: RevenueTrendPoint[] }) {
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-        <XAxis dataKey="period" tick={{ fontSize: 10, fill: '#78716c' }} angle={-35} textAnchor="end" height={48} />
+        <XAxis
+          dataKey="period"
+          tick={{ fontSize: 10, fill: '#78716c' }}
+          angle={-35}
+          textAnchor="end"
+          height={48}
+        />
         <YAxis
           tick={{ fontSize: 11, fill: '#78716c' }}
           tickFormatter={(v) => `$${Math.round(v / 100).toLocaleString()}`}
@@ -385,7 +418,12 @@ export function ClientStatusChart({ data }: { data: { name: string; count: numbe
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 32, top: 4, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
         <XAxis type="number" tick={{ fontSize: 11, fill: '#78716c' }} allowDecimals={false} />
-        <YAxis type="category" dataKey="name" tick={{ fontSize: 12, fill: '#44403c' }} width={100} />
+        <YAxis
+          type="category"
+          dataKey="name"
+          tick={{ fontSize: 12, fill: '#44403c' }}
+          width={100}
+        />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
           formatter={(value: number | undefined) => [value, 'Clients']}
@@ -446,7 +484,7 @@ export function EventsPerClientHistogram({
 }: {
   data: { events: string; clients: number }[]
 }) {
-  const hasData = data.some(d => d.clients > 0)
+  const hasData = data.some((d) => d.clients > 0)
   if (!hasData) return <EmptyChart message="No client event data yet" />
 
   return (
@@ -456,7 +494,12 @@ export function EventsPerClientHistogram({
         <XAxis
           dataKey="events"
           tick={{ fontSize: 12, fill: '#78716c' }}
-          label={{ value: 'Events booked', position: 'insideBottom', offset: -2, style: { fontSize: 10, fill: '#a8a29e' } }}
+          label={{
+            value: 'Events booked',
+            position: 'insideBottom',
+            offset: -2,
+            style: { fontSize: 10, fill: '#a8a29e' },
+          }}
         />
         <YAxis tick={{ fontSize: 12, fill: '#78716c' }} allowDecimals={false} />
         <Tooltip
@@ -471,7 +514,7 @@ export function EventsPerClientHistogram({
 
 // Lifetime value distribution
 export function LTVDistributionChart({ data }: { data: LTVBucket[] }) {
-  const hasData = data.some(d => d.clients > 0)
+  const hasData = data.some((d) => d.clients > 0)
   if (!hasData) return <EmptyChart message="No LTV data yet" />
 
   return (
@@ -494,7 +537,7 @@ export function LTVDistributionChart({ data }: { data: LTVBucket[] }) {
 
 // Phase time averages (horizontal bar)
 export function PhaseTimeChart({ data }: { data: { phase: string; avg_minutes: number }[] }) {
-  const hasData = data.some(d => d.avg_minutes > 0)
+  const hasData = data.some((d) => d.avg_minutes > 0)
   if (!hasData) return <EmptyChart message="No time tracking data yet" />
 
   const PHASE_COLORS: Record<string, string> = {
@@ -514,7 +557,12 @@ export function PhaseTimeChart({ data }: { data: { phase: string; avg_minutes: n
           tick={{ fontSize: 11, fill: '#78716c' }}
           tickFormatter={(v) => formatMinutes(v)}
         />
-        <YAxis type="category" dataKey="phase" tick={{ fontSize: 12, fill: '#44403c' }} width={70} />
+        <YAxis
+          type="category"
+          dataKey="phase"
+          tick={{ fontSize: 12, fill: '#44403c' }}
+          width={70}
+        />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
           formatter={(value: number | undefined) => [formatMinutes(value ?? 0), 'Avg time']}
@@ -531,7 +579,7 @@ export function PhaseTimeChart({ data }: { data: { phase: string; avg_minutes: n
 
 // AAR rating trends (3 lines)
 export function AARRatingTrendChart({ data }: { data: AARTrends['trend'] }) {
-  const hasData = data.some(d => d.calm != null || d.preparation != null)
+  const hasData = data.some((d) => d.calm != null || d.preparation != null)
   if (!hasData) return <EmptyChart message="No after-action review data yet" />
 
   return (
@@ -548,15 +596,17 @@ export function AARRatingTrendChart({ data }: { data: AARTrends['trend'] }) {
         <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={{ fontSize: 12, fill: '#78716c' }} />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={((value: number | null | undefined, name: string | undefined) => {
-            if (value == null) return ['\u2014', name]
-            const labels: Record<string, string> = {
-              calm: 'Calm',
-              preparation: 'Preparation',
-              execution: 'Execution',
-            }
-            return [value.toFixed(1), labels[name ?? ''] ?? name]
-          }) as any}
+          formatter={
+            ((value: number | null | undefined, name: string | undefined) => {
+              if (value == null) return ['\u2014', name]
+              const labels: Record<string, string> = {
+                calm: 'Calm',
+                preparation: 'Preparation',
+                execution: 'Execution',
+              }
+              return [value.toFixed(1), labels[name ?? ''] ?? name]
+            }) as any
+          }
         />
         <Legend />
         <Line
@@ -601,7 +651,12 @@ export function ForgottenItemsChart({ data }: { data: AARTrends['topForgotten'] 
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 32, top: 4, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
         <XAxis type="number" tick={{ fontSize: 11, fill: '#78716c' }} allowDecimals={false} />
-        <YAxis type="category" dataKey="item" tick={{ fontSize: 11, fill: '#44403c' }} width={130} />
+        <YAxis
+          type="category"
+          dataKey="item"
+          tick={{ fontSize: 11, fill: '#44403c' }}
+          width={130}
+        />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
           formatter={(value: number | undefined) => [value, 'Times forgotten']}
@@ -629,16 +684,23 @@ export function RevenueByOccasionChart({
           tick={{ fontSize: 11, fill: '#78716c' }}
           tickFormatter={(v) => `$${Math.round(v / 100).toLocaleString()}`}
         />
-        <YAxis type="category" dataKey="occasion" tick={{ fontSize: 12, fill: '#44403c' }} width={110} />
+        <YAxis
+          type="category"
+          dataKey="occasion"
+          tick={{ fontSize: 12, fill: '#44403c' }}
+          width={110}
+        />
         <Tooltip
           contentStyle={{ borderRadius: '8px', border: '1px solid #e7e5e4' }}
-          formatter={((value: number | undefined, name: string | undefined) => {
-            const labels: Record<string, string> = {
-              total_cents: 'Total Revenue',
-              avg_cents: 'Avg per Event',
-            }
-            return [formatCurrency(value ?? 0), labels[name ?? ''] ?? name]
-          }) as any}
+          formatter={
+            ((value: number | undefined, name: string | undefined) => {
+              const labels: Record<string, string> = {
+                total_cents: 'Total Revenue',
+                avg_cents: 'Avg per Event',
+              }
+              return [formatCurrency(value ?? 0), labels[name ?? ''] ?? name]
+            }) as any
+          }
         />
         <Legend
           formatter={(v) =>

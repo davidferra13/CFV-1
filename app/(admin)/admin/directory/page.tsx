@@ -15,7 +15,7 @@ export default async function AdminDirectoryPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-stone-900">Public Directory</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Public Directory</h1>
         <p className="mt-1 text-sm text-stone-500">
           Control which chefs appear on the public{' '}
           <a href="/chefs" target="_blank" className="font-medium text-brand-600 underline">
@@ -27,11 +27,11 @@ export default async function AdminDirectoryPage() {
 
       {/* Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4">
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
+        <div className="rounded-xl border border-stone-700 bg-surface p-4">
           <p className="text-2xl font-bold text-emerald-600">{approved.length}</p>
           <p className="text-sm text-stone-500">Listed publicly</p>
         </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
+        <div className="rounded-xl border border-stone-700 bg-surface p-4">
           <p className="text-2xl font-bold text-stone-400">{pending.length}</p>
           <p className="text-sm text-stone-500">Not listed</p>
         </div>
@@ -43,7 +43,7 @@ export default async function AdminDirectoryPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500 mb-3">
             Listed ({approved.length})
           </h2>
-          <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white overflow-hidden">
+          <div className="divide-y divide-stone-800 rounded-xl border border-stone-700 bg-surface overflow-hidden">
             {approved.map((chef) => (
               <DirectoryToggleRow key={chef.id} chef={chef} />
             ))}
@@ -57,7 +57,7 @@ export default async function AdminDirectoryPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500 mb-3">
             Not Listed ({pending.length})
           </h2>
-          <div className="divide-y divide-stone-100 rounded-xl border border-stone-200 bg-white overflow-hidden">
+          <div className="divide-y divide-stone-800 rounded-xl border border-stone-700 bg-surface overflow-hidden">
             {pending.map((chef) => (
               <DirectoryToggleRow key={chef.id} chef={chef} />
             ))}

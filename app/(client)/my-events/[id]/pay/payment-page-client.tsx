@@ -46,14 +46,24 @@ export function PaymentPageClient({ eventId, outstandingBalanceCents, paymentAmo
     return (
       <Card>
         <CardContent className="pt-6 text-center space-y-4">
-          <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto">
-            <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          <div className="w-12 h-12 bg-green-900 rounded-full flex items-center justify-center mx-auto">
+            <svg
+              className="w-6 h-6 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">Payment complete!</h2>
-            <p className="text-stone-600 text-sm mt-1">
+            <h2 className="text-lg font-semibold text-stone-100">Payment complete!</h2>
+            <p className="text-stone-400 text-sm mt-1">
               Your gift card covered the full balance. Your event is now confirmed.
             </p>
           </div>
@@ -68,9 +78,8 @@ export function PaymentPageClient({ eventId, outstandingBalanceCents, paymentAmo
     )
   }
 
-  const displayAmount = creditAppliedCents > 0
-    ? Math.max(0, paymentAmount - creditAppliedCents)
-    : paymentAmount
+  const displayAmount =
+    creditAppliedCents > 0 ? Math.max(0, paymentAmount - creditAppliedCents) : paymentAmount
 
   return (
     <div className="space-y-4">
@@ -93,11 +102,7 @@ export function PaymentPageClient({ eventId, outstandingBalanceCents, paymentAmo
           )}
         </CardHeader>
         <CardContent>
-          <PaymentSection
-            key={paymentKey}
-            eventId={eventId}
-            amount={displayAmount}
-          />
+          <PaymentSection key={paymentKey} eventId={eventId} amount={displayAmount} />
         </CardContent>
       </Card>
     </div>

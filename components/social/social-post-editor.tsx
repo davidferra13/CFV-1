@@ -12,7 +12,11 @@ import { SocialPlatformPreview } from '@/components/social/social-platform-previ
 import { SocialPostPreflight } from '@/components/social/social-post-preflight'
 import { SocialPillarBadge } from '@/components/social/social-pillar-badge'
 import { SocialHashtagSetPicker } from '@/components/social/social-hashtag-set-picker'
-import { updateSocialPost, attachSocialAssetToPost, detachSocialAssetFromPost } from '@/lib/social/actions'
+import {
+  updateSocialPost,
+  attachSocialAssetToPost,
+  detachSocialAssetFromPost,
+} from '@/lib/social/actions'
 import type {
   SocialMediaAsset,
   SocialPillar,
@@ -28,18 +32,42 @@ import {
 } from '@/lib/social/types'
 import type { SocialHashtagSet } from '@/lib/social/hashtag-actions'
 import { format } from 'date-fns'
-import { Save, CheckCircle, X, Film, Link as LinkIcon, Image as ImageIcon, Wifi } from 'lucide-react'
+import {
+  Save,
+  CheckCircle,
+  X,
+  Film,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  Wifi,
+} from 'lucide-react'
 
 type Tab = 'caption' | 'platforms' | 'media' | 'settings'
 
 const ALL_PLATFORMS: SocialPlatform[] = [
-  'instagram', 'facebook', 'tiktok', 'linkedin', 'x', 'pinterest', 'youtube_shorts',
+  'instagram',
+  'facebook',
+  'tiktok',
+  'linkedin',
+  'x',
+  'pinterest',
+  'youtube_shorts',
 ]
 const ALL_PILLARS: SocialPillar[] = [
-  'recipe', 'behind_scenes', 'education', 'social_proof', 'offers', 'seasonal',
+  'recipe',
+  'behind_scenes',
+  'education',
+  'social_proof',
+  'offers',
+  'seasonal',
 ]
 const ALL_STATUSES: SocialPostStatus[] = [
-  'idea', 'draft', 'approved', 'queued', 'published', 'archived',
+  'idea',
+  'draft',
+  'approved',
+  'queued',
+  'published',
+  'archived',
 ]
 
 type EditorState = CaptionState & {
@@ -110,7 +138,9 @@ export function SocialPostEditor({
   const [links, setLinks] = useState(initialLinks)
   const [editor, setEditor] = useState<EditorState>(buildEditorState(initialPost))
   const [activeTab, setActiveTab] = useState<Tab>('caption')
-  const [activeCaptionPlatform, setActiveCaptionPlatform] = useState<SocialPlatform | 'master'>('master')
+  const [activeCaptionPlatform, setActiveCaptionPlatform] = useState<SocialPlatform | 'master'>(
+    'master'
+  )
   const [previewPlatform, setPreviewPlatform] = useState<SocialPlatform>('instagram')
   const [isPending, startTransition] = useTransition()
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -174,7 +204,11 @@ export function SocialPostEditor({
     const isPrimary = !primaryLink
     startTransition(async () => {
       try {
-        const link = await attachSocialAssetToPost({ post_id: post.id, asset_id: assetId, is_primary: isPrimary })
+        const link = await attachSocialAssetToPost({
+          post_id: post.id,
+          asset_id: assetId,
+          is_primary: isPrimary,
+        })
         setLinks((prev) => {
           const without = prev.filter((l) => l.id !== link.id)
           return [...without, link]
@@ -208,7 +242,9 @@ export function SocialPostEditor({
     { key: 'settings', label: 'Settings' },
   ]
 
-  const statusBadgeVariant = (s: SocialPostStatus): 'default' | 'success' | 'warning' | 'error' | 'info' => {
+  const statusBadgeVariant = (
+    s: SocialPostStatus
+  ): 'default' | 'success' | 'warning' | 'error' | 'info' => {
     if (s === 'published') return 'success'
     if (s === 'queued' || s === 'approved') return 'info'
     if (s === 'draft') return 'warning'
@@ -218,7 +254,7 @@ export function SocialPostEditor({
   return (
     <div className="space-y-4">
       {/* Header card */}
-      <div className="bg-white rounded-xl border border-stone-200 px-5 py-4">
+      <div className="bg-surface rounded-xl border border-stone-700 px-5 py-4">
         <div className="flex items-center gap-3 mb-3">
           <SocialPillarBadge pillar={post.pillar} />
           <Badge variant={statusBadgeVariant(post.status)}>
@@ -236,8 +272,8 @@ export function SocialPostEditor({
       </div>
 
       {/* Tab navigation + content */}
-      <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
-        <div className="flex gap-0 border-b border-stone-100 overflow-x-auto">
+      <div className="bg-surface rounded-xl border border-stone-700 overflow-hidden">
+        <div className="flex gap-0 border-b border-stone-800 overflow-x-auto">
           {tabs.map(({ key, label }) => (
             <button
               key={key}
@@ -246,8 +282,8 @@ export function SocialPostEditor({
               className={[
                 'px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-colors whitespace-nowrap',
                 activeTab === key
-                  ? 'border-brand-600 text-brand-700'
-                  : 'border-transparent text-stone-500 hover:text-stone-700',
+                  ? 'border-brand-600 text-brand-400'
+                  : 'border-transparent text-stone-500 hover:text-stone-300',
               ].join(' ')}
             >
               {label}
@@ -267,7 +303,7 @@ export function SocialPostEditor({
               />
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium text-stone-700">Hashtags</label>
+                  <label className="text-sm font-medium text-stone-300">Hashtags</label>
                   <SocialHashtagSetPicker
                     sets={hashtagSets}
                     onInsert={(tags) =>
@@ -300,7 +336,7 @@ export function SocialPostEditor({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">
                   Mentions / @Tags
                 </label>
                 <TagInput
@@ -310,7 +346,7 @@ export function SocialPostEditor({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">
                   Alt Text <span className="text-stone-400 font-normal">(accessibility)</span>
                 </label>
                 <Textarea
@@ -327,9 +363,7 @@ export function SocialPostEditor({
           {activeTab === 'platforms' && (
             <div className="space-y-6">
               <div>
-                <label className="text-sm font-medium text-stone-700 block mb-3">
-                  Publish to
-                </label>
+                <label className="text-sm font-medium text-stone-300 block mb-3">Publish to</label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
                   {ALL_PLATFORMS.map((platform) => {
                     const checked = editor.platforms.includes(platform)
@@ -340,8 +374,8 @@ export function SocialPostEditor({
                         className={[
                           'flex items-center gap-2 rounded-lg border px-3 py-2 cursor-pointer transition-colors',
                           checked
-                            ? 'border-brand-300 bg-brand-50'
-                            : 'border-stone-200 hover:border-stone-300',
+                            ? 'border-brand-600 bg-brand-950'
+                            : 'border-stone-700 hover:border-stone-600',
                         ].join(' ')}
                       >
                         <input
@@ -357,7 +391,7 @@ export function SocialPostEditor({
                           }
                           className="rounded"
                         />
-                        <span className="flex-1 text-sm text-stone-700">
+                        <span className="flex-1 text-sm text-stone-300">
                           {SOCIAL_PLATFORM_LABELS[platform]}
                         </span>
                         {isConnected ? (
@@ -388,7 +422,7 @@ export function SocialPostEditor({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-stone-700 block mb-3">
+                <label className="text-sm font-medium text-stone-300 block mb-3">
                   Platform Preview
                 </label>
                 <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
@@ -401,7 +435,7 @@ export function SocialPostEditor({
                         'px-3 py-1.5 text-xs rounded-full whitespace-nowrap transition-colors flex-shrink-0',
                         previewPlatform === p
                           ? 'bg-stone-900 text-white'
-                          : 'bg-stone-100 text-stone-600 hover:bg-stone-200',
+                          : 'bg-stone-800 text-stone-400 hover:bg-stone-700',
                       ].join(' ')}
                     >
                       {SOCIAL_PLATFORM_LABELS[p]}
@@ -427,12 +461,12 @@ export function SocialPostEditor({
           {activeTab === 'media' && (
             <div className="space-y-5">
               <div>
-                <label className="text-sm font-medium text-stone-700 block mb-2">
+                <label className="text-sm font-medium text-stone-300 block mb-2">
                   Primary Media
                 </label>
                 {primaryAsset ? (
                   <div className="flex items-start gap-3">
-                    <div className="w-24 h-24 rounded-lg border border-stone-200 overflow-hidden flex-shrink-0 bg-stone-100">
+                    <div className="w-24 h-24 rounded-lg border border-stone-700 overflow-hidden flex-shrink-0 bg-stone-800">
                       {primaryAsset.asset_kind === 'image' ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
@@ -447,9 +481,12 @@ export function SocialPostEditor({
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-stone-800">{primaryAsset.asset_name}</p>
+                      <p className="text-sm font-medium text-stone-200">
+                        {primaryAsset.asset_name}
+                      </p>
                       <p className="text-xs text-stone-400 mt-0.5">
-                        {primaryAsset.asset_kind} · {Math.round(primaryAsset.file_size_bytes / 1024)}KB
+                        {primaryAsset.asset_kind} ·{' '}
+                        {Math.round(primaryAsset.file_size_bytes / 1024)}KB
                       </p>
                       {primaryAsset.duration_seconds && (
                         <p className="text-xs text-stone-400">{primaryAsset.duration_seconds}s</p>
@@ -473,16 +510,16 @@ export function SocialPostEditor({
 
               {linkedAssetObjs.length > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-stone-700 block mb-2">
+                  <label className="text-sm font-medium text-stone-300 block mb-2">
                     Linked Assets ({linkedAssetObjs.length})
                   </label>
                   <div className="space-y-2">
                     {linkedAssetObjs.map(({ link, asset }) => (
                       <div
                         key={link.id}
-                        className="flex items-center gap-3 rounded-lg border border-stone-200 px-3 py-2"
+                        className="flex items-center gap-3 rounded-lg border border-stone-700 px-3 py-2"
                       >
-                        <div className="w-10 h-10 rounded border border-stone-100 overflow-hidden flex-shrink-0 bg-stone-50">
+                        <div className="w-10 h-10 rounded border border-stone-800 overflow-hidden flex-shrink-0 bg-stone-800">
                           {asset.asset_kind === 'image' ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
@@ -497,9 +534,11 @@ export function SocialPostEditor({
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-stone-700 truncate">{asset.asset_name}</p>
+                          <p className="text-sm text-stone-300 truncate">{asset.asset_name}</p>
                           {link.is_primary && (
-                            <span className="text-[10px] text-emerald-600 font-medium">Primary</span>
+                            <span className="text-[10px] text-emerald-600 font-medium">
+                              Primary
+                            </span>
                           )}
                         </div>
                         <button
@@ -527,7 +566,7 @@ export function SocialPostEditor({
           {activeTab === 'settings' && (
             <div className="space-y-5">
               <div>
-                <label className="text-sm font-medium text-stone-700 block mb-2">Status</label>
+                <label className="text-sm font-medium text-stone-300 block mb-2">Status</label>
                 <div className="flex flex-wrap gap-2">
                   {ALL_STATUSES.map((s) => (
                     <button
@@ -538,7 +577,7 @@ export function SocialPostEditor({
                         'px-3 py-1.5 text-sm rounded-full border transition-colors',
                         editor.status === s
                           ? 'bg-stone-900 text-white border-stone-900'
-                          : 'border-stone-200 text-stone-600 hover:border-stone-300',
+                          : 'border-stone-700 text-stone-400 hover:border-stone-600',
                       ].join(' ')}
                     >
                       {SOCIAL_STATUS_LABELS[s]}
@@ -553,7 +592,7 @@ export function SocialPostEditor({
               </div>
 
               <div>
-                <label className="text-sm font-medium text-stone-700 block mb-2">
+                <label className="text-sm font-medium text-stone-300 block mb-2">
                   Content Pillar
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -566,7 +605,7 @@ export function SocialPostEditor({
                         'px-3 py-1.5 text-sm rounded-full border transition-colors',
                         editor.pillar === p
                           ? 'bg-stone-900 text-white border-stone-900'
-                          : 'border-stone-200 text-stone-600 hover:border-stone-300',
+                          : 'border-stone-700 text-stone-400 hover:border-stone-600',
                       ].join(' ')}
                     >
                       {SOCIAL_PILLAR_LABELS[p]}
@@ -583,7 +622,7 @@ export function SocialPostEditor({
                   placeholder="e.g. Summer 2026"
                 />
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-300 mb-1.5">
                     Offer Link
                   </label>
                   <div className="relative">
@@ -593,7 +632,7 @@ export function SocialPostEditor({
                       value={editor.offer_link}
                       onChange={(e) => update('offer_link', e.target.value)}
                       placeholder="https://..."
-                      className="w-full pl-8 pr-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                      className="w-full pl-8 pr-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                     />
                   </div>
                 </div>
@@ -607,7 +646,7 @@ export function SocialPostEditor({
                     onChange={(e) => update('seasonal_flag', e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm text-stone-700">Seasonal post</span>
+                  <span className="text-sm text-stone-300">Seasonal post</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -616,12 +655,12 @@ export function SocialPostEditor({
                     onChange={(e) => update('hot_swap_ready', e.target.checked)}
                     className="rounded"
                   />
-                  <span className="text-sm text-stone-700">Hot-swap ready</span>
+                  <span className="text-sm text-stone-300">Hot-swap ready</span>
                 </label>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">
                   Internal Notes
                 </label>
                 <Textarea
@@ -637,7 +676,7 @@ export function SocialPostEditor({
       </div>
 
       {/* Preflight + save bar */}
-      <div className="bg-white rounded-xl border border-stone-200 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between sticky bottom-4 shadow-sm">
+      <div className="bg-surface rounded-xl border border-stone-700 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between sticky bottom-4 shadow-sm">
         <div className="flex-1">
           <SocialPostPreflight post={post} />
         </div>
@@ -648,9 +687,7 @@ export function SocialPostEditor({
               Saved
             </span>
           )}
-          {saveError && (
-            <p className="text-sm text-red-500">{saveError}</p>
-          )}
+          {saveError && <p className="text-sm text-red-500">{saveError}</p>}
           <Button variant="primary" onClick={handleSave} loading={isPending}>
             <Save className="w-4 h-4 mr-1.5" />
             Save Post
@@ -661,18 +698,15 @@ export function SocialPostEditor({
       {/* Vault picker overlay */}
       {vaultOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-black/40"
-            onClick={() => setVaultOpen(false)}
-          />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
-              <h3 className="font-semibold text-stone-900">Select from Media Vault</h3>
+          <div className="fixed inset-0 bg-black/40" onClick={() => setVaultOpen(false)} />
+          <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800">
+              <h3 className="font-semibold text-stone-100">Select from Media Vault</h3>
               <button
                 type="button"
                 aria-label="Close vault picker"
                 onClick={() => setVaultOpen(false)}
-                className="text-stone-400 hover:text-stone-600"
+                className="text-stone-400 hover:text-stone-400"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -692,7 +726,7 @@ export function SocialPostEditor({
                       'rounded-lg border overflow-hidden aspect-square relative group transition-all',
                       alreadyLinked
                         ? 'border-emerald-300 opacity-60 cursor-default'
-                        : 'border-stone-200 hover:border-brand-400 hover:shadow-sm cursor-pointer',
+                        : 'border-stone-700 hover:border-brand-400 hover:shadow-sm cursor-pointer',
                     ].join(' ')}
                   >
                     {asset.asset_kind === 'image' ? (
@@ -703,15 +737,17 @@ export function SocialPostEditor({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full bg-stone-100 flex flex-col items-center justify-center gap-1">
+                      <div className="w-full h-full bg-stone-800 flex flex-col items-center justify-center gap-1">
                         <Film className="w-6 h-6 text-stone-400" />
                         {asset.duration_seconds && (
-                          <span className="text-[10px] text-stone-400">{asset.duration_seconds}s</span>
+                          <span className="text-[10px] text-stone-400">
+                            {asset.duration_seconds}s
+                          </span>
                         )}
                       </div>
                     )}
                     {alreadyLinked && (
-                      <div className="absolute inset-0 flex items-center justify-center bg-emerald-50/80">
+                      <div className="absolute inset-0 flex items-center justify-center bg-emerald-950/80">
                         <CheckCircle className="w-5 h-5 text-emerald-500" />
                       </div>
                     )}
@@ -727,9 +763,10 @@ export function SocialPostEditor({
                 </div>
               )}
             </div>
-            <div className="px-5 py-3 border-t border-stone-100">
+            <div className="px-5 py-3 border-t border-stone-800">
               <p className="text-xs text-stone-400">
-                First attachment becomes the primary media. Additional attachments create a carousel.
+                First attachment becomes the primary media. Additional attachments create a
+                carousel.
               </p>
             </div>
           </div>

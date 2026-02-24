@@ -41,11 +41,7 @@ function getUrlCount(value: unknown) {
   return value.filter((item) => typeof item === 'string' && item.trim().length > 0).length
 }
 
-export function ExternalReviewSources({
-  sources,
-}: {
-  sources: ExternalReviewSourceSummary[]
-}) {
+export function ExternalReviewSources({ sources }: { sources: ExternalReviewSourceSummary[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [provider, setProvider] = useState<Provider>('google_places')
@@ -156,7 +152,9 @@ export function ExternalReviewSources({
         setInfo(nextActive ? 'Source resumed.' : 'Source paused.')
         router.refresh()
       } catch (actionError) {
-        setError(actionError instanceof Error ? actionError.message : 'Failed to update source status')
+        setError(
+          actionError instanceof Error ? actionError.message : 'Failed to update source status'
+        )
       }
     })
   }
@@ -183,16 +181,17 @@ export function ExternalReviewSources({
       </CardHeader>
       <CardContent className="space-y-4">
         <Alert variant="info">
-          Uses official API pulls and owned-site schema parsing. Direct scraping of third-party sites is intentionally not used.
+          Uses official API pulls and owned-site schema parsing. Direct scraping of third-party
+          sites is intentionally not used.
         </Alert>
 
         {error && <Alert variant="error">{error}</Alert>}
         {info && <Alert variant="success">{info}</Alert>}
 
-        <div className="rounded-lg border border-stone-200 p-4">
+        <div className="rounded-lg border border-stone-700 p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-medium text-stone-900">Configured Sources</p>
+              <p className="text-sm font-medium text-stone-100">Configured Sources</p>
               <p className="text-xs text-stone-500 mt-1">
                 {activeSources.length} active of {sources.length} total
               </p>
@@ -209,7 +208,9 @@ export function ExternalReviewSources({
           </div>
 
           {sources.length === 0 ? (
-            <p className="text-sm text-stone-500 mt-4">No external review sources configured yet.</p>
+            <p className="text-sm text-stone-500 mt-4">
+              No external review sources configured yet.
+            </p>
           ) : (
             <div className="mt-4 space-y-3">
               {sources.map((source) => {
@@ -219,11 +220,11 @@ export function ExternalReviewSources({
                 return (
                   <div
                     key={source.id}
-                    className="rounded-lg border border-stone-200 px-3 py-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
+                    className="rounded-lg border border-stone-700 px-3 py-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className="font-medium text-stone-900">{source.label}</p>
+                        <p className="font-medium text-stone-100">{source.label}</p>
                         <Badge variant={source.active ? 'success' : 'default'}>
                           {source.active ? 'Active' : 'Paused'}
                         </Badge>
@@ -239,7 +240,9 @@ export function ExternalReviewSources({
                       )}
 
                       {source.provider === 'website_jsonld' && (
-                        <p className="text-xs text-stone-500 mt-1">Tracked URLs: {urlsForDisplay}</p>
+                        <p className="text-xs text-stone-500 mt-1">
+                          Tracked URLs: {urlsForDisplay}
+                        </p>
                       )}
 
                       <p className="text-xs text-stone-400 mt-1">
@@ -284,8 +287,11 @@ export function ExternalReviewSources({
           )}
         </div>
 
-        <form onSubmit={handleCreateSource} className="rounded-lg border border-stone-200 p-4 space-y-3">
-          <p className="text-sm font-medium text-stone-900">Add Source</p>
+        <form
+          onSubmit={handleCreateSource}
+          className="rounded-lg border border-stone-700 p-4 space-y-3"
+        >
+          <p className="text-sm font-medium text-stone-100">Add Source</p>
 
           <Select
             label="Provider"
@@ -335,7 +341,7 @@ export function ExternalReviewSources({
             </>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
                 Website URLs (one per line)
               </label>
               <Textarea

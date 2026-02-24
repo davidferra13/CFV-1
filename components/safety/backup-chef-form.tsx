@@ -40,47 +40,47 @@ export function BackupChefForm({ onClose }: { onClose: () => void }) {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Name *</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Name *</label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Phone</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Phone</label>
               <input
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Relationship</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Relationship</label>
             <input
               type="text"
               value={relationship}
               onChange={(e) => setRelationship(e.target.value)}
               placeholder="e.g., Culinary school friend"
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Specialties (comma-separated)
             </label>
             <input
@@ -88,27 +88,27 @@ export function BackupChefForm({ onClose }: { onClose: () => void }) {
               value={specialties}
               onChange={(e) => setSpecialties(e.target.value)}
               placeholder="Italian, French, Pastry"
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Max Guest Count</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Max Guest Count</label>
             <input
               type="number"
               value={maxGuests}
               onChange={(e) => setMaxGuests(e.target.value)}
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Availability Notes
             </label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             />
           </div>
           <div className="flex gap-2">

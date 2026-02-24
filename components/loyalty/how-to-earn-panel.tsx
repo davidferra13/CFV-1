@@ -18,10 +18,10 @@ type Props = {
 
 function EarnRow({ emoji, label, points }: { emoji: string; label: string; points: string }) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-stone-100 last:border-b-0">
+    <div className="flex items-center justify-between py-3 border-b border-stone-800 last:border-b-0">
       <div className="flex items-center gap-3">
         <span className="text-xl w-7 text-center">{emoji}</span>
-        <span className="text-sm text-stone-700">{label}</span>
+        <span className="text-sm text-stone-300">{label}</span>
       </div>
       <span className="text-sm font-bold text-emerald-700 shrink-0 ml-4">+{points}</span>
     </div>
@@ -38,8 +38,7 @@ export function HowToEarnPanel({ config }: Props) {
         </p>
       </CardHeader>
       <CardContent>
-        <div className="divide-y divide-stone-100">
-
+        <div className="divide-y divide-stone-800">
           {/* Welcome bonus */}
           {(config.welcome_points ?? 0) > 0 && (
             <EarnRow
@@ -66,14 +65,15 @@ export function HowToEarnPanel({ config }: Props) {
           )}
 
           {/* Milestone bonuses */}
-          {(config.milestone_bonuses ?? []).length > 0 && config.milestone_bonuses.map((m) => (
-            <EarnRow
-              key={m.events}
-              emoji="🏆"
-              label={`Milestone: complete your ${ordinal(m.events)} dinner`}
-              points={`+${m.bonus} bonus`}
-            />
-          ))}
+          {(config.milestone_bonuses ?? []).length > 0 &&
+            config.milestone_bonuses.map((m) => (
+              <EarnRow
+                key={m.events}
+                emoji="🏆"
+                label={`Milestone: complete your ${ordinal(m.events)} dinner`}
+                points={`+${m.bonus} bonus`}
+              />
+            ))}
 
           {/* Referrals (informational) */}
           <EarnRow
@@ -90,12 +90,12 @@ export function HowToEarnPanel({ config }: Props) {
           />
         </div>
 
-        <div className="mt-4 p-3 bg-stone-50 rounded-lg">
+        <div className="mt-4 p-3 bg-stone-800 rounded-lg">
           <p className="text-xs text-stone-500 leading-relaxed">
-            Points are awarded automatically when your chef marks an event as completed.
-            They appear in your transaction history within minutes.
-            Your tier is based on your <span className="font-medium">lifetime points earned</span> —
-            it never goes down, even when you redeem rewards.
+            Points are awarded automatically when your chef marks an event as completed. They appear
+            in your transaction history within minutes. Your tier is based on your{' '}
+            <span className="font-medium">lifetime points earned</span> — it never goes down, even
+            when you redeem rewards.
           </p>
         </div>
       </CardContent>

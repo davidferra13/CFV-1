@@ -30,7 +30,7 @@ export function PublicHeader() {
     <header
       className={`sticky top-0 z-50 border-b transition-all ${
         isScrolled
-          ? 'border-stone-200 bg-white/90 shadow-sm backdrop-blur-xl'
+          ? 'border-stone-700 bg-stone-900/90 shadow-sm backdrop-blur-xl'
           : 'border-transparent bg-transparent'
       }`}
     >
@@ -38,7 +38,7 @@ export function PublicHeader() {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <AppLogo size={36} className="shadow-sm" />
-            <span className="text-base font-display tracking-tight text-stone-900">ChefFlow</span>
+            <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
 
           <div className="hidden items-center gap-1 md:flex">
@@ -50,8 +50,8 @@ export function PublicHeader() {
                   href={item.href}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-brand-50 text-brand-700'
-                      : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
+                      ? 'bg-brand-950 text-brand-400'
+                      : 'text-stone-400 hover:bg-stone-700 hover:text-stone-100'
                   }`}
                 >
                   {item.label}
@@ -77,7 +77,7 @@ export function PublicHeader() {
         <button
           type="button"
           onClick={() => setMobileMenuOpen((open) => !open)}
-          className="rounded-lg p-2 text-stone-600 hover:bg-stone-100 md:hidden"
+          className="rounded-lg p-2 text-stone-400 hover:bg-stone-700 md:hidden"
           aria-label="Toggle menu"
         >
           {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -85,7 +85,7 @@ export function PublicHeader() {
       </nav>
 
       {mobileMenuOpen && (
-        <div className="border-t border-stone-200 bg-white md:hidden">
+        <div className="border-t border-stone-700 bg-surface md:hidden">
           <div className="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6 lg:px-8">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href
@@ -94,7 +94,7 @@ export function PublicHeader() {
                   key={item.href}
                   href={item.href}
                   className={`block rounded-lg px-3 py-2 text-sm font-medium ${
-                    isActive ? 'bg-brand-50 text-brand-700' : 'text-stone-700 hover:bg-stone-100'
+                    isActive ? 'bg-brand-950 text-brand-400' : 'text-stone-300 hover:bg-stone-700'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >

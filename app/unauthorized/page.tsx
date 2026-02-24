@@ -13,7 +13,7 @@ export default function UnauthorizedPage() {
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-24 h-24 flex items-center justify-center rounded-full bg-orange-100">
+          <div className="mx-auto mb-4 w-24 h-24 flex items-center justify-center rounded-full bg-orange-900">
             <svg
               className="w-12 h-12 text-orange-600"
               fill="none"
@@ -31,15 +31,9 @@ export default function UnauthorizedPage() {
           <CardTitle className="text-2xl">Access Denied</CardTitle>
         </CardHeader>
         <CardContent className="text-center space-y-4">
-          <p className="text-stone-600">
-            You don&apos;t have permission to access this page.
-          </p>
+          <p className="text-stone-400">You don&apos;t have permission to access this page.</p>
           <div className="space-y-2">
-            <Button
-              variant="secondary"
-              onClick={() => router.back()}
-              className="w-full"
-            >
+            <Button variant="secondary" onClick={() => router.back()} className="w-full">
               Go Back
             </Button>
             <Link href="/auth/signin" className="block">

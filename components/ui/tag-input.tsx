@@ -15,7 +15,14 @@ interface TagInputProps {
   suggestions?: string[]
 }
 
-export function TagInput({ value, onChange, placeholder = 'Type and press Enter', label, helperText, suggestions }: TagInputProps) {
+export function TagInput({
+  value,
+  onChange,
+  placeholder = 'Type and press Enter',
+  label,
+  helperText,
+  suggestions,
+}: TagInputProps) {
   const [input, setInput] = useState('')
   const [showSuggestions, setShowSuggestions] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -43,31 +50,31 @@ export function TagInput({ value, onChange, placeholder = 'Type and press Enter'
     }
   }
 
-  const filteredSuggestions = suggestions?.filter(
-    s => s.toLowerCase().includes(input.toLowerCase()) && !value.includes(s)
-  ) || []
+  const filteredSuggestions =
+    suggestions?.filter(
+      (s) => s.toLowerCase().includes(input.toLowerCase()) && !value.includes(s)
+    ) || []
 
   return (
     <div>
-      {label && (
-        <label className="block text-sm font-medium text-stone-700 mb-1.5">
-          {label}
-        </label>
-      )}
+      {label && <label className="block text-sm font-medium text-stone-300 mb-1.5">{label}</label>}
       <div
-        className="flex flex-wrap gap-1.5 p-2 border border-stone-300 rounded-lg bg-white focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500 min-h-[42px] cursor-text"
+        className="flex flex-wrap gap-1.5 p-2 border border-stone-600 rounded-lg bg-surface focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500 min-h-[42px] cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {value.map((tag, i) => (
           <span
             key={`${tag}-${i}`}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-sm"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-stone-800 text-stone-300 text-sm"
           >
             {tag}
             <button
               type="button"
-              onClick={(e) => { e.stopPropagation(); removeTag(i) }}
-              className="text-stone-400 hover:text-stone-600 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation()
+                removeTag(i)
+              }}
+              className="text-stone-400 hover:text-stone-400 transition-colors"
             >
               <X className="w-3 h-3" />
             </button>
@@ -78,21 +85,29 @@ export function TagInput({ value, onChange, placeholder = 'Type and press Enter'
             ref={inputRef}
             type="text"
             value={input}
-            onChange={(e) => { setInput(e.target.value); setShowSuggestions(true) }}
+            onChange={(e) => {
+              setInput(e.target.value)
+              setShowSuggestions(true)
+            }}
             onKeyDown={handleKeyDown}
             onFocus={() => setShowSuggestions(true)}
-            onBlur={() => { setTimeout(() => setShowSuggestions(false), 150) }}
+            onBlur={() => {
+              setTimeout(() => setShowSuggestions(false), 150)
+            }}
             placeholder={value.length === 0 ? placeholder : ''}
-            className="w-full border-0 p-0 py-0.5 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-0 bg-transparent"
+            className="w-full border-0 p-0 py-0.5 text-sm text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-0 bg-transparent"
           />
           {showSuggestions && input && filteredSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 mt-1 w-48 bg-white border border-stone-200 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
-              {filteredSuggestions.map(s => (
+            <div className="absolute top-full left-0 mt-1 w-48 bg-surface border border-stone-700 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
+              {filteredSuggestions.map((s) => (
                 <button
                   key={s}
                   type="button"
-                  onMouseDown={(e) => { e.preventDefault(); addTag(s) }}
-                  className="block w-full text-left px-3 py-1.5 text-sm text-stone-700 hover:bg-stone-50"
+                  onMouseDown={(e) => {
+                    e.preventDefault()
+                    addTag(s)
+                  }}
+                  className="block w-full text-left px-3 py-1.5 text-sm text-stone-300 hover:bg-stone-800"
                 >
                   {s}
                 </button>
@@ -101,9 +116,7 @@ export function TagInput({ value, onChange, placeholder = 'Type and press Enter'
           )}
         </div>
       </div>
-      {helperText && (
-        <p className="mt-1 text-xs text-stone-500">{helperText}</p>
-      )}
+      {helperText && <p className="mt-1 text-xs text-stone-500">{helperText}</p>}
     </div>
   )
 }

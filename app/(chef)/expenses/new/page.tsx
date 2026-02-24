@@ -26,7 +26,7 @@ export default async function NewExpensePage({
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold text-stone-900">Add Expense</h1>
+      <h1 className="text-3xl font-bold text-stone-100">Add Expense</h1>
       <ExpenseForm events={events} defaultEventId={searchParams.event_id} />
     </div>
   )

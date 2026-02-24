@@ -73,7 +73,7 @@ export function GuestMessagesPanel({ messages, eventId }: Props) {
   if (messages.length === 0) {
     return (
       <Card className="p-4">
-        <h3 className="font-semibold text-stone-900 mb-1">Guest Wall</h3>
+        <h3 className="font-semibold text-stone-100 mb-1">Guest Wall</h3>
         <p className="text-sm text-stone-500">
           No guest messages yet. Messages will appear here once guests post on the share page.
         </p>
@@ -84,7 +84,7 @@ export function GuestMessagesPanel({ messages, eventId }: Props) {
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-semibold text-stone-900">Guest Wall</h3>
+        <h3 className="font-semibold text-stone-100">Guest Wall</h3>
         <div className="flex gap-2">
           <Badge variant="success">{visibleCount} visible</Badge>
           {hiddenCount > 0 && <Badge variant="default">{hiddenCount} hidden</Badge>}
@@ -106,21 +106,21 @@ export function GuestMessagesPanel({ messages, eventId }: Props) {
               key={msg.id}
               className={`rounded-lg border p-3 ${
                 !msg.is_visible
-                  ? 'border-stone-200 bg-stone-50 opacity-60'
+                  ? 'border-stone-700 bg-stone-800 opacity-60'
                   : msg.is_pinned
-                    ? 'border-brand-200 bg-brand-50/30'
-                    : 'border-stone-200'
+                    ? 'border-brand-700 bg-brand-950/30'
+                    : 'border-stone-700'
               }`}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-sm text-stone-900">{msg.guest_name}</span>
+                    <span className="font-medium text-sm text-stone-100">{msg.guest_name}</span>
                     {msg.is_pinned && <Badge variant="info">Pinned</Badge>}
                     {!msg.is_visible && <Badge variant="default">Hidden</Badge>}
                     <span className="text-xs text-stone-400">{date}</span>
                   </div>
-                  <p className="text-sm text-stone-700 mt-0.5">
+                  <p className="text-sm text-stone-300 mt-0.5">
                     {msg.emoji && <span className="mr-1">{msg.emoji}</span>}
                     {msg.message}
                   </p>
@@ -151,7 +151,7 @@ export function GuestMessagesPanel({ messages, eventId }: Props) {
                   <button
                     onClick={() => handleToggleVisibility(msg.id, msg.is_visible)}
                     disabled={isLoading}
-                    className="p-1 text-stone-400 hover:text-stone-700 disabled:opacity-50"
+                    className="p-1 text-stone-400 hover:text-stone-300 disabled:opacity-50"
                     title={msg.is_visible ? 'Hide' : 'Show'}
                   >
                     {msg.is_visible ? (

@@ -54,7 +54,9 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
   function handleIgnore(txId: string) {
     startTransition(async () => {
       await ignoreTransaction(txId)
-      setTransactions((prev) => prev.map((t) => (t.id === txId ? { ...t, status: 'ignored' as const } : t)))
+      setTransactions((prev) =>
+        prev.map((t) => (t.id === txId ? { ...t, status: 'ignored' as const } : t))
+      )
     })
   }
 
@@ -65,7 +67,7 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Connections</p>
-            <p className="text-2xl font-semibold text-stone-900">{connections.length}</p>
+            <p className="text-2xl font-semibold text-stone-100">{connections.length}</p>
           </CardContent>
         </Card>
         <Card>
@@ -83,7 +85,9 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Pending Amount</p>
-            <p className="text-2xl font-semibold text-stone-900">{formatCents(summary.totalPendingCents)}</p>
+            <p className="text-2xl font-semibold text-stone-100">
+              {formatCents(summary.totalPendingCents)}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -115,26 +119,28 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
           {filtered.length === 0 ? (
             <p className="px-6 py-8 text-sm text-stone-500 text-center">No transactions found.</p>
           ) : (
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {filtered.map((tx) => (
                 <div key={tx.id} className="px-6 py-3 flex items-center justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-stone-900 truncate">
+                      <p className="text-sm font-medium text-stone-100 truncate">
                         {tx.vendorName || tx.description || 'Unknown'}
                       </p>
-                      <Badge variant={STATUS_BADGE[tx.status] || 'default'}>
-                        {tx.status}
-                      </Badge>
+                      <Badge variant={STATUS_BADGE[tx.status] || 'default'}>{tx.status}</Badge>
                     </div>
                     <p className="text-xs text-stone-500 mt-0.5">
                       {tx.date}
                       {tx.confirmedCategory && ` · ${tx.confirmedCategory}`}
-                      {tx.suggestedCategory && !tx.confirmedCategory && ` · Suggested: ${tx.suggestedCategory}`}
+                      {tx.suggestedCategory &&
+                        !tx.confirmedCategory &&
+                        ` · Suggested: ${tx.suggestedCategory}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <p className={`text-sm font-medium ${tx.amountCents < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                    <p
+                      className={`text-sm font-medium ${tx.amountCents < 0 ? 'text-red-600' : 'text-emerald-600'}`}
+                    >
                       {formatCents(tx.amountCents)}
                     </p>
                     {tx.status === 'pending' && (
@@ -144,7 +150,7 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
                             <select
                               value={category}
                               onChange={(e) => setCategory(e.target.value)}
-                              className="rounded border border-stone-300 px-2 py-1 text-xs"
+                              className="rounded border border-stone-600 px-2 py-1 text-xs"
                             >
                               <option value="">Category…</option>
                               <option value="groceries">Groceries</option>
@@ -155,7 +161,11 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
                               <option value="marketing">Marketing</option>
                               <option value="other">Other</option>
                             </select>
-                            <Button size="sm" onClick={() => handleConfirm(tx.id)} disabled={isPending || !category}>
+                            <Button
+                              size="sm"
+                              onClick={() => handleConfirm(tx.id)}
+                              disabled={isPending || !category}
+                            >
                               Save
                             </Button>
                             <Button size="sm" variant="ghost" onClick={() => setConfirmingId(null)}>
@@ -164,10 +174,19 @@ export function BankFeedPanel({ connections, initialTransactions, summary }: Pro
                           </div>
                         ) : (
                           <>
-                            <Button size="sm" variant="ghost" onClick={() => setConfirmingId(tx.id)}>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setConfirmingId(tx.id)}
+                            >
                               <Check className="h-3.5 w-3.5" />
                             </Button>
-                            <Button size="sm" variant="ghost" onClick={() => handleIgnore(tx.id)} disabled={isPending}>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleIgnore(tx.id)}
+                              disabled={isPending}
+                            >
                               <X className="h-3.5 w-3.5" />
                             </Button>
                           </>

@@ -13,14 +13,27 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
 const SEASON_COLORS: Record<string, string> = {
-  Winter: 'border-sky-200 bg-sky-50/50',
-  Spring: 'border-emerald-200 bg-emerald-50/50',
-  Summer: 'border-amber-200 bg-amber-50/50',
-  Autumn: 'border-orange-200 bg-orange-50/50',
+  Winter: 'border-sky-200 bg-sky-950/50',
+  Spring: 'border-emerald-200 bg-emerald-950/50',
+  Summer: 'border-amber-200 bg-amber-950/50',
+  Autumn: 'border-orange-200 bg-orange-950/50',
 }
 
 function formatDateRange(start: string, end: string): string {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   const [sm, sd] = start.split('-').map(Number)
   const [em, ed] = end.split('-').map(Number)
   return `${months[sm - 1]} ${sd} \u2013 ${months[em - 1]} ${ed}`
@@ -30,7 +43,7 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  const hasActiveSeason = palettes.some(p => p.is_active)
+  const hasActiveSeason = palettes.some((p) => p.is_active)
 
   const handleSetActive = (paletteId: string) => {
     startTransition(async () => {
@@ -49,13 +62,12 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
   return (
     <div className="space-y-4">
       {/* Opt-in/opt-out info */}
-      <div className="bg-stone-50 border border-stone-200 rounded-lg p-4 flex items-center justify-between">
+      <div className="bg-stone-800 border border-stone-700 rounded-lg p-4 flex items-center justify-between">
         <div>
-          <p className="text-sm text-stone-700">
+          <p className="text-sm text-stone-300">
             {hasActiveSeason
               ? 'Seasonal ingredients are showing on your Calendar and Recipes pages.'
-              : 'Seasonal ingredients are hidden. Set a season as active to show them.'
-            }
+              : 'Seasonal ingredients are hidden. Set a season as active to show them.'}
           </p>
         </div>
         {hasActiveSeason && (
@@ -73,27 +85,29 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {palettes.map((palette) => {
-          const colorClass = SEASON_COLORS[palette.season_name] || 'border-stone-200 bg-stone-50/50'
+          const colorClass =
+            SEASON_COLORS[palette.season_name] || 'border-stone-700 bg-stone-800/50'
           const ingredientCount = palette.micro_windows.length
           const dishCount = palette.proven_wins.length
 
           return (
-            <Card key={palette.id} className={`${colorClass} transition-all ${isPending ? 'opacity-50' : ''}`}>
+            <Card
+              key={palette.id}
+              className={`${colorClass} transition-all ${isPending ? 'opacity-50' : ''}`}
+            >
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <h3 className="font-semibold text-stone-900 text-lg">{palette.season_name}</h3>
+                    <h3 className="font-semibold text-stone-100 text-lg">{palette.season_name}</h3>
                     <p className="text-sm text-stone-500">
                       {formatDateRange(palette.start_month_day, palette.end_month_day)}
                     </p>
                   </div>
-                  {palette.is_active && (
-                    <Badge variant="success">Active</Badge>
-                  )}
+                  {palette.is_active && <Badge variant="success">Active</Badge>}
                 </div>
 
                 {palette.sensory_anchor ? (
-                  <p className="text-sm text-stone-600 line-clamp-2 mb-3">
+                  <p className="text-sm text-stone-400 line-clamp-2 mb-3">
                     {palette.sensory_anchor}
                   </p>
                 ) : (
@@ -101,13 +115,19 @@ export function SeasonalPaletteList({ palettes }: { palettes: SeasonalPalette[] 
                 )}
 
                 <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-stone-500 mb-4">
-                  <span>{ingredientCount} ingredient{ingredientCount !== 1 ? 's' : ''}</span>
-                  <span>{dishCount} go-to dish{dishCount !== 1 ? 'es' : ''}</span>
+                  <span>
+                    {ingredientCount} ingredient{ingredientCount !== 1 ? 's' : ''}
+                  </span>
+                  <span>
+                    {dishCount} go-to dish{dishCount !== 1 ? 'es' : ''}
+                  </span>
                 </div>
 
                 <div className="flex gap-2">
                   <Link href={`/settings/repertoire/${palette.id}`} className="flex-1">
-                    <Button variant="secondary" size="sm" className="w-full">Edit</Button>
+                    <Button variant="secondary" size="sm" className="w-full">
+                      Edit
+                    </Button>
                   </Link>
                   {!palette.is_active && (
                     <Button

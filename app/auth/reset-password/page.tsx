@@ -55,8 +55,8 @@ export default function ResetPasswordPage() {
       <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-            <p className="text-stone-600 mt-2">Password updated</p>
+            <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+            <p className="text-stone-400 mt-2">Password updated</p>
           </div>
 
           <Card>
@@ -83,8 +83,8 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">Set your new password</p>
+          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+          <p className="text-stone-400 mt-2">Set your new password</p>
         </div>
 
         <Card>
@@ -94,9 +94,7 @@ export default function ResetPasswordPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {error && (
-                <Alert variant="error">{error}</Alert>
-              )}
+              {error && <Alert variant="error">{error}</Alert>}
 
               <Input
                 type="password"
@@ -120,17 +118,15 @@ export default function ResetPasswordPage() {
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                loading={loading}
-              >
+              <Button type="submit" variant="primary" className="w-full" loading={loading}>
                 Update Password
               </Button>
 
-              <div className="text-sm text-center text-stone-600">
-                <Link href="/auth/signin" className="text-brand-600 hover:text-brand-700 font-medium">
+              <div className="text-sm text-center text-stone-400">
+                <Link
+                  href="/auth/signin"
+                  className="text-brand-600 hover:text-brand-400 font-medium"
+                >
                   Back to Sign In
                 </Link>
               </div>

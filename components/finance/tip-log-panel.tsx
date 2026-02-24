@@ -36,15 +36,16 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
 
   async function handleDelete(id: string) {
     await deleteTip(id, eventId)
-    setTips(prev => prev.filter(t => t.id !== id))
+    setTips((prev) => prev.filter((t) => t.id !== id))
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <DollarSign className="h-4 w-4 text-emerald-500 shrink-0" />
-        <span className="text-sm text-stone-600">
-          Total tips received: <span className="font-semibold text-emerald-700">{formatCurrency(totalCents)}</span>
+        <span className="text-sm text-stone-400">
+          Total tips received:{' '}
+          <span className="font-semibold text-emerald-700">{formatCurrency(totalCents)}</span>
         </span>
       </div>
 
@@ -53,15 +54,26 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
       )}
 
       <div className="space-y-1.5">
-        {tips.map(tip => (
-          <div key={tip.id} className="flex items-center justify-between text-sm border border-stone-100 rounded-md px-3 py-2">
+        {tips.map((tip) => (
+          <div
+            key={tip.id}
+            className="flex items-center justify-between text-sm border border-stone-800 rounded-md px-3 py-2"
+          >
             <div className="min-w-0">
-              <p className="font-medium text-stone-900 capitalize">{tip.method}</p>
-              <p className="text-xs text-stone-400">{format(new Date(tip.receivedAt), 'MMM d, yyyy')}{tip.notes ? ` · ${tip.notes}` : ''}</p>
+              <p className="font-medium text-stone-100 capitalize">{tip.method}</p>
+              <p className="text-xs text-stone-400">
+                {format(new Date(tip.receivedAt), 'MMM d, yyyy')}
+                {tip.notes ? ` · ${tip.notes}` : ''}
+              </p>
             </div>
             <div className="flex items-center gap-3 shrink-0 ml-3">
-              <span className="font-semibold text-emerald-700">{formatCurrency(tip.amountCents)}</span>
-              <button onClick={() => handleDelete(tip.id)} className="text-stone-300 hover:text-red-500 transition-colors">
+              <span className="font-semibold text-emerald-700">
+                {formatCurrency(tip.amountCents)}
+              </span>
+              <button
+                onClick={() => handleDelete(tip.id)}
+                className="text-stone-300 hover:text-red-500 transition-colors"
+              >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -70,36 +82,64 @@ export function TipLogPanel({ eventId, initialTips }: Props) {
       </div>
 
       {isAdding ? (
-        <form onSubmit={handleAdd} className="border border-stone-200 rounded-md p-3 space-y-2">
+        <form onSubmit={handleAdd} className="border border-stone-700 rounded-md p-3 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-stone-600">Amount ($)</label>
-              <input name="amountDollars" type="number" step="0.01" min="0.01" required placeholder="0.00" className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 mt-0.5" />
+              <label className="text-xs text-stone-400">Amount ($)</label>
+              <input
+                name="amountDollars"
+                type="number"
+                step="0.01"
+                min="0.01"
+                required
+                placeholder="0.00"
+                className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5"
+              />
             </div>
             <div>
-              <label className="text-xs text-stone-600">Method</label>
-              <select name="method" className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 mt-0.5 capitalize">
-                {TIP_METHODS.map(m => (
-                  <option key={m} value={m} className="capitalize">{m}</option>
+              <label className="text-xs text-stone-400">Method</label>
+              <select
+                name="method"
+                className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5 capitalize"
+              >
+                {TIP_METHODS.map((m) => (
+                  <option key={m} value={m} className="capitalize">
+                    {m}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
           <div>
-            <label className="text-xs text-stone-600">Notes (optional)</label>
-            <input name="notes" placeholder="Any notes…" className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 mt-0.5" />
+            <label className="text-xs text-stone-400">Notes (optional)</label>
+            <input
+              name="notes"
+              placeholder="Any notes…"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5"
+            />
           </div>
           <div className="flex gap-2 pt-1">
-            <button type="submit" disabled={submitting} className="text-xs font-medium px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="text-xs font-medium px-3 py-1.5 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50"
+            >
               {submitting ? 'Saving…' : 'Record Tip'}
             </button>
-            <button type="button" onClick={() => setIsAdding(false)} className="text-xs text-stone-500 hover:text-stone-700 px-2">
+            <button
+              type="button"
+              onClick={() => setIsAdding(false)}
+              className="text-xs text-stone-500 hover:text-stone-300 px-2"
+            >
               Cancel
             </button>
           </div>
         </form>
       ) : (
-        <button onClick={() => setIsAdding(true)} className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium transition-colors">
+        <button
+          onClick={() => setIsAdding(true)}
+          className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-400 font-medium transition-colors"
+        >
           <Plus className="h-4 w-4" />
           Record tip
         </button>

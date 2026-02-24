@@ -108,8 +108,8 @@ export function ClientInvitationForm() {
             <p className="text-sm">
               Invitation created for <strong>{success.email}</strong>
             </p>
-            <div className="bg-white rounded border border-green-300 p-3">
-              <p className="text-xs font-mono break-all text-stone-700">{success.url}</p>
+            <div className="bg-surface rounded border border-green-300 p-3">
+              <p className="text-xs font-mono break-all text-stone-300">{success.url}</p>
             </div>
             <Button variant="secondary" size="sm" onClick={() => copyToClipboard(success.url)}>
               Copy Link
@@ -127,7 +127,7 @@ export function ClientInvitationForm() {
             <p className="text-sm">
               Client <strong>{createSuccess.full_name}</strong> created successfully.
             </p>
-            <p className="text-xs text-stone-600">You can now manage this client from the list.</p>
+            <p className="text-xs text-stone-400">You can now manage this client from the list.</p>
           </div>
         </Alert>
       )}

@@ -58,7 +58,7 @@ function ItemRow({
         <button
           onClick={() => handleSet('complete')}
           disabled={isPending || status === 'complete'}
-          className="px-2 py-0.5 text-xs rounded bg-green-100 text-green-700 hover:bg-green-200 disabled:opacity-40 disabled:cursor-default transition-colors"
+          className="px-2 py-0.5 text-xs rounded bg-green-900 text-green-700 hover:bg-green-200 disabled:opacity-40 disabled:cursor-default transition-colors"
         >
           Complete
         </button>
@@ -73,7 +73,7 @@ function ItemRow({
           <button
             onClick={() => handleSet('pending')}
             disabled={isPending}
-            className="px-2 py-0.5 text-xs rounded bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:opacity-40 disabled:cursor-default transition-colors"
+            className="px-2 py-0.5 text-xs rounded bg-amber-950 text-amber-700 hover:bg-amber-900 disabled:opacity-40 disabled:cursor-default transition-colors"
           >
             Pending
           </button>
@@ -92,16 +92,16 @@ export function OnboardingChecklist({ staffMemberId, items }: OnboardingChecklis
 
   const badgeColor =
     completeCount === total
-      ? 'bg-green-100 text-green-800'
+      ? 'bg-green-900 text-green-800'
       : completeCount > 0
-        ? 'bg-amber-100 text-amber-800'
+        ? 'bg-amber-900 text-amber-800'
         : 'bg-gray-100 text-gray-600'
 
   return (
     <div className="border border-gray-200 rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-white hover:bg-gray-50 transition-colors text-left"
+        className="w-full flex items-center justify-between px-4 py-3 bg-surface hover:bg-gray-50 transition-colors text-left"
       >
         <span className="font-medium text-gray-900">Onboarding Checklist</span>
         <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export function OnboardingChecklist({ staffMemberId, items }: OnboardingChecklis
       </button>
 
       {open && (
-        <div className="bg-white border-t border-gray-100 px-4 py-2">
+        <div className="bg-surface border-t border-gray-100 px-4 py-2">
           <ul>
             {ONBOARDING_ITEM_KEYS.map((key) => {
               const item = itemMap.get(key)

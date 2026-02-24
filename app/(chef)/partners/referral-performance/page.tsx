@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPartnerLeaderboard, getConversionRatesBySource } from '@/lib/partners/analytics'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = { title: 'Referral Performance - ChefFlow' }
@@ -22,18 +29,20 @@ export default async function ReferralPerformancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/partners" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/partners" className="text-sm text-stone-500 hover:text-stone-300">
           ← Partners
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Referral Performance</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Referral Performance</h1>
         </div>
-        <p className="text-stone-500 mt-1">Revenue and conversion metrics attributed to each partner</p>
+        <p className="text-stone-500 mt-1">
+          Revenue and conversion metrics attributed to each partner
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{formatCurrency(totalRevenue)}</p>
+          <p className="text-2xl font-bold text-stone-100">{formatCurrency(totalRevenue)}</p>
           <p className="text-sm text-stone-500 mt-1">Total partner revenue</p>
         </Card>
         <Card className="p-4">
@@ -48,13 +57,15 @@ export default async function ReferralPerformancePage() {
 
       {leaderboard.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No partner referral data yet</p>
-          <p className="text-stone-400 text-sm">Partner attribution will appear here once inquiries are linked to partners</p>
+          <p className="text-stone-400 font-medium mb-1">No partner referral data yet</p>
+          <p className="text-stone-400 text-sm">
+            Partner attribution will appear here once inquiries are linked to partners
+          </p>
         </Card>
       ) : (
         <Card>
-          <div className="p-4 border-b border-stone-100">
-            <h2 className="text-sm font-semibold text-stone-700">Partner Leaderboard</h2>
+          <div className="p-4 border-b border-stone-800">
+            <h2 className="text-sm font-semibold text-stone-300">Partner Leaderboard</h2>
           </div>
           <Table>
             <TableHeader>
@@ -76,19 +87,23 @@ export default async function ReferralPerformancePage() {
                   <TableCell className="font-medium">
                     <Link
                       href={`/partners/${partner.id}`}
-                      className="text-brand-600 hover:text-brand-800 hover:underline"
+                      className="text-brand-600 hover:text-brand-300 hover:underline"
                     >
                       {partner.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm capitalize">
+                  <TableCell className="text-stone-400 text-sm capitalize">
                     {partner.partner_type.replace(/_/g, ' ')}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{partner.inquiry_count}</TableCell>
-                  <TableCell className="text-stone-600 text-sm">{partner.event_count}</TableCell>
-                  <TableCell className="text-stone-600 text-sm">{partner.completed_count}</TableCell>
-                  <TableCell className="text-stone-600 text-sm">{formatCurrency(partner.revenue_cents)}</TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-400 text-sm">{partner.inquiry_count}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">{partner.event_count}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">
+                    {partner.completed_count}
+                  </TableCell>
+                  <TableCell className="text-stone-400 text-sm">
+                    {formatCurrency(partner.revenue_cents)}
+                  </TableCell>
+                  <TableCell className="text-stone-400 text-sm">
                     {(partner.conversion_rate * 100).toFixed(0)}%
                   </TableCell>
                 </TableRow>
@@ -100,8 +115,8 @@ export default async function ReferralPerformancePage() {
 
       {conversions.length > 0 && (
         <Card>
-          <div className="p-4 border-b border-stone-100">
-            <h2 className="text-sm font-semibold text-stone-700">Conversion by Channel</h2>
+          <div className="p-4 border-b border-stone-800">
+            <h2 className="text-sm font-semibold text-stone-300">Conversion by Channel</h2>
           </div>
           <Table>
             <TableHeader>
@@ -114,15 +129,16 @@ export default async function ReferralPerformancePage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {conversions.map(row => {
-                const rate = row.inquiries > 0 ? ((row.confirmed / row.inquiries) * 100).toFixed(0) : '0'
+              {conversions.map((row) => {
+                const rate =
+                  row.inquiries > 0 ? ((row.confirmed / row.inquiries) * 100).toFixed(0) : '0'
                 return (
                   <TableRow key={row.name}>
                     <TableCell className="font-medium">{row.name}</TableCell>
-                    <TableCell className="text-stone-600 text-sm">{row.inquiries}</TableCell>
-                    <TableCell className="text-stone-600 text-sm">{row.confirmed}</TableCell>
-                    <TableCell className="text-stone-600 text-sm">{row.completed}</TableCell>
-                    <TableCell className="text-stone-600 text-sm">{rate}%</TableCell>
+                    <TableCell className="text-stone-400 text-sm">{row.inquiries}</TableCell>
+                    <TableCell className="text-stone-400 text-sm">{row.confirmed}</TableCell>
+                    <TableCell className="text-stone-400 text-sm">{row.completed}</TableCell>
+                    <TableCell className="text-stone-400 text-sm">{rate}%</TableCell>
                   </TableRow>
                 )
               })}

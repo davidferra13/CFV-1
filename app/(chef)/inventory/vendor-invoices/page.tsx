@@ -55,10 +55,10 @@ export default async function VendorInvoicesPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-700">
+          <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Inventory
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Vendor Invoices</h1>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Vendor Invoices</h1>
           <p className="text-stone-500 mt-1">
             Upload vendor invoices, match line items to tracked ingredients, and flag price changes.
           </p>
@@ -67,7 +67,7 @@ export default async function VendorInvoicesPage() {
       </div>
 
       {(invoices as any[]).length === 0 ? (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
           <p className="text-stone-500 text-sm">
             No vendor invoices uploaded yet. Upload your first invoice to start matching line items
             to ingredients and tracking price changes.
@@ -80,7 +80,7 @@ export default async function VendorInvoicesPage() {
               <div className="flex items-center justify-between">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-stone-900">
+                    <span className="font-medium text-stone-100">
                       {invoice.invoiceNumber || 'No invoice number'}
                     </span>
                     <Badge variant={statusBadgeVariant(invoice.status)}>{invoice.status}</Badge>
@@ -96,7 +96,7 @@ export default async function VendorInvoicesPage() {
                 </div>
                 <Link
                   href={`/inventory/vendor-invoices/${invoice.id}`}
-                  className="text-sm text-brand-600 hover:text-brand-700 font-medium shrink-0 ml-4"
+                  className="text-sm text-brand-600 hover:text-brand-400 font-medium shrink-0 ml-4"
                 >
                   View &rarr;
                 </Link>

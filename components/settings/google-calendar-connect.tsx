@@ -77,7 +77,7 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
 
         {!connection.connected ? (
           <>
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-stone-400">
               Connect Google Calendar to automatically sync your confirmed events. When you confirm
               an event in ChefFlow it appears in your calendar; when you cancel it, it's removed.
             </p>
@@ -96,7 +96,7 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant="success">Connected</Badge>
-                  <span className="text-sm font-medium text-stone-900">{connection.email}</span>
+                  <span className="text-sm font-medium text-stone-100">{connection.email}</span>
                 </div>
                 {connection.lastSync ? (
                   <p className="text-xs text-stone-500 mt-1">
@@ -118,8 +118,8 @@ export function GoogleCalendarConnect({ connection }: GoogleCalendarConnectProps
               </Button>
             </div>
 
-            <div className="rounded-md bg-stone-50 border border-stone-200 px-3 py-2 text-xs text-stone-600 space-y-0.5">
-              <p className="font-medium text-stone-700">How sync works</p>
+            <div className="rounded-md bg-stone-800 border border-stone-700 px-3 py-2 text-xs text-stone-400 space-y-0.5">
+              <p className="font-medium text-stone-300">How sync works</p>
               <p>Confirming an event → creates a calendar entry automatically.</p>
               <p>Cancelling an event → removes it from your calendar.</p>
               <p>Edits to event date/time/location → update the calendar entry.</p>

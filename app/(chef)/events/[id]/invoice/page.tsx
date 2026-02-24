@@ -11,11 +11,7 @@ import { InvoiceView } from '@/components/events/invoice-view'
 import { Button } from '@/components/ui/button'
 import { PrintButton } from '@/components/events/print-button'
 
-export default async function ChefInvoicePage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function ChefInvoicePage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const invoice = await getInvoiceData(params.id)
@@ -26,14 +22,16 @@ export default async function ChefInvoicePage({
       {/* Nav */}
       <div className="flex justify-between items-center">
         <Link href={`/events/${params.id}`}>
-          <Button variant="ghost" size="sm">&larr; Back to Event</Button>
+          <Button variant="ghost" size="sm">
+            &larr; Back to Event
+          </Button>
         </Link>
         <div className="flex items-center gap-2">
           <a
             href={`/api/documents/invoice/${params.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="inline-flex items-center rounded-lg border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
           >
             Download PDF
           </a>

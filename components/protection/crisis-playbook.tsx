@@ -61,7 +61,7 @@ export function CrisisPlaybook() {
             <CardContent>
               <ol className="space-y-2">
                 {playbook.steps.map((step, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-stone-700">
+                  <li key={i} className="flex gap-3 text-sm text-stone-300">
                     <span className="font-medium text-stone-400 shrink-0 w-5 text-right">
                       {i + 1}.
                     </span>

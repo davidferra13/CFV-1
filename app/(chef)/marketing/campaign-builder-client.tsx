@@ -22,22 +22,22 @@ export function CampaignBuilderClient() {
   const router = useRouter()
   const bodyRef = useRef<HTMLTextAreaElement>(null)
 
-  const [step, setStep]             = useState<Step>('compose')
-  const [saving, setSaving]         = useState(false)
-  const [error, setError]           = useState<string | null>(null)
+  const [step, setStep] = useState<Step>('compose')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [campaignId, setCampaignId] = useState<string | null>(null)
   const [channelSplit, setChannelSplit] = useState<ChannelSplit | null>(null)
-  const [templates, setTemplates]   = useState<any[]>([])
+  const [templates, setTemplates] = useState<any[]>([])
   const [loadingTemplates, setLoadingTemplates] = useState(false)
   const [showSchedule, setShowSchedule] = useState(false)
 
   const [form, setForm] = useState({
-    name:          '',
+    name: '',
     campaign_type: 're_engagement',
-    subject:       '',
-    body_html:     '',
-    segment_type:  'dormant_90_days',
-    scheduled_at:  '',
+    subject: '',
+    body_html: '',
+    segment_type: 'dormant_90_days',
+    scheduled_at: '',
   })
 
   // Load templates on mount
@@ -57,8 +57,8 @@ export function CampaignBuilderClient() {
     setForm((prev) => ({
       ...prev,
       campaign_type: t.campaign_type,
-      subject:       t.subject,
-      body_html:     t.body_html,
+      subject: t.subject,
+      body_html: t.body_html,
     }))
   }
 
@@ -66,26 +66,27 @@ export function CampaignBuilderClient() {
     const ta = bodyRef.current
     if (!ta) return
     const start = ta.selectionStart
-    const end   = ta.selectionEnd
+    const end = ta.selectionEnd
     const newBody = form.body_html.slice(0, start) + token + form.body_html.slice(end)
     update('body_html', newBody)
     // Restore cursor
     requestAnimationFrame(() => {
       ta.selectionStart = start + token.length
-      ta.selectionEnd   = start + token.length
+      ta.selectionEnd = start + token.length
       ta.focus()
     })
   }
 
   async function handlePreview(e: React.FormEvent) {
     e.preventDefault()
-    setSaving(true); setError(null)
+    setSaving(true)
+    setError(null)
     try {
       const id = await createCampaign({
-        name:           form.name,
-        campaign_type:  form.campaign_type as any,
-        subject:        form.subject,
-        body_html:      form.body_html,
+        name: form.name,
+        campaign_type: form.campaign_type as any,
+        subject: form.subject,
+        body_html: form.body_html,
         target_segment: { type: form.segment_type },
         ...(showSchedule && form.scheduled_at ? { scheduled_at: form.scheduled_at } : {}),
       })
@@ -105,7 +106,8 @@ export function CampaignBuilderClient() {
     if (!campaignId) return
     const emailCount = channelSplit?.email.length ?? 0
     if (!confirm(`Send to ${emailCount} clients by email now?`)) return
-    setSaving(true); setError(null)
+    setSaving(true)
+    setError(null)
     try {
       await sendCampaignNow(campaignId)
       setStep('sent')
@@ -121,14 +123,21 @@ export function CampaignBuilderClient() {
     setStep('compose')
     setCampaignId(null)
     setChannelSplit(null)
-    setForm({ name: '', campaign_type: 're_engagement', subject: '', body_html: '', segment_type: 'dormant_90_days', scheduled_at: '' })
+    setForm({
+      name: '',
+      campaign_type: 're_engagement',
+      subject: '',
+      body_html: '',
+      segment_type: 'dormant_90_days',
+      scheduled_at: '',
+    })
   }
 
   // ---- SENT ----
   if (step === 'sent') {
     return (
       <div className="text-center py-6">
-        <p className="text-lg font-semibold text-stone-900">Campaign sent!</p>
+        <p className="text-lg font-semibold text-stone-100">Campaign sent!</p>
         <p className="text-sm text-stone-500 mt-1">Your emails are on their way.</p>
         <Button className="mt-4" variant="secondary" size="sm" onClick={reset}>
           Create another
@@ -139,26 +148,26 @@ export function CampaignBuilderClient() {
 
   // ---- PREVIEW ----
   if (step === 'preview' && channelSplit) {
-    const emailCount    = channelSplit.email.length
-    const smsCount      = channelSplit.sms.length
-    const callCount     = channelSplit.call.length
-    const instaCount    = channelSplit.instagram.length
+    const emailCount = channelSplit.email.length
+    const smsCount = channelSplit.sms.length
+    const callCount = channelSplit.call.length
+    const instaCount = channelSplit.instagram.length
     const noMethodCount = channelSplit.no_method.length
-    const isScheduled   = showSchedule && form.scheduled_at
+    const isScheduled = showSchedule && form.scheduled_at
 
     return (
       <div className="space-y-4">
         {/* Message preview */}
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
-          <p className="text-sm font-semibold text-stone-900">{form.name}</p>
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-4">
+          <p className="text-sm font-semibold text-stone-100">{form.name}</p>
           <p className="text-xs text-stone-500">Subject: {form.subject}</p>
-          <div className="mt-3 border border-stone-200 rounded p-3 bg-white text-xs text-stone-700 max-h-40 overflow-y-auto whitespace-pre-wrap">
+          <div className="mt-3 border border-stone-700 rounded p-3 bg-surface text-xs text-stone-300 max-h-40 overflow-y-auto whitespace-pre-wrap">
             {form.body_html}
           </div>
         </div>
 
         {/* Channel breakdown */}
-        <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-2">
+        <div className="rounded-lg border border-stone-700 bg-surface p-4 space-y-2">
           <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
             Channel breakdown
           </p>
@@ -179,9 +188,11 @@ export function CampaignBuilderClient() {
                 label="prefer text — see SMS queue below"
                 color="text-emerald-600"
               />
-              <div className="ml-6 pl-2 border-l border-stone-200">
+              <div className="ml-6 pl-2 border-l border-stone-700">
                 <p className="text-xs text-stone-500 mb-1">Draft SMS to send:</p>
-                <pre className="whitespace-pre-wrap text-xs text-stone-600 bg-stone-50 p-2 rounded">{form.body_html.slice(0, 160)}</pre>
+                <pre className="whitespace-pre-wrap text-xs text-stone-400 bg-stone-800 p-2 rounded">
+                  {form.body_html.slice(0, 160)}
+                </pre>
                 <p className="text-xs text-stone-400 mt-1">
                   {channelSplit.sms.map((c) => c.full_name).join(', ')}
                 </p>
@@ -196,9 +207,11 @@ export function CampaignBuilderClient() {
                 label="prefer phone calls — call list:"
                 color="text-amber-600"
               />
-              <div className="ml-6 pl-2 border-l border-stone-200">
+              <div className="ml-6 pl-2 border-l border-stone-700">
                 <p className="text-xs text-stone-500">
-                  {channelSplit.call.map((c) => c.full_name + (c.phone ? ` (${c.phone})` : '')).join(' · ')}
+                  {channelSplit.call
+                    .map((c) => c.full_name + (c.phone ? ` (${c.phone})` : ''))
+                    .join(' · ')}
                 </p>
               </div>
             </div>
@@ -211,8 +224,10 @@ export function CampaignBuilderClient() {
                 label="prefer Instagram — DM copy ready:"
                 color="text-purple-600"
               />
-              <div className="ml-6 pl-2 border-l border-stone-200">
-                <pre className="whitespace-pre-wrap text-xs text-stone-600 bg-stone-50 p-2 rounded">{form.body_html.slice(0, 300)}</pre>
+              <div className="ml-6 pl-2 border-l border-stone-700">
+                <pre className="whitespace-pre-wrap text-xs text-stone-400 bg-stone-800 p-2 rounded">
+                  {form.body_html.slice(0, 300)}
+                </pre>
                 <p className="text-xs text-stone-400 mt-1">
                   {channelSplit.instagram.map((c) => c.full_name).join(', ')}
                 </p>
@@ -227,9 +242,13 @@ export function CampaignBuilderClient() {
               color="text-stone-400"
             />
           )}
-          {emailCount === 0 && smsCount === 0 && callCount === 0 && instaCount === 0 && noMethodCount === 0 && (
-            <p className="text-xs text-amber-600">No clients match this segment.</p>
-          )}
+          {emailCount === 0 &&
+            smsCount === 0 &&
+            callCount === 0 &&
+            instaCount === 0 &&
+            noMethodCount === 0 && (
+              <p className="text-xs text-amber-600">No clients match this segment.</p>
+            )}
         </div>
 
         {error && <p className="text-xs text-red-600">{error}</p>}
@@ -237,14 +256,18 @@ export function CampaignBuilderClient() {
         <div className="flex gap-2 flex-wrap">
           {isScheduled ? (
             <Button disabled={saving}>
-              {saving ? 'Scheduling…' : `Schedule for ${new Date(form.scheduled_at).toLocaleString()}`}
+              {saving
+                ? 'Scheduling…'
+                : `Schedule for ${new Date(form.scheduled_at).toLocaleString()}`}
             </Button>
           ) : (
             <Button onClick={handleSend} disabled={saving || emailCount === 0}>
               {saving ? 'Sending…' : `Send to ${emailCount} clients by email`}
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={() => setStep('compose')}>← Edit</Button>
+          <Button variant="ghost" size="sm" onClick={() => setStep('compose')}>
+            ← Edit
+          </Button>
         </div>
 
         {smsCount > 0 || callCount > 0 || instaCount > 0 ? (
@@ -262,7 +285,7 @@ export function CampaignBuilderClient() {
       {/* Template picker */}
       {!loadingTemplates && templates.length > 0 && (
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">
+          <label className="block text-xs font-medium text-stone-400 mb-1">
             Start from a template (optional)
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -271,9 +294,9 @@ export function CampaignBuilderClient() {
                 key={t.id}
                 type="button"
                 onClick={() => applyTemplate(t)}
-                className="text-left rounded-md border border-stone-200 bg-stone-50 hover:bg-stone-100 px-3 py-2 text-xs transition-colors"
+                className="text-left rounded-md border border-stone-700 bg-stone-800 hover:bg-stone-700 px-3 py-2 text-xs transition-colors"
               >
-                <span className="font-medium text-stone-800 block truncate">{t.name}</span>
+                <span className="font-medium text-stone-200 block truncate">{t.name}</span>
                 <span className="text-stone-400 truncate block">{t.subject}</span>
               </button>
             ))}
@@ -283,7 +306,7 @@ export function CampaignBuilderClient() {
 
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-stone-600 mb-1">Campaign name *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Campaign name *</label>
           <Input
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
@@ -293,33 +316,39 @@ export function CampaignBuilderClient() {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Type</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
           <select
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
             title="Campaign type"
             value={form.campaign_type}
             onChange={(e) => update('campaign_type', e.target.value)}
           >
-            {CAMPAIGN_TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+            {CAMPAIGN_TYPES.map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
+              </option>
+            ))}
           </select>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Audience</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Audience</label>
           <select
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
             title="Audience segment"
             value={form.segment_type}
             onChange={(e) => update('segment_type', e.target.value)}
           >
             {SEGMENT_OPTIONS.filter((s) => s.value !== 'client_ids').map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-stone-600 mb-1">Subject *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Subject *</label>
           <Input
             value={form.subject}
             onChange={(e) => update('subject', e.target.value)}
@@ -330,7 +359,7 @@ export function CampaignBuilderClient() {
 
         <div className="col-span-2">
           <div className="flex items-center justify-between mb-1">
-            <label className="block text-xs font-medium text-stone-600">Message body *</label>
+            <label className="block text-xs font-medium text-stone-400">Message body *</label>
             {/* Token toolbar */}
             <div className="flex gap-1 flex-wrap justify-end">
               {AVAILABLE_TOKENS.map((t) => (
@@ -338,7 +367,7 @@ export function CampaignBuilderClient() {
                   key={t.token}
                   type="button"
                   onClick={() => insertToken(t.token)}
-                  className="text-xs bg-stone-100 hover:bg-stone-200 text-stone-600 rounded px-1.5 py-0.5 transition-colors font-mono"
+                  className="text-xs bg-stone-800 hover:bg-stone-700 text-stone-400 rounded px-1.5 py-0.5 transition-colors font-mono"
                   title={`Insert ${t.token}`}
                 >
                   {t.label}
@@ -348,14 +377,15 @@ export function CampaignBuilderClient() {
           </div>
           <textarea
             ref={bodyRef}
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm min-h-[160px] resize-y font-mono"
+            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[160px] resize-y font-mono"
             value={form.body_html}
             onChange={(e) => update('body_html', e.target.value)}
             placeholder={`Hi {{first_name}},\n\nWrite your message here. Plain text is perfect.\n\n{{chef_name}}`}
             required
           />
           <p className="text-xs text-stone-400 mt-1">
-            Use tokens like <code className="bg-stone-100 px-1 rounded">{'{{first_name}}'}</code> — they get replaced with each client&apos;s real name before sending.
+            Use tokens like <code className="bg-stone-800 px-1 rounded">{'{{first_name}}'}</code> —
+            they get replaced with each client&apos;s real name before sending.
           </p>
         </div>
       </div>
@@ -364,7 +394,7 @@ export function CampaignBuilderClient() {
       <div>
         <button
           type="button"
-          className="text-xs text-stone-500 hover:text-stone-700 underline"
+          className="text-xs text-stone-500 hover:text-stone-300 underline"
           onClick={() => setShowSchedule((v) => !v)}
         >
           {showSchedule ? 'Send immediately (remove schedule)' : '+ Schedule for a future date'}
@@ -403,8 +433,12 @@ function ChannelRow({
 }) {
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className={`font-bold ${color}`}>{icon} {count}</span>
-      <span className="text-stone-600">{count === 1 ? 'client' : 'clients'} {label}</span>
+      <span className={`font-bold ${color}`}>
+        {icon} {count}
+      </span>
+      <span className="text-stone-400">
+        {count === 1 ? 'client' : 'clients'} {label}
+      </span>
     </div>
   )
 }

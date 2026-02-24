@@ -23,7 +23,7 @@ export default async function IncidentsPage() {
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Incident Documentation</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Incident Documentation</h1>
           <p className="mt-1 text-sm text-stone-500">
             A complete log of safety incidents — foodborne illness concerns, injuries, equipment
             failures, and near-misses. Accurate records protect you legally and help prevent

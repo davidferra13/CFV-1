@@ -5,7 +5,14 @@ import { getEvents } from '@/lib/events/actions'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -16,18 +23,18 @@ export default async function ConfirmedEventsPage() {
 
   const allEvents = await getEvents()
   const events = allEvents
-    .filter(e => e.status === 'paid' || e.status === 'confirmed')
+    .filter((e) => e.status === 'paid' || e.status === 'confirmed')
     .sort((a, b) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime())
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/events" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/events" className="text-sm text-stone-500 hover:text-stone-300">
           ← All Events
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Confirmed Events</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Confirmed Events</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {events.length}
           </span>
         </div>
@@ -36,10 +43,14 @@ export default async function ConfirmedEventsPage() {
 
       {events.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No confirmed events</p>
-          <p className="text-stone-400 text-sm mb-4">Events that are paid and confirmed will appear here</p>
+          <p className="text-stone-400 font-medium mb-1">No confirmed events</p>
+          <p className="text-stone-400 text-sm mb-4">
+            Events that are paid and confirmed will appear here
+          </p>
           <Link href="/events">
-            <Button variant="secondary" size="sm">View All Events</Button>
+            <Button variant="secondary" size="sm">
+              View All Events
+            </Button>
           </Link>
         </Card>
       ) : (
@@ -61,26 +72,22 @@ export default async function ConfirmedEventsPage() {
                   <TableCell className="font-medium">
                     <Link
                       href={`/events/${event.id}`}
-                      className="text-brand-600 hover:text-brand-800 hover:underline"
+                      className="text-brand-600 hover:text-brand-300 hover:underline"
                     >
                       {event.occasion || 'Untitled Event'}
                     </Link>
                   </TableCell>
-                  <TableCell>
-                    {format(new Date(event.event_date), 'MMM d, yyyy')}
-                  </TableCell>
-                  <TableCell>
-                    {event.client?.full_name || 'Unknown'}
-                  </TableCell>
+                  <TableCell>{format(new Date(event.event_date), 'MMM d, yyyy')}</TableCell>
+                  <TableCell>{event.client?.full_name || 'Unknown'}</TableCell>
                   <TableCell>
                     <EventStatusBadge status={event.status} />
                   </TableCell>
-                  <TableCell>
-                    {formatCurrency(event.quoted_price_cents ?? 0)}
-                  </TableCell>
+                  <TableCell>{formatCurrency(event.quoted_price_cents ?? 0)}</TableCell>
                   <TableCell>
                     <Link href={`/events/${event.id}`}>
-                      <Button size="sm" variant="secondary">View</Button>
+                      <Button size="sm" variant="secondary">
+                        View
+                      </Button>
                     </Link>
                   </TableCell>
                 </TableRow>

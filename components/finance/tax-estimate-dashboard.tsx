@@ -67,27 +67,35 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Estimated Income</p>
-            <p className="text-xl font-semibold text-stone-900">{formatCents(summary.totalIncomeCents)}</p>
+            <p className="text-xl font-semibold text-stone-900">
+              {formatCents(summary.totalIncomeCents)}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Total Tax Owed</p>
             <p className="text-xl font-semibold text-red-600">
-              {formatCents(summary.totalSeTaxCents + summary.totalFederalCents + summary.totalStateCents)}
+              {formatCents(
+                summary.totalSeTaxCents + summary.totalFederalCents + summary.totalStateCents
+              )}
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Total Paid</p>
-            <p className="text-xl font-semibold text-emerald-600">{formatCents(summary.totalPaidCents)}</p>
+            <p className="text-xl font-semibold text-emerald-600">
+              {formatCents(summary.totalPaidCents)}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Remaining</p>
-            <p className={`text-xl font-semibold ${summary.totalOwedCents > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+            <p
+              className={`text-xl font-semibold ${summary.totalOwedCents > 0 ? 'text-amber-600' : 'text-emerald-600'}`}
+            >
               {formatCents(summary.totalOwedCents)}
             </p>
           </CardContent>
@@ -96,12 +104,14 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
 
       {/* Safe Harbor */}
       {summary.totalPaidCents < safeHarborCents && summary.totalOwedCents > 0 && (
-        <Card className="border-amber-200 bg-amber-50">
+        <Card className="border-amber-200 bg-amber-950">
           <CardContent className="py-3">
             <div className="flex items-center gap-2">
               <Calculator className="h-4 w-4 text-amber-600" />
               <p className="text-sm text-amber-800">
-                Safe harbor target: {formatCents(safeHarborCents)} — you need {formatCents(safeHarborCents - summary.totalPaidCents)} more to avoid underpayment penalties.
+                Safe harbor target: {formatCents(safeHarborCents)} — you need{' '}
+                {formatCents(safeHarborCents - summary.totalPaidCents)} more to avoid underpayment
+                penalties.
               </p>
             </div>
           </CardContent>
@@ -154,7 +164,9 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
                       <div>
                         <p className="text-xs text-stone-500">Due: {quarter.dueDate}</p>
                         {quarter.amountPaidCents > 0 && (
-                          <p className="text-xs text-emerald-600">Paid: {formatCents(quarter.amountPaidCents)}</p>
+                          <p className="text-xs text-emerald-600">
+                            Paid: {formatCents(quarter.amountPaidCents)}
+                          </p>
                         )}
                       </div>
                       <div className="flex gap-1">
@@ -188,7 +200,12 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
                       min="0"
                       step="0.01"
                       value={(formData.estimatedIncomeCents / 100).toString()}
-                      onChange={(e) => setFormData({ ...formData, estimatedIncomeCents: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          estimatedIncomeCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                        })
+                      }
                     />
                     <Input
                       label="SE Tax ($)"
@@ -196,7 +213,12 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
                       min="0"
                       step="0.01"
                       value={(formData.estimatedSeTaxCents / 100).toString()}
-                      onChange={(e) => setFormData({ ...formData, estimatedSeTaxCents: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          estimatedSeTaxCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                        })
+                      }
                     />
                     <Input
                       label="Federal ($)"
@@ -204,7 +226,14 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
                       min="0"
                       step="0.01"
                       value={(formData.estimatedFederalCents / 100).toString()}
-                      onChange={(e) => setFormData({ ...formData, estimatedFederalCents: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          estimatedFederalCents: Math.round(
+                            parseFloat(e.target.value || '0') * 100
+                          ),
+                        })
+                      }
                     />
                     <Input
                       label="State ($)"
@@ -212,11 +241,20 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
                       min="0"
                       step="0.01"
                       value={(formData.estimatedStateCents / 100).toString()}
-                      onChange={(e) => setFormData({ ...formData, estimatedStateCents: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          estimatedStateCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                        })
+                      }
                     />
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleSaveEstimate(q)} loading={isPending}>Save</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingQuarter(null)}>Cancel</Button>
+                      <Button size="sm" onClick={() => handleSaveEstimate(q)} loading={isPending}>
+                        Save
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingQuarter(null)}>
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -233,8 +271,12 @@ export function TaxEstimateDashboard({ summary, currentYear }: Props) {
                       onChange={(e) => setPaymentAmount(e.target.value)}
                     />
                     <div className="flex gap-2">
-                      <Button size="sm" onClick={() => handleRecordPayment(q)} loading={isPending}>Record</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setPayingQuarter(null)}>Cancel</Button>
+                      <Button size="sm" onClick={() => handleRecordPayment(q)} loading={isPending}>
+                        Record
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setPayingQuarter(null)}>
+                        Cancel
+                      </Button>
                     </div>
                   </div>
                 )}

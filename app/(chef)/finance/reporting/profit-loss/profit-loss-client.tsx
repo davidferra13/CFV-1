@@ -21,7 +21,11 @@ interface ProfitLossClientControlsProps {
   pl: PLData
 }
 
-export function ProfitLossClientControls({ yearOptions, selectedYear, pl }: ProfitLossClientControlsProps) {
+export function ProfitLossClientControls({
+  yearOptions,
+  selectedYear,
+  pl,
+}: ProfitLossClientControlsProps) {
   const router = useRouter()
 
   function handleYearChange(e: React.ChangeEvent<HTMLSelectElement>) {
@@ -43,7 +47,9 @@ export function ProfitLossClientControls({ yearOptions, selectedYear, pl }: Prof
     rows.push([])
     rows.push(['EXPENSES BY CATEGORY'])
     rows.push(['Category', 'Amount'])
-    for (const [category, amount] of Object.entries(pl.expensesByCategory).sort((a, b) => b[1] - a[1])) {
+    for (const [category, amount] of Object.entries(pl.expensesByCategory).sort(
+      (a, b) => b[1] - a[1]
+    )) {
       rows.push([category.replace(/_/g, ' '), centsToDollars(amount)])
     }
     rows.push(['Total Expenses', centsToDollars(pl.totalExpensesCents)])
@@ -59,7 +65,9 @@ export function ProfitLossClientControls({ yearOptions, selectedYear, pl }: Prof
       rows.push([month, centsToDollars(amount)])
     }
 
-    const csv = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
+    const csv = rows
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -76,10 +84,12 @@ export function ProfitLossClientControls({ yearOptions, selectedYear, pl }: Prof
       <select
         value={selectedYear}
         onChange={handleYearChange}
-        className="text-sm border border-stone-300 rounded-md px-3 py-2 text-stone-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="text-sm border border-stone-600 rounded-md px-3 py-2 text-stone-300 bg-surface focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
-        {yearOptions.map(y => (
-          <option key={y} value={y}>{y}</option>
+        {yearOptions.map((y) => (
+          <option key={y} value={y}>
+            {y}
+          </option>
         ))}
       </select>
       <button

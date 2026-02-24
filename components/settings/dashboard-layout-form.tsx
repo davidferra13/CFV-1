@@ -24,7 +24,9 @@ export function DashboardLayoutForm({
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [widgets, setWidgets] = useState<DashboardWidgetPreference[]>(normalizeWidgets(initialWidgets))
+  const [widgets, setWidgets] = useState<DashboardWidgetPreference[]>(
+    normalizeWidgets(initialWidgets)
+  )
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
 
@@ -69,12 +71,10 @@ export function DashboardLayoutForm({
             <CardTitle>Enabled Widgets</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            <p className="text-sm text-stone-500">
-              These widgets will show on your dashboard.
-            </p>
+            <p className="text-sm text-stone-500">These widgets will show on your dashboard.</p>
 
             {visibleWidgets.length === 0 && (
-              <p className="rounded-md border border-dashed border-stone-300 p-3 text-sm text-stone-500">
+              <p className="rounded-md border border-dashed border-stone-600 p-3 text-sm text-stone-500">
                 No enabled widgets. Turn widgets on from the disabled list.
               </p>
             )}
@@ -82,9 +82,11 @@ export function DashboardLayoutForm({
             {visibleWidgets.map((widget) => (
               <div
                 key={widget.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-3"
+                className="flex items-center justify-between gap-3 rounded-lg border border-stone-700 p-3"
               >
-                <p className="text-sm font-medium text-stone-900">{DASHBOARD_WIDGET_LABELS[widget.id]}</p>
+                <p className="text-sm font-medium text-stone-100">
+                  {DASHBOARD_WIDGET_LABELS[widget.id]}
+                </p>
                 <Button
                   type="button"
                   variant="ghost"
@@ -108,7 +110,7 @@ export function DashboardLayoutForm({
             </p>
 
             {hiddenWidgets.length === 0 && (
-              <p className="rounded-md border border-dashed border-stone-300 p-3 text-sm text-stone-500">
+              <p className="rounded-md border border-dashed border-stone-600 p-3 text-sm text-stone-500">
                 All widgets are currently visible.
               </p>
             )}
@@ -116,9 +118,11 @@ export function DashboardLayoutForm({
             {hiddenWidgets.map((widget) => (
               <div
                 key={widget.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-3"
+                className="flex items-center justify-between gap-3 rounded-lg border border-stone-700 p-3"
               >
-                <p className="text-sm font-medium text-stone-900">{DASHBOARD_WIDGET_LABELS[widget.id]}</p>
+                <p className="text-sm font-medium text-stone-100">
+                  {DASHBOARD_WIDGET_LABELS[widget.id]}
+                </p>
                 <Button
                   type="button"
                   variant="secondary"
@@ -134,13 +138,13 @@ export function DashboardLayoutForm({
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className="rounded-lg border border-red-200 bg-red-950 p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+        <div className="rounded-lg border border-green-200 bg-green-950 p-4">
           <p className="text-sm text-green-700">Dashboard widget settings saved.</p>
         </div>
       )}

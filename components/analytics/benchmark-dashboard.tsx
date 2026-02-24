@@ -40,7 +40,7 @@ const KPI_CONFIG = [
     label: 'Avg Event Value',
     icon: DollarSign,
     iconColor: 'text-emerald-500',
-    bgColor: 'bg-emerald-50',
+    bgColor: 'bg-emerald-950',
     chartColor: '#10b981',
     format: (v: number) => `$${(v / 100).toFixed(2)}`,
   },
@@ -49,7 +49,7 @@ const KPI_CONFIG = [
     label: 'Food Cost %',
     icon: Percent,
     iconColor: 'text-amber-500',
-    bgColor: 'bg-amber-50',
+    bgColor: 'bg-amber-950',
     chartColor: '#f59e0b',
     format: (v: number) => `${v.toFixed(1)}%`,
   },
@@ -58,7 +58,7 @@ const KPI_CONFIG = [
     label: 'Booking Conversion',
     icon: TrendingUp,
     iconColor: 'text-blue-500',
-    bgColor: 'bg-blue-50',
+    bgColor: 'bg-blue-950',
     chartColor: '#3b82f6',
     format: (v: number) => `${(v * 100).toFixed(1)}%`,
   },
@@ -67,7 +67,7 @@ const KPI_CONFIG = [
     label: 'Client Return Rate',
     icon: Users,
     iconColor: 'text-violet-500',
-    bgColor: 'bg-violet-50',
+    bgColor: 'bg-violet-950',
     chartColor: '#8b5cf6',
     format: (v: number) => `${(v * 100).toFixed(1)}%`,
   },
@@ -76,7 +76,7 @@ const KPI_CONFIG = [
     label: 'Revenue / Hour',
     icon: Clock,
     iconColor: 'text-brand-600',
-    bgColor: 'bg-orange-50',
+    bgColor: 'bg-orange-950',
     chartColor: '#d47530',
     format: (v: number) => `$${(v / 100).toFixed(2)}`,
   },
@@ -99,7 +99,7 @@ export function BenchmarkDashboard({ current, history }: BenchmarkDashboardProps
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        {KPI_CONFIG.map(kpi => {
+        {KPI_CONFIG.map((kpi) => {
           const Icon = kpi.icon
           const trend = getTrend(kpi.key)
 
@@ -107,27 +107,29 @@ export function BenchmarkDashboard({ current, history }: BenchmarkDashboardProps
             <Card key={kpi.key}>
               <CardContent className="py-4">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-8 h-8 rounded-lg ${kpi.bgColor} flex items-center justify-center`}>
+                  <div
+                    className={`w-8 h-8 rounded-lg ${kpi.bgColor} flex items-center justify-center`}
+                  >
                     <Icon className={`h-4 w-4 ${kpi.iconColor}`} />
                   </div>
                   {trend !== 'flat' && (
-                    <span className={`text-xs font-medium ${
-                      trend === 'up' ? 'text-emerald-600' : 'text-red-600'
-                    }`}>
+                    <span
+                      className={`text-xs font-medium ${
+                        trend === 'up' ? 'text-emerald-600' : 'text-red-600'
+                      }`}
+                    >
                       {trend === 'up' ? 'Trending up' : 'Trending down'}
                     </span>
                   )}
                 </div>
-                <p className="text-2xl font-bold text-stone-900">
-                  {kpi.format(current[kpi.key])}
-                </p>
+                <p className="text-2xl font-bold text-stone-900">{kpi.format(current[kpi.key])}</p>
                 <p className="text-xs text-stone-500 mt-0.5">{kpi.label}</p>
 
                 {/* Mini sparkline using simple bars */}
                 {history.length > 1 && (
                   <div className="flex items-end gap-px h-6 mt-2">
                     {history.slice(-12).map((point, i, arr) => {
-                      const values = history.map(h => h[kpi.key])
+                      const values = history.map((h) => h[kpi.key])
                       const max = Math.max(...values, 1)
                       const heightPct = Math.max((point[kpi.key] / max) * 100, 5)
                       return (
@@ -173,16 +175,18 @@ export function BenchmarkDashboard({ current, history }: BenchmarkDashboardProps
                   tick={{ fontSize: 11, fill: '#78716c' }}
                 />
                 <Tooltip
-                  formatter={((value: number | undefined, name: string | undefined) => {
-                    const v = value ?? 0
-                    if (name === 'Avg Event Value' || name === 'Revenue / Hour') {
-                      return [`$${(v / 100).toFixed(2)}`, name]
-                    }
-                    if (name === 'Food Cost %') {
-                      return [`${v.toFixed(1)}%`, name]
-                    }
-                    return [`${(v * 100).toFixed(1)}%`, name]
-                  }) as any}
+                  formatter={
+                    ((value: number | undefined, name: string | undefined) => {
+                      const v = value ?? 0
+                      if (name === 'Avg Event Value' || name === 'Revenue / Hour') {
+                        return [`$${(v / 100).toFixed(2)}`, name]
+                      }
+                      if (name === 'Food Cost %') {
+                        return [`${v.toFixed(1)}%`, name]
+                      }
+                      return [`${(v * 100).toFixed(1)}%`, name]
+                    }) as any
+                  }
                 />
                 <Legend />
                 <Line

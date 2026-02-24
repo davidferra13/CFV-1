@@ -64,9 +64,9 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
 
   if (!editing) {
     return (
-      <div className="rounded-lg border border-stone-200 overflow-hidden">
-        <div className="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-          <h3 className="font-medium text-stone-800">Service Defaults</h3>
+      <div className="rounded-lg border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
+          <h3 className="font-medium text-stone-200">Service Defaults</h3>
           <button
             type="button"
             onClick={() => setEditing(true)}
@@ -80,25 +80,25 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
             {serviceStyle && (
               <>
                 <span className="text-stone-500">Service Style</span>
-                <span className="text-stone-800 capitalize">{serviceStyle.replace(/-/g, ' ')}</span>
+                <span className="text-stone-200 capitalize">{serviceStyle.replace(/-/g, ' ')}</span>
               </>
             )}
             {guestCount && (
               <>
                 <span className="text-stone-500">Typical Guest Count</span>
-                <span className="text-stone-800">{guestCount}</span>
+                <span className="text-stone-200">{guestCount}</span>
               </>
             )}
             {days.length > 0 && (
               <>
                 <span className="text-stone-500">Preferred Days</span>
-                <span className="text-stone-800 capitalize">{days.join(', ')}</span>
+                <span className="text-stone-200 capitalize">{days.join(', ')}</span>
               </>
             )}
             {(budgetMin || budgetMax) && (
               <>
                 <span className="text-stone-500">Budget Range</span>
-                <span className="text-stone-800">
+                <span className="text-stone-200">
                   {formatCents(initial.budgetRangeMinCents)} –{' '}
                   {formatCents(initial.budgetRangeMaxCents)}
                 </span>
@@ -107,13 +107,13 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
             {cleanup && (
               <>
                 <span className="text-stone-500">Cleanup</span>
-                <span className="text-stone-800 capitalize">{cleanup.replace(/_/g, ' ')}</span>
+                <span className="text-stone-200 capitalize">{cleanup.replace(/_/g, ' ')}</span>
               </>
             )}
             {leftovers && (
               <>
                 <span className="text-stone-500">Leftovers</span>
-                <span className="text-stone-800 capitalize">{leftovers.replace(/_/g, ' ')}</span>
+                <span className="text-stone-200 capitalize">{leftovers.replace(/_/g, ' ')}</span>
               </>
             )}
           </div>
@@ -127,9 +127,9 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-brand-200 overflow-hidden">
-      <div className="px-4 py-3 bg-brand-50 border-b border-brand-200">
-        <h3 className="font-medium text-stone-800">Service Defaults</h3>
+    <div className="rounded-lg border border-brand-700 overflow-hidden">
+      <div className="px-4 py-3 bg-brand-950 border-b border-brand-700">
+        <h3 className="font-medium text-stone-200">Service Defaults</h3>
       </div>
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -156,7 +156,7 @@ export function ServiceDefaultsPanel({ clientId, ...initial }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="block text-sm font-medium text-stone-300 mb-1.5">
             Preferred Event Days
           </label>
           <div className="flex flex-wrap gap-2">

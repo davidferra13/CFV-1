@@ -118,7 +118,7 @@ export function CapacitySettingsForm({ settings }: Props) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Max events per week
               </label>
               <input
@@ -128,12 +128,12 @@ export function CapacitySettingsForm({ settings }: Props) {
                 placeholder="No limit"
                 min="1"
                 max="30"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Max events per month
               </label>
               <input
@@ -143,12 +143,12 @@ export function CapacitySettingsForm({ settings }: Props) {
                 placeholder="No limit"
                 min="1"
                 max="60"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Max consecutive working days
               </label>
               <input
@@ -158,12 +158,12 @@ export function CapacitySettingsForm({ settings }: Props) {
                 placeholder="No limit"
                 min="1"
                 max="14"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Min rest days per week
               </label>
               <input
@@ -173,12 +173,12 @@ export function CapacitySettingsForm({ settings }: Props) {
                 placeholder="No minimum"
                 min="0"
                 max="7"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Max hours per week (total working time)
               </label>
               <input
@@ -188,7 +188,7 @@ export function CapacitySettingsForm({ settings }: Props) {
                 placeholder="No limit"
                 min="1"
                 max="80"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
           </div>
@@ -210,32 +210,32 @@ export function CapacitySettingsForm({ settings }: Props) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Quiet start (e.g. 22:00)
               </label>
               <input
                 type="time"
                 value={offStart}
                 onChange={(e) => setOffStart(e.target.value)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Quiet end (e.g. 08:00)
               </label>
               <input
                 type="time"
                 value={offEnd}
                 onChange={(e) => setOffEnd(e.target.value)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-stone-600 mb-2">
+            <label className="block text-xs font-medium text-stone-400 mb-2">
               Off days (no notifications)
             </label>
             <div className="flex flex-wrap gap-2">
@@ -247,7 +247,7 @@ export function CapacitySettingsForm({ settings }: Props) {
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                     offDays.includes(day.value)
                       ? 'bg-brand-600 border-brand-600 text-white'
-                      : 'bg-white border-stone-300 text-stone-700 hover:bg-stone-50'
+                      : 'bg-surface border-stone-600 text-stone-300 hover:bg-stone-800'
                   }`}
                 >
                   {day.label}

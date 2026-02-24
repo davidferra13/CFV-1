@@ -43,7 +43,7 @@ export function ChatSearch({ conversationId, onResultClick, onClose }: ChatSearc
   }
 
   return (
-    <div className="border-b border-stone-200 bg-white">
+    <div className="border-b border-stone-700 bg-surface">
       {/* Search input */}
       <div className="flex items-center gap-2 px-4 py-2">
         <Search className="w-4 h-4 text-stone-400 flex-shrink-0" />
@@ -59,7 +59,7 @@ export function ChatSearch({ conversationId, onResultClick, onClose }: ChatSearc
         {searching && <Loader2 className="w-4 h-4 text-stone-400 animate-spin" />}
         <button
           onClick={onClose}
-          className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+          className="p-1 text-stone-400 hover:text-stone-400 transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
@@ -67,18 +67,18 @@ export function ChatSearch({ conversationId, onResultClick, onClose }: ChatSearc
 
       {/* Results */}
       {searched && (
-        <div className="max-h-60 overflow-y-auto border-t border-stone-100">
+        <div className="max-h-60 overflow-y-auto border-t border-stone-800">
           {results.length === 0 ? (
             <p className="px-4 py-3 text-sm text-stone-500">No messages found</p>
           ) : (
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {results.map((msg) => (
                 <button
                   key={msg.id}
                   onClick={() => onResultClick?.(msg.id)}
-                  className="w-full text-left px-4 py-2.5 hover:bg-stone-50 transition-colors"
+                  className="w-full text-left px-4 py-2.5 hover:bg-stone-800 transition-colors"
                 >
-                  <p className="text-sm text-stone-800 line-clamp-2">
+                  <p className="text-sm text-stone-200 line-clamp-2">
                     {highlightMatch(msg.body || '', query)}
                   </p>
                   <p className="text-[10px] text-stone-400 mt-0.5">
@@ -88,7 +88,7 @@ export function ChatSearch({ conversationId, onResultClick, onClose }: ChatSearc
               ))}
             </div>
           )}
-          <p className="px-4 py-1.5 text-[10px] text-stone-400 border-t border-stone-100">
+          <p className="px-4 py-1.5 text-[10px] text-stone-400 border-t border-stone-800">
             {results.length} result{results.length !== 1 ? 's' : ''}
           </p>
         </div>

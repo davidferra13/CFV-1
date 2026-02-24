@@ -11,11 +11,7 @@ import { GroceryQuotePanel } from '@/components/events/grocery-quote-panel'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 
-export default async function GroceryQuotePage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function GroceryQuotePage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const event = await getEventById(params.id)
@@ -32,7 +28,7 @@ export default async function GroceryQuotePage({
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Grocery Price Quote</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Grocery Price Quote</h1>
           <p className="text-stone-500 mt-1 text-sm">{eventLabel}</p>
         </div>
         <Link href={`/events/${params.id}`}>
@@ -40,11 +36,10 @@ export default async function GroceryQuotePage({
         </Link>
       </div>
 
-      <div className="rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-600">
+      <div className="rounded-lg border border-stone-700 bg-stone-800 px-4 py-3 text-sm text-stone-400">
         <p>
-          Prices are estimated from Spoonacular (US average) and Kroger (real-time shelf
-          prices). The average is used for your food cost estimate. Actuals may vary by
-          store and region.
+          Prices are estimated from Spoonacular (US average) and Kroger (real-time shelf prices).
+          The average is used for your food cost estimate. Actuals may vary by store and region.
         </p>
       </div>
 

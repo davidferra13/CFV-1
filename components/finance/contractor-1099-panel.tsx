@@ -52,7 +52,13 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
       })
       setPayments((prev) => [payment, ...prev])
       setShowAdd(false)
-      setForm({ staffMemberId: '', amountCents: 0, paymentDate: new Date().toISOString().split('T')[0], paymentMethod: 'venmo', description: '' })
+      setForm({
+        staffMemberId: '',
+        amountCents: 0,
+        paymentDate: new Date().toISOString().split('T')[0],
+        paymentMethod: 'venmo',
+        description: '',
+      })
     })
   }
 
@@ -63,13 +69,13 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Contractors</p>
-            <p className="text-2xl font-semibold text-stone-900">{summaries.length}</p>
+            <p className="text-2xl font-semibold text-stone-100">{summaries.length}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">YTD Payments</p>
-            <p className="text-2xl font-semibold text-stone-900">{formatCents(totalPaid)}</p>
+            <p className="text-2xl font-semibold text-stone-100">{formatCents(totalPaid)}</p>
           </CardContent>
         </Card>
         <Card>
@@ -81,22 +87,24 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Tax Year</p>
-            <p className="text-2xl font-semibold text-stone-600">{taxYear}</p>
+            <p className="text-2xl font-semibold text-stone-400">{taxYear}</p>
           </CardContent>
         </Card>
       </div>
 
       {/* 1099 Alerts */}
       {threshold.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50">
+        <Card className="border-amber-200 bg-amber-950">
           <CardContent className="py-3">
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-amber-800">1099 Filing Required</p>
                 <p className="text-xs text-amber-700 mt-1">
-                  {threshold.map((t) => `${t.staffName} (${formatCents(t.ytdPaymentsCents)})`).join(', ')}
-                  {' '}— these contractors have received $600+ this year.
+                  {threshold
+                    .map((t) => `${t.staffName} (${formatCents(t.ytdPaymentsCents)})`)
+                    .join(', ')}{' '}
+                  — these contractors have received $600+ this year.
                 </p>
               </div>
             </div>
@@ -113,18 +121,22 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
       </div>
 
       {showAdd && (
-        <Card className="border-stone-300">
+        <Card className="border-stone-600">
           <CardContent className="py-4 space-y-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Staff Member</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Staff Member
+              </label>
               <select
                 value={form.staffMemberId}
                 onChange={(e) => setForm({ ...form, staffMemberId: e.target.value })}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="">Select contractor…</option>
                 {staffMembers.map((s) => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -134,7 +146,12 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
               min="0"
               step="0.01"
               value={(form.amountCents / 100).toString()}
-              onChange={(e) => setForm({ ...form, amountCents: Math.round(parseFloat(e.target.value || '0') * 100) })}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  amountCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                })
+              }
             />
             <Input
               label="Payment Date"
@@ -143,11 +160,13 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
               onChange={(e) => setForm({ ...form, paymentDate: e.target.value })}
             />
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Payment Method</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Payment Method
+              </label>
               <select
                 value={form.paymentMethod}
                 onChange={(e) => setForm({ ...form, paymentMethod: e.target.value })}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="check">Check</option>
                 <option value="venmo">Venmo</option>
@@ -164,10 +183,17 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
               placeholder="e.g., Event staff payment"
             />
             <div className="flex gap-2">
-              <Button size="sm" onClick={handleRecord} loading={isPending} disabled={!form.staffMemberId}>
+              <Button
+                size="sm"
+                onClick={handleRecord}
+                loading={isPending}
+                disabled={!form.staffMemberId}
+              >
                 Record
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>
+                Cancel
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -184,19 +210,27 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200">
-                <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">Name</th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-stone-500 uppercase">YTD Paid</th>
-                <th className="text-right px-6 py-3 text-xs font-medium text-stone-500 uppercase">Payments</th>
-                <th className="text-center px-6 py-3 text-xs font-medium text-stone-500 uppercase">1099</th>
+              <tr className="border-b border-stone-700">
+                <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">
+                  Name
+                </th>
+                <th className="text-right px-6 py-3 text-xs font-medium text-stone-500 uppercase">
+                  YTD Paid
+                </th>
+                <th className="text-right px-6 py-3 text-xs font-medium text-stone-500 uppercase">
+                  Payments
+                </th>
+                <th className="text-center px-6 py-3 text-xs font-medium text-stone-500 uppercase">
+                  1099
+                </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-stone-800">
               {summaries.map((s) => (
                 <tr key={s.staffMemberId}>
-                  <td className="px-6 py-3 font-medium text-stone-900">{s.staffName}</td>
+                  <td className="px-6 py-3 font-medium text-stone-100">{s.staffName}</td>
                   <td className="px-6 py-3 text-right">{formatCents(s.ytdPaymentsCents)}</td>
-                  <td className="px-6 py-3 text-right text-stone-600">{s.paymentCount}</td>
+                  <td className="px-6 py-3 text-right text-stone-400">{s.paymentCount}</td>
                   <td className="px-6 py-3 text-center">
                     {s.threshold1099 ? (
                       <Badge variant="warning">Required</Badge>
@@ -218,17 +252,19 @@ export function Contractor1099Panel({ summaries, recentPayments, staffMembers, t
             <CardTitle className="text-base">Recent Payments</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {payments.slice(0, 20).map((p) => (
                 <div key={p.id} className="px-6 py-3 flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{p.staffName || 'Contractor'}</p>
+                    <p className="text-sm font-medium text-stone-100">
+                      {p.staffName || 'Contractor'}
+                    </p>
                     <p className="text-xs text-stone-500">
                       {p.paymentDate} · {p.paymentMethod}
                       {p.description && ` · ${p.description}`}
                     </p>
                   </div>
-                  <p className="text-sm font-medium text-stone-900">{formatCents(p.amountCents)}</p>
+                  <p className="text-sm font-medium text-stone-100">{formatCents(p.amountCents)}</p>
                 </div>
               ))}
             </div>

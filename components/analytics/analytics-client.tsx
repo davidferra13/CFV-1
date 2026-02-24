@@ -26,29 +26,33 @@ export function AnalyticsClient({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Source Distribution */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Inquiry Sources</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-4">Inquiry Sources</h2>
         <p className="text-xs text-stone-400 mb-3">Where are your inquiries coming from?</p>
         <SourceDistributionChart data={distribution} />
       </Card>
 
       {/* Conversion Funnel */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Conversion by Source</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-4">Conversion by Source</h2>
         <p className="text-xs text-stone-400 mb-3">How each source converts through the pipeline</p>
         <ConversionFunnelChart data={conversions} />
       </Card>
 
       {/* Revenue by Source */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Revenue by Source</h2>
-        <p className="text-xs text-stone-400 mb-3">Total revenue from completed events by inquiry source</p>
+        <h2 className="text-lg font-semibold text-stone-100 mb-4">Revenue by Source</h2>
+        <p className="text-xs text-stone-400 mb-3">
+          Total revenue from completed events by inquiry source
+        </p>
         <RevenueBySourceChart data={revenue} />
       </Card>
 
       {/* Trends Over Time */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">Source Trends</h2>
-        <p className="text-xs text-stone-400 mb-3">Monthly inquiry count by top sources (last 12 months)</p>
+        <h2 className="text-lg font-semibold text-stone-100 mb-4">Source Trends</h2>
+        <p className="text-xs text-stone-400 mb-3">
+          Monthly inquiry count by top sources (last 12 months)
+        </p>
         <SourceTrendsChart data={trends} sources={trendSources} />
       </Card>
     </div>

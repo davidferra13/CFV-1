@@ -15,23 +15,27 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
 
   if (!chefSlug || !data) {
     return (
-      <div className="min-h-screen bg-stone-50">
+      <div className="min-h-screen bg-stone-800">
         <section className="container mx-auto px-4 py-16">
           <div className="max-w-xl mx-auto text-center space-y-6">
-            <h1 className="text-3xl font-bold text-stone-900">Partner Sign Up</h1>
-            <p className="text-stone-600">
+            <h1 className="text-3xl font-bold text-stone-100">Partner Sign Up</h1>
+            <p className="text-stone-400">
               Use your chef&apos;s public partner link, or add their profile slug to continue.
             </p>
 
-            <form action="/partner-signup" method="get" className="bg-white border border-stone-200 rounded-lg p-5 text-left space-y-4">
+            <form
+              action="/partner-signup"
+              method="get"
+              className="bg-surface border border-stone-700 rounded-lg p-5 text-left space-y-4"
+            >
               <label className="block">
-                <span className="text-sm font-medium text-stone-700">Chef Slug</span>
+                <span className="text-sm font-medium text-stone-300">Chef Slug</span>
                 <input
                   type="text"
                   name="chef"
                   required
                   placeholder="chef-slug"
-                  className="mt-1 block w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  className="mt-1 block w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </label>
               <Button type="submit" className="w-full">
@@ -46,7 +50,8 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
             )}
 
             <p className="text-sm text-stone-500">
-              Preferred URL format: <span className="font-mono">/chef/your-slug/partner-signup</span>
+              Preferred URL format:{' '}
+              <span className="font-mono">/chef/your-slug/partner-signup</span>
             </p>
           </div>
         </section>
@@ -72,8 +77,8 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
       <section className="container mx-auto px-4 py-12 md:py-16">
         <div className="max-w-2xl mx-auto space-y-6">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-stone-900">Create Partner Profile</h1>
-            <p className="text-stone-600 mt-2">
+            <h1 className="text-3xl font-bold text-stone-100">Create Partner Profile</h1>
+            <p className="text-stone-400 mt-2">
               Submit your profile to be listed as a referral partner for {data.chef.display_name}.
             </p>
             <p className="text-sm mt-3">

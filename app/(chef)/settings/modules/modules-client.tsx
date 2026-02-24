@@ -56,14 +56,14 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
         <button
           onClick={selectAll}
           disabled={isPending}
-          className="text-sm px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
+          className="text-sm px-3 py-1.5 rounded-lg border border-stone-700 dark:border-stone-700 hover:bg-stone-800 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
         >
           Select All
         </button>
         <button
           onClick={selectDefaults}
           disabled={isPending}
-          className="text-sm px-3 py-1.5 rounded-lg border border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
+          className="text-sm px-3 py-1.5 rounded-lg border border-stone-700 dark:border-stone-700 hover:bg-stone-800 dark:hover:bg-stone-800 transition-colors disabled:opacity-50"
         >
           Reset to Defaults
         </button>
@@ -81,18 +81,18 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
               key={mod.slug}
               className={`relative rounded-xl border p-4 transition-colors ${
                 isOn
-                  ? 'border-brand-300 bg-brand-50/30 dark:border-brand-700 dark:bg-brand-900/20'
-                  : 'border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-800'
+                  ? 'border-brand-600 bg-brand-950/30 dark:border-brand-700 dark:bg-brand-900/20'
+                  : 'border-stone-700 bg-surface dark:border-stone-700 dark:bg-stone-800'
               } ${mod.alwaysVisible ? 'opacity-75' : ''}`}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                    <h3 className="text-sm font-semibold text-stone-100 dark:text-stone-100">
                       {mod.label}
                     </h3>
                     {isProModule && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 dark:bg-brand-900 dark:text-brand-300">
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-brand-900 text-brand-400 dark:bg-brand-900 dark:text-brand-300">
                         <Sparkles size={10} />
                         Pro
                       </span>
@@ -105,7 +105,7 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
                   {isLocked && (
                     <Link
                       href="/settings/billing"
-                      className="text-xs text-brand-600 hover:text-brand-700 dark:text-brand-400 mt-1 inline-block"
+                      className="text-xs text-brand-600 hover:text-brand-400 dark:text-brand-400 mt-1 inline-block"
                     >
                       Upgrade to unlock
                     </Link>
@@ -116,12 +116,12 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
                     onClick={() => toggle(mod.slug)}
                     disabled={isPending}
                     className={`relative shrink-0 w-10 h-6 rounded-full transition-colors disabled:opacity-50 ${
-                      isOn ? 'bg-brand-500' : 'bg-stone-300 dark:bg-stone-600'
+                      isOn ? 'bg-brand-9500' : 'bg-stone-300 dark:bg-stone-600'
                     }`}
                     aria-label={`Toggle ${mod.label}`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-surface shadow transition-transform ${
                         isOn ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />

@@ -60,16 +60,16 @@ export default async function PayrollPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Finance
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Payroll (W-2)</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Payroll (W-2)</h1>
         <p className="text-stone-500 mt-1">
           Track employee wages, withholdings, employer taxes, and filing summaries.
         </p>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
         <strong>Reference tool only.</strong> File payroll taxes and W-2s using IRS-approved payroll
         software. Consult a payroll professional for filing deadlines (Form 941 due 30 days after
         each quarter; W-2s due January 31).
@@ -80,7 +80,7 @@ export default async function PayrollPage() {
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">YTD Gross Wages</p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">{formatCurrency(ytdWages)}</p>
+            <p className="text-2xl font-bold text-stone-100 mt-1">{formatCurrency(ytdWages)}</p>
             <p className="text-xs text-stone-400 mt-1">{records.length} pay runs</p>
           </CardContent>
         </Card>
@@ -93,7 +93,7 @@ export default async function PayrollPage() {
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Employer Tax Cost</p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {formatCurrency(ytdEmployerTaxes)}
             </p>
             <p className="text-xs text-stone-400 mt-1">SS + Medicare + FUTA (deductible)</p>
@@ -109,13 +109,13 @@ export default async function PayrollPage() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-lg border border-stone-200 bg-white hover:border-brand-300 hover:bg-brand-50 transition-colors p-5 flex items-start gap-4"
+              className="rounded-lg border border-stone-700 bg-surface hover:border-brand-600 hover:bg-brand-950 transition-colors p-5 flex items-start gap-4"
             >
-              <div className="rounded-lg bg-stone-100 p-2.5">
-                <Icon className="h-5 w-5 text-stone-600" />
+              <div className="rounded-lg bg-stone-800 p-2.5">
+                <Icon className="h-5 w-5 text-stone-400" />
               </div>
               <div>
-                <p className="font-medium text-stone-900">{link.label}</p>
+                <p className="font-medium text-stone-100">{link.label}</p>
                 <p className="text-sm text-stone-500 mt-0.5">{link.description}</p>
                 {link.count && <p className="text-xs text-stone-400 mt-1">{link.count}</p>}
               </div>
@@ -127,23 +127,23 @@ export default async function PayrollPage() {
       {/* Recent payroll runs */}
       {records.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-stone-900 mb-3">
+          <h2 className="text-lg font-semibold text-stone-100 mb-3">
             Recent Pay Runs ({currentYear})
           </h2>
           <div className="space-y-2">
             {records.slice(0, 5).map((r) => (
               <div
                 key={r.id}
-                className="flex items-center justify-between py-3 px-4 rounded-lg border border-stone-100 bg-stone-50"
+                className="flex items-center justify-between py-3 px-4 rounded-lg border border-stone-800 bg-stone-800"
               >
                 <div>
-                  <p className="text-sm font-medium text-stone-800">{r.employeeName ?? '—'}</p>
+                  <p className="text-sm font-medium text-stone-200">{r.employeeName ?? '—'}</p>
                   <p className="text-xs text-stone-500">
                     {r.payPeriodStart} → {r.payPeriodEnd} · Paid {r.payDate}
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-stone-900">
+                  <p className="text-sm font-semibold text-stone-100">
                     {formatCurrency(r.netPayCents)}
                   </p>
                   <p className="text-xs text-stone-400">

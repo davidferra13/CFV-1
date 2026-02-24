@@ -67,7 +67,7 @@ function ServiceCard({
       <CardContent className="space-y-4">
         {!status.connected ? (
           <>
-            <p className="text-sm text-stone-600">{description}</p>
+            <p className="text-sm text-stone-400">{description}</p>
             <Button variant="primary" onClick={handleConnect} loading={loading}>
               Connect {title}
             </Button>
@@ -78,7 +78,7 @@ function ServiceCard({
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant="success">Connected</Badge>
-                  <span className="text-sm font-medium text-stone-900">{status.email}</span>
+                  <span className="text-sm font-medium text-stone-100">{status.email}</span>
                 </div>
                 {status.lastSync && (
                   <p className="text-xs text-stone-500 mt-1">
@@ -109,7 +109,7 @@ function OAuthDiagnostics({
   if (!errorMessage && !redirectUri) return null
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
+    <div className="rounded-lg border border-amber-200 bg-amber-950 p-4 space-y-3">
       <h4 className="text-sm font-semibold text-amber-900">Google OAuth Setup</h4>
       {errorMessage && <p className="text-sm text-amber-800">{errorMessage}</p>}
       {redirectUri && (
@@ -126,7 +126,7 @@ function OAuthDiagnostics({
             </a>{' '}
             under OAuth 2.0 Client IDs &rarr; Authorized redirect URIs:
           </p>
-          <code className="block bg-amber-100 rounded px-2 py-1 text-xs text-amber-900 font-mono select-all break-all">
+          <code className="block bg-amber-900 rounded px-2 py-1 text-xs text-amber-900 font-mono select-all break-all">
             {redirectUri}
           </code>
           <p className="text-xs text-amber-600">
@@ -272,10 +272,10 @@ export function GoogleIntegrations({
         onDisconnect={() => handleDisconnect('gmail')}
       >
         {connection.gmail.connected && (
-          <div className="space-y-4 pt-4 border-t border-stone-200 mt-4">
+          <div className="space-y-4 pt-4 border-t border-stone-700 mt-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-stone-900">Inbox Sync</p>
+                <p className="text-sm font-medium text-stone-100">Inbox Sync</p>
                 {connection.gmail.errorCount > 0 && (
                   <p className="text-xs text-amber-600 mt-1">
                     {connection.gmail.errorCount} error(s) in last sync
@@ -300,7 +300,7 @@ export function GoogleIntegrations({
 
             {recentSyncs.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-stone-700 mb-2">Recent Activity</h4>
+                <h4 className="text-sm font-medium text-stone-300 mb-2">Recent Activity</h4>
                 {/* Simplified history for brevity */}
               </div>
             )}

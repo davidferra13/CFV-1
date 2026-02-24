@@ -52,16 +52,14 @@ export default async function InventoryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Inventory</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Inventory</h1>
         <p className="text-stone-500 mt-1">
           Track ingredient levels, log waste, manage vendor invoices, and analyze food costs.
         </p>
       </div>
 
       {/* Par Alerts — shown prominently when items are below par */}
-      {(parAlerts as any[]).length > 0 && (
-        <ParAlertPanel alerts={parAlerts as any[]} />
-      )}
+      {(parAlerts as any[]).length > 0 && <ParAlertPanel alerts={parAlerts as any[]} />}
 
       {/* Sub-page navigation */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -71,7 +69,7 @@ export default async function InventoryPage() {
               <div className="flex items-start gap-3">
                 <span className="text-2xl">{ICON_MAP[page.icon] ?? ''}</span>
                 <div>
-                  <h2 className="font-semibold text-stone-900">{page.label}</h2>
+                  <h2 className="font-semibold text-stone-100">{page.label}</h2>
                   <p className="text-sm text-stone-500 mt-0.5">{page.description}</p>
                 </div>
               </div>
@@ -81,10 +79,12 @@ export default async function InventoryPage() {
       </div>
 
       {(parAlerts as any[]).length === 0 && (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-6 text-center">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-6 text-center">
           <p className="text-stone-500 text-sm">
             All inventory items are at or above par levels. Start by adding{' '}
-            <Link href="/inventory/counts" className="text-brand-600 hover:underline">inventory counts</Link>{' '}
+            <Link href="/inventory/counts" className="text-brand-600 hover:underline">
+              inventory counts
+            </Link>{' '}
             if you haven't set up ingredient tracking yet.
           </p>
         </div>

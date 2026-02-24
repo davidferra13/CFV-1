@@ -35,10 +35,8 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   function handleToggleFeatured(itemId: string) {
-    setItems(prev =>
-      prev.map(item =>
-        item.id === itemId ? { ...item, isFeatured: !item.isFeatured } : item
-      )
+    setItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, isFeatured: !item.isFeatured } : item))
     )
   }
 
@@ -46,7 +44,7 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
     startTransition(async () => {
       try {
         await removePortfolioItem(itemId)
-        setItems(prev => prev.filter(item => item.id !== itemId))
+        setItems((prev) => prev.filter((item) => item.id !== itemId))
         toast.success('Portfolio item removed')
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to remove item'
@@ -69,13 +67,16 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
           dishName: newDishName.trim() || undefined,
         })
         if (result.item) {
-          setItems(prev => [...prev, {
-            id: result.item.id,
-            photoUrl: result.item.photoUrl,
-            caption: result.item.caption ?? undefined,
-            dishName: result.item.dishName ?? undefined,
-            isFeatured: result.item.isFeatured,
-          }])
+          setItems((prev) => [
+            ...prev,
+            {
+              id: result.item.id,
+              photoUrl: result.item.photoUrl,
+              caption: result.item.caption ?? undefined,
+              dishName: result.item.dishName ?? undefined,
+              isFeatured: result.item.isFeatured,
+            },
+          ])
         }
         setNewPhotoUrl('')
         setNewCaption('')
@@ -112,7 +113,7 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
     setDraggedIndex(null)
     setDragOverIndex(null)
 
-    const orderedIds = reordered.map(item => item.id)
+    const orderedIds = reordered.map((item) => item.id)
     startTransition(async () => {
       try {
         await reorderPortfolio(orderedIds)
@@ -138,7 +139,7 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
       </CardHeader>
       <CardContent>
         {isPending && (
-          <div className="absolute inset-0 bg-white/50 z-10 rounded-xl pointer-events-none" />
+          <div className="absolute inset-0 bg-stone-900/50 z-10 rounded-xl pointer-events-none" />
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -153,7 +154,7 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
               className={`group relative rounded-lg border overflow-hidden transition-all ${
                 dragOverIndex === index
                   ? 'border-brand-500 ring-2 ring-brand-500/20'
-                  : 'border-stone-200'
+                  : 'border-stone-700'
               } ${draggedIndex === index ? 'opacity-50' : ''}`}
             >
               {/* Drag handle */}
@@ -162,7 +163,7 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
               </div>
 
               {/* Photo */}
-              <div className="aspect-square bg-stone-100">
+              <div className="aspect-square bg-stone-800">
                 <img
                   src={item.photoUrl}
                   alt={item.dishName || item.caption || 'Portfolio photo'}
@@ -172,12 +173,8 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
 
               {/* Caption overlay */}
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3">
-                {item.dishName && (
-                  <p className="text-sm font-medium text-white">{item.dishName}</p>
-                )}
-                {item.caption && (
-                  <p className="text-xs text-white/80">{item.caption}</p>
-                )}
+                {item.dishName && <p className="text-sm font-medium text-white">{item.dishName}</p>}
+                {item.caption && <p className="text-xs text-white/80">{item.caption}</p>}
               </div>
 
               {/* Actions */}
@@ -215,30 +212,30 @@ export function GridEditor({ items: initialItems }: GridEditorProps) {
           {!showAddForm ? (
             <button
               onClick={() => setShowAddForm(true)}
-              className="aspect-square rounded-lg border-2 border-dashed border-stone-300 hover:border-brand-500 hover:bg-brand-50/50 flex flex-col items-center justify-center gap-2 text-stone-400 hover:text-brand-600 transition-colors"
+              className="aspect-square rounded-lg border-2 border-dashed border-stone-600 hover:border-brand-500 hover:bg-brand-950/50 flex flex-col items-center justify-center gap-2 text-stone-400 hover:text-brand-600 transition-colors"
             >
               <Plus className="h-8 w-8" />
               <span className="text-sm font-medium">Add Item</span>
             </button>
           ) : (
-            <div className="rounded-lg border border-stone-200 p-4 space-y-3">
+            <div className="rounded-lg border border-stone-700 p-4 space-y-3">
               <Input
                 label="Photo URL"
                 value={newPhotoUrl}
-                onChange={e => setNewPhotoUrl(e.target.value)}
+                onChange={(e) => setNewPhotoUrl(e.target.value)}
                 placeholder="https://..."
                 required
               />
               <Input
                 label="Dish Name"
                 value={newDishName}
-                onChange={e => setNewDishName(e.target.value)}
+                onChange={(e) => setNewDishName(e.target.value)}
                 placeholder="e.g., Seared Scallops"
               />
               <Input
                 label="Caption"
                 value={newCaption}
-                onChange={e => setNewCaption(e.target.value)}
+                onChange={(e) => setNewCaption(e.target.value)}
                 placeholder="Brief description"
               />
               <div className="flex gap-2">

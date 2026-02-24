@@ -33,18 +33,18 @@ export default async function HomeOfficePage({
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/tax" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance/tax" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Tax Center
         </Link>
         <div className="flex items-start justify-between mt-1">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900">Home Office Deduction</h1>
+            <h1 className="text-3xl font-bold text-stone-100">Home Office Deduction</h1>
             <p className="text-stone-500 mt-1">
               Schedule C, Line 30 — Exclusive business use of home
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm text-stone-600">Tax Year:</label>
+            <label className="text-sm text-stone-400">Tax Year:</label>
             <div className="flex gap-1">
               {years.map((y) => (
                 <Link
@@ -53,7 +53,7 @@ export default async function HomeOfficePage({
                   className={`px-3 py-1.5 text-sm rounded-lg font-medium transition-colors ${
                     y === taxYear
                       ? 'bg-stone-900 text-white'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                      : 'bg-stone-800 text-stone-300 hover:bg-stone-700'
                   }`}
                 >
                   {y}
@@ -65,7 +65,7 @@ export default async function HomeOfficePage({
       </div>
 
       {deductionData.selectedMethodDeductionCents > 0 && (
-        <Card className="border-emerald-200 bg-emerald-50">
+        <Card className="border-emerald-200 bg-emerald-950">
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <div>

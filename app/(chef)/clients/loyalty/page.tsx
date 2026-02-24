@@ -7,10 +7,10 @@ import { Card } from '@/components/ui/card'
 export const metadata: Metadata = { title: 'Client Loyalty - ChefFlow' }
 
 const TIER_STYLES: Record<string, string> = {
-  bronze: 'bg-amber-100 text-amber-800',
-  silver: 'bg-stone-200 text-stone-700',
-  gold: 'bg-yellow-100 text-yellow-800',
-  platinum: 'bg-sky-100 text-sky-800',
+  bronze: 'bg-amber-900 text-amber-800',
+  silver: 'bg-stone-700 text-stone-300',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-sky-900 text-sky-800',
 }
 
 const VIEWS = [
@@ -50,16 +50,18 @@ export default async function ClientLoyaltyPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-300">
           ← Clients
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Loyalty Program</h1>
-        <p className="text-stone-500 mt-1">Points, rewards, and tier status across your clientele</p>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Loyalty Program</h1>
+        <p className="text-stone-500 mt-1">
+          Points, rewards, and tier status across your clientele
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{enrolledCount}</p>
+          <p className="text-2xl font-bold text-stone-100">{enrolledCount}</p>
           <p className="text-sm text-stone-500 mt-1">Clients enrolled</p>
         </Card>
         <Card className="p-4">
@@ -68,22 +70,27 @@ export default async function ClientLoyaltyPage() {
         </Card>
         <Card className="p-4">
           <div className="flex gap-2 flex-wrap">
-            {Object.entries(tiers).filter(([tier, count]) => tier !== 'none' && count > 0).map(([tier, count]) => (
-              <span key={tier} className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${TIER_STYLES[tier] ?? 'bg-stone-100 text-stone-600'}`}>
-                {count} {tier}
-              </span>
-            ))}
+            {Object.entries(tiers)
+              .filter(([tier, count]) => tier !== 'none' && count > 0)
+              .map(([tier, count]) => (
+                <span
+                  key={tier}
+                  className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${TIER_STYLES[tier] ?? 'bg-stone-800 text-stone-400'}`}
+                >
+                  {count} {tier}
+                </span>
+              ))}
           </div>
           <p className="text-sm text-stone-500 mt-2">Tier distribution</p>
         </Card>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        {VIEWS.map(view => (
+        {VIEWS.map((view) => (
           <Link key={view.href} href={view.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
               <div className="text-2xl mb-2">{view.icon}</div>
-              <h2 className="font-semibold text-stone-900">{view.label}</h2>
+              <h2 className="font-semibold text-stone-100">{view.label}</h2>
               <p className="text-sm text-stone-500 mt-1">{view.description}</p>
             </Card>
           </Link>

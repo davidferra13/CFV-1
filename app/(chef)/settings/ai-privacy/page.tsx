@@ -78,9 +78,9 @@ export default function AiPrivacyPage() {
     return (
       <div className="max-w-3xl mx-auto p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-stone-200 rounded w-1/3" />
-          <div className="h-4 bg-stone-200 rounded w-2/3" />
-          <div className="h-64 bg-stone-200 rounded" />
+          <div className="h-8 bg-stone-700 rounded w-1/3" />
+          <div className="h-4 bg-stone-700 rounded w-2/3" />
+          <div className="h-64 bg-stone-700 rounded" />
         </div>
       </div>
     )
@@ -103,23 +103,23 @@ export default function AiPrivacyPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-brand-100 flex items-center justify-center">
+          <div className="h-10 w-10 rounded-xl bg-brand-900 flex items-center justify-center">
             <Shield className="h-5 w-5 text-brand-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-stone-900">Privacy &amp; Data</h1>
+            <h1 className="text-2xl font-bold text-stone-100">Privacy &amp; Data</h1>
             <p className="text-sm text-stone-500">Your conversations with Remy are private.</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <div
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-              prefs.remy_enabled ? 'bg-emerald-100 text-emerald-700' : 'bg-stone-100 text-stone-500'
+              prefs.remy_enabled ? 'bg-emerald-900 text-emerald-700' : 'bg-stone-800 text-stone-500'
             }`}
           >
             <div
               className={`h-2 w-2 rounded-full ${
-                prefs.remy_enabled ? 'bg-emerald-500' : 'bg-stone-400'
+                prefs.remy_enabled ? 'bg-emerald-9500' : 'bg-stone-400'
               }`}
             />
             {prefs.remy_enabled ? 'Remy Active' : 'Remy Off'}
@@ -129,18 +129,18 @@ export default function AiPrivacyPage() {
 
       {/* ─── Remy Personality Selector ─────────────────────────── */}
       {prefs.remy_enabled && (
-        <div className="rounded-xl border border-stone-200 bg-white p-6">
+        <div className="rounded-xl border border-stone-700 bg-surface p-6">
           <RemyArchetypeSelector currentArchetype={prefs.remy_archetype} />
         </div>
       )}
 
       {/* ─── Section 1: How It Works ─────────────────────────── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Server className="h-5 w-5 text-brand-500" />
-          <h2 className="text-lg font-semibold text-stone-900">How it works</h2>
+          <h2 className="text-lg font-semibold text-stone-100">How it works</h2>
         </div>
-        <div className="text-sm text-stone-600 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
           <p>
             Remy runs on ChefFlow&apos;s private AI infrastructure — not OpenAI, not Google, not any
             third-party cloud AI service. When you talk to Remy, your conversation is processed on
@@ -155,12 +155,12 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── Section 2: What We Can See ──────────────────────── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Eye className="h-5 w-5 text-brand-500" />
-          <h2 className="text-lg font-semibold text-stone-900">What we can see</h2>
+          <h2 className="text-lg font-semibold text-stone-100">What we can see</h2>
         </div>
-        <div className="text-sm text-stone-600 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
           <p>
             We can see that you used Remy — how often, which features, whether errors occurred. We
             cannot see what you talked about.
@@ -174,28 +174,28 @@ export default function AiPrivacyPage() {
 
         {/* Anonymous metrics summary — shows the chef what we actually have */}
         {metrics && metrics.totalMessages > 0 && (
-          <div className="rounded-lg bg-stone-50 border border-stone-200 p-4 space-y-2">
+          <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-2">
             <div className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4 text-stone-400" />
-              <p className="text-xs font-medium text-stone-700">
+              <p className="text-xs font-medium text-stone-300">
                 What we know about your Remy usage (this is all of it):
               </p>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
               <div>
-                <p className="text-lg font-bold text-stone-900">{metrics.totalConversations}</p>
+                <p className="text-lg font-bold text-stone-100">{metrics.totalConversations}</p>
                 <p className="text-xs text-stone-500">Conversations</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-stone-900">{metrics.totalMessages}</p>
+                <p className="text-lg font-bold text-stone-100">{metrics.totalMessages}</p>
                 <p className="text-xs text-stone-500">Messages</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-stone-900">{metrics.topCategory ?? '—'}</p>
+                <p className="text-lg font-bold text-stone-100">{metrics.topCategory ?? '—'}</p>
                 <p className="text-xs text-stone-500">Top category</p>
               </div>
               <div>
-                <p className="text-lg font-bold text-stone-900">
+                <p className="text-lg font-bold text-stone-100">
                   {metrics.since
                     ? new Date(metrics.since).toLocaleDateString('en-US', {
                         month: 'short',
@@ -214,12 +214,12 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── Section 3: If You Need Help ─────────────────────── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Headphones className="h-5 w-5 text-brand-500" />
-          <h2 className="text-lg font-semibold text-stone-900">If you need help</h2>
+          <h2 className="text-lg font-semibold text-stone-100">If you need help</h2>
         </div>
-        <div className="text-sm text-stone-600 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
           <p>
             If Remy isn&apos;t working right and you want to share a conversation with our support
             team, you can do that from inside any conversation. Tap &ldquo;Send to Support&rdquo;
@@ -230,12 +230,12 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── External Services Disclosure ────────────────────── */}
-      <div className="rounded-xl border border-amber-200 bg-amber-50/50 p-6 space-y-4">
+      <div className="rounded-xl border border-amber-200 bg-amber-950/50 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <ExternalLink className="h-5 w-5 text-amber-600" />
-          <h2 className="text-lg font-semibold text-stone-900">Other services we use</h2>
+          <h2 className="text-lg font-semibold text-stone-100">Other services we use</h2>
         </div>
-        <div className="text-sm text-stone-600 space-y-3 leading-relaxed">
+        <div className="text-sm text-stone-400 space-y-3 leading-relaxed">
           <p>
             Some ChefFlow features use external APIs for things like grocery pricing, nutrition
             data, and store availability. These services receive only the specific item-level data
@@ -268,11 +268,11 @@ export default function AiPrivacyPage() {
           ].map((svc) => (
             <div
               key={svc.name}
-              className="rounded-lg border border-amber-200 bg-white p-3 space-y-1"
+              className="rounded-lg border border-amber-200 bg-surface p-3 space-y-1"
             >
               <div className="flex items-center gap-2">
                 <svc.icon className="h-3.5 w-3.5 text-amber-500" />
-                <span className="text-xs font-semibold text-stone-800">{svc.name}</span>
+                <span className="text-xs font-semibold text-stone-200">{svc.name}</span>
               </div>
               <p className="text-xs text-stone-500">{svc.use}</p>
             </div>
@@ -285,33 +285,33 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── How It Works — animated schematic ──── */}
-      <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+      <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
         <div className="px-5 py-4">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-brand-500" />
-            <h2 className="text-lg font-semibold text-stone-900">See how it works</h2>
+            <h2 className="text-lg font-semibold text-stone-100">See how it works</h2>
           </div>
           <p className="mt-1 text-sm text-stone-500">
             55-second animated walkthrough of where your data goes (and doesn&apos;t go).
           </p>
         </div>
-        <div className="border-t border-stone-200 p-5">
+        <div className="border-t border-stone-700 p-5">
           <PrivacySchematicPlayer />
         </div>
       </div>
 
       {/* ─── Static data flow diagram (collapsible) ──── */}
-      <details className="rounded-xl border border-stone-200 bg-white">
+      <details className="rounded-xl border border-stone-700 bg-surface">
         <summary className="cursor-pointer px-5 py-4">
           <div className="inline-flex items-center gap-2">
             <Bot className="h-4 w-4 text-brand-500" />
-            <h2 className="text-lg font-semibold text-stone-900">Static data flow diagram</h2>
+            <h2 className="text-lg font-semibold text-stone-100">Static data flow diagram</h2>
           </div>
           <p className="mt-1 text-sm text-stone-500">
             Side-by-side comparison of ChefFlow vs. other AI services.
           </p>
         </summary>
-        <div className="border-t border-stone-200 p-5">
+        <div className="border-t border-stone-700 p-5">
           <DataFlowAnimated />
         </div>
       </details>

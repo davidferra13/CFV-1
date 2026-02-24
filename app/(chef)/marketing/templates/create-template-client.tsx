@@ -10,12 +10,12 @@ import { CAMPAIGN_TYPE_LABELS } from '@/lib/marketing/constants'
 export function CreateTemplateClient() {
   const router = useRouter()
   const [saving, setSaving] = useState(false)
-  const [error, setError]   = useState<string | null>(null)
-  const [form, setForm]     = useState({
-    name:          '',
+  const [error, setError] = useState<string | null>(null)
+  const [form, setForm] = useState({
+    name: '',
     campaign_type: 're_engagement',
-    subject:       '',
-    body_html:     '',
+    subject: '',
+    body_html: '',
   })
 
   function update(field: string, value: string) {
@@ -24,7 +24,8 @@ export function CreateTemplateClient() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setSaving(true); setError(null)
+    setSaving(true)
+    setError(null)
     try {
       await createCampaignTemplate(form)
       router.refresh()
@@ -40,7 +41,7 @@ export function CreateTemplateClient() {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-stone-600 mb-1">Template name *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Template name *</label>
           <Input
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
@@ -49,20 +50,22 @@ export function CreateTemplateClient() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Type</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
           <select
             title="Campaign type"
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
             value={form.campaign_type}
             onChange={(e) => update('campaign_type', e.target.value)}
           >
             {Object.entries(CAMPAIGN_TYPE_LABELS).map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
+              <option key={v} value={v}>
+                {l}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Subject *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Subject *</label>
           <Input
             value={form.subject}
             onChange={(e) => update('subject', e.target.value)}
@@ -71,9 +74,9 @@ export function CreateTemplateClient() {
           />
         </div>
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-stone-600 mb-1">Body *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Body *</label>
           <textarea
-            className="w-full rounded-md border border-stone-200 bg-white px-3 py-2 text-sm min-h-[120px] resize-y font-mono"
+            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[120px] resize-y font-mono"
             value={form.body_html}
             onChange={(e) => update('body_html', e.target.value)}
             placeholder={`Hi {{first_name}},\n\nYour message here.\n\n{{chef_name}}`}

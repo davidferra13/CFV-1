@@ -37,18 +37,20 @@ export default function ForgotPasswordPage() {
       <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-            <p className="text-stone-600 mt-2">Check your email</p>
+            <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+            <p className="text-stone-400 mt-2">Check your email</p>
           </div>
 
           <Card>
             <CardContent className="space-y-4 py-6">
               <Alert variant="success">
-                If an account exists for <strong>{email}</strong>, you will receive a password reset link shortly.
+                If an account exists for <strong>{email}</strong>, you will receive a password reset
+                link shortly.
               </Alert>
 
-              <p className="text-sm text-stone-600 text-center">
-                Didn&apos;t receive an email? Check your spam folder or try again with a different email address.
+              <p className="text-sm text-stone-400 text-center">
+                Didn&apos;t receive an email? Check your spam folder or try again with a different
+                email address.
               </p>
             </CardContent>
 
@@ -64,8 +66,11 @@ export default function ForgotPasswordPage() {
                 Try Again
               </Button>
 
-              <div className="text-sm text-center text-stone-600">
-                <Link href="/auth/signin" className="text-brand-600 hover:text-brand-700 font-medium">
+              <div className="text-sm text-center text-stone-400">
+                <Link
+                  href="/auth/signin"
+                  className="text-brand-600 hover:text-brand-400 font-medium"
+                >
                   Back to Sign In
                 </Link>
               </div>
@@ -80,8 +85,8 @@ export default function ForgotPasswordPage() {
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">Reset your password</p>
+          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+          <p className="text-stone-400 mt-2">Reset your password</p>
         </div>
 
         <Card>
@@ -91,12 +96,11 @@ export default function ForgotPasswordPage() {
             </CardHeader>
 
             <CardContent className="space-y-4">
-              {error && (
-                <Alert variant="error">{error}</Alert>
-              )}
+              {error && <Alert variant="error">{error}</Alert>}
 
-              <p className="text-sm text-stone-600">
-                Enter the email address associated with your account and we&apos;ll send you a link to reset your password.
+              <p className="text-sm text-stone-400">
+                Enter the email address associated with your account and we&apos;ll send you a link
+                to reset your password.
               </p>
 
               <Input
@@ -111,18 +115,16 @@ export default function ForgotPasswordPage() {
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">
-              <Button
-                type="submit"
-                variant="primary"
-                className="w-full"
-                loading={loading}
-              >
+              <Button type="submit" variant="primary" className="w-full" loading={loading}>
                 Send Reset Link
               </Button>
 
-              <div className="text-sm text-center text-stone-600">
+              <div className="text-sm text-center text-stone-400">
                 Remember your password?{' '}
-                <Link href="/auth/signin" className="text-brand-600 hover:text-brand-700 font-medium">
+                <Link
+                  href="/auth/signin"
+                  className="text-brand-600 hover:text-brand-400 font-medium"
+                >
                   Sign in
                 </Link>
               </div>

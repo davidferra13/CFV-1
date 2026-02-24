@@ -46,11 +46,11 @@ export function ServiceTimelinePanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Service Run-of-Show</span>
+            <span className="text-sm font-medium text-stone-300">Service Run-of-Show</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -75,11 +75,11 @@ export function ServiceTimelinePanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Service Run-of-Show</span>
+          <span className="text-sm font-medium text-stone-300">Service Run-of-Show</span>
           <Badge variant="info">{result.entries.length} steps</Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -99,9 +99,9 @@ export function ServiceTimelinePanel({ eventId }: { eventId: string }) {
             key={i}
             className="flex items-start gap-3 py-1.5 border-b border-stone-50 last:border-0"
           >
-            <div className="w-16 flex-shrink-0 text-xs font-mono text-stone-600">{entry.time}</div>
+            <div className="w-16 flex-shrink-0 text-xs font-mono text-stone-400">{entry.time}</div>
             <div className="w-12 flex-shrink-0 text-[11px] text-stone-400">{entry.duration}</div>
-            <div className="flex-1 text-sm text-stone-700">{entry.task}</div>
+            <div className="flex-1 text-sm text-stone-300">{entry.task}</div>
             <div className="flex-shrink-0">{whoIcon(entry.who)}</div>
           </div>
         ))}

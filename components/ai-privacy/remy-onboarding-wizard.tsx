@@ -112,10 +112,10 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               <div
                 className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                   i === step
-                    ? 'bg-brand-500 text-white scale-110'
+                    ? 'bg-brand-9500 text-white scale-110'
                     : i < step
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-stone-100 text-stone-400'
+                      ? 'bg-emerald-900 text-emerald-700'
+                      : 'bg-stone-800 text-stone-400'
                 }`}
               >
                 {i < step ? <Check className="h-3.5 w-3.5" /> : i + 1}
@@ -124,25 +124,25 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
             </button>
           ))}
         </div>
-        <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+        <div className="h-1.5 bg-stone-800 rounded-full overflow-hidden">
           <div
-            className="h-full bg-brand-500 rounded-full transition-all duration-500"
+            className="h-full bg-brand-9500 rounded-full transition-all duration-500"
             style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
           />
         </div>
       </div>
 
       {/* Step content */}
-      <div className="rounded-2xl border border-stone-200 bg-white shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-stone-700 bg-surface shadow-sm overflow-hidden">
         <div className="p-6 sm:p-8">
           {/* ─── Step 1: Meet Remy ──────────────────────────── */}
           {step === 0 && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-100 flex items-center justify-center mb-4">
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-900 flex items-center justify-center mb-4">
                   <Bot className="h-8 w-8 text-brand-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-stone-900">Meet Remy</h2>
+                <h2 className="text-2xl font-bold text-stone-100">Meet Remy</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
                   Remy is your AI sous chef. It helps you draft emails, plan menus, manage prep
                   timelines, and run your business more efficiently.
@@ -169,10 +169,10 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 ].map((card) => (
                   <div
                     key={card.title}
-                    className="rounded-xl border border-stone-200 bg-stone-50/50 p-4 space-y-2"
+                    className="rounded-xl border border-stone-700 bg-stone-800/50 p-4 space-y-2"
                   >
                     {card.icon}
-                    <h4 className="font-semibold text-stone-900 text-sm">{card.title}</h4>
+                    <h4 className="font-semibold text-stone-100 text-sm">{card.title}</h4>
                     <p className="text-xs text-stone-500 leading-relaxed">{card.desc}</p>
                   </div>
                 ))}
@@ -187,10 +187,10 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
           {step === 2 && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="mx-auto h-16 w-16 rounded-2xl bg-emerald-100 flex items-center justify-center mb-4">
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-emerald-900 flex items-center justify-center mb-4">
                   <Trash2 className="h-8 w-8 text-emerald-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-stone-900">You&apos;re in Control</h2>
+                <h2 className="text-2xl font-bold text-stone-100">You&apos;re in Control</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
                   Your conversation history lives in your browser. You can clear it at any time —
                   and when you do, it&apos;s gone. Not archived, not hidden. Gone.
@@ -198,8 +198,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               </div>
 
               {/* Interactive practice section */}
-              <div className="rounded-xl border-2 border-dashed border-stone-300 bg-stone-50 p-5 space-y-4">
-                <h3 className="font-semibold text-stone-900 text-center">
+              <div className="rounded-xl border-2 border-dashed border-stone-600 bg-stone-800 p-5 space-y-4">
+                <h3 className="font-semibold text-stone-100 text-center">
                   Try It — Practice Deleting Data
                 </h3>
                 <p className="text-sm text-stone-500 text-center">
@@ -215,19 +215,19 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                     ].map((item) => (
                       <div
                         key={item.text}
-                        className="flex items-center justify-between rounded-lg border border-stone-200 bg-white p-3"
+                        className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface p-3"
                       >
                         <div>
                           <span className="text-xs font-medium text-stone-400 uppercase">
                             {item.type}
                           </span>
-                          <p className="text-sm text-stone-700">{item.text}</p>
+                          <p className="text-sm text-stone-300">{item.text}</p>
                         </div>
                       </div>
                     ))}
                     <button
                       onClick={() => setPracticeDeleted(true)}
-                      className="w-full rounded-lg bg-red-500 text-white py-2.5 text-sm font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+                      className="w-full rounded-lg bg-red-9500 text-white py-2.5 text-sm font-medium hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
                     >
                       <Trash2 className="h-4 w-4" />
                       Delete All (Practice)
@@ -235,7 +235,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                   </div>
                 ) : (
                   <div className="text-center py-8 space-y-3">
-                    <div className="mx-auto h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <div className="mx-auto h-12 w-12 rounded-full bg-emerald-900 flex items-center justify-center">
                       <Check className="h-6 w-6 text-emerald-600" />
                     </div>
                     <p className="text-sm font-medium text-emerald-700">All deleted. Truly gone.</p>
@@ -244,7 +244,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                     </p>
                     <button
                       onClick={() => setPracticeDeleted(false)}
-                      className="text-xs text-brand-600 hover:text-brand-700 underline"
+                      className="text-xs text-brand-600 hover:text-brand-400 underline"
                     >
                       Reset demo
                     </button>
@@ -258,10 +258,10 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
           {step === 3 && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="mx-auto h-16 w-16 rounded-2xl bg-blue-100 flex items-center justify-center mb-4">
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-blue-900 flex items-center justify-center mb-4">
                   <BookOpen className="h-8 w-8 text-blue-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-stone-900">Best Practices</h2>
+                <h2 className="text-2xl font-bold text-stone-100">Best Practices</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">Get the most out of Remy.</p>
               </div>
 
@@ -301,7 +301,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                       </span>
                     </div>
                     <div>
-                      <h4 className="font-semibold text-stone-900 text-sm">{practice.title}</h4>
+                      <h4 className="font-semibold text-stone-100 text-sm">{practice.title}</h4>
                       <p className="text-sm text-stone-500 mt-0.5 leading-relaxed">
                         {practice.desc}
                       </p>
@@ -310,8 +310,8 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 ))}
               </div>
 
-              <div className="rounded-lg bg-stone-50 border border-stone-200 p-4">
-                <p className="text-sm text-stone-600">
+              <div className="rounded-lg bg-stone-800 border border-stone-700 p-4">
+                <p className="text-sm text-stone-400">
                   <strong>Remember:</strong> Remy is a tool, not a decision-maker. Every email,
                   every suggestion, every action requires your approval.
                 </p>
@@ -323,17 +323,17 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
           {step === 4 && (
             <div className="space-y-6">
               <div className="text-center">
-                <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-100 flex items-center justify-center mb-4">
+                <div className="mx-auto h-16 w-16 rounded-2xl bg-brand-900 flex items-center justify-center mb-4">
                   <Power className="h-8 w-8 text-brand-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-stone-900">You&apos;re Ready</h2>
+                <h2 className="text-2xl font-bold text-stone-100">You&apos;re Ready</h2>
                 <p className="text-stone-500 mt-2 max-w-lg mx-auto">
                   You know how Remy works and how to stay in control. The choice is yours.
                 </p>
               </div>
 
               {/* Summary card */}
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-5 space-y-3">
+              <div className="rounded-xl border border-emerald-200 bg-emerald-950/50 p-5 space-y-3">
                 <h3 className="font-semibold text-emerald-900">Quick recap:</h3>
                 {[
                   'Remy runs on ChefFlow\u2019s private servers — no third-party AI',
@@ -353,7 +353,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                 <button
                   onClick={handleComplete}
                   disabled={completing}
-                  className="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-8 py-3.5
+                  className="inline-flex items-center gap-2 rounded-xl bg-brand-9500 px-8 py-3.5
                              text-base font-semibold text-white hover:bg-brand-600
                              disabled:opacity-50 disabled:cursor-not-allowed transition-all
                              shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30"
@@ -376,7 +376,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
               </div>
 
               {/* Skip option */}
-              <div className="text-center border-t border-stone-100 pt-4">
+              <div className="text-center border-t border-stone-800 pt-4">
                 <p className="text-sm text-stone-500">
                   Not ready? No problem. Come back anytime from Settings.
                 </p>
@@ -386,12 +386,12 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
         </div>
 
         {/* Navigation footer */}
-        <div className="border-t border-stone-200 bg-stone-50 px-6 py-4 flex items-center justify-between">
+        <div className="border-t border-stone-700 bg-stone-800 px-6 py-4 flex items-center justify-between">
           <button
             onClick={() => setStep((s) => Math.max(0, s - 1))}
             disabled={isFirst}
-            className="inline-flex items-center gap-1 text-sm font-medium text-stone-600
-                       hover:text-stone-900 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="inline-flex items-center gap-1 text-sm font-medium text-stone-400
+                       hover:text-stone-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <ChevronLeft className="h-4 w-4" />
             Back
@@ -405,7 +405,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
             <button
               onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}
               className="inline-flex items-center gap-1 text-sm font-medium text-brand-600
-                         hover:text-brand-700 transition-colors"
+                         hover:text-brand-400 transition-colors"
             >
               Next
               <ChevronRight className="h-4 w-4" />

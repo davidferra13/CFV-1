@@ -201,7 +201,7 @@ export function AvailabilityCalendarClient({
           <Button variant="ghost">←</Button>
         </Link>
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold text-stone-900">
+          <h2 className="text-lg font-semibold text-stone-100">
             {MONTH_NAMES[month]} {year}
           </h2>
           {!isCurrentMonth && (
@@ -241,9 +241,9 @@ export function AvailabilityCalendarClient({
           const isToday = ds === today
 
           // Background color for cell
-          let cellBg = 'bg-white border-stone-200 hover:bg-stone-50'
-          if (hasEventOnDay) cellBg = 'bg-amber-50 border-amber-200'
-          else if (hasBlock) cellBg = 'bg-red-50 border-red-200'
+          let cellBg = 'bg-surface border-stone-700 hover:bg-stone-800'
+          if (hasEventOnDay) cellBg = 'bg-amber-950 border-amber-200'
+          else if (hasBlock) cellBg = 'bg-red-950 border-red-200'
 
           // Dots for items on this day (up to 4)
           const visibleDots = dayItems.slice(0, 4)
@@ -268,7 +268,7 @@ export function AvailabilityCalendarClient({
                   'text-sm leading-none mb-1',
                   isToday
                     ? 'bg-brand-600 text-white w-6 h-6 rounded-full flex items-center justify-center mx-auto'
-                    : 'text-stone-900',
+                    : 'text-stone-100',
                 ].join(' ')}
               >
                 {day}
@@ -296,9 +296,9 @@ export function AvailabilityCalendarClient({
 
       {/* Selected date detail panel */}
       {selectedDate && (
-        <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
+        <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-stone-900">
+            <h3 className="font-semibold text-stone-100">
               {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
             </h3>
             <Button variant="secondary" size="sm" onClick={() => openNewEntry(selectedDate)}>
@@ -322,7 +322,7 @@ export function AvailabilityCalendarClient({
                   }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-stone-900 truncate">{item.title}</p>
+                    <p className="text-sm font-medium text-stone-100 truncate">{item.title}</p>
                     {item.startTime && (
                       <p className="text-xs text-stone-500">
                         {item.startTime}
@@ -350,7 +350,7 @@ export function AvailabilityCalendarClient({
 
           {/* Quick block (for dates with no blocking item) */}
           {!isDateBlocked(selectedDate) && !hasEvent(selectedDate) && (
-            <div className="space-y-2 pt-1 border-t border-stone-100">
+            <div className="space-y-2 pt-1 border-t border-stone-800">
               <p className="text-sm text-stone-500">This date is available.</p>
               {!showBlockForm ? (
                 <Button size="sm" variant="secondary" onClick={() => setShowBlockForm(true)}>
@@ -363,7 +363,7 @@ export function AvailabilityCalendarClient({
                     value={blockReason}
                     onChange={(e) => setBlockReason(e.target.value)}
                     placeholder="Reason (optional)"
-                    className="w-full rounded border border-stone-300 px-3 py-2 text-sm"
+                    className="w-full rounded border border-stone-600 px-3 py-2 text-sm"
                   />
                   <div className="flex gap-2">
                     <Button size="sm" onClick={handleBlock} loading={loading}>
@@ -380,7 +380,7 @@ export function AvailabilityCalendarClient({
 
           {/* Availability block unblock option */}
           {selectedDateItems.some((i) => i.type === 'availability_block') && (
-            <div className="pt-1 border-t border-stone-100">
+            <div className="pt-1 border-t border-stone-800">
               <Button
                 size="sm"
                 variant="secondary"
@@ -394,16 +394,16 @@ export function AvailabilityCalendarClient({
 
           {/* Waitlist for this date */}
           {waitlistForSelected.length > 0 && (
-            <div className="space-y-2 pt-1 border-t border-stone-100">
-              <p className="text-sm font-medium text-stone-700">
+            <div className="space-y-2 pt-1 border-t border-stone-800">
+              <p className="text-sm font-medium text-stone-300">
                 Waitlist ({waitlistForSelected.length})
               </p>
               {waitlistForSelected.map((entry) => (
                 <div
                   key={entry.id}
-                  className="rounded-lg border border-blue-100 bg-blue-50 px-3 py-2 text-sm"
+                  className="rounded-lg border border-blue-100 bg-blue-950 px-3 py-2 text-sm"
                 >
-                  <p className="font-medium text-stone-900">
+                  <p className="font-medium text-stone-100">
                     {entry.clients?.full_name ?? 'Unknown client'}
                   </p>
                   <p className="text-xs text-stone-500">

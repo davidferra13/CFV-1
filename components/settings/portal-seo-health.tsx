@@ -27,7 +27,7 @@ export function PortalSEOHealth({ items }: { items: SEOItem[] }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-2 bg-stone-200 rounded-full overflow-hidden mb-4">
+        <div className="h-2 bg-stone-700 rounded-full overflow-hidden mb-4">
           <div
             className="h-full rounded-full bg-emerald-500 transition-all"
             style={{ width: `${pct}%` }}
@@ -44,7 +44,7 @@ export function PortalSEOHealth({ items }: { items: SEOItem[] }) {
               )}
               <div>
                 <p
-                  className={`text-sm ${item.passed ? 'text-stone-600' : 'text-stone-900 font-medium'}`}
+                  className={`text-sm ${item.passed ? 'text-stone-400' : 'text-stone-100 font-medium'}`}
                 >
                   {item.label}
                 </p>

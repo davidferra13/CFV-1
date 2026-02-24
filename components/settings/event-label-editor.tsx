@@ -69,7 +69,7 @@ function LabelRow({ defaultLabel, currentLabel, labelType, onSaved }: LabelRowPr
   }
 
   return (
-    <div className="flex items-center gap-3 py-3 border-b border-stone-100 last:border-0">
+    <div className="flex items-center gap-3 py-3 border-b border-stone-800 last:border-0">
       {/* Default label — immutable reference shown in mono */}
       <div className="w-36 shrink-0">
         <span className="text-sm text-stone-500 font-mono">{defaultLabel}</span>
@@ -85,7 +85,7 @@ function LabelRow({ defaultLabel, currentLabel, labelType, onSaved }: LabelRowPr
           onChange={handleChange}
           disabled={isPending}
           placeholder={defaultLabel}
-          className="w-full border border-stone-300 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:opacity-60"
+          className="w-full border border-stone-600 rounded-md px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-500 disabled:opacity-60"
         />
       </div>
 
@@ -97,9 +97,7 @@ function LabelRow({ defaultLabel, currentLabel, labelType, onSaved }: LabelRowPr
             Saved
           </span>
         )}
-        {isCustomized && !saved && (
-          <Badge variant="info">Custom</Badge>
-        )}
+        {isCustomized && !saved && <Badge variant="info">Custom</Badge>}
         {isCustomized && (
           <Button
             variant="ghost"
@@ -107,7 +105,7 @@ function LabelRow({ defaultLabel, currentLabel, labelType, onSaved }: LabelRowPr
             onClick={handleReset}
             disabled={isPending}
             title="Reset to default"
-            className="text-stone-400 hover:text-stone-700"
+            className="text-stone-400 hover:text-stone-300"
           >
             <RotateCcw className="h-3.5 w-3.5" />
           </Button>
@@ -176,13 +174,11 @@ export function EventLabelEditor({
             <div>
               <CardTitle>Status Labels</CardTitle>
               <p className="text-sm text-stone-500 mt-1">
-                Rename event lifecycle states to match your preferred language.
-                The underlying FSM is unchanged — only the display name differs.
+                Rename event lifecycle states to match your preferred language. The underlying FSM
+                is unchanged — only the display name differs.
               </p>
             </div>
-            {statusCustomCount > 0 && (
-              <Badge variant="info">{statusCustomCount} customised</Badge>
-            )}
+            {statusCustomCount > 0 && <Badge variant="info">{statusCustomCount} customised</Badge>}
           </div>
         </CardHeader>
         <CardContent>

@@ -62,7 +62,7 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
         {/* Inputs */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Fixed monthly overhead ($)
             </label>
             <input
@@ -72,13 +72,13 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
               value={fixedMonthly}
               onChange={(e) => setFixedMonthly(e.target.value)}
               placeholder="e.g. 2000"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <p className="text-xs text-stone-400 mt-1">Rent, insurance, subscriptions, etc.</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Variable cost per event ($)
             </label>
             <input
@@ -88,13 +88,13 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
               value={variableCost}
               onChange={(e) => setVariableCost(e.target.value)}
               placeholder="e.g. 300"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <p className="text-xs text-stone-400 mt-1">Groceries, supplies, transport per event.</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Average revenue per event ($)
             </label>
             <input
@@ -104,7 +104,7 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
               value={avgRevenue}
               onChange={(e) => setAvgRevenue(e.target.value)}
               placeholder="e.g. 800"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
             <p className="text-xs text-stone-400 mt-1">Typical price charged per event.</p>
           </div>
@@ -112,15 +112,15 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
 
         {/* Result */}
         {hasValidInputs && eventsPerMonth !== null && revenueNeededCents !== null && (
-          <div className="rounded-xl bg-brand-50 border border-brand-200 p-4">
-            <p className="text-lg font-semibold text-brand-800">
+          <div className="rounded-xl bg-brand-950 border border-brand-700 p-4">
+            <p className="text-lg font-semibold text-brand-300">
               You break even at{' '}
               <span className="text-brand-600">
                 {eventsPerMonth < 1 ? 'less than 1 event' : `${eventsPerMonth.toFixed(1)} events`}
               </span>{' '}
               per month
             </p>
-            <p className="text-sm text-brand-700 mt-1">
+            <p className="text-sm text-brand-400 mt-1">
               That requires {centsToDisplay(revenueNeededCents)} in monthly revenue (
               {Math.ceil(eventsPerMonth)} events at {centsToDisplay(revenueCents)} each).
             </p>
@@ -131,7 +131,7 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
           contributionMarginCents <= 0 &&
           revenueCents > 0 &&
           variableCents > 0 && (
-            <div className="rounded-xl bg-red-50 border border-red-200 p-4">
+            <div className="rounded-xl bg-red-950 border border-red-200 p-4">
               <p className="text-sm text-red-700 font-medium">
                 Variable cost per event exceeds revenue — you cannot break even at these numbers.
                 Increase your pricing or reduce variable costs.
@@ -142,7 +142,7 @@ export function BreakEvenCalculator({ initialFixedMonthlyCents = 0 }: BreakEvenC
         {/* Bar chart */}
         {chartPoints.length > 0 && maxValue > 0 && (
           <div>
-            <p className="text-sm font-medium text-stone-600 mb-3">
+            <p className="text-sm font-medium text-stone-400 mb-3">
               Revenue vs. Cost (1-10 events)
             </p>
             <div className="flex items-end gap-1.5 h-32">

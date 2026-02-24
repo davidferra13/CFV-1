@@ -21,7 +21,7 @@ export default async function BusinessHealthPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Business Health Checklist</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Business Health Checklist</h1>
         <p className="mt-1 text-sm text-stone-500">
           A practical checklist of legal, financial, and operational foundations every private chef
           business should have in place.

@@ -79,9 +79,9 @@ export function AddManualTransactionForm() {
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <label className="text-sm font-medium text-stone-700">Description *</label>
+          <label className="text-sm font-medium text-stone-300">Description *</label>
           <input
-            className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
             placeholder="e.g. Farmer's market produce"
@@ -89,20 +89,20 @@ export function AddManualTransactionForm() {
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-sm font-medium text-stone-700">Amount ($) *</label>
+            <label className="text-sm font-medium text-stone-300">Amount ($) *</label>
             <input
               type="number"
               step="0.01"
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
               placeholder="0.00"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Category</label>
+            <label className="text-sm font-medium text-stone-300">Category</label>
             <select
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
             >
@@ -114,10 +114,10 @@ export function AddManualTransactionForm() {
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Date</label>
+            <label className="text-sm font-medium text-stone-300">Date</label>
             <input
               type="date"
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.date}
               onChange={(e) => setForm({ ...form, date: e.target.value })}
             />

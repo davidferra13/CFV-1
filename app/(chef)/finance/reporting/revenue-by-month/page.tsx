@@ -5,7 +5,14 @@ import { getLedgerEntries } from '@/lib/ledger/actions'
 import { exportRevenueByMonthCSV } from '@/lib/finance/export-actions'
 import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, subMonths, startOfMonth } from 'date-fns'
 
@@ -27,7 +34,7 @@ export default async function RevenueByMonthPage() {
 
   for (const entry of entries) {
     const key = format(new Date(entry.created_at), 'yyyy-MM')
-    const bucket = months.find(m => m.key === key)
+    const bucket = months.find((m) => m.key === key)
     if (!bucket) continue
     if (entry.is_refund) {
       bucket.refunds += entry.amount_cents
@@ -38,15 +45,20 @@ export default async function RevenueByMonthPage() {
 
   const totalRevenue = months.reduce((s, m) => s + m.revenue, 0)
   const totalRefunds = months.reduce((s, m) => s + m.refunds, 0)
-  const bestMonth = months.reduce((best, m) => (m.revenue - m.refunds > best.revenue - best.refunds ? m : best), months[0])
+  const bestMonth = months.reduce(
+    (best, m) => (m.revenue - m.refunds > best.revenue - best.refunds ? m : best),
+    months[0]
+  )
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-700">← Reporting</Link>
+        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Reporting
+        </Link>
         <div className="flex items-start justify-between mt-1">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900">Revenue by Month</h1>
+            <h1 className="text-3xl font-bold text-stone-100">Revenue by Month</h1>
             <p className="text-stone-500 mt-1">12-month rolling revenue trend</p>
           </div>
           <CSVDownloadButton action={exportRevenueByMonthCSV} label="Export CSV" />
@@ -59,12 +71,16 @@ export default async function RevenueByMonthPage() {
           <p className="text-sm text-stone-500 mt-1">12-month gross revenue</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{formatCurrency(totalRevenue - totalRefunds)}</p>
+          <p className="text-2xl font-bold text-stone-100">
+            {formatCurrency(totalRevenue - totalRefunds)}
+          </p>
           <p className="text-sm text-stone-500 mt-1">Net revenue</p>
         </Card>
         <Card className="p-4">
-          <p className="text-sm font-semibold text-stone-700">{bestMonth.label}</p>
-          <p className="text-xl font-bold text-stone-900 mt-0.5">{formatCurrency(bestMonth.revenue - bestMonth.refunds)}</p>
+          <p className="text-sm font-semibold text-stone-300">{bestMonth.label}</p>
+          <p className="text-xl font-bold text-stone-100 mt-0.5">
+            {formatCurrency(bestMonth.revenue - bestMonth.refunds)}
+          </p>
           <p className="text-sm text-stone-500 mt-0.5">Best month (net)</p>
         </Card>
       </div>
@@ -80,12 +96,18 @@ export default async function RevenueByMonthPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[...months].reverse().map(month => (
+            {[...months].reverse().map((month) => (
               <TableRow key={month.key}>
-                <TableCell className="font-medium text-stone-900">{month.label}</TableCell>
-                <TableCell className="text-green-700 font-semibold text-sm">{formatCurrency(month.revenue)}</TableCell>
-                <TableCell className="text-red-600 text-sm">{month.refunds > 0 ? `−${formatCurrency(month.refunds)}` : '—'}</TableCell>
-                <TableCell className={`font-semibold text-sm ${(month.revenue - month.refunds) > 0 ? 'text-stone-900' : 'text-stone-400'}`}>
+                <TableCell className="font-medium text-stone-100">{month.label}</TableCell>
+                <TableCell className="text-green-700 font-semibold text-sm">
+                  {formatCurrency(month.revenue)}
+                </TableCell>
+                <TableCell className="text-red-600 text-sm">
+                  {month.refunds > 0 ? `−${formatCurrency(month.refunds)}` : '—'}
+                </TableCell>
+                <TableCell
+                  className={`font-semibold text-sm ${month.revenue - month.refunds > 0 ? 'text-stone-100' : 'text-stone-400'}`}
+                >
                   {formatCurrency(month.revenue - month.refunds)}
                 </TableCell>
               </TableRow>

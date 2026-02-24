@@ -46,14 +46,12 @@ export function ClientEmailToggle({ clientId, initialEnabled }: ClientEmailToggl
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-surface shadow ring-0 transition duration-200 ease-in-out ${
               enabled ? 'translate-x-4' : 'translate-x-0'
             }`}
           />
         </button>
-        <span className="text-sm text-stone-700">
-          {enabled ? 'On' : 'Off'}
-        </span>
+        <span className="text-sm text-stone-300">{enabled ? 'On' : 'Off'}</span>
         {isPending && <span className="text-xs text-stone-400">Saving…</span>}
       </div>
       <p className="text-xs text-stone-400 mt-1">

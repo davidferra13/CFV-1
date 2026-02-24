@@ -31,15 +31,18 @@ const CHANNEL_OPTIONS: { value: CreateMessageInput['channel']; label: string }[]
   { value: 'internal_note', label: 'Internal Note' },
 ]
 
-export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }: MessageLogFormProps) {
+export function MessageLogForm({
+  inquiryId,
+  eventId,
+  clientId,
+  templates = [],
+}: MessageLogFormProps) {
   const router = useRouter()
   const [direction, setDirection] = useState<'outbound' | 'inbound'>('outbound')
   const [channel, setChannel] = useState<CreateMessageInput['channel']>('text')
   const [body, setBody] = useState('')
   const [subject, setSubject] = useState('')
-  const [sentAt, setSentAt] = useState(
-    new Date().toISOString().substring(0, 16)
-  )
+  const [sentAt, setSentAt] = useState(new Date().toISOString().substring(0, 16))
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showTemplates, setShowTemplates] = useState(false)
@@ -84,14 +87,14 @@ export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }:
       {error && <Alert variant="error">{error}</Alert>}
 
       {/* Direction Toggle */}
-      <div className="flex gap-1 p-1 bg-stone-100 rounded-lg w-fit">
+      <div className="flex gap-1 p-1 bg-stone-800 rounded-lg w-fit">
         <button
           type="button"
           onClick={() => setDirection('outbound')}
           className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
             direction === 'outbound'
-              ? 'bg-white text-stone-900 shadow-sm font-medium'
-              : 'text-stone-500 hover:text-stone-700'
+              ? 'bg-surface text-stone-100 shadow-sm font-medium'
+              : 'text-stone-500 hover:text-stone-300'
           }`}
         >
           I sent
@@ -101,8 +104,8 @@ export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }:
           onClick={() => setDirection('inbound')}
           className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
             direction === 'inbound'
-              ? 'bg-white text-stone-900 shadow-sm font-medium'
-              : 'text-stone-500 hover:text-stone-700'
+              ? 'bg-surface text-stone-100 shadow-sm font-medium'
+              : 'text-stone-500 hover:text-stone-300'
           }`}
         >
           I received
@@ -117,7 +120,7 @@ export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }:
             value={channel}
             onChange={(e) => setChannel(e.target.value as CreateMessageInput['channel'])}
             title="Communication channel"
-            className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           >
             {CHANNEL_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -133,7 +136,7 @@ export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }:
             value={sentAt}
             onChange={(e) => setSentAt(e.target.value)}
             title="Date and time of message"
-            className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -147,7 +150,7 @@ export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }:
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             placeholder="Email subject..."
-            className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
       )}
@@ -161,20 +164,20 @@ export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }:
               <button
                 type="button"
                 onClick={() => setShowTemplates(!showTemplates)}
-                className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                className="text-xs text-brand-600 hover:text-brand-400 font-medium"
               >
                 Use Template
               </button>
               {showTemplates && (
-                <div className="absolute right-0 top-6 z-10 w-64 bg-white border border-stone-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                <div className="absolute right-0 top-6 z-10 w-64 bg-surface border border-stone-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                   {templates.map((t) => (
                     <button
                       key={t.id}
                       type="button"
                       onClick={() => applyTemplate(t)}
-                      className="block w-full text-left px-3 py-2 text-sm hover:bg-stone-50 border-b border-stone-100 last:border-0"
+                      className="block w-full text-left px-3 py-2 text-sm hover:bg-stone-800 border-b border-stone-800 last:border-0"
                     >
-                      <span className="font-medium text-stone-900">{t.name}</span>
+                      <span className="font-medium text-stone-100">{t.name}</span>
                       <span className="block text-xs text-stone-500 truncate mt-0.5">
                         {t.template_text.substring(0, 60)}...
                       </span>
@@ -194,7 +197,7 @@ export function MessageLogForm({ inquiryId, eventId, clientId, templates = [] }:
               : 'What did you receive? (can be a summary)'
           }
           rows={3}
-          className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+          className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
           required
         />
       </div>

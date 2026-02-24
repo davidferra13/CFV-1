@@ -48,17 +48,23 @@ export function RewardCard({
 
   return (
     <>
-      {error && <Alert variant="error" className="mb-3">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-3">
+          {error}
+        </Alert>
+      )}
 
-      <div className={`rounded-xl border p-4 ${canRedeem ? 'border-emerald-200 bg-emerald-50/40' : 'border-stone-200 bg-white'}`}>
+      <div
+        className={`rounded-xl border p-4 ${canRedeem ? 'border-emerald-200 bg-emerald-950/40' : 'border-stone-700 bg-surface'}`}
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-stone-900">{reward.name}</h3>
-            <p className="text-sm text-stone-600 mt-1">{reward.description || rewardSubtitle(reward)}</p>
+            <h3 className="font-semibold text-stone-100">{reward.name}</h3>
+            <p className="text-sm text-stone-400 mt-1">
+              {reward.description || rewardSubtitle(reward)}
+            </p>
           </div>
-          <Badge variant={canRedeem ? 'success' : 'default'}>
-            {reward.points_required} pts
-          </Badge>
+          <Badge variant={canRedeem ? 'success' : 'default'}>{reward.points_required} pts</Badge>
         </div>
 
         <div className="mt-4">
@@ -75,13 +81,15 @@ export function RewardCard({
 
       {showConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold text-stone-900 mb-2">Redeem Reward?</h3>
-            <p className="text-stone-600 mb-1">
-              You are redeeming <span className="font-medium text-stone-900">{reward.name}</span>.
+          <div className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-stone-100 mb-2">Redeem Reward?</h3>
+            <p className="text-stone-400 mb-1">
+              You are redeeming <span className="font-medium text-stone-100">{reward.name}</span>.
             </p>
-            <p className="text-stone-600 mb-6">
-              This will deduct <span className="font-medium text-stone-900">{reward.points_required} points</span> from your balance.
+            <p className="text-stone-400 mb-6">
+              This will deduct{' '}
+              <span className="font-medium text-stone-100">{reward.points_required} points</span>{' '}
+              from your balance.
             </p>
 
             <div className="flex gap-3">
@@ -89,7 +97,7 @@ export function RewardCard({
                 type="button"
                 onClick={() => setShowConfirm(false)}
                 disabled={isPending}
-                className="flex-1 px-4 py-2 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 transition disabled:opacity-50"
+                className="flex-1 px-4 py-2 border border-stone-600 rounded-lg text-stone-300 hover:bg-stone-800 transition disabled:opacity-50"
               >
                 Cancel
               </button>

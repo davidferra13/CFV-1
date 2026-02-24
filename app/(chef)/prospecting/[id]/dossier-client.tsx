@@ -144,7 +144,7 @@ export function ProspectDossierClient({
         <div>
           <button
             onClick={() => router.push('/prospecting')}
-            className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 mb-2"
+            className="flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 mb-2"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Prospects
@@ -253,7 +253,7 @@ export function ProspectDossierClient({
               {(prospect.address || prospect.city) && (
                 <div className="flex items-start gap-2">
                   <MapPin className="h-3.5 w-3.5 text-stone-400 mt-0.5" />
-                  <span className="text-stone-600">
+                  <span className="text-stone-400">
                     {[prospect.address, prospect.city, prospect.state, prospect.zip]
                       .filter(Boolean)
                       .join(', ')}
@@ -266,7 +266,7 @@ export function ProspectDossierClient({
 
               {/* Social profiles */}
               {hasSocials && (
-                <div className="border-t border-stone-100 pt-3 mt-3 space-y-1">
+                <div className="border-t border-stone-800 pt-3 mt-3 space-y-1">
                   {Object.entries(socialProfiles).map(([platform, url]) =>
                     url ? (
                       <a
@@ -286,7 +286,7 @@ export function ProspectDossierClient({
           </Card>
 
           {/* Gatekeeper Intel */}
-          <Card className="border-amber-200 bg-amber-50/30">
+          <Card className="border-amber-200 bg-amber-950/30">
             <CardHeader>
               <CardTitle className="text-sm flex items-center gap-2">
                 <Shield className="h-4 w-4 text-amber-600" />
@@ -297,7 +297,7 @@ export function ProspectDossierClient({
               {prospect.contact_person && (
                 <div>
                   <span className="text-xs font-medium text-stone-500">Ask For:</span>
-                  <p className="text-stone-900 font-medium">{prospect.contact_person}</p>
+                  <p className="text-stone-100 font-medium">{prospect.contact_person}</p>
                   {prospect.contact_title && (
                     <p className="text-xs text-stone-500">{prospect.contact_title}</p>
                   )}
@@ -306,19 +306,19 @@ export function ProspectDossierClient({
               {prospect.gatekeeper_name && (
                 <div>
                   <span className="text-xs font-medium text-stone-500">Gatekeeper:</span>
-                  <p className="text-stone-700">{prospect.gatekeeper_name}</p>
+                  <p className="text-stone-300">{prospect.gatekeeper_name}</p>
                 </div>
               )}
               {prospect.gatekeeper_notes && (
                 <div>
                   <span className="text-xs font-medium text-stone-500">How to Get Through:</span>
-                  <p className="text-stone-700">{prospect.gatekeeper_notes}</p>
+                  <p className="text-stone-300">{prospect.gatekeeper_notes}</p>
                 </div>
               )}
               {prospect.best_time_to_call && (
                 <div className="flex items-center gap-2">
                   <Clock className="h-3.5 w-3.5 text-amber-600" />
-                  <span className="text-stone-700">Best time: {prospect.best_time_to_call}</span>
+                  <span className="text-stone-300">Best time: {prospect.best_time_to_call}</span>
                 </div>
               )}
               {!prospect.contact_person &&
@@ -340,12 +340,12 @@ export function ProspectDossierClient({
             </CardHeader>
             <CardContent className="text-sm space-y-2">
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="rounded-lg bg-stone-50 p-2 text-center">
-                  <p className="text-lg font-semibold text-stone-900">{prospect.call_count}</p>
+                <div className="rounded-lg bg-stone-800 p-2 text-center">
+                  <p className="text-lg font-semibold text-stone-100">{prospect.call_count}</p>
                   <p className="text-stone-500">Total Calls</p>
                 </div>
-                <div className="rounded-lg bg-stone-50 p-2 text-center">
-                  <p className="text-sm font-medium text-stone-900 mt-1">
+                <div className="rounded-lg bg-stone-800 p-2 text-center">
+                  <p className="text-sm font-medium text-stone-100 mt-1">
                     {prospect.last_outcome ?? 'Never called'}
                   </p>
                   <p className="text-stone-500">Last Outcome</p>
@@ -376,7 +376,7 @@ export function ProspectDossierClient({
         {/* Right column — Approach, Intelligence, Actions */}
         <div className="lg:col-span-2 space-y-4">
           {/* Quick Call Log */}
-          <Card className="border-brand-200 bg-brand-50/20">
+          <Card className="border-brand-700 bg-brand-950/20">
             <CardContent className="py-4">
               {!showCallLog ? (
                 <div className="flex items-center gap-3">
@@ -401,7 +401,7 @@ export function ProspectDossierClient({
                         className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                           callOutcome === outcome.value
                             ? 'bg-brand-600 text-white'
-                            : 'bg-white border border-stone-200 text-stone-700 hover:bg-stone-50'
+                            : 'bg-surface border border-stone-700 text-stone-300 hover:bg-stone-800'
                         }`}
                       >
                         {outcome.label}
@@ -410,11 +410,11 @@ export function ProspectDossierClient({
                   </div>
                   {callOutcome === 'spoke_follow_up' && (
                     <div className="flex items-center gap-2">
-                      <label className="text-xs text-stone-600">Follow up in:</label>
+                      <label className="text-xs text-stone-400">Follow up in:</label>
                       <select
                         value={followUpDays}
                         onChange={(e) => setFollowUpDays(Number(e.target.value))}
-                        className="rounded border border-stone-200 px-2 py-1 text-xs"
+                        className="rounded border border-stone-700 px-2 py-1 text-xs"
                       >
                         <option value={1}>1 day</option>
                         <option value={3}>3 days</option>
@@ -429,7 +429,7 @@ export function ProspectDossierClient({
                     onChange={(e) => setCallNotes(e.target.value)}
                     placeholder="Call notes (optional)..."
                     rows={2}
-                    className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+                    className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm"
                   />
                   <div className="flex items-center gap-2">
                     <Button onClick={handleLogCall} disabled={!callOutcome || isPending}>
@@ -447,7 +447,7 @@ export function ProspectDossierClient({
 
           {/* Approach Strategy */}
           {prospect.approach_strategy && (
-            <Card className="border-blue-200 bg-blue-50/30">
+            <Card className="border-blue-200 bg-blue-950/30">
               <CardHeader>
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Target className="h-4 w-4 text-blue-600" />
@@ -455,7 +455,7 @@ export function ProspectDossierClient({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-stone-800 whitespace-pre-wrap">
+                <p className="text-sm text-stone-200 whitespace-pre-wrap">
                   {prospect.approach_strategy}
                 </p>
               </CardContent>
@@ -472,7 +472,7 @@ export function ProspectDossierClient({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-stone-700 whitespace-pre-wrap">
+                <p className="text-sm text-stone-300 whitespace-pre-wrap">
                   {prospect.talking_points}
                 </p>
               </CardContent>
@@ -489,7 +489,7 @@ export function ProspectDossierClient({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-stone-700 whitespace-pre-wrap font-mono bg-stone-50 rounded-lg p-3">
+                <p className="text-sm text-stone-300 whitespace-pre-wrap font-mono bg-stone-800 rounded-lg p-3">
                   {script.script_body}
                 </p>
               </CardContent>
@@ -508,32 +508,32 @@ export function ProspectDossierClient({
               {prospect.description && (
                 <div>
                   <span className="text-xs font-medium text-stone-500">Description</span>
-                  <p className="text-stone-700">{prospect.description}</p>
+                  <p className="text-stone-300">{prospect.description}</p>
                 </div>
               )}
               <div className="grid grid-cols-2 gap-3 text-xs">
                 {prospect.annual_events_estimate && (
-                  <div className="rounded-lg bg-stone-50 p-2">
+                  <div className="rounded-lg bg-stone-800 p-2">
                     <span className="font-medium text-stone-500">Annual Events</span>
-                    <p className="text-stone-800 mt-0.5">{prospect.annual_events_estimate}</p>
+                    <p className="text-stone-200 mt-0.5">{prospect.annual_events_estimate}</p>
                   </div>
                 )}
                 {prospect.membership_size && (
-                  <div className="rounded-lg bg-stone-50 p-2">
+                  <div className="rounded-lg bg-stone-800 p-2">
                     <span className="font-medium text-stone-500">Membership Size</span>
-                    <p className="text-stone-800 mt-0.5">{prospect.membership_size}</p>
+                    <p className="text-stone-200 mt-0.5">{prospect.membership_size}</p>
                   </div>
                 )}
                 {prospect.avg_event_budget && (
-                  <div className="rounded-lg bg-stone-50 p-2">
+                  <div className="rounded-lg bg-stone-800 p-2">
                     <span className="font-medium text-stone-500">Avg Event Budget</span>
-                    <p className="text-stone-800 mt-0.5">{prospect.avg_event_budget}</p>
+                    <p className="text-stone-200 mt-0.5">{prospect.avg_event_budget}</p>
                   </div>
                 )}
                 {prospect.competitors_present && (
-                  <div className="rounded-lg bg-stone-50 p-2">
+                  <div className="rounded-lg bg-stone-800 p-2">
                     <span className="font-medium text-stone-500">Current Caterer</span>
-                    <p className="text-stone-800 mt-0.5">{prospect.competitors_present}</p>
+                    <p className="text-stone-200 mt-0.5">{prospect.competitors_present}</p>
                   </div>
                 )}
               </div>
@@ -544,7 +544,7 @@ export function ProspectDossierClient({
                     {prospect.event_types_hosted.map((type) => (
                       <span
                         key={type}
-                        className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-600"
+                        className="rounded-full bg-stone-800 px-2 py-0.5 text-xs text-stone-400"
                       >
                         {type}
                       </span>
@@ -555,7 +555,7 @@ export function ProspectDossierClient({
               {prospect.seasonal_notes && (
                 <div>
                   <span className="text-xs font-medium text-stone-500">Seasonal Notes</span>
-                  <p className="text-xs text-stone-700">{prospect.seasonal_notes}</p>
+                  <p className="text-xs text-stone-300">{prospect.seasonal_notes}</p>
                 </div>
               )}
               {prospect.luxury_indicators && prospect.luxury_indicators.length > 0 && (
@@ -565,7 +565,7 @@ export function ProspectDossierClient({
                     {prospect.luxury_indicators.map((ind) => (
                       <span
                         key={ind}
-                        className="rounded-full bg-amber-50 border border-amber-200 px-2 py-0.5 text-xs text-amber-700"
+                        className="rounded-full bg-amber-950 border border-amber-200 px-2 py-0.5 text-xs text-amber-700"
                       >
                         {ind}
                       </span>
@@ -580,7 +580,7 @@ export function ProspectDossierClient({
                     {prospect.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="rounded-full bg-brand-50 border border-brand-200 px-2 py-0.5 text-xs text-brand-700"
+                        className="rounded-full bg-brand-950 border border-brand-700 px-2 py-0.5 text-xs text-brand-400"
                       >
                         {tag}
                       </span>
@@ -603,7 +603,7 @@ export function ProspectDossierClient({
                   <select
                     value={noteType}
                     onChange={(e) => setNoteType(e.target.value)}
-                    className="rounded border border-stone-200 px-2 py-1 text-xs"
+                    className="rounded border border-stone-700 px-2 py-1 text-xs"
                   >
                     {NOTE_TYPES.map((t) => (
                       <option key={t} value={t}>
@@ -617,7 +617,7 @@ export function ProspectDossierClient({
                   onChange={(e) => setNewNote(e.target.value)}
                   placeholder="Add a note..."
                   rows={2}
-                  className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm"
                 />
                 <Button size="sm" onClick={handleAddNote} disabled={!newNote.trim() || isPending}>
                   {isPending ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : null}
@@ -627,9 +627,9 @@ export function ProspectDossierClient({
 
               {/* Notes timeline */}
               {notes.length > 0 ? (
-                <div className="space-y-2 border-t border-stone-100 pt-4">
+                <div className="space-y-2 border-t border-stone-800 pt-4">
                   {notes.map((note) => (
-                    <div key={note.id} className="rounded-lg bg-stone-50 p-3 text-sm">
+                    <div key={note.id} className="rounded-lg bg-stone-800 p-3 text-sm">
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs font-medium text-stone-500 capitalize">
                           {note.note_type.replace('_', ' ')}
@@ -638,7 +638,7 @@ export function ProspectDossierClient({
                           {format(new Date(note.created_at), 'MMM d, yyyy h:mm a')}
                         </span>
                       </div>
-                      <p className="text-stone-700 whitespace-pre-wrap">{note.content}</p>
+                      <p className="text-stone-300 whitespace-pre-wrap">{note.content}</p>
                     </div>
                   ))}
                 </div>
@@ -648,9 +648,9 @@ export function ProspectDossierClient({
 
               {/* Chef's personal notes from prospect record */}
               {prospect.notes && (
-                <div className="border-t border-stone-100 pt-4">
+                <div className="border-t border-stone-800 pt-4">
                   <span className="text-xs font-medium text-stone-500">Original Notes</span>
-                  <p className="text-sm text-stone-700 mt-1 whitespace-pre-wrap">
+                  <p className="text-sm text-stone-300 mt-1 whitespace-pre-wrap">
                     {prospect.notes}
                   </p>
                 </div>

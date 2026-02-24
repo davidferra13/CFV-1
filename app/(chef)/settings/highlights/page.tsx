@@ -23,12 +23,13 @@ export default async function HighlightsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-700">
+          <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Settings
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Profile Highlights</h1>
-          <p className="text-stone-600 mt-1">
-            Feature your key achievements, certifications, press mentions, and awards on your profile.
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Profile Highlights</h1>
+          <p className="text-stone-400 mt-1">
+            Feature your key achievements, certifications, press mentions, and awards on your
+            profile.
           </p>
         </div>
       </div>

@@ -57,10 +57,10 @@ export default async function FoodCostAnalysisPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Inventory
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Food Cost Analysis</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Food Cost Analysis</h1>
         <p className="text-stone-500 mt-1">
           Compare theoretical food costs (from recipes) against actual grocery spend per event.
           Identify where costs are running over or under projections.
@@ -68,7 +68,7 @@ export default async function FoodCostAnalysisPage() {
       </div>
 
       {varianceEvents.length === 0 ? (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
           <p className="text-stone-500 text-sm">
             No food cost variance data available yet. This page requires completed events with both
             recipe-based cost projections and actual grocery receipts. Complete a few events with

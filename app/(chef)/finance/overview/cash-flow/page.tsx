@@ -4,7 +4,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { getExpenses } from '@/lib/expenses/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, startOfMonth, subMonths } from 'date-fns'
 
@@ -20,15 +27,22 @@ export default async function CashFlowPage() {
     getExpenses({ start_date: startDate.split('T')[0] }),
   ])
 
-  const months: { key: string; label: string; revenue: number; expenses: number; net: number }[] = []
+  const months: { key: string; label: string; revenue: number; expenses: number; net: number }[] =
+    []
   for (let i = 11; i >= 0; i--) {
     const month = subMonths(now, i)
-    months.push({ key: format(month, 'yyyy-MM'), label: format(month, 'MMM yyyy'), revenue: 0, expenses: 0, net: 0 })
+    months.push({
+      key: format(month, 'yyyy-MM'),
+      label: format(month, 'MMM yyyy'),
+      revenue: 0,
+      expenses: 0,
+      net: 0,
+    })
   }
 
   for (const entry of entries) {
     const key = format(new Date(entry.created_at), 'yyyy-MM')
-    const bucket = months.find(m => m.key === key)
+    const bucket = months.find((m) => m.key === key)
     if (!bucket) continue
     if (entry.is_refund || entry.entry_type === 'refund') {
       bucket.revenue -= Math.abs(entry.amount_cents)
@@ -39,7 +53,7 @@ export default async function CashFlowPage() {
 
   for (const expense of expenses) {
     const key = format(new Date(expense.expense_date), 'yyyy-MM')
-    const bucket = months.find(m => m.key === key)
+    const bucket = months.find((m) => m.key === key)
     if (bucket) bucket.expenses += expense.amount_cents
   }
 
@@ -54,8 +68,10 @@ export default async function CashFlowPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/overview" className="text-sm text-stone-500 hover:text-stone-700">← Overview</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Cash Flow</h1>
+        <Link href="/finance/overview" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Overview
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Cash Flow</h1>
         <p className="text-stone-500 mt-1">Revenue vs. expenses over the last 12 months</p>
       </div>
 
@@ -69,7 +85,9 @@ export default async function CashFlowPage() {
           <p className="text-sm text-stone-500 mt-1">Total expenses (12 months)</p>
         </Card>
         <Card className="p-4">
-          <p className={`text-2xl font-bold ${netCashFlow >= 0 ? 'text-stone-900' : 'text-red-700'}`}>
+          <p
+            className={`text-2xl font-bold ${netCashFlow >= 0 ? 'text-stone-100' : 'text-red-700'}`}
+          >
             {formatCurrency(netCashFlow)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Net cash flow</p>
@@ -87,16 +105,18 @@ export default async function CashFlowPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {[...months].reverse().map(m => (
+            {[...months].reverse().map((m) => (
               <TableRow key={m.key}>
-                <TableCell className="font-medium text-stone-700">{m.label}</TableCell>
+                <TableCell className="font-medium text-stone-300">{m.label}</TableCell>
                 <TableCell className="text-green-700 text-sm">
                   {m.revenue > 0 ? formatCurrency(m.revenue) : '—'}
                 </TableCell>
                 <TableCell className="text-red-600 text-sm">
                   {m.expenses > 0 ? formatCurrency(m.expenses) : '—'}
                 </TableCell>
-                <TableCell className={`text-sm font-semibold ${m.net > 0 ? 'text-stone-900' : m.net < 0 ? 'text-red-700' : 'text-stone-400'}`}>
+                <TableCell
+                  className={`text-sm font-semibold ${m.net > 0 ? 'text-stone-100' : m.net < 0 ? 'text-red-700' : 'text-stone-400'}`}
+                >
                   {m.net !== 0 ? formatCurrency(m.net) : '—'}
                 </TableCell>
               </TableRow>

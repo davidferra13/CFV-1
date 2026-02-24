@@ -34,21 +34,23 @@ export default async function ClientHistoryPage() {
 
   const totalEvents = clients.reduce((sum, c) => sum + (c.totalEvents ?? 0), 0)
   const totalRevenue = clients.reduce((sum, c) => sum + (c.totalSpentCents ?? 0), 0)
-  const clientsWithEvents = clients.filter(c => (c.totalEvents ?? 0) > 0).length
+  const clientsWithEvents = clients.filter((c) => (c.totalEvents ?? 0) > 0).length
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-300">
           ← Clients
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Client History</h1>
-        <p className="text-stone-500 mt-1">A complete record of events, menus, and spending across your clientele</p>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Client History</h1>
+        <p className="text-stone-500 mt-1">
+          A complete record of events, menus, and spending across your clientele
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{totalEvents}</p>
+          <p className="text-2xl font-bold text-stone-100">{totalEvents}</p>
           <p className="text-sm text-stone-500 mt-1">Total events completed</p>
         </Card>
         <Card className="p-4">
@@ -62,11 +64,11 @@ export default async function ClientHistoryPage() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {VIEWS.map(view => (
+        {VIEWS.map((view) => (
           <Link key={view.href} href={view.href}>
             <Card className="p-5 hover:shadow-md transition-shadow cursor-pointer h-full">
               <div className="text-2xl mb-2">{view.icon}</div>
-              <h2 className="font-semibold text-stone-900">{view.label}</h2>
+              <h2 className="font-semibold text-stone-100">{view.label}</h2>
               <p className="text-sm text-stone-500 mt-1">{view.description}</p>
             </Card>
           </Link>

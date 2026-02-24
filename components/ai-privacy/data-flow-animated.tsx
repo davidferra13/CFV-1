@@ -16,7 +16,7 @@ export function DataFlowAnimated() {
     <div className="space-y-8">
       {/* Title */}
       <div className="text-center">
-        <h2 className="text-xl font-bold text-stone-900">Where Does Your Data Go?</h2>
+        <h2 className="text-xl font-bold text-stone-100">Where Does Your Data Go?</h2>
         <p className="text-sm text-stone-500 mt-1">
           See exactly how ChefFlow handles your data compared to other AI services.
         </p>
@@ -25,9 +25,9 @@ export function DataFlowAnimated() {
       {/* Side-by-side comparison */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Red side — Other AI Apps */}
-        <div className="rounded-xl border-2 border-red-200 bg-red-50/50 p-5 space-y-4">
+        <div className="rounded-xl border-2 border-red-200 bg-red-950/50 p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 text-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-900 text-sm">
               ☁️
             </div>
             <div>
@@ -38,17 +38,17 @@ export function DataFlowAnimated() {
 
           {/* Flow diagram */}
           <div className="flex flex-col items-center gap-1 py-2">
-            <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-center">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-4 py-2 text-center">
               <div className="text-xs font-semibold text-red-900">You</div>
               <div className="text-[10px] text-red-500">Client names, budgets...</div>
             </div>
             <div className="text-red-400 text-xs">↓ sent to</div>
-            <div className="rounded-lg border border-red-300 bg-red-100 px-4 py-2 text-center">
+            <div className="rounded-lg border border-red-300 bg-red-900 px-4 py-2 text-center">
               <div className="text-xs font-semibold text-red-900">Their Servers</div>
               <div className="text-[10px] text-red-500">OpenAI, Google, etc.</div>
             </div>
             <div className="text-red-400 text-xs">→</div>
-            <div className="rounded-lg border border-red-300 bg-red-100 px-4 py-2 text-center">
+            <div className="rounded-lg border border-red-300 bg-red-900 px-4 py-2 text-center">
               <div className="text-xs font-semibold text-red-900">Third Parties</div>
               <div className="text-[10px] text-red-500">Training, ads, leaks</div>
             </div>
@@ -70,9 +70,9 @@ export function DataFlowAnimated() {
         </div>
 
         {/* Green side — ChefFlow + Remy */}
-        <div className="rounded-xl border-2 border-emerald-200 bg-emerald-50/50 p-5 space-y-4">
+        <div className="rounded-xl border-2 border-emerald-200 bg-emerald-950/50 p-5 space-y-4">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-900 text-sm">
               🛡️
             </div>
             <div>
@@ -83,17 +83,17 @@ export function DataFlowAnimated() {
 
           {/* Flow diagram */}
           <div className="flex flex-col items-center gap-1 py-2">
-            <div className="rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-50 p-3 space-y-2 w-full">
+            <div className="rounded-lg border-2 border-dashed border-emerald-300 bg-emerald-950 p-3 space-y-2 w-full">
               <div className="text-[10px] font-semibold text-emerald-800 text-center">
                 ChefFlow (everything stays here)
               </div>
               <div className="flex items-center justify-center gap-2">
-                <div className="rounded-md border border-emerald-300 bg-emerald-100 px-3 py-1.5 text-center">
+                <div className="rounded-md border border-emerald-300 bg-emerald-900 px-3 py-1.5 text-center">
                   <div className="text-xs font-semibold text-emerald-900">Your Data</div>
                   <div className="text-[10px] text-emerald-600">Clients, menus</div>
                 </div>
                 <div className="text-emerald-400 text-xs">⇄</div>
-                <div className="rounded-md border border-emerald-300 bg-emerald-100 px-3 py-1.5 text-center">
+                <div className="rounded-md border border-emerald-300 bg-emerald-900 px-3 py-1.5 text-center">
                   <div className="text-xs font-semibold text-emerald-900">Remy (AI)</div>
                   <div className="text-[10px] text-emerald-600">Private servers</div>
                 </div>
@@ -126,8 +126,8 @@ export function DataFlowAnimated() {
       </div>
 
       {/* What Remy CAN and CANNOT do — preserved from original */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5">
-        <h3 className="font-semibold text-stone-900 mb-4 text-center">
+      <div className="rounded-xl border border-stone-700 bg-surface p-5">
+        <h3 className="font-semibold text-stone-100 mb-4 text-center">
           What Remy Can &amp; Cannot Do
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -144,7 +144,7 @@ export function DataFlowAnimated() {
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
                 <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-                <span className="text-sm text-stone-700">{item}</span>
+                <span className="text-sm text-stone-300">{item}</span>
               </div>
             ))}
           </div>
@@ -161,7 +161,7 @@ export function DataFlowAnimated() {
             ].map((item) => (
               <div key={item} className="flex items-start gap-2">
                 <X className="h-4 w-4 text-red-400 mt-0.5 shrink-0" />
-                <span className="text-sm text-stone-700">{item}</span>
+                <span className="text-sm text-stone-300">{item}</span>
               </div>
             ))}
           </div>

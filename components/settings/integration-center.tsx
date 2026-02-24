@@ -62,11 +62,11 @@ export function IntegrationCenter({
               {providers.map((provider) => (
                 <div
                   key={provider.provider}
-                  className="flex items-start justify-between gap-3 rounded-lg border border-stone-200 px-4 py-3"
+                  className="flex items-start justify-between gap-3 rounded-lg border border-stone-700 px-4 py-3"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-stone-900">{provider.label}</p>
+                      <p className="font-medium text-stone-100">{provider.label}</p>
                       <Badge variant={provider.isConnected ? 'success' : 'default'}>
                         {provider.isConnected ? 'Connected' : 'Not connected'}
                       </Badge>
@@ -89,7 +89,9 @@ export function IntegrationCenter({
                   </div>
 
                   <div className="shrink-0 text-right">
-                    <p className="text-xs text-stone-500">Connections: {provider.connectionCount}</p>
+                    <p className="text-xs text-stone-500">
+                      Connections: {provider.connectionCount}
+                    </p>
                     {provider.lastEventStatus && (
                       <Badge variant={statusVariant(provider.lastEventStatus)} className="mt-1">
                         {provider.lastEventStatus}
@@ -115,10 +117,10 @@ export function IntegrationCenter({
               {recentEvents.slice(0, 20).map((event) => (
                 <div
                   key={event.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 px-4 py-2"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-stone-700 px-4 py-2"
                 >
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-stone-900">
+                    <p className="text-sm font-medium text-stone-100">
                       {event.provider} / {event.sourceEventType}
                     </p>
                     <p className="text-xs text-stone-500">

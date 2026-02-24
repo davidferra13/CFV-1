@@ -19,7 +19,7 @@ export default async function DailyOpsPage() {
     <div className="flex flex-col gap-6 max-w-3xl mx-auto">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-display text-stone-900">Daily Ops</h1>
+        <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Daily Ops</h1>
         <p className="text-sm text-stone-400 mt-0.5">{todayFormatted}</p>
       </div>
 

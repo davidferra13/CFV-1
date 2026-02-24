@@ -40,7 +40,7 @@ function StatCard({
   trend?: 'up' | 'down' | 'neutral'
 }) {
   return (
-    <div className="bg-white rounded-xl border border-slate-200 px-5 py-4">
+    <div className="bg-surface rounded-xl border border-slate-200 px-5 py-4">
       <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">{label}</p>
       <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
       {sub !== undefined && (
@@ -70,10 +70,10 @@ function QuickTile({
   return (
     <Link
       href={href}
-      className="bg-white rounded-xl border border-slate-200 px-4 py-4 hover:border-slate-300 hover:shadow-sm transition-all group"
+      className="bg-surface rounded-xl border border-slate-200 px-4 py-4 hover:border-slate-300 hover:shadow-sm transition-all group"
     >
       <div className="flex items-center gap-3 mb-2">
-        <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-orange-50 transition-colors">
+        <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-orange-950 transition-colors">
           <Icon
             size={16}
             className="text-slate-600 group-hover:text-orange-500 transition-colors"
@@ -152,7 +152,7 @@ export default async function AdminOverviewPage() {
           <StatCard label="New Clients (Month)" value={stats.clientsThisMonth} />
         </div>
       ) : (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+        <div className="bg-red-950 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
           Could not load platform statistics. Check server logs.
         </div>
       )}

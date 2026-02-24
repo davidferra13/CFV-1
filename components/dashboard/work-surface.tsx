@@ -5,7 +5,12 @@ import Link from 'next/link'
 import { format, formatDistanceToNow } from 'date-fns'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { DashboardWorkSurface, WorkItem, WorkCategory, WorkUrgency } from '@/lib/workflow/types'
+import type {
+  DashboardWorkSurface,
+  WorkItem,
+  WorkCategory,
+  WorkUrgency,
+} from '@/lib/workflow/types'
 
 // ============================================
 // SUMMARY BAR
@@ -19,25 +24,31 @@ function SummaryBar({ surface }: { surface: DashboardWorkSurface }) {
       <Card>
         <CardContent className="pt-6">
           <div className="text-sm font-medium text-stone-500">Active Events</div>
-          <div className="text-3xl font-bold text-stone-900 mt-2">{summary.totalActiveEvents}</div>
+          <div className="text-3xl font-bold text-stone-100 mt-2">{summary.totalActiveEvents}</div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="pt-6">
           <div className="text-sm font-medium text-stone-500">Preparable Now</div>
-          <div className="text-3xl font-bold text-brand-600 mt-2">{summary.totalPreparableActions}</div>
+          <div className="text-3xl font-bold text-brand-600 mt-2">
+            {summary.totalPreparableActions}
+          </div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="pt-6">
           <div className="text-sm font-medium text-stone-500">Blocked</div>
-          <div className="text-3xl font-bold text-stone-400 mt-2">{summary.totalBlockedActions}</div>
+          <div className="text-3xl font-bold text-stone-400 mt-2">
+            {summary.totalBlockedActions}
+          </div>
         </CardContent>
       </Card>
       <Card>
         <CardContent className="pt-6">
           <div className="text-sm font-medium text-amber-600">Fragile if Delayed</div>
-          <div className="text-3xl font-bold text-amber-600 mt-2">{summary.totalFragileActions}</div>
+          <div className="text-3xl font-bold text-amber-600 mt-2">
+            {summary.totalFragileActions}
+          </div>
         </CardContent>
       </Card>
     </div>
@@ -49,15 +60,18 @@ function SummaryBar({ surface }: { surface: DashboardWorkSurface }) {
 // ============================================
 
 const URGENCY_STYLES: Record<WorkUrgency, string> = {
-  fragile: 'border-l-4 border-l-amber-500 bg-amber-50',
+  fragile: 'border-l-4 border-l-amber-500 bg-amber-950',
   normal: 'border-l-4 border-l-brand-400',
-  low: 'border-l-4 border-l-stone-300'
+  low: 'border-l-4 border-l-stone-300',
 }
 
-const CATEGORY_BADGE: Record<WorkCategory, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const CATEGORY_BADGE: Record<
+  WorkCategory,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   blocked: { label: 'Blocked', variant: 'error' },
   preparable: { label: 'Ready', variant: 'success' },
-  optional_early: { label: 'Optional', variant: 'info' }
+  optional_early: { label: 'Optional', variant: 'info' },
 }
 
 function WorkItemRow({ item }: { item: WorkItem }) {
@@ -73,19 +87,19 @@ function WorkItemRow({ item }: { item: WorkItem }) {
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium text-stone-900 text-sm">{item.title}</span>
+            <span className="font-medium text-stone-100 text-sm">{item.title}</span>
             <Badge variant={badge.variant}>{badge.label}</Badge>
-            {item.urgency === 'fragile' && (
-              <Badge variant="warning">Fragile</Badge>
-            )}
+            {item.urgency === 'fragile' && <Badge variant="warning">Fragile</Badge>}
           </div>
-          <p className="text-sm text-stone-600 mt-1">{item.description}</p>
+          <p className="text-sm text-stone-400 mt-1">{item.description}</p>
           {item.blockedBy && (
             <p className="text-xs text-red-600 mt-1">Waiting on: {item.blockedBy}</p>
           )}
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-sm font-medium text-stone-900 truncate max-w-[140px]">{item.eventOccasion}</p>
+          <p className="text-sm font-medium text-stone-100 truncate max-w-[140px]">
+            {item.eventOccasion}
+          </p>
           <p className="text-xs text-stone-500">{item.clientName}</p>
           <p className="text-xs text-stone-400 mt-1">{timeUntil}</p>
         </div>
@@ -95,9 +109,7 @@ function WorkItemRow({ item }: { item: WorkItem }) {
           Stage {item.stageNumber}: {item.stageLabel}
         </span>
         <span className="text-xs text-stone-300">|</span>
-        <span className="text-xs text-stone-400">
-          {format(eventDate, 'MMM d, yyyy')}
-        </span>
+        <span className="text-xs text-stone-400">{format(eventDate, 'MMM d, yyyy')}</span>
       </div>
     </Link>
   )
@@ -112,7 +124,7 @@ function WorkSection({
   description,
   items,
   emptyMessage,
-  defaultCollapsed = false
+  defaultCollapsed = false,
 }: {
   title: string
   description: string
@@ -127,7 +139,9 @@ function WorkSection({
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>
-            <CardTitle>{title} ({items.length})</CardTitle>
+            <CardTitle>
+              {title} ({items.length})
+            </CardTitle>
             <p className="text-sm text-stone-500 mt-1">{description}</p>
           </div>
         </div>
@@ -137,7 +151,7 @@ function WorkSection({
           <p className="text-sm text-stone-400 py-4 text-center">{emptyMessage}</p>
         ) : (
           <div className="space-y-3">
-            {items.map(item => (
+            {items.map((item) => (
               <WorkItemRow key={item.id} item={item} />
             ))}
           </div>
@@ -152,15 +166,15 @@ function WorkSection({
 // ============================================
 
 export function DashboardWorkSurfaceView({ surface }: { surface: DashboardWorkSurface }) {
-  const hasNoEvents = surface.summary.totalActiveEvents === 0 &&
-    surface.byEvent.every(e => e.facts.isTerminal)
+  const hasNoEvents =
+    surface.summary.totalActiveEvents === 0 && surface.byEvent.every((e) => e.facts.isTerminal)
 
   if (hasNoEvents && surface.byEvent.length === 0) {
     return (
       <div className="space-y-6">
         <SummaryBar surface={surface} />
         <Card className="p-12 text-center">
-          <h3 className="text-lg font-medium text-stone-900">No active events</h3>
+          <h3 className="text-lg font-medium text-stone-100">No active events</h3>
           <p className="text-stone-500 mt-2">
             Create your first event to see preparable work here.
           </p>

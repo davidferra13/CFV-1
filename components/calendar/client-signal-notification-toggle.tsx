@@ -31,13 +31,13 @@ export function ClientSignalNotificationToggle({ initialEnabled }: Props) {
   }
 
   return (
-    <div className="border border-stone-200 rounded-xl p-4 space-y-3">
+    <div className="border border-stone-700 rounded-xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="font-medium text-stone-900">Chef Availability Notifications</p>
+          <p className="font-medium text-stone-100">Chef Availability Notifications</p>
           <p className="text-sm text-stone-500 mt-0.5">
-            When enabled, your chef can notify you when they are actively seeking a booking
-            on specific dates. You can inquire directly from those notifications.
+            When enabled, your chef can notify you when they are actively seeking a booking on
+            specific dates. You can inquire directly from those notifications.
           </p>
         </div>
         <button
@@ -47,12 +47,12 @@ export function ClientSignalNotificationToggle({ initialEnabled }: Props) {
           onClick={handleToggle}
           className={[
             'relative flex-shrink-0 inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2',
-            enabled ? 'bg-brand-600' : 'bg-stone-200',
+            enabled ? 'bg-brand-600' : 'bg-stone-700',
           ].join(' ')}
         >
           <span
             className={[
-              'inline-block h-4 w-4 transform rounded-full bg-white transition-transform shadow',
+              'inline-block h-4 w-4 transform rounded-full bg-surface transition-transform shadow',
               enabled ? 'translate-x-6' : 'translate-x-1',
             ].join(' ')}
           />
@@ -60,18 +60,16 @@ export function ClientSignalNotificationToggle({ initialEnabled }: Props) {
       </div>
 
       {enabled ? (
-        <p className="text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2">
+        <p className="text-xs text-green-700 bg-green-950 rounded-lg px-3 py-2">
           On — you will be notified when your chef posts available booking dates.
         </p>
       ) : (
-        <p className="text-xs text-stone-500 bg-stone-50 rounded-lg px-3 py-2">
+        <p className="text-xs text-stone-500 bg-stone-800 rounded-lg px-3 py-2">
           Off — you will not receive availability date notifications.
         </p>
       )}
 
-      {error && (
-        <p className="text-xs text-red-600">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600">{error}</p>}
     </div>
   )
 }

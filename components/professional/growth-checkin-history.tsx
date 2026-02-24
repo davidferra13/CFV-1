@@ -35,12 +35,12 @@ export function GrowthCheckinHistory({ checkins }: { checkins: Checkin[] }) {
                 </span>
               </div>
               {c.learned_this_quarter && (
-                <p className="text-sm text-stone-700">
+                <p className="text-sm text-stone-300">
                   <span className="font-medium">Learned:</span> {c.learned_this_quarter}
                 </p>
               )}
               {c.goal_next_quarter && (
-                <p className="text-sm text-stone-600 mt-1">
+                <p className="text-sm text-stone-400 mt-1">
                   <span className="font-medium">Goal:</span> {c.goal_next_quarter}
                 </p>
               )}

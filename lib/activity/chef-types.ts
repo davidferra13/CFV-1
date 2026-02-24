@@ -363,7 +363,7 @@ export const DOMAIN_CONFIG: Record<
   client: { label: 'Client', color: 'text-indigo-700', bgColor: 'bg-indigo-100' },
   financial: { label: 'Financial', color: 'text-green-700', bgColor: 'bg-green-100' },
   communication: { label: 'Comms', color: 'text-sky-700', bgColor: 'bg-sky-100' },
-  operational: { label: 'Ops', color: 'text-stone-600', bgColor: 'bg-stone-100' },
+  operational: { label: 'Ops', color: 'text-stone-400', bgColor: 'bg-stone-800' },
   staff: { label: 'Staff', color: 'text-orange-700', bgColor: 'bg-orange-100' },
   scheduling: { label: 'Schedule', color: 'text-cyan-700', bgColor: 'bg-cyan-100' },
   document: { label: 'Document', color: 'text-rose-700', bgColor: 'bg-rose-100' },

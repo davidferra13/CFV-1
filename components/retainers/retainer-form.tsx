@@ -78,19 +78,19 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
     <Card className="p-6">
       <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+          <div className="p-3 bg-red-950 text-red-700 text-sm rounded-lg border border-red-200">
             {error}
           </div>
         )}
 
         {/* Client */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Client</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Client</label>
           <select
             value={clientId}
             onChange={(e) => setClientId(e.target.value)}
             required
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             <option value="">Select a client...</option>
             {clients.map((c) => (
@@ -103,25 +103,25 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
 
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Retainer Name</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Retainer Name</label>
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             placeholder="e.g. Monthly Meal Prep — Johnson Family"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         {/* Billing Cycle + Amount */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Billing Cycle</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Billing Cycle</label>
             <select
               value={billingCycle}
               onChange={(e) => setBillingCycle(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               {Object.entries(BILLING_CYCLE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -131,7 +131,7 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Amount ($)</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Amount ($)</label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 text-sm">
                 $
@@ -142,7 +142,7 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
                 onChange={(e) => setAmountDisplay(e.target.value)}
                 required
                 placeholder="0.00"
-                className="w-full rounded-lg border border-stone-300 pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full rounded-lg border border-stone-600 pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
@@ -151,7 +151,7 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
         {/* Inclusions */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Included Events <span className="text-stone-400">(optional)</span>
             </label>
             <input
@@ -160,11 +160,11 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
               onChange={(e) => setIncludesEventsCount(e.target.value)}
               min={0}
               placeholder="Unlimited"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Included Hours <span className="text-stone-400">(optional)</span>
             </label>
             <input
@@ -174,7 +174,7 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
               min={0}
               step={0.5}
               placeholder="Unlimited"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -182,49 +182,49 @@ export function RetainerForm({ clients, mode, retainer }: RetainerFormProps) {
         {/* Date range */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Start Date</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Start Date</label>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               required
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               End Date <span className="text-stone-400">(optional)</span>
             </label>
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
 
         {/* Notes */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Internal notes about this retainer agreement..."
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
         {/* Terms Summary */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Terms Summary</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Terms Summary</label>
           <textarea
             value={termsSummary}
             onChange={(e) => setTermsSummary(e.target.value)}
             rows={3}
             placeholder="Human-readable terms for the client portal..."
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 

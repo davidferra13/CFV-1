@@ -73,7 +73,7 @@ export default async function CulinaryHubPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Culinary</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Culinary</h1>
         <p className="text-stone-500 mt-1">Recipes, menus, ingredients, costing, and suppliers</p>
       </div>
 
@@ -82,7 +82,7 @@ export default async function CulinaryHubPage() {
         {stats.map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-4 pb-4">
-              <p className="text-2xl font-bold text-stone-900">{s.value}</p>
+              <p className="text-2xl font-bold text-stone-100">{s.value}</p>
               <p className="text-sm text-stone-500 mt-0.5">{s.label}</p>
             </CardContent>
           </Card>
@@ -98,7 +98,7 @@ export default async function CulinaryHubPage() {
                 <div className="flex items-start gap-3">
                   <span className="text-2xl">{tile.icon}</span>
                   <div>
-                    <p className="font-semibold text-stone-900 group-hover:text-brand-700 transition-colors">
+                    <p className="font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
                       {tile.label}
                     </p>
                     <p className="text-sm text-stone-500 mt-0.5">{tile.description}</p>

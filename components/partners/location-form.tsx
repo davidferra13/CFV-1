@@ -104,7 +104,7 @@ export function LocationForm({
       {error && <Alert variant="error">{error}</Alert>}
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
+        <label className="block text-sm font-medium text-stone-300 mb-1">
           Location Name <span className="text-red-500">*</span>
         </label>
         <Input
@@ -116,7 +116,7 @@ export function LocationForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">Description</label>
         <Textarea
           name="description"
           defaultValue={location?.description || ''}
@@ -127,35 +127,41 @@ export function LocationForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Address</label>
-          <Input name="address" defaultValue={location?.address || ''} placeholder="123 Mountain Rd" />
+          <label className="block text-sm font-medium text-stone-300 mb-1">Address</label>
+          <Input
+            name="address"
+            defaultValue={location?.address || ''}
+            placeholder="123 Mountain Rd"
+          />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">City</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">City</label>
           <Input name="city" defaultValue={location?.city || ''} placeholder="Aspen" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">State</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">State</label>
           <Input name="state" defaultValue={location?.state || ''} placeholder="CO" />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">ZIP</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">ZIP</label>
           <Input name="zip" defaultValue={location?.zip || ''} placeholder="81611" />
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Booking URL</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Booking URL</label>
           <Input
             name="booking_url"
             defaultValue={location?.booking_url || ''}
             placeholder="https://airbnb.com/rooms/..."
           />
-          <p className="text-xs text-stone-400 mt-1">Overrides the partner-level booking link for this location</p>
+          <p className="text-xs text-stone-400 mt-1">
+            Overrides the partner-level booking link for this location
+          </p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Max Guest Count</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Max Guest Count</label>
           <Input
             name="max_guest_count"
             type="number"
@@ -167,7 +173,7 @@ export function LocationForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Internal Notes</label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">Internal Notes</label>
         <Textarea
           name="notes"
           defaultValue={location?.notes || ''}
@@ -178,11 +184,15 @@ export function LocationForm({
       </div>
 
       <div className="flex justify-end gap-3">
-        <Button type="button" variant="secondary" onClick={() => onSuccess ? onSuccess() : router.back()}>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => (onSuccess ? onSuccess() : router.back())}
+        >
           Cancel
         </Button>
         <Button type="submit" disabled={loading}>
-          {loading ? 'Saving...' : (isEdit ? 'Save Location' : 'Add Location')}
+          {loading ? 'Saving...' : isEdit ? 'Save Location' : 'Add Location'}
         </Button>
       </div>
     </form>

@@ -28,7 +28,7 @@ export default function AuthError({
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-3 w-16 h-16 flex items-center justify-center rounded-full bg-amber-100">
+          <div className="mx-auto mb-3 w-16 h-16 flex items-center justify-center rounded-full bg-amber-900">
             <svg
               className="w-8 h-8 text-amber-600"
               fill="none"
@@ -50,7 +50,7 @@ export default function AuthError({
         </CardHeader>
         <CardContent className="space-y-3">
           {error.digest && (
-            <div className="bg-stone-100 rounded-md p-2.5">
+            <div className="bg-stone-800 rounded-md p-2.5">
               <p className="text-xs text-stone-500">Error ID: {error.digest}</p>
             </div>
           )}

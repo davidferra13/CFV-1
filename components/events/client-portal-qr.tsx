@@ -21,7 +21,7 @@ export function ClientPortalQR({ eventId, appUrl }: ClientPortalQRProps) {
         alt="Client portal QR code"
         width={180}
         height={180}
-        className="rounded border border-stone-200 shadow-sm"
+        className="rounded border border-stone-700 shadow-sm"
       />
       <div className="text-center">
         <p className="text-xs text-stone-500 font-medium">Client Portal</p>

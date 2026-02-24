@@ -129,7 +129,7 @@ export function RemyHistoryList() {
             placeholder="Search history..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-stone-300 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full pl-9 pr-3 py-2 text-sm rounded-lg border border-stone-600 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
 
@@ -142,7 +142,7 @@ export function RemyHistoryList() {
               setTypeFilter(e.target.value)
               setPage(0)
             }}
-            className="text-sm rounded-lg border border-stone-300 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 px-2 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="text-sm rounded-lg border border-stone-600 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100 px-2 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             {FILTER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -177,12 +177,12 @@ export function RemyHistoryList() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="h-20 rounded-lg bg-stone-100 dark:bg-stone-800 animate-pulse" />
+            <div key={i} className="h-20 rounded-lg bg-stone-800 dark:bg-stone-800 animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12">
-          <Bot className="h-12 w-12 text-stone-300 dark:text-stone-600 mx-auto mb-3" />
+          <Bot className="h-12 w-12 text-stone-300 dark:text-stone-400 mx-auto mb-3" />
           <p className="text-sm text-stone-500 dark:text-stone-400">
             {total === 0
               ? 'Nothing here yet. Everything Remy creates is auto-saved — just start chatting!'
@@ -200,8 +200,8 @@ export function RemyHistoryList() {
                 key={artifact.id}
                 className={`rounded-lg border transition-colors ${
                   artifact.pinned
-                    ? 'border-brand-200 bg-brand-50/50 dark:border-brand-800 dark:bg-brand-950/30'
-                    : 'border-stone-200 bg-white dark:border-stone-700 dark:bg-stone-900'
+                    ? 'border-brand-700 bg-brand-950/50 dark:border-brand-800 dark:bg-brand-950/30'
+                    : 'border-stone-700 bg-surface dark:border-stone-700 dark:bg-stone-900'
                 }`}
               >
                 {/* Card header */}
@@ -213,7 +213,7 @@ export function RemyHistoryList() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
-                        <h3 className="text-sm font-medium text-stone-900 dark:text-stone-100 truncate">
+                        <h3 className="text-sm font-medium text-stone-100 dark:text-stone-100 truncate">
                           {artifact.title}
                         </h3>
                         <div className="flex items-center gap-2 mt-1">
@@ -232,8 +232,8 @@ export function RemyHistoryList() {
                           onClick={() => handleTogglePin(artifact.id, artifact.pinned)}
                           className={`p-1 rounded transition-colors ${
                             artifact.pinned
-                              ? 'text-brand-600 hover:text-brand-700'
-                              : 'text-stone-400 hover:text-stone-600 dark:text-stone-500 dark:hover:text-stone-300'
+                              ? 'text-brand-600 hover:text-brand-400'
+                              : 'text-stone-400 hover:text-stone-400 dark:text-stone-500 dark:hover:text-stone-300'
                           }`}
                           title={artifact.pinned ? 'Unpin' : 'Pin'}
                         >
@@ -263,7 +263,7 @@ export function RemyHistoryList() {
                     {/* Expand/collapse */}
                     <button
                       onClick={() => setExpandedId(isExpanded ? null : artifact.id)}
-                      className="flex items-center gap-1 mt-2 text-xs text-stone-500 hover:text-stone-700 dark:text-stone-400 dark:hover:text-stone-200"
+                      className="flex items-center gap-1 mt-2 text-xs text-stone-500 hover:text-stone-300 dark:text-stone-400 dark:hover:text-stone-200"
                     >
                       {isExpanded ? (
                         <ChevronUp className="h-3 w-3" />
@@ -277,23 +277,23 @@ export function RemyHistoryList() {
 
                 {/* Expanded content */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 pt-0 border-t border-stone-100 dark:border-stone-800">
+                  <div className="px-4 pb-4 pt-0 border-t border-stone-800 dark:border-stone-800">
                     {artifact.content && (
-                      <pre className="whitespace-pre-wrap font-sans text-sm text-stone-700 dark:text-stone-300 mt-3">
+                      <pre className="whitespace-pre-wrap font-sans text-sm text-stone-300 dark:text-stone-300 mt-3">
                         {artifact.content}
                       </pre>
                     )}
                     {artifact.data && !artifact.content && (
-                      <pre className="whitespace-pre-wrap font-mono text-xs text-stone-500 mt-3 max-h-64 overflow-auto bg-stone-50 dark:bg-stone-800/50 rounded p-3">
+                      <pre className="whitespace-pre-wrap font-mono text-xs text-stone-500 mt-3 max-h-64 overflow-auto bg-stone-800 dark:bg-stone-800/50 rounded p-3">
                         {JSON.stringify(artifact.data, null, 2)}
                       </pre>
                     )}
                     {artifact.data && artifact.content && (
                       <details className="mt-2">
-                        <summary className="text-xs text-stone-400 cursor-pointer hover:text-stone-600">
+                        <summary className="text-xs text-stone-400 cursor-pointer hover:text-stone-400">
                           Raw data
                         </summary>
-                        <pre className="whitespace-pre-wrap font-mono text-xs text-stone-500 mt-1 max-h-48 overflow-auto bg-stone-50 dark:bg-stone-800/50 rounded p-2">
+                        <pre className="whitespace-pre-wrap font-mono text-xs text-stone-500 mt-1 max-h-48 overflow-auto bg-stone-800 dark:bg-stone-800/50 rounded p-2">
                           {JSON.stringify(artifact.data, null, 2)}
                         </pre>
                       </details>

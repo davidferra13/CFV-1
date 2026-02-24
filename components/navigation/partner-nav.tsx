@@ -35,7 +35,7 @@ function NavLink({
       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
         isActive
           ? 'bg-stone-900 text-white'
-          : 'text-stone-600 hover:bg-stone-100 hover:text-stone-900'
+          : 'text-stone-400 hover:bg-stone-700 hover:text-stone-100'
       }`}
     >
       <Icon size={16} className="shrink-0" />
@@ -46,13 +46,13 @@ function NavLink({
 
 export function PartnerSidebar({ partnerName }: { partnerName: string }) {
   return (
-    <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-stone-200 bg-white min-h-screen">
+    <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-stone-700 bg-surface min-h-screen">
       {/* Brand */}
-      <div className="px-4 py-5 border-b border-stone-100">
+      <div className="px-4 py-5 border-b border-stone-800">
         <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-0.5">
           Partner Portal
         </p>
-        <p className="text-sm font-semibold text-stone-900 truncate">{partnerName}</p>
+        <p className="text-sm font-semibold text-stone-100 truncate">{partnerName}</p>
       </div>
 
       {/* Nav links */}
@@ -63,11 +63,11 @@ export function PartnerSidebar({ partnerName }: { partnerName: string }) {
       </nav>
 
       {/* Sign out */}
-      <div className="px-3 py-4 border-t border-stone-100">
+      <div className="px-3 py-4 border-t border-stone-800">
         <button
           type="button"
           onClick={() => signOut()}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-700 hover:text-stone-100 transition-colors"
         >
           <LogOut size={16} className="shrink-0" />
           Sign out
@@ -82,7 +82,7 @@ export function PartnerMobileNav() {
   const pathname = rawPathname ?? ''
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 z-40 flex">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-stone-700 z-40 flex">
       {NAV_ITEMS.slice(0, 4).map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href || pathname.startsWith(href + '/')
         return (
@@ -90,7 +90,7 @@ export function PartnerMobileNav() {
             key={href}
             href={href}
             className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-colors ${
-              isActive ? 'text-stone-900' : 'text-stone-400'
+              isActive ? 'text-stone-100' : 'text-stone-400'
             }`}
           >
             <Icon size={18} />

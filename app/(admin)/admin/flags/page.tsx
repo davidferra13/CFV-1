@@ -58,7 +58,7 @@ export default async function AdminFlagsPage() {
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-violet-50 rounded-lg">
+        <div className="p-2 bg-violet-950 rounded-lg">
           <ToggleLeft size={18} className="text-violet-600" />
         </div>
         <div>
@@ -68,13 +68,13 @@ export default async function AdminFlagsPage() {
       </div>
 
       {note && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
           {note}
         </div>
       )}
 
       {/* Flag Legend */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4">
+      <div className="bg-surface rounded-xl border border-slate-200 p-4">
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
           Flag Reference
         </h2>

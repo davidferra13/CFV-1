@@ -27,7 +27,7 @@ export function ScopeDriftBanner({ eventId, driftResult, acknowledged }: Props) 
   }
 
   return (
-    <div className="rounded-md border border-amber-300 bg-amber-50 px-4 py-4">
+    <div className="rounded-md border border-amber-300 bg-amber-950 px-4 py-4">
       <div className="flex items-start gap-3">
         <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
         <div className="flex-1 space-y-2">
@@ -57,7 +57,7 @@ export function ScopeDriftBanner({ eventId, driftResult, acknowledged }: Props) 
             </Button>
             <Link
               href={`/quotes/new?from_event=${eventId}`}
-              className="inline-flex items-center gap-1 rounded-md border border-amber-400 bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-200 transition-colors"
+              className="inline-flex items-center gap-1 rounded-md border border-amber-400 bg-amber-900 px-3 py-1.5 text-xs font-medium text-amber-900 hover:bg-amber-200 transition-colors"
             >
               Issue Change Order
               <ArrowRight className="h-3 w-3" />

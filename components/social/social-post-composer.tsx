@@ -10,10 +10,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 type Visibility = PostVisibility
 
 const VISIBILITY_OPTIONS: Array<{ value: Visibility; label: string; icon: React.ReactNode }> = [
-  { value: 'public',      label: 'Public',      icon: <Globe className="h-3.5 w-3.5" /> },
-  { value: 'followers',   label: 'Followers',   icon: <Users className="h-3.5 w-3.5" /> },
+  { value: 'public', label: 'Public', icon: <Globe className="h-3.5 w-3.5" /> },
+  { value: 'followers', label: 'Followers', icon: <Users className="h-3.5 w-3.5" /> },
   { value: 'connections', label: 'Connections', icon: <Users className="h-3.5 w-3.5" /> },
-  { value: 'private',     label: 'Only Me',     icon: <Lock className="h-3.5 w-3.5" /> },
+  { value: 'private', label: 'Only Me', icon: <Lock className="h-3.5 w-3.5" /> },
 ]
 
 export function SocialPostComposer({
@@ -35,7 +35,9 @@ export function SocialPostComposer({
   const [locationTag, setLocationTag] = useState('')
   const [showLocation, setShowLocation] = useState(false)
   const [showVisMenu, setShowVisMenu] = useState(false)
-  const [mediaItems, setMediaItems] = useState<Array<{ url: string; type: 'image' | 'video'; preview: string }>>([])
+  const [mediaItems, setMediaItems] = useState<
+    Array<{ url: string; type: 'image' | 'video'; preview: string }>
+  >([])
   const [uploading, setUploading] = useState(false)
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
@@ -69,10 +71,11 @@ export function SocialPostComposer({
     setError(null)
     startTransition(async () => {
       try {
-        const postType =
-          mediaItems.some((m) => m.type === 'video') ? 'video' :
-          mediaItems.length > 0 ? 'photo' :
-          'text'
+        const postType = mediaItems.some((m) => m.type === 'video')
+          ? 'video'
+          : mediaItems.length > 0
+            ? 'photo'
+            : 'text'
 
         await createSocialPost({
           content: content.trim(),
@@ -95,15 +98,22 @@ export function SocialPostComposer({
     })
   }
 
-  const initials = myName.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
+  const initials = myName
+    .split(' ')
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 space-y-3">
+    <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4 space-y-3">
       {/* Top row */}
       <div className="flex gap-3">
         <Avatar className="w-10 h-10 flex-shrink-0">
           {myAvatar && <AvatarImage src={myAvatar} alt={myName} />}
-          <AvatarFallback className="bg-amber-100 text-amber-800 text-xs font-semibold">{initials}</AvatarFallback>
+          <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
+            {initials}
+          </AvatarFallback>
         </Avatar>
         <textarea
           value={content}
@@ -111,7 +121,7 @@ export function SocialPostComposer({
           placeholder="Share something with the chef community..."
           rows={3}
           maxLength={5000}
-          className="flex-1 resize-none text-sm bg-stone-50 border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent placeholder:text-stone-400"
+          className="flex-1 resize-none text-sm bg-stone-800 border border-stone-700 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent placeholder:text-stone-400"
         />
       </div>
 
@@ -119,7 +129,7 @@ export function SocialPostComposer({
       {mediaItems.length > 0 && (
         <div className="flex gap-2 flex-wrap ml-13">
           {mediaItems.map((item, i) => (
-            <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden bg-stone-100">
+            <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden bg-stone-800">
               {item.type === 'video' ? (
                 <video src={item.preview} className="w-full h-full object-cover" muted />
               ) : (
@@ -147,7 +157,7 @@ export function SocialPostComposer({
             onChange={(e) => setLocationTag(e.target.value)}
             placeholder="Add location..."
             maxLength={100}
-            className="text-sm border border-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 flex-1"
+            className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 flex-1"
           />
         </div>
       )}
@@ -159,7 +169,7 @@ export function SocialPostComposer({
           <select
             value={channelId ?? ''}
             onChange={(e) => setChannelId(e.target.value || null)}
-            className="text-sm border border-stone-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white"
+            className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-surface"
           >
             <option value="">No channel</option>
             {channels.map((ch) => (
@@ -174,14 +184,14 @@ export function SocialPostComposer({
       {error && <p className="text-sm text-red-600 ml-13">{error}</p>}
 
       {/* Bottom toolbar */}
-      <div className="flex items-center justify-between pt-1 border-t border-stone-100">
+      <div className="flex items-center justify-between pt-1 border-t border-stone-800">
         <div className="flex items-center gap-1">
           {/* Media upload */}
           <button
             onClick={() => fileRef.current?.click()}
             disabled={uploading || mediaItems.length >= 10}
             title="Add photo or video"
-            className="p-2 rounded-lg text-stone-500 hover:bg-stone-100 transition-colors disabled:opacity-40"
+            className="p-2 rounded-lg text-stone-500 hover:bg-stone-700 transition-colors disabled:opacity-40"
           >
             <ImagePlus className="h-4 w-4" />
           </button>
@@ -198,7 +208,7 @@ export function SocialPostComposer({
           <button
             onClick={() => setShowLocation((s) => !s)}
             title="Add location"
-            className={`p-2 rounded-lg transition-colors ${showLocation ? 'text-amber-600 bg-amber-50' : 'text-stone-500 hover:bg-stone-100'}`}
+            className={`p-2 rounded-lg transition-colors ${showLocation ? 'text-amber-600 bg-amber-950' : 'text-stone-500 hover:bg-stone-700'}`}
           >
             <MapPin className="h-4 w-4" />
           </button>
@@ -207,19 +217,22 @@ export function SocialPostComposer({
           <div className="relative">
             <button
               onClick={() => setShowVisMenu((s) => !s)}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-stone-600 hover:bg-stone-100 transition-colors"
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium text-stone-400 hover:bg-stone-700 transition-colors"
             >
               {selectedVis.icon}
               <span>{selectedVis.label}</span>
               <ChevronDown className="h-3 w-3" />
             </button>
             {showVisMenu && (
-              <div className="absolute left-0 bottom-full mb-1 bg-white border border-stone-200 rounded-xl shadow-lg z-20 min-w-[140px]">
+              <div className="absolute left-0 bottom-full mb-1 bg-surface border border-stone-700 rounded-xl shadow-lg z-20 min-w-[140px]">
                 {VISIBILITY_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
-                    onClick={() => { setVisibility(opt.value); setShowVisMenu(false) }}
-                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-stone-50 rounded-xl ${visibility === opt.value ? 'font-medium text-amber-700' : 'text-stone-700'}`}
+                    onClick={() => {
+                      setVisibility(opt.value)
+                      setShowVisMenu(false)
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-stone-800 rounded-xl ${visibility === opt.value ? 'font-medium text-amber-700' : 'text-stone-300'}`}
                   >
                     {opt.icon} {opt.label}
                   </button>

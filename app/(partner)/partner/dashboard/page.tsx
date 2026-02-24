@@ -18,12 +18,12 @@ function StatCard({
   icon: typeof MapPin
 }) {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-5">
+    <div className="rounded-xl border border-stone-700 bg-surface p-5">
       <div className="flex items-center gap-2 mb-1">
         <Icon size={15} className="text-stone-400" />
         <span className="text-xs font-medium uppercase tracking-wide text-stone-400">{label}</span>
       </div>
-      <p className="text-3xl font-bold text-stone-900">{value}</p>
+      <p className="text-3xl font-bold text-stone-100">{value}</p>
     </div>
   )
 }
@@ -49,7 +49,7 @@ export default async function PartnerDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Welcome back, {partner.name}</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Welcome back, {partner.name}</h1>
         <p className="mt-1 text-stone-500">
           Here's the impact your space is making — every event below happened because of you.
         </p>
@@ -65,7 +65,7 @@ export default async function PartnerDashboardPage() {
 
       {/* Partnership origin story */}
       {(originClientName || originEventSummary) && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-5">
+        <div className="rounded-xl border border-amber-200 bg-amber-950 p-5">
           <div className="flex items-start gap-3">
             <Heart size={18} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
@@ -86,8 +86,8 @@ export default async function PartnerDashboardPage() {
       {locations.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-stone-900">Your Locations</h2>
-            <Link href="/partner/locations" className="text-sm text-stone-500 hover:text-stone-800">
+            <h2 className="text-lg font-semibold text-stone-100">Your Locations</h2>
+            <Link href="/partner/locations" className="text-sm text-stone-500 hover:text-stone-200">
               Manage →
             </Link>
           </div>
@@ -104,11 +104,11 @@ export default async function PartnerDashboardPage() {
                   <Link
                     key={location.id}
                     href={`/partner/locations/${location.id}`}
-                    className="rounded-xl border border-stone-200 bg-white overflow-hidden hover:border-stone-300 hover:shadow-sm transition-all"
+                    className="rounded-xl border border-stone-700 bg-surface overflow-hidden hover:border-stone-600 hover:shadow-sm transition-all"
                   >
                     {/* Cover image */}
                     {coverImg ? (
-                      <div className="h-36 bg-stone-100 overflow-hidden">
+                      <div className="h-36 bg-stone-800 overflow-hidden">
                         <img
                           src={coverImg}
                           alt={location.name}
@@ -122,7 +122,7 @@ export default async function PartnerDashboardPage() {
                     )}
 
                     <div className="p-4">
-                      <h3 className="font-semibold text-stone-900">{location.name}</h3>
+                      <h3 className="font-semibold text-stone-100">{location.name}</h3>
                       {(location.city || location.state) && (
                         <p className="text-sm text-stone-500 mt-0.5">
                           {[location.city, location.state].filter(Boolean).join(', ')}
@@ -145,10 +145,10 @@ export default async function PartnerDashboardPage() {
       {/* Recent events */}
       {displayEvents.length > 0 && (
         <div>
-          <h2 className="text-lg font-semibold text-stone-900 mb-4">Recent Events</h2>
-          <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+          <h2 className="text-lg font-semibold text-stone-100 mb-4">Recent Events</h2>
+          <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-stone-50 border-b border-stone-200">
+              <thead className="bg-stone-800 border-b border-stone-700">
                 <tr>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium">Date</th>
                   <th className="text-left px-4 py-3 text-stone-500 font-medium">Occasion</th>
@@ -156,17 +156,17 @@ export default async function PartnerDashboardPage() {
                   <th className="text-right px-4 py-3 text-stone-500 font-medium">Guests</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {displayEvents.map((evt) => {
                   const loc = evt.partner_location_id ? locationMap[evt.partner_location_id] : null
                   return (
-                    <tr key={evt.id} className="hover:bg-stone-50">
-                      <td className="px-4 py-3 text-stone-700">
+                    <tr key={evt.id} className="hover:bg-stone-800">
+                      <td className="px-4 py-3 text-stone-300">
                         {format(new Date(evt.event_date), 'MMM d, yyyy')}
                       </td>
-                      <td className="px-4 py-3 text-stone-700">{evt.occasion ?? '—'}</td>
+                      <td className="px-4 py-3 text-stone-300">{evt.occasion ?? '—'}</td>
                       <td className="px-4 py-3 text-stone-500">{loc?.name ?? '—'}</td>
-                      <td className="px-4 py-3 text-right text-stone-700">
+                      <td className="px-4 py-3 text-right text-stone-300">
                         {evt.guest_count ?? '—'}
                       </td>
                     </tr>
@@ -180,9 +180,9 @@ export default async function PartnerDashboardPage() {
 
       {/* Empty state */}
       {locations.length === 0 && (
-        <div className="rounded-xl border border-dashed border-stone-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-stone-600 bg-surface p-10 text-center">
           <MapPin size={32} className="mx-auto text-stone-300 mb-3" />
-          <h3 className="font-semibold text-stone-700 mb-1">No locations yet</h3>
+          <h3 className="font-semibold text-stone-300 mb-1">No locations yet</h3>
           <p className="text-sm text-stone-500">
             Your chef will add your locations. Check back soon — your showcase is on its way.
           </p>

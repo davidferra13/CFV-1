@@ -24,7 +24,7 @@ export function DailyPlanBanner({ stats }: Props) {
   if (remaining === 0 && stats.totalItems > 0) {
     return (
       <Link href="/daily" className="block">
-        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3 hover:bg-green-100 transition-colors">
+        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-950 px-4 py-3 hover:bg-green-900 transition-colors">
           <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
           <p className="text-sm font-medium text-green-800">Daily plan cleared. Go cook.</p>
           <ArrowRight className="h-3.5 w-3.5 text-green-400 ml-auto shrink-0" />
@@ -43,11 +43,11 @@ export function DailyPlanBanner({ stats }: Props) {
 
   return (
     <Link href="/daily" className="block">
-      <div className="flex items-center justify-between rounded-lg border border-brand-200 bg-brand-50/50 px-4 py-3 hover:bg-brand-50 transition-colors">
+      <div className="flex items-center justify-between rounded-lg border border-brand-700 bg-brand-950/50 px-4 py-3 hover:bg-brand-950 transition-colors">
         <div className="flex items-center gap-3 min-w-0">
           <ListChecks className="h-4 w-4 text-brand-600 shrink-0" />
           <div className="min-w-0">
-            <p className="text-sm font-medium text-brand-900">
+            <p className="text-sm font-medium text-brand-200">
               Daily Ops: {parts.join(' \u00B7 ')}
             </p>
             <p className="text-xs text-brand-600/70 mt-0.5">

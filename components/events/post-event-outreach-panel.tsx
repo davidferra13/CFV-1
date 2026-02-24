@@ -58,7 +58,7 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
 
   return (
     <Card className="p-4">
-      <h3 className="font-semibold text-stone-900 mb-2">Guest Outreach</h3>
+      <h3 className="font-semibold text-stone-100 mb-2">Guest Outreach</h3>
       <p className="text-xs text-stone-500 mb-3">
         Draft emails for your event guests. Review before sending from your email.
       </p>
@@ -89,9 +89,9 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
             <Badge variant="default">{draft.recipientCount} recipients</Badge>
           </div>
 
-          <div className="bg-stone-50 rounded-lg p-4 space-y-2">
-            <p className="text-sm font-medium text-stone-700">Subject: {draft.subject}</p>
-            <pre className="text-sm text-stone-600 whitespace-pre-wrap font-sans leading-relaxed">
+          <div className="bg-stone-800 rounded-lg p-4 space-y-2">
+            <p className="text-sm font-medium text-stone-300">Subject: {draft.subject}</p>
+            <pre className="text-sm text-stone-400 whitespace-pre-wrap font-sans leading-relaxed">
               {draft.body}
             </pre>
           </div>
@@ -117,7 +117,7 @@ export function PostEventOutreachPanel({ eventId }: { eventId: string }) {
 
           {draft.recipientCount > 0 && (
             <details className="text-xs text-stone-500">
-              <summary className="cursor-pointer hover:text-stone-700">
+              <summary className="cursor-pointer hover:text-stone-300">
                 Show {draft.recipientCount} recipients
               </summary>
               <div className="mt-1 space-y-0.5 max-h-32 overflow-y-auto">

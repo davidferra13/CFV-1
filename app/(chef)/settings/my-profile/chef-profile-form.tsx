@@ -183,11 +183,11 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
             placeholder="https://your-site.com"
             helperText="Optional. Your primary marketing website."
           />
-          <div className="rounded-lg border border-stone-200 p-3">
-            <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
+          <div className="rounded-lg border border-stone-700 p-3">
+            <label className="flex items-center gap-2 text-sm font-medium text-stone-300">
               <input
                 type="checkbox"
-                className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
                 checked={showWebsiteOnPublicProfile}
                 onChange={(e) => setShowWebsiteOnPublicProfile(e.target.checked)}
               />
@@ -212,14 +212,12 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
             helperText="Default routing preference for incoming leads."
           />
           <div className="w-full">
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              Profile Photo
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">Profile Photo</label>
             <input
               type="file"
               accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
               onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
             />
             <p className="mt-1.5 text-sm text-stone-500">
               Upload a JPEG, PNG, HEIC, or WebP image (max 10MB).
@@ -227,7 +225,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
             {profileImageUrl && !selectedImageFile && (
               <button
                 type="button"
-                className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+                className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
                 onClick={() => setProfileImageUrl('')}
               >
                 Remove current photo
@@ -236,29 +234,28 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
           </div>
 
           {(imagePreviewUrl || profileImageUrl) && (
-            <div className="pt-2 border-t border-stone-100">
-              <p className="text-sm text-stone-600 mb-2">Image Preview</p>
+            <div className="pt-2 border-t border-stone-800">
+              <p className="text-sm text-stone-400 mb-2">Image Preview</p>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={imagePreviewUrl || profileImageUrl}
                 alt="Profile preview"
-                className="h-20 w-20 rounded-full object-cover border border-stone-200"
+                className="h-20 w-20 rounded-full object-cover border border-stone-700"
               />
             </div>
           )}
 
-          <div className="w-full pt-2 border-t border-stone-100">
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              Business Logo
-            </label>
+          <div className="w-full pt-2 border-t border-stone-800">
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">Business Logo</label>
             <p className="text-xs text-stone-500 mb-2">
-              Your brand mark or logo, shown on your public chef page. Transparent PNG or SVG works best.
+              Your brand mark or logo, shown on your public chef page. Transparent PNG or SVG works
+              best.
             </p>
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp,image/svg+xml"
               onChange={(e) => setSelectedLogoFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
             />
             <p className="mt-1.5 text-xs text-stone-500">
               JPEG, PNG, WebP, or SVG (max 5MB). Recommended: landscape format, min 200px wide.
@@ -266,7 +263,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
             {logoUrl && !selectedLogoFile && (
               <button
                 type="button"
-                className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+                className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
                 onClick={() => setLogoUrl('')}
               >
                 Remove current logo
@@ -275,9 +272,9 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
           </div>
 
           {(logoPreviewUrl || logoUrl) && (
-            <div className="pt-2 border-t border-stone-100">
-              <p className="text-sm text-stone-600 mb-2">Logo Preview</p>
-              <div className="inline-flex items-center justify-center rounded-lg border border-stone-200 bg-stone-50 p-3">
+            <div className="pt-2 border-t border-stone-800">
+              <p className="text-sm text-stone-400 mb-2">Logo Preview</p>
+              <div className="inline-flex items-center justify-center rounded-lg border border-stone-700 bg-stone-800 p-3">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={logoPreviewUrl || logoUrl}
@@ -291,12 +288,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
       </Card>
 
       <div className="flex justify-end">
-        <Button
-          variant="primary"
-          size="lg"
-          onClick={handleSave}
-          disabled={isPending}
-        >
+        <Button variant="primary" size="lg" onClick={handleSave} disabled={isPending}>
           {isPending ? 'Saving...' : 'Save Profile'}
         </Button>
       </div>

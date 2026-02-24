@@ -18,23 +18,23 @@ const LEVEL_CONFIG: Record<
 > = {
   low: {
     label: 'Sustainable',
-    dotClass: 'bg-green-500',
+    dotClass: 'bg-green-9500',
     borderClass: 'border-green-200',
-    bgClass: 'bg-green-50/60',
+    bgClass: 'bg-green-950/60',
     textClass: 'text-green-800',
   },
   moderate: {
     label: 'Accumulating',
     dotClass: 'bg-amber-400',
     borderClass: 'border-amber-200',
-    bgClass: 'bg-amber-50/60',
+    bgClass: 'bg-amber-950/60',
     textClass: 'text-amber-800',
   },
   high: {
     label: 'High Load',
-    dotClass: 'bg-red-500',
+    dotClass: 'bg-red-9500',
     borderClass: 'border-red-200',
-    bgClass: 'bg-red-50/60',
+    bgClass: 'bg-red-950/60',
     textClass: 'text-red-800',
   },
 }

@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from 'react'
 import { format } from 'date-fns'
-import { ExternalLink, Image as ImageIcon, FileText, FileSpreadsheet, File as FileIcon, Download } from 'lucide-react'
+import {
+  ExternalLink,
+  Image as ImageIcon,
+  FileText,
+  FileSpreadsheet,
+  File as FileIcon,
+  Download,
+} from 'lucide-react'
 import { ChatEventRefCard } from './chat-event-ref-card'
 import { ChatSystemMessage } from './chat-system-message'
 import { getChatAttachmentUrl } from '@/lib/chat/actions'
@@ -27,9 +34,10 @@ export function ChatMessageBubble({
   isChefViewer = true,
   otherParticipantLastReadAt,
 }: ChatMessageBubbleProps) {
-  const isRead = isOwn && otherParticipantLastReadAt
-    ? new Date(otherParticipantLastReadAt) >= new Date(message.created_at)
-    : false
+  const isRead =
+    isOwn && otherParticipantLastReadAt
+      ? new Date(otherParticipantLastReadAt) >= new Date(message.created_at)
+      : false
   // System messages render differently
   if (message.message_type === 'system') {
     return <ChatSystemMessage message={message} />
@@ -40,28 +48,21 @@ export function ChatMessageBubble({
       <div
         className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
           isOwn
-            ? 'bg-brand-50 border border-brand-200 rounded-br-md'
-            : 'bg-white border border-stone-200 rounded-bl-md'
+            ? 'bg-brand-950 border border-brand-700 rounded-br-md'
+            : 'bg-surface border border-stone-700 rounded-bl-md'
         }`}
       >
         {/* Sender name (only shown for messages from others) */}
-        {!isOwn && (
-          <p className="text-xs font-medium text-stone-500 mb-1">{senderName}</p>
-        )}
+        {!isOwn && <p className="text-xs font-medium text-stone-500 mb-1">{senderName}</p>}
 
         {/* Message content by type */}
-        <MessageContent
-          message={message}
-          isChefViewer={isChefViewer}
-        />
+        <MessageContent message={message} isChefViewer={isChefViewer} />
 
         {/* Timestamp and read receipt */}
         {showTimestamp && (
           <p className={`text-[10px] mt-1 ${isOwn ? 'text-brand-400' : 'text-stone-400'}`}>
             {format(new Date(message.created_at), 'h:mm a')}
-            {isOwn && isRead && (
-              <span className="ml-1.5 text-brand-500">Read</span>
-            )}
+            {isOwn && isRead && <span className="ml-1.5 text-brand-500">Read</span>}
           </p>
         )}
       </div>
@@ -100,7 +101,7 @@ function TextContent({ body }: { body: string | null }) {
   const parts = body.split(urlRegex)
 
   return (
-    <p className="text-sm text-stone-800 whitespace-pre-wrap break-words">
+    <p className="text-sm text-stone-200 whitespace-pre-wrap break-words">
       {parts.map((part, i) =>
         urlRegex.test(part) ? (
           <a
@@ -108,7 +109,7 @@ function TextContent({ body }: { body: string | null }) {
             href={part}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-brand-600 underline hover:text-brand-700"
+            className="text-brand-600 underline hover:text-brand-400"
           >
             {part}
           </a>
@@ -133,13 +134,15 @@ function ImageContent({ message }: { message: ChatMessage }) {
         setLoading(false)
       }
     })
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [message.id])
 
   return (
     <div>
       {loading ? (
-        <div className="w-48 h-36 bg-stone-100 rounded-lg flex items-center justify-center animate-pulse">
+        <div className="w-48 h-36 bg-stone-800 rounded-lg flex items-center justify-center animate-pulse">
           <ImageIcon className="w-6 h-6 text-stone-300" />
         </div>
       ) : imageUrl ? (
@@ -168,20 +171,22 @@ function ImageContent({ message }: { message: ChatMessage }) {
           )}
         </>
       ) : (
-        <div className="w-48 h-36 bg-stone-100 rounded-lg flex items-center justify-center">
+        <div className="w-48 h-36 bg-stone-800 rounded-lg flex items-center justify-center">
           <ImageIcon className="w-6 h-6 text-stone-300" />
         </div>
       )}
-      {message.body && (
-        <p className="text-sm text-stone-800 mt-1">{message.body}</p>
-      )}
+      {message.body && <p className="text-sm text-stone-200 mt-1">{message.body}</p>}
     </div>
   )
 }
 
 function getDocIcon(contentType: string | null) {
   if (contentType === 'application/pdf') return <FileText className="w-8 h-8 text-red-500" />
-  if (contentType?.includes('spreadsheet') || contentType?.includes('excel') || contentType === 'text/csv') {
+  if (
+    contentType?.includes('spreadsheet') ||
+    contentType?.includes('excel') ||
+    contentType === 'text/csv'
+  ) {
     return <FileSpreadsheet className="w-8 h-8 text-emerald-600" />
   }
   if (contentType?.includes('word') || contentType === 'application/msword') {
@@ -209,24 +214,24 @@ function FileContent({ message }: { message: ChatMessage }) {
         setLoading(false)
       }
     })
-    return () => { cancelled = true }
+    return () => {
+      cancelled = true
+    }
   }, [message.id])
 
   return (
     <div>
-      <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-lg p-3 min-w-[200px]">
+      <div className="flex items-center gap-3 bg-stone-800 border border-stone-700 rounded-lg p-3 min-w-[200px]">
         {getDocIcon(message.attachment_content_type)}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-stone-800 truncate">
+          <p className="text-sm font-medium text-stone-200 truncate">
             {message.attachment_filename || 'Document'}
           </p>
-          <p className="text-xs text-stone-500">
-            {formatBytes(message.attachment_size_bytes)}
-          </p>
+          <p className="text-xs text-stone-500">{formatBytes(message.attachment_size_bytes)}</p>
         </div>
         {loading ? (
           <div className="w-8 h-8 flex items-center justify-center">
-            <div className="w-4 h-4 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-stone-600 border-t-stone-600 rounded-full animate-spin" />
           </div>
         ) : fileUrl ? (
           <a
@@ -234,16 +239,14 @@ function FileContent({ message }: { message: ChatMessage }) {
             target="_blank"
             rel="noopener noreferrer"
             download={message.attachment_filename || undefined}
-            className="flex-shrink-0 p-2 text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg transition-colors"
+            className="flex-shrink-0 p-2 text-brand-600 hover:text-brand-400 hover:bg-brand-950 rounded-lg transition-colors"
             title="Download file"
           >
             <Download className="w-4 h-4" />
           </a>
         ) : null}
       </div>
-      {message.body && (
-        <p className="text-sm text-stone-800 mt-1">{message.body}</p>
-      )}
+      {message.body && <p className="text-sm text-stone-200 mt-1">{message.body}</p>}
     </div>
   )
 }
@@ -252,17 +255,17 @@ function LinkContent({ message }: { message: ChatMessage }) {
   return (
     <div>
       {message.body && (
-        <p className="text-sm text-stone-800 whitespace-pre-wrap mb-2">{message.body}</p>
+        <p className="text-sm text-stone-200 whitespace-pre-wrap mb-2">{message.body}</p>
       )}
       {message.link_url && (
         <a
           href={message.link_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="block border border-stone-200 rounded-lg p-3 hover:bg-stone-50 transition-colors"
+          className="block border border-stone-700 rounded-lg p-3 hover:bg-stone-800 transition-colors"
         >
           {message.link_title && (
-            <p className="text-sm font-medium text-stone-800 mb-0.5">{message.link_title}</p>
+            <p className="text-sm font-medium text-stone-200 mb-0.5">{message.link_title}</p>
           )}
           {message.link_description && (
             <p className="text-xs text-stone-500 line-clamp-2 mb-1">{message.link_description}</p>
@@ -288,9 +291,7 @@ function EventRefContent({
 
   return (
     <div>
-      {message.body && (
-        <p className="text-sm text-stone-800 mb-1">{message.body}</p>
-      )}
+      {message.body && <p className="text-sm text-stone-200 mb-1">{message.body}</p>}
       {message.referenced_event_id && (
         <ChatEventRefCard
           eventId={message.referenced_event_id}

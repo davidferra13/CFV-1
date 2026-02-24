@@ -6,10 +6,10 @@
    DESIGN TOKENS — CSS Custom Properties
    ============================================ */
 :root {
-  /* Shadows */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.07), 0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-card-hover: 0 4px 14px rgba(0, 0, 0, 0.09), 0 2px 4px rgba(0, 0, 0, 0.05);
-  --shadow-overlay: 0 20px 40px rgba(0, 0, 0, 0.13), 0 8px 16px rgba(0, 0, 0, 0.06);
+  /* Shadows — stronger for dark backgrounds */
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 14px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.25);
+  --shadow-overlay: 0 20px 40px rgba(0, 0, 0, 0.5), 0 8px 16px rgba(0, 0, 0, 0.3);
 
   /* Motion tokens */
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
@@ -24,7 +24,8 @@
   --brand-400: #eda86b;
   --brand-500: #e88f47;
   --brand-600: #d47530;
-  --brand-50: #fef9f3;
+  --brand-50: #3e200f;
+  --brand-950: #3e200f;
 }
 
 /* ============================================
@@ -36,8 +37,8 @@ html {
 
 /* Brand-tinted text selection */
 ::selection {
-  background-color: #f8ddc0;
-  color: #1c1917;
+  background-color: #3e200f;
+  color: #f5f5f4;
 }
 
 /* Global scrollbar — thin, refined */
@@ -46,19 +47,26 @@ html {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #1c1917;
 }
 ::-webkit-scrollbar-thumb {
-  background: #c8c4bf;
+  background: #44403c;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a29e;
+  background: #57534e;
 }
 
 @layer base {
   body {
-    @apply bg-surface-page text-stone-800 antialiased;
+    @apply bg-surface-page text-stone-200 antialiased;
+  }
+
+  /* Dark theme: ring-offset matches dark background */
+  *,
+  *::before,
+  *::after {
+    --tw-ring-offset-color: #0c0a09;
   }
 
   /* Display typeface for page headings — editorial culinary feel */
@@ -76,10 +84,10 @@ html {
   input[type='url'],
   textarea,
   select {
-    @apply rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900
-      placeholder:text-stone-400
+    @apply rounded-lg border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100
+      placeholder:text-stone-500
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
-      disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500;
+      disabled:cursor-not-allowed disabled:bg-stone-900 disabled:text-stone-500;
     /* Prevent iOS auto-zoom on focus — requires font-size >= 16px */
     font-size: max(16px, 0.875rem);
   }
@@ -122,7 +130,7 @@ html {
     background: transparent;
   }
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-stone-300 rounded-full;
+    @apply bg-stone-600 rounded-full;
   }
 
   .allergy-banner {
@@ -131,7 +139,7 @@ html {
   }
 
   .skeleton {
-    @apply bg-stone-200 rounded animate-pulse;
+    @apply bg-stone-700 rounded animate-pulse;
   }
 
   /* Architectural section labels — small uppercase headers used throughout the app */
@@ -140,7 +148,7 @@ html {
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #a8a29e;
+    color: #78716c;
   }
 }
 
@@ -150,12 +158,12 @@ html {
 
 /* Container */
 .calendar-container .fc {
-  --fc-border-color: #e7e5e4;
-  --fc-today-bg-color: var(--brand-50);
-  --fc-neutral-bg-color: #faf9f7;
-  --fc-page-bg-color: #ffffff;
+  --fc-border-color: #44403c;
+  --fc-today-bg-color: var(--brand-950);
+  --fc-neutral-bg-color: #292524;
+  --fc-page-bg-color: #1c1917;
   --fc-now-indicator-color: var(--brand-500);
-  --fc-list-event-hover-bg-color: #f5f3ef;
+  --fc-list-event-hover-bg-color: #292524;
   font-family:
     var(--font-inter),
     system-ui,
@@ -177,13 +185,13 @@ html {
 /* Day headers (Mon, Tue, etc.) */
 .calendar-container .fc .fc-col-header-cell {
   padding: 10px 0;
-  background: #faf9f7;
-  border-bottom: 1px solid #e7e5e4;
+  background: #292524;
+  border-bottom: 1px solid #44403c;
 }
 .calendar-container .fc .fc-col-header-cell-cushion {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #78716c;
+  color: #a8a29e;
   text-transform: uppercase;
   letter-spacing: 0.025em;
   text-decoration: none;
@@ -194,14 +202,14 @@ html {
   transition: background-color 0.15s;
 }
 .calendar-container .fc .fc-daygrid-day:hover {
-  background-color: #faf9f7;
+  background-color: #292524;
 }
 
 /* Day numbers */
 .calendar-container .fc .fc-daygrid-day-number {
   font-size: 0.875rem;
   font-weight: 500;
-  color: #57534e;
+  color: #d6d3d1;
   padding: 6px 10px;
   text-decoration: none;
 }
@@ -221,7 +229,7 @@ html {
 
 /* Other month days */
 .calendar-container .fc .fc-day-other .fc-daygrid-day-number {
-  color: #a8a29e;
+  color: #57534e;
 }
 
 /* Event pill styling */
@@ -251,23 +259,23 @@ html {
   border-radius: 4px;
 }
 .calendar-container .fc .fc-daygrid-more-link:hover {
-  background-color: var(--brand-50);
-  color: var(--brand-600);
+  background-color: var(--brand-950);
+  color: var(--brand-400);
 }
 
 /* Time grid (Week / Day views) */
 .calendar-container .fc .fc-timegrid-slot {
   height: 48px;
-  border-bottom: 1px solid #f5f5f4;
+  border-bottom: 1px solid #292524;
 }
 .calendar-container .fc .fc-timegrid-slot-label {
   font-size: 0.75rem;
-  color: #a8a29e;
+  color: #78716c;
   vertical-align: top;
   padding-top: 2px;
 }
 .calendar-container .fc .fc-timegrid-slot-lane {
-  border-bottom: 1px solid #f5f5f4;
+  border-bottom: 1px solid #292524;
 }
 
 /* Now indicator (red line like Google Calendar) */
@@ -299,14 +307,14 @@ html {
   border: none;
 }
 .calendar-container .fc .fc-list-day-cushion {
-  background: #faf9f7;
+  background: #292524;
   padding: 8px 14px;
 }
 .calendar-container .fc .fc-list-day-text,
 .calendar-container .fc .fc-list-day-side-text {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #57534e;
+  color: #d6d3d1;
   text-decoration: none;
 }
 .calendar-container .fc .fc-list-event {
@@ -314,29 +322,30 @@ html {
 }
 .calendar-container .fc .fc-list-event td {
   padding: 10px 14px;
-  border-color: #f5f5f4;
+  border-color: #292524;
 }
 .calendar-container .fc .fc-list-event-dot {
   border-color: var(--brand-500);
 }
 .calendar-container .fc .fc-list-event-title a {
-  color: #1c1917;
+  color: #e7e5e4;
   text-decoration: none;
 }
 
 /* Popover for "+X more" */
 .calendar-container .fc .fc-popover {
   border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-  border: 1px solid #e7e5e4;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+  border: 1px solid #44403c;
   overflow: hidden;
+  background: #1c1917;
 }
 .calendar-container .fc .fc-popover-header {
-  background: #faf9f7;
+  background: #292524;
   padding: 8px 12px;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #57534e;
+  color: #d6d3d1;
 }
 .calendar-container .fc .fc-popover-body {
   padding: 4px;

@@ -43,11 +43,7 @@ function ReadinessIndicator({ ready, missing }: { ready: boolean; missing: strin
   if (ready) {
     return <span className="text-emerald-600 text-sm font-medium">Ready</span>
   }
-  return (
-    <span className="text-amber-600 text-sm">
-      Needs: {missing.join(', ')}
-    </span>
-  )
+  return <span className="text-amber-600 text-sm">Needs: {missing.join(', ')}</span>
 }
 
 export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSectionProps) {
@@ -128,10 +124,10 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
           {docs.map((doc, i) => (
             <div
               key={doc.type}
-              className={`flex items-center justify-between py-2 ${i < docs.length - 1 ? 'border-b border-stone-100' : ''}`}
+              className={`flex items-center justify-between py-2 ${i < docs.length - 1 ? 'border-b border-stone-800' : ''}`}
             >
               <div>
-                <p className="font-medium text-stone-900">{doc.label}</p>
+                <p className="font-medium text-stone-100">{doc.label}</p>
                 <p className="text-xs text-stone-500">{doc.description}</p>
                 <ReadinessIndicator ready={doc.ready} missing={doc.missing} />
               </div>
@@ -147,15 +143,18 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                 )}
 
                 {/* Interactive viewer — all operational docs except packing */}
-                {doc.type !== 'packing' && (
-                  doc.ready ? (
+                {doc.type !== 'packing' &&
+                  (doc.ready ? (
                     <a href={`/events/${eventId}/interactive?type=${doc.type}`}>
-                      <Button variant="secondary" size="sm">Interactive</Button>
+                      <Button variant="secondary" size="sm">
+                        Interactive
+                      </Button>
                     </a>
                   ) : (
-                    <Button variant="secondary" size="sm" disabled>Interactive</Button>
-                  )
-                )}
+                    <Button variant="secondary" size="sm" disabled>
+                      Interactive
+                    </Button>
+                  ))}
 
                 {/* View PDF — opens inline modal */}
                 <Button
@@ -173,7 +172,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                     href={`${baseUrl}?type=${doc.type}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-stone-400 hover:text-stone-700 text-sm"
+                    className="text-stone-400 hover:text-stone-300 text-sm"
                     title="Open in new tab"
                     aria-label={`Open ${doc.label} in new tab`}
                   >
@@ -186,16 +185,9 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
         </div>
 
         {/* Print All — combined 8-page PDF; stays as new-tab link for multi-page print */}
-        <div className="mt-5 pt-4 border-t border-stone-200">
-          <a
-            href={`${baseUrl}?type=all`}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button
-              variant="primary"
-              className="w-full"
-            >
+        <div className="mt-5 pt-4 border-t border-stone-700">
+          <a href={`${baseUrl}?type=all`} target="_blank" rel="noopener noreferrer">
+            <Button variant="primary" className="w-full">
               Print All (8 Sheets)
             </Button>
           </a>
@@ -206,16 +198,21 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Travel Route</h2>
         <p className="text-stone-500 text-sm mb-4">
-          Complete route sheet for all planned trips — specialty sourcing, grocery runs, venue travel, and return home. One page per leg.
+          Complete route sheet for all planned trips — specialty sourcing, grocery runs, venue
+          travel, and return home. One page per leg.
         </p>
         <div className="flex items-center justify-between">
           <div>
             <ReadinessIndicator ready={travelRouteReady} missing={travelRouteMissing} />
             {!travelRouteReady && (
               <p className="text-xs text-stone-400 mt-1">
-                <a href={`/events/${eventId}/travel`} className="underline underline-offset-2 hover:text-stone-700">
+                <a
+                  href={`/events/${eventId}/travel`}
+                  className="underline underline-offset-2 hover:text-stone-300"
+                >
                   Open Travel Plan
-                </a>{' '}to add your route.
+                </a>{' '}
+                to add your route.
               </p>
             )}
           </div>
@@ -227,15 +224,13 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             </a>
             {travelRouteReady && (
               <a href={`/events/${eventId}/interactive?type=travel`}>
-                <Button variant="secondary" size="sm">Interactive</Button>
+                <Button variant="secondary" size="sm">
+                  Interactive
+                </Button>
               </a>
             )}
             {travelRouteReady && (
-              <a
-                href={`${baseUrl}?type=travel`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={`${baseUrl}?type=travel`} target="_blank" rel="noopener noreferrer">
                 <Button variant="primary" size="sm">
                   Print Route ↗
                 </Button>
@@ -249,7 +244,8 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Content Asset Capture Sheet</h2>
         <p className="text-stone-500 text-sm mb-4">
-          Shot list for capturing 20+ marketing assets per event — organized by phase, with platform specs and brand consistency reminders. Bring this alongside your other printed sheets.
+          Shot list for capturing 20+ marketing assets per event — organized by phase, with platform
+          specs and brand consistency reminders. Bring this alongside your other printed sheets.
         </p>
         <div className="flex items-center justify-between">
           <div>
@@ -258,7 +254,9 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <a href={`/events/${eventId}/interactive?type=shots`}>
-              <Button variant="secondary" size="sm">Interactive</Button>
+              <Button variant="secondary" size="sm">
+                Interactive
+              </Button>
             </a>
             <Button
               variant="secondary"
@@ -271,7 +269,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
               href={`${baseUrl}?type=shots`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-stone-400 hover:text-stone-700 text-sm"
+              className="text-stone-400 hover:text-stone-300 text-sm"
               title="Open in new tab"
               aria-label="Open Content Asset Capture Sheet in new tab"
             >
@@ -284,18 +282,15 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
       {/* Business Documents — quote, contract, invoice */}
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-1">Business Documents</h2>
-        <p className="text-stone-500 text-sm mb-4">
-          Quote, contract, and invoice for this event.
-        </p>
+        <p className="text-stone-500 text-sm mb-4">Quote, contract, and invoice for this event.</p>
         <div className="space-y-0">
-
           {/* Quote */}
           {businessDocs?.quote ? (
-            <div className="flex items-center justify-between py-3 border-b border-stone-100">
+            <div className="flex items-center justify-between py-3 border-b border-stone-800">
               <div>
-                <p className="font-medium text-stone-900">Quote / Proposal</p>
+                <p className="font-medium text-stone-100">Quote / Proposal</p>
                 <p className="text-xs text-stone-500">{businessDocs.quote.ref}</p>
-                <span className="text-sm text-stone-600">
+                <span className="text-sm text-stone-400">
                   {QUOTE_STATUS_LABELS[businessDocs.quote.status] ?? businessDocs.quote.status}
                 </span>
               </div>
@@ -303,15 +298,15 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                 href={`/api/documents/quote/${businessDocs.quote.id}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-stone-500 hover:text-stone-800 font-medium shrink-0"
+                className="text-sm text-stone-500 hover:text-stone-200 font-medium shrink-0"
               >
                 Download PDF ↗
               </a>
             </div>
           ) : (
-            <div className="flex items-center justify-between py-3 border-b border-stone-100">
+            <div className="flex items-center justify-between py-3 border-b border-stone-800">
               <div>
-                <p className="font-medium text-stone-900">Quote / Proposal</p>
+                <p className="font-medium text-stone-100">Quote / Proposal</p>
                 <span className="text-sm text-stone-400">None yet</span>
               </div>
               <a href={`/events/${eventId}`} className="text-sm text-stone-400">
@@ -322,11 +317,12 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
 
           {/* Contract */}
           {businessDocs?.contract ? (
-            <div className="flex items-center justify-between py-3 border-b border-stone-100">
+            <div className="flex items-center justify-between py-3 border-b border-stone-800">
               <div>
-                <p className="font-medium text-stone-900">Service Agreement</p>
-                <span className="text-sm text-stone-600">
-                  {CONTRACT_STATUS_LABELS[businessDocs.contract.status] ?? businessDocs.contract.status}
+                <p className="font-medium text-stone-100">Service Agreement</p>
+                <span className="text-sm text-stone-400">
+                  {CONTRACT_STATUS_LABELS[businessDocs.contract.status] ??
+                    businessDocs.contract.status}
                   {businessDocs.contract.status === 'signed' && businessDocs.contract.signedAt && (
                     <span className="text-stone-400 ml-1">
                       — {new Date(businessDocs.contract.signedAt).toLocaleDateString()}
@@ -339,16 +335,18 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   href={`/api/documents/contract/${businessDocs.contract.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-stone-500 hover:text-stone-800 font-medium shrink-0"
+                  className="text-sm text-stone-500 hover:text-stone-200 font-medium shrink-0"
                 >
-                  {businessDocs.contract.status === 'signed' ? 'Download Signed PDF ↗' : 'Preview PDF ↗'}
+                  {businessDocs.contract.status === 'signed'
+                    ? 'Download Signed PDF ↗'
+                    : 'Preview PDF ↗'}
                 </a>
               )}
             </div>
           ) : (
-            <div className="flex items-center justify-between py-3 border-b border-stone-100">
+            <div className="flex items-center justify-between py-3 border-b border-stone-800">
               <div>
-                <p className="font-medium text-stone-900">Service Agreement</p>
+                <p className="font-medium text-stone-100">Service Agreement</p>
                 <span className="text-sm text-stone-400">None generated</span>
               </div>
             </div>
@@ -357,7 +355,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
           {/* Invoice */}
           <div className="flex items-center justify-between py-3">
             <div>
-              <p className="font-medium text-stone-900">Invoice</p>
+              <p className="font-medium text-stone-100">Invoice</p>
               {businessDocs?.invoiceNumber ? (
                 <p className="text-xs text-stone-500">{businessDocs.invoiceNumber}</p>
               ) : (
@@ -367,7 +365,7 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
             <div className="flex items-center gap-3 shrink-0">
               <a
                 href={`/events/${eventId}/invoice`}
-                className="text-sm text-stone-500 hover:text-stone-800 font-medium"
+                className="text-sm text-stone-500 hover:text-stone-200 font-medium"
               >
                 View
               </a>
@@ -376,14 +374,13 @@ export function DocumentSection({ eventId, readiness, businessDocs }: DocumentSe
                   href={`/api/documents/invoice/${eventId}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-stone-500 hover:text-stone-800 font-medium"
+                  className="text-sm text-stone-500 hover:text-stone-200 font-medium"
                 >
                   Download PDF ↗
                 </a>
               )}
             </div>
           </div>
-
         </div>
       </Card>
 

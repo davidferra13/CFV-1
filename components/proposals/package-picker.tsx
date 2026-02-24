@@ -27,7 +27,7 @@ function formatCents(cents: number): string {
 export function PackagePicker({ templates, selectedId, onSelect }: Props) {
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-medium text-stone-700">Choose a Package</h3>
+      <h3 className="text-sm font-medium text-stone-300">Choose a Package</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {templates.map((t) => {
           const isSelected = selectedId === t.id
@@ -35,14 +35,12 @@ export function PackagePicker({ templates, selectedId, onSelect }: Props) {
             <Card
               key={t.id}
               className={`overflow-hidden cursor-pointer transition-all ${
-                isSelected
-                  ? 'ring-2 ring-brand-500 border-brand-300'
-                  : 'hover:border-stone-300'
+                isSelected ? 'ring-2 ring-brand-500 border-brand-600' : 'hover:border-stone-600'
               }`}
               onClick={() => onSelect(t.id)}
             >
               {t.coverPhotoUrl ? (
-                <div className="h-28 bg-stone-100 overflow-hidden relative">
+                <div className="h-28 bg-stone-800 overflow-hidden relative">
                   <img src={t.coverPhotoUrl} alt={t.name} className="w-full h-full object-cover" />
                   {isSelected && (
                     <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center">
@@ -51,7 +49,7 @@ export function PackagePicker({ templates, selectedId, onSelect }: Props) {
                   )}
                 </div>
               ) : (
-                <div className="h-28 bg-stone-100 flex items-center justify-center relative">
+                <div className="h-28 bg-stone-800 flex items-center justify-center relative">
                   <Image className="h-8 w-8 text-stone-300" />
                   {isSelected && (
                     <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-brand-600 flex items-center justify-center">
@@ -62,7 +60,7 @@ export function PackagePicker({ templates, selectedId, onSelect }: Props) {
               )}
               <CardContent className="py-3">
                 <div className="flex items-start justify-between">
-                  <h4 className="text-sm font-semibold text-stone-900">{t.name}</h4>
+                  <h4 className="text-sm font-semibold text-stone-100">{t.name}</h4>
                   <span className="text-sm font-bold text-brand-600">
                     {formatCents(t.basePriceCents)}
                   </span>
@@ -73,7 +71,9 @@ export function PackagePicker({ templates, selectedId, onSelect }: Props) {
                 {t.includedServices.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {t.includedServices.slice(0, 3).map((s, i) => (
-                      <Badge key={i} variant="default">{s}</Badge>
+                      <Badge key={i} variant="default">
+                        {s}
+                      </Badge>
                     ))}
                     {t.includedServices.length > 3 && (
                       <Badge variant="default">+{t.includedServices.length - 3}</Badge>

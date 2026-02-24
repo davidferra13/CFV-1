@@ -15,15 +15,16 @@ export default async function JournalPage() {
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
         <div className="flex items-center gap-2 text-sm">
-          <Link href="/settings" className="text-brand-600 hover:text-brand-700">
+          <Link href="/settings" className="text-brand-600 hover:text-brand-400">
             Settings
           </Link>
           <span className="text-stone-400">/</span>
           <span className="text-stone-500">Chef Journal</span>
         </div>
-        <h1 className="text-3xl font-bold text-stone-900 mt-2">Chef Journal</h1>
-        <p className="text-stone-600 mt-1">
-          Build a living record of where your chefs go, what inspires them, and how those learnings become better food.
+        <h1 className="text-3xl font-bold text-stone-100 mt-2">Chef Journal</h1>
+        <p className="text-stone-400 mt-1">
+          Build a living record of where your chefs go, what inspires them, and how those learnings
+          become better food.
         </p>
       </div>
 

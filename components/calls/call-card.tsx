@@ -12,7 +12,7 @@ const STATUS_COLORS: Record<string, string> = {
   scheduled: 'text-blue-600',
   confirmed: 'text-emerald-600',
   completed: 'text-gray-500',
-  no_show:   'text-red-500',
+  no_show: 'text-red-500',
   cancelled: 'text-gray-400',
 }
 
@@ -32,13 +32,16 @@ function getCallTitle(call: ScheduledCall): string {
 
 export function CallCard({ call }: { call: ScheduledCall }) {
   const isOverdue = isPast(new Date(call.scheduled_at)) && call.status === 'scheduled'
-  const isTerminal = call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
+  const isTerminal =
+    call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
 
   return (
     <Link href={`/calls/${call.id}`}>
-      <div className="flex items-center gap-4 p-4 rounded-lg border bg-white hover:bg-gray-50 transition-colors group">
+      <div className="flex items-center gap-4 p-4 rounded-lg border bg-surface hover:bg-gray-50 transition-colors group">
         {/* Icon */}
-        <div className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isTerminal ? 'bg-gray-100' : 'bg-blue-50'}`}>
+        <div
+          className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isTerminal ? 'bg-gray-100' : 'bg-blue-950'}`}
+        >
           <Phone className={`w-4 h-4 ${isTerminal ? 'text-gray-400' : 'text-blue-500'}`} />
         </div>
 
@@ -83,7 +86,8 @@ export function CallCard({ call }: { call: ScheduledCall }) {
         {!isTerminal && call.agenda_items.length > 0 && (
           <div className="flex-shrink-0 text-right hidden sm:block">
             <p className="text-xs text-gray-400">
-              {call.agenda_items.filter(i => i.completed).length}/{call.agenda_items.length} prep items
+              {call.agenda_items.filter((i) => i.completed).length}/{call.agenda_items.length} prep
+              items
             </p>
           </div>
         )}

@@ -71,7 +71,7 @@ function RatingSelector({
 }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-stone-700 mb-1">
+      <label className="block text-sm font-medium text-stone-300 mb-1">
         {label} <span className="text-red-500">*</span>
       </label>
       <p className="text-xs text-stone-500 mb-3">{sublabel}</p>
@@ -84,9 +84,10 @@ function RatingSelector({
             className={`
               flex-1 py-3 px-2 rounded-lg border-2 text-center transition-all
               min-h-[60px] flex flex-col items-center justify-center
-              ${value === n
-                ? 'border-brand-600 bg-brand-50 text-brand-700 font-semibold'
-                : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50'
+              ${
+                value === n
+                  ? 'border-brand-600 bg-brand-950 text-brand-400 font-semibold'
+                  : 'border-stone-700 bg-surface text-stone-400 hover:border-stone-600 hover:bg-stone-800'
               }
             `}
           >
@@ -109,7 +110,9 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
     new Set(existingAAR?.forgotten_items ?? [])
   )
   const [otherForgotten, setOtherForgotten] = useState('')
-  const [couldHaveDoneEarlier, setCouldHaveDoneEarlier] = useState(existingAAR?.could_have_done_earlier ?? '')
+  const [couldHaveDoneEarlier, setCouldHaveDoneEarlier] = useState(
+    existingAAR?.could_have_done_earlier ?? ''
+  )
   const [whatWentWell, setWhatWentWell] = useState(existingAAR?.what_went_well ?? '')
   const [whatWentWrong, setWhatWentWrong] = useState(existingAAR?.what_went_wrong ?? '')
   const [menuNotes, setMenuNotes] = useState(existingAAR?.menu_performance_notes ?? '')
@@ -120,7 +123,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
   const [error, setError] = useState<string | null>(null)
 
   const toggleForgotten = (item: string) => {
-    setForgottenItems(prev => {
+    setForgottenItems((prev) => {
       const next = new Set(prev)
       if (next.has(item)) {
         next.delete(item)
@@ -145,7 +148,10 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
     // Build forgotten items array: checked items + free text
     const allForgotten = Array.from(forgottenItems)
     if (otherForgotten.trim()) {
-      const extras = otherForgotten.split(',').map(s => s.trim()).filter(Boolean)
+      const extras = otherForgotten
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean)
       allForgotten.push(...extras)
     }
 
@@ -199,7 +205,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
 
       {/* Section 1: Quick Ratings (required, do these first) */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-4">How did it feel?</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-4">How did it feel?</h2>
         <div className="space-y-6">
           <RatingSelector
             label="Calm Rating"
@@ -220,7 +226,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
 
       {/* Section 2: Forgotten Items (important, do this second) */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-2">Forgotten Items</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-2">Forgotten Items</h2>
         <p className="text-sm text-stone-500 mb-4">
           Check any items you forgot. This helps build your permanent checklist.
         </p>
@@ -231,9 +237,10 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
               key={ci.item}
               className={`
                 flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors
-                ${forgottenItems.has(ci.item)
-                  ? 'border-red-300 bg-red-50 text-red-800'
-                  : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                ${
+                  forgottenItems.has(ci.item)
+                    ? 'border-red-300 bg-red-950 text-red-800'
+                    : 'border-stone-700 bg-surface text-stone-300 hover:bg-stone-800'
                 }
               `}
             >
@@ -241,7 +248,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
                 type="checkbox"
                 checked={forgottenItems.has(ci.item)}
                 onChange={() => toggleForgotten(ci.item)}
-                className="rounded border-stone-300 text-red-600 focus:ring-red-500"
+                className="rounded border-stone-600 text-red-600 focus:ring-red-500"
               />
               <span className="text-sm">{ci.item}</span>
               {ci.category === 'learned' && ci.forgottenCount && (
@@ -263,7 +270,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
 
       {/* Section 3: Text Notes (optional, fill in what you can) */}
       <Card className="p-6">
-        <h2 className="text-lg font-semibold text-stone-900 mb-2">Notes</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-2">Notes</h2>
         <p className="text-sm text-stone-500 mb-4">
           All optional. Fill in what you can now, come back later to add more.
         </p>

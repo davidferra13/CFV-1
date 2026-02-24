@@ -19,15 +19,14 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
   const [callNotes, setCallNotes] = useState(call.call_notes ?? '')
   const [nextAction, setNextAction] = useState(call.next_action ?? '')
   const [nextActionDueAt, setNextActionDueAt] = useState(
-    call.next_action_due_at
-      ? new Date(call.next_action_due_at).toISOString().slice(0, 10)
-      : ''
+    call.next_action_due_at ? new Date(call.next_action_due_at).toISOString().slice(0, 10) : ''
   )
   const [actualDuration, setActualDuration] = useState(
     call.actual_duration_minutes ? String(call.actual_duration_minutes) : ''
   )
 
-  const isTerminal = call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
+  const isTerminal =
+    call.status === 'completed' || call.status === 'cancelled' || call.status === 'no_show'
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -67,17 +66,17 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      <h3 className="font-semibold text-gray-900">
-        {isTerminal ? 'Call Outcome' : 'Log Outcome'}
-      </h3>
+      <h3 className="font-semibold text-gray-900">{isTerminal ? 'Call Outcome' : 'Log Outcome'}</h3>
 
       {/* Outcome summary */}
       <div className="space-y-1.5">
-        <Label htmlFor="outcome_summary">Summary <span className="text-gray-400 font-normal">(optional)</span></Label>
+        <Label htmlFor="outcome_summary">
+          Summary <span className="text-gray-400 font-normal">(optional)</span>
+        </Label>
         <Textarea
           id="outcome_summary"
           value={outcomeSummary}
-          onChange={e => setOutcomeSummary(e.target.value)}
+          onChange={(e) => setOutcomeSummary(e.target.value)}
           placeholder="What was decided? What's the status after this call?"
           rows={3}
           maxLength={2000}
@@ -87,11 +86,13 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
 
       {/* Call notes */}
       <div className="space-y-1.5">
-        <Label htmlFor="call_notes">Detailed notes <span className="text-gray-400 font-normal">(optional)</span></Label>
+        <Label htmlFor="call_notes">
+          Detailed notes <span className="text-gray-400 font-normal">(optional)</span>
+        </Label>
         <Textarea
           id="call_notes"
           value={callNotes}
-          onChange={e => setCallNotes(e.target.value)}
+          onChange={(e) => setCallNotes(e.target.value)}
           placeholder="Anything else worth capturing — preferences, concerns, ideas discussed…"
           rows={4}
           maxLength={5000}
@@ -102,23 +103,27 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
       {/* Next action */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor="next_action">Next action <span className="text-gray-400 font-normal">(optional)</span></Label>
+          <Label htmlFor="next_action">
+            Next action <span className="text-gray-400 font-normal">(optional)</span>
+          </Label>
           <Input
             id="next_action"
             value={nextAction}
-            onChange={e => setNextAction(e.target.value)}
+            onChange={(e) => setNextAction(e.target.value)}
             placeholder="e.g. Send draft menu by Friday"
             maxLength={500}
             disabled={isTerminal}
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="next_action_due">Due date <span className="text-gray-400 font-normal">(optional)</span></Label>
+          <Label htmlFor="next_action_due">
+            Due date <span className="text-gray-400 font-normal">(optional)</span>
+          </Label>
           <Input
             id="next_action_due"
             type="date"
             value={nextActionDueAt}
-            onChange={e => setNextActionDueAt(e.target.value)}
+            onChange={(e) => setNextActionDueAt(e.target.value)}
             disabled={isTerminal}
           />
         </div>
@@ -126,23 +131,24 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
 
       {/* Actual duration */}
       <div className="space-y-1.5 max-w-xs">
-        <Label htmlFor="actual_duration">Actual call duration (minutes) <span className="text-gray-400 font-normal">(optional)</span></Label>
+        <Label htmlFor="actual_duration">
+          Actual call duration (minutes){' '}
+          <span className="text-gray-400 font-normal">(optional)</span>
+        </Label>
         <Input
           id="actual_duration"
           type="number"
           min={1}
           max={600}
           value={actualDuration}
-          onChange={e => setActualDuration(e.target.value)}
+          onChange={(e) => setActualDuration(e.target.value)}
           placeholder={String(call.duration_minutes)}
           disabled={isTerminal}
         />
       </div>
 
       {/* Error */}
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 bg-red-950 px-3 py-2 rounded">{error}</p>}
 
       {/* Actions */}
       {!isTerminal && (
@@ -155,7 +161,7 @@ export function CallOutcomeForm({ call }: { call: ScheduledCall }) {
             variant="secondary"
             disabled={isPending}
             onClick={handleNoShow}
-            className="text-amber-600 border-amber-300 hover:bg-amber-50"
+            className="text-amber-600 border-amber-300 hover:bg-amber-950"
           >
             Mark as no-show
           </Button>

@@ -201,21 +201,21 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
       {/* Transparent backdrop */}
       <div
         data-backdrop="true"
-        className="absolute inset-0 bg-white/80 dark:bg-stone-950/80 backdrop-blur-[1.5px]"
+        className="absolute inset-0 bg-stone-900/80 dark:bg-stone-950/80 backdrop-blur-[1.5px]"
         style={{ minHeight: docH }}
       />
 
       {/* Close button */}
       <button
         onClick={onClose}
-        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-stone-900 dark:bg-white text-white dark:text-stone-900 flex items-center justify-center shadow-lg hover:bg-stone-800 dark:hover:bg-stone-100 transition-colors"
+        className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-stone-900 dark:bg-surface text-white dark:text-stone-100 flex items-center justify-center shadow-lg hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors"
         aria-label="Close page info"
       >
         <X className="h-5 w-5" />
       </button>
 
       {/* Page title banner */}
-      <div className="fixed top-4 left-4 z-50 bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-xl px-4 py-2.5 shadow-lg max-w-xs">
+      <div className="fixed top-4 left-4 z-50 bg-stone-900 dark:bg-surface text-white dark:text-stone-100 rounded-xl px-4 py-2.5 shadow-lg max-w-xs">
         <p className="text-xs font-medium uppercase tracking-wider text-stone-400 dark:text-stone-500">
           Page Guide
         </p>
@@ -251,7 +251,7 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
 
             {/* Annotation label card */}
             <div
-              className="absolute bg-stone-900 dark:bg-white text-white dark:text-stone-900 rounded-lg px-3 py-2 shadow-lg pointer-events-none"
+              className="absolute bg-stone-900 dark:bg-surface text-white dark:text-stone-100 rounded-lg px-3 py-2 shadow-lg pointer-events-none"
               style={{
                 top: labelPos.top,
                 left: labelPos.left,
@@ -260,7 +260,7 @@ function SchematicOverlay({ entry, onClose }: { entry: PageInfoEntry; onClose: (
               }}
             >
               <div className="flex items-center gap-1.5 mb-0.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 flex-shrink-0" />
+                <span className="w-1.5 h-1.5 rounded-full bg-brand-9500 flex-shrink-0" />
                 <span className="text-xs font-semibold truncate">{r.annotation.label}</span>
               </div>
               <p className="text-xs text-stone-400 dark:text-stone-500 leading-relaxed">
@@ -327,19 +327,19 @@ function FallbackSummary({
         inline
           ? 'fixed bottom-4 left-4 z-[60]'
           : 'fixed bottom-[7.5rem] left-4 lg:bottom-16 lg:left-4 z-[60]'
-      } w-80 max-w-[calc(100vw-2rem)] bg-white dark:bg-stone-900 rounded-xl shadow-2xl border border-stone-200 dark:border-stone-700 overflow-hidden animate-scale-in`}
+      } w-80 max-w-[calc(100vw-2rem)] bg-surface dark:bg-stone-900 rounded-xl shadow-2xl border border-stone-700 dark:border-stone-700 overflow-hidden animate-scale-in`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100 dark:border-stone-800">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800 dark:border-stone-800">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-stone-400">Page Guide</p>
-          <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100 mt-0.5">
+          <h3 className="text-sm font-semibold text-stone-100 dark:text-stone-100 mt-0.5">
             {entry.title}
           </h3>
         </div>
         <button
           onClick={onClose}
-          className="w-7 h-7 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-600 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
+          className="w-7 h-7 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-400 hover:bg-stone-700 dark:hover:bg-stone-800 transition-colors"
           aria-label="Close"
         >
           <X className="h-4 w-4" />
@@ -348,7 +348,7 @@ function FallbackSummary({
 
       {/* Description */}
       <div className="px-4 py-3">
-        <p className="text-sm text-stone-600 dark:text-stone-400 leading-relaxed">
+        <p className="text-sm text-stone-400 dark:text-stone-400 leading-relaxed">
           {entry.description}
         </p>
       </div>
@@ -363,7 +363,7 @@ function FallbackSummary({
             {entry.features.map((f, i) => (
               <li
                 key={i}
-                className="text-sm text-stone-600 dark:text-stone-400 flex items-start gap-2"
+                className="text-sm text-stone-400 dark:text-stone-400 flex items-start gap-2"
               >
                 <span className="text-brand-500 mt-0.5 flex-shrink-0">&#8226;</span>
                 {f}
@@ -405,8 +405,8 @@ export function PageInfoButton() {
         onClick={handleToggle}
         className={`fixed bottom-[5.5rem] left-4 lg:bottom-4 lg:left-4 z-50 w-9 h-9 rounded-full flex items-center justify-center transition-all duration-150 ${
           isOpen
-            ? 'bg-stone-900 text-white shadow-lg dark:bg-white dark:text-stone-900'
-            : 'bg-white dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 shadow-md'
+            ? 'bg-stone-900 text-white shadow-lg dark:bg-surface dark:text-stone-100'
+            : 'bg-surface dark:bg-stone-800 text-stone-500 dark:text-stone-400 hover:text-stone-300 dark:hover:text-stone-200 hover:bg-stone-800 dark:hover:bg-stone-700 border border-stone-700 dark:border-stone-700 shadow-md'
         }`}
         aria-label="Page info"
         title="What does this page do?"

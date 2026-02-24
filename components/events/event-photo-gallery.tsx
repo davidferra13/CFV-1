@@ -59,9 +59,9 @@ function PhotoCard({
       : `${(photo.size_bytes / 1024 / 1024).toFixed(1)} MB`
 
   return (
-    <div className="flex flex-col border border-stone-200 rounded-xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex flex-col border border-stone-700 rounded-xl overflow-hidden bg-surface shadow-sm hover:shadow-md transition-shadow">
       {/* Thumbnail — click to preview full size */}
-      <div className="relative aspect-square bg-stone-100">
+      <div className="relative aspect-square bg-stone-800">
         <button
           type="button"
           onClick={onPreview}
@@ -96,7 +96,12 @@ function PhotoCard({
             className="w-6 h-6 rounded bg-black/50 text-white flex items-center justify-center hover:bg-black/70 disabled:opacity-30 disabled:cursor-not-allowed transition"
           >
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 15l7-7 7 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M5 15l7-7 7 7"
+              />
             </svg>
           </button>
           <button
@@ -107,7 +112,12 @@ function PhotoCard({
             className="w-6 h-6 rounded bg-black/50 text-white flex items-center justify-center hover:bg-black/70 disabled:opacity-30 disabled:cursor-not-allowed transition"
           >
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
         </div>
@@ -128,7 +138,7 @@ function PhotoCard({
           onBlur={handleCaptionBlur}
           placeholder={savingCaption ? 'Saving…' : 'Add a caption…'}
           maxLength={200}
-          className="w-full text-xs text-stone-700 placeholder:text-stone-400 bg-stone-50 border border-stone-200 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
+          className="w-full text-xs text-stone-300 placeholder:text-stone-400 bg-stone-800 border border-stone-700 rounded px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-brand-400"
         />
         <div className="flex items-center justify-between gap-1">
           <span className="text-xs text-stone-400 truncate" title={photo.filename_original}>
@@ -139,7 +149,7 @@ function PhotoCard({
               <button
                 type="button"
                 onClick={() => setConfirmDelete(false)}
-                className="text-xs text-stone-500 hover:text-stone-700 px-1.5 py-0.5"
+                className="text-xs text-stone-500 hover:text-stone-300 px-1.5 py-0.5"
               >
                 Cancel
               </button>
@@ -159,8 +169,12 @@ function PhotoCard({
               className="flex-shrink-0 ml-auto text-stone-400 hover:text-red-600 transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                />
               </svg>
             </button>
           )}
@@ -180,7 +194,9 @@ type Props = {
 export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
   const [photos, setPhotos] = useState<EventPhoto[]>(initialPhotos)
   const [uploading, setUploading] = useState(false)
-  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null)
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(
+    null
+  )
   const [error, setError] = useState<string | null>(null)
   const [isDragOver, setIsDragOver] = useState(false)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
@@ -293,189 +309,251 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
     ;[reordered[index], reordered[swapIndex]] = [reordered[swapIndex], reordered[index]]
     setPhotos(reordered)
 
-    await reorderEventPhotos(eventId, reordered.map((p) => p.id))
+    await reorderEventPhotos(
+      eventId,
+      reordered.map((p) => p.id)
+    )
   }
 
   // ── Render ──
 
   return (
     <>
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-stone-900">Dinner Photos</h2>
-        <span className="text-sm text-stone-500 tabular-nums">
-          {photos.length} / {MAX_PHOTOS}
-        </span>
-      </div>
-
-      {/* Error banner */}
-      {error && (
-        <div className="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700 flex items-start gap-2">
-          <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <span>{error}</span>
-          <button type="button" onClick={() => setError(null)} title="Dismiss error" className="ml-auto flex-shrink-0 text-red-400 hover:text-red-600">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-stone-100">Dinner Photos</h2>
+          <span className="text-sm text-stone-500 tabular-nums">
+            {photos.length} / {MAX_PHOTOS}
+          </span>
         </div>
-      )}
 
-      {/* Upload zone */}
-      {canUploadMore && (
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => !uploading && fileInputRef.current?.click()}
-          className={`mb-6 border-2 border-dashed rounded-xl p-8 text-center transition cursor-pointer select-none ${
-            isDragOver
-              ? 'border-brand-500 bg-brand-50'
-              : 'border-stone-300 hover:border-brand-400 hover:bg-stone-50'
-          } ${uploading ? 'cursor-wait opacity-75' : ''}`}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
-            multiple
-            aria-label="Upload dinner photos"
-            className="sr-only"
-            onChange={handleFileInputChange}
-            disabled={uploading}
-          />
-
-          {uploading && uploadProgress ? (
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm font-medium text-stone-700">
-                Uploading {uploadProgress.current} of {uploadProgress.total}…
-              </p>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
-              <svg className="w-10 h-10 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        {/* Error banner */}
+        {error && (
+          <div className="mb-4 p-3 rounded-lg bg-red-950 border border-red-200 text-sm text-red-700 flex items-start gap-2">
+            <svg
+              className="w-4 h-4 mt-0.5 flex-shrink-0"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              title="Dismiss error"
+              className="ml-auto flex-shrink-0 text-red-400 hover:text-red-600"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
-              <div>
-                <p className="text-sm font-medium text-stone-700">
-                  Drag photos here, or{' '}
-                  <span className="text-brand-600 underline underline-offset-2">click to upload</span>
-                </p>
-                <p className="text-xs text-stone-400 mt-1">
-                  JPEG · PNG · HEIC · WebP · up to 10 MB each · up to{' '}
-                  {MAX_PHOTOS - photos.length} more
+            </button>
+          </div>
+        )}
+
+        {/* Upload zone */}
+        {canUploadMore && (
+          <div
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => !uploading && fileInputRef.current?.click()}
+            className={`mb-6 border-2 border-dashed rounded-xl p-8 text-center transition cursor-pointer select-none ${
+              isDragOver
+                ? 'border-brand-500 bg-brand-950'
+                : 'border-stone-600 hover:border-brand-400 hover:bg-stone-800'
+            } ${uploading ? 'cursor-wait opacity-75' : ''}`}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
+              multiple
+              aria-label="Upload dinner photos"
+              className="sr-only"
+              onChange={handleFileInputChange}
+              disabled={uploading}
+            />
+
+            {uploading && uploadProgress ? (
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm font-medium text-stone-300">
+                  Uploading {uploadProgress.current} of {uploadProgress.total}…
                 </p>
               </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Gallery grid */}
-      {photos.length === 0 ? (
-        <div className="text-center py-6">
-          <p className="text-sm text-stone-400">
-            No photos uploaded yet. Upload dish and dinner photos above.
-          </p>
-          <p className="text-xs text-stone-400 mt-1">
-            Photos will be visible to your client in their event portal.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {photos.map((photo, index) => (
-            <PhotoCard
-              key={photo.id}
-              photo={photo}
-              index={index}
-              total={photos.length}
-              onDelete={() => handleDelete(photo.id)}
-              onCaptionSave={(caption) => handleCaptionSave(photo.id, caption)}
-              onMoveUp={() => handleMove(index, 'up')}
-              onMoveDown={() => handleMove(index, 'down')}
-              onPreview={() => setPreviewIndex(index)}
-            />
-          ))}
-        </div>
-      )}
-
-      {photos.length > 0 && (
-        <p className="mt-4 text-xs text-stone-400">
-          Caption changes are saved on blur. Reorder with the arrow buttons. Click any photo to preview.
-        </p>
-      )}
-    </Card>
-
-    {/* Chef preview lightbox */}
-    {previewIndex !== null && photos[previewIndex] && (
-      <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
-        onClick={() => setPreviewIndex(null)}
-      >
-        {/* Close */}
-        <button
-          type="button"
-          onClick={() => setPreviewIndex(null)}
-          className="absolute top-4 right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-2 transition"
-          title="Close (Esc)"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-
-        {/* Previous */}
-        {photos.length > 1 && (
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); setPreviewIndex((i) => (i !== null && i > 0 ? i - 1 : photos.length - 1)) }}
-            className="absolute left-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition"
-            title="Previous (←)"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
+            ) : (
+              <div className="flex flex-col items-center gap-2">
+                <svg
+                  className="w-10 h-10 text-stone-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-stone-300">
+                    Drag photos here, or{' '}
+                    <span className="text-brand-600 underline underline-offset-2">
+                      click to upload
+                    </span>
+                  </p>
+                  <p className="text-xs text-stone-400 mt-1">
+                    JPEG · PNG · HEIC · WebP · up to 10 MB each · up to {MAX_PHOTOS - photos.length}{' '}
+                    more
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
         )}
 
-        {/* Image */}
-        <div className="flex flex-col items-center max-w-[90vw]" onClick={(e) => e.stopPropagation()}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={photos[previewIndex].signedUrl}
-            alt={photos[previewIndex].caption ?? photos[previewIndex].filename_original ?? 'Dinner photo'}
-            className="max-w-full max-h-[80vh] object-contain rounded-lg"
-          />
-          {photos[previewIndex].caption && (
-            <p className="mt-3 text-white/90 text-sm text-center max-w-xl px-4">
-              {photos[previewIndex].caption}
+        {/* Gallery grid */}
+        {photos.length === 0 ? (
+          <div className="text-center py-6">
+            <p className="text-sm text-stone-400">
+              No photos uploaded yet. Upload dish and dinner photos above.
             </p>
-          )}
-          <p className="mt-2 text-white/50 text-xs">
-            {previewIndex + 1} / {photos.length} · {photos[previewIndex].filename_original}
-          </p>
-        </div>
+            <p className="text-xs text-stone-400 mt-1">
+              Photos will be visible to your client in their event portal.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {photos.map((photo, index) => (
+              <PhotoCard
+                key={photo.id}
+                photo={photo}
+                index={index}
+                total={photos.length}
+                onDelete={() => handleDelete(photo.id)}
+                onCaptionSave={(caption) => handleCaptionSave(photo.id, caption)}
+                onMoveUp={() => handleMove(index, 'up')}
+                onMoveDown={() => handleMove(index, 'down')}
+                onPreview={() => setPreviewIndex(index)}
+              />
+            ))}
+          </div>
+        )}
 
-        {/* Next */}
-        {photos.length > 1 && (
+        {photos.length > 0 && (
+          <p className="mt-4 text-xs text-stone-400">
+            Caption changes are saved on blur. Reorder with the arrow buttons. Click any photo to
+            preview.
+          </p>
+        )}
+      </Card>
+
+      {/* Chef preview lightbox */}
+      {previewIndex !== null && photos[previewIndex] && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          onClick={() => setPreviewIndex(null)}
+        >
+          {/* Close */}
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setPreviewIndex((i) => (i !== null && i < photos.length - 1 ? i + 1 : 0)) }}
-            className="absolute right-4 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full p-3 transition"
-            title="Next (→)"
+            onClick={() => setPreviewIndex(null)}
+            className="absolute top-4 right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-2 transition"
+            title="Close (Esc)"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
-        )}
-      </div>
-    )}
-  </>
+
+          {/* Previous */}
+          {photos.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setPreviewIndex((i) => (i !== null && i > 0 ? i - 1 : photos.length - 1))
+              }}
+              className="absolute left-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
+              title="Previous (←)"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+            </button>
+          )}
+
+          {/* Image */}
+          <div
+            className="flex flex-col items-center max-w-[90vw]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photos[previewIndex].signedUrl}
+              alt={
+                photos[previewIndex].caption ??
+                photos[previewIndex].filename_original ??
+                'Dinner photo'
+              }
+              className="max-w-full max-h-[80vh] object-contain rounded-lg"
+            />
+            {photos[previewIndex].caption && (
+              <p className="mt-3 text-white/90 text-sm text-center max-w-xl px-4">
+                {photos[previewIndex].caption}
+              </p>
+            )}
+            <p className="mt-2 text-white/50 text-xs">
+              {previewIndex + 1} / {photos.length} · {photos[previewIndex].filename_original}
+            </p>
+          </div>
+
+          {/* Next */}
+          {photos.length > 1 && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setPreviewIndex((i) => (i !== null && i < photos.length - 1 ? i + 1 : 0))
+              }}
+              className="absolute right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
+              title="Next (→)"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          )}
+        </div>
+      )}
+    </>
   )
 }

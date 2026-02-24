@@ -77,7 +77,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-stone-900">
+        <h3 className="text-lg font-semibold text-stone-100">
           Photos{' '}
           {photos.length > 0 && (
             <span className="text-stone-400 font-normal text-sm ml-1">({photos.length})</span>
@@ -86,7 +86,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
         {!showUpload && (
           <button
             onClick={() => setShowUpload(true)}
-            className="text-sm font-medium text-brand-600 hover:text-brand-700"
+            className="text-sm font-medium text-brand-600 hover:text-brand-400"
           >
             Share a photo
           </button>
@@ -94,7 +94,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
       </div>
 
       {success && (
-        <div className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg text-sm">
+        <div className="bg-emerald-950 text-emerald-700 px-4 py-2 rounded-lg text-sm">
           Photo uploaded!
         </div>
       )}
@@ -103,7 +103,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
       {showUpload && (
         <form
           onSubmit={handleUpload}
-          className="bg-white rounded-xl border border-stone-200 p-4 space-y-3"
+          className="bg-surface rounded-xl border border-stone-700 p-4 space-y-3"
         >
           {!guestName && (
             <input
@@ -112,7 +112,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
               required
-              className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
+              className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400"
             />
           )}
 
@@ -122,7 +122,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
               type="file"
               accept="image/*"
               required
-              className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
+              className="w-full text-sm text-stone-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-brand-950 file:text-brand-400 hover:file:bg-brand-900"
             />
             <p className="text-xs text-stone-400 mt-1">Max 10MB. JPG, PNG, HEIC supported.</p>
           </div>
@@ -133,14 +133,14 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Add a caption (optional)"
             maxLength={200}
-            className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
+            className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400"
           />
 
           <div className="flex items-center justify-end gap-2">
             <button
               type="button"
               onClick={() => setShowUpload(false)}
-              className="px-3 py-1.5 text-sm text-stone-500 hover:text-stone-700"
+              className="px-3 py-1.5 text-sm text-stone-500 hover:text-stone-300"
             >
               Cancel
             </button>
@@ -160,15 +160,15 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
       {/* Photo grid */}
       {loading ? (
         <div className="text-center py-6">
-          <div className="w-6 h-6 border-2 border-stone-300 border-t-brand-600 rounded-full animate-spin mx-auto" />
+          <div className="w-6 h-6 border-2 border-stone-600 border-t-brand-600 rounded-full animate-spin mx-auto" />
         </div>
       ) : photos.length === 0 ? (
-        <div className="text-center py-6 bg-stone-50 rounded-xl border border-dashed border-stone-300">
+        <div className="text-center py-6 bg-stone-800 rounded-xl border border-dashed border-stone-600">
           <p className="text-stone-500 text-sm">No photos shared yet. Be the first!</p>
           {!showUpload && (
             <button
               onClick={() => setShowUpload(true)}
-              className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-700"
+              className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-400"
             >
               Upload a photo
             </button>
@@ -180,7 +180,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
             <button
               key={photo.id}
               onClick={() => setSelectedPhoto(photo)}
-              className="relative aspect-square rounded-xl overflow-hidden bg-stone-100 group"
+              className="relative aspect-square rounded-xl overflow-hidden bg-stone-800 group"
             >
               {photo.url ? (
                 <img

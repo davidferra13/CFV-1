@@ -94,7 +94,7 @@ function StepGoalType({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-stone-900">What do you want to track?</h2>
+        <h2 className="text-xl font-semibold text-stone-100">What do you want to track?</h2>
         <p className="text-sm text-stone-500 mt-1">Choose a goal type to get started.</p>
       </div>
 
@@ -106,7 +106,7 @@ function StepGoalType({
           className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
             activeCategory === null
               ? 'bg-brand-600 text-white'
-              : 'border border-stone-300 text-stone-600 hover:border-brand-400'
+              : 'border border-stone-600 text-stone-400 hover:border-brand-400'
           }`}
         >
           All
@@ -120,7 +120,7 @@ function StepGoalType({
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                 activeCategory === cat.id
                   ? 'bg-brand-600 text-white'
-                  : 'border border-stone-300 text-stone-600 hover:border-brand-400'
+                  : 'border border-stone-600 text-stone-400 hover:border-brand-400'
               }`}
             >
               <Icon className="h-3 w-3" />
@@ -154,12 +154,12 @@ function StepGoalType({
                       key={meta.type}
                       onClick={() => onSelect(meta.type)}
                       className={`text-left rounded-lg border-2 p-3 transition-all hover:border-brand-400 ${
-                        isSelected ? 'border-brand-500 bg-brand-50' : 'border-stone-200 bg-white'
+                        isSelected ? 'border-brand-500 bg-brand-950' : 'border-stone-700 bg-surface'
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
                         <div
-                          className={`rounded-lg p-1.5 flex-shrink-0 ${isSelected ? 'bg-brand-100' : 'bg-stone-100'}`}
+                          className={`rounded-lg p-1.5 flex-shrink-0 ${isSelected ? 'bg-brand-900' : 'bg-stone-800'}`}
                         >
                           <Icon
                             className={`h-4 w-4 ${isSelected ? 'text-brand-600' : 'text-stone-500'}`}
@@ -167,9 +167,9 @@ function StepGoalType({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <p className="font-medium text-stone-900 text-sm">{meta.label}</p>
+                            <p className="font-medium text-stone-100 text-sm">{meta.label}</p>
                             {meta.trackingMethod === 'manual_count' && (
-                              <span className="text-[10px] text-stone-400 border border-stone-200 rounded px-1 py-px">
+                              <span className="text-[10px] text-stone-400 border border-stone-700 rounded px-1 py-px">
                                 manual
                               </span>
                             )}
@@ -297,7 +297,7 @@ function StepTarget({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-stone-900">Set your target</h2>
+        <h2 className="text-xl font-semibold text-stone-100">Set your target</h2>
         <p className="text-sm text-stone-500 mt-1">
           Give the goal a name and define what you want to hit.
         </p>
@@ -305,18 +305,18 @@ function StepTarget({
 
       <div className="space-y-3">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Goal name</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Goal name</label>
           <input
             type="text"
             value={label}
             onChange={(e) => onLabelChange(e.target.value)}
             maxLength={100}
-            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">{inputLabel}</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">{inputLabel}</label>
           <div className="relative">
             {isRevenue && (
               <span className="absolute inset-y-0 left-3 flex items-center text-stone-400 text-sm">
@@ -335,7 +335,7 @@ function StepTarget({
               min={0}
               step={isRevenue ? 100 : isPercent ? 1 : isRating ? 0.1 : 1}
               placeholder={inputPlaceholder}
-              className={`w-full rounded-md border border-stone-300 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent ${isRevenue ? 'pl-7 pr-3' : isPercent ? 'pl-3 pr-7' : 'px-3'}`}
+              className={`w-full rounded-md border border-stone-600 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent ${isRevenue ? 'pl-7 pr-3' : isPercent ? 'pl-3 pr-7' : 'px-3'}`}
             />
           </div>
           {isRevenue && (
@@ -353,7 +353,7 @@ function StepTarget({
 
         {/* Period */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Period</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Period</label>
           <div className="flex gap-2 flex-wrap">
             {(['this_month', 'this_year', 'custom'] as PeriodPreset[]).map((preset) => (
               <button
@@ -362,7 +362,7 @@ function StepTarget({
                 className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
                   periodPreset === preset
                     ? 'bg-brand-600 text-white'
-                    : 'border border-stone-300 text-stone-600 hover:border-brand-400'
+                    : 'border border-stone-600 text-stone-400 hover:border-brand-400'
                 }`}
               >
                 {preset === 'this_month'
@@ -381,7 +381,7 @@ function StepTarget({
                   type="date"
                   value={periodStart}
                   onChange={(e) => onPeriodStartChange(e.target.value)}
-                  className="w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
               <div className="flex-1">
@@ -390,7 +390,7 @@ function StepTarget({
                   type="date"
                   value={periodEnd}
                   onChange={(e) => onPeriodEndChange(e.target.value)}
-                  className="w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
@@ -435,7 +435,7 @@ function StepReminders({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-stone-900">How should we push you?</h2>
+        <h2 className="text-xl font-semibold text-stone-100">How should we push you?</h2>
         <p className="text-sm text-stone-500 mt-1">
           ChefFlow can send you regular reminders and recommendations to help you stay on track.
         </p>
@@ -449,26 +449,26 @@ function StepReminders({
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${nudgeEnabled ? 'bg-brand-600' : 'bg-stone-300'}`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${nudgeEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+            className={`inline-block h-4 w-4 transform rounded-full bg-surface transition-transform ${nudgeEnabled ? 'translate-x-6' : 'translate-x-1'}`}
           />
         </button>
-        <span className="text-sm text-stone-700">Enable notifications for this goal</span>
+        <span className="text-sm text-stone-300">Enable notifications for this goal</span>
       </div>
 
       {nudgeEnabled && (
         <div className="space-y-2">
-          <p className="text-sm font-medium text-stone-700">Notification intensity</p>
+          <p className="text-sm font-medium text-stone-300">Notification intensity</p>
           {levels.map((l) => (
             <button
               key={l.value}
               onClick={() => onNudgeLevelChange(l.value)}
               className={`w-full text-left rounded-lg border-2 px-4 py-3 transition-all ${
                 nudgeLevel === l.value
-                  ? 'border-brand-500 bg-brand-50'
-                  : 'border-stone-200 hover:border-stone-300'
+                  ? 'border-brand-500 bg-brand-950'
+                  : 'border-stone-700 hover:border-stone-600'
               }`}
             >
-              <p className="text-sm font-medium text-stone-900">{l.label}</p>
+              <p className="text-sm font-medium text-stone-100">{l.label}</p>
               <p className="text-xs text-stone-500 mt-0.5">{l.description}</p>
             </button>
           ))}
@@ -516,40 +516,40 @@ function StepReview({
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-xl font-semibold text-stone-900">Review and save</h2>
+        <h2 className="text-xl font-semibold text-stone-100">Review and save</h2>
         <p className="text-sm text-stone-500 mt-1">Confirm your goal before saving.</p>
       </div>
       <Card>
         <CardContent className="pt-4 space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-stone-500">Type</span>
-            <span className="font-medium text-stone-900">{meta?.label ?? goalType}</span>
+            <span className="font-medium text-stone-100">{meta?.label ?? goalType}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-stone-500">Tracking</span>
-            <span className="font-medium text-stone-900">
+            <span className="font-medium text-stone-100">
               {meta?.trackingMethod === 'manual_count' ? 'Manual (you log progress)' : 'Automatic'}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-stone-500">Name</span>
-            <span className="font-medium text-stone-900 text-right max-w-[60%] truncate">
+            <span className="font-medium text-stone-100 text-right max-w-[60%] truncate">
               {label || '—'}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-stone-500">Target</span>
-            <span className="font-medium text-stone-900">{targetDisplay}</span>
+            <span className="font-medium text-stone-100">{targetDisplay}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-stone-500">Period</span>
-            <span className="font-medium text-stone-900">
+            <span className="font-medium text-stone-100">
               {periodStart} – {periodEnd}
             </span>
           </div>
           <div className="flex justify-between">
             <span className="text-stone-500">Notifications</span>
-            <span className="font-medium text-stone-900">
+            <span className="font-medium text-stone-100">
               {nudgeEnabled ? `${nudgeLevel.charAt(0).toUpperCase() + nudgeLevel.slice(1)}` : 'Off'}
             </span>
           </div>
@@ -686,12 +686,12 @@ export function GoalWizardSteps() {
           return (
             <div key={stepLabel} className="flex items-center gap-2">
               <div
-                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${done ? 'bg-brand-600 text-white' : active ? 'bg-brand-600 text-white' : 'bg-stone-200 text-stone-500'}`}
+                className={`h-6 w-6 rounded-full flex items-center justify-center text-xs font-medium transition-colors ${done ? 'bg-brand-600 text-white' : active ? 'bg-brand-600 text-white' : 'bg-stone-700 text-stone-500'}`}
               >
                 {done ? <Check className="h-3.5 w-3.5" /> : num}
               </div>
               <span
-                className={`text-xs hidden sm:inline ${active ? 'font-medium text-stone-900' : 'text-stone-400'}`}
+                className={`text-xs hidden sm:inline ${active ? 'font-medium text-stone-100' : 'text-stone-400'}`}
               >
                 {stepLabel}
               </span>
@@ -748,7 +748,7 @@ export function GoalWizardSteps() {
 
       {/* Error */}
       {error && (
-        <p className="text-sm text-red-600 rounded-md bg-red-50 border border-red-200 px-3 py-2">
+        <p className="text-sm text-red-600 rounded-md bg-red-950 border border-red-200 px-3 py-2">
           {error}
         </p>
       )}
@@ -758,7 +758,7 @@ export function GoalWizardSteps() {
         <button
           onClick={handleBack}
           disabled={step === 1}
-          className="inline-flex items-center gap-1 text-sm text-stone-600 hover:text-stone-900 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="inline-flex items-center gap-1 text-sm text-stone-400 hover:text-stone-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <ChevronLeft className="h-4 w-4" />
           Back

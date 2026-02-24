@@ -12,23 +12,17 @@ export const metadata: Metadata = { title: 'Client Preview - ChefFlow' }
 
 export default async function ClientPreviewPage() {
   // requireChef() is invoked internally by both getChefSlug() and getPreviewClients()
-  const [profile, clients] = await Promise.all([
-    getChefSlug(),
-    getPreviewClients(),
-  ])
+  const [profile, clients] = await Promise.all([getChefSlug(), getPreviewClients()])
 
   // Fetch the full public profile data (same as what /chef/[slug] renders)
-  const publicProfileData = profile?.slug
-    ? await getPublicChefProfile(profile.slug)
-    : null
+  const publicProfileData = profile?.slug ? await getPublicChefProfile(profile.slug) : null
 
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-stone-900">Client Preview</h1>
-        <p className="text-stone-600 mt-1">
-          See exactly what your clients experience — your public profile and
-          their portal.
+        <h1 className="text-3xl font-bold text-stone-100">Client Preview</h1>
+        <p className="text-stone-400 mt-1">
+          See exactly what your clients experience — your public profile and their portal.
         </p>
       </div>
 

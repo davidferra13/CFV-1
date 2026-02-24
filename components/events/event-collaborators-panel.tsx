@@ -38,19 +38,23 @@ const ROLE_LABELS: Record<CollaboratorRole, string> = {
   observer: 'Observer',
 }
 
-const ROLE_BADGE_VARIANTS: Record<CollaboratorRole, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
+const ROLE_BADGE_VARIANTS: Record<
+  CollaboratorRole,
+  'default' | 'success' | 'warning' | 'error' | 'info'
+> = {
   primary: 'success',
   co_host: 'info',
   sous_chef: 'default',
   observer: 'warning',
 }
 
-const STATUS_BADGE_VARIANTS: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
-  pending: 'warning',
-  accepted: 'success',
-  declined: 'error',
-  removed: 'default',
-}
+const STATUS_BADGE_VARIANTS: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> =
+  {
+    pending: 'warning',
+    accepted: 'success',
+    declined: 'error',
+    removed: 'default',
+  }
 
 const PERMISSION_LABELS: Record<keyof CollaboratorPermissions, string> = {
   can_modify_menu: 'Edit menu',
@@ -81,8 +85,8 @@ export function EventCollaboratorsPanel({ eventId, isOwner, collaborators }: Pro
     router.refresh()
   }
 
-  const acceptedCollaborators = collaborators.filter(c => c.status === 'accepted')
-  const pendingCollaborators = collaborators.filter(c => c.status === 'pending')
+  const acceptedCollaborators = collaborators.filter((c) => c.status === 'accepted')
+  const pendingCollaborators = collaborators.filter((c) => c.status === 'pending')
 
   return (
     <Card>
@@ -154,7 +158,11 @@ export function EventCollaboratorsPanel({ eventId, isOwner, collaborators }: Pro
           </p>
         ) : (
           <div className="space-y-3">
-            {[...acceptedCollaborators, ...pendingCollaborators, ...collaborators.filter(c => c.status === 'declined' || c.status === 'removed')].map(collab => (
+            {[
+              ...acceptedCollaborators,
+              ...pendingCollaborators,
+              ...collaborators.filter((c) => c.status === 'declined' || c.status === 'removed'),
+            ].map((collab) => (
               <CollaboratorRow
                 key={collab.id}
                 collab={collab}
@@ -245,8 +253,8 @@ function InviteChefForm({
   }
 
   return (
-    <div className="rounded-lg border border-brand-200 bg-brand-50/40 p-4 space-y-3">
-      <p className="text-sm font-semibold text-stone-800">Invite a Connected Chef</p>
+    <div className="rounded-lg border border-brand-700 bg-brand-950/40 p-4 space-y-3">
+      <p className="text-sm font-semibold text-stone-200">Invite a Connected Chef</p>
 
       {!selectedChef ? (
         <div className="space-y-2">
@@ -254,10 +262,10 @@ function InviteChefForm({
             <input
               type="text"
               value={search}
-              onChange={e => setSearch(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleSearch()}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="Search your connected chefs..."
-              className="flex-1 rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="flex-1 rounded-md border border-stone-600 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
             <Button variant="secondary" size="sm" onClick={handleSearch} disabled={searching}>
               {searching ? '...' : 'Search'}
@@ -266,24 +274,32 @@ function InviteChefForm({
 
           {searchResults.length > 0 && (
             <div className="space-y-1">
-              {searchResults.map(chef => (
+              {searchResults.map((chef) => (
                 <button
                   key={chef.id}
                   type="button"
                   onClick={() => setSelectedChef(chef)}
-                  className="w-full text-left flex items-center gap-3 rounded-md border border-stone-200 bg-white px-3 py-2 hover:bg-stone-50 transition-colors text-sm"
+                  className="w-full text-left flex items-center gap-3 rounded-md border border-stone-700 bg-surface px-3 py-2 hover:bg-stone-800 transition-colors text-sm"
                 >
                   {chef.profile_image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={chef.profile_image_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                    <img
+                      src={chef.profile_image_url}
+                      alt=""
+                      className="h-8 w-8 rounded-full object-cover"
+                    />
                   ) : (
-                    <div className="h-8 w-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600">
+                    <div className="h-8 w-8 rounded-full bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-400">
                       {(chef.display_name || chef.business_name).charAt(0).toUpperCase()}
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-stone-900">{chef.display_name || chef.business_name}</p>
-                    {chef.display_name && <p className="text-xs text-stone-500">{chef.business_name}</p>}
+                    <p className="font-medium text-stone-100">
+                      {chef.display_name || chef.business_name}
+                    </p>
+                    {chef.display_name && (
+                      <p className="text-xs text-stone-500">{chef.business_name}</p>
+                    )}
                   </div>
                 </button>
               ))}
@@ -292,32 +308,35 @@ function InviteChefForm({
 
           {searchResults.length === 0 && search && !searching && (
             <p className="text-sm text-stone-500">
-              No connected chefs found. Only chefs you&apos;re connected with in the Chef Network can be invited.
+              No connected chefs found. Only chefs you&apos;re connected with in the Chef Network
+              can be invited.
             </p>
           )}
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center gap-3 rounded-md bg-white border border-stone-200 px-3 py-2">
-            <div className="h-8 w-8 rounded-full bg-stone-200 flex items-center justify-center text-xs font-medium text-stone-600">
+          <div className="flex items-center gap-3 rounded-md bg-surface border border-stone-700 px-3 py-2">
+            <div className="h-8 w-8 rounded-full bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-400">
               {(selectedChef.display_name || selectedChef.business_name).charAt(0).toUpperCase()}
             </div>
-            <p className="text-sm font-medium text-stone-900">{selectedChef.display_name || selectedChef.business_name}</p>
+            <p className="text-sm font-medium text-stone-100">
+              {selectedChef.display_name || selectedChef.business_name}
+            </p>
             <button
               type="button"
               onClick={() => setSelectedChef(null)}
-              className="ml-auto text-xs text-stone-400 hover:text-stone-600"
+              className="ml-auto text-xs text-stone-400 hover:text-stone-400"
             >
               Change
             </button>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-stone-700 mb-1">Role</label>
+            <label className="block text-xs font-medium text-stone-300 mb-1">Role</label>
             <select
               value={role}
-              onChange={e => setRole(e.target.value as CollaboratorRole)}
-              className="w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+              onChange={(e) => setRole(e.target.value as CollaboratorRole)}
+              className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               <option value="co_host">Co-Host — full access except closing event</option>
               <option value="sous_chef">Sous Chef — kitchen-side access only</option>
@@ -329,13 +348,13 @@ function InviteChefForm({
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-stone-700 mb-1">Optional note</label>
+            <label className="block text-xs font-medium text-stone-300 mb-1">Optional note</label>
             <input
               type="text"
               value={note}
-              onChange={e => setNote(e.target.value)}
+              onChange={(e) => setNote(e.target.value)}
               placeholder="e.g. I need help with the dessert station"
-              className="w-full rounded-md border border-stone-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="w-full rounded-md border border-stone-600 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
           </div>
 
@@ -343,7 +362,9 @@ function InviteChefForm({
             <Button variant="primary" size="sm" onClick={handleInvite} disabled={isPending}>
               {isPending ? 'Sending...' : 'Send Invitation'}
             </Button>
-            <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+            <Button variant="ghost" size="sm" onClick={onCancel}>
+              Cancel
+            </Button>
           </div>
         </div>
       )}
@@ -384,31 +405,32 @@ function HandoffForm({
   }
 
   return (
-    <div className="rounded-lg border border-red-200 bg-red-50/40 p-4 space-y-3">
-      <p className="text-sm font-semibold text-stone-800">Hand Off Event</p>
-      <p className="text-xs text-stone-600">
-        Transfers operational leadership to another chef. You become an observer (read-only). Both of you keep access.
+    <div className="rounded-lg border border-red-200 bg-red-950/40 p-4 space-y-3">
+      <p className="text-sm font-semibold text-stone-200">Hand Off Event</p>
+      <p className="text-xs text-stone-400">
+        Transfers operational leadership to another chef. You become an observer (read-only). Both
+        of you keep access.
       </p>
 
       <select
         value={selectedId}
-        onChange={e => setSelectedId(e.target.value)}
-        className="w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
+        onChange={(e) => setSelectedId(e.target.value)}
+        className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500"
       >
         <option value="">Select new primary chef...</option>
-        {acceptedCollaborators.map(c => (
+        {acceptedCollaborators.map((c) => (
           <option key={c.id} value={c.chef_id}>
             {c.chef.display_name || c.chef.business_name} ({ROLE_LABELS[c.role]})
           </option>
         ))}
       </select>
 
-      <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+      <label className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
         <input
           type="checkbox"
           checked={confirmed}
-          onChange={e => setConfirmed(e.target.checked)}
-          className="h-4 w-4 rounded border-stone-300"
+          onChange={(e) => setConfirmed(e.target.checked)}
+          className="h-4 w-4 rounded border-stone-600"
         />
         I understand I will become an observer and lose editing rights
       </label>
@@ -422,7 +444,9 @@ function HandoffForm({
         >
           {isPending ? 'Transferring...' : 'Confirm Handoff'}
         </Button>
-        <Button variant="ghost" size="sm" onClick={onCancel}>Cancel</Button>
+        <Button variant="ghost" size="sm" onClick={onCancel}>
+          Cancel
+        </Button>
       </div>
     </div>
   )
@@ -448,16 +472,18 @@ function CollaboratorRow({
   const chefName = collab.chef.display_name || collab.chef.business_name
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-3 space-y-2">
+    <div className="rounded-lg border border-stone-700 bg-surface p-3 space-y-2">
       <div className="flex items-center gap-3">
-        <div className="h-9 w-9 rounded-full bg-stone-200 flex items-center justify-center text-sm font-medium text-stone-600 flex-shrink-0">
+        <div className="h-9 w-9 rounded-full bg-stone-700 flex items-center justify-center text-sm font-medium text-stone-400 flex-shrink-0">
           {chefName.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-stone-900 truncate">{chefName}</p>
+          <p className="text-sm font-medium text-stone-100 truncate">{chefName}</p>
           <div className="flex items-center gap-2 mt-0.5">
             <Badge variant={ROLE_BADGE_VARIANTS[collab.role]}>{ROLE_LABELS[collab.role]}</Badge>
-            <Badge variant={STATUS_BADGE_VARIANTS[collab.status] || 'default'}>{collab.status}</Badge>
+            <Badge variant={STATUS_BADGE_VARIANTS[collab.status] || 'default'}>
+              {collab.status}
+            </Badge>
           </div>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -465,7 +491,7 @@ function CollaboratorRow({
             <button
               type="button"
               onClick={() => setShowPermissions(!showPermissions)}
-              className="text-xs text-stone-400 hover:text-stone-600 px-1.5 py-0.5 rounded"
+              className="text-xs text-stone-400 hover:text-stone-400 px-1.5 py-0.5 rounded"
             >
               {showPermissions ? 'Hide' : 'Perms'}
             </button>
@@ -475,9 +501,9 @@ function CollaboratorRow({
               {collab.status === 'accepted' && (
                 <select
                   value={collab.role}
-                  onChange={e => onRoleChange(e.target.value as CollaboratorRole)}
+                  onChange={(e) => onRoleChange(e.target.value as CollaboratorRole)}
                   disabled={isPending}
-                  className="text-xs rounded border border-stone-200 px-1 py-0.5 bg-white text-stone-700"
+                  className="text-xs rounded border border-stone-700 px-1 py-0.5 bg-surface text-stone-300"
                   title="Change role"
                 >
                   <option value="primary">Primary</option>
@@ -500,19 +526,17 @@ function CollaboratorRow({
         </div>
       </div>
 
-      {collab.note && (
-        <p className="text-xs text-stone-500 italic pl-12">{collab.note}</p>
-      )}
+      {collab.note && <p className="text-xs text-stone-500 italic pl-12">{collab.note}</p>}
 
       {showPermissions && collab.status === 'accepted' && (
         <div className="pl-12 flex flex-wrap gap-1">
-          {(Object.keys(PERMISSION_LABELS) as Array<keyof CollaboratorPermissions>).map(key => (
+          {(Object.keys(PERMISSION_LABELS) as Array<keyof CollaboratorPermissions>).map((key) => (
             <span
               key={key}
               className={`text-xs rounded-full px-2 py-0.5 ${
                 collab.permissions[key]
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-stone-100 text-stone-400 line-through'
+                  ? 'bg-green-900 text-green-800'
+                  : 'bg-stone-800 text-stone-400 line-through'
               }`}
             >
               {PERMISSION_LABELS[key]}
@@ -530,7 +554,9 @@ export function CollaborationInvitationCard({
   collab,
   onRespond,
 }: {
-  collab: EventCollaborator & { event?: { id: string; occasion: string | null; event_date: string | null } }
+  collab: EventCollaborator & {
+    event?: { id: string; occasion: string | null; event_date: string | null }
+  }
   onRespond?: () => void
 }) {
   const router = useRouter()
@@ -557,16 +583,19 @@ export function CollaborationInvitationCard({
     : null
 
   return (
-    <div className="rounded-lg border border-brand-200 bg-brand-50/30 p-4 space-y-3">
+    <div className="rounded-lg border border-brand-700 bg-brand-950/30 p-4 space-y-3">
       {error && <Alert variant="error">{error}</Alert>}
       <div>
-        <p className="text-sm font-semibold text-stone-900">
+        <p className="text-sm font-semibold text-stone-100">
           Collaboration invitation from {inviterName}
         </p>
         <p className="text-xs text-stone-500 mt-0.5">
-          Event: {eventName}{eventDate && <span className="ml-1 text-stone-400">· {eventDate}</span>}
+          Event: {eventName}
+          {eventDate && <span className="ml-1 text-stone-400">· {eventDate}</span>}
         </p>
-        {collab.note && <p className="text-xs text-stone-600 mt-0.5 italic">&ldquo;{collab.note}&rdquo;</p>}
+        {collab.note && (
+          <p className="text-xs text-stone-400 mt-0.5 italic">&ldquo;{collab.note}&rdquo;</p>
+        )}
       </div>
       <div className="flex items-center gap-2">
         <Badge variant={ROLE_BADGE_VARIANTS[collab.role]}>{ROLE_LABELS[collab.role]}</Badge>
@@ -614,17 +643,17 @@ export function PendingRecipeShareCard({
   const recipeName = share.recipe?.name || 'a recipe'
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50/30 p-4 space-y-3">
+    <div className="rounded-lg border border-amber-200 bg-amber-950/30 p-4 space-y-3">
       {error && <Alert variant="error">{error}</Alert>}
       <div>
-        <p className="text-sm font-semibold text-stone-900">
-          Recipe share from {fromChefName}
-        </p>
-        <p className="text-xs text-stone-600 mt-0.5">
+        <p className="text-sm font-semibold text-stone-100">Recipe share from {fromChefName}</p>
+        <p className="text-xs text-stone-400 mt-0.5">
           Recipe: <span className="font-medium">{recipeName}</span>
           {share.recipe?.category && ` · ${share.recipe.category}`}
         </p>
-        {share.note && <p className="text-xs text-stone-600 mt-1 italic">&ldquo;{share.note}&rdquo;</p>}
+        {share.note && (
+          <p className="text-xs text-stone-400 mt-1 italic">&ldquo;{share.note}&rdquo;</p>
+        )}
       </div>
       <p className="text-xs text-stone-500">
         Accepting creates an independent editable copy in your recipe library.

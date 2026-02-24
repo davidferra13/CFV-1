@@ -28,9 +28,9 @@ export function AgentConfirmationCard({
 
   const safetyColors = {
     reversible:
-      'border-emerald-200 bg-emerald-50/50 dark:border-emerald-800 dark:bg-emerald-950/50',
-    significant: 'border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/50',
-    restricted: 'border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/50',
+      'border-emerald-200 bg-emerald-950/50 dark:border-emerald-800 dark:bg-emerald-950/50',
+    significant: 'border-amber-200 bg-amber-950/50 dark:border-amber-800 dark:bg-amber-950/50',
+    restricted: 'border-red-200 bg-red-950/50 dark:border-red-800 dark:bg-red-950/50',
   }
 
   const safetyIcons = {
@@ -74,7 +74,7 @@ export function AgentConfirmationCard({
       {/* Header */}
       <div className="flex items-center gap-2 mb-2">
         {safetyIcons[preview.safety]}
-        <span className="font-medium text-stone-900 dark:text-stone-100 flex-1">
+        <span className="font-medium text-stone-100 dark:text-stone-100 flex-1">
           {preview.summary}
         </span>
         <span className="text-xs text-stone-500 dark:text-stone-400">
@@ -88,7 +88,7 @@ export function AgentConfirmationCard({
       >
         {displayFields.map((field, i) => (
           <div key={i} className="flex items-start gap-2 text-xs">
-            <span className="font-medium text-stone-600 dark:text-stone-400 min-w-[90px] shrink-0">
+            <span className="font-medium text-stone-400 dark:text-stone-400 min-w-[90px] shrink-0">
               {field.label}:
             </span>
             {editing && field.editable ? (
@@ -98,10 +98,10 @@ export function AgentConfirmationCard({
                 onChange={(e) =>
                   setEditValues((prev) => ({ ...prev, [field.label]: e.target.value }))
                 }
-                className="flex-1 bg-white dark:bg-stone-800 border border-stone-300 dark:border-stone-600 rounded px-1.5 py-0.5 text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                className="flex-1 bg-surface dark:bg-stone-800 border border-stone-600 dark:border-stone-600 rounded px-1.5 py-0.5 text-xs text-stone-100 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
             ) : (
-              <span className="text-stone-900 dark:text-stone-100 flex-1">
+              <span className="text-stone-100 dark:text-stone-100 flex-1">
                 {field.value}
                 {field.editable && !isRestricted && (
                   <span className="text-stone-400 ml-1">(editable)</span>
@@ -114,7 +114,7 @@ export function AgentConfirmationCard({
         {!showAllFields && preview.fields.length > (isBatch ? 6 : 4) && (
           <button
             onClick={() => setShowAllFields(true)}
-            className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
+            className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 dark:hover:text-stone-300"
           >
             <ChevronDown className="h-3 w-3" />
             Show {preview.fields.length - (isBatch ? 6 : 4)} more fields
@@ -123,7 +123,7 @@ export function AgentConfirmationCard({
         {showAllFields && preview.fields.length > 5 && (
           <button
             onClick={() => setShowAllFields(false)}
-            className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
+            className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-300 dark:hover:text-stone-300"
           >
             <ChevronUp className="h-3 w-3" />
             Show less

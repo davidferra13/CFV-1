@@ -504,7 +504,7 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-display text-stone-900">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-display text-stone-100">Dashboard</h1>
           <p className="text-sm text-stone-400 mt-0.5">
             Good {timeOfDay}
             {firstName ? `, ${firstName}` : ''}.
@@ -514,7 +514,7 @@ export default async function ChefDashboard() {
           <DashboardQuickSettings initialWidgets={widgetPreferences} />
           <Link
             href="/queue"
-            className="inline-flex items-center justify-center px-4 py-2 border border-stone-300 text-stone-700 rounded-lg hover:bg-stone-50 transition-colors font-medium text-sm"
+            className="inline-flex items-center justify-center px-4 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
           >
             Full Queue
           </Link>
@@ -546,10 +546,10 @@ export default async function ChefDashboard() {
             <div
               className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:opacity-90 ${
                 queue.nextAction.urgency === 'critical'
-                  ? 'bg-red-50 border-red-200 text-red-900'
+                  ? 'bg-red-950 border-red-200 text-red-900'
                   : queue.nextAction.urgency === 'high'
-                    ? 'bg-amber-50 border-amber-200 text-amber-900'
-                    : 'bg-brand-50 border-brand-200 text-brand-900'
+                    ? 'bg-amber-950 border-amber-200 text-amber-900'
+                    : 'bg-brand-950 border-brand-700 text-brand-200'
               }`}
             >
               <div className="flex items-center gap-3 min-w-0">
@@ -579,7 +579,7 @@ export default async function ChefDashboard() {
             </div>
           </Link>
         ) : (
-          <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 px-4 py-3">
+          <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-950 px-4 py-3">
             <span
               className="w-2.5 h-2.5 rounded-full shrink-0"
               style={{ backgroundColor: '#10b981' }}
@@ -600,8 +600,8 @@ export default async function ChefDashboard() {
           <div
             className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
               schedulingGaps.some((g: any) => g.severity === 'critical')
-                ? 'bg-red-50 border-red-200 text-red-900'
-                : 'bg-amber-50 border-amber-200 text-amber-900'
+                ? 'bg-red-950 border-red-200 text-red-900'
+                : 'bg-amber-950 border-amber-200 text-amber-900'
             }`}
           >
             <div>
@@ -712,10 +712,10 @@ export default async function ChefDashboard() {
                 <Link
                   key={item.event?.id}
                   href={`/events/${item.event?.id}`}
-                  className="flex items-center justify-between rounded-lg border border-stone-200 bg-stone-50 px-3 py-2 hover:bg-stone-100 transition-colors"
+                  className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-800 px-3 py-2 hover:bg-stone-700 transition-colors"
                 >
                   <div>
-                    <p className="text-sm font-medium text-stone-900">
+                    <p className="text-sm font-medium text-stone-100">
                       {item.event?.occasion || 'Untitled Event'}
                     </p>
                     <p className="text-xs text-stone-500">
@@ -725,7 +725,7 @@ export default async function ChefDashboard() {
                       {item.event?.client ? ` · ${item.event.client.full_name}` : ''}
                     </p>
                   </div>
-                  <span className="text-xs rounded-full px-2 py-0.5 bg-brand-100 text-brand-800 font-medium capitalize">
+                  <span className="text-xs rounded-full px-2 py-0.5 bg-brand-900 text-brand-300 font-medium capitalize">
                     {item.role.replace('_', ' ')}
                   </span>
                 </Link>
@@ -746,29 +746,29 @@ export default async function ChefDashboard() {
       {isWidgetEnabled('todays_schedule') && (
         <section style={{ order: getWidgetOrder('todays_schedule') }}>
           {todaysSchedule ? (
-            <Card className="border-brand-200">
+            <Card className="border-brand-700">
               <CardHeader>
                 <div className="flex justify-between items-center">
-                  <CardTitle className="text-brand-900">
+                  <CardTitle className="text-brand-200">
                     Today: {todaysSchedule.event.occasion || 'Event'}
                   </CardTitle>
                   <Link
                     href={`/events/${todaysSchedule.event.id}/schedule`}
-                    className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                    className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                   >
                     Full Schedule <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="mb-2 text-sm text-stone-600">
+                <div className="mb-2 text-sm text-stone-400">
                   {todaysSchedule.event.client?.full_name} &mdash;{' '}
                   {todaysSchedule.event.guest_count} guests
                   {todaysSchedule.event.location_city &&
                     ` \u2014 ${todaysSchedule.event.location_city}`}
                 </div>
                 {todaysSchedule.dop.isCompressed && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-4">
+                  <div className="bg-amber-950 border border-amber-200 rounded-lg p-2 mb-4">
                     <p className="text-sm font-medium text-amber-900">Compressed timeline active</p>
                   </div>
                 )}
@@ -776,14 +776,14 @@ export default async function ChefDashboard() {
               </CardContent>
             </Card>
           ) : (
-            <Card className="border-stone-200 bg-stone-50">
+            <Card className="border-stone-700 bg-stone-800">
               <CardContent className="py-8 text-center">
                 <p className="text-stone-500 text-sm">
                   No dinners on the schedule today. A quiet day to plan ahead.
                 </p>
                 {nextEvent && (
                   <Link href={`/events/${nextEvent.id}`} className="inline-block mt-3">
-                    <p className="text-sm text-brand-600 hover:text-brand-700 font-medium">
+                    <p className="text-sm text-brand-600 hover:text-brand-400 font-medium">
                       Next up: {nextEvent.occasion || 'Event'} &mdash;{' '}
                       {format(new Date(nextEvent.eventDate + 'T12:00:00'), 'EEEE, MMM d')}
                       <span className="text-stone-500 font-normal ml-1">
@@ -832,7 +832,7 @@ export default async function ChefDashboard() {
                 </h2>
                 <Link
                   href="/queue"
-                  className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-sm text-brand-600 hover:text-brand-400 font-medium"
                 >
                   View all <ArrowRight className="h-3.5 w-3.5 inline" />
                 </Link>
@@ -869,7 +869,7 @@ export default async function ChefDashboard() {
                   <div className="min-w-0">
                     <Link
                       href={`/events/${e.eventId}`}
-                      className="text-sm font-medium text-stone-900 hover:text-brand-600 truncate block"
+                      className="text-sm font-medium text-stone-100 hover:text-brand-600 truncate block"
                     >
                       {e.occasion || 'Event'} — {e.clientName}
                     </Link>
@@ -930,7 +930,7 @@ export default async function ChefDashboard() {
                 <CardHeader>
                   <div className="flex justify-between items-center">
                     <CardTitle>Service Quality</CardTitle>
-                    <Link href="/aar" className="text-sm text-brand-600 hover:text-brand-700">
+                    <Link href="/aar" className="text-sm text-brand-600 hover:text-brand-400">
                       All Reviews
                     </Link>
                   </div>
@@ -938,13 +938,13 @@ export default async function ChefDashboard() {
                 <CardContent>
                   <div className="flex gap-8">
                     <div>
-                      <div className="text-2xl font-bold text-stone-900">
+                      <div className="text-2xl font-bold text-stone-100">
                         {aarStats.last5AvgCalm}/5
                       </div>
                       <p className="text-sm text-stone-500">calm (last 5)</p>
                     </div>
                     <div>
-                      <div className="text-2xl font-bold text-stone-900">
+                      <div className="text-2xl font-bold text-stone-100">
                         {aarStats.last5AvgPrep}/5
                       </div>
                       <p className="text-sm text-stone-500">prep (last 5)</p>
@@ -993,7 +993,7 @@ export default async function ChefDashboard() {
                         .slice(0, 4)
                         .map(({ item, count }) => (
                           <div key={item} className="flex justify-between items-center">
-                            <span className="text-sm text-stone-700 capitalize">{item}</span>
+                            <span className="text-sm text-stone-300 capitalize">{item}</span>
                             <span className="text-sm font-medium text-red-600">
                               {count}x forgotten
                             </span>
@@ -1026,7 +1026,7 @@ export default async function ChefDashboard() {
               {closureStreak.currentStreak >= 2 && (
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-lg">🔥</span>
-                  <span className="font-semibold text-stone-800">
+                  <span className="font-semibold text-stone-200">
                     {closureStreak.currentStreak} events closed on time in a row
                   </span>
                   {closureStreak.milestoneMessage && (
@@ -1045,22 +1045,22 @@ export default async function ChefDashboard() {
                     <CardTitle>Revenue</CardTitle>
                     <Link
                       href="/financials"
-                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                     >
                       Details <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-stone-900">
+                  <div className="text-3xl font-bold text-stone-100">
                     {formatCurrency(financials.netRevenueCents)}
                   </div>
                   <p className="text-sm text-stone-500 mt-1">net revenue (all time)</p>
-                  <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
+                  <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
                     {(monthRevenue.currentMonthRevenueCents > 0 ||
                       monthRevenue.previousMonthRevenueCents > 0) && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-stone-600">
+                        <span className="text-sm text-stone-400">
                           {currentMonthName}:{' '}
                           {formatCurrency(monthRevenue.currentMonthRevenueCents)}
                         </span>
@@ -1094,7 +1094,7 @@ export default async function ChefDashboard() {
                     <CardTitle>Revenue Goal</CardTitle>
                     <Link
                       href="/financials"
-                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                     >
                       View <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
@@ -1103,24 +1103,24 @@ export default async function ChefDashboard() {
                 <CardContent>
                   {!revenueGoal.enabled ? (
                     <>
-                      <div className="text-lg font-semibold text-stone-900">Program Off</div>
+                      <div className="text-lg font-semibold text-stone-100">Program Off</div>
                       <p className="text-sm text-stone-500 mt-1">
                         Enable revenue goals in Settings to get booking and calendar suggestions.
                       </p>
                     </>
                   ) : (
                     <>
-                      <div className="text-3xl font-bold text-stone-900">
+                      <div className="text-3xl font-bold text-stone-100">
                         {Math.max(0, revenueGoal.monthly.progressPercent)}%
                       </div>
                       <p className="text-sm text-stone-500 mt-1">
                         projected toward {formatCurrency(revenueGoal.monthly.targetCents)} this
                         month
                       </p>
-                      <div className="mt-3 pt-3 border-t border-stone-100 space-y-1 text-sm">
+                      <div className="mt-3 pt-3 border-t border-stone-800 space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span className="text-stone-500">Projected</span>
-                          <span className="text-stone-900 font-medium">
+                          <span className="text-stone-100 font-medium">
                             {formatCurrency(revenueGoal.monthly.projectedCents)}
                           </span>
                         </div>
@@ -1139,7 +1139,7 @@ export default async function ChefDashboard() {
                         {revenueGoal.monthly.gapCents > 0 && (
                           <div className="flex justify-between">
                             <span className="text-stone-500">Dinners Needed</span>
-                            <span className="text-stone-900 font-medium">
+                            <span className="text-stone-100 font-medium">
                               {revenueGoal.dinnersNeededThisMonth}
                             </span>
                           </div>
@@ -1157,7 +1157,7 @@ export default async function ChefDashboard() {
                     <CardTitle>Profit ({currentMonthName})</CardTitle>
                     <Link
                       href="/financials"
-                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                     >
                       Details <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
@@ -1165,14 +1165,14 @@ export default async function ChefDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div
-                    className={`text-3xl font-bold ${monthRevenue.currentMonthProfitCents >= 0 ? 'text-stone-900' : 'text-red-600'}`}
+                    className={`text-3xl font-bold ${monthRevenue.currentMonthProfitCents >= 0 ? 'text-stone-100' : 'text-red-600'}`}
                   >
                     {formatCurrency(monthRevenue.currentMonthProfitCents)}
                   </div>
                   <p className="text-sm text-stone-500 mt-1">revenue minus expenses</p>
                   {monthRevenue.currentMonthRevenueCents > 0 && (
-                    <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
-                      <span className="text-sm text-stone-600">
+                    <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
+                      <span className="text-sm text-stone-400">
                         {monthRevenue.currentMonthRevenueCents > 0
                           ? `${Math.round((monthRevenue.currentMonthProfitCents / monthRevenue.currentMonthRevenueCents) * 100)}% margin`
                           : 'No revenue yet'}
@@ -1194,7 +1194,7 @@ export default async function ChefDashboard() {
                     <CardTitle>Events</CardTitle>
                     <Link
                       href="/events"
-                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                     >
                       <Calendar className="h-3.5 w-3.5" />
                       All Events <ArrowRight className="h-3.5 w-3.5" />
@@ -1202,14 +1202,14 @@ export default async function ChefDashboard() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-stone-900">{eventCounts.thisMonth}</div>
+                  <div className="text-3xl font-bold text-stone-100">{eventCounts.thisMonth}</div>
                   <p className="text-sm text-stone-500 mt-1">
                     this month
                     {eventCounts.totalGuestsThisMonth > 0 &&
                       ` \u00B7 ${eventCounts.totalGuestsThisMonth} guests`}
                   </p>
-                  <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
-                    <div className="flex gap-3 text-sm text-stone-600">
+                  <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
+                    <div className="flex gap-3 text-sm text-stone-400">
                       {eventCounts.upcomingThisMonth > 0 && (
                         <span>{eventCounts.upcomingThisMonth} upcoming</span>
                       )}
@@ -1242,17 +1242,17 @@ export default async function ChefDashboard() {
                     <CardTitle>Inquiries</CardTitle>
                     <Link
                       href="/inquiries"
-                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                     >
                       Pipeline <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-stone-900">{activeInquiryCount}</div>
+                  <div className="text-3xl font-bold text-stone-100">{activeInquiryCount}</div>
                   <p className="text-sm text-stone-500 mt-1">active in pipeline</p>
-                  <div className="mt-3 pt-3 border-t border-stone-100 space-y-1">
-                    <div className="flex gap-3 text-sm text-stone-600">
+                  <div className="mt-3 pt-3 border-t border-stone-800 space-y-1">
+                    <div className="flex gap-3 text-sm text-stone-400">
                       {inquiryStats.new > 0 && <span>{inquiryStats.new} new</span>}
                       {inquiryStats.quoted > 0 && <span>{inquiryStats.quoted} quoted</span>}
                       {inquiryStats.awaiting_client > 0 && (
@@ -1301,17 +1301,17 @@ export default async function ChefDashboard() {
                     <CardTitle>Clients</CardTitle>
                     <Link
                       href="/clients"
-                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                     >
                       Manage <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-stone-900">{clients.length}</div>
+                  <div className="text-3xl font-bold text-stone-100">{clients.length}</div>
                   <p className="text-sm text-stone-500 mt-1">total clients</p>
                   {loyaltyApproaching.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-stone-100">
+                    <div className="mt-3 pt-3 border-t border-stone-800">
                       <Link
                         href="/loyalty"
                         className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
@@ -1332,7 +1332,7 @@ export default async function ChefDashboard() {
                       <CardTitle>Re-Engage Clients</CardTitle>
                       <Link
                         href="/clients"
-                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                       >
                         All Clients <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
@@ -1344,10 +1344,10 @@ export default async function ChefDashboard() {
                         <Link
                           key={c.clientId}
                           href={`/clients/${c.clientId}`}
-                          className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                          className="flex items-center justify-between hover:bg-stone-800 rounded-md px-1 py-0.5 transition-colors"
                         >
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-stone-900 truncate">
+                            <p className="text-sm font-medium text-stone-100 truncate">
                               {c.clientName}
                             </p>
                             <p className="text-xs text-amber-600">
@@ -1382,7 +1382,7 @@ export default async function ChefDashboard() {
                       </CardTitle>
                       <Link
                         href="/clients"
-                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                       >
                         All Clients <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
@@ -1394,10 +1394,10 @@ export default async function ChefDashboard() {
                         <Link
                           key={`${m.clientId}-${i}`}
                           href={`/clients/${m.clientId}`}
-                          className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                          className="flex items-center justify-between hover:bg-stone-800 rounded-md px-1 py-0.5 transition-colors"
                         >
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-stone-900 truncate">
+                            <p className="text-sm font-medium text-stone-100 truncate">
                               {m.clientName}
                             </p>
                             <p className="text-xs text-stone-500">{m.label}</p>
@@ -1431,20 +1431,20 @@ export default async function ChefDashboard() {
                     <CardTitle>Expenses ({currentMonthName})</CardTitle>
                     <Link
                       href="/expenses"
-                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                      className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                     >
                       Details <ArrowRight className="h-3.5 w-3.5" />
                     </Link>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-stone-900">
+                  <div className="text-3xl font-bold text-stone-100">
                     {formatCurrency(monthExpenses.businessCents)}
                   </div>
                   <p className="text-sm text-stone-500 mt-1">business expenses</p>
                   {monthExpenses.totalCents > monthExpenses.businessCents && (
-                    <div className="mt-3 pt-3 border-t border-stone-100">
-                      <span className="text-sm text-stone-600">
+                    <div className="mt-3 pt-3 border-t border-stone-800">
+                      <span className="text-sm text-stone-400">
                         {formatCurrency(monthExpenses.totalCents)} total (incl. personal)
                       </span>
                     </div>
@@ -1464,7 +1464,7 @@ export default async function ChefDashboard() {
                           <CardTitle>Food Cost Trend</CardTitle>
                           <Link
                             href="/finance/reporting"
-                            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                            className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                           >
                             Details <ArrowRight className="h-3.5 w-3.5" />
                           </Link>
@@ -1472,7 +1472,7 @@ export default async function ChefDashboard() {
                       </CardHeader>
                       <CardContent>
                         {foodCostTrend.isRising && (
-                          <div className="mb-3 flex items-center gap-2 rounded-md bg-amber-50 border border-amber-200 px-3 py-2">
+                          <div className="mb-3 flex items-center gap-2 rounded-md bg-amber-950 border border-amber-200 px-3 py-2">
                             <TrendingUp className="h-3.5 w-3.5 text-amber-600 shrink-0" />
                             <p className="text-xs text-amber-800 font-medium">
                               Food cost rising {foodCostTrend.risingMonthCount + 1} months in a row
@@ -1489,7 +1489,7 @@ export default async function ChefDashboard() {
                                   key={m.month}
                                   className="flex-1 flex flex-col items-center justify-end gap-0.5"
                                 >
-                                  <div className="w-full h-1 bg-stone-100 rounded-sm" />
+                                  <div className="w-full h-1 bg-stone-800 rounded-sm" />
                                 </div>
                               )
                             }
@@ -1580,9 +1580,9 @@ export default async function ChefDashboard() {
                       <CardContent>
                         {/* Upcoming season signal */}
                         {seasonality.upcomingPeak && seasonality.upcomingPeak.monthsAway <= 3 && (
-                          <div className="mb-3 flex items-center gap-2 rounded-md bg-brand-50 border border-brand-200 px-3 py-2">
+                          <div className="mb-3 flex items-center gap-2 rounded-md bg-brand-950 border border-brand-700 px-3 py-2">
                             <TrendingUp className="h-3.5 w-3.5 text-brand-600 shrink-0" />
-                            <p className="text-xs text-brand-800 font-medium">
+                            <p className="text-xs text-brand-300 font-medium">
                               Busy season in{' '}
                               {seasonality.upcomingPeak.monthsAway === 1
                                 ? 'next month'
@@ -1594,9 +1594,9 @@ export default async function ChefDashboard() {
                         {!seasonality.upcomingPeak &&
                           seasonality.upcomingQuiet &&
                           seasonality.upcomingQuiet.monthsAway <= 3 && (
-                            <div className="mb-3 flex items-center gap-2 rounded-md bg-stone-50 border border-stone-200 px-3 py-2">
+                            <div className="mb-3 flex items-center gap-2 rounded-md bg-stone-800 border border-stone-700 px-3 py-2">
                               <TrendingDown className="h-3.5 w-3.5 text-stone-500 shrink-0" />
-                              <p className="text-xs text-stone-600">
+                              <p className="text-xs text-stone-400">
                                 Quiet period coming in{' '}
                                 {seasonality.upcomingQuiet.monthsAway === 1
                                   ? 'next month'
@@ -1629,11 +1629,11 @@ export default async function ChefDashboard() {
                             const isPeak = seasonality.peakMonths.includes(m.month)
                             const isQuiet = seasonality.quietMonths.includes(m.month)
                             const barColor = isPeak
-                              ? 'bg-brand-500'
+                              ? 'bg-brand-9500'
                               : isQuiet
-                                ? 'bg-stone-200'
-                                : 'bg-brand-200'
-                            const emptyColor = m.eventCount === 0 ? 'bg-stone-100' : barColor
+                                ? 'bg-stone-700'
+                                : 'bg-brand-800'
+                            const emptyColor = m.eventCount === 0 ? 'bg-stone-800' : barColor
                             return (
                               <div
                                 key={m.month}
@@ -1663,7 +1663,7 @@ export default async function ChefDashboard() {
                           {seasonality.peakMonths.length > 0 && (
                             <span>
                               Peak:{' '}
-                              <span className="text-brand-700 font-medium">
+                              <span className="text-brand-400 font-medium">
                                 {seasonality.peakMonths
                                   .sort((a, b) => a - b)
                                   .map(
@@ -1732,7 +1732,7 @@ export default async function ChefDashboard() {
                       <CardTitle>Top Events ({currentMonthName})</CardTitle>
                       <Link
                         href="/finance/reporting/profit-by-event"
-                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700"
+                        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-400"
                       >
                         All <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
@@ -1751,16 +1751,16 @@ export default async function ChefDashboard() {
                           <Link
                             key={event.eventId}
                             href={`/events/${event.eventId}`}
-                            className="flex items-center justify-between hover:bg-stone-50 rounded-md px-1 py-0.5 transition-colors"
+                            className="flex items-center justify-between hover:bg-stone-800 rounded-md px-1 py-0.5 transition-colors"
                           >
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-stone-900 truncate">
+                              <p className="text-sm font-medium text-stone-100 truncate">
                                 {event.occasion || 'Event'} — {event.clientName}
                               </p>
                               <p className="text-xs text-stone-500">{event.eventDate}</p>
                             </div>
                             <div className="text-right shrink-0 ml-4">
-                              <p className="text-sm font-semibold text-stone-900">
+                              <p className="text-sm font-semibold text-stone-100">
                                 {formatCurrency(event.profitCents)}
                               </p>
                               <p className={`text-xs font-medium ${marginColor}`}>
@@ -1842,14 +1842,14 @@ export default async function ChefDashboard() {
               </h2>
               <Link
                 href="/activity"
-                className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+                className="text-xs text-brand-600 hover:text-brand-400 font-medium"
               >
                 View all &rarr;
               </Link>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="border border-stone-200 rounded-lg p-4">
-                <h3 className="text-sm font-semibold text-stone-700 mb-3">My Recent Activity</h3>
+              <div className="border border-stone-700 rounded-lg p-4">
+                <h3 className="text-sm font-semibold text-stone-300 mb-3">My Recent Activity</h3>
                 <div className="max-h-64 overflow-y-auto">
                   <ChefActivityFeed entries={chefActivity} compact />
                 </div>

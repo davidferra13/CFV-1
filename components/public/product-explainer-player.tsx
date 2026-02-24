@@ -12,7 +12,7 @@ import { ProductExplainerComposition } from '@/lib/remotion/product-explainer-co
 
 export function ProductExplainerPlayer() {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={ProductExplainerComposition}
         compositionWidth={640}

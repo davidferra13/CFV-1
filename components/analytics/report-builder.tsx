@@ -42,7 +42,7 @@ export function CustomReportBuilder() {
   const [isPending, startTransition] = useTransition()
 
   function updateConfig(key: keyof ReportConfig, value: string) {
-    setConfig(prev => ({ ...prev, [key]: value }))
+    setConfig((prev) => ({ ...prev, [key]: value }))
   }
 
   function handleRun() {
@@ -58,8 +58,7 @@ export function CustomReportBuilder() {
     })
   }
 
-  const formatValue = (v: number) =>
-    config.metric === 'count' ? v.toString() : formatCurrency(v)
+  const formatValue = (v: number) => (config.metric === 'count' ? v.toString() : formatCurrency(v))
 
   return (
     <div className="space-y-6">
@@ -70,24 +69,22 @@ export function CustomReportBuilder() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">
-                Data Source
-              </label>
+              <label className="block text-xs font-medium text-stone-400 mb-1">Data Source</label>
               <select
                 value={config.entity}
-                onChange={e => updateConfig('entity', e.target.value)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                onChange={(e) => updateConfig('entity', e.target.value)}
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               >
                 <option value="events">Events</option>
                 <option value="expenses">Expenses</option>
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">Metric</label>
+              <label className="block text-xs font-medium text-stone-400 mb-1">Metric</label>
               <select
                 value={config.metric}
-                onChange={e => updateConfig('metric', e.target.value)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                onChange={(e) => updateConfig('metric', e.target.value)}
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               >
                 <option value="revenue">Revenue</option>
                 <option value="count">Count</option>
@@ -95,11 +92,11 @@ export function CustomReportBuilder() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">Group By</label>
+              <label className="block text-xs font-medium text-stone-400 mb-1">Group By</label>
               <select
                 value={config.groupBy}
-                onChange={e => updateConfig('groupBy', e.target.value)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                onChange={(e) => updateConfig('groupBy', e.target.value)}
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               >
                 <option value="month">Month</option>
                 <option value="status">Status</option>
@@ -108,11 +105,11 @@ export function CustomReportBuilder() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">Date Range</label>
+              <label className="block text-xs font-medium text-stone-400 mb-1">Date Range</label>
               <select
                 value={config.dateRange}
-                onChange={e => updateConfig('dateRange', e.target.value)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                onChange={(e) => updateConfig('dateRange', e.target.value)}
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               >
                 <option value="last_3_months">Last 3 Months</option>
                 <option value="last_6_months">Last 6 Months</option>
@@ -121,11 +118,11 @@ export function CustomReportBuilder() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-stone-600 mb-1">Chart Type</label>
+              <label className="block text-xs font-medium text-stone-400 mb-1">Chart Type</label>
               <select
                 value={config.chartType}
-                onChange={e => updateConfig('chartType', e.target.value as ChartType)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                onChange={(e) => updateConfig('chartType', e.target.value as ChartType)}
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
               >
                 <option value="bar">Bar Chart</option>
                 <option value="line">Line Chart</option>
@@ -164,19 +161,18 @@ export function CustomReportBuilder() {
               <ResponsiveContainer width="100%" height={320}>
                 <BarChart data={data} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: 11 }}
-                    angle={-30}
-                    textAnchor="end"
-                  />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" />
                   <YAxis
-                    tickFormatter={v =>
+                    tickFormatter={(v) =>
                       config.metric === 'count' ? String(v) : `$${(v / 100).toFixed(0)}`
                     }
                     tick={{ fontSize: 11 }}
                   />
-                  <Tooltip formatter={(v: number | undefined) => v != null ? [formatValue(v), config.metric] : ['-', config.metric]} />
+                  <Tooltip
+                    formatter={(v: number | undefined) =>
+                      v != null ? [formatValue(v), config.metric] : ['-', config.metric]
+                    }
+                  />
                   <Bar dataKey="value" fill="#d47530" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -185,19 +181,18 @@ export function CustomReportBuilder() {
               <ResponsiveContainer width="100%" height={320}>
                 <LineChart data={data} margin={{ top: 10, right: 20, left: 20, bottom: 40 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-                  <XAxis
-                    dataKey="label"
-                    tick={{ fontSize: 11 }}
-                    angle={-30}
-                    textAnchor="end"
-                  />
+                  <XAxis dataKey="label" tick={{ fontSize: 11 }} angle={-30} textAnchor="end" />
                   <YAxis
-                    tickFormatter={v =>
+                    tickFormatter={(v) =>
                       config.metric === 'count' ? String(v) : `$${(v / 100).toFixed(0)}`
                     }
                     tick={{ fontSize: 11 }}
                   />
-                  <Tooltip formatter={(v: number | undefined) => v != null ? [formatValue(v), config.metric] : ['-', config.metric]} />
+                  <Tooltip
+                    formatter={(v: number | undefined) =>
+                      v != null ? [formatValue(v), config.metric] : ['-', config.metric]
+                    }
+                  />
                   <Line
                     dataKey="value"
                     stroke="#d47530"
@@ -228,7 +223,11 @@ export function CustomReportBuilder() {
                       <Cell key={i} fill={COLORS[i % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number | undefined) => v != null ? [formatValue(v), ''] : ['-', '']} />
+                  <Tooltip
+                    formatter={(v: number | undefined) =>
+                      v != null ? [formatValue(v), ''] : ['-', '']
+                    }
+                  />
                 </PieChart>
               </ResponsiveContainer>
             )}
@@ -236,20 +235,18 @@ export function CustomReportBuilder() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-stone-200">
-                      <th className="text-left py-2 text-stone-600">Label</th>
-                      <th className="text-right py-2 text-stone-600">Value</th>
-                      <th className="text-right py-2 text-stone-600">Count</th>
+                    <tr className="border-b border-stone-700">
+                      <th className="text-left py-2 text-stone-400">Label</th>
+                      <th className="text-right py-2 text-stone-400">Value</th>
+                      <th className="text-right py-2 text-stone-400">Count</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.map((row, i) => (
-                      <tr key={i} className="border-b border-stone-100 hover:bg-stone-50">
+                      <tr key={i} className="border-b border-stone-800 hover:bg-stone-800">
                         <td className="py-2 font-medium">{row.label}</td>
                         <td className="py-2 text-right">{formatValue(row.value)}</td>
-                        <td className="py-2 text-right text-stone-500">
-                          {row.count ?? '-'}
-                        </td>
+                        <td className="py-2 text-right text-stone-500">{row.count ?? '-'}</td>
                       </tr>
                     ))}
                   </tbody>

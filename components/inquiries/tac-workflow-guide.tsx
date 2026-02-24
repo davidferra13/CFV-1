@@ -61,7 +61,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
   }
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50/50 px-3 py-2">
+    <div className="rounded-lg border border-blue-200 bg-blue-950/50 px-3 py-2">
       <div className="flex items-center justify-between">
         <button
           type="button"
@@ -89,7 +89,7 @@ export function TacWorkflowGuide({ inquiryStatus }: TacWorkflowGuideProps) {
               <div
                 key={step.number}
                 className={`flex items-start gap-2 rounded px-2 py-1 ${
-                  isActive ? 'bg-blue-100/60' : ''
+                  isActive ? 'bg-blue-900/60' : ''
                 }`}
               >
                 <span

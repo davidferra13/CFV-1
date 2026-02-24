@@ -11,7 +11,17 @@ import { SmartImportHub, type ImportMode } from '@/components/import/smart-impor
 import { getClientsForHistoricalImport } from '@/lib/events/historical-import-actions'
 import { Alert } from '@/components/ui/alert'
 
-const IMPORT_MODES: ImportMode[] = ['brain-dump', 'csv', 'past-events', 'take-a-chef', 'clients', 'recipe', 'receipt', 'document', 'file-upload']
+const IMPORT_MODES: ImportMode[] = [
+  'brain-dump',
+  'csv',
+  'past-events',
+  'take-a-chef',
+  'clients',
+  'recipe',
+  'receipt',
+  'document',
+  'file-upload',
+]
 
 function getInitialMode(mode?: string): ImportMode {
   if (!mode) return 'brain-dump'
@@ -29,11 +39,7 @@ async function getEventsForDropdown() {
   return data || []
 }
 
-export default async function ImportPage({
-  searchParams,
-}: {
-  searchParams: { mode?: string }
-}) {
+export default async function ImportPage({ searchParams }: { searchParams: { mode?: string } }) {
   await requireChef()
   const initialMode = getInitialMode(searchParams.mode)
   const [aiConfigured, events, existingClients] = await Promise.all([
@@ -45,16 +51,27 @@ export default async function ImportPage({
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Smart Import</h1>
-        <p className="text-stone-600 mt-1">
-          Paste text, upload photos, or drop files — we&apos;ll pull out the details and
-          let you review everything before it saves.
+        <h1 className="text-3xl font-bold text-stone-100">Smart Import</h1>
+        <p className="text-stone-400 mt-1">
+          Paste text, upload photos, or drop files — we&apos;ll pull out the details and let you
+          review everything before it saves.
         </p>
       </div>
 
       {!aiConfigured && (
         <Alert variant="warning" title="Smart Import Not Configured">
-          Set the <code className="font-mono text-sm bg-yellow-100 px-1 rounded">GEMINI_API_KEY</code> environment variable to enable parsing. Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="underline">Google Studio</a>.
+          Set the{' '}
+          <code className="font-mono text-sm bg-yellow-900 px-1 rounded">GEMINI_API_KEY</code>{' '}
+          environment variable to enable parsing. Get a free key at{' '}
+          <a
+            href="https://aistudio.google.com/apikey"
+            target="_blank"
+            rel="noopener"
+            className="underline"
+          >
+            Google Studio
+          </a>
+          .
         </Alert>
       )}
 

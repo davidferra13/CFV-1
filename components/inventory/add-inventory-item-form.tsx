@@ -71,9 +71,9 @@ export function AddInventoryItemForm() {
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <label className="text-sm font-medium text-stone-700">Ingredient Name *</label>
+          <label className="text-sm font-medium text-stone-300">Ingredient Name *</label>
           <input
-            className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             value={form.ingredientName}
             onChange={(e) => setForm({ ...form, ingredientName: e.target.value })}
             placeholder="e.g. Olive Oil, Chicken Thighs"
@@ -81,33 +81,33 @@ export function AddInventoryItemForm() {
         </div>
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-sm font-medium text-stone-700">Current Qty</label>
+            <label className="text-sm font-medium text-stone-300">Current Qty</label>
             <input
               type="number"
               step="0.1"
               min="0"
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.currentQty}
               onChange={(e) => setForm({ ...form, currentQty: e.target.value })}
               placeholder="0"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Par Level</label>
+            <label className="text-sm font-medium text-stone-300">Par Level</label>
             <input
               type="number"
               step="0.1"
               min="0"
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.parLevel}
               onChange={(e) => setForm({ ...form, parLevel: e.target.value })}
               placeholder="Min qty"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Unit</label>
+            <label className="text-sm font-medium text-stone-300">Unit</label>
             <select
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.unit}
               onChange={(e) => setForm({ ...form, unit: e.target.value })}
             >

@@ -20,15 +20,19 @@ export default async function ContractTemplatesPage() {
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Contract Templates</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Contract Templates</h1>
           <p className="mt-1 text-sm text-stone-500">
             Create reusable contract templates. Use{' '}
-            <code className="rounded bg-stone-100 px-1 py-0.5 text-xs font-mono">{'{{merge_fields}}'}</code>{' '}
+            <code className="rounded bg-stone-800 px-1 py-0.5 text-xs font-mono">
+              {'{{merge_fields}}'}
+            </code>{' '}
             for event-specific values filled automatically.
           </p>
         </div>
         <Link href="/settings">
-          <Button variant="ghost" size="sm">← Back to Settings</Button>
+          <Button variant="ghost" size="sm">
+            ← Back to Settings
+          </Button>
         </Link>
       </div>
 
@@ -39,8 +43,8 @@ export default async function ContractTemplatesPage() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-stone-500 mb-4">
-              You don&apos;t have any contract templates yet. Create one and it will be available
-              to generate and send from any event page.
+              You don&apos;t have any contract templates yet. Create one and it will be available to
+              generate and send from any event page.
             </p>
             <ContractTemplateEditor />
           </CardContent>
@@ -54,7 +58,7 @@ export default async function ContractTemplatesPage() {
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-base">{template.name}</CardTitle>
                     {template.is_default && (
-                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">
+                      <span className="rounded-full bg-amber-900 px-2 py-0.5 text-xs font-medium text-amber-800">
                         Default
                       </span>
                     )}
@@ -63,7 +67,7 @@ export default async function ContractTemplatesPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                <pre className="max-h-32 overflow-hidden text-xs text-stone-500 bg-stone-50 rounded p-3 whitespace-pre-wrap line-clamp-4">
+                <pre className="max-h-32 overflow-hidden text-xs text-stone-500 bg-stone-800 rounded p-3 whitespace-pre-wrap line-clamp-4">
                   {template.body_markdown.slice(0, 300)}
                   {template.body_markdown.length > 300 ? '…' : ''}
                 </pre>

@@ -156,7 +156,7 @@ export function ChatView({
           }
           return next
         })
-      },
+      }
     )
 
     // Store sendTyping for the input bar
@@ -169,11 +169,7 @@ export function ChatView({
 
   // Presence
   useEffect(() => {
-    const unsubscribe = subscribeToPresence(
-      conversationId,
-      currentUserId,
-      setOnlineUserIds,
-    )
+    const unsubscribe = subscribeToPresence(conversationId, currentUserId, setOnlineUserIds)
 
     return unsubscribe
   }, [conversationId, currentUserId])
@@ -236,7 +232,7 @@ export function ChatView({
   const groupedMessages = groupMessagesByDate(messages)
 
   return (
-    <div className="flex flex-col h-full bg-stone-50">
+    <div className="flex flex-col h-full bg-stone-800">
       {/* Header */}
       <ChatHeader
         participantName={otherName}
@@ -249,10 +245,7 @@ export function ChatView({
 
       {/* Search overlay */}
       {showSearch && (
-        <ChatSearch
-          conversationId={conversationId}
-          onClose={() => setShowSearch(false)}
-        />
+        <ChatSearch conversationId={conversationId} onClose={() => setShowSearch(false)} />
       )}
 
       {/* Messages area */}
@@ -272,7 +265,7 @@ export function ChatView({
           <button
             type="button"
             onClick={loadMore}
-            className="w-full text-center py-2 text-xs text-stone-400 hover:text-stone-600"
+            className="w-full text-center py-2 text-xs text-stone-400 hover:text-stone-400"
           >
             Load older messages
           </button>
@@ -282,7 +275,7 @@ export function ChatView({
         {groupedMessages.map((group) => (
           <div key={group.date}>
             <div className="flex justify-center my-4">
-              <span className="text-xs text-stone-400 bg-stone-100 px-3 py-1 rounded-full">
+              <span className="text-xs text-stone-400 bg-stone-800 px-3 py-1 rounded-full">
                 {group.label}
               </span>
             </div>
@@ -306,9 +299,7 @@ export function ChatView({
 
         {/* Typing indicator */}
         {typingUsers.size > 0 && (
-          <ChatTypingIndicator
-            userName={Array.from(typingUsers.values())[0]}
-          />
+          <ChatTypingIndicator userName={Array.from(typingUsers.values())[0]} />
         )}
 
         <div ref={messagesEndRef} />
@@ -316,17 +307,11 @@ export function ChatView({
 
       {/* File upload overlay */}
       {showFileUpload && (
-        <ChatFileUpload
-          onUpload={handleSendFile}
-          onCancel={() => setShowFileUpload(false)}
-        />
+        <ChatFileUpload onUpload={handleSendFile} onCancel={() => setShowFileUpload(false)} />
       )}
 
       {/* Quick replies for clients */}
-      <ChatQuickReplies
-        visible={!!showQuickReplies && !showFileUpload}
-        onSelect={handleSendText}
-      />
+      <ChatQuickReplies visible={!!showQuickReplies && !showFileUpload} onSelect={handleSendText} />
 
       {/* Input bar */}
       {!showFileUpload && (

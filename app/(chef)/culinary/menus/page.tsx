@@ -18,10 +18,10 @@ import { NoMenusIllustration } from '@/components/ui/branded-illustrations'
 export const metadata: Metadata = { title: 'Menus - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  draft: 'bg-stone-100 text-stone-600',
-  shared: 'bg-blue-100 text-blue-700',
-  locked: 'bg-green-100 text-green-700',
-  archived: 'bg-stone-200 text-stone-500',
+  draft: 'bg-stone-800 text-stone-400',
+  shared: 'bg-blue-900 text-blue-700',
+  locked: 'bg-green-900 text-green-700',
+  archived: 'bg-stone-700 text-stone-500',
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -50,8 +50,8 @@ export default async function ChefMenusPage() {
       <div>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Menus</h1>
-            <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+            <h1 className="text-3xl font-bold text-stone-100">Menus</h1>
+            <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
               {activeMenus.length}
             </span>
           </div>
@@ -67,7 +67,7 @@ export default async function ChefMenusPage() {
           <div className="flex justify-center mb-4">
             <NoMenusIllustration className="h-24 w-24" />
           </div>
-          <p className="text-stone-600 font-medium mb-1">No menus yet</p>
+          <p className="text-stone-400 font-medium mb-1">No menus yet</p>
           <p className="text-stone-400 text-sm mb-4">
             Create a menu template or attach one to an event
           </p>
@@ -97,7 +97,7 @@ export default async function ChefMenusPage() {
                   <TableCell className="font-medium">
                     <Link
                       href={`/culinary/menus/${menu.id}`}
-                      className="text-brand-600 hover:text-brand-800 hover:underline"
+                      className="text-brand-600 hover:text-brand-300 hover:underline"
                     >
                       {menu.name}
                     </Link>
@@ -109,22 +109,22 @@ export default async function ChefMenusPage() {
                   </TableCell>
                   <TableCell>
                     <span
-                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLES[menu.status] ?? 'bg-stone-100 text-stone-600'}`}
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_STYLES[menu.status] ?? 'bg-stone-800 text-stone-400'}`}
                     >
                       {STATUS_LABELS[menu.status] ?? menu.status}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-400 text-sm">
                     {menu.service_style
                       ? (SERVICE_STYLE_LABELS[menu.service_style] ?? menu.service_style)
                       : '—'}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-400 text-sm">
                     {menu.cuisine_type || '—'}
                   </TableCell>
                   <TableCell>
                     {menu.is_template ? (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
                         Template
                       </span>
                     ) : (

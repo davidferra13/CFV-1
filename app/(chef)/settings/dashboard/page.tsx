@@ -14,14 +14,15 @@ export default async function DashboardLayoutSettingsPage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Dashboard Widgets</h1>
-          <p className="mt-1 text-stone-600">
-            Choose which widgets are enabled. Reorder enabled widgets directly from the dashboard corner settings.
+          <h1 className="text-3xl font-bold text-stone-100">Dashboard Widgets</h1>
+          <p className="mt-1 text-stone-400">
+            Choose which widgets are enabled. Reorder enabled widgets directly from the dashboard
+            corner settings.
           </p>
         </div>
         <Link
           href="/settings"
-          className="inline-flex items-center justify-center rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+          className="inline-flex items-center justify-center rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800 transition-colors"
         >
           Back to Settings
         </Link>

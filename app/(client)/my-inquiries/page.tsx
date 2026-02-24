@@ -18,22 +18,20 @@ export const metadata: Metadata = {
 function InquiryCard({ inquiry }: { inquiry: ClientInquiryListItem }) {
   return (
     <Link href={`/my-inquiries/${inquiry.id}`}>
-      <Card className="p-4 hover:shadow-md hover:border-stone-300 transition-all cursor-pointer group">
+      <Card className="p-4 hover:shadow-md hover:border-stone-600 transition-all cursor-pointer group">
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0 space-y-1.5">
             <div className="flex items-center gap-2 flex-wrap">
               <InquiryStatusBadge status={inquiry.status as any} />
             </div>
-            <p className="font-semibold text-stone-900 truncate">
+            <p className="font-semibold text-stone-100 truncate">
               {inquiry.confirmed_occasion || 'Catering Inquiry'}
             </p>
             <p className="text-sm text-stone-500">
               {inquiry.confirmed_date
                 ? format(new Date(inquiry.confirmed_date), 'MMMM d, yyyy')
                 : 'Date to be confirmed'}
-              {inquiry.confirmed_guest_count
-                ? ` · ${inquiry.confirmed_guest_count} guests`
-                : ''}
+              {inquiry.confirmed_guest_count ? ` · ${inquiry.confirmed_guest_count} guests` : ''}
               {inquiry.confirmed_location ? ` · ${inquiry.confirmed_location}` : ''}
             </p>
           </div>
@@ -52,7 +50,7 @@ export default async function MyInquiriesPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">My Inquiries</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">My Inquiries</h1>
         <p className="text-stone-500 mt-1">Track the status of your catering requests.</p>
       </div>
 

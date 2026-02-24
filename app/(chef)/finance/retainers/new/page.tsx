@@ -19,7 +19,7 @@ export default async function NewRetainerPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">New Retainer</h1>
+        <h1 className="text-3xl font-bold text-stone-100">New Retainer</h1>
         <p className="text-stone-500 mt-1">Set up a recurring service agreement with a client</p>
       </div>
 

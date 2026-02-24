@@ -51,8 +51,16 @@ export default function CancelEventButton({
 
   return (
     <>
-      {error && <Alert variant="error" className="w-full sm:w-auto">{error}</Alert>}
-      {success && <Alert variant="success" className="w-full sm:w-auto">{success}</Alert>}
+      {error && (
+        <Alert variant="error" className="w-full sm:w-auto">
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" className="w-full sm:w-auto">
+          {success}
+        </Alert>
+      )}
 
       <Button
         variant="danger"
@@ -65,11 +73,11 @@ export default function CancelEventButton({
 
       {showConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full p-6">
-            <h3 className="text-lg font-semibold text-stone-900 mb-2">
+          <div className="bg-surface rounded-lg shadow-xl max-w-lg w-full p-6">
+            <h3 className="text-lg font-semibold text-stone-100 mb-2">
               {directCancel ? 'Cancel This Event?' : 'Request Event Cancellation?'}
             </h3>
-            <p className="text-stone-600 mb-4">
+            <p className="text-stone-400 mb-4">
               {directCancel
                 ? 'This will cancel the event immediately.'
                 : 'This will send a cancellation request message to your chef for review.'}
@@ -88,7 +96,7 @@ export default function CancelEventButton({
                 type="button"
                 onClick={() => setShowConfirm(false)}
                 disabled={isPending}
-                className="flex-1 px-4 py-2 border border-stone-300 rounded-lg text-stone-700 hover:bg-stone-50 transition disabled:opacity-50"
+                className="flex-1 px-4 py-2 border border-stone-600 rounded-lg text-stone-300 hover:bg-stone-800 transition disabled:opacity-50"
               >
                 Keep Event
               </button>
@@ -98,7 +106,13 @@ export default function CancelEventButton({
                 disabled={isPending || !reason.trim()}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
               >
-                {isPending ? (directCancel ? 'Cancelling...' : 'Sending...') : (directCancel ? 'Confirm Cancel' : 'Send Request')}
+                {isPending
+                  ? directCancel
+                    ? 'Cancelling...'
+                    : 'Sending...'
+                  : directCancel
+                    ? 'Confirm Cancel'
+                    : 'Send Request'}
               </button>
             </div>
           </div>

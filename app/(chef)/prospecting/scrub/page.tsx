@@ -30,8 +30,8 @@ export default async function ScrubPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">AI Lead Scrub</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">AI Lead Scrub</h1>
+          <p className="text-stone-400 mt-1">
             Type any query — AI will research and generate detailed prospect dossiers with real
             contact info
           </p>
@@ -51,10 +51,10 @@ export default async function ScrubPage() {
               {sessions.map((session: any) => (
                 <div
                   key={session.id}
-                  className="flex items-center justify-between p-3 rounded-lg border border-stone-100 hover:bg-stone-50"
+                  className="flex items-center justify-between p-3 rounded-lg border border-stone-800 hover:bg-stone-800"
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-stone-900 truncate">
+                    <p className="text-sm font-medium text-stone-100 truncate">
                       &ldquo;{session.query}&rdquo;
                     </p>
                     <p className="text-xs text-stone-500 mt-0.5">
@@ -68,7 +68,7 @@ export default async function ScrubPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-3 ml-4">
-                    <span className="text-sm text-stone-600">
+                    <span className="text-sm text-stone-400">
                       {session.prospect_count} prospects
                       {session.enriched_count > 0 && `, ${session.enriched_count} enriched`}
                     </span>

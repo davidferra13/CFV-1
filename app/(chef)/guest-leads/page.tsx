@@ -19,8 +19,8 @@ export default async function GuestLeadsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Guest Leads</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Guest Leads</h1>
+        <p className="text-stone-400 mt-1">
           People who scanned your QR code at events and expressed interest in booking.
         </p>
       </div>
@@ -28,7 +28,7 @@ export default async function GuestLeadsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-stone-900">{stats.total}</p>
+          <p className="text-2xl font-bold text-stone-100">{stats.total}</p>
           <p className="text-sm text-stone-500">Total Leads</p>
         </Card>
         <Card className="p-4 text-center">

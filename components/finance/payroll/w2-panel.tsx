@@ -57,7 +57,7 @@ export function W2Panel({ taxYear, summaries }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
         <strong>Reference only.</strong> W-2s must be filed with the Social Security Administration
         via IRS-approved software by January 31. Provide a copy to each employee by the same date.
         This tool computes the box values for your records.
@@ -88,7 +88,7 @@ export function W2Panel({ taxYear, summaries }: Props) {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 bg-stone-50">
+                <tr className="border-b border-stone-700 bg-stone-800">
                   <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">
                     Employee
                   </th>
@@ -109,30 +109,30 @@ export function W2Panel({ taxYear, summaries }: Props) {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {summaries.map((s) => (
-                  <tr key={s.id} className="hover:bg-stone-50">
-                    <td className="px-6 py-3 font-medium text-stone-900">
+                  <tr key={s.id} className="hover:bg-stone-800">
+                    <td className="px-6 py-3 font-medium text-stone-100">
                       {s.employeeName ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-right">{formatCurrency(s.box1WagesCents)}</td>
-                    <td className="px-4 py-3 text-right text-stone-600">
+                    <td className="px-4 py-3 text-right text-stone-400">
                       {formatCurrency(s.box2FederalWithheldCents)}
                     </td>
-                    <td className="px-4 py-3 text-right text-stone-600">
+                    <td className="px-4 py-3 text-right text-stone-400">
                       {formatCurrency(s.box4SsWithheldCents)}
                     </td>
-                    <td className="px-4 py-3 text-right text-stone-600">
+                    <td className="px-4 py-3 text-right text-stone-400">
                       {formatCurrency(s.box6MedicareWithheldCents)}
                     </td>
-                    <td className="px-6 py-3 text-right text-stone-600">
+                    <td className="px-6 py-3 text-right text-stone-400">
                       {formatCurrency(s.box17StateTaxCents)}
                     </td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-stone-200 bg-stone-50 font-bold">
+                <tr className="border-t-2 border-stone-700 bg-stone-800 font-bold">
                   <td className="px-6 py-3">Total</td>
                   <td className="px-4 py-3 text-right">
                     {formatCurrency(summaries.reduce((s, r) => s + r.box1WagesCents, 0))}

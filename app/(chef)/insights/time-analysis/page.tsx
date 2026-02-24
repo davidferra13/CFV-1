@@ -31,7 +31,7 @@ export default async function TimeAnalysisPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Time Analysis</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Time Analysis</h1>
         <p className="mt-1 text-sm text-stone-500">
           Track administrative time to see where your hours really go — not just on-site.
         </p>
@@ -44,7 +44,9 @@ export default async function TimeAnalysisPage() {
             <CardTitle className="text-sm text-stone-500">This Week (Admin)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-stone-900">{formatMinutes(thisWeek.totalMinutes)}</p>
+            <p className="text-2xl font-bold text-stone-100">
+              {formatMinutes(thisWeek.totalMinutes)}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -52,7 +54,9 @@ export default async function TimeAnalysisPage() {
             <CardTitle className="text-sm text-stone-500">This Month (Admin)</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-stone-900">{formatMinutes(thisMonth.totalMinutes)}</p>
+            <p className="text-2xl font-bold text-stone-100">
+              {formatMinutes(thisMonth.totalMinutes)}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -65,16 +69,18 @@ export default async function TimeAnalysisPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {ADMIN_TIME_CATEGORIES
-                .filter((c) => (thisMonth.byCategory[c.value] ?? 0) > 0)
-                .sort((a, b) => (thisMonth.byCategory[b.value] ?? 0) - (thisMonth.byCategory[a.value] ?? 0))
+              {ADMIN_TIME_CATEGORIES.filter((c) => (thisMonth.byCategory[c.value] ?? 0) > 0)
+                .sort(
+                  (a, b) =>
+                    (thisMonth.byCategory[b.value] ?? 0) - (thisMonth.byCategory[a.value] ?? 0)
+                )
                 .map((c) => {
                   const mins = thisMonth.byCategory[c.value] ?? 0
                   const pct = Math.round((mins / thisMonth.totalMinutes) * 100)
                   return (
                     <div key={c.value} className="flex items-center gap-3">
-                      <div className="w-28 text-xs text-stone-600">{c.label}</div>
-                      <div className="flex-1 bg-stone-100 rounded-full h-2">
+                      <div className="w-28 text-xs text-stone-400">{c.label}</div>
+                      <div className="flex-1 bg-stone-800 rounded-full h-2">
                         <div
                           className="bg-amber-500 h-2 rounded-full"
                           style={{ width: `${pct}%` }}
@@ -102,10 +108,15 @@ export default async function TimeAnalysisPage() {
               {thisWeek.logs.map((log: any) => {
                 const cat = ADMIN_TIME_CATEGORIES.find((c) => c.value === log.category)
                 return (
-                  <div key={log.id} className="flex items-center justify-between text-sm py-1 border-b border-stone-100 last:border-0">
+                  <div
+                    key={log.id}
+                    className="flex items-center justify-between text-sm py-1 border-b border-stone-800 last:border-0"
+                  >
                     <div>
-                      <span className="text-stone-700">{cat?.label ?? log.category}</span>
-                      {log.notes && <span className="text-stone-400 ml-2 text-xs">— {log.notes}</span>}
+                      <span className="text-stone-300">{cat?.label ?? log.category}</span>
+                      {log.notes && (
+                        <span className="text-stone-400 ml-2 text-xs">— {log.notes}</span>
+                      )}
                     </div>
                     <div className="text-stone-500">{formatMinutes(log.minutes)}</div>
                   </div>

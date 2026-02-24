@@ -21,9 +21,10 @@ export default async function AutomationsPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Automations</h1>
-        <p className="text-stone-600 mt-1">
-          Control what ChefFlow does automatically — built-in follow-up reminders, expiry rules, and your own custom triggers.
+        <h1 className="text-3xl font-bold text-stone-100">Automations</h1>
+        <p className="text-stone-400 mt-1">
+          Control what ChefFlow does automatically — built-in follow-up reminders, expiry rules, and
+          your own custom triggers.
         </p>
       </div>
 

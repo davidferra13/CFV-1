@@ -50,21 +50,21 @@ export function IncidentForm({ eventId, onSuccess }: { eventId?: string; onSucce
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Date & Time</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Date & Time</label>
             <input
               type="datetime-local"
               value={incidentDate}
               onChange={(e) => setIncidentDate(e.target.value)}
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               title="Incident date and time"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Incident Type</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Incident Type</label>
             <select
               value={incidentType}
               onChange={(e) => setIncidentType(e.target.value as typeof incidentType)}
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               title="Incident type"
             >
               {INCIDENT_TYPES.map((t) => (
@@ -75,37 +75,37 @@ export function IncidentForm({ eventId, onSuccess }: { eventId?: string; onSucce
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Description *</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Description *</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
               required
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               placeholder="What happened?"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Parties Involved
             </label>
             <textarea
               value={partiesInvolved}
               onChange={(e) => setPartiesInvolved(e.target.value)}
               rows={2}
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               placeholder="Who was involved or affected?"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Immediate Action Taken
             </label>
             <textarea
               value={immediateAction}
               onChange={(e) => setImmediateAction(e.target.value)}
               rows={2}
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               placeholder="What was done immediately?"
             />
           </div>

@@ -43,7 +43,10 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
         description,
       })
       if (result.success) {
-        setFeedback({ ok: true, msg: `Adjustment of ${isDebit ? '-' : '+'}$${dollars.toFixed(2)} issued.` })
+        setFeedback({
+          ok: true,
+          msg: `Adjustment of ${isDebit ? '-' : '+'}$${dollars.toFixed(2)} issued.`,
+        })
         setAmountStr('')
         setDescription('')
         setEventId('')
@@ -56,7 +59,7 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
       <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
         <PlusCircle size={14} className="text-slate-500" />
         <h2 className="text-sm font-semibold text-slate-700">Issue Ledger Adjustment</h2>
@@ -71,7 +74,9 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
               <button
                 onClick={() => setIsDebit(false)}
                 className={`px-3 py-2 text-xs font-medium transition-colors ${
-                  !isDebit ? 'bg-green-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'
+                  !isDebit
+                    ? 'bg-green-500 text-white'
+                    : 'bg-surface text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 Credit (+)
@@ -79,7 +84,7 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
               <button
                 onClick={() => setIsDebit(true)}
                 className={`px-3 py-2 text-xs font-medium transition-colors ${
-                  isDebit ? 'bg-red-500 text-white' : 'bg-white text-slate-500 hover:bg-slate-50'
+                  isDebit ? 'bg-red-500 text-white' : 'bg-surface text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 Debit (–)
@@ -90,7 +95,9 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
           <div className="flex-1">
             <label className="block text-xs font-medium text-slate-500 mb-1">Amount ($)</label>
             <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">$</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">
+                $
+              </span>
               <input
                 type="number"
                 min="0.01"
@@ -107,7 +114,9 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
 
         {/* Description */}
         <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">Reason / Description</label>
+          <label className="block text-xs font-medium text-slate-500 mb-1">
+            Reason / Description
+          </label>
           <input
             type="text"
             value={description}
@@ -121,11 +130,13 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
         {/* Optional event link */}
         {eventOptions.length > 0 && (
           <div>
-            <label className="block text-xs font-medium text-slate-500 mb-1">Link to Event (optional)</label>
+            <label className="block text-xs font-medium text-slate-500 mb-1">
+              Link to Event (optional)
+            </label>
             <select
               value={eventId}
               onChange={(e) => setEventId(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200 bg-white"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200 bg-surface"
               disabled={isPending}
             >
               <option value="">No event</option>

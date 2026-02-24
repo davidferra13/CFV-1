@@ -65,11 +65,11 @@ export function EducationLog({ entries }: { entries: Entry[] }) {
             <form onSubmit={handleSubmit} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Type</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Type</label>
                   <select
                     value={entryType}
                     onChange={(e) => setEntryType(e.target.value)}
-                    className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                    className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                     title="Entry type"
                   >
                     {ENTRY_TYPES.map((t) => (
@@ -80,35 +80,35 @@ export function EducationLog({ entries }: { entries: Entry[] }) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Date</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Date</label>
                   <input
                     type="date"
                     value={entryDate}
                     onChange={(e) => setEntryDate(e.target.value)}
-                    className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                    className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                     title="Entry date"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Title *</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Title *</label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   required
-                  className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                  className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   What did you learn?
                 </label>
                 <textarea
                   value={learned}
                   onChange={(e) => setLearned(e.target.value)}
                   rows={2}
-                  className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                  className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                 />
               </div>
               <div className="flex gap-2">
@@ -135,8 +135,8 @@ export function EducationLog({ entries }: { entries: Entry[] }) {
                     {format(new Date(entry.entry_date), 'MMM d, yyyy')}
                   </span>
                 </div>
-                <p className="text-sm font-medium text-stone-900">{entry.title}</p>
-                {entry.learned && <p className="text-sm text-stone-600 mt-1">{entry.learned}</p>}
+                <p className="text-sm font-medium text-stone-100">{entry.title}</p>
+                {entry.learned && <p className="text-sm text-stone-400 mt-1">{entry.learned}</p>}
               </div>
             </div>
           </CardContent>

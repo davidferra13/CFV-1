@@ -79,17 +79,17 @@ export default function SalesTaxSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/sales-tax" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance/sales-tax" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Sales Tax
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Sales Tax Settings</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Sales Tax Settings</h1>
         <p className="text-stone-500 mt-1">
           Configure your state sales tax rate and collection preferences.
         </p>
       </div>
 
       {saved && (
-        <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg px-4 py-3">
+        <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-4 py-3">
           <CheckCircle className="h-4 w-4" />
           Settings saved.
         </div>
@@ -108,7 +108,7 @@ export default function SalesTaxSettingsPage() {
               onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
               className="rounded"
             />
-            <label htmlFor="enabled" className="text-sm font-medium text-stone-700">
+            <label htmlFor="enabled" className="text-sm font-medium text-stone-300">
               Enable sales tax collection
             </label>
           </div>
@@ -116,11 +116,11 @@ export default function SalesTaxSettingsPage() {
           {form.enabled && (
             <>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">State</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">State</label>
                 <select
                   value={form.state}
                   onChange={(e) => handleStateSelect(e.target.value)}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                 >
                   <option value="">Select state…</option>
                   {Object.entries(COMMON_STATE_RATES_BPS).map(([code, info]) => (
@@ -136,7 +136,7 @@ export default function SalesTaxSettingsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-300 mb-1.5">
                     State Rate (basis points)
                   </label>
                   <Input
@@ -153,7 +153,7 @@ export default function SalesTaxSettingsPage() {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                  <label className="block text-sm font-medium text-stone-300 mb-1.5">
                     Local/County Rate (basis points)
                   </label>
                   <Input
@@ -171,10 +171,10 @@ export default function SalesTaxSettingsPage() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
-                <p className="text-sm font-medium text-stone-700">
+              <div className="rounded-lg border border-stone-700 bg-stone-800 px-4 py-3">
+                <p className="text-sm font-medium text-stone-300">
                   Combined Rate:{' '}
-                  <span className="text-brand-700 font-bold">{bpsToPercent(combinedRateBps)}</span>
+                  <span className="text-brand-400 font-bold">{bpsToPercent(combinedRateBps)}</span>
                 </p>
                 <p className="text-xs text-stone-500 mt-0.5">
                   On a $2,000 event: tax = ${((2000 * combinedRateBps) / 10000).toFixed(2)}
@@ -182,7 +182,7 @@ export default function SalesTaxSettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">
                   Filing Frequency
                 </label>
                 <select
@@ -193,7 +193,7 @@ export default function SalesTaxSettingsPage() {
                       filingFrequency: e.target.value as 'monthly' | 'quarterly' | 'annually',
                     })
                   }
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                 >
                   {Object.entries(FILING_FREQUENCY_LABELS).map(([val, label]) => (
                     <option key={val} value={val}>
@@ -225,7 +225,7 @@ export default function SalesTaxSettingsPage() {
         </CardContent>
       </Card>
 
-      <div className="text-xs text-stone-400 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
+      <div className="text-xs text-stone-400 rounded-lg border border-stone-700 bg-stone-800 px-4 py-3">
         <strong>Note:</strong> Sales tax rules vary by state and locality. Consult a tax
         professional to confirm whether your services are taxable in your jurisdiction and at what
         rate. This tool helps you track and record; it does not constitute tax advice.

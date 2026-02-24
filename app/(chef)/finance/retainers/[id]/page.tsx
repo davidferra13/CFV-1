@@ -21,7 +21,7 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-bold text-stone-900">{retainer.name}</h1>
+            <h1 className="text-3xl font-bold text-stone-100">{retainer.name}</h1>
             <RetainerStatusBadge status={retainer.status} />
           </div>
           <p className="text-stone-500">
@@ -41,29 +41,29 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
       {/* Details Card */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card className="p-5">
-          <h2 className="text-lg font-semibold text-stone-900 mb-3">Agreement Details</h2>
+          <h2 className="text-lg font-semibold text-stone-100 mb-3">Agreement Details</h2>
           <dl className="space-y-2 text-sm">
             <div className="flex justify-between">
               <dt className="text-stone-500">Client</dt>
-              <dd className="text-stone-900 font-medium">
+              <dd className="text-stone-100 font-medium">
                 {retainer.clients?.full_name || 'Unknown'}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-stone-500">Amount</dt>
-              <dd className="text-stone-900 font-medium">
+              <dd className="text-stone-100 font-medium">
                 {formatCurrency(retainer.amount_cents)}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-stone-500">Billing Cycle</dt>
-              <dd className="text-stone-900">
+              <dd className="text-stone-100">
                 {BILLING_CYCLE_LABELS[retainer.billing_cycle] || retainer.billing_cycle}
               </dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-stone-500">Start Date</dt>
-              <dd className="text-stone-900">
+              <dd className="text-stone-100">
                 {new Date(retainer.start_date + 'T00:00:00').toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
@@ -73,7 +73,7 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
             </div>
             <div className="flex justify-between">
               <dt className="text-stone-500">End Date</dt>
-              <dd className="text-stone-900">
+              <dd className="text-stone-100">
                 {retainer.end_date
                   ? new Date(retainer.end_date + 'T00:00:00').toLocaleDateString('en-US', {
                       month: 'long',
@@ -86,7 +86,7 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
             {retainer.next_billing_date && (
               <div className="flex justify-between">
                 <dt className="text-stone-500">Next Billing</dt>
-                <dd className="text-stone-900">
+                <dd className="text-stone-100">
                   {new Date(retainer.next_billing_date + 'T00:00:00').toLocaleDateString('en-US', {
                     month: 'long',
                     day: 'numeric',
@@ -98,13 +98,13 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
             {retainer.includes_events_count != null && (
               <div className="flex justify-between">
                 <dt className="text-stone-500">Included Events</dt>
-                <dd className="text-stone-900">{retainer.includes_events_count} per period</dd>
+                <dd className="text-stone-100">{retainer.includes_events_count} per period</dd>
               </div>
             )}
             {retainer.includes_hours != null && (
               <div className="flex justify-between">
                 <dt className="text-stone-500">Included Hours</dt>
-                <dd className="text-stone-900">{retainer.includes_hours} per period</dd>
+                <dd className="text-stone-100">{retainer.includes_hours} per period</dd>
               </div>
             )}
           </dl>
@@ -112,19 +112,19 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
 
         {/* Terms / Notes Card */}
         <Card className="p-5">
-          <h2 className="text-lg font-semibold text-stone-900 mb-3">Notes & Terms</h2>
+          <h2 className="text-lg font-semibold text-stone-100 mb-3">Notes & Terms</h2>
           {retainer.terms_summary ? (
             <div className="mb-4">
-              <h3 className="text-sm font-medium text-stone-600 mb-1">Terms Summary</h3>
-              <pre className="whitespace-pre-wrap text-sm text-stone-700 bg-stone-50 rounded-lg p-3">
+              <h3 className="text-sm font-medium text-stone-400 mb-1">Terms Summary</h3>
+              <pre className="whitespace-pre-wrap text-sm text-stone-300 bg-stone-800 rounded-lg p-3">
                 {retainer.terms_summary}
               </pre>
             </div>
           ) : null}
           {retainer.notes ? (
             <div>
-              <h3 className="text-sm font-medium text-stone-600 mb-1">Internal Notes</h3>
-              <pre className="whitespace-pre-wrap text-sm text-stone-700 bg-stone-50 rounded-lg p-3">
+              <h3 className="text-sm font-medium text-stone-400 mb-1">Internal Notes</h3>
+              <pre className="whitespace-pre-wrap text-sm text-stone-300 bg-stone-800 rounded-lg p-3">
                 {retainer.notes}
               </pre>
             </div>
@@ -137,28 +137,28 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
 
       {/* Billing Timeline */}
       <div>
-        <h2 className="text-lg font-semibold text-stone-900 mb-3">Billing Periods</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-3">Billing Periods</h2>
         <RetainerBillingTimeline periods={retainer.periods || []} retainerId={retainer.id} />
       </div>
 
       {/* Linked Events */}
       <div>
-        <h2 className="text-lg font-semibold text-stone-900 mb-3">Linked Events</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-3">Linked Events</h2>
         {retainer.linked_events && retainer.linked_events.length > 0 ? (
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-100 bg-stone-50/60">
-                    <th className="text-left py-3 px-4 font-medium text-stone-600">Event</th>
-                    <th className="text-left py-3 px-4 font-medium text-stone-600">Date</th>
-                    <th className="text-left py-3 px-4 font-medium text-stone-600">Status</th>
-                    <th className="text-right py-3 px-4 font-medium text-stone-600">Guests</th>
+                  <tr className="border-b border-stone-800 bg-stone-800/60">
+                    <th className="text-left py-3 px-4 font-medium text-stone-400">Event</th>
+                    <th className="text-left py-3 px-4 font-medium text-stone-400">Date</th>
+                    <th className="text-left py-3 px-4 font-medium text-stone-400">Status</th>
+                    <th className="text-right py-3 px-4 font-medium text-stone-400">Guests</th>
                   </tr>
                 </thead>
                 <tbody>
                   {retainer.linked_events.map((event: any) => (
-                    <tr key={event.id} className="border-b border-stone-50 hover:bg-stone-50/40">
+                    <tr key={event.id} className="border-b border-stone-50 hover:bg-stone-800/40">
                       <td className="py-3 px-4">
                         <Link
                           href={`/events/${event.id}`}
@@ -167,7 +167,7 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
                           {event.occasion || 'Untitled Event'}
                         </Link>
                       </td>
-                      <td className="py-3 px-4 text-stone-600">
+                      <td className="py-3 px-4 text-stone-400">
                         {event.event_date
                           ? new Date(event.event_date + 'T00:00:00').toLocaleDateString('en-US', {
                               month: 'short',
@@ -176,8 +176,8 @@ export default async function RetainerDetailPage({ params }: { params: { id: str
                             })
                           : '\u2014'}
                       </td>
-                      <td className="py-3 px-4 text-stone-600 capitalize">{event.status}</td>
-                      <td className="py-3 px-4 text-right text-stone-600">
+                      <td className="py-3 px-4 text-stone-400 capitalize">{event.status}</td>
+                      <td className="py-3 px-4 text-right text-stone-400">
                         {event.guest_count ?? '\u2014'}
                       </td>
                     </tr>

@@ -47,7 +47,7 @@ export function DailyPlanView({ plan }: Props) {
 
       {/* Protected time reminder */}
       {plan.protectedTime.length > 0 && (
-        <div className="rounded-lg border border-purple-200 bg-purple-50/50 px-4 py-3">
+        <div className="rounded-lg border border-purple-200 bg-purple-950/50 px-4 py-3">
           <p className="text-sm text-purple-700">
             <span className="font-medium">Protected time today:</span>{' '}
             {plan.protectedTime.map((b) => b.title).join(', ')}
@@ -72,7 +72,7 @@ export function DailyPlanView({ plan }: Props) {
           type="button"
           onClick={handleRefresh}
           disabled={refreshing}
-          className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-600 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-400 transition-colors disabled:opacity-50"
         >
           <RefreshCw className={`h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
           Refresh plan

@@ -29,21 +29,21 @@ export function ConcentrationWarningCard({ risk }: ConcentrationWarningCardProps
 
   const cardConfig = {
     safe: {
-      bg: 'bg-emerald-50 border-emerald-200',
+      bg: 'bg-emerald-950 border-emerald-200',
       title: 'Revenue Well Diversified',
       titleColor: 'text-emerald-800',
       body: `Your largest client accounts for ${topClientRevenuePct}% of revenue — healthy diversification.`,
       bodyColor: 'text-emerald-700',
     },
     moderate: {
-      bg: 'bg-amber-50 border-amber-200',
+      bg: 'bg-amber-950 border-amber-200',
       title: 'Revenue Concentration Moderate',
       titleColor: 'text-amber-800',
       body: `${topClientName} accounts for ${topClientRevenuePct}% of revenue. Consider diversifying your client base.`,
       bodyColor: 'text-amber-700',
     },
     high: {
-      bg: 'bg-red-50 border-red-200',
+      bg: 'bg-red-950 border-red-200',
       title: 'High Revenue Concentration',
       titleColor: 'text-red-800',
       body: `${topClientName} accounts for ${topClientRevenuePct}% of revenue. Losing this client would significantly impact income. Consider diversifying.`,

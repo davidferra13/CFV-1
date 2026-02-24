@@ -15,15 +15,15 @@ export default async function GoalSetupPage() {
       <div>
         <Link
           href="/goals"
-          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 transition-colors mb-4"
+          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors mb-4"
         >
           <ChevronLeft className="h-4 w-4" />
           Back to Goals
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900">New Goal</h1>
-        <p className="text-stone-600 mt-1">
-          Set a target and ChefFlow will track your progress, show you how to close any gap,
-          and suggest which clients to reach out to.
+        <h1 className="text-3xl font-bold text-stone-100">New Goal</h1>
+        <p className="text-stone-400 mt-1">
+          Set a target and ChefFlow will track your progress, show you how to close any gap, and
+          suggest which clients to reach out to.
         </p>
       </div>
 

@@ -25,13 +25,13 @@ export default async function SauceComponentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-300">
           ← Components
         </Link>
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Sauces</h1>
-            <span className="bg-orange-100 text-orange-700 text-sm px-2 py-0.5 rounded-full">
+            <h1 className="text-3xl font-bold text-stone-100">Sauces</h1>
+            <span className="bg-orange-900 text-orange-700 text-sm px-2 py-0.5 rounded-full">
               {sauces.length}
             </span>
           </div>
@@ -43,7 +43,7 @@ export default async function SauceComponentsPage() {
       {sauces.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
           <Card className="p-4">
-            <p className="text-2xl font-bold text-stone-900">{sauces.length}</p>
+            <p className="text-2xl font-bold text-stone-100">{sauces.length}</p>
             <p className="text-sm text-stone-500 mt-1">Sauce components</p>
           </Card>
           <Card className="p-4">
@@ -61,7 +61,7 @@ export default async function SauceComponentsPage() {
 
       {sauces.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No sauce components yet</p>
+          <p className="text-stone-400 font-medium">No sauce components yet</p>
           <p className="text-stone-400 text-sm mt-1">
             Add components to dishes inside a menu and categorize them as &quot;sauce&quot;
           </p>
@@ -81,7 +81,7 @@ export default async function SauceComponentsPage() {
             <TableBody>
               {sauces.map((comp) => (
                 <TableRow key={comp.id}>
-                  <TableCell className="font-medium text-stone-900">{comp.name}</TableCell>
+                  <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
                   <TableCell className="text-stone-500 text-sm">{comp.dish_name ?? '—'}</TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {comp.menu_id ? (
@@ -99,7 +99,7 @@ export default async function SauceComponentsPage() {
                     {comp.recipe_id ? (
                       <Link
                         href={`/culinary/recipes/${comp.recipe_id}`}
-                        className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
+                        className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
                       >
                         Linked
                       </Link>
@@ -109,7 +109,7 @@ export default async function SauceComponentsPage() {
                   </TableCell>
                   <TableCell>
                     {comp.is_make_ahead ? (
-                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full">
                         {comp.make_ahead_window_hours
                           ? `${comp.make_ahead_window_hours}h ahead`
                           : 'Make ahead'}

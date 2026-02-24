@@ -11,7 +11,7 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(
       <div className="overflow-x-auto">
         <table
           ref={ref}
-          className={`min-w-full divide-y divide-stone-200 ${className}`}
+          className={`min-w-full divide-y divide-stone-700 ${className}`}
           {...props}
         />
       </div>
@@ -21,42 +21,30 @@ export const Table = forwardRef<HTMLTableElement, TableProps>(
 
 Table.displayName = 'Table'
 
-export const TableHeader = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
-  ({ className = '', ...props }, ref) => {
-    return (
-      <thead
-        ref={ref}
-        className={`bg-stone-50/60 ${className}`}
-        {...props}
-      />
-    )
-  }
-)
+export const TableHeader = forwardRef<
+  HTMLTableSectionElement,
+  HTMLAttributes<HTMLTableSectionElement>
+>(({ className = '', ...props }, ref) => {
+  return <thead ref={ref} className={`bg-stone-800/60 ${className}`} {...props} />
+})
 
 TableHeader.displayName = 'TableHeader'
 
-export const TableBody = forwardRef<HTMLTableSectionElement, HTMLAttributes<HTMLTableSectionElement>>(
-  ({ className = '', ...props }, ref) => {
-    return (
-      <tbody
-        ref={ref}
-        className={`bg-white divide-y divide-stone-100 ${className}`}
-        {...props}
-      />
-    )
-  }
-)
+export const TableBody = forwardRef<
+  HTMLTableSectionElement,
+  HTMLAttributes<HTMLTableSectionElement>
+>(({ className = '', ...props }, ref) => {
+  return (
+    <tbody ref={ref} className={`bg-surface divide-y divide-stone-800 ${className}`} {...props} />
+  )
+})
 
 TableBody.displayName = 'TableBody'
 
 export const TableRow = forwardRef<HTMLTableRowElement, HTMLAttributes<HTMLTableRowElement>>(
   ({ className = '', ...props }, ref) => {
     return (
-      <tr
-        ref={ref}
-        className={`hover:bg-stone-50/80 transition-colors ${className}`}
-        {...props}
-      />
+      <tr ref={ref} className={`hover:bg-stone-800/80 transition-colors ${className}`} {...props} />
     )
   }
 )
@@ -82,7 +70,7 @@ export const TableCell = forwardRef<HTMLTableCellElement, TdHTMLAttributes<HTMLT
     return (
       <td
         ref={ref}
-        className={`px-6 py-4 whitespace-nowrap text-sm text-stone-700 ${className}`}
+        className={`px-6 py-4 whitespace-nowrap text-sm text-stone-300 ${className}`}
         {...props}
       />
     )

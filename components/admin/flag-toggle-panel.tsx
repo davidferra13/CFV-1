@@ -25,8 +25,8 @@ type Props = {
 
 export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
   // Local optimistic state: { chefId: { flagName: boolean } }
-  const [localFlags, setLocalFlags] = useState<Record<string, Record<string, boolean>>>(
-    () => JSON.parse(JSON.stringify(flagsByChef))
+  const [localFlags, setLocalFlags] = useState<Record<string, Record<string, boolean>>>(() =>
+    JSON.parse(JSON.stringify(flagsByChef))
   )
   const [pending, startTransition] = useTransition()
   const [feedback, setFeedback] = useState<string | null>(null)
@@ -60,7 +60,7 @@ export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
 
   if (chefs.length === 0) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 py-12 text-center text-sm text-slate-400">
+      <div className="bg-surface rounded-xl border border-slate-200 py-12 text-center text-sm text-slate-400">
         No chefs found.
       </div>
     )
@@ -72,7 +72,7 @@ export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
         <div className="text-xs text-slate-600 bg-slate-100 px-3 py-2 rounded-lg">{feedback}</div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-700">Per-Chef Flag Controls</h2>
           {pending && <span className="text-xs text-slate-400">Saving…</span>}
@@ -114,7 +114,7 @@ export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
                             }`}
                           >
                             <span
-                              className={`inline-block w-3.5 h-3.5 rounded-full bg-white shadow-sm transform transition-transform duration-200 ${
+                              className={`inline-block w-3.5 h-3.5 rounded-full bg-surface shadow-sm transform transition-transform duration-200 ${
                                 isOn ? 'translate-x-[18px]' : 'translate-x-[3px]'
                               }`}
                             />

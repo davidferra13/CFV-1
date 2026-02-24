@@ -7,7 +7,11 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card } from '@/components/ui/card'
-import type { InteractiveDocSpec, InteractiveItem, ItemState } from '@/lib/documents/interactive-specs'
+import type {
+  InteractiveDocSpec,
+  InteractiveItem,
+  ItemState,
+} from '@/lib/documents/interactive-specs'
 
 type StateMap = Record<string, ItemState>
 
@@ -46,22 +50,20 @@ function ItemRow({
   if (!item.checkable) {
     return (
       <div className="px-3 py-2">
-        <p className="text-sm text-stone-700">{item.label}</p>
-        {item.sublabel && (
-          <p className="text-xs text-stone-400 mt-0.5">{item.sublabel}</p>
-        )}
+        <p className="text-sm text-stone-300">{item.label}</p>
+        {item.sublabel && <p className="text-xs text-stone-400 mt-0.5">{item.sublabel}</p>}
       </div>
     )
   }
 
   const bgClass =
     state === 2
-      ? 'bg-green-50 border-green-200'
+      ? 'bg-green-950 border-green-200'
       : state === 1
-        ? 'bg-amber-50 border-amber-300'
-        : 'bg-white border-stone-200 hover:bg-stone-50'
+        ? 'bg-amber-950 border-amber-300'
+        : 'bg-surface border-stone-700 hover:bg-stone-800'
 
-  const textClass = state === 2 ? 'line-through text-stone-400' : 'text-stone-900'
+  const textClass = state === 2 ? 'line-through text-stone-400' : 'text-stone-100'
 
   return (
     <button
@@ -73,10 +75,10 @@ function ItemRow({
       <div
         className={`flex-shrink-0 w-7 h-7 rounded border-2 flex items-center justify-center mt-0.5 ${
           state === 2
-            ? 'bg-green-500 border-green-500'
+            ? 'bg-green-9500 border-green-500'
             : state === 1
-              ? 'border-amber-400 bg-amber-50'
-              : 'border-stone-400 bg-white'
+              ? 'border-amber-400 bg-amber-950'
+              : 'border-stone-400 bg-surface'
         }`}
       >
         {state === 2 && (
@@ -90,9 +92,7 @@ function ItemRow({
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         )}
-        {state === 1 && (
-          <span className="text-amber-500 font-bold text-sm leading-none">→</span>
-        )}
+        {state === 1 && <span className="text-amber-500 font-bold text-sm leading-none">→</span>}
       </div>
 
       <div className="flex-1 min-w-0">
@@ -118,9 +118,9 @@ function Section({
 }) {
   if (section.items.length === 0) return null
 
-  const checkable = section.items.filter(i => i.checkable)
-  const doneCount = checkable.filter(i => stateMap[i.id] === 2).length
-  const inProgressCount = checkable.filter(i => stateMap[i.id] === 1).length
+  const checkable = section.items.filter((i) => i.checkable)
+  const doneCount = checkable.filter((i) => stateMap[i.id] === 2).length
+  const inProgressCount = checkable.filter((i) => stateMap[i.id] === 1).length
   const allDone = checkable.length > 0 && doneCount === checkable.length
   const anyInProgress = inProgressCount > 0
 
@@ -128,21 +128,19 @@ function Section({
     <Card className="p-4 space-y-2">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-stone-900 text-sm uppercase tracking-wide">
+          <h3 className="font-semibold text-stone-100 text-sm uppercase tracking-wide">
             {section.title}
           </h3>
-          {section.subtitle && (
-            <p className="text-xs text-stone-500 mt-0.5">{section.subtitle}</p>
-          )}
+          {section.subtitle && <p className="text-xs text-stone-500 mt-0.5">{section.subtitle}</p>}
         </div>
         {checkable.length > 0 && (
           <span
             className={`text-xs font-medium px-2 py-0.5 rounded-full ${
               allDone
-                ? 'bg-green-100 text-green-700'
+                ? 'bg-green-900 text-green-700'
                 : anyInProgress
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-stone-100 text-stone-600'
+                  ? 'bg-amber-900 text-amber-700'
+                  : 'bg-stone-800 text-stone-400'
             }`}
           >
             {doneCount} / {checkable.length}
@@ -151,19 +149,14 @@ function Section({
       </div>
 
       {section.warning && (
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+        <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1.5">
           {section.warning}
         </p>
       )}
 
       <div className="space-y-1.5">
-        {section.items.map(item => (
-          <ItemRow
-            key={item.id}
-            item={item}
-            state={stateMap[item.id] ?? 0}
-            onToggle={onToggle}
-          />
+        {section.items.map((item) => (
+          <ItemRow key={item.id} item={item} state={stateMap[item.id] ?? 0} onToggle={onToggle} />
         ))}
       </div>
     </Card>
@@ -183,7 +176,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
       const saved = localStorage.getItem(storageKey)
       if (saved) {
         const parsed = JSON.parse(saved) as StateMap
-        setStateMap(prev => ({ ...prev, ...parsed }))
+        setStateMap((prev) => ({ ...prev, ...parsed }))
       }
     } catch {
       // localStorage unavailable (SSR guard, private browsing)
@@ -192,7 +185,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
 
   const toggle = useCallback(
     (id: string) => {
-      setStateMap(prev => {
+      setStateMap((prev) => {
         const current = prev[id] ?? 0
         const next = ((current + 1) % 3) as ItemState
         const updated = { ...prev, [id]: next }
@@ -204,7 +197,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
         return updated
       })
     },
-    [storageKey],
+    [storageKey]
   )
 
   const handleReset = () => {
@@ -219,10 +212,10 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
 
   // ─── Progress ─────────────────────────────────────────────────────────────
 
-  const allCheckable = spec.sections.flatMap(s => s.items.filter(i => i.checkable))
+  const allCheckable = spec.sections.flatMap((s) => s.items.filter((i) => i.checkable))
   const totalCheckable = allCheckable.length
-  const doneCount = allCheckable.filter(i => stateMap[i.id] === 2).length
-  const inProgressCount = allCheckable.filter(i => stateMap[i.id] === 1).length
+  const doneCount = allCheckable.filter((i) => stateMap[i.id] === 2).length
+  const inProgressCount = allCheckable.filter((i) => stateMap[i.id] === 1).length
   const pct = totalCheckable > 0 ? Math.round((doneCount / totalCheckable) * 100) : 0
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -231,16 +224,16 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
     <div className="space-y-4">
       {/* Alert banners — allergy / safety warnings */}
       {spec.alerts.map((alert, i) => (
-        <div key={i} className="bg-red-50 border border-red-300 rounded-lg px-4 py-3">
+        <div key={i} className="bg-red-950 border border-red-300 rounded-lg px-4 py-3">
           <p className="text-sm font-semibold text-red-800">{alert}</p>
         </div>
       ))}
 
       {/* Overall progress bar — only when there are checkable items */}
       {totalCheckable > 0 && (
-        <div className="bg-white border border-stone-200 rounded-lg px-4 py-3">
+        <div className="bg-surface border border-stone-700 rounded-lg px-4 py-3">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-stone-700">
+            <span className="text-sm font-medium text-stone-300">
               {doneCount} of {totalCheckable} done
             </span>
             <div className="flex items-center gap-3">
@@ -254,9 +247,9 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
               )}
             </div>
           </div>
-          <div className="w-full bg-stone-100 rounded-full h-2">
+          <div className="w-full bg-stone-800 rounded-full h-2">
             <div
-              className="bg-green-500 h-2 rounded-full transition-all duration-300"
+              className="bg-green-9500 h-2 rounded-full transition-all duration-300"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -264,13 +257,8 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
       )}
 
       {/* Sections */}
-      {spec.sections.map(section => (
-        <Section
-          key={section.id}
-          section={section}
-          stateMap={stateMap}
-          onToggle={toggle}
-        />
+      {spec.sections.map((section) => (
+        <Section key={section.id} section={section} stateMap={stateMap} onToggle={toggle} />
       ))}
 
       {/* Legend + reset — only shown when there are checkable items */}
@@ -278,17 +266,17 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
         <div className="pt-2 space-y-3">
           <div className="flex items-center gap-4 justify-center text-xs text-stone-500">
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded border-2 border-stone-400 bg-white inline-flex items-center justify-center" />
+              <span className="w-5 h-5 rounded border-2 border-stone-400 bg-surface inline-flex items-center justify-center" />
               Untouched
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded border-2 border-amber-400 bg-amber-50 inline-flex items-center justify-center text-amber-500 font-bold text-xs leading-none">
+              <span className="w-5 h-5 rounded border-2 border-amber-400 bg-amber-950 inline-flex items-center justify-center text-amber-500 font-bold text-xs leading-none">
                 →
               </span>
               Working on
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded bg-green-500 border-2 border-green-500 inline-flex items-center justify-center">
+              <span className="w-5 h-5 rounded bg-green-9500 border-2 border-green-500 inline-flex items-center justify-center">
                 <svg
                   className="w-3 h-3 text-white"
                   fill="none"
@@ -306,7 +294,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
           <button
             type="button"
             onClick={handleReset}
-            className="w-full text-xs text-stone-400 hover:text-stone-600 py-2"
+            className="w-full text-xs text-stone-400 hover:text-stone-400 py-2"
           >
             Reset checklist
           </button>

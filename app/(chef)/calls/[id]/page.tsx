@@ -26,11 +26,11 @@ function getContactLabel(call: Awaited<ReturnType<typeof getCall>>): string {
 }
 
 const STATUS_PILL: Record<string, string> = {
-  scheduled: 'bg-blue-100 text-blue-700',
-  confirmed:  'bg-green-100 text-green-700',
-  completed:  'bg-gray-100 text-gray-600',
-  no_show:    'bg-red-100 text-red-700',
-  cancelled:  'bg-gray-100 text-gray-400',
+  scheduled: 'bg-blue-900 text-blue-700',
+  confirmed: 'bg-green-900 text-green-700',
+  completed: 'bg-gray-100 text-gray-600',
+  no_show: 'bg-red-900 text-red-700',
+  cancelled: 'bg-gray-100 text-gray-400',
 }
 
 export default async function CallDetailPage({ params }: Props) {
@@ -55,13 +55,15 @@ export default async function CallDetailPage({ params }: Props) {
       </Link>
 
       {/* Header */}
-      <div className="bg-white rounded-xl border shadow-sm p-6 space-y-4">
+      <div className="bg-surface rounded-xl border shadow-sm p-6 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-xl font-bold text-gray-900 capitalize">{title}</h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <CallTypeBadge type={call.call_type} />
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_PILL[call.status] ?? 'bg-gray-100 text-gray-600'}`}>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_PILL[call.status] ?? 'bg-gray-100 text-gray-600'}`}
+              >
                 {call.status.replace('_', ' ')}
               </span>
             </div>
@@ -97,9 +99,7 @@ export default async function CallDetailPage({ params }: Props) {
             <div>
               <dt className="sr-only">Contact</dt>
               <dd className="text-gray-800 font-medium">{contact}</dd>
-              {call.contact_phone && (
-                <dd className="text-gray-500">{call.contact_phone}</dd>
-              )}
+              {call.contact_phone && <dd className="text-gray-500">{call.contact_phone}</dd>}
               {call.contact_company && !call.client && (
                 <dd className="text-gray-500">{call.contact_company}</dd>
               )}
@@ -134,7 +134,8 @@ export default async function CallDetailPage({ params }: Props) {
                     className="text-blue-600 hover:underline text-sm"
                   >
                     Event: {call.event.title}
-                    {call.event.event_date && ` (${format(new Date(call.event.event_date), 'MMM d')})`}
+                    {call.event.event_date &&
+                      ` (${format(new Date(call.event.event_date), 'MMM d')})`}
                   </Link>
                 </dd>
               </div>
@@ -147,20 +148,22 @@ export default async function CallDetailPage({ params }: Props) {
       </div>
 
       {/* Prep panel */}
-      <div className="bg-white rounded-xl border shadow-sm p-6">
+      <div className="bg-surface rounded-xl border shadow-sm p-6">
         <CallPrepPanel call={call} />
       </div>
 
       {/* Outcome */}
-      {(call.status === 'scheduled' || call.status === 'confirmed' || call.status === 'completed') && (
-        <div className="bg-white rounded-xl border shadow-sm p-6">
+      {(call.status === 'scheduled' ||
+        call.status === 'confirmed' ||
+        call.status === 'completed') && (
+        <div className="bg-surface rounded-xl border shadow-sm p-6">
           <CallOutcomeForm call={call} />
         </div>
       )}
 
       {/* Completed outcome display */}
       {call.status === 'completed' && call.next_action && (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+        <div className="bg-amber-950 border border-amber-200 rounded-xl p-4">
           <p className="text-sm font-medium text-amber-800">Next action</p>
           <p className="text-sm text-amber-700 mt-1">{call.next_action}</p>
           {call.next_action_due_at && (

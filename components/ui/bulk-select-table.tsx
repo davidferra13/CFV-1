@@ -77,10 +77,10 @@ export function BulkSelectTable<T extends { id: string }>({
 
   return (
     <div className="relative">
-      <div className="overflow-x-auto rounded-xl border border-stone-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-stone-700 bg-surface shadow-sm">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-100 bg-stone-50/60">
+            <tr className="border-b border-stone-800 bg-stone-800/60">
               {/* Select-all checkbox */}
               <th className="w-10 px-3 py-3 text-left">
                 <input
@@ -91,20 +91,20 @@ export function BulkSelectTable<T extends { id: string }>({
                   }}
                   onChange={toggleAll}
                   aria-label="Select all rows"
-                  className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                  className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500 cursor-pointer"
                 />
               </th>
               {renderHeader()}
             </tr>
           </thead>
-          <tbody className="divide-y divide-stone-100">
+          <tbody className="divide-y divide-stone-800">
             {items.map((item) => {
               const selected = selectedIds.has(item.id)
               return (
                 <tr
                   key={item.id}
                   className={`transition-colors ${
-                    selected ? 'bg-brand-50' : 'hover:bg-stone-50/60'
+                    selected ? 'bg-brand-950' : 'hover:bg-stone-800/60'
                   }`}
                 >
                   {/* Per-row checkbox */}
@@ -114,7 +114,7 @@ export function BulkSelectTable<T extends { id: string }>({
                       checked={selected}
                       onChange={() => toggleOne(item.id)}
                       aria-label={`Select row ${item.id}`}
-                      className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500 cursor-pointer"
+                      className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500 cursor-pointer"
                     />
                   </td>
                   {renderRow(item, selected)}
@@ -127,8 +127,8 @@ export function BulkSelectTable<T extends { id: string }>({
 
       {/* Floating bulk-action bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-stone-200 bg-white px-5 py-3 shadow-xl">
-          <span className="text-sm font-medium text-stone-700 mr-1">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-stone-700 bg-surface px-5 py-3 shadow-xl">
+          <span className="text-sm font-medium text-stone-300 mr-1">
             {selectedIds.size} selected
           </span>
           {bulkActions.map((action) => (

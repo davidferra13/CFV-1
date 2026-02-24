@@ -21,15 +21,15 @@ function TierLegend() {
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-stone-500">
       <span className="flex items-center gap-1.5">
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" />
+        <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-9500" />
         Auto (instant)
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-500" />
+        <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-9500" />
         Draft — needs your approval
       </span>
       <span className="flex items-center gap-1.5">
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
+        <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-9500" />
         Held — needs clarification
       </span>
     </div>
@@ -120,12 +120,12 @@ export function CommandCenterClient() {
             placeholder="Tell me what you need… Find Sarah Johnson, check if March 15th is free, and draft her a follow-up."
             rows={4}
             disabled={loading}
-            className="w-full rounded-xl border border-stone-300 bg-white pl-12 pr-14 py-4 text-sm text-stone-900 placeholder-stone-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 disabled:opacity-60 transition-colors"
+            className="w-full rounded-xl border border-stone-600 bg-surface pl-12 pr-14 py-4 text-sm text-stone-100 placeholder-stone-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 disabled:opacity-60 transition-colors"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            className="absolute bottom-3.5 right-3.5 rounded-lg bg-brand-500 hover:bg-brand-600 disabled:bg-stone-200 disabled:cursor-not-allowed p-2 transition-colors"
+            className="absolute bottom-3.5 right-3.5 rounded-lg bg-brand-9500 hover:bg-brand-600 disabled:bg-stone-700 disabled:cursor-not-allowed p-2 transition-colors"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 text-white animate-spin" />
@@ -149,7 +149,7 @@ export function CommandCenterClient() {
                 type="button"
                 key={prompt}
                 onClick={() => handleQuickPrompt(prompt)}
-                className="flex items-center gap-2 rounded-lg border border-stone-200 bg-white hover:border-brand-300 hover:bg-brand-50/50 px-3 py-2.5 text-left text-sm text-stone-600 hover:text-brand-700 transition-all"
+                className="flex items-center gap-2 rounded-lg border border-stone-700 bg-surface hover:border-brand-600 hover:bg-brand-950/50 px-3 py-2.5 text-left text-sm text-stone-400 hover:text-brand-400 transition-all"
               >
                 <Zap className="w-3.5 h-3.5 text-brand-500 shrink-0" />
                 {prompt}
@@ -169,7 +169,7 @@ export function CommandCenterClient() {
 
       {/* Ollama offline */}
       {currentRun?.ollamaOffline && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-red-200 bg-red-950 p-4 text-sm text-red-700">
           <span className="font-medium">Ollama is offline.</span> Start Ollama to use the Command
           Center. Your conversations are processed privately and never stored on our servers.
         </div>

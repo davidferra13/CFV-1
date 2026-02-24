@@ -15,8 +15,8 @@ export default async function DuplicatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Duplicate Clients</h1>
-        <p className="text-stone-600 mt-1">Review and merge potential duplicate client records</p>
+        <h1 className="text-3xl font-bold text-stone-100">Duplicate Clients</h1>
+        <p className="text-stone-400 mt-1">Review and merge potential duplicate client records</p>
       </div>
 
       {pairs.length === 0 ? (

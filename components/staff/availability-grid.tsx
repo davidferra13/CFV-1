@@ -42,7 +42,20 @@ function addDays(dateStr: string, days: number): string {
 function formatShortDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   return `${days[d.getDay()]}\n${months[d.getMonth()]} ${d.getDate()}`
 }
 
@@ -106,8 +119,8 @@ export function AvailabilityGrid({
 
     // Optimistic update
     const key = `${staffId}:${date}`
-    setAvailabilityState(prev => {
-      const filtered = prev.filter(r => !(r.staffMemberId === staffId && r.date === date))
+    setAvailabilityState((prev) => {
+      const filtered = prev.filter((r) => !(r.staffMemberId === staffId && r.date === date))
       return [...filtered, { staffMemberId: staffId, date, isAvailable: newAvailable }]
     })
 
@@ -116,8 +129,8 @@ export function AvailabilityGrid({
         await setAvailability(staffId, date, newAvailable)
       } catch {
         // Revert on error
-        setAvailabilityState(prev =>
-          prev.filter(r => !(r.staffMemberId === staffId && r.date === date))
+        setAvailabilityState((prev) =>
+          prev.filter((r) => !(r.staffMemberId === staffId && r.date === date))
         )
       }
     })
@@ -132,8 +145,8 @@ export function AvailabilityGrid({
   }
 
   const cellColors: Record<string, string> = {
-    available: 'bg-emerald-100 hover:bg-emerald-200 border-emerald-300',
-    unavailable: 'bg-red-100 hover:bg-red-200 border-red-300',
+    available: 'bg-emerald-900 hover:bg-emerald-200 border-emerald-300',
+    unavailable: 'bg-red-900 hover:bg-red-200 border-red-300',
     unknown: 'bg-stone-100 hover:bg-stone-200 border-stone-300',
   }
 
@@ -166,9 +179,16 @@ export function AvailabilityGrid({
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm text-stone-600 min-w-[140px] text-center">
-              {new Date(dates[0] + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              {new Date(dates[0] + 'T00:00:00').toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })}
               {' \u2013 '}
-              {new Date(dates[dates.length - 1] + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {new Date(dates[dates.length - 1] + 'T00:00:00').toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
             </span>
             <Button variant="ghost" size="sm" onClick={handleNext} disabled={isPending}>
               <ChevronRight className="h-4 w-4" />
@@ -189,7 +209,7 @@ export function AvailabilityGrid({
                   <th className="text-left text-xs font-medium text-stone-500 uppercase tracking-wider pb-2 pr-4 min-w-[160px]">
                     Staff Member
                   </th>
-                  {dates.map(date => {
+                  {dates.map((date) => {
                     const d = new Date(date + 'T00:00:00')
                     const isToday = date === new Date().toISOString().split('T')[0]
                     const isWeekend = d.getDay() === 0 || d.getDay() === 6
@@ -197,11 +217,17 @@ export function AvailabilityGrid({
                       <th
                         key={date}
                         className={`text-center text-xs font-medium pb-2 px-1 min-w-[64px] ${
-                          isToday ? 'text-brand-600' : isWeekend ? 'text-stone-400' : 'text-stone-500'
+                          isToday
+                            ? 'text-brand-600'
+                            : isWeekend
+                              ? 'text-stone-400'
+                              : 'text-stone-500'
                         }`}
                       >
                         <div>{['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()]}</div>
-                        <div className={`text-sm font-semibold ${isToday ? 'text-brand-600' : 'text-stone-700'}`}>
+                        <div
+                          className={`text-sm font-semibold ${isToday ? 'text-brand-600' : 'text-stone-700'}`}
+                        >
                           {d.getDate()}
                         </div>
                       </th>
@@ -210,13 +236,15 @@ export function AvailabilityGrid({
                 </tr>
               </thead>
               <tbody>
-                {staffMembers.map(member => (
+                {staffMembers.map((member) => (
                   <tr key={member.id} className="border-t border-stone-100">
                     <td className="py-2 pr-4">
                       <div className="text-sm font-medium text-stone-900">{member.name}</div>
-                      <div className="text-xs text-stone-500">{ROLE_LABELS[member.role] ?? member.role}</div>
+                      <div className="text-xs text-stone-500">
+                        {ROLE_LABELS[member.role] ?? member.role}
+                      </div>
                     </td>
-                    {dates.map(date => {
+                    {dates.map((date) => {
                       const status = getStatus(member.id, date)
                       return (
                         <td key={date} className="py-2 px-1 text-center">
@@ -239,12 +267,14 @@ export function AvailabilityGrid({
                   <td className="py-2 pr-4 text-xs font-medium text-stone-500 uppercase tracking-wider">
                     Available
                   </td>
-                  {dates.map(date => {
+                  {dates.map((date) => {
                     const count = countAvailable(date)
                     const total = staffMembers.length
                     return (
                       <td key={date} className="py-2 px-1 text-center">
-                        <Badge variant={count === total ? 'success' : count === 0 ? 'error' : 'warning'}>
+                        <Badge
+                          variant={count === total ? 'success' : count === 0 ? 'error' : 'warning'}
+                        >
                           {count}/{total}
                         </Badge>
                       </td>
@@ -260,11 +290,11 @@ export function AvailabilityGrid({
         <div className="flex items-center gap-4 mt-4 pt-4 border-t border-stone-100">
           <span className="text-xs text-stone-500">Legend:</span>
           <div className="flex items-center gap-1.5">
-            <span className="inline-block w-4 h-4 rounded bg-emerald-100 border border-emerald-300" />
+            <span className="inline-block w-4 h-4 rounded bg-emerald-900 border border-emerald-300" />
             <span className="text-xs text-stone-600">Available</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="inline-block w-4 h-4 rounded bg-red-100 border border-red-300" />
+            <span className="inline-block w-4 h-4 rounded bg-red-900 border border-red-300" />
             <span className="text-xs text-stone-600">Unavailable</span>
           </div>
           <div className="flex items-center gap-1.5">

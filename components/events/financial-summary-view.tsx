@@ -27,17 +27,21 @@ function formatMinutes(minutes: number | null): string {
 
 function DataRow({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="flex justify-between items-baseline py-2 border-b border-stone-100 last:border-0">
-      <span className="text-sm text-stone-600">{label}</span>
+    <div className="flex justify-between items-baseline py-2 border-b border-stone-800 last:border-0">
+      <span className="text-sm text-stone-400">{label}</span>
       <div className="text-right">
-        <span className="text-sm font-medium text-stone-900">{value}</span>
+        <span className="text-sm font-medium text-stone-100">{value}</span>
         {sub && <p className="text-xs text-stone-400">{sub}</p>}
       </div>
     </div>
   )
 }
 
-function SectionCard({ title, badge, children }: {
+function SectionCard({
+  title,
+  badge,
+  children,
+}: {
   title: string
   badge?: string
   children: React.ReactNode
@@ -45,9 +49,11 @@ function SectionCard({ title, badge, children }: {
   return (
     <Card className="p-5">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="font-semibold text-stone-900">{title}</h2>
+        <h2 className="font-semibold text-stone-100">{title}</h2>
         {badge && (
-          <span className="text-xs font-medium text-stone-500 bg-stone-100 rounded-full px-2 py-0.5">{badge}</span>
+          <span className="text-xs font-medium text-stone-500 bg-stone-800 rounded-full px-2 py-0.5">
+            {badge}
+          </span>
         )}
       </div>
       {children}
@@ -60,17 +66,7 @@ type Props = {
 }
 
 export function FinancialSummaryView({ data }: Props) {
-  const {
-    event,
-    client,
-    revenue,
-    costs,
-    margins,
-    time,
-    mileage,
-    comparison,
-    pendingItems,
-  } = data
+  const { event, client, revenue, costs, margins, time, mileage, comparison, pendingItems } = data
 
   const [mileageInput, setMileageInput] = useState(mileage.miles ? String(mileage.miles) : '')
   const [mileageSaved, setMileageSaved] = useState(false)
@@ -109,24 +105,28 @@ export function FinancialSummaryView({ data }: Props) {
       <Card className="p-5">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-xl font-bold text-stone-900">Event Financial Summary</h1>
+            <h1 className="text-xl font-bold text-stone-100">Event Financial Summary</h1>
             <p className="text-stone-500 text-sm mt-1">
-              {client.displayName} &middot; {format(new Date(event.eventDate), 'MMMM d, yyyy')} &middot; {event.guestCount} guests
+              {client.displayName} &middot; {format(new Date(event.eventDate), 'MMMM d, yyyy')}{' '}
+              &middot; {event.guestCount} guests
             </p>
           </div>
-          <span className={`text-xs font-semibold px-3 py-1 rounded-full ${
-            isDraft
-              ? 'bg-amber-100 text-amber-800'
-              : closed
-              ? 'bg-green-100 text-green-800'
-              : 'bg-stone-100 text-stone-700'
-          }`}>
+          <span
+            className={`text-xs font-semibold px-3 py-1 rounded-full ${
+              isDraft
+                ? 'bg-amber-900 text-amber-800'
+                : closed
+                  ? 'bg-green-900 text-green-800'
+                  : 'bg-stone-800 text-stone-300'
+            }`}
+          >
             {closed ? 'CLOSED' : statusLabel}
           </span>
         </div>
         {isDraft && (
-          <div className="mt-3 text-xs text-amber-700 bg-amber-50 rounded px-3 py-2">
-            Pending: {pendingItems.join(' · ')}. Financial closure requires all payments received and receipts reviewed.
+          <div className="mt-3 text-xs text-amber-700 bg-amber-950 rounded px-3 py-2">
+            Pending: {pendingItems.join(' · ')}. Financial closure requires all payments received
+            and receipts reviewed.
           </div>
         )}
       </Card>
@@ -134,12 +134,15 @@ export function FinancialSummaryView({ data }: Props) {
       {/* ── Section 2: Revenue ── */}
       <SectionCard title="Revenue">
         <DataRow label="Quoted price" value={formatCents(revenue.quotedPriceCents)} />
-        <DataRow label="Service payment received" value={formatCents(revenue.basePaymentReceivedCents)} />
-        <DataRow label="Tip / gratuity" value={revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '—'} />
         <DataRow
-          label="Total received"
-          value={formatCents(revenue.totalReceivedCents)}
+          label="Service payment received"
+          value={formatCents(revenue.basePaymentReceivedCents)}
         />
+        <DataRow
+          label="Tip / gratuity"
+          value={revenue.tipCents > 0 ? formatCents(revenue.tipCents) : '—'}
+        />
+        <DataRow label="Total received" value={formatCents(revenue.totalReceivedCents)} />
         {revenue.varianceCents !== 0 && (
           <DataRow
             label="Variance"
@@ -150,10 +153,21 @@ export function FinancialSummaryView({ data }: Props) {
       </SectionCard>
 
       {/* ── Section 3: Costs ── */}
-      <SectionCard title="Costs" badge={costs.projectedFoodCostCents ? `Projected: ${formatCents(costs.projectedFoodCostCents)}` : undefined}>
+      <SectionCard
+        title="Costs"
+        badge={
+          costs.projectedFoodCostCents
+            ? `Projected: ${formatCents(costs.projectedFoodCostCents)}`
+            : undefined
+        }
+      >
         <DataRow
           label="Grocery & ingredient spend"
-          value={costs.actualGrocerySpendCents > 0 ? formatCents(costs.actualGrocerySpendCents) : 'Pending'}
+          value={
+            costs.actualGrocerySpendCents > 0
+              ? formatCents(costs.actualGrocerySpendCents)
+              : 'Pending'
+          }
         />
         {costs.leftoverCreditInCents && costs.leftoverCreditInCents > 0 && (
           <DataRow
@@ -169,20 +183,14 @@ export function FinancialSummaryView({ data }: Props) {
             sub="surplus applied forward"
           />
         )}
-        <DataRow
-          label="Net food cost"
-          value={formatCents(costs.netFoodCostCents)}
-        />
+        <DataRow label="Net food cost" value={formatCents(costs.netFoodCostCents)} />
         {costs.additionalExpensesCents > 0 && (
           <DataRow
             label="Additional expenses (gas, etc.)"
             value={formatCents(costs.additionalExpensesCents)}
           />
         )}
-        <DataRow
-          label="Total cost"
-          value={formatCents(costs.totalCostCents)}
-        />
+        <DataRow label="Total cost" value={formatCents(costs.totalCostCents)} />
       </SectionCard>
 
       {/* ── Section 4: Margins ── */}
@@ -192,22 +200,16 @@ export function FinancialSummaryView({ data }: Props) {
           value={`${margins.foodCostPercent}%`}
           sub="target: under 30%"
         />
-        <DataRow
-          label="Gross profit"
-          value={formatCents(margins.grossProfitCents)}
-        />
-        <DataRow
-          label="Gross margin %"
-          value={`${margins.grossMarginPercent}%`}
-        />
-        <DataRow
-          label="Net profit (with tip)"
-          value={formatCents(margins.netProfitWithTipCents)}
-        />
+        <DataRow label="Gross profit" value={formatCents(margins.grossProfitCents)} />
+        <DataRow label="Gross margin %" value={`${margins.grossMarginPercent}%`} />
+        <DataRow label="Net profit (with tip)" value={formatCents(margins.netProfitWithTipCents)} />
       </SectionCard>
 
       {/* ── Section 5: Time Investment ── */}
-      <SectionCard title="Time Investment" badge={time.totalMinutes ? formatMinutes(time.totalMinutes) + ' total' : 'Not logged'}>
+      <SectionCard
+        title="Time Investment"
+        badge={time.totalMinutes ? formatMinutes(time.totalMinutes) + ' total' : 'Not logged'}
+      >
         {time.totalMinutes ? (
           <>
             <DataRow label="Shopping" value={formatMinutes(time.shoppingMinutes)} />
@@ -216,10 +218,12 @@ export function FinancialSummaryView({ data }: Props) {
             <DataRow label="Service" value={formatMinutes(time.serviceMinutes)} />
             <DataRow label="Reset & cleanup" value={formatMinutes(time.resetMinutes)} />
             {time.effectiveHourlyRateCents && (
-              <div className="pt-3 border-t border-stone-100 mt-1">
+              <div className="pt-3 border-t border-stone-800 mt-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-semibold text-stone-800">Effective hourly rate</span>
-                  <span className="text-lg font-bold text-stone-900">
+                  <span className="text-sm font-semibold text-stone-200">
+                    Effective hourly rate
+                  </span>
+                  <span className="text-lg font-bold text-stone-100">
                     {formatCents(time.effectiveHourlyRateCents)}/hr
                   </span>
                 </div>
@@ -232,18 +236,25 @@ export function FinancialSummaryView({ data }: Props) {
       </SectionCard>
 
       {/* ── Section 6: Mileage ── */}
-      <SectionCard title="Mileage" badge={`$${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}/mi IRS rate`}>
+      <SectionCard
+        title="Mileage"
+        badge={`$${(mileage.irsMileageRateCentsPerMile / 100).toFixed(2)}/mi IRS rate`}
+      >
         <div className="flex gap-2 mb-3">
           <input
             type="number"
             value={mileageInput}
             onChange={(e) => setMileageInput(e.target.value)}
             placeholder="Miles driven (round trip)"
-            className="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="flex-1 px-3 py-2 text-sm border border-stone-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500"
             min="0"
             step="0.1"
           />
-          <Button size="sm" onClick={handleSaveMileage} variant={mileageSaved ? 'ghost' : 'secondary'}>
+          <Button
+            size="sm"
+            onClick={handleSaveMileage}
+            variant={mileageSaved ? 'ghost' : 'secondary'}
+          >
             {mileageSaved ? 'Saved' : 'Save'}
           </Button>
         </div>
@@ -258,7 +269,9 @@ export function FinancialSummaryView({ data }: Props) {
           </>
         )}
         {!mileage.miles && (
-          <p className="text-xs text-stone-400">Enter total miles driven (home → stores → client → home).</p>
+          <p className="text-xs text-stone-400">
+            Enter total miles driven (home → stores → client → home).
+          </p>
         )}
       </SectionCard>
 
@@ -268,23 +281,36 @@ export function FinancialSummaryView({ data }: Props) {
           <DataRow
             label="Food cost vs. your average"
             value={`${comparison.vsAverageFoodCostPercent !== null && comparison.vsAverageFoodCostPercent > 0 ? '+' : ''}${comparison.vsAverageFoodCostPercent}%`}
-            sub={comparison.vsAverageFoodCostPercent !== null && comparison.vsAverageFoodCostPercent > 0 ? 'higher than average' : 'lower than average'}
+            sub={
+              comparison.vsAverageFoodCostPercent !== null &&
+              comparison.vsAverageFoodCostPercent > 0
+                ? 'higher than average'
+                : 'lower than average'
+            }
           />
           <DataRow
             label="Margin vs. your average"
             value={`${comparison.vsAverageMarginPercent !== null && comparison.vsAverageMarginPercent > 0 ? '+' : ''}${comparison.vsAverageMarginPercent}%`}
-            sub={comparison.vsAverageMarginPercent !== null && comparison.vsAverageMarginPercent > 0 ? 'above average' : 'below average'}
+            sub={
+              comparison.vsAverageMarginPercent !== null && comparison.vsAverageMarginPercent > 0
+                ? 'above average'
+                : 'below average'
+            }
           />
         </SectionCard>
       )}
 
       {/* ── Mark Financial Closed ── */}
       {!closed && !isDraft && (
-        <Card className="p-5 border-green-200 bg-green-50">
+        <Card className="p-5 border-green-200 bg-green-950">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h2 className="font-semibold text-green-900">Ready to close this event financially?</h2>
-              <p className="text-sm text-green-700 mt-1">All payments received and receipts reviewed. Mark as financially closed.</p>
+              <h2 className="font-semibold text-green-900">
+                Ready to close this event financially?
+              </h2>
+              <p className="text-sm text-green-700 mt-1">
+                All payments received and receipts reviewed. Mark as financially closed.
+              </p>
             </div>
             <Button
               onClick={handleMarkClosed}

@@ -77,12 +77,12 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
   const pct = Math.round((progress.completedPhases / progress.totalPhases) * 100)
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-800">
       <div className="max-w-3xl mx-auto px-4 py-12 space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Set Up Your Business</h1>
-          <p className="text-stone-600 mt-2">
+          <h1 className="text-3xl font-bold text-stone-100">Set Up Your Business</h1>
+          <p className="text-stone-400 mt-2">
             Migrate your existing clients, recipes, and loyalty program so ChefFlow knows your
             business from day one.
           </p>
@@ -90,15 +90,15 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
 
         {/* Progress bar */}
         <div>
-          <div className="flex justify-between text-sm text-stone-600 mb-2">
+          <div className="flex justify-between text-sm text-stone-400 mb-2">
             <span>
               {progress.completedPhases} of {progress.totalPhases} phases complete
             </span>
             <span>{pct}%</span>
           </div>
-          <div className="h-2 bg-stone-200 rounded-full overflow-hidden">
+          <div className="h-2 bg-stone-700 rounded-full overflow-hidden">
             <div
-              className="h-2 bg-amber-500 rounded-full transition-all duration-500"
+              className="h-2 bg-amber-9500 rounded-full transition-all duration-500"
               style={{ width: `${pct}%` }}
             />
           </div>
@@ -123,12 +123,12 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
             return (
               <Card
                 key={phase.key}
-                className={isDone ? 'border-green-200 bg-green-50' : 'bg-white'}
+                className={isDone ? 'border-green-200 bg-green-950' : 'bg-surface'}
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3 text-base font-semibold">
-                    <div className={`p-2 rounded-lg ${isDone ? 'bg-green-100' : 'bg-stone-100'}`}>
-                      <Icon className={`h-4 w-4 ${isDone ? 'text-green-600' : 'text-stone-600'}`} />
+                    <div className={`p-2 rounded-lg ${isDone ? 'bg-green-900' : 'bg-stone-800'}`}>
+                      <Icon className={`h-4 w-4 ${isDone ? 'text-green-600' : 'text-stone-400'}`} />
                     </div>
                     <span className="flex-1">{phase.label}</span>
                     {phase.optional && (
@@ -143,7 +143,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
                 </CardHeader>
                 <CardContent className="flex items-end justify-between gap-4">
                   <div className="space-y-1">
-                    <p className="text-sm text-stone-600">{phase.description}</p>
+                    <p className="text-sm text-stone-400">{phase.description}</p>
                     {isDone && (
                       <p className="text-sm font-medium text-green-700">
                         ✓ {phase.doneSummary(progress)}
@@ -166,7 +166,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
         </div>
 
         {/* Go to dashboard */}
-        <div className="pt-4 border-t border-stone-200 flex items-center justify-between">
+        <div className="pt-4 border-t border-stone-700 flex items-center justify-between">
           <p className="text-sm text-stone-500">
             You can return here any time from the Settings menu.
           </p>

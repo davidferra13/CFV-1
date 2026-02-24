@@ -39,8 +39,8 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
       <div className="max-w-5xl mx-auto space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900">Inbox</h1>
-            <p className="text-stone-600 mt-1">
+            <h1 className="text-3xl font-bold text-stone-100">Inbox</h1>
+            <p className="text-stone-400 mt-1">
               Manage all your messages, bookings, and follow-ups in one place.
             </p>
           </div>
@@ -48,7 +48,7 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
         </div>
 
         {!gmailConnection.gmail.connected && (
-          <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
             <span className="font-medium">Gmail is disconnected.</span> New emails won&apos;t be
             synced into your inbox.{' '}
             <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">
@@ -71,14 +71,14 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Inbox</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Inbox</h1>
+        <p className="text-stone-400 mt-1">
           Everything in one place - chat, messages, form submissions, and notifications.
         </p>
       </div>
 
       {!gmailConnection.gmail.connected && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
           <span className="font-medium">Gmail is disconnected.</span> New emails won&apos;t be
           synced into your inbox.{' '}
           <Link href="/settings" className="underline underline-offset-2 hover:text-amber-900">

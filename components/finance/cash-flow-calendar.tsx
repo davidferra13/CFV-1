@@ -4,8 +4,20 @@ import Link from 'next/link'
 import type { CashFlowCalendarData } from '@/lib/finance/cash-flow-calendar'
 import { formatCurrency } from '@/lib/utils/currency'
 
-const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December']
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 interface Props {
@@ -15,7 +27,7 @@ interface Props {
 export function CashFlowCalendar({ data }: Props) {
   const { year, month, days } = data
 
-  const dayMap = new Map(days.map(d => [d.date, d]))
+  const dayMap = new Map(days.map((d) => [d.date, d]))
 
   // Build calendar grid
   const firstDay = new Date(year, month - 1, 1).getDay()
@@ -29,45 +41,59 @@ export function CashFlowCalendar({ data }: Props) {
     }),
   ]
 
-  const prevMonthUrl = month === 1
-    ? `/finance/cash-flow?year=${year - 1}&month=12`
-    : `/finance/cash-flow?year=${year}&month=${month - 1}`
-  const nextMonthUrl = month === 12
-    ? `/finance/cash-flow?year=${year + 1}&month=1`
-    : `/finance/cash-flow?year=${year}&month=${month + 1}`
+  const prevMonthUrl =
+    month === 1
+      ? `/finance/cash-flow?year=${year - 1}&month=12`
+      : `/finance/cash-flow?year=${year}&month=${month - 1}`
+  const nextMonthUrl =
+    month === 12
+      ? `/finance/cash-flow?year=${year + 1}&month=1`
+      : `/finance/cash-flow?year=${year}&month=${month + 1}`
 
   return (
     <div className="space-y-4">
       {/* Nav + summary */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Link href={prevMonthUrl} className="text-stone-400 hover:text-stone-700 px-1">‹</Link>
-          <h3 className="font-semibold text-stone-900 text-sm">
+          <Link href={prevMonthUrl} className="text-stone-400 hover:text-stone-300 px-1">
+            ‹
+          </Link>
+          <h3 className="font-semibold text-stone-100 text-sm">
             {MONTH_NAMES[month - 1]} {year}
           </h3>
-          <Link href={nextMonthUrl} className="text-stone-400 hover:text-stone-700 px-1">›</Link>
+          <Link href={nextMonthUrl} className="text-stone-400 hover:text-stone-300 px-1">
+            ›
+          </Link>
         </div>
         <div className="flex gap-4 text-xs">
-          <span className="text-emerald-700 font-medium">+{formatCurrency(data.totalIncomeCents)}</span>
-          <span className="text-red-500 font-medium">−{formatCurrency(data.totalOutgoingCents)}</span>
+          <span className="text-emerald-700 font-medium">
+            +{formatCurrency(data.totalIncomeCents)}
+          </span>
+          <span className="text-red-500 font-medium">
+            −{formatCurrency(data.totalOutgoingCents)}
+          </span>
           {data.totalInstallmentsDueCents > 0 && (
-            <span className="text-amber-600 font-medium">{formatCurrency(data.totalInstallmentsDueCents)} due</span>
+            <span className="text-amber-600 font-medium">
+              {formatCurrency(data.totalInstallmentsDueCents)} due
+            </span>
           )}
         </div>
       </div>
 
       {/* Day-of-week headers */}
       <div className="grid grid-cols-7 gap-px text-center">
-        {DAY_NAMES.map(d => (
-          <div key={d} className="text-[10px] font-medium text-stone-400 py-1">{d}</div>
+        {DAY_NAMES.map((d) => (
+          <div key={d} className="text-[10px] font-medium text-stone-400 py-1">
+            {d}
+          </div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-px bg-stone-100 rounded-lg overflow-hidden border border-stone-100">
+      <div className="grid grid-cols-7 gap-px bg-stone-800 rounded-lg overflow-hidden border border-stone-800">
         {cells.map((dateStr, idx) => {
           if (!dateStr) {
-            return <div key={`empty-${idx}`} className="bg-white h-16" />
+            return <div key={`empty-${idx}`} className="bg-surface h-16" />
           }
           const day = dayMap.get(dateStr)
           const dayNum = parseInt(dateStr.slice(8), 10)
@@ -77,9 +103,11 @@ export function CashFlowCalendar({ data }: Props) {
           return (
             <div
               key={dateStr}
-              className={`bg-white h-16 p-1 text-xs flex flex-col ${isToday ? 'ring-1 ring-brand-400 ring-inset' : ''}`}
+              className={`bg-surface h-16 p-1 text-xs flex flex-col ${isToday ? 'ring-1 ring-brand-400 ring-inset' : ''}`}
             >
-              <span className={`font-medium ${isToday ? 'text-brand-600' : 'text-stone-700'}`}>{dayNum}</span>
+              <span className={`font-medium ${isToday ? 'text-brand-600' : 'text-stone-300'}`}>
+                {dayNum}
+              </span>
               {day && (
                 <div className="space-y-0.5 mt-0.5 min-h-0 overflow-hidden">
                   {day.incomeCents > 0 && (

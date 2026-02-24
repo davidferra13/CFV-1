@@ -5,7 +5,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { updateClientMilestones, type Milestone, type MilestoneType } from '@/lib/clients/milestones'
+import {
+  updateClientMilestones,
+  type Milestone,
+  type MilestoneType,
+} from '@/lib/clients/milestones'
 
 const MILESTONE_TYPES: { value: MilestoneType; label: string }[] = [
   { value: 'birthday', label: 'Birthday' },
@@ -32,7 +36,10 @@ export function MilestoneManager({
 
   async function handleAdd() {
     if (!newLabel || !newDate) return
-    const updated = [...milestones, { type: newType, label: newLabel, date: newDate, notes: newNotes || undefined }]
+    const updated = [
+      ...milestones,
+      { type: newType, label: newLabel, date: newDate, notes: newNotes || undefined },
+    ]
     setSaving(true)
     try {
       await updateClientMilestones(clientId, updated)
@@ -76,22 +83,32 @@ export function MilestoneManager({
       </CardHeader>
       <CardContent>
         {milestones.length === 0 && !isAdding && (
-          <p className="text-sm text-stone-500">No milestones recorded yet. Add birthdays, anniversaries, and other key dates to get outreach reminders.</p>
+          <p className="text-sm text-stone-500">
+            No milestones recorded yet. Add birthdays, anniversaries, and other key dates to get
+            outreach reminders.
+          </p>
         )}
 
         {milestones.length > 0 && (
           <div className="space-y-3 mb-4">
             {milestones.map((m, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
+              <div
+                key={i}
+                className="flex items-center justify-between py-2 border-b border-stone-800 last:border-0"
+              >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-700 capitalize">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-800 text-stone-300 capitalize">
                       {m.type.replace('_', ' ')}
                     </span>
-                    <span className="text-sm font-medium text-stone-900">{m.label}</span>
+                    <span className="text-sm font-medium text-stone-100">{m.label}</span>
                   </div>
                   <p className="text-xs text-stone-500 mt-1">
-                    {new Date(m.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    {new Date(m.date).toLocaleDateString('en-US', {
+                      month: 'long',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}
                     {m.notes && ` - ${m.notes}`}
                   </p>
                 </div>
@@ -110,10 +127,10 @@ export function MilestoneManager({
         )}
 
         {isAdding && (
-          <div className="space-y-3 border rounded-lg p-4 bg-stone-50">
+          <div className="space-y-3 border rounded-lg p-4 bg-stone-800">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-stone-600">Type</label>
+                <label className="text-xs font-medium text-stone-400">Type</label>
                 <Select
                   options={MILESTONE_TYPES}
                   value={newType}
@@ -121,12 +138,12 @@ export function MilestoneManager({
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">Date</label>
+                <label className="text-xs font-medium text-stone-400">Date</label>
                 <Input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-stone-600">Label</label>
+              <label className="text-xs font-medium text-stone-400">Label</label>
               <Input
                 placeholder="e.g., Mary's birthday, Wedding anniversary"
                 value={newLabel}
@@ -134,7 +151,7 @@ export function MilestoneManager({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-stone-600">Notes (optional)</label>
+              <label className="text-xs font-medium text-stone-400">Notes (optional)</label>
               <Input
                 placeholder="e.g., Prefers chocolate cake"
                 value={newNotes}
@@ -145,7 +162,12 @@ export function MilestoneManager({
               <Button size="sm" onClick={handleAdd} disabled={saving || !newLabel || !newDate}>
                 {saving ? 'Saving...' : 'Add'}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setIsAdding(false)} disabled={saving}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAdding(false)}
+                disabled={saving}
+              >
                 Cancel
               </Button>
             </div>

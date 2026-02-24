@@ -313,28 +313,28 @@ export function EventForm({
         <div className="flex items-center gap-1.5">
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-              step === 1 ? 'bg-brand-600 text-white' : 'bg-green-500 text-white'
+              step === 1 ? 'bg-brand-600 text-white' : 'bg-green-9500 text-white'
             }`}
           >
             {step === 1 ? '1' : '✓'}
           </div>
           <span
-            className={`text-sm font-medium ${step === 1 ? 'text-stone-900' : 'text-green-700'}`}
+            className={`text-sm font-medium ${step === 1 ? 'text-stone-100' : 'text-green-700'}`}
           >
             Event Details
           </span>
         </div>
-        <div className="flex-1 h-px bg-stone-200" />
+        <div className="flex-1 h-px bg-stone-700" />
         <div className="flex items-center gap-1.5">
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-              step === 2 ? 'bg-brand-600 text-white' : 'bg-stone-200 text-stone-500'
+              step === 2 ? 'bg-brand-600 text-white' : 'bg-stone-700 text-stone-500'
             }`}
           >
             2
           </div>
           <span
-            className={`text-sm font-medium ${step === 2 ? 'text-stone-900' : 'text-stone-400'}`}
+            className={`text-sm font-medium ${step === 2 ? 'text-stone-100' : 'text-stone-400'}`}
           >
             Pricing &amp; Notes
           </span>
@@ -448,7 +448,7 @@ export function EventForm({
 
             {/* Conflict warning banner */}
             {conflictWarnings && conflictWarnings.length > 0 && (
-              <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 space-y-3">
+              <div className="rounded-lg border border-amber-300 bg-amber-950 p-4 space-y-3">
                 <p className="text-sm font-semibold text-amber-800">Scheduling conflict detected</p>
                 <ul className="space-y-1">
                   {conflictWarnings.map((w, i) => (
@@ -566,7 +566,7 @@ export function EventForm({
                   </p>
                   <button
                     type="button"
-                    className="text-sm text-stone-400 hover:text-stone-600 underline"
+                    className="text-sm text-stone-400 hover:text-stone-400 underline"
                     onClick={() => {
                       setDepositAmount('')
                       setDepositSource('none')
@@ -587,8 +587,8 @@ export function EventForm({
             />
 
             {partners.length > 0 && (
-              <div className="border border-stone-200 rounded-lg p-4 space-y-1">
-                <p className="text-sm font-medium text-stone-700 mb-2">
+              <div className="border border-stone-700 rounded-lg p-4 space-y-1">
+                <p className="text-sm font-medium text-stone-300 mb-2">
                   Partner Venue <span className="text-stone-400 font-normal">(optional)</span>
                 </p>
                 <PartnerSelect

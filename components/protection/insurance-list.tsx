@@ -93,7 +93,7 @@ export function InsuranceList({ policies }: InsuranceListProps) {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Shield className="h-5 w-5 text-brand-600" />
-          <h2 className="text-base font-semibold text-stone-900">Insurance Policies</h2>
+          <h2 className="text-base font-semibold text-stone-100">Insurance Policies</h2>
           {localPolicies.length > 0 && <Badge variant="info">{localPolicies.length}</Badge>}
         </div>
         <Button variant="secondary" size="sm" onClick={() => setShowAdd(true)}>
@@ -103,7 +103,7 @@ export function InsuranceList({ policies }: InsuranceListProps) {
       </div>
 
       {showAdd && (
-        <Card className="border-brand-200">
+        <Card className="border-brand-700">
           <CardContent className="pt-4">
             <InsurancePolicyForm onClose={() => setShowAdd(false)} onSuccess={handleAdded} />
           </CardContent>
@@ -137,7 +137,7 @@ export function InsuranceList({ policies }: InsuranceListProps) {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-2">
-                    <span className="text-sm font-semibold text-stone-900">
+                    <span className="text-sm font-semibold text-stone-100">
                       {formatPolicyType(policy.policy_type)}
                     </span>
                     <ExpiryBadge expiryDate={policy.expiry_date} />
@@ -145,25 +145,25 @@ export function InsuranceList({ policies }: InsuranceListProps) {
                   <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-stone-500">
                     {policy.carrier && (
                       <div>
-                        <span className="font-medium text-stone-700">Carrier:</span>{' '}
+                        <span className="font-medium text-stone-300">Carrier:</span>{' '}
                         {policy.carrier}
                       </div>
                     )}
                     {policy.policy_number && (
                       <div>
-                        <span className="font-medium text-stone-700">Policy #:</span>{' '}
+                        <span className="font-medium text-stone-300">Policy #:</span>{' '}
                         {policy.policy_number}
                       </div>
                     )}
                     {policy.coverage_limit_cents != null && (
                       <div>
-                        <span className="font-medium text-stone-700">Coverage:</span>{' '}
+                        <span className="font-medium text-stone-300">Coverage:</span>{' '}
                         {formatCurrency(policy.coverage_limit_cents)}
                       </div>
                     )}
                     {policy.effective_date && (
                       <div>
-                        <span className="font-medium text-stone-700">Effective:</span>{' '}
+                        <span className="font-medium text-stone-300">Effective:</span>{' '}
                         {format(new Date(policy.effective_date), 'MMM d, yyyy')}
                       </div>
                     )}
@@ -181,7 +181,7 @@ export function InsuranceList({ policies }: InsuranceListProps) {
                     size="sm"
                     onClick={() => handleDelete(policy.id)}
                     loading={deletingId === policy.id}
-                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-500 hover:text-red-700 hover:bg-red-950"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

@@ -64,7 +64,9 @@ function NavLink({
     <Link
       href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-        isActive ? 'bg-white/15 text-white' : 'text-slate-300 hover:bg-white/10 hover:text-white'
+        isActive
+          ? 'bg-surface/15 text-white'
+          : 'text-slate-300 hover:bg-stone-800/10 hover:text-white'
       }`}
     >
       <Icon size={16} className="shrink-0" />
@@ -104,7 +106,7 @@ export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
             }
             window.location.href = '/'
           }}
-          className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-white/10 hover:text-white transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-sm font-medium text-slate-300 hover:bg-stone-800/10 hover:text-white transition-colors"
         >
           <LogOut size={16} className="shrink-0" />
           <span>Sign Out</span>

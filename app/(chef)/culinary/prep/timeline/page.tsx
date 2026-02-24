@@ -22,7 +22,9 @@ export default async function PrepTimelinePage() {
 
   // Sort components within each menu by make_ahead_window_hours descending
   for (const entry of byMenu.values()) {
-    entry.components.sort((a, b) => (b.make_ahead_window_hours ?? 0) - (a.make_ahead_window_hours ?? 0))
+    entry.components.sort(
+      (a, b) => (b.make_ahead_window_hours ?? 0) - (a.make_ahead_window_hours ?? 0)
+    )
   }
 
   const menus = Array.from(byMenu.entries()).sort((a, b) =>
@@ -32,17 +34,21 @@ export default async function PrepTimelinePage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/prep" className="text-sm text-stone-500 hover:text-stone-700">← Prep</Link>
+        <Link href="/culinary/prep" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Prep
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Prep Timeline</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Prep Timeline</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {makeAheadComponents.length}
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Make-ahead components ordered by lead time — longest prep first</p>
+        <p className="text-stone-500 mt-1">
+          Make-ahead components ordered by lead time — longest prep first
+        </p>
       </div>
 
-      <Card className="p-4 bg-amber-50 border-amber-200">
+      <Card className="p-4 bg-amber-950 border-amber-200">
         <p className="text-sm font-medium text-amber-800">How to use this view</p>
         <p className="text-sm text-amber-700 mt-1">
           Components marked as make-ahead on a menu appear here, grouped by menu and sorted from
@@ -53,11 +59,14 @@ export default async function PrepTimelinePage() {
 
       {makeAheadComponents.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No make-ahead components yet</p>
+          <p className="text-stone-400 font-medium">No make-ahead components yet</p>
           <p className="text-stone-400 text-sm mt-1">
             Mark components on a menu as make-ahead and set their lead time to see them here
           </p>
-          <Link href="/culinary/menus" className="text-brand-600 hover:underline text-sm mt-3 inline-block">
+          <Link
+            href="/culinary/menus"
+            className="text-brand-600 hover:underline text-sm mt-3 inline-block"
+          >
             Browse menus →
           </Link>
         </Card>
@@ -66,33 +75,37 @@ export default async function PrepTimelinePage() {
           {menus.map(([menuId, { menuName, components }]) => (
             <div key={menuId}>
               <div className="flex items-center gap-2 mb-3">
-                <h2 className="text-lg font-semibold text-stone-800">{menuName}</h2>
-                <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full">
+                <h2 className="text-lg font-semibold text-stone-200">{menuName}</h2>
+                <span className="text-xs bg-stone-800 text-stone-500 px-2 py-0.5 rounded-full">
                   {components.length} make-ahead
                 </span>
                 {menuId !== '__no_menu__' && (
-                  <Link href={`/culinary/menus/${menuId}`} className="text-xs text-brand-600 hover:underline ml-auto">
+                  <Link
+                    href={`/culinary/menus/${menuId}`}
+                    className="text-xs text-brand-600 hover:underline ml-auto"
+                  >
                     View menu →
                   </Link>
                 )}
               </div>
               <div className="space-y-2">
-                {components.map(comp => {
+                {components.map((comp) => {
                   const hours = comp.make_ahead_window_hours ?? 0
                   const days = Math.floor(hours / 24)
                   const remHours = hours % 24
-                  const leadLabel = days > 0
-                    ? `${days}d${remHours > 0 ? ` ${remHours}h` : ''} ahead`
-                    : `${hours}h ahead`
+                  const leadLabel =
+                    days > 0
+                      ? `${days}d${remHours > 0 ? ` ${remHours}h` : ''} ahead`
+                      : `${hours}h ahead`
 
                   return (
                     <Card key={comp.id} className="p-4">
                       <div className="flex items-start gap-4">
                         <div className="shrink-0 w-20 text-right">
-                          <span className="text-sm font-semibold text-brand-700">{leadLabel}</span>
+                          <span className="text-sm font-semibold text-brand-400">{leadLabel}</span>
                         </div>
                         <div className="flex-1">
-                          <p className="font-medium text-stone-900">{comp.name}</p>
+                          <p className="font-medium text-stone-100">{comp.name}</p>
                           {comp.dish_name && (
                             <p className="text-xs text-stone-500 mt-0.5">For: {comp.dish_name}</p>
                           )}
@@ -103,12 +116,13 @@ export default async function PrepTimelinePage() {
                           )}
                           {comp.execution_notes && (
                             <p className="text-sm text-stone-500 mt-0.5">
-                              <span className="text-stone-400">Execution:</span> {comp.execution_notes}
+                              <span className="text-stone-400">Execution:</span>{' '}
+                              {comp.execution_notes}
                             </p>
                           )}
                         </div>
                         <div className="shrink-0">
-                          <span className="text-xs bg-stone-100 text-stone-500 px-2 py-0.5 rounded-full capitalize">
+                          <span className="text-xs bg-stone-800 text-stone-500 px-2 py-0.5 rounded-full capitalize">
                             {comp.category}
                           </span>
                         </div>

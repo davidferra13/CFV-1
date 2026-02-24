@@ -24,18 +24,15 @@ export default async function ReviewsPage() {
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Reviews</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">Reviews</h1>
+          <p className="text-stone-400 mt-1">
             Unified feed of internal and external reviews with source attribution.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <LogFeedbackButton />
           <ImportPlatformReview />
-          <Link
-            href="/settings"
-            className="text-sm text-brand-600 hover:text-brand-700"
-          >
+          <Link href="/settings" className="text-sm text-brand-600 hover:text-brand-400">
             Configure Google Review Link
           </Link>
         </div>

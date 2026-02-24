@@ -67,16 +67,16 @@ export function ParAlertPanel({ alerts }: { alerts: ParAlert[] }) {
         {Object.entries(grouped).map(([vendorName, vendorAlerts]) => (
           <div key={vendorName}>
             {/* Vendor group header */}
-            <div className="px-6 py-2 bg-stone-50 border-y border-stone-100 flex items-center gap-2">
+            <div className="px-6 py-2 bg-stone-800 border-y border-stone-800 flex items-center gap-2">
               <Store className="h-4 w-4 text-stone-400" />
-              <span className="text-xs font-semibold text-stone-600 uppercase tracking-wide">
+              <span className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
                 {vendorName}
               </span>
               <Badge variant="default">{vendorAlerts.length}</Badge>
             </div>
 
             {/* Vendor items */}
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {vendorAlerts.map((alert, idx) => {
                 const deficit = alert.parLevel - alert.currentQty
 
@@ -86,7 +86,7 @@ export function ParAlertPanel({ alerts }: { alerts: ParAlert[] }) {
                     className="px-6 py-3 flex items-center justify-between"
                   >
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-stone-900 truncate">
+                      <p className="text-sm font-medium text-stone-100 truncate">
                         {alert.ingredientName}
                       </p>
                       <div className="flex items-center gap-3 mt-0.5 text-xs text-stone-500">
@@ -109,7 +109,7 @@ export function ParAlertPanel({ alerts }: { alerts: ParAlert[] }) {
                         </p>
                         <p className="text-xs text-stone-400">deficit</p>
                       </div>
-                      <div className="flex items-center gap-1 text-xs text-stone-500 bg-stone-100 px-2 py-1 rounded-md">
+                      <div className="flex items-center gap-1 text-xs text-stone-500 bg-stone-800 px-2 py-1 rounded-md">
                         <ShoppingCart className="h-3 w-3" />
                         <span>Reorder</span>
                       </div>

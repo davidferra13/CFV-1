@@ -74,30 +74,54 @@ const SERVICE_STYLE_LABELS: Record<string, string> = {
 }
 
 const CUISINE_SUGGESTIONS = [
-  'American', 'Italian', 'French', 'Japanese', 'Mediterranean',
-  'Mexican', 'Indian', 'Thai', 'Chinese', 'Greek', 'Spanish',
-  'Middle Eastern', 'Farm-to-Table', 'Modern American', 'Seasonal Local',
-  'New American', 'Pan-Asian', 'Latin', 'Nordic', 'Fusion',
+  'American',
+  'Italian',
+  'French',
+  'Japanese',
+  'Mediterranean',
+  'Mexican',
+  'Indian',
+  'Thai',
+  'Chinese',
+  'Greek',
+  'Spanish',
+  'Middle Eastern',
+  'Farm-to-Table',
+  'Modern American',
+  'Seasonal Local',
+  'New American',
+  'Pan-Asian',
+  'Latin',
+  'Nordic',
+  'Fusion',
 ]
 
 // ─── Season utility ───────────────────────────────────────────────────────────
 
 function getSeason(dateStr: string) {
   const m = new Date(dateStr).getMonth() + 1
-  if (m >= 3 && m <= 5) return {
-    label: 'Spring', emoji: '🌿',
-    ingredients: 'Asparagus · Peas · Ramps · Morels · Artichokes · Mint · Radishes',
-  }
-  if (m >= 6 && m <= 8) return {
-    label: 'Summer', emoji: '☀️',
-    ingredients: 'Heirloom Tomatoes · Corn · Zucchini · Peaches · Basil · Blueberries · Lobster',
-  }
-  if (m >= 9 && m <= 11) return {
-    label: 'Fall', emoji: '🍂',
-    ingredients: 'Butternut Squash · Porcini · Apples · Pears · Beets · Brussels Sprouts · Chestnuts',
-  }
+  if (m >= 3 && m <= 5)
+    return {
+      label: 'Spring',
+      emoji: '🌿',
+      ingredients: 'Asparagus · Peas · Ramps · Morels · Artichokes · Mint · Radishes',
+    }
+  if (m >= 6 && m <= 8)
+    return {
+      label: 'Summer',
+      emoji: '☀️',
+      ingredients: 'Heirloom Tomatoes · Corn · Zucchini · Peaches · Basil · Blueberries · Lobster',
+    }
+  if (m >= 9 && m <= 11)
+    return {
+      label: 'Fall',
+      emoji: '🍂',
+      ingredients:
+        'Butternut Squash · Porcini · Apples · Pears · Beets · Brussels Sprouts · Chestnuts',
+    }
   return {
-    label: 'Winter', emoji: '❄️',
+    label: 'Winter',
+    emoji: '❄️',
     ingredients: 'Citrus · Root Vegetables · Cabbage · Blood Oranges · Truffles · Clams · Celeriac',
   }
 }
@@ -126,7 +150,9 @@ function useAutoSave() {
 
   useEffect(() => {
     const t = timers.current
-    return () => { Object.values(t).forEach(clearTimeout) }
+    return () => {
+      Object.values(t).forEach(clearTimeout)
+    }
   }, [])
 
   return { saveState, scheduleSave }
@@ -162,7 +188,7 @@ function AutoTextarea({
     <textarea
       ref={ref}
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
       disabled={disabled}
       rows={minRows}
@@ -210,14 +236,12 @@ function CourseBlock({
 
   const saveField = (field: string, data: Partial<EditorDish>) => {
     onUpdate(dish.id, data)
-    scheduleSave(`dish-${dish.id}-${field}`, () =>
-      updateDishEditorContent(dish.id, data)
-    )
+    scheduleSave(`dish-${dish.id}-${field}`, () => updateDishEditorContent(dish.id, data))
   }
 
   const toggleTag = (tag: string) => {
     const next = dietaryTags.includes(tag)
-      ? dietaryTags.filter(t => t !== tag)
+      ? dietaryTags.filter((t) => t !== tag)
       : [...dietaryTags, tag]
     setDietaryTags(next)
     saveField('tags', { dietary_tags: next })
@@ -225,7 +249,7 @@ function CourseBlock({
 
   const toggleAllergen = (short: string) => {
     const next = allergenFlags.includes(short)
-      ? allergenFlags.filter(f => f !== short)
+      ? allergenFlags.filter((f) => f !== short)
       : [...allergenFlags, short]
     setAllergenFlags(next)
     saveField('allergens', { allergen_flags: next })
@@ -241,7 +265,6 @@ function CourseBlock({
 
   return (
     <div className={`group relative ${deleting ? 'opacity-40 pointer-events-none' : ''}`}>
-
       {/* Reorder + delete controls (appear on hover) */}
       {!locked && (
         <div className="absolute -right-8 top-0 flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -249,7 +272,7 @@ function CourseBlock({
             type="button"
             onClick={() => onMoveUp(dish.id)}
             disabled={isFirst}
-            className="w-6 h-6 flex items-center justify-center text-stone-300 hover:text-stone-600 disabled:opacity-20 disabled:cursor-not-allowed text-base leading-none"
+            className="w-6 h-6 flex items-center justify-center text-stone-300 hover:text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed text-base leading-none"
             title="Move up"
           >
             ↑
@@ -258,7 +281,7 @@ function CourseBlock({
             type="button"
             onClick={() => onMoveDown(dish.id)}
             disabled={isLast}
-            className="w-6 h-6 flex items-center justify-center text-stone-300 hover:text-stone-600 disabled:opacity-20 disabled:cursor-not-allowed text-base leading-none"
+            className="w-6 h-6 flex items-center justify-center text-stone-300 hover:text-stone-400 disabled:opacity-20 disabled:cursor-not-allowed text-base leading-none"
             title="Move down"
           >
             ↓
@@ -281,20 +304,22 @@ function CourseBlock({
           <>
             <input
               value={courseName}
-              onChange={e => {
+              onChange={(e) => {
                 setCourseName(e.target.value)
                 saveField('course_name', { course_name: e.target.value })
                 // Only show suggestions when field is empty
                 setShowSuggestions(e.target.value.length === 0)
               }}
-              onFocus={() => { if (!courseName) setShowSuggestions(true) }}
+              onFocus={() => {
+                if (!courseName) setShowSuggestions(true)
+              }}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
               placeholder="COURSE TYPE"
-              className="w-full text-xs font-bold tracking-[0.15em] uppercase text-stone-400 bg-transparent border-none outline-none focus:text-stone-600 placeholder:text-stone-300 py-0 leading-none"
+              className="w-full text-xs font-bold tracking-[0.15em] uppercase text-stone-400 bg-transparent border-none outline-none focus:text-stone-400 placeholder:text-stone-300 py-0 leading-none"
             />
             {showSuggestions && (
-              <div className="absolute left-0 top-full z-10 bg-white border border-stone-200 rounded-lg shadow-lg mt-1 py-1 min-w-[180px] max-h-48 overflow-y-auto">
-                {COURSE_SUGGESTIONS.map(s => (
+              <div className="absolute left-0 top-full z-10 bg-surface border border-stone-700 rounded-lg shadow-lg mt-1 py-1 min-w-[180px] max-h-48 overflow-y-auto">
+                {COURSE_SUGGESTIONS.map((s) => (
                   <button
                     key={s}
                     type="button"
@@ -303,7 +328,7 @@ function CourseBlock({
                       saveField('course_name', { course_name: s })
                       setShowSuggestions(false)
                     }}
-                    className="block w-full text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-stone-600 hover:bg-stone-50"
+                    className="block w-full text-left px-3 py-1.5 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:bg-stone-800"
                   >
                     {s}
                   </button>
@@ -319,7 +344,7 @@ function CourseBlock({
       </div>
 
       {/* Divider */}
-      <div className="h-px bg-stone-200 mb-4" />
+      <div className="h-px bg-stone-700 mb-4" />
 
       {/* Dish name + photo thumbnail */}
       <div className="flex gap-3 items-start">
@@ -327,16 +352,16 @@ function CourseBlock({
           {!locked ? (
             <AutoTextarea
               value={dishName}
-              onChange={v => {
+              onChange={(v) => {
                 setDishName(v)
                 saveField('name', { name: v || null })
               }}
               placeholder="Dish name…"
               minRows={1}
-              className="w-full text-xl font-semibold text-stone-900 bg-transparent border-none outline-none placeholder:text-stone-300 leading-tight mb-1 py-0 block"
+              className="w-full text-xl font-semibold text-stone-100 bg-transparent border-none outline-none placeholder:text-stone-300 leading-tight mb-1 py-0 block"
             />
           ) : (
-            <p className="text-xl font-semibold text-stone-900 leading-tight mb-1">
+            <p className="text-xl font-semibold text-stone-100 leading-tight mb-1">
               {dishName || <span className="text-stone-300 italic text-base">Unnamed dish</span>}
             </p>
           )}
@@ -345,7 +370,7 @@ function CourseBlock({
           {!locked ? (
             <AutoTextarea
               value={description}
-              onChange={v => {
+              onChange={(v) => {
                 setDescription(v)
                 saveField('description', { description: v || null })
               }}
@@ -372,16 +397,16 @@ function CourseBlock({
 
       {/* Dietary tags row — Accommodates */}
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
-        {dietaryTags.map(tag => (
+        {dietaryTags.map((tag) => (
           <button
             type="button"
             key={tag}
             onClick={() => !locked && toggleTag(tag)}
-            title={DIETARY_TAG_OPTIONS.find(t => t.label === tag)?.title ?? tag}
+            title={DIETARY_TAG_OPTIONS.find((t) => t.label === tag)?.title ?? tag}
             className={`text-xs font-semibold px-2 py-0.5 rounded-full border transition-colors ${
               locked
-                ? 'border-emerald-200 text-emerald-700 bg-emerald-50 cursor-default'
-                : 'border-emerald-200 text-emerald-700 bg-emerald-50 hover:border-red-300 hover:text-red-500 hover:bg-red-50 cursor-pointer'
+                ? 'border-emerald-200 text-emerald-700 bg-emerald-950 cursor-default'
+                : 'border-emerald-200 text-emerald-700 bg-emerald-950 hover:border-red-300 hover:text-red-500 hover:bg-red-950 cursor-pointer'
             }`}
           >
             {tag}
@@ -391,14 +416,19 @@ function CourseBlock({
           <div className="relative">
             <button
               type="button"
-              onClick={() => { setShowTagPicker(p => !p); setShowAllergenPicker(false) }}
-              className="text-xs text-stone-400 hover:text-stone-600 border border-dashed border-stone-300 hover:border-stone-400 px-2 py-0.5 rounded-full transition-colors"
+              onClick={() => {
+                setShowTagPicker((p) => !p)
+                setShowAllergenPicker(false)
+              }}
+              className="text-xs text-stone-400 hover:text-stone-400 border border-dashed border-stone-600 hover:border-stone-400 px-2 py-0.5 rounded-full transition-colors"
             >
               + tag
             </button>
             {showTagPicker && (
-              <div className="absolute left-0 top-full mt-1 z-10 bg-white border border-stone-200 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[210px]">
-                <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1 px-0.5">Accommodates</p>
+              <div className="absolute left-0 top-full mt-1 z-10 bg-surface border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[210px]">
+                <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1 px-0.5">
+                  Accommodates
+                </p>
                 {DIETARY_TAG_OPTIONS.map(({ label, title }) => (
                   <button
                     type="button"
@@ -407,8 +437,8 @@ function CourseBlock({
                     title={title}
                     className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
                       dietaryTags.includes(label)
-                        ? 'border-emerald-400 bg-emerald-100 text-emerald-800'
-                        : 'border-stone-200 text-stone-600 hover:border-stone-400 hover:bg-stone-50'
+                        ? 'border-emerald-400 bg-emerald-900 text-emerald-800'
+                        : 'border-stone-700 text-stone-400 hover:border-stone-400 hover:bg-stone-800'
                     }`}
                   >
                     {label}
@@ -423,8 +453,8 @@ function CourseBlock({
       {/* Allergen flags row — Contains */}
       {(allergenFlags.length > 0 || !locked) && (
         <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
-          {allergenFlags.map(short => {
-            const allergenLabel = ALLERGEN_OPTIONS.find(a => a.short === short)?.label ?? short
+          {allergenFlags.map((short) => {
+            const allergenLabel = ALLERGEN_OPTIONS.find((a) => a.short === short)?.label ?? short
             return (
               <button
                 type="button"
@@ -433,8 +463,8 @@ function CourseBlock({
                 title={`Contains ${allergenLabel} — click to remove`}
                 className={`text-xs font-semibold px-2 py-0.5 rounded-full border transition-colors ${
                   locked
-                    ? 'border-orange-200 text-orange-700 bg-orange-50 cursor-default'
-                    : 'border-orange-200 text-orange-700 bg-orange-50 hover:border-red-300 hover:text-red-500 hover:bg-red-50 cursor-pointer'
+                    ? 'border-orange-200 text-orange-700 bg-orange-950 cursor-default'
+                    : 'border-orange-200 text-orange-700 bg-orange-950 hover:border-red-300 hover:text-red-500 hover:bg-red-950 cursor-pointer'
                 }`}
               >
                 ⚠ {allergenLabel}
@@ -445,14 +475,19 @@ function CourseBlock({
             <div className="relative">
               <button
                 type="button"
-                onClick={() => { setShowAllergenPicker(p => !p); setShowTagPicker(false) }}
+                onClick={() => {
+                  setShowAllergenPicker((p) => !p)
+                  setShowTagPicker(false)
+                }}
                 className="text-xs text-orange-400 hover:text-orange-600 border border-dashed border-orange-200 hover:border-orange-400 px-2 py-0.5 rounded-full transition-colors"
               >
                 + allergen
               </button>
               {showAllergenPicker && (
-                <div className="absolute left-0 top-full mt-1 z-10 bg-white border border-stone-200 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[220px]">
-                  <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-orange-400 mb-1 px-0.5">Contains</p>
+                <div className="absolute left-0 top-full mt-1 z-10 bg-surface border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[220px]">
+                  <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-orange-400 mb-1 px-0.5">
+                    Contains
+                  </p>
                   {ALLERGEN_OPTIONS.map(({ label, short }) => (
                     <button
                       type="button"
@@ -461,8 +496,8 @@ function CourseBlock({
                       title={label}
                       className={`text-xs font-semibold px-2.5 py-1 rounded-full border transition-colors ${
                         allergenFlags.includes(short)
-                          ? 'border-orange-400 bg-orange-100 text-orange-800'
-                          : 'border-stone-200 text-stone-600 hover:border-orange-300 hover:bg-orange-50'
+                          ? 'border-orange-400 bg-orange-900 text-orange-800'
+                          : 'border-stone-700 text-stone-400 hover:border-orange-300 hover:bg-orange-950'
                       }`}
                     >
                       {label}
@@ -478,23 +513,27 @@ function CourseBlock({
       {/* Chef-only notes */}
       {!locked ? (
         <div className="mt-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-500 mb-1 px-3">Internal notes</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-500 mb-1 px-3">
+            Internal notes
+          </p>
           <AutoTextarea
             value={chefNotes}
-            onChange={v => {
+            onChange={(v) => {
               setChefNotes(v)
               saveField('chef_notes', { chef_notes: v || null })
             }}
             placeholder="Allergens to watch, timing, techniques, client preferences…"
             minRows={1}
-            className="w-full text-xs text-amber-700 bg-amber-50 border-none outline-none placeholder:text-amber-300 rounded-lg px-3 py-2 leading-relaxed block"
+            className="w-full text-xs text-amber-700 bg-amber-950 border-none outline-none placeholder:text-amber-300 rounded-lg px-3 py-2 leading-relaxed block"
           />
         </div>
       ) : (
         chefNotes && (
           <div className="mt-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-500 mb-1">Internal notes</p>
-            <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 leading-relaxed">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-500 mb-1">
+              Internal notes
+            </p>
+            <p className="text-xs text-amber-700 bg-amber-950 rounded-lg px-3 py-2 leading-relaxed">
               {chefNotes}
             </p>
           </div>
@@ -521,7 +560,10 @@ function AddCourseRow({
   const [error, setError] = useState('')
 
   const handleAdd = (courseName: string) => {
-    if (!courseName.trim()) { setError('Course name required'); return }
+    if (!courseName.trim()) {
+      setError('Course name required')
+      return
+    }
     setError('')
     startAdd(async () => {
       try {
@@ -543,7 +585,7 @@ function AddCourseRow({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="w-full border-2 border-dashed border-stone-200 hover:border-brand-300 rounded-xl py-5 text-sm text-stone-400 hover:text-brand-600 transition-colors mt-4"
+        className="w-full border-2 border-dashed border-stone-700 hover:border-brand-600 rounded-xl py-5 text-sm text-stone-400 hover:text-brand-600 transition-colors mt-4"
       >
         + Add Course
       </button>
@@ -551,19 +593,19 @@ function AddCourseRow({
   }
 
   return (
-    <div className="mt-4 border border-stone-200 rounded-xl p-5 space-y-4 bg-stone-50">
+    <div className="mt-4 border border-stone-700 rounded-xl p-5 space-y-4 bg-stone-800">
       <p className="text-xs font-bold uppercase tracking-widest text-stone-400">New Course</p>
       {error && <p className="text-xs text-red-500">{error}</p>}
 
       {/* Quick suggestions */}
       <div className="flex flex-wrap gap-1.5">
-        {COURSE_SUGGESTIONS.map(s => (
+        {COURSE_SUGGESTIONS.map((s) => (
           <button
             type="button"
             key={s}
             onClick={() => handleAdd(s)}
             disabled={adding}
-            className="text-xs px-3 py-1.5 rounded-full border border-stone-200 text-stone-600 bg-white hover:border-brand-400 hover:text-brand-700 hover:bg-brand-50 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-full border border-stone-700 text-stone-400 bg-surface hover:border-brand-400 hover:text-brand-400 hover:bg-brand-950 transition-colors"
           >
             {s}
           </button>
@@ -571,20 +613,20 @@ function AddCourseRow({
       </div>
 
       <div className="flex items-center gap-2">
-        <div className="h-px flex-1 bg-stone-200" />
+        <div className="h-px flex-1 bg-stone-700" />
         <span className="text-xs text-stone-400">or type custom name</span>
-        <div className="h-px flex-1 bg-stone-200" />
+        <div className="h-px flex-1 bg-stone-700" />
       </div>
 
       <div className="flex gap-2">
         <input
           value={name}
-          onChange={e => setName(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && handleAdd(name)}
+          onChange={(e) => setName(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleAdd(name)}
           placeholder="Custom course name…"
           disabled={adding}
           autoFocus
-          className="flex-1 text-sm border border-stone-300 rounded-lg px-3 py-2 bg-white text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 text-sm border border-stone-600 rounded-lg px-3 py-2 bg-surface text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <button
           type="button"
@@ -596,9 +638,13 @@ function AddCourseRow({
         </button>
         <button
           type="button"
-          onClick={() => { setOpen(false); setName(''); setError('') }}
+          onClick={() => {
+            setOpen(false)
+            setName('')
+            setError('')
+          }}
           disabled={adding}
-          className="px-3 py-2 text-sm text-stone-500 hover:text-stone-700 rounded-lg hover:bg-stone-200 transition-colors"
+          className="px-3 py-2 text-sm text-stone-500 hover:text-stone-300 rounded-lg hover:bg-stone-700 transition-colors"
         >
           Cancel
         </button>
@@ -626,10 +672,9 @@ function ContextSidebar({
   const [sending, startSend] = useTransition()
   const [sendResult, setSendResult] = useState<'sent' | 'error' | null>(null)
 
-  const allergyText = [
-    event?.client?.dietary_restrictions,
-    event?.client?.allergies,
-  ].filter(Boolean).join(' · ')
+  const allergyText = [event?.client?.dietary_restrictions, event?.client?.allergies]
+    .filter(Boolean)
+    .join(' · ')
 
   const handleSendForApproval = () => {
     if (!event) return
@@ -645,23 +690,22 @@ function ContextSidebar({
 
   return (
     <div className="sticky top-16 space-y-3 text-sm">
-
       {/* Event panel */}
       {event ? (
-        <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
+        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-bold uppercase tracking-widest text-stone-400">Event</p>
             <Link href={`/events/${event.id}`} className="text-xs text-brand-600 hover:underline">
               View →
             </Link>
           </div>
-          <p className="font-semibold text-stone-900 mb-1">{event.occasion || 'Private Dinner'}</p>
-          <p className="text-stone-600 text-xs">
+          <p className="font-semibold text-stone-100 mb-1">{event.occasion || 'Private Dinner'}</p>
+          <p className="text-stone-400 text-xs">
             {format(new Date(event.event_date), 'EEE, MMM d yyyy')}
             {event.event_time && ` · ${event.event_time}`}
           </p>
           {event.guest_count && (
-            <p className="text-stone-600 text-xs mt-0.5">
+            <p className="text-stone-400 text-xs mt-0.5">
               <span className="font-semibold">{event.guest_count}</span> guests
             </p>
           )}
@@ -673,7 +717,7 @@ function ContextSidebar({
 
           {/* Send for approval */}
           {!locked && (
-            <div className="mt-3 pt-3 border-t border-stone-100">
+            <div className="mt-3 pt-3 border-t border-stone-800">
               {sendResult === 'sent' ? (
                 <p className="text-xs text-emerald-600 font-medium">Menu sent to client ✓</p>
               ) : sendResult === 'error' ? (
@@ -683,7 +727,7 @@ function ContextSidebar({
                   type="button"
                   onClick={handleSendForApproval}
                   disabled={sending}
-                  className="w-full text-xs py-1.5 px-3 rounded-lg border border-brand-200 text-brand-700 bg-brand-50 hover:bg-brand-100 hover:border-brand-300 transition-colors disabled:opacity-50 font-medium"
+                  className="w-full text-xs py-1.5 px-3 rounded-lg border border-brand-700 text-brand-400 bg-brand-950 hover:bg-brand-900 hover:border-brand-600 transition-colors disabled:opacity-50 font-medium"
                 >
                   {sending ? 'Sending…' : 'Send menu for approval'}
                 </button>
@@ -692,7 +736,7 @@ function ContextSidebar({
           )}
         </div>
       ) : (
-        <div className="bg-stone-50 rounded-xl border border-dashed border-stone-200 p-4 text-center">
+        <div className="bg-stone-800 rounded-xl border border-dashed border-stone-700 p-4 text-center">
           <p className="text-xs text-stone-400 font-medium">No event linked</p>
           <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
             Attach this menu to an event for full context
@@ -702,11 +746,11 @@ function ContextSidebar({
 
       {/* Client panel */}
       {event?.client && (
-        <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
+        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Client</p>
-          <p className="font-semibold text-stone-900">{event.client.full_name || 'Client'}</p>
+          <p className="font-semibold text-stone-100">{event.client.full_name || 'Client'}</p>
           {allergyText ? (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+            <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2 mt-2">
               <p className="text-xs font-semibold text-amber-800 mb-0.5">Dietary needs</p>
               <p className="text-xs text-amber-700 leading-relaxed">{allergyText}</p>
             </div>
@@ -718,15 +762,17 @@ function ContextSidebar({
 
       {/* Season panel */}
       {season && (
-        <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
+        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Season</p>
-          <p className="font-semibold text-stone-900 mb-1">{season.emoji} {season.label}</p>
+          <p className="font-semibold text-stone-100 mb-1">
+            {season.emoji} {season.label}
+          </p>
           <p className="text-xs text-stone-500 leading-relaxed">{season.ingredients}</p>
         </div>
       )}
 
       {/* Pricing panel */}
-      <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
+      <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Pricing</p>
         {!locked ? (
           <div className="flex items-baseline gap-1">
@@ -734,17 +780,21 @@ function ContextSidebar({
             <input
               type="number"
               value={pricePerPerson}
-              onChange={e => onPriceChange(e.target.value)}
+              onChange={(e) => onPriceChange(e.target.value)}
               placeholder="0"
               min="0"
               step="5"
-              className="text-2xl font-bold text-stone-900 border-none outline-none bg-transparent w-20 p-0 focus:ring-0"
+              className="text-2xl font-bold text-stone-100 border-none outline-none bg-transparent w-20 p-0 focus:ring-0"
             />
             <span className="text-stone-500 text-sm">/ person</span>
           </div>
         ) : (
-          <p className="text-2xl font-bold text-stone-900">
-            {pricePerPerson ? `$${Number(pricePerPerson).toLocaleString()} / person` : <span className="text-stone-300">—</span>}
+          <p className="text-2xl font-bold text-stone-100">
+            {pricePerPerson ? (
+              `$${Number(pricePerPerson).toLocaleString()} / person`
+            ) : (
+              <span className="text-stone-300">—</span>
+            )}
           </p>
         )}
         {event?.quoted_price_cents != null && event.guest_count && (
@@ -756,18 +806,18 @@ function ContextSidebar({
 
       {/* Previous menus */}
       {previousMenus.length > 0 && (
-        <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
+        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">
             Previous Menus
           </p>
           <div className="space-y-1">
-            {previousMenus.map(m => (
+            {previousMenus.map((m) => (
               <Link
                 key={m.id}
                 href={`/menus/${m.id}/editor`}
-                className="block hover:bg-stone-50 rounded-lg py-1.5 px-2 -mx-2 transition-colors group"
+                className="block hover:bg-stone-800 rounded-lg py-1.5 px-2 -mx-2 transition-colors group"
               >
-                <p className="text-sm font-medium text-stone-800 group-hover:text-brand-700 truncate">
+                <p className="text-sm font-medium text-stone-200 group-hover:text-brand-400 truncate">
                   {m.name}
                 </p>
                 <p className="text-xs text-stone-400">
@@ -804,13 +854,9 @@ export function MenuDocEditor({
   const [menuName, setMenuName] = useState(initialMenu.name)
   const [cuisineType, setCuisineType] = useState(initialMenu.cuisine_type ?? '')
   const [serviceStyle, setServiceStyle] = useState(initialMenu.service_style ?? '')
-  const [guestCount, setGuestCount] = useState(
-    initialMenu.target_guest_count?.toString() ?? ''
-  )
+  const [guestCount, setGuestCount] = useState(initialMenu.target_guest_count?.toString() ?? '')
   const [pricePerPerson, setPricePerPerson] = useState(
-    initialMenu.price_per_person_cents
-      ? (initialMenu.price_per_person_cents / 100).toString()
-      : ''
+    initialMenu.price_per_person_cents ? (initialMenu.price_per_person_cents / 100).toString() : ''
   )
   const [simpleMode, setSimpleMode] = useState(initialMenu.simple_mode)
   const [simpleContent, setSimpleContent] = useState(initialMenu.simple_mode_content ?? '')
@@ -819,10 +865,13 @@ export function MenuDocEditor({
   )
   const [showCuisineSuggestions, setShowCuisineSuggestions] = useState(false)
 
-  const saveMenuMeta = useCallback((data: Parameters<typeof updateMenuMeta>[1]) => {
-    const key = 'menu-meta-' + Object.keys(data).sort().join(',')
-    scheduleSave(key, () => updateMenuMeta(initialMenu.id, data))
-  }, [initialMenu.id, scheduleSave])
+  const saveMenuMeta = useCallback(
+    (data: Parameters<typeof updateMenuMeta>[1]) => {
+      const key = 'menu-meta-' + Object.keys(data).sort().join(',')
+      scheduleSave(key, () => updateMenuMeta(initialMenu.id, data))
+    },
+    [initialMenu.id, scheduleSave]
+  )
 
   // ─── Field handlers ──────────────────────────────────────────────────────────
 
@@ -865,99 +914,103 @@ export function MenuDocEditor({
   }
 
   const handleDishUpdate = (id: string, data: Partial<EditorDish>) => {
-    setDishes(prev => prev.map(d => d.id === id ? { ...d, ...data } : d))
+    setDishes((prev) => prev.map((d) => (d.id === id ? { ...d, ...data } : d)))
   }
 
   const handleDishDelete = (id: string) => {
-    setDishes(prev => prev.filter(d => d.id !== id))
+    setDishes((prev) => prev.filter((d) => d.id !== id))
   }
 
   const handleCourseAdded = (dish: EditorDish) => {
-    setDishes(prev => [...prev, dish])
+    setDishes((prev) => [...prev, dish])
   }
 
   // ─── Course reordering ───────────────────────────────────────────────────────
 
-  const handleMoveUp = useCallback((dishId: string) => {
-    setDishes(prev => {
-      const sorted = [...prev].sort((a, b) => a.sort_order - b.sort_order)
-      const idx = sorted.findIndex(d => d.id === dishId)
-      if (idx <= 0) return prev
-      // Swap sort_order values optimistically
-      const result = sorted.map(d => ({ ...d }))
-      const tmp = result[idx].sort_order
-      result[idx].sort_order = result[idx - 1].sort_order
-      result[idx - 1].sort_order = tmp
-      return result.sort((a, b) => a.sort_order - b.sort_order)
-    })
-    // Fire server action (best-effort, page reload will correct any mismatch)
-    reorderEditorCourse(initialMenu.id, dishId, 'up').catch(console.error)
-  }, [initialMenu.id])
+  const handleMoveUp = useCallback(
+    (dishId: string) => {
+      setDishes((prev) => {
+        const sorted = [...prev].sort((a, b) => a.sort_order - b.sort_order)
+        const idx = sorted.findIndex((d) => d.id === dishId)
+        if (idx <= 0) return prev
+        // Swap sort_order values optimistically
+        const result = sorted.map((d) => ({ ...d }))
+        const tmp = result[idx].sort_order
+        result[idx].sort_order = result[idx - 1].sort_order
+        result[idx - 1].sort_order = tmp
+        return result.sort((a, b) => a.sort_order - b.sort_order)
+      })
+      // Fire server action (best-effort, page reload will correct any mismatch)
+      reorderEditorCourse(initialMenu.id, dishId, 'up').catch(console.error)
+    },
+    [initialMenu.id]
+  )
 
-  const handleMoveDown = useCallback((dishId: string) => {
-    setDishes(prev => {
-      const sorted = [...prev].sort((a, b) => a.sort_order - b.sort_order)
-      const idx = sorted.findIndex(d => d.id === dishId)
-      if (idx === -1 || idx >= sorted.length - 1) return prev
-      const result = sorted.map(d => ({ ...d }))
-      const tmp = result[idx].sort_order
-      result[idx].sort_order = result[idx + 1].sort_order
-      result[idx + 1].sort_order = tmp
-      return result.sort((a, b) => a.sort_order - b.sort_order)
-    })
-    reorderEditorCourse(initialMenu.id, dishId, 'down').catch(console.error)
-  }, [initialMenu.id])
+  const handleMoveDown = useCallback(
+    (dishId: string) => {
+      setDishes((prev) => {
+        const sorted = [...prev].sort((a, b) => a.sort_order - b.sort_order)
+        const idx = sorted.findIndex((d) => d.id === dishId)
+        if (idx === -1 || idx >= sorted.length - 1) return prev
+        const result = sorted.map((d) => ({ ...d }))
+        const tmp = result[idx].sort_order
+        result[idx].sort_order = result[idx + 1].sort_order
+        result[idx + 1].sort_order = tmp
+        return result.sort((a, b) => a.sort_order - b.sort_order)
+      })
+      reorderEditorCourse(initialMenu.id, dishId, 'down').catch(console.error)
+    },
+    [initialMenu.id]
+  )
 
   // ─── Save indicator ──────────────────────────────────────────────────────────
 
   const { text: saveText, color: saveColor } = {
-    saved:   { text: 'All changes saved', color: 'text-stone-400' },
-    pending: { text: 'Unsaved…',          color: 'text-amber-500' },
-    saving:  { text: 'Saving…',           color: 'text-stone-400' },
-    error:   { text: 'Save failed',        color: 'text-red-500'  },
+    saved: { text: 'All changes saved', color: 'text-stone-400' },
+    pending: { text: 'Unsaved…', color: 'text-amber-500' },
+    saving: { text: 'Saving…', color: 'text-stone-400' },
+    error: { text: 'Save failed', color: 'text-red-500' },
   }[saveState]
 
   const sortedDishes = [...dishes].sort((a, b) => a.sort_order - b.sort_order)
 
-  const nextCourseNumber = dishes.length > 0
-    ? Math.max(...dishes.map(d => d.course_number)) + 1
-    : 1
+  const nextCourseNumber =
+    dishes.length > 0 ? Math.max(...dishes.map((d) => d.course_number)) + 1 : 1
 
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-stone-100">
-
+    <div className="min-h-screen bg-stone-800">
       {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-white border-b border-stone-200 px-6 py-2.5 flex items-center gap-4">
+      <div className="sticky top-0 z-20 bg-surface border-b border-stone-700 px-6 py-2.5 flex items-center gap-4">
         <button
           type="button"
           onClick={() => router.push(`/menus/${initialMenu.id}`)}
-          className="text-sm text-stone-500 hover:text-stone-800 transition-colors"
+          className="text-sm text-stone-500 hover:text-stone-200 transition-colors"
         >
           ← Back
         </button>
 
         <div className="flex-1 min-w-0">
-          <span className="text-sm font-medium text-stone-700 truncate hidden sm:block">
+          <span className="text-sm font-medium text-stone-300 truncate hidden sm:block">
             {menuName || 'Untitled Menu'}
           </span>
         </div>
 
-        <span className={`text-xs ${saveColor} transition-colors shrink-0`}>
-          {saveText}
-        </span>
+        <span className={`text-xs ${saveColor} transition-colors shrink-0`}>{saveText}</span>
 
         {/* Status badge */}
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0 ${
-          locked
-            ? 'border-amber-300 bg-amber-50 text-amber-700'
-            : initialMenu.status === 'shared'
-            ? 'border-blue-300 bg-blue-50 text-blue-700'
-            : initialMenu.status === 'archived'
-            ? 'border-stone-300 bg-stone-50 text-stone-500'
-            : 'border-stone-200 bg-white text-stone-600'
-        }`}>
+        <span
+          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border shrink-0 ${
+            locked
+              ? 'border-amber-300 bg-amber-950 text-amber-700'
+              : initialMenu.status === 'shared'
+                ? 'border-blue-300 bg-blue-950 text-blue-700'
+                : initialMenu.status === 'archived'
+                  ? 'border-stone-600 bg-stone-800 text-stone-500'
+                  : 'border-stone-700 bg-surface text-stone-400'
+          }`}
+        >
           {initialMenu.status.charAt(0).toUpperCase() + initialMenu.status.slice(1)}
         </span>
 
@@ -965,11 +1018,15 @@ export function MenuDocEditor({
         <button
           type="button"
           onClick={handleSimpleModeToggle}
-          title={simpleMode ? 'Switch back to structured course editor' : 'Write freeform or paste menu text'}
+          title={
+            simpleMode
+              ? 'Switch back to structured course editor'
+              : 'Write freeform or paste menu text'
+          }
           className={`text-xs px-3 py-1 rounded-full border transition-colors shrink-0 ${
             simpleMode
-              ? 'border-brand-400 bg-brand-50 text-brand-700 font-medium'
-              : 'border-stone-200 text-stone-500 hover:border-stone-400 hover:text-stone-700'
+              ? 'border-brand-400 bg-brand-950 text-brand-400 font-medium'
+              : 'border-stone-700 text-stone-500 hover:border-stone-400 hover:text-stone-300'
           }`}
         >
           {simpleMode ? 'Exit freeform' : 'Freeform text'}
@@ -978,11 +1035,9 @@ export function MenuDocEditor({
 
       {/* Main layout */}
       <div className="max-w-6xl mx-auto px-4 py-8 flex gap-6 items-start">
-
         {/* ─── Document ─── */}
         <div className="flex-1 min-w-0">
-          <div className="bg-white shadow-xl rounded-xl p-10 min-h-[calc(100vh-8rem)]">
-
+          <div className="bg-surface shadow-xl rounded-xl p-10 min-h-[calc(100vh-8rem)]">
             {/* Title */}
             {!locked ? (
               <AutoTextarea
@@ -990,41 +1045,45 @@ export function MenuDocEditor({
                 onChange={handleMenuName}
                 placeholder="Menu title…"
                 minRows={1}
-                className="w-full text-[2rem] leading-tight font-bold text-stone-900 bg-transparent border-none outline-none placeholder:text-stone-300 mb-1 py-0 block"
+                className="w-full text-[2rem] leading-tight font-bold text-stone-100 bg-transparent border-none outline-none placeholder:text-stone-300 mb-1 py-0 block"
               />
             ) : (
-              <h1 className="text-[2rem] leading-tight font-bold text-stone-900 mb-1">{menuName}</h1>
+              <h1 className="text-[2rem] leading-tight font-bold text-stone-100 mb-1">
+                {menuName}
+              </h1>
             )}
 
             {/* Metadata row */}
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 mb-10 pb-6 border-b border-stone-100">
-
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 mb-10 pb-6 border-b border-stone-800">
               {/* Cuisine */}
               <div className="relative">
                 {!locked ? (
                   <>
                     <input
                       value={cuisineType}
-                      onChange={e => handleCuisineType(e.target.value)}
+                      onChange={(e) => handleCuisineType(e.target.value)}
                       onFocus={() => setShowCuisineSuggestions(true)}
                       onBlur={() => setTimeout(() => setShowCuisineSuggestions(false), 150)}
                       placeholder="Cuisine type"
-                      className="text-sm text-stone-500 border-b border-dashed border-stone-300 bg-transparent outline-none focus:border-brand-400 focus:text-stone-800 pb-0.5 min-w-[100px] max-w-[180px] transition-colors"
+                      className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 focus:text-stone-200 pb-0.5 min-w-[100px] max-w-[180px] transition-colors"
                     />
                     {showCuisineSuggestions && (
-                      <div className="absolute left-0 top-full z-10 bg-white border border-stone-200 rounded-lg shadow-lg mt-1 py-1 max-h-48 overflow-y-auto min-w-[160px]">
-                        {CUISINE_SUGGESTIONS
-                          .filter(s => !cuisineType || s.toLowerCase().includes(cuisineType.toLowerCase()))
-                          .map(s => (
-                            <button
-                              type="button"
-                              key={s}
-                              onMouseDown={() => { handleCuisineType(s); setShowCuisineSuggestions(false) }}
-                              className="block w-full text-left px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-50"
-                            >
-                              {s}
-                            </button>
-                          ))}
+                      <div className="absolute left-0 top-full z-10 bg-surface border border-stone-700 rounded-lg shadow-lg mt-1 py-1 max-h-48 overflow-y-auto min-w-[160px]">
+                        {CUISINE_SUGGESTIONS.filter(
+                          (s) => !cuisineType || s.toLowerCase().includes(cuisineType.toLowerCase())
+                        ).map((s) => (
+                          <button
+                            type="button"
+                            key={s}
+                            onMouseDown={() => {
+                              handleCuisineType(s)
+                              setShowCuisineSuggestions(false)
+                            }}
+                            className="block w-full text-left px-3 py-1.5 text-sm text-stone-400 hover:bg-stone-800"
+                          >
+                            {s}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </>
@@ -1039,13 +1098,15 @@ export function MenuDocEditor({
               {!locked ? (
                 <select
                   value={serviceStyle}
-                  onChange={e => handleServiceStyle(e.target.value)}
+                  onChange={(e) => handleServiceStyle(e.target.value)}
                   title="Service style"
-                  className="text-sm text-stone-500 border-b border-dashed border-stone-300 bg-transparent outline-none focus:border-brand-400 pb-0.5 appearance-none cursor-pointer transition-colors"
+                  className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 pb-0.5 appearance-none cursor-pointer transition-colors"
                 >
                   <option value="">Service style</option>
                   {Object.entries(SERVICE_STYLE_LABELS).map(([v, l]) => (
-                    <option key={v} value={v}>{l}</option>
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
                   ))}
                 </select>
               ) : (
@@ -1056,7 +1117,9 @@ export function MenuDocEditor({
                 )
               )}
 
-              {(cuisineType || serviceStyle) && guestCount && <span className="text-stone-300 text-sm">·</span>}
+              {(cuisineType || serviceStyle) && guestCount && (
+                <span className="text-stone-300 text-sm">·</span>
+              )}
 
               {/* Guest count */}
               {!locked ? (
@@ -1064,48 +1127,48 @@ export function MenuDocEditor({
                   <input
                     type="number"
                     value={guestCount}
-                    onChange={e => handleGuestCount(e.target.value)}
+                    onChange={(e) => handleGuestCount(e.target.value)}
                     placeholder="—"
                     min="1"
-                    className="text-sm text-stone-500 border-b border-dashed border-stone-300 bg-transparent outline-none focus:border-brand-400 w-10 pb-0.5 transition-colors"
+                    className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 w-10 pb-0.5 transition-colors"
                   />
                   <span className="text-sm text-stone-400">guests</span>
                 </div>
               ) : (
-                guestCount && (
-                  <span className="text-sm text-stone-500">{guestCount} guests</span>
-                )
+                guestCount && <span className="text-sm text-stone-500">{guestCount} guests</span>
               )}
             </div>
 
             {/* ── Simple mode ── */}
             {simpleMode ? (
               <div className="space-y-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 flex items-start gap-3">
+                <div className="bg-blue-950 border border-blue-200 rounded-lg px-4 py-3 flex items-start gap-3">
                   <span className="text-blue-500 text-lg leading-none">✎</span>
                   <div>
                     <p className="text-sm font-medium text-blue-800">Freeform text mode</p>
                     <p className="text-xs text-blue-600 mt-0.5">
-                      Write your menu as freeform text or paste it in directly.
-                      Switch back anytime — your structured courses will still be there.
+                      Write your menu as freeform text or paste it in directly. Switch back anytime
+                      — your structured courses will still be there.
                     </p>
                   </div>
                 </div>
                 <textarea
                   value={simpleContent}
-                  onChange={e => handleSimpleContent(e.target.value)}
+                  onChange={(e) => handleSimpleContent(e.target.value)}
                   disabled={locked}
                   placeholder={`Write your menu here…\n\nSTARTER\nAutumn Beet Salad — goat cheese, candied walnuts, honey vinaigrette\n\nMAIN\nGrass-fed Filet Mignon — truffle jus, pommes purée, haricots verts\n\nDESSERT\nValrhona Chocolate Fondant — crème anglaise, raspberry coulis`}
-                  className="w-full min-h-[420px] text-sm text-stone-700 bg-stone-50 border border-stone-200 rounded-xl px-6 py-5 outline-none focus:ring-2 focus:ring-brand-200 leading-relaxed font-mono resize-none"
+                  className="w-full min-h-[420px] text-sm text-stone-300 bg-stone-800 border border-stone-700 rounded-xl px-6 py-5 outline-none focus:ring-2 focus:ring-brand-700 leading-relaxed font-mono resize-none"
                 />
               </div>
             ) : (
               /* ── Structured editor ── */
               <div className="space-y-10">
                 {dishes.length === 0 && !locked && (
-                  <div className="text-center py-16 text-stone-400 border-2 border-dashed border-stone-200 rounded-xl">
+                  <div className="text-center py-16 text-stone-400 border-2 border-dashed border-stone-700 rounded-xl">
                     <p className="text-base font-medium mb-1">No courses yet</p>
-                    <p className="text-sm">Add your first course below to start building the menu</p>
+                    <p className="text-sm">
+                      Add your first course below to start building the menu
+                    </p>
                   </div>
                 )}
                 {locked && dishes.length === 0 && (

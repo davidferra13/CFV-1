@@ -21,14 +21,14 @@ export default async function InsurancePoliciesPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Insurance Policies</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Insurance Policies</h1>
         <p className="mt-1 text-sm text-stone-500">
           Document your coverage — general liability, food contamination, workers&apos; comp, and
           umbrella policies. Staying current protects you, your clients, and your business.
         </p>
       </div>
 
-      <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+      <div className="rounded-lg border border-blue-200 bg-blue-950 px-4 py-3">
         <p className="text-sm text-blue-900">
           Set expiry reminders so you never lapse on coverage. Clients increasingly ask for proof of
           insurance before booking — keep your certificates accessible here.

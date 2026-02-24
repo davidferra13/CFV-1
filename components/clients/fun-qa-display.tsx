@@ -15,15 +15,14 @@ export function FunQADisplay({ answers, clientName }: FunQADisplayProps) {
 
   if (filled.length === 0) {
     return (
-      <Card className="border-dashed border-2 border-stone-200">
+      <Card className="border-dashed border-2 border-stone-700">
         <CardHeader>
           <CardTitle className="text-lg">Just for Fun</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-400 italic">
-            {clientName.split(' ')[0]} hasn&apos;t answered the fun Q&amp;A yet. Once they do,
-            their personality will show up here — great inspiration for tailoring
-            the next invite.
+            {clientName.split(' ')[0]} hasn&apos;t answered the fun Q&amp;A yet. Once they do, their
+            personality will show up here — great inspiration for tailoring the next invite.
           </p>
         </CardContent>
       </Card>
@@ -35,13 +34,13 @@ export function FunQADisplay({ answers, clientName }: FunQADisplayProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">Just for Fun</CardTitle>
-          <span className="text-xs font-medium bg-stone-100 text-stone-600 rounded-full px-2.5 py-1">
+          <span className="text-xs font-medium bg-stone-800 text-stone-400 rounded-full px-2.5 py-1">
             {filled.length}/{FUN_QA_QUESTIONS.length} answered
           </span>
         </div>
         <p className="text-sm text-stone-500 mt-1">
-          Answered by {clientName.split(' ')[0]} — use these to craft a
-          personalised re-engagement message or plan their next experience.
+          Answered by {clientName.split(' ')[0]} — use these to craft a personalised re-engagement
+          message or plan their next experience.
         </p>
       </CardHeader>
 
@@ -53,7 +52,7 @@ export function FunQADisplay({ answers, clientName }: FunQADisplayProps) {
                 <span>{q.emoji}</span>
                 <span>{q.question}</span>
               </dt>
-              <dd className="text-sm text-stone-800 bg-stone-50 rounded-lg px-3 py-2">
+              <dd className="text-sm text-stone-200 bg-stone-800 rounded-lg px-3 py-2">
                 {answers[q.key]}
               </dd>
             </div>

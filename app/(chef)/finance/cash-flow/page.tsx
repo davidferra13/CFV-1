@@ -14,16 +14,20 @@ export default async function CashFlowPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">&larr; Finance</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Cash Flow Forecast</h1>
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
+          &larr; Finance
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Cash Flow Forecast</h1>
         <p className="text-stone-500 mt-1">Projected income and expenses over the next 30 days</p>
       </div>
 
       {forecast ? (
         <CashFlowChart initialForecast={forecast} />
       ) : (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
-          <p className="text-stone-500 text-sm">Cash flow forecast is not available at this time.</p>
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
+          <p className="text-stone-500 text-sm">
+            Cash flow forecast is not available at this time.
+          </p>
         </div>
       )}
     </div>

@@ -16,8 +16,8 @@ export function SeasonalPaleteSidebar({ month }: Props) {
   return (
     <Card className="sticky top-8">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-stone-100">
-        <h3 className="font-display text-lg text-stone-900">Seasonal Palate</h3>
+      <div className="px-5 py-4 border-b border-stone-800">
+        <h3 className="font-display text-lg text-stone-100">Seasonal Palate</h3>
         <p className="text-xs text-stone-500 mt-0.5">{seasonLabel}</p>
       </div>
 
@@ -42,14 +42,14 @@ export function SeasonalPaleteSidebar({ month }: Props) {
                     key={item.name}
                     className={
                       item.peak
-                        ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-brand-50 text-brand-700 ring-1 ring-inset ring-brand-200'
-                        : 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-stone-50 text-stone-600 ring-1 ring-inset ring-stone-200'
+                        ? 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-brand-950 text-brand-400 ring-1 ring-inset ring-brand-700'
+                        : 'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-stone-800 text-stone-400 ring-1 ring-inset ring-stone-700'
                     }
                     title={item.note ?? `${item.name} — ${item.peak ? 'peak season' : 'available'}`}
                   >
                     {item.name}
                     {item.peak && (
-                      <span className="w-1 h-1 rounded-full bg-brand-500 flex-shrink-0" />
+                      <span className="w-1 h-1 rounded-full bg-brand-9500 flex-shrink-0" />
                     )}
                   </span>
                 ))}
@@ -59,10 +59,10 @@ export function SeasonalPaleteSidebar({ month }: Props) {
         })}
 
         {/* Legend */}
-        <div className="pt-3 border-t border-stone-100">
+        <div className="pt-3 border-t border-stone-800">
           <div className="flex items-center gap-3 text-[10px] text-stone-400">
             <span className="flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-brand-500" />
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-9500" />
               Peak season
             </span>
             <span>Gray = available</span>

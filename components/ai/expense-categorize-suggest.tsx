@@ -61,10 +61,10 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
   const label = EXPENSE_CATEGORY_LABELS[result.category]
   const confidenceColor =
     result.confidence === 'high'
-      ? 'text-green-700 bg-green-50 border-green-200'
+      ? 'text-green-700 bg-green-950 border-green-200'
       : result.confidence === 'medium'
-        ? 'text-amber-700 bg-amber-50 border-amber-200'
-        : 'text-stone-500 bg-stone-50 border-stone-200'
+        ? 'text-amber-700 bg-amber-950 border-amber-200'
+        : 'text-stone-500 bg-stone-800 border-stone-700'
 
   return (
     <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export function ExpenseCategorizeSuggest({ description, amountCents, onAccept }:
       {result.alternativeCategory && (
         <button
           onClick={() => onAccept(result.alternativeCategory!)}
-          className="text-[11px] text-stone-400 hover:text-stone-600"
+          className="text-[11px] text-stone-400 hover:text-stone-400"
           title="Alternative suggestion"
         >
           or {EXPENSE_CATEGORY_LABELS[result.alternativeCategory]}

@@ -4,7 +4,7 @@ type Stat = { label: string; value: number; color: string }
 
 export function SocialQueueSummaryBar({ summary }: { summary: SocialQueueSummary }) {
   const stats: Stat[] = [
-    { label: 'Total Posts', value: summary.totalPosts, color: 'text-stone-700' },
+    { label: 'Total Posts', value: summary.totalPosts, color: 'text-stone-300' },
     { label: 'Ideas', value: summary.byStatus.idea ?? 0, color: 'text-stone-500' },
     { label: 'Drafts', value: summary.byStatus.draft ?? 0, color: 'text-amber-600' },
     { label: 'Approved', value: summary.byStatus.approved ?? 0, color: 'text-sky-600' },
@@ -16,7 +16,10 @@ export function SocialQueueSummaryBar({ summary }: { summary: SocialQueueSummary
   return (
     <div className="grid grid-cols-4 sm:grid-cols-7 gap-3">
       {stats.map(({ label, value, color }) => (
-        <div key={label} className="bg-white rounded-lg border border-stone-200 px-3 py-3 text-center">
+        <div
+          key={label}
+          className="bg-surface rounded-lg border border-stone-700 px-3 py-3 text-center"
+        >
           <div className={`text-2xl font-bold ${color}`}>{value}</div>
           <div className="text-xs text-stone-500 mt-0.5 leading-tight">{label}</div>
         </div>

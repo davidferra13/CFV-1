@@ -19,7 +19,13 @@ type Props = {
   eventId: string
 }
 
-export function ContractSigningClient({ contractId, bodyMarkdown, status, signedAt, eventId }: Props) {
+export function ContractSigningClient({
+  contractId,
+  bodyMarkdown,
+  status,
+  signedAt,
+  eventId,
+}: Props) {
   const router = useRouter()
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | null>(null)
   const [agreed, setAgreed] = useState(false)
@@ -53,7 +59,7 @@ export function ContractSigningClient({ contractId, bodyMarkdown, status, signed
 
   if (status === 'voided') {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center space-y-2">
+      <div className="rounded-xl border border-red-200 bg-red-950 p-6 text-center space-y-2">
         <ContractStatusBadge status="voided" />
         <p className="text-sm text-red-700">
           This contract has been voided. Please contact your chef for an updated agreement.
@@ -67,7 +73,7 @@ export function ContractSigningClient({ contractId, bodyMarkdown, status, signed
 
   if (done) {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center space-y-3">
+      <div className="rounded-xl border border-green-200 bg-green-950 p-6 text-center space-y-3">
         <div className="text-4xl">✓</div>
         <ContractStatusBadge status="signed" />
         <p className="text-sm text-green-700 font-medium">
@@ -81,7 +87,7 @@ export function ContractSigningClient({ contractId, bodyMarkdown, status, signed
             href={`/api/documents/contract/${contractId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-lg border border-stone-300 bg-white px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="inline-flex items-center rounded-lg border border-stone-600 bg-surface px-4 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800"
           >
             Download PDF
           </a>
@@ -96,15 +102,15 @@ export function ContractSigningClient({ contractId, bodyMarkdown, status, signed
   return (
     <div className="space-y-6">
       {/* Contract body — rendered as plain markdown text, readable without a parser */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6">
-        <pre className="whitespace-pre-wrap font-sans text-sm text-stone-800 leading-relaxed">
+      <div className="rounded-xl border border-stone-700 bg-surface p-6">
+        <pre className="whitespace-pre-wrap font-sans text-sm text-stone-200 leading-relaxed">
           {bodyMarkdown}
         </pre>
       </div>
 
       {/* Signature section */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6 space-y-4">
-        <h2 className="text-base font-semibold text-stone-900">Your Signature</h2>
+      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
+        <h2 className="text-base font-semibold text-stone-100">Your Signature</h2>
         <SignaturePad onChange={setSignatureDataUrl} />
 
         <div className="flex items-start gap-3">
@@ -113,9 +119,9 @@ export function ContractSigningClient({ contractId, bodyMarkdown, status, signed
             id="agree"
             checked={agreed}
             onChange={(e) => setAgreed(e.target.checked)}
-            className="mt-1 rounded border-stone-300"
+            className="mt-1 rounded border-stone-600"
           />
-          <label htmlFor="agree" className="text-sm text-stone-700">
+          <label htmlFor="agree" className="text-sm text-stone-300">
             I have read and agree to all terms in this Service Agreement. I understand this is a
             legally binding document.
           </label>

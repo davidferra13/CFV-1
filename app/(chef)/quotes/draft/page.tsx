@@ -18,12 +18,12 @@ export default async function DraftQuotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/quotes" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/quotes" className="text-sm text-stone-500 hover:text-stone-300">
           ← All Quotes
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Draft Quotes</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Draft Quotes</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {quotes.length}
           </span>
         </div>
@@ -32,14 +32,18 @@ export default async function DraftQuotesPage() {
 
       {quotes.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No draft quotes</p>
-          <p className="text-stone-400 text-sm mb-4">Quotes you&apos;re working on will appear here</p>
+          <p className="text-stone-400 font-medium mb-1">No draft quotes</p>
+          <p className="text-stone-400 text-sm mb-4">
+            Quotes you&apos;re working on will appear here
+          </p>
           <div className="flex gap-3 justify-center">
             <Link href="/quotes/new">
               <Button size="sm">+ New Quote</Button>
             </Link>
             <Link href="/quotes">
-              <Button variant="secondary" size="sm">View All Quotes</Button>
+              <Button variant="secondary" size="sm">
+                View All Quotes
+              </Button>
             </Link>
           </div>
         </Card>
@@ -51,19 +55,19 @@ export default async function DraftQuotesPage() {
               <Link
                 key={quote.id}
                 href={`/quotes/${quote.id}`}
-                className="block rounded-lg border border-stone-200 p-4 hover:shadow-sm transition-all hover:bg-stone-50"
+                className="block rounded-lg border border-stone-700 p-4 hover:shadow-sm transition-all hover:bg-stone-800"
               >
                 <div className="flex justify-between items-start gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-stone-900">{clientName}</span>
+                      <span className="font-medium text-stone-100">{clientName}</span>
                       <QuoteStatusBadge status={quote.status as any} />
                       {quote.pricing_model && (
                         <PricingModelBadge model={quote.pricing_model as any} />
                       )}
                     </div>
                     {quote.quote_name && (
-                      <p className="text-sm text-stone-600 mt-1">{quote.quote_name}</p>
+                      <p className="text-sm text-stone-400 mt-1">{quote.quote_name}</p>
                     )}
                     {quote.inquiry?.confirmed_occasion && (
                       <p className="text-xs text-stone-500 mt-1">
@@ -72,12 +76,13 @@ export default async function DraftQuotesPage() {
                     )}
                   </div>
                   <div className="text-right flex-shrink-0">
-                    <p className="text-lg font-semibold text-stone-900">
+                    <p className="text-lg font-semibold text-stone-100">
                       {formatCurrency(quote.total_quoted_cents)}
                     </p>
                     {quote.price_per_person_cents && quote.guest_count_estimated && (
                       <p className="text-xs text-stone-500">
-                        {formatCurrency(quote.price_per_person_cents)}/person x {quote.guest_count_estimated}
+                        {formatCurrency(quote.price_per_person_cents)}/person x{' '}
+                        {quote.guest_count_estimated}
                       </p>
                     )}
                     <p className="text-xs text-stone-400 mt-1">

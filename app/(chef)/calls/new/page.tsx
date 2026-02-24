@@ -33,7 +33,7 @@ export default function NewCallPage({ searchParams }: Props) {
         </p>
       </div>
 
-      <div className="bg-white rounded-xl border shadow-sm p-6">
+      <div className="bg-surface rounded-xl border shadow-sm p-6">
         <CallForm
           defaultClientId={searchParams.client_id}
           defaultClientName={searchParams.client_name}

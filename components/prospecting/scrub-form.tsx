@@ -58,14 +58,14 @@ export function ScrubForm() {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             What prospects are you looking for?
           </label>
           <textarea
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={`Type anything, e.g.:\n• "Top 50 wealthiest business owners in Massachusetts"\n• "All yacht clubs on Cape Cod"\n• "Top 100 car dealerships in Maine"\n• "Luxury wedding planners in the Hamptons"`}
-            className="w-full h-32 rounded-lg border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 resize-none"
+            className="w-full h-32 rounded-lg border border-stone-600 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 resize-none"
             disabled={isPending}
           />
         </div>
@@ -76,7 +76,7 @@ export function ScrubForm() {
             <button
               key={preset.label}
               onClick={() => applyPreset(preset.query)}
-              className="px-3 py-1 text-xs rounded-full border border-stone-200 text-stone-600 hover:bg-stone-50 hover:border-stone-300 transition-colors"
+              className="px-3 py-1 text-xs rounded-full border border-stone-700 text-stone-400 hover:bg-stone-800 hover:border-stone-600 transition-colors"
               disabled={isPending}
             >
               {preset.label}
@@ -113,8 +113,8 @@ export function ScrubForm() {
           <div
             className={`p-4 rounded-lg text-sm ${
               result.success
-                ? 'bg-green-50 border border-green-200 text-green-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
+                ? 'bg-green-950 border border-green-200 text-green-800'
+                : 'bg-red-950 border border-red-200 text-red-800'
             }`}
           >
             {result.success ? (
@@ -134,25 +134,25 @@ export function ScrubForm() {
         )}
 
         {/* How It Works — always visible */}
-        <div className="rounded-lg bg-stone-50 border border-stone-200 p-4 space-y-3">
-          <h4 className="text-sm font-medium text-stone-700">How AI Scrub Works</h4>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-stone-600">
+        <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 space-y-3">
+          <h4 className="text-sm font-medium text-stone-300">How AI Scrub Works</h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-stone-400">
             <div className="space-y-1">
-              <p className="font-medium text-stone-800">Phase 1: Generate</p>
+              <p className="font-medium text-stone-200">Phase 1: Generate</p>
               <p>
                 Ollama (local AI) generates a list of real businesses or individuals matching your
                 query. Up to 10 prospects per scrub.
               </p>
             </div>
             <div className="space-y-1">
-              <p className="font-medium text-stone-800">Phase 2: Enrich</p>
+              <p className="font-medium text-stone-200">Phase 2: Enrich</p>
               <p>
                 For the top 5, the system searches the public web for their actual website, phone
                 number, email, and social profiles.
               </p>
             </div>
             <div className="space-y-1">
-              <p className="font-medium text-stone-800">Phase 3: Strategize</p>
+              <p className="font-medium text-stone-200">Phase 3: Strategize</p>
               <p>
                 AI writes personalized talking points and an approach strategy for each prospect so
                 you sound prepared when you call.

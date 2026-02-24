@@ -49,10 +49,10 @@ export default function PricingPage() {
       {/* Page Header */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">
             One plan. Everything included.
           </h1>
-          <p className="text-lg md:text-xl text-stone-600">No hidden fees. Cancel anytime.</p>
+          <p className="text-lg md:text-xl text-stone-400">No hidden fees. Cancel anytime.</p>
         </div>
       </section>
 
@@ -62,16 +62,16 @@ export default function PricingPage() {
           <Card className="border-2 border-brand-500 shadow-xl">
             <CardHeader className="text-center pb-8 pt-8">
               <div className="mb-4">
-                <span className="inline-block px-4 py-1 bg-brand-100 text-brand-700 text-sm font-semibold rounded-full">
+                <span className="inline-block px-4 py-1 bg-brand-900 text-brand-400 text-sm font-semibold rounded-full">
                   EVERYTHING YOU NEED
                 </span>
               </div>
               <CardTitle className="text-2xl mb-4">Everything You Need</CardTitle>
               <div className="mb-2">
-                <span className="text-5xl font-bold text-stone-900">$29</span>
-                <span className="text-stone-600 text-lg">/month</span>
+                <span className="text-5xl font-bold text-stone-100">$29</span>
+                <span className="text-stone-400 text-lg">/month</span>
               </div>
-              <p className="text-sm text-stone-600">14-day free trial included</p>
+              <p className="text-sm text-stone-400">14-day free trial included</p>
             </CardHeader>
             <CardContent className="space-y-4">
               <ul className="space-y-3 mb-8">
@@ -87,7 +87,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Unlimited events &amp; clients</span>
+                  <span className="text-stone-300">Unlimited events &amp; clients</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -101,7 +101,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">
+                  <span className="text-stone-300">
                     Inquiry-to-payout pipeline — track every step
                   </span>
                 </li>
@@ -117,7 +117,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Menus, recipes &amp; food costing</span>
+                  <span className="text-stone-300">Menus, recipes &amp; food costing</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -131,7 +131,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Invoices, payments &amp; expense tracking</span>
+                  <span className="text-stone-300">Invoices, payments &amp; expense tracking</span>
                 </li>
                 <li className="flex items-start">
                   <svg
@@ -145,7 +145,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">
+                  <span className="text-stone-300">
                     Client portal — proposals, approvals &amp; messaging
                   </span>
                 </li>
@@ -161,7 +161,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">
+                  <span className="text-stone-300">
                     Auto-generated documents when milestones hit
                   </span>
                 </li>
@@ -177,7 +177,7 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">
+                  <span className="text-stone-300">
                     Prep lists, shopping lists &amp; kitchen ops
                   </span>
                 </li>
@@ -193,13 +193,13 @@ export default function PricingPage() {
                       clipRule="evenodd"
                     />
                   </svg>
-                  <span className="text-stone-700">Calendar, scheduling &amp; email support</span>
+                  <span className="text-stone-300">Calendar, scheduling &amp; email support</span>
                 </li>
               </ul>
               <p className="text-xs text-stone-500 text-center mb-2">No credit card required</p>
               <Link
                 href="/auth/signup"
-                className="block w-full bg-brand-500 text-white text-center px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium"
+                className="block w-full bg-brand-9500 text-white text-center px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium"
               >
                 Start your 14-day trial
               </Link>
@@ -212,23 +212,23 @@ export default function PricingPage() {
       <section className="py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-stone-900 mb-4">
+            <h2 className="text-3xl font-bold text-stone-100 mb-4">
               Ready to ditch the spreadsheets?
             </h2>
-            <p className="text-lg text-stone-600 mb-8">
+            <p className="text-lg text-stone-400 mb-8">
               Built by a chef who got tired of juggling it all — join the chefs who let ChefFlow
               handle the admin
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/auth/signup"
-                className="w-full sm:w-auto bg-brand-500 text-white px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium text-center"
+                className="w-full sm:w-auto bg-brand-9500 text-white px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium text-center"
               >
                 Start your 14-day trial
               </Link>
               <Link
                 href="/contact"
-                className="w-full sm:w-auto bg-white text-stone-700 px-8 py-3 rounded-md hover:bg-stone-50 transition-colors font-medium border border-stone-300 text-center"
+                className="w-full sm:w-auto bg-surface text-stone-300 px-8 py-3 rounded-md hover:bg-stone-800 transition-colors font-medium border border-stone-600 text-center"
               >
                 Contact Us
               </Link>
@@ -238,10 +238,10 @@ export default function PricingPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="bg-stone-50 py-16 md:py-24">
+      <section className="bg-stone-800 py-16 md:py-24">
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold text-stone-900 mb-8 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold text-stone-100 mb-8 text-center">
               Frequently Asked Questions
             </h2>
             <div className="space-y-4">
@@ -249,11 +249,11 @@ export default function PricingPage() {
                 <Card key={index} className="overflow-hidden">
                   <button
                     onClick={() => toggleFaq(index)}
-                    className="w-full text-left px-6 py-4 hover:bg-stone-50 transition-colors"
+                    className="w-full text-left px-6 py-4 hover:bg-stone-800 transition-colors"
                     aria-expanded={openFaq === index}
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="text-lg font-semibold text-stone-900 pr-8">{faq.question}</h3>
+                      <h3 className="text-lg font-semibold text-stone-100 pr-8">{faq.question}</h3>
                       <svg
                         className={`w-5 h-5 text-stone-500 flex-shrink-0 transition-transform ${
                           openFaq === index ? 'transform rotate-180' : ''
@@ -273,7 +273,7 @@ export default function PricingPage() {
                   </button>
                   {openFaq === index && (
                     <div className="px-6 pb-4">
-                      <p className="text-stone-600">{faq.answer}</p>
+                      <p className="text-stone-400">{faq.answer}</p>
                     </div>
                   )}
                 </Card>

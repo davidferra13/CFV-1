@@ -30,7 +30,7 @@ function trendLabel(trend: HolidayYoYRow['trend']): string {
 export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
   if (rows.length === 0) {
     return (
-      <div className="rounded-lg border border-stone-200 bg-stone-50 p-6 text-center">
+      <div className="rounded-lg border border-stone-700 bg-stone-800 p-6 text-center">
         <p className="text-stone-500 text-sm">
           No holiday booking data yet. Complete events near major holidays to see year-over-year
           trends.
@@ -42,9 +42,9 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
   const years = [currentYear - 2, currentYear - 1, currentYear]
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
-      <div className="px-5 py-4 border-b border-stone-100">
-        <h3 className="text-sm font-semibold text-stone-900">Holiday Bookings — Year Over Year</h3>
+    <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
+      <div className="px-5 py-4 border-b border-stone-800">
+        <h3 className="text-sm font-semibold text-stone-100">Holiday Bookings — Year Over Year</h3>
         <p className="text-xs text-stone-500 mt-0.5">
           Events within ±3 weeks of each holiday. High-relevance holidays only.
         </p>
@@ -53,7 +53,7 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-100 bg-stone-50">
+            <tr className="border-b border-stone-800 bg-stone-800">
               <th className="text-left px-5 py-3 text-xs font-semibold text-stone-500 uppercase tracking-wide">
                 Holiday
               </th>
@@ -76,20 +76,20 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
           <tbody className="divide-y divide-stone-50">
             {rows.map((row) => {
               return (
-                <tr key={row.holidayName} className="hover:bg-stone-50 transition-colors">
-                  <td className="px-5 py-3 font-medium text-stone-800">{row.holidayName}</td>
+                <tr key={row.holidayName} className="hover:bg-stone-800 transition-colors">
+                  <td className="px-5 py-3 font-medium text-stone-200">{row.holidayName}</td>
                   {years.map((y) => {
                     const stat = row.years.find((s) => s.year === y)
                     const isCurrentYear = y === currentYear
                     return (
                       <td
                         key={y}
-                        className={`px-4 py-3 text-center ${isCurrentYear ? 'bg-amber-50/40' : ''}`}
+                        className={`px-4 py-3 text-center ${isCurrentYear ? 'bg-amber-950/40' : ''}`}
                       >
                         {stat && stat.eventCount > 0 ? (
                           <div>
                             <div
-                              className={`font-semibold ${isCurrentYear ? 'text-amber-800' : 'text-stone-700'}`}
+                              className={`font-semibold ${isCurrentYear ? 'text-amber-800' : 'text-stone-300'}`}
                             >
                               {stat.eventCount} event{stat.eventCount !== 1 ? 's' : ''}
                             </div>

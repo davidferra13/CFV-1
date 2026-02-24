@@ -22,7 +22,7 @@ export function CapacityWarningBanner({ warnings }: Props) {
   return (
     <div
       className={`rounded-lg border px-4 py-3 ${
-        hasHardWarning ? 'bg-amber-50 border-amber-200' : 'bg-blue-50 border-blue-200'
+        hasHardWarning ? 'bg-amber-950 border-amber-200' : 'bg-blue-950 border-blue-200'
       }`}
     >
       <div className="flex items-start gap-2">

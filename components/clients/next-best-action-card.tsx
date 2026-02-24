@@ -5,30 +5,33 @@ import Link from 'next/link'
 import { ArrowRight, MessageCircle, Calendar, RefreshCw, Gift, Sparkles, Heart } from 'lucide-react'
 import type { NextBestAction } from '@/lib/clients/next-best-action'
 
-const ACTION_ICONS: Record<NextBestAction['actionType'], React.ComponentType<{ className?: string }>> = {
-  reply_inquiry:    MessageCircle,
-  follow_up_quote:  MessageCircle,
-  re_engage:        RefreshCw,
-  schedule_event:   Calendar,
+const ACTION_ICONS: Record<
+  NextBestAction['actionType'],
+  React.ComponentType<{ className?: string }>
+> = {
+  reply_inquiry: MessageCircle,
+  follow_up_quote: MessageCircle,
+  re_engage: RefreshCw,
+  schedule_event: Calendar,
   request_feedback: Heart,
-  send_birthday:    Gift,
-  ask_referral:     Sparkles,
-  reach_out:        MessageCircle,
-  none:             ArrowRight,
+  send_birthday: Gift,
+  ask_referral: Sparkles,
+  reach_out: MessageCircle,
+  none: ArrowRight,
 }
 
 const URGENCY_STYLES: Record<NextBestAction['urgency'], string> = {
-  critical: 'border-red-200 bg-red-50',
-  high:     'border-amber-200 bg-amber-50',
-  normal:   'border-brand-200 bg-brand-50/40',
-  low:      'border-stone-200 bg-stone-50',
+  critical: 'border-red-200 bg-red-950',
+  high: 'border-amber-200 bg-amber-950',
+  normal: 'border-brand-700 bg-brand-50/40',
+  low: 'border-stone-200 bg-stone-50',
 }
 
 const URGENCY_ICON_COLOR: Record<NextBestAction['urgency'], string> = {
   critical: 'text-red-500',
-  high:     'text-amber-500',
-  normal:   'text-brand-500',
-  low:      'text-stone-400',
+  high: 'text-amber-500',
+  normal: 'text-brand-500',
+  low: 'text-stone-400',
 }
 
 interface Props {

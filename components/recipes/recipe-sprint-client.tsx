@@ -106,13 +106,13 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
     return (
       <div className="max-w-2xl mx-auto text-center space-y-6 py-12">
         <div className="flex justify-center">
-          <div className="rounded-full bg-green-100 p-6">
+          <div className="rounded-full bg-green-900 p-6">
             <CheckCircle className="h-16 w-16 text-emerald-600" />
           </div>
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-stone-900">Recipe Book is up to date</h2>
-          <p className="text-stone-600 mt-2">
+          <h2 className="text-2xl font-bold text-stone-100">Recipe Book is up to date</h2>
+          <p className="text-stone-400 mt-2">
             {doneCount > 0
               ? `You just captured ${doneCount} recipe${doneCount !== 1 ? 's' : ''}. Your future self will thank you.`
               : 'Nothing left to record — all dishes have recipes.'}
@@ -135,14 +135,14 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
       {/* Progress bar */}
       <div className="space-y-2">
         <div className="flex justify-between items-center text-sm">
-          <span className="font-medium text-stone-700">
+          <span className="font-medium text-stone-300">
             {doneCount} captured · {remaining} remaining
           </span>
           <span className="text-stone-500">{progressPercent}%</span>
         </div>
-        <div className="h-2 bg-stone-200 rounded-full overflow-hidden">
+        <div className="h-2 bg-stone-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-brand-500 rounded-full transition-all duration-300"
+            className="h-full bg-brand-9500 rounded-full transition-all duration-300"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -159,7 +159,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
 
       {/* Current component card */}
       {current && (
-        <Card className="border-brand-300 shadow-sm">
+        <Card className="border-brand-600 shadow-sm">
           <CardHeader>
             <div className="flex items-start justify-between gap-3">
               <div className="space-y-1">
@@ -176,7 +176,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
                   <ChevronRight className="h-3.5 w-3.5" />
                   <Link
                     href={`/events/${current.eventId}`}
-                    className="text-brand-600 hover:text-brand-700"
+                    className="text-brand-600 hover:text-brand-400"
                     target="_blank"
                   >
                     View event
@@ -192,7 +192,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
 
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 {aiConfigured
                   ? 'Describe how you make it — ingredients, method, anything you remember'
                   : 'Describe the method (will save as-is)'}
@@ -217,7 +217,7 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
               <button
                 onClick={handleSkip}
                 disabled={loading}
-                className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-300 disabled:opacity-50"
               >
                 <SkipForward className="h-3.5 w-3.5" />
                 Skip for now (come back later)
@@ -247,9 +247,9 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
           {queue.slice(1, 4).map((item, i) => (
             <div
               key={`${item.componentId}-${i}`}
-              className="flex items-center gap-2 px-3 py-2 bg-stone-50 rounded-lg text-sm text-stone-500"
+              className="flex items-center gap-2 px-3 py-2 bg-stone-800 rounded-lg text-sm text-stone-500"
             >
-              <span className="font-medium text-stone-700">{item.componentName}</span>
+              <span className="font-medium text-stone-300">{item.componentName}</span>
               <span className="text-stone-400">·</span>
               <span>{item.eventOccasion || 'Event'}</span>
               <span className="text-stone-400">·</span>
@@ -262,11 +262,11 @@ export function RecipeSprintClient({ initialItems, aiConfigured }: Props) {
         </div>
       )}
 
-      <div className="flex justify-between items-center pt-2 border-t border-stone-100">
-        <Link href="/dashboard" className="text-sm text-stone-500 hover:text-stone-700">
+      <div className="flex justify-between items-center pt-2 border-t border-stone-800">
+        <Link href="/dashboard" className="text-sm text-stone-500 hover:text-stone-300">
           Done for today
         </Link>
-        <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/recipes" className="text-sm text-stone-500 hover:text-stone-300">
           View Recipe Book
         </Link>
       </div>

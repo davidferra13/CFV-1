@@ -3,21 +3,28 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
 export const metadata: Metadata = { title: 'Event History - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-stone-200 text-stone-500',
-  in_progress: 'bg-blue-100 text-blue-700',
-  confirmed: 'bg-teal-100 text-teal-700',
-  paid: 'bg-emerald-100 text-emerald-700',
-  accepted: 'bg-sky-100 text-sky-700',
-  proposed: 'bg-amber-100 text-amber-700',
-  draft: 'bg-stone-100 text-stone-600',
+  completed: 'bg-green-900 text-green-700',
+  cancelled: 'bg-stone-700 text-stone-500',
+  in_progress: 'bg-blue-900 text-blue-700',
+  confirmed: 'bg-teal-900 text-teal-700',
+  paid: 'bg-emerald-900 text-emerald-700',
+  accepted: 'bg-sky-900 text-sky-700',
+  proposed: 'bg-amber-900 text-amber-700',
+  draft: 'bg-stone-800 text-stone-400',
 }
 
 export default async function EventHistoryPage() {
@@ -25,31 +32,33 @@ export default async function EventHistoryPage() {
   const events = await getEvents()
 
   const pastEvents = events
-    .filter(e => new Date(e.event_date) < new Date())
+    .filter((e) => new Date(e.event_date) < new Date())
     .sort((a, b) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime())
 
-  const completedEvents = pastEvents.filter(e => e.status === 'completed')
+  const completedEvents = pastEvents.filter((e) => e.status === 'completed')
   const totalRevenue = completedEvents.reduce((sum, e) => sum + (e.quoted_price_cents ?? 0), 0)
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/clients/history" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients/history" className="text-sm text-stone-500 hover:text-stone-300">
           ← Client History
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Event History</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Event History</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {pastEvents.length}
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Complete timeline of all past events across every client</p>
+        <p className="text-stone-500 mt-1">
+          Complete timeline of all past events across every client
+        </p>
       </div>
 
       {pastEvents.length > 0 && (
         <div className="grid grid-cols-3 gap-4">
           <Card className="p-4">
-            <p className="text-2xl font-bold text-stone-900">{pastEvents.length}</p>
+            <p className="text-2xl font-bold text-stone-100">{pastEvents.length}</p>
             <p className="text-sm text-stone-500 mt-1">Past events</p>
           </Card>
           <Card className="p-4">
@@ -65,7 +74,7 @@ export default async function EventHistoryPage() {
 
       {pastEvents.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No past events yet</p>
+          <p className="text-stone-400 font-medium mb-1">No past events yet</p>
           <p className="text-stone-400 text-sm">Completed events will appear here</p>
         </Card>
       ) : (
@@ -83,33 +92,46 @@ export default async function EventHistoryPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pastEvents.map(event => (
+              {pastEvents.map((event) => (
                 <TableRow key={event.id}>
-                  <TableCell className="text-stone-600 text-sm whitespace-nowrap">
+                  <TableCell className="text-stone-400 text-sm whitespace-nowrap">
                     {format(new Date(event.event_date), 'MMM d, yyyy')}
                   </TableCell>
                   <TableCell className="font-medium">
                     {event.client ? (
-                      <Link href={`/clients/${event.client.id}`} className="text-brand-600 hover:text-brand-800 hover:underline">
+                      <Link
+                        href={`/clients/${event.client.id}`}
+                        className="text-brand-600 hover:text-brand-300 hover:underline"
+                      >
                         {event.client.full_name}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm capitalize">
+                  <TableCell className="text-stone-400 text-sm capitalize">
                     {event.occasion?.replace(/_/g, ' ') ?? '—'}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{event.guest_count ?? '—'}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">
+                    {event.guest_count ?? '—'}
+                  </TableCell>
                   <TableCell>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[event.status] ?? 'bg-stone-100 text-stone-600'}`}>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[event.status] ?? 'bg-stone-800 text-stone-400'}`}
+                    >
                       {event.status.replace(/_/g, ' ')}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
-                    {event.quoted_price_cents != null ? formatCurrency(event.quoted_price_cents) : '—'}
+                  <TableCell className="text-stone-400 text-sm">
+                    {event.quoted_price_cents != null
+                      ? formatCurrency(event.quoted_price_cents)
+                      : '—'}
                   </TableCell>
                   <TableCell>
                     <Link href={`/events/${event.id}`}>
-                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">View</span>
+                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">
+                        View
+                      </span>
                     </Link>
                   </TableCell>
                 </TableRow>

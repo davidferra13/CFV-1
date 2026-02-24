@@ -9,8 +9,8 @@ export default async function ReportsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Custom Reports</h1>
-        <p className="text-stone-600 mt-1">Build your own reports and visualizations</p>
+        <h1 className="text-3xl font-bold text-stone-100">Custom Reports</h1>
+        <p className="text-stone-400 mt-1">Build your own reports and visualizations</p>
       </div>
       <CustomReportBuilder />
     </div>

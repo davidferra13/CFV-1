@@ -14,9 +14,20 @@ import { parseRecipeFromText } from '@/lib/ai/parse-recipe'
 import type { ParsedRecipe, ParsedIngredient } from '@/lib/ai/parse-recipe'
 
 const RECIPE_CATEGORIES = [
-  'sauce', 'protein', 'starch', 'vegetable', 'fruit', 'dessert',
-  'bread', 'pasta', 'soup', 'salad', 'appetizer', 'condiment',
-  'beverage', 'other'
+  'sauce',
+  'protein',
+  'starch',
+  'vegetable',
+  'fruit',
+  'dessert',
+  'bread',
+  'pasta',
+  'soup',
+  'salad',
+  'appetizer',
+  'condiment',
+  'beverage',
+  'other',
 ]
 
 type IngredientRow = {
@@ -63,7 +74,14 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
   const [yieldUnit, setYieldUnit] = useState('')
   const [dietaryTags, setDietaryTags] = useState('')
   const [ingredients, setIngredients] = useState<IngredientRow[]>([
-    { name: '', quantity: 1, unit: '', category: 'other', preparation_notes: '', is_optional: false }
+    {
+      name: '',
+      quantity: 1,
+      unit: '',
+      category: 'other',
+      preparation_notes: '',
+      is_optional: false,
+    },
   ])
 
   // Smart Import: parse
@@ -101,7 +119,16 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               preparation_notes: ing.preparation_notes || '',
               is_optional: ing.is_optional,
             }))
-          : [{ name: '', quantity: 1, unit: '', category: 'other', preparation_notes: '', is_optional: false }]
+          : [
+              {
+                name: '',
+                quantity: 1,
+                unit: '',
+                category: 'other',
+                preparation_notes: '',
+                is_optional: false,
+              },
+            ]
       )
     } catch (err: any) {
       setError(err.message || 'Failed to parse recipe')
@@ -112,7 +139,17 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
 
   // Add ingredient row
   const addIngredientRow = () => {
-    setIngredients([...ingredients, { name: '', quantity: 1, unit: '', category: 'other', preparation_notes: '', is_optional: false }])
+    setIngredients([
+      ...ingredients,
+      {
+        name: '',
+        quantity: 1,
+        unit: '',
+        category: 'other',
+        preparation_notes: '',
+        is_optional: false,
+      },
+    ])
   }
 
   // Remove ingredient row
@@ -122,7 +159,11 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
   }
 
   // Update ingredient row
-  const updateIngredientRow = (index: number, field: keyof IngredientRow, value: string | number | boolean) => {
+  const updateIngredientRow = (
+    index: number,
+    field: keyof IngredientRow,
+    value: string | number | boolean
+  ) => {
     const updated = [...ingredients]
     updated[index] = { ...updated[index], [field]: value }
     setIngredients(updated)
@@ -149,16 +190,22 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
         notes: notes.trim() || undefined,
         prep_time_minutes: prepTime ? parseInt(prepTime) : undefined,
         cook_time_minutes: cookTime ? parseInt(cookTime) : undefined,
-        total_time_minutes: (prepTime && cookTime) ? parseInt(prepTime) + parseInt(cookTime) : undefined,
+        total_time_minutes:
+          prepTime && cookTime ? parseInt(prepTime) + parseInt(cookTime) : undefined,
         yield_quantity: yieldQty ? parseFloat(yieldQty) : undefined,
         yield_unit: yieldUnit.trim() || undefined,
-        dietary_tags: dietaryTags ? dietaryTags.split(',').map(t => t.trim()).filter(Boolean) : undefined,
+        dietary_tags: dietaryTags
+          ? dietaryTags
+              .split(',')
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : undefined,
       })
 
       const recipeId = result.recipe.id
 
       // Add ingredients
-      const validIngredients = ingredients.filter(ing => ing.name.trim())
+      const validIngredients = ingredients.filter((ing) => ing.name.trim())
       for (let i = 0; i < validIngredients.length; i++) {
         const ing = validIngredients[i]
         await addIngredientToRecipe(recipeId, {
@@ -202,7 +249,16 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
     setYieldQty('')
     setYieldUnit('')
     setDietaryTags('')
-    setIngredients([{ name: '', quantity: 1, unit: '', category: 'other', preparation_notes: '', is_optional: false }])
+    setIngredients([
+      {
+        name: '',
+        quantity: 1,
+        unit: '',
+        category: 'other',
+        preparation_notes: '',
+        is_optional: false,
+      },
+    ])
   }
 
   return (
@@ -210,9 +266,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">New Recipe</h1>
+          <h1 className="text-3xl font-bold text-stone-100">New Recipe</h1>
           {prefillComponent && (
-            <p className="text-stone-600 mt-1">Recording recipe for: {prefillComponent.name}</p>
+            <p className="text-stone-400 mt-1">Recording recipe for: {prefillComponent.name}</p>
           )}
         </div>
         <Link href="/recipes">
@@ -223,13 +279,16 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
       {error && <Alert variant="error">{error}</Alert>}
 
       {/* Mode Tabs */}
-      <div className="flex gap-1 border-b border-stone-200">
+      <div className="flex gap-1 border-b border-stone-700">
         <button
-          onClick={() => { setMode('import'); setPhase('input') }}
+          onClick={() => {
+            setMode('import')
+            setPhase('input')
+          }}
           className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
             mode === 'import'
-              ? 'border-brand-500 text-brand-700'
-              : 'border-transparent text-stone-500 hover:text-stone-700'
+              ? 'border-brand-500 text-brand-400'
+              : 'border-transparent text-stone-500 hover:text-stone-300'
           }`}
         >
           Smart Import
@@ -238,8 +297,8 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
           onClick={() => setMode('manual')}
           className={`px-4 py-2 text-sm font-medium border-b-2 -mb-px ${
             mode === 'manual'
-              ? 'border-brand-500 text-brand-700'
-              : 'border-transparent text-stone-500 hover:text-stone-700'
+              ? 'border-brand-500 text-brand-400'
+              : 'border-transparent text-stone-500 hover:text-stone-300'
           }`}
         >
           Manual Entry
@@ -266,10 +325,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               disabled={!aiConfigured || loading}
             />
             <div className="flex gap-3">
-              <Button
-                onClick={handleParse}
-                disabled={!aiConfigured || !rawText.trim() || loading}
-              >
+              <Button onClick={handleParse} disabled={!aiConfigured || !rawText.trim() || loading}>
                 {loading ? 'Parsing...' : 'Parse Recipe'}
               </Button>
               <Button variant="ghost" onClick={() => setRawText('')} disabled={loading}>
@@ -284,7 +340,11 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
       {mode === 'import' && phase === 'review' && parsed && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <Badge variant={confidence === 'high' ? 'success' : confidence === 'medium' ? 'warning' : 'error'}>
+            <Badge
+              variant={
+                confidence === 'high' ? 'success' : confidence === 'medium' ? 'warning' : 'error'
+              }
+            >
               {confidence} confidence
             </Badge>
             {warnings.length > 0 && (
@@ -294,11 +354,13 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
 
           {warnings.length > 0 && (
             <Alert variant="warning">
-              {warnings.map((w, i) => <p key={i}>{w}</p>)}
+              {warnings.map((w, i) => (
+                <p key={i}>{w}</p>
+              ))}
             </Alert>
           )}
 
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-stone-400">
             Review and edit the parsed recipe below, then save.
           </p>
         </div>
@@ -315,7 +377,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
                     Recipe Name <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -326,16 +388,18 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
                     Category <span className="text-red-500">*</span>
                   </label>
                   <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm bg-white"
+                    className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-surface"
                   >
-                    {RECIPE_CATEGORIES.map(cat => (
-                      <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    {RECIPE_CATEGORIES.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -343,7 +407,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
 
               {description !== undefined && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Description
+                  </label>
                   <Input
                     type="text"
                     value={description}
@@ -354,7 +420,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Method</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Method</label>
                 <Textarea
                   value={method}
                   onChange={(e) => setMethod(e.target.value)}
@@ -364,7 +430,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Detailed Method</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">
+                  Detailed Method
+                </label>
                 <Textarea
                   value={methodDetailed}
                   onChange={(e) => setMethodDetailed(e.target.value)}
@@ -375,7 +443,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Prep (min)</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Prep (min)
+                  </label>
                   <Input
                     type="number"
                     value={prepTime}
@@ -384,7 +454,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Cook (min)</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Cook (min)
+                  </label>
                   <Input
                     type="number"
                     value={cookTime}
@@ -393,7 +465,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Yield</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Yield</label>
                   <Input
                     type="number"
                     value={yieldQty}
@@ -403,7 +475,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Yield Unit</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Yield Unit
+                  </label>
                   <Input
                     type="text"
                     value={yieldUnit}
@@ -414,7 +488,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Dietary Tags</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">
+                  Dietary Tags
+                </label>
                 <Input
                   type="text"
                   value={dietaryTags}
@@ -424,7 +500,7 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
                 <Textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
@@ -450,7 +526,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                 {ingredients.map((ing, index) => (
                   <div key={index} className="flex gap-2 items-start">
                     <div className="flex-1 min-w-[140px]">
-                      {index === 0 && <label className="block text-xs text-stone-500 mb-1">Name</label>}
+                      {index === 0 && (
+                        <label className="block text-xs text-stone-500 mb-1">Name</label>
+                      )}
                       <Input
                         type="text"
                         value={ing.name}
@@ -459,16 +537,22 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                       />
                     </div>
                     <div className="w-20">
-                      {index === 0 && <label className="block text-xs text-stone-500 mb-1">Qty</label>}
+                      {index === 0 && (
+                        <label className="block text-xs text-stone-500 mb-1">Qty</label>
+                      )}
                       <Input
                         type="number"
                         value={ing.quantity}
-                        onChange={(e) => updateIngredientRow(index, 'quantity', parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          updateIngredientRow(index, 'quantity', parseFloat(e.target.value) || 0)
+                        }
                         step="0.25"
                       />
                     </div>
                     <div className="w-24">
-                      {index === 0 && <label className="block text-xs text-stone-500 mb-1">Unit</label>}
+                      {index === 0 && (
+                        <label className="block text-xs text-stone-500 mb-1">Unit</label>
+                      )}
                       <Input
                         type="text"
                         value={ing.unit}
@@ -477,16 +561,22 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
                       />
                     </div>
                     <div className="w-28">
-                      {index === 0 && <label className="block text-xs text-stone-500 mb-1">Prep</label>}
+                      {index === 0 && (
+                        <label className="block text-xs text-stone-500 mb-1">Prep</label>
+                      )}
                       <Input
                         type="text"
                         value={ing.preparation_notes}
-                        onChange={(e) => updateIngredientRow(index, 'preparation_notes', e.target.value)}
+                        onChange={(e) =>
+                          updateIngredientRow(index, 'preparation_notes', e.target.value)
+                        }
                         placeholder="diced, etc."
                       />
                     </div>
                     <div className="flex items-end pb-1">
-                      {index === 0 && <label className="block text-xs text-stone-500 mb-1">&nbsp;</label>}
+                      {index === 0 && (
+                        <label className="block text-xs text-stone-500 mb-1">&nbsp;</label>
+                      )}
                       <button
                         onClick={() => removeIngredientRow(index)}
                         className="p-2 text-stone-400 hover:text-red-500"
@@ -510,7 +600,9 @@ export function CreateRecipeClient({ aiConfigured, prefillComponent }: Props) {
             )}
             <div className="flex gap-3 ml-auto">
               <Link href="/recipes">
-                <Button variant="ghost" disabled={loading}>Cancel</Button>
+                <Button variant="ghost" disabled={loading}>
+                  Cancel
+                </Button>
               </Link>
               <Button onClick={handleSave} disabled={loading || !name.trim()}>
                 {loading ? 'Saving...' : 'Save Recipe'}

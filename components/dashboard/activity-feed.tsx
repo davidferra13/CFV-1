@@ -56,9 +56,7 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
         <ActorBadge type={event.actor_type} />
         <span className="text-stone-700 truncate">
           {description}
-          {event.entity_type && (
-            <span className="text-stone-400"> ({event.entity_type})</span>
-          )}
+          {event.entity_type && <span className="text-stone-400"> ({event.entity_type})</span>}
         </span>
       </div>
       <span className="text-stone-400 shrink-0 ml-2">{timeAgo}</span>
@@ -73,8 +71,8 @@ function ActivityRow({ event }: { event: ActivityEvent }) {
 
 function ActorBadge({ type }: { type: string }) {
   const config: Record<string, { bg: string; label: string }> = {
-    client: { bg: 'bg-blue-100 text-blue-700', label: 'Client' },
-    chef: { bg: 'bg-emerald-100 text-emerald-700', label: 'Chef' },
+    client: { bg: 'bg-blue-900 text-blue-700', label: 'Client' },
+    chef: { bg: 'bg-emerald-900 text-emerald-700', label: 'Chef' },
     system: { bg: 'bg-stone-100 text-stone-600', label: 'System' },
   }
   const c = config[type] || config.system

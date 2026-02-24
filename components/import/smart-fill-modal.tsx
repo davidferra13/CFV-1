@@ -22,7 +22,7 @@ export function SmartFillModal<T>({
   onFill,
   parseFn,
   title,
-  placeholder
+  placeholder,
 }: SmartFillModalProps<T>) {
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
@@ -63,25 +63,25 @@ export function SmartFillModal<T>({
       <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
       {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 space-y-4">
+      <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-stone-900">{title}</h3>
+          <h3 className="text-lg font-semibold text-stone-100">{title}</h3>
           <button
             onClick={handleClose}
-            className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+            className="text-stone-400 hover:text-stone-400 text-xl leading-none"
           >
             &times;
           </button>
         </div>
 
-        {error && (
-          <Alert variant="error">{error}</Alert>
-        )}
+        {error && <Alert variant="error">{error}</Alert>}
 
         {warnings.length > 0 && (
           <Alert variant="warning">
             <ul className="list-disc list-inside">
-              {warnings.map((w, i) => <li key={i}>{w}</li>)}
+              {warnings.map((w, i) => (
+                <li key={i}>{w}</li>
+              ))}
             </ul>
           </Alert>
         )}

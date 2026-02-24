@@ -68,7 +68,7 @@ export function CrossContaminationChecklist({ eventId, allergens, checklist }: P
 
       {/* Hard gate warning if incomplete */}
       {!allComplete && items.length > 0 && (
-        <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-3 py-2">
+        <div className="flex items-start gap-2 rounded-md border border-red-300 bg-red-950 px-3 py-2">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-red-600" />
           <p className="text-xs font-medium text-red-800">
             Cannot skip cross-contamination protocol when allergens are flagged.

@@ -15,9 +15,14 @@ import {
 } from '@/lib/contracts/actions'
 
 const MERGE_FIELDS = [
-  '{{client_name}}', '{{event_date}}', '{{quoted_price}}',
-  '{{deposit_amount}}', '{{cancellation_policy}}',
-  '{{occasion}}', '{{guest_count}}', '{{event_location}}',
+  '{{client_name}}',
+  '{{event_date}}',
+  '{{quoted_price}}',
+  '{{deposit_amount}}',
+  '{{cancellation_policy}}',
+  '{{occasion}}',
+  '{{guest_count}}',
+  '{{event_location}}',
 ]
 
 type Template = {
@@ -28,7 +33,7 @@ type Template = {
 }
 
 type Props = {
-  template?: Template   // if provided, we're editing; otherwise creating
+  template?: Template // if provided, we're editing; otherwise creating
   onDone?: () => void
 }
 
@@ -70,7 +75,7 @@ export function ContractTemplateEditor({ template, onDone }: Props) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Template name</label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">Template name</label>
         <Input
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -80,7 +85,7 @@ export function ContractTemplateEditor({ template, onDone }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
+        <label className="block text-sm font-medium text-stone-300 mb-1">
           Contract body <span className="text-stone-400">(Markdown)</span>
         </label>
         <div className="mb-2 flex flex-wrap gap-1">
@@ -89,7 +94,7 @@ export function ContractTemplateEditor({ template, onDone }: Props) {
               key={f}
               type="button"
               onClick={() => insertMergeField(f)}
-              className="rounded bg-amber-100 px-2 py-0.5 text-xs font-mono text-amber-800 hover:bg-amber-200 transition-colors"
+              className="rounded bg-amber-900 px-2 py-0.5 text-xs font-mono text-amber-800 hover:bg-amber-200 transition-colors"
             >
               {f}
             </button>
@@ -100,7 +105,7 @@ export function ContractTemplateEditor({ template, onDone }: Props) {
           onChange={(e) => setBody(e.target.value)}
           rows={18}
           required
-          className="w-full rounded-lg border border-stone-300 p-3 font-mono text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
+          className="w-full rounded-lg border border-stone-600 p-3 font-mono text-sm text-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500 resize-y"
           placeholder="Write your contract in Markdown. Use {{merge_fields}} for dynamic values."
         />
         <p className="mt-1 text-xs text-stone-400">
@@ -114,9 +119,9 @@ export function ContractTemplateEditor({ template, onDone }: Props) {
           id="is_default"
           checked={isDefault}
           onChange={(e) => setIsDefault(e.target.checked)}
-          className="rounded border-stone-300"
+          className="rounded border-stone-600"
         />
-        <label htmlFor="is_default" className="text-sm text-stone-700">
+        <label htmlFor="is_default" className="text-sm text-stone-300">
           Use as default template for new contracts
         </label>
       </div>

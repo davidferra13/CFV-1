@@ -71,33 +71,33 @@ export function EmbedCodePanel({ chefId }: Props) {
   return (
     <div className="space-y-6">
       {/* ── How It Works ── */}
-      <div className="rounded-xl border border-brand-200 bg-brand-50/40 p-5">
-        <h2 className="text-lg font-semibold text-brand-900 mb-2">How It Works</h2>
+      <div className="rounded-xl border border-brand-700 bg-brand-950/40 p-5">
+        <h2 className="text-lg font-semibold text-brand-200 mb-2">How It Works</h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
           <div className="flex gap-3">
-            <div className="flex-none w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
+            <div className="flex-none w-8 h-8 rounded-full bg-brand-900 flex items-center justify-center text-brand-400 font-bold text-sm">
               1
             </div>
             <div>
-              <p className="font-medium text-stone-900">Copy your code</p>
+              <p className="font-medium text-stone-100">Copy your code</p>
               <p className="text-stone-500">Customize the look, then copy the snippet below.</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <div className="flex-none w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
+            <div className="flex-none w-8 h-8 rounded-full bg-brand-900 flex items-center justify-center text-brand-400 font-bold text-sm">
               2
             </div>
             <div>
-              <p className="font-medium text-stone-900">Paste on your site</p>
+              <p className="font-medium text-stone-100">Paste on your site</p>
               <p className="text-stone-500">Add it to your Wix, Squarespace, or WordPress page.</p>
             </div>
           </div>
           <div className="flex gap-3">
-            <div className="flex-none w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
+            <div className="flex-none w-8 h-8 rounded-full bg-brand-900 flex items-center justify-center text-brand-400 font-bold text-sm">
               3
             </div>
             <div>
-              <p className="font-medium text-stone-900">Leads flow in</p>
+              <p className="font-medium text-stone-100">Leads flow in</p>
               <p className="text-stone-500">
                 Submissions appear in your ChefFlow inquiry pipeline.
               </p>
@@ -107,23 +107,23 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Widget Configuration ── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-5">
-        <h2 className="text-lg font-semibold text-stone-900 flex items-center gap-2">
+      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-5">
+        <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
           <Palette className="h-5 w-5 text-stone-400" />
           Customize Your Widget
         </h2>
 
         {/* Mode */}
         <div>
-          <label className="text-sm font-medium text-stone-700 block mb-2">Display Mode</label>
+          <label className="text-sm font-medium text-stone-300 block mb-2">Display Mode</label>
           <div className="grid grid-cols-2 gap-3">
             <button
               type="button"
               onClick={() => setMode('inline')}
               className={`p-3 rounded-lg border text-left transition-colors ${
                 mode === 'inline'
-                  ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-400'
-                  : 'border-stone-200 hover:border-stone-300'
+                  ? 'border-brand-400 bg-brand-950 ring-1 ring-brand-400'
+                  : 'border-stone-700 hover:border-stone-600'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -137,8 +137,8 @@ export function EmbedCodePanel({ chefId }: Props) {
               onClick={() => setMode('popup')}
               className={`p-3 rounded-lg border text-left transition-colors ${
                 mode === 'popup'
-                  ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-400'
-                  : 'border-stone-200 hover:border-stone-300'
+                  ? 'border-brand-400 bg-brand-950 ring-1 ring-brand-400'
+                  : 'border-stone-700 hover:border-stone-600'
               }`}
             >
               <div className="flex items-center gap-2 mb-1">
@@ -154,15 +154,15 @@ export function EmbedCodePanel({ chefId }: Props) {
 
         {/* Theme */}
         <div>
-          <label className="text-sm font-medium text-stone-700 block mb-2">Theme</label>
+          <label className="text-sm font-medium text-stone-300 block mb-2">Theme</label>
           <div className="flex gap-3">
             <button
               type="button"
               onClick={() => setTheme('light')}
               className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 theme === 'light'
-                  ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-400'
-                  : 'border-stone-200 hover:border-stone-300'
+                  ? 'border-brand-400 bg-brand-950 ring-1 ring-brand-400'
+                  : 'border-stone-700 hover:border-stone-600'
               }`}
             >
               Light
@@ -172,8 +172,8 @@ export function EmbedCodePanel({ chefId }: Props) {
               onClick={() => setTheme('dark')}
               className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 theme === 'dark'
-                  ? 'border-brand-400 bg-brand-50 ring-1 ring-brand-400'
-                  : 'border-stone-200 hover:border-stone-300'
+                  ? 'border-brand-400 bg-brand-950 ring-1 ring-brand-400'
+                  : 'border-stone-700 hover:border-stone-600'
               }`}
             >
               Dark
@@ -183,7 +183,7 @@ export function EmbedCodePanel({ chefId }: Props) {
 
         {/* Accent Color */}
         <div>
-          <label className="text-sm font-medium text-stone-700 block mb-2">Accent Color</label>
+          <label className="text-sm font-medium text-stone-300 block mb-2">Accent Color</label>
           <div className="flex flex-wrap gap-2 mb-2">
             {PRESET_COLORS.map((c) => (
               <button
@@ -214,10 +214,10 @@ export function EmbedCodePanel({ chefId }: Props) {
                   setAccent(e.target.value)
                 }
               }}
-              className="px-3 py-1.5 border border-stone-200 rounded-lg text-sm w-44"
+              className="px-3 py-1.5 border border-stone-700 rounded-lg text-sm w-44"
             />
             <div
-              className="w-6 h-6 rounded-full border border-stone-300"
+              className="w-6 h-6 rounded-full border border-stone-600"
               style={{ backgroundColor: accent }}
             />
           </div>
@@ -226,28 +226,28 @@ export function EmbedCodePanel({ chefId }: Props) {
         {/* Button Text (popup only) */}
         {mode === 'popup' && (
           <div>
-            <label className="text-sm font-medium text-stone-700 block mb-2">Button Text</label>
+            <label className="text-sm font-medium text-stone-300 block mb-2">Button Text</label>
             <input
               type="text"
               value={buttonText}
               onChange={(e) => setButtonText(e.target.value)}
               maxLength={40}
-              className="px-3 py-2 border border-stone-200 rounded-lg text-sm w-full max-w-xs"
+              className="px-3 py-2 border border-stone-700 rounded-lg text-sm w-full max-w-xs"
             />
           </div>
         )}
       </div>
 
       {/* ── Embed Code ── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-stone-900 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
             <Code2 className="h-5 w-5 text-stone-400" />
             Your Embed Code
           </h2>
           <button
             onClick={() => handleCopy(embedCode)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-brand-9500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
           >
             {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
             {copied ? 'Copied!' : 'Copy Code'}
@@ -263,8 +263,8 @@ export function EmbedCodePanel({ chefId }: Props) {
         </p>
 
         {/* Alternative: Direct iframe */}
-        <details className="border border-stone-200 rounded-lg">
-          <summary className="px-4 py-2.5 text-sm font-medium text-stone-700 cursor-pointer hover:bg-stone-50">
+        <details className="border border-stone-700 rounded-lg">
+          <summary className="px-4 py-2.5 text-sm font-medium text-stone-300 cursor-pointer hover:bg-stone-800">
             Alternative: Direct iframe embed (for platforms that block external scripts)
           </summary>
           <div className="px-4 pb-4 space-y-3">
@@ -277,7 +277,7 @@ export function EmbedCodePanel({ chefId }: Props) {
             </pre>
             <button
               onClick={() => handleCopy(iframeDirectCode)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-300 text-stone-700 text-xs font-medium hover:bg-stone-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-600 text-stone-300 text-xs font-medium hover:bg-stone-800 transition-colors"
             >
               <Copy className="h-3 w-3" />
               Copy iframe Code
@@ -287,13 +287,13 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Preview ── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900 flex items-center gap-2">
+      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+        <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
           <Globe className="h-5 w-5 text-stone-400" />
           Live Preview
         </h2>
         <div
-          className="rounded-xl overflow-hidden border border-stone-200"
+          className="rounded-xl overflow-hidden border border-stone-700"
           style={{ backgroundColor: theme === 'dark' ? '#1c1917' : '#f5f5f4' }}
         >
           <iframe
@@ -305,8 +305,8 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Platform-Specific Guides ── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Setup Guides by Platform</h2>
+      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+        <h2 className="text-lg font-semibold text-stone-100">Setup Guides by Platform</h2>
         <p className="text-sm text-stone-500">
           Click your website platform for step-by-step instructions.
         </p>
@@ -439,26 +439,26 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Troubleshooting ── */}
-      <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Troubleshooting</h2>
+      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+        <h2 className="text-lg font-semibold text-stone-100">Troubleshooting</h2>
 
         <div className="space-y-3 text-sm">
           <div>
-            <p className="font-medium text-stone-900">The form doesn&apos;t appear on my page</p>
+            <p className="font-medium text-stone-100">The form doesn&apos;t appear on my page</p>
             <p className="text-stone-500 mt-0.5">
               Try the iframe alternative code. Some platforms block external JavaScript but allow
               iframes. Also check that you&apos;ve published the page after adding the code.
             </p>
           </div>
           <div>
-            <p className="font-medium text-stone-900">The form is cut off or too short</p>
+            <p className="font-medium text-stone-100">The form is cut off or too short</p>
             <p className="text-stone-500 mt-0.5">
               Increase the height of the embed container. The form needs at least 900px of height.
               On Wix, drag the embed box corners to make it taller.
             </p>
           </div>
           <div>
-            <p className="font-medium text-stone-900">
+            <p className="font-medium text-stone-100">
               I submitted a test but it didn&apos;t appear in ChefFlow
             </p>
             <p className="text-stone-500 mt-0.5">
@@ -468,14 +468,14 @@ export function EmbedCodePanel({ chefId }: Props) {
             </p>
           </div>
           <div>
-            <p className="font-medium text-stone-900">The colors don&apos;t match my website</p>
+            <p className="font-medium text-stone-100">The colors don&apos;t match my website</p>
             <p className="text-stone-500 mt-0.5">
               Use the accent color picker above to match your brand color. Enter your exact hex code
               for a perfect match. The widget will use this color for buttons and highlights.
             </p>
           </div>
           <div>
-            <p className="font-medium text-stone-900">
+            <p className="font-medium text-stone-100">
               The popup button overlaps with something on my site
             </p>
             <p className="text-stone-500 mt-0.5">
@@ -487,7 +487,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── What Happens After ── */}
-      <div className="rounded-xl border border-emerald-200 bg-emerald-50/40 p-5 space-y-3">
+      <div className="rounded-xl border border-emerald-200 bg-emerald-950/40 p-5 space-y-3">
         <h2 className="text-lg font-semibold text-emerald-900">
           What Happens When Someone Submits
         </h2>
@@ -537,21 +537,21 @@ function PlatformGuide({
   tips?: string[]
 }) {
   return (
-    <div className="border border-stone-200 rounded-lg overflow-hidden">
+    <div className="border border-stone-700 rounded-lg overflow-hidden">
       <button
         type="button"
         onClick={onToggle}
-        className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-stone-50 transition-colors"
+        className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-stone-800 transition-colors"
       >
-        <span className="font-medium text-sm text-stone-900">{name}</span>
+        <span className="font-medium text-sm text-stone-100">{name}</span>
         <span className="text-stone-400 text-lg">{isOpen ? '−' : '+'}</span>
       </button>
       {isOpen && (
-        <div className="px-4 pb-4 border-t border-stone-100">
+        <div className="px-4 pb-4 border-t border-stone-800">
           <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mt-3 mb-2">
             Step-by-Step
           </h4>
-          <ol className="text-sm text-stone-700 space-y-2 list-decimal list-inside">
+          <ol className="text-sm text-stone-300 space-y-2 list-decimal list-inside">
             {steps.map((step, i) => (
               <li key={i} className="leading-relaxed">
                 {step}
@@ -564,7 +564,7 @@ function PlatformGuide({
               <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wide mt-4 mb-2">
                 Tips
               </h4>
-              <ul className="text-sm text-stone-600 space-y-1.5 list-disc list-inside">
+              <ul className="text-sm text-stone-400 space-y-1.5 list-disc list-inside">
                 {tips.map((tip, i) => (
                   <li key={i} className="leading-relaxed">
                     {tip}

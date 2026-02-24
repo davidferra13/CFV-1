@@ -78,7 +78,7 @@ export function RetainerBillingTimeline({ periods, retainerId }: RetainerBilling
   return (
     <div className="space-y-3">
       {error && (
-        <div className="p-3 bg-red-50 text-red-700 text-sm rounded-lg border border-red-200">
+        <div className="p-3 bg-red-950 text-red-700 text-sm rounded-lg border border-red-200">
           {error}
         </div>
       )}
@@ -88,7 +88,7 @@ export function RetainerBillingTimeline({ periods, retainerId }: RetainerBilling
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-sm font-medium text-stone-900">
+                <span className="text-sm font-medium text-stone-100">
                   {formatDate(period.period_start)} &ndash; {formatDate(period.period_end)}
                 </span>
                 <PeriodStatusBadge status={period.status} />
@@ -140,16 +140,16 @@ export function RetainerBillingTimeline({ periods, retainerId }: RetainerBilling
 
           {/* Inline payment form */}
           {payingPeriodId === period.id && (
-            <div className="mt-3 pt-3 border-t border-stone-100 space-y-3">
+            <div className="mt-3 pt-3 border-t border-stone-800 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                  <label className="block text-xs font-medium text-stone-400 mb-1">
                     Payment Method
                   </label>
                   <select
                     value={paymentMethod}
                     onChange={(e) => setPaymentMethod(e.target.value)}
-                    className="w-full rounded-lg border border-stone-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-lg border border-stone-600 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   >
                     {PAYMENT_METHODS.map((m) => (
                       <option key={m.value} value={m.value}>
@@ -159,7 +159,7 @@ export function RetainerBillingTimeline({ periods, retainerId }: RetainerBilling
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-stone-600 mb-1">
+                  <label className="block text-xs font-medium text-stone-400 mb-1">
                     Notes <span className="text-stone-400">(optional)</span>
                   </label>
                   <input
@@ -167,7 +167,7 @@ export function RetainerBillingTimeline({ periods, retainerId }: RetainerBilling
                     value={paymentNotes}
                     onChange={(e) => setPaymentNotes(e.target.value)}
                     placeholder="Reference, memo..."
-                    className="w-full rounded-lg border border-stone-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-lg border border-stone-600 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
               </div>

@@ -54,12 +54,12 @@ export function FileAARButton() {
           <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
+          <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-stone-900">File Event Review</h3>
+              <h3 className="text-lg font-semibold text-stone-100">File Event Review</h3>
               <button
                 onClick={handleClose}
-                className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+                className="text-stone-400 hover:text-stone-400 text-xl leading-none"
               >
                 &times;
               </button>
@@ -72,13 +72,13 @@ export function FileAARButton() {
             {error && <Alert variant="error">{error}</Alert>}
 
             {/* Event List */}
-            <div className="max-h-72 overflow-y-auto border border-stone-200 rounded-lg divide-y divide-stone-100">
+            <div className="max-h-72 overflow-y-auto border border-stone-700 rounded-lg divide-y divide-stone-800">
               {loading ? (
                 <div className="p-8 text-center text-sm text-stone-400">Loading events...</div>
               ) : events.length === 0 ? (
                 <div className="p-8 text-center">
                   <ClipboardCheck className="w-10 h-10 text-green-300 mx-auto mb-2" />
-                  <p className="text-sm font-medium text-stone-700">All caught up!</p>
+                  <p className="text-sm font-medium text-stone-300">All caught up!</p>
                   <p className="text-xs text-stone-400 mt-1">No completed events need AARs.</p>
                 </div>
               ) : (
@@ -86,11 +86,11 @@ export function FileAARButton() {
                   <button
                     key={event.id}
                     onClick={() => handleSelect(event.id)}
-                    className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors"
+                    className="w-full text-left px-4 py-3 hover:bg-stone-800 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-stone-900 text-sm truncate">
+                        <div className="font-medium text-stone-100 text-sm truncate">
                           {event.occasion || 'Untitled Event'}
                         </div>
                         <div className="text-xs text-stone-500 mt-0.5">

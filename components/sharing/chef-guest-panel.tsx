@@ -102,7 +102,8 @@ export function ChefGuestPanel({
   if (guests.length === 0 && !eventShareId) {
     return (
       <p className="text-sm text-stone-500">
-        No share link has been created for this event yet. The client can create one from their event page.
+        No share link has been created for this event yet. The client can create one from their
+        event page.
       </p>
     )
   }
@@ -113,18 +114,18 @@ export function ChefGuestPanel({
       {summary.total_guests > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-sm font-medium text-stone-700">RSVP Progress</h4>
+            <h4 className="text-sm font-medium text-stone-300">RSVP Progress</h4>
             <span className="text-xs text-stone-500">
               {summary.total_guests - summary.pending_count} of {summary.total_guests} responded
             </span>
           </div>
 
           {/* Progress bar */}
-          <div className="w-full bg-stone-100 rounded-full h-3 overflow-hidden mb-3">
+          <div className="w-full bg-stone-800 rounded-full h-3 overflow-hidden mb-3">
             <div className="h-full flex">
               {summary.attending_count > 0 && (
                 <div
-                  className="bg-emerald-500 h-full"
+                  className="bg-emerald-9500 h-full"
                   style={{ width: `${(summary.attending_count / summary.total_guests) * 100}%` }}
                 />
               )}
@@ -158,33 +159,38 @@ export function ChefGuestPanel({
               <span className="text-stone-500 ml-1">Declined</span>
             </div>
             <div>
-              <span className="font-bold text-stone-700">{summary.pending_count}</span>
+              <span className="font-bold text-stone-300">{summary.pending_count}</span>
               <span className="text-stone-500 ml-1">Pending</span>
             </div>
           </div>
 
           {/* Effective vs estimated */}
           {originalGuestCount && (
-            <div className="mt-2 px-3 py-2 bg-stone-50 rounded-lg text-xs text-stone-600">
-              Effective headcount: <span className="font-semibold text-stone-900">{effectiveAttending}</span>
+            <div className="mt-2 px-3 py-2 bg-stone-800 rounded-lg text-xs text-stone-400">
+              Effective headcount:{' '}
+              <span className="font-semibold text-stone-100">{effectiveAttending}</span>
               {summary.plus_one_count > 0 && (
                 <span> (incl. {summary.plus_one_count} plus-ones)</span>
-              )} / Original estimate: <span className="font-semibold">{originalGuestCount}</span>
+              )}{' '}
+              / Original estimate: <span className="font-semibold">{originalGuestCount}</span>
             </div>
           )}
         </div>
       )}
 
       {/* Aggregated Dietary Intelligence */}
-      {(summary.all_dietary_restrictions?.length || summary.all_allergies?.length) ? (
+      {summary.all_dietary_restrictions?.length || summary.all_allergies?.length ? (
         <div>
-          <h4 className="text-sm font-medium text-stone-700 mb-2">Dietary Intelligence</h4>
+          <h4 className="text-sm font-medium text-stone-300 mb-2">Dietary Intelligence</h4>
           {summary.all_dietary_restrictions && summary.all_dietary_restrictions.length > 0 && (
             <div className="mb-2">
               <span className="text-xs text-stone-500">Restrictions:</span>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {summary.all_dietary_restrictions.map((r) => (
-                  <span key={r} className="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-xs font-medium">
+                  <span
+                    key={r}
+                    className="px-2 py-0.5 bg-amber-950 text-amber-700 rounded-full text-xs font-medium"
+                  >
                     {r}
                   </span>
                 ))}
@@ -196,7 +202,10 @@ export function ChefGuestPanel({
               <span className="text-xs text-stone-500">Allergies:</span>
               <div className="flex flex-wrap gap-1.5 mt-1">
                 {summary.all_allergies.map((a) => (
-                  <span key={a} className="px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-xs font-medium">
+                  <span
+                    key={a}
+                    className="px-2 py-0.5 bg-red-950 text-red-700 rounded-full text-xs font-medium"
+                  >
                     {a}
                   </span>
                 ))}
@@ -209,34 +218,48 @@ export function ChefGuestPanel({
       {/* Guest List with Notes */}
       {guests.length > 0 && (
         <div>
-          <h4 className="text-sm font-medium text-stone-700 mb-2">Guest Responses</h4>
-          <div className="divide-y divide-stone-100">
+          <h4 className="text-sm font-medium text-stone-300 mb-2">Guest Responses</h4>
+          <div className="divide-y divide-stone-800">
             {guests.map((guest) => (
               <div key={guest.id} className="py-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-stone-900">{guest.full_name}</span>
+                    <span className="text-sm font-medium text-stone-100">{guest.full_name}</span>
                     {guest.plus_one && <span className="text-xs text-stone-400">(+1)</span>}
                   </div>
                   <Badge
                     variant={
-                      guest.rsvp_status === 'attending' ? 'success'
-                        : guest.rsvp_status === 'declined' ? 'error'
-                        : guest.rsvp_status === 'maybe' ? 'warning'
-                        : 'default'
+                      guest.rsvp_status === 'attending'
+                        ? 'success'
+                        : guest.rsvp_status === 'declined'
+                          ? 'error'
+                          : guest.rsvp_status === 'maybe'
+                            ? 'warning'
+                            : 'default'
                     }
                   >
                     {guest.rsvp_status}
                   </Badge>
                 </div>
                 {/* Individual dietary/allergy info */}
-                {((guest.dietary_restrictions?.length ?? 0) > 0 || (guest.allergies?.length ?? 0) > 0) && (
+                {((guest.dietary_restrictions?.length ?? 0) > 0 ||
+                  (guest.allergies?.length ?? 0) > 0) && (
                   <div className="flex flex-wrap gap-1 mt-1">
                     {guest.dietary_restrictions?.map((d) => (
-                      <span key={d} className="px-1.5 py-0.5 bg-amber-50 text-amber-600 rounded text-[10px]">{d}</span>
+                      <span
+                        key={d}
+                        className="px-1.5 py-0.5 bg-amber-950 text-amber-600 rounded text-[10px]"
+                      >
+                        {d}
+                      </span>
                     ))}
                     {guest.allergies?.map((a) => (
-                      <span key={a} className="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-[10px]">{a}</span>
+                      <span
+                        key={a}
+                        className="px-1.5 py-0.5 bg-red-950 text-red-600 rounded text-[10px]"
+                      >
+                        {a}
+                      </span>
                     ))}
                   </div>
                 )}
@@ -252,7 +275,7 @@ export function ChefGuestPanel({
       {/* Visibility Controls */}
       {eventShareId && (
         <div>
-          <h4 className="text-sm font-medium text-stone-700 mb-2">
+          <h4 className="text-sm font-medium text-stone-300 mb-2">
             Guest Page Visibility
             {saving && <span className="text-xs text-stone-400 ml-2">Saving...</span>}
           </h4>
@@ -267,9 +290,9 @@ export function ChefGuestPanel({
                     type="checkbox"
                     checked={visibility[key]}
                     onChange={() => handleToggle(key)}
-                    className="w-3.5 h-3.5 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
+                    className="w-3.5 h-3.5 text-brand-600 rounded border-stone-600 focus:ring-brand-500"
                   />
-                  <span className="text-stone-700">{label}</span>
+                  <span className="text-stone-300">{label}</span>
                 </label>
               )
             )}

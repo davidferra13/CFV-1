@@ -27,7 +27,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <Search className="h-4 w-4" />,
     title: 'Look Up & Search',
     subtitle: 'Instant — no approval needed',
-    color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50',
+    color: 'text-emerald-600 bg-emerald-950 dark:bg-emerald-950/50',
     items: [
       'Search for clients by name',
       'List upcoming events or filter by status',
@@ -47,7 +47,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <Plus className="h-4 w-4" />,
     title: 'Create & Build',
     subtitle: 'Shows preview — needs your approval',
-    color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/50',
+    color: 'text-blue-600 bg-blue-950 dark:bg-blue-950/50',
     items: [
       'Create clients from a description',
       'Create events from natural language',
@@ -65,7 +65,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <Pencil className="h-4 w-4" />,
     title: 'Update & Change',
     subtitle: 'Shows before/after — needs your approval',
-    color: 'text-amber-600 bg-amber-50 dark:bg-amber-950/50',
+    color: 'text-amber-600 bg-amber-950 dark:bg-amber-950/50',
     items: [
       'Update client profiles (dietary, contact, status)',
       'Update event details (date, guests, location)',
@@ -79,7 +79,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <ArrowRight className="h-4 w-4" />,
     title: 'Move Forward',
     subtitle: 'Shows warnings — needs your approval',
-    color: 'text-purple-600 bg-purple-50 dark:bg-purple-950/50',
+    color: 'text-purple-600 bg-purple-950 dark:bg-purple-950/50',
     items: [
       'Transition events (draft → proposed → accepted → ...)',
       'Transition inquiries (new → quoted → confirmed → ...)',
@@ -91,7 +91,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <Mail className="h-4 w-4" />,
     title: 'Draft Communications',
     subtitle: 'Draft only — you copy & send manually',
-    color: 'text-sky-600 bg-sky-50 dark:bg-sky-950/50',
+    color: 'text-sky-600 bg-sky-950 dark:bg-sky-950/50',
     items: [
       'Follow-up emails & thank-you notes',
       'Referral & testimonial requests',
@@ -105,7 +105,7 @@ const CAPABILITIES: CapabilityCategory[] = [
     icon: <ShieldX className="h-4 w-4" />,
     title: 'Off Limits',
     subtitle: 'Remy will explain why & show you how',
-    color: 'text-red-600 bg-red-50 dark:bg-red-950/50',
+    color: 'text-red-600 bg-red-950 dark:bg-red-950/50',
     items: [
       'Financial ledger entries (payments, refunds)',
       'User roles and permissions',
@@ -125,9 +125,9 @@ export function RemyCapabilitiesPanel({ onClose }: RemyCapabilitiesPanelProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 dark:border-stone-700">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-700 dark:border-stone-700">
         <div>
-          <h3 className="font-semibold text-stone-900 dark:text-stone-100 text-sm">
+          <h3 className="font-semibold text-stone-100 dark:text-stone-100 text-sm">
             What Can Remy Do?
           </h3>
           <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
@@ -146,15 +146,15 @@ export function RemyCapabilitiesPanel({ onClose }: RemyCapabilitiesPanelProps) {
           return (
             <div
               key={i}
-              className="rounded-lg border border-stone-200 dark:border-stone-700 overflow-hidden"
+              className="rounded-lg border border-stone-700 dark:border-stone-700 overflow-hidden"
             >
               <button
                 onClick={() => setExpandedIndex(isExpanded ? null : i)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-800/50 transition-colors"
+                className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-stone-800 dark:hover:bg-stone-800/50 transition-colors"
               >
                 <div className={`rounded-md p-1.5 ${cat.color}`}>{cat.icon}</div>
                 <div className="flex-1 text-left">
-                  <div className="text-sm font-medium text-stone-900 dark:text-stone-100">
+                  <div className="text-sm font-medium text-stone-100 dark:text-stone-100">
                     {cat.title}
                   </div>
                   <div className="text-xs text-stone-500 dark:text-stone-400">{cat.subtitle}</div>
@@ -168,12 +168,12 @@ export function RemyCapabilitiesPanel({ onClose }: RemyCapabilitiesPanelProps) {
               </button>
 
               {isExpanded && (
-                <div className="px-3 pb-3 border-t border-stone-100 dark:border-stone-700/50">
+                <div className="px-3 pb-3 border-t border-stone-800 dark:border-stone-700/50">
                   <ul className="mt-2 space-y-1.5">
                     {cat.items.map((item, j) => (
                       <li
                         key={j}
-                        className="text-xs text-stone-600 dark:text-stone-300 flex items-start gap-2"
+                        className="text-xs text-stone-400 dark:text-stone-300 flex items-start gap-2"
                       >
                         <span className="text-stone-400 mt-0.5">•</span>
                         {item}
@@ -187,8 +187,8 @@ export function RemyCapabilitiesPanel({ onClose }: RemyCapabilitiesPanelProps) {
         })}
 
         {/* Tip */}
-        <div className="rounded-lg bg-brand-50 dark:bg-brand-950/30 border border-brand-200 dark:border-brand-800 p-3 mt-3">
-          <p className="text-xs text-brand-800 dark:text-brand-200">
+        <div className="rounded-lg bg-brand-950 dark:bg-brand-950/30 border border-brand-700 dark:border-brand-800 p-3 mt-3">
+          <p className="text-xs text-brand-300 dark:text-brand-200">
             <strong>Tip:</strong> Just tell Remy what you need in plain language. "Add a client
             named Sarah" or "Create an event for 12 guests on March 20" — Remy will figure out the
             rest and ask you to confirm before doing anything.
@@ -197,7 +197,7 @@ export function RemyCapabilitiesPanel({ onClose }: RemyCapabilitiesPanelProps) {
       </div>
 
       {/* Back button */}
-      <div className="px-4 py-3 border-t border-stone-200 dark:border-stone-700">
+      <div className="px-4 py-3 border-t border-stone-700 dark:border-stone-700">
         <Button variant="secondary" size="sm" onClick={onClose} className="w-full text-xs">
           Back to Chat
         </Button>

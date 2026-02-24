@@ -7,7 +7,12 @@ import {
   deleteChefJourneyIdea,
   updateChefJourneyIdea,
 } from '@/lib/journey/actions'
-import type { ChefJourneyEntry, ChefJourneyIdea, ChefJourneyIdeaArea, ChefJourneyIdeaStatus } from '@/lib/journey/types'
+import type {
+  ChefJourneyEntry,
+  ChefJourneyIdea,
+  ChefJourneyIdeaArea,
+  ChefJourneyIdeaStatus,
+} from '@/lib/journey/types'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -114,13 +119,17 @@ export function JourneyIdeaPanel({
   const [isPending, startTransition] = useTransition()
 
   const adoptedCount = useMemo(
-    () => ideas.filter(idea => idea.status === 'adopted').length,
-    [ideas],
+    () => ideas.filter((idea) => idea.status === 'adopted').length,
+    [ideas]
   )
 
   const entryOptions = useMemo(
-    () => entries.map(entry => ({ id: entry.id, label: `${formatDisplayDate(entry.entry_date)} - ${entry.title}` })),
-    [entries],
+    () =>
+      entries.map((entry) => ({
+        id: entry.id,
+        label: `${formatDisplayDate(entry.entry_date)} - ${entry.title}`,
+      })),
+    [entries]
   )
 
   const resetForm = () => {
@@ -150,8 +159,10 @@ export function JourneyIdeaPanel({
             adopted_recipe_id: form.adopted_recipe_id || null,
           })
 
-          setIdeas(prev => {
-            const next = sortIdeas(prev.map(idea => idea.id === result.idea.id ? result.idea : idea))
+          setIdeas((prev) => {
+            const next = sortIdeas(
+              prev.map((idea) => (idea.id === result.idea.id ? result.idea : idea))
+            )
             onIdeasChange?.(next)
             return next
           })
@@ -171,7 +182,7 @@ export function JourneyIdeaPanel({
             adopted_recipe_id: form.adopted_recipe_id || null,
           })
 
-          setIdeas(prev => {
+          setIdeas((prev) => {
             const next = sortIdeas([result.idea, ...prev])
             onIdeasChange?.(next)
             return next
@@ -200,13 +211,15 @@ export function JourneyIdeaPanel({
     startTransition(async () => {
       try {
         await deleteChefJourneyIdea(idea.id)
-        setIdeas(prev => {
-          const next = prev.filter(item => item.id !== idea.id)
+        setIdeas((prev) => {
+          const next = prev.filter((item) => item.id !== idea.id)
           onIdeasChange?.(next)
           return next
         })
       } catch (deleteError) {
-        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete journal idea')
+        setError(
+          deleteError instanceof Error ? deleteError.message : 'Failed to delete journal idea'
+        )
       }
     })
   }
@@ -224,7 +237,7 @@ export function JourneyIdeaPanel({
           onClick={() => {
             setEditingId(null)
             setForm(EMPTY_FORM)
-            setShowForm(prev => !prev)
+            setShowForm((prev) => !prev)
           }}
         >
           <Plus className="w-4 h-4" />
@@ -233,45 +246,64 @@ export function JourneyIdeaPanel({
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="border border-stone-200 rounded-lg p-4 space-y-4 bg-stone-50/50">
+        <form
+          onSubmit={handleSubmit}
+          className="border border-stone-700 rounded-lg p-4 space-y-4 bg-stone-800/50"
+        >
           <Input
             label="Idea Title"
             value={form.title}
-            onChange={event => setForm(prev => ({ ...prev, title: event.target.value }))}
+            onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
             required
           />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Area</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Area</label>
               <select
                 value={form.application_area}
-                onChange={event => setForm(prev => ({ ...prev, application_area: event.target.value as ChefJourneyIdeaArea }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    application_area: event.target.value as ChefJourneyIdeaArea,
+                  }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 {Object.entries(AREA_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Status</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Status</label>
               <select
                 value={form.status}
-                onChange={event => setForm(prev => ({ ...prev, status: event.target.value as ChefJourneyIdeaStatus }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    status: event.target.value as ChefJourneyIdeaStatus,
+                  }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Priority</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Priority</label>
               <select
                 value={form.priority}
-                onChange={event => setForm(prev => ({ ...prev, priority: Number(event.target.value) }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, priority: Number(event.target.value) }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value={1}>1 - Highest</option>
                 <option value={2}>2 - High</option>
@@ -284,28 +316,40 @@ export function JourneyIdeaPanel({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Linked Entry (optional)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Linked Entry (optional)
+              </label>
               <select
                 value={form.source_entry_id}
-                onChange={event => setForm(prev => ({ ...prev, source_entry_id: event.target.value }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, source_entry_id: event.target.value }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="">None</option>
-                {entryOptions.map(option => (
-                  <option key={option.id} value={option.id}>{option.label}</option>
+                {entryOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Linked Recipe (optional)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Linked Recipe (optional)
+              </label>
               <select
                 value={form.adopted_recipe_id}
-                onChange={event => setForm(prev => ({ ...prev, adopted_recipe_id: event.target.value }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, adopted_recipe_id: event.target.value }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="">None</option>
-                {recipeOptions.map(recipe => (
-                  <option key={recipe.id} value={recipe.id}>{recipe.name}</option>
+                {recipeOptions.map((recipe) => (
+                  <option key={recipe.id} value={recipe.id}>
+                    {recipe.name}
+                  </option>
                 ))}
               </select>
             </div>
@@ -314,7 +358,9 @@ export function JourneyIdeaPanel({
           <Textarea
             label="Concept Notes"
             value={form.concept_notes}
-            onChange={event => setForm(prev => ({ ...prev, concept_notes: event.target.value }))}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, concept_notes: event.target.value }))
+            }
             rows={3}
           />
 
@@ -322,13 +368,15 @@ export function JourneyIdeaPanel({
             <Textarea
               label="Expected Impact"
               value={form.expected_impact}
-              onChange={event => setForm(prev => ({ ...prev, expected_impact: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, expected_impact: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="Test Plan"
               value={form.test_plan}
-              onChange={event => setForm(prev => ({ ...prev, test_plan: event.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, test_plan: event.target.value }))}
               rows={3}
             />
           </div>
@@ -338,24 +386,28 @@ export function JourneyIdeaPanel({
               label="First Test Date"
               type="date"
               value={form.first_test_date}
-              onChange={event => setForm(prev => ({ ...prev, first_test_date: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, first_test_date: event.target.value }))
+              }
             />
             <Input
               label="Adopted On"
               type="date"
               value={form.adopted_on}
-              onChange={event => setForm(prev => ({ ...prev, adopted_on: event.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, adopted_on: event.target.value }))}
             />
           </div>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
               {error}
             </div>
           )}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={resetForm}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={isPending}>
               {isPending ? 'Saving...' : editingId ? 'Update Idea' : 'Add Idea'}
             </Button>
@@ -365,24 +417,26 @@ export function JourneyIdeaPanel({
 
       <div className="space-y-3">
         {ideas.length === 0 ? (
-          <div className="border border-dashed border-stone-300 rounded-lg p-8 text-center text-sm text-stone-600">
+          <div className="border border-dashed border-stone-600 rounded-lg p-8 text-center text-sm text-stone-400">
             No ideas yet. Add your first post-trip idea.
           </div>
         ) : (
-          ideas.map(idea => (
-            <div key={idea.id} className="border border-stone-200 rounded-lg p-4 space-y-3">
+          ideas.map((idea) => (
+            <div key={idea.id} className="border border-stone-700 rounded-lg p-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant={STATUS_VARIANTS[idea.status]}>{STATUS_LABELS[idea.status]}</Badge>
-                    <span className="text-xs rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-stone-600">
+                    <Badge variant={STATUS_VARIANTS[idea.status]}>
+                      {STATUS_LABELS[idea.status]}
+                    </Badge>
+                    <span className="text-xs rounded-full border border-stone-700 bg-stone-800 px-2 py-0.5 text-stone-400">
                       {AREA_LABELS[idea.application_area]}
                     </span>
-                    <span className="text-xs rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-stone-600">
+                    <span className="text-xs rounded-full border border-stone-700 bg-stone-800 px-2 py-0.5 text-stone-400">
                       Priority {idea.priority}
                     </span>
                   </div>
-                  <p className="font-semibold text-stone-900">{idea.title}</p>
+                  <p className="font-semibold text-stone-100">{idea.title}</p>
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -393,7 +447,7 @@ export function JourneyIdeaPanel({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-950"
                     onClick={() => handleDelete(idea)}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -401,21 +455,25 @@ export function JourneyIdeaPanel({
                 </div>
               </div>
 
-              {idea.concept_notes && <p className="text-sm text-stone-700 whitespace-pre-wrap">{idea.concept_notes}</p>}
+              {idea.concept_notes && (
+                <p className="text-sm text-stone-300 whitespace-pre-wrap">{idea.concept_notes}</p>
+              )}
 
               {idea.expected_impact && (
-                <div className="rounded-md bg-stone-50 border border-stone-200 p-2.5 text-sm">
+                <div className="rounded-md bg-stone-800 border border-stone-700 p-2.5 text-sm">
                   <p className="text-[11px] uppercase tracking-wide text-stone-500 flex items-center gap-1">
                     <Lightbulb className="w-3.5 h-3.5" />
                     Expected Impact
                   </p>
-                  <p className="text-stone-800 mt-1">{idea.expected_impact}</p>
+                  <p className="text-stone-200 mt-1">{idea.expected_impact}</p>
                 </div>
               )}
 
               <div className="flex flex-wrap gap-3 text-xs text-stone-500">
                 <span>Created: {formatDisplayDate(idea.created_at)}</span>
-                {idea.first_test_date && <span>First Test: {formatDisplayDate(idea.first_test_date)}</span>}
+                {idea.first_test_date && (
+                  <span>First Test: {formatDisplayDate(idea.first_test_date)}</span>
+                )}
                 {idea.adopted_on && <span>Adopted: {formatDisplayDate(idea.adopted_on)}</span>}
               </div>
             </div>

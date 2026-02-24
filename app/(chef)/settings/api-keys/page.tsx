@@ -21,8 +21,10 @@ export default async function ApiKeysPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">API Keys</h1>
-        <p className="text-stone-600 mt-1">Create API keys to integrate ChefFlow with other tools</p>
+        <h1 className="text-3xl font-bold text-stone-100">API Keys</h1>
+        <p className="text-stone-400 mt-1">
+          Create API keys to integrate ChefFlow with other tools
+        </p>
       </div>
       <ApiKeyManager apiKeys={keys} />
     </div>

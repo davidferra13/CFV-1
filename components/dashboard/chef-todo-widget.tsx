@@ -23,7 +23,7 @@ function TodoRow({
   return (
     <div
       className={`group flex items-start gap-3 rounded-lg px-2 py-2 transition-colors ${
-        todo.completed ? 'opacity-50' : 'hover:bg-stone-50'
+        todo.completed ? 'opacity-50' : 'hover:bg-stone-800'
       }`}
     >
       <button
@@ -42,7 +42,7 @@ function TodoRow({
 
       <span
         className={`flex-1 text-sm leading-relaxed break-words ${
-          todo.completed ? 'line-through text-stone-400' : 'text-stone-800'
+          todo.completed ? 'line-through text-stone-400' : 'text-stone-200'
         }`}
       >
         {todo.text}
@@ -89,16 +89,19 @@ function AddTodoForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-100">
+    <form
+      onSubmit={handleSubmit}
+      className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-800"
+    >
       <input
         ref={inputRef}
         type="text"
         value={value}
-        onChange={e => setValue(e.target.value)}
+        onChange={(e) => setValue(e.target.value)}
         placeholder="Add a task…"
         maxLength={500}
         disabled={disabled || pending}
-        className="flex-1 text-sm bg-transparent border-none outline-none placeholder:text-stone-400 text-stone-800 disabled:cursor-not-allowed"
+        className="flex-1 text-sm bg-transparent border-none outline-none placeholder:text-stone-400 text-stone-200 disabled:cursor-not-allowed"
       />
       <button
         type="submit"
@@ -121,8 +124,8 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
   const [isPending, startTransition] = useTransition()
 
   // Sort: incomplete first (by sort_order), completed last
-  const incomplete = todos.filter(t => !t.completed)
-  const completed = todos.filter(t => t.completed)
+  const incomplete = todos.filter((t) => !t.completed)
+  const completed = todos.filter((t) => t.completed)
   const sortedTodos = [...incomplete, ...completed]
 
   // Add: show immediately with a temp ID, then swap in real ID on confirm
@@ -137,28 +140,32 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
       created_at: new Date().toISOString(),
     }
 
-    setTodos(prev => [...prev, optimisticTodo])
+    setTodos((prev) => [...prev, optimisticTodo])
 
     const result = await createTodo(text)
 
     if (result.success && result.id) {
       // Swap temp ID for the real database ID so subsequent toggle/delete work
-      setTodos(prev => prev.map(t => t.id === tempId ? { ...t, id: result.id! } : t))
+      setTodos((prev) => prev.map((t) => (t.id === tempId ? { ...t, id: result.id! } : t)))
     } else {
       // Revert on failure
-      setTodos(prev => prev.filter(t => t.id !== tempId))
+      setTodos((prev) => prev.filter((t) => t.id !== tempId))
     }
   }
 
   // Toggle: show immediately, revert to original state on failure
   function handleToggle(id: string) {
-    const original = todos.find(t => t.id === id)
+    const original = todos.find((t) => t.id === id)
     if (!original) return
 
-    setTodos(prev =>
-      prev.map(t =>
+    setTodos((prev) =>
+      prev.map((t) =>
         t.id === id
-          ? { ...t, completed: !t.completed, completed_at: !t.completed ? new Date().toISOString() : null }
+          ? {
+              ...t,
+              completed: !t.completed,
+              completed_at: !t.completed ? new Date().toISOString() : null,
+            }
           : t
       )
     )
@@ -166,20 +173,20 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
     startTransition(async () => {
       const result = await toggleTodo(id)
       if (!result.success) {
-        setTodos(prev => prev.map(t => t.id === id ? original : t))
+        setTodos((prev) => prev.map((t) => (t.id === id ? original : t)))
       }
     })
   }
 
   // Delete: remove immediately, restore on failure
   function handleDelete(id: string) {
-    const original = todos.find(t => t.id === id)
-    setTodos(prev => prev.filter(t => t.id !== id))
+    const original = todos.find((t) => t.id === id)
+    setTodos((prev) => prev.filter((t) => t.id !== id))
 
     startTransition(async () => {
       const result = await deleteTodo(id)
       if (!result.success && original) {
-        setTodos(prev =>
+        setTodos((prev) =>
           [...prev, original].sort((a, b) =>
             a.sort_order !== b.sort_order
               ? a.sort_order - b.sort_order
@@ -212,7 +219,7 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
           </p>
         ) : (
           <div className="space-y-0.5">
-            {sortedTodos.map(todo => (
+            {sortedTodos.map((todo) => (
               <TodoRow
                 key={todo.id}
                 todo={todo}

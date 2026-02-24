@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats } from '@/lib/clients/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 
 export const metadata: Metadata = { title: 'Client Dislikes - ChefFlow' }
 
@@ -12,13 +19,13 @@ export default async function DislikesPage() {
   const clients = await getClientsWithStats()
 
   const clientsWithDislikes = clients
-    .filter(c => c.dislikes && (c.dislikes as string[]).length > 0)
+    .filter((c) => c.dislikes && (c.dislikes as string[]).length > 0)
     .sort((a, b) => a.full_name.localeCompare(b.full_name))
 
   // Aggregate dislike mentions
   const dislikeCounts: Record<string, number> = {}
   for (const client of clientsWithDislikes) {
-    for (const d of (client.dislikes as string[])) {
+    for (const d of client.dislikes as string[]) {
       dislikeCounts[d] = (dislikeCounts[d] ?? 0) + 1
     }
   }
@@ -29,24 +36,29 @@ export default async function DislikesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/clients/preferences" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients/preferences" className="text-sm text-stone-500 hover:text-stone-300">
           ← Client Preferences
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Dislikes</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Dislikes</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {clientsWithDislikes.length} clients
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Ingredients and dishes to avoid when planning menus for each client</p>
+        <p className="text-stone-500 mt-1">
+          Ingredients and dishes to avoid when planning menus for each client
+        </p>
       </div>
 
       {commonDislikes.length > 0 && (
         <Card className="p-4">
-          <h2 className="text-sm font-semibold text-stone-700 mb-3">Most Common Dislikes</h2>
+          <h2 className="text-sm font-semibold text-stone-300 mb-3">Most Common Dislikes</h2>
           <div className="flex flex-wrap gap-2">
             {commonDislikes.map(([item, count]) => (
-              <span key={item} className="bg-stone-200 text-stone-700 text-sm px-3 py-1 rounded-full">
+              <span
+                key={item}
+                className="bg-stone-700 text-stone-300 text-sm px-3 py-1 rounded-full"
+              >
                 {item} {count > 1 && <span className="text-stone-500 font-semibold">×{count}</span>}
               </span>
             ))}
@@ -56,8 +68,10 @@ export default async function DislikesPage() {
 
       {clientsWithDislikes.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No dislikes on file</p>
-          <p className="text-stone-400 text-sm">Add disliked items to client profiles to see them here</p>
+          <p className="text-stone-400 font-medium mb-1">No dislikes on file</p>
+          <p className="text-stone-400 text-sm">
+            Add disliked items to client profiles to see them here
+          </p>
         </Card>
       ) : (
         <Card>
@@ -70,17 +84,23 @@ export default async function DislikesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clientsWithDislikes.map(client => (
+              {clientsWithDislikes.map((client) => (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">
-                    <Link href={`/clients/${client.id}`} className="text-brand-600 hover:text-brand-800 hover:underline">
+                    <Link
+                      href={`/clients/${client.id}`}
+                      className="text-brand-600 hover:text-brand-300 hover:underline"
+                    >
                       {client.full_name}
                     </Link>
                   </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
-                      {(client.dislikes as string[]).map(d => (
-                        <span key={d} className="bg-stone-200 text-stone-700 text-xs px-2 py-0.5 rounded-full">
+                      {(client.dislikes as string[]).map((d) => (
+                        <span
+                          key={d}
+                          className="bg-stone-700 text-stone-300 text-xs px-2 py-0.5 rounded-full"
+                        >
                           {d}
                         </span>
                       ))}
@@ -88,7 +108,9 @@ export default async function DislikesPage() {
                   </TableCell>
                   <TableCell>
                     <Link href={`/clients/${client.id}`}>
-                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">View Profile</span>
+                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">
+                        View Profile
+                      </span>
                     </Link>
                   </TableCell>
                 </TableRow>

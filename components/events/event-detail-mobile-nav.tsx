@@ -31,7 +31,7 @@ export function EventDetailMobileNav() {
   }
 
   return (
-    <nav className="md:hidden sticky top-14 z-30 bg-white border-b border-stone-200 shadow-sm -mx-4 px-4">
+    <nav className="md:hidden sticky top-14 z-30 bg-surface border-b border-stone-700 shadow-sm -mx-4 px-4">
       <div className="flex">
         {TABS.map(({ id, label, icon }) => (
           <button
@@ -41,7 +41,7 @@ export function EventDetailMobileNav() {
             className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors border-b-2 ${
               activeTab === id
                 ? 'border-brand-600 text-brand-600'
-                : 'border-transparent text-stone-500 hover:text-stone-700'
+                : 'border-transparent text-stone-500 hover:text-stone-300'
             }`}
           >
             {icon}

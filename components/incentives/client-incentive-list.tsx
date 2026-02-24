@@ -39,7 +39,10 @@ function getValueLabel(incentive: Incentive): string {
   return 'Value at redemption'
 }
 
-function getStatus(incentive: Incentive): { label: string; variant: 'success' | 'default' | 'error' } {
+function getStatus(incentive: Incentive): {
+  label: string
+  variant: 'success' | 'default' | 'error'
+} {
   if (!incentive.is_active) return { label: 'Inactive', variant: 'default' }
   if (incentive.expires_at && new Date(incentive.expires_at) < new Date()) {
     return { label: 'Expired', variant: 'error' }
@@ -72,7 +75,7 @@ export function ClientIncentiveList({ incentives }: Props) {
           <div
             key={incentive.id}
             className={`border rounded-xl p-4 ${
-              isActive ? 'border-stone-200 bg-white' : 'border-stone-100 bg-stone-50'
+              isActive ? 'border-stone-700 bg-surface' : 'border-stone-800 bg-stone-800'
             }`}
           >
             {/* Type badge + status */}
@@ -84,17 +87,15 @@ export function ClientIncentiveList({ incentives }: Props) {
             </div>
 
             {/* Title */}
-            <h3 className="font-semibold text-stone-900 mb-1">{incentive.title}</h3>
+            <h3 className="font-semibold text-stone-100 mb-1">{incentive.title}</h3>
 
             {/* Value */}
-            <div className="text-2xl font-bold text-stone-900 mb-3">
-              {getValueLabel(incentive)}
-            </div>
+            <div className="text-2xl font-bold text-stone-100 mb-3">{getValueLabel(incentive)}</div>
 
             {/* Code */}
-            <div className="bg-stone-100 rounded-lg px-3 py-2 mb-3">
+            <div className="bg-stone-800 rounded-lg px-3 py-2 mb-3">
               <p className="text-xs text-stone-500 mb-0.5">Code</p>
-              <p className="font-mono font-bold text-stone-900 text-sm tracking-widest">
+              <p className="font-mono font-bold text-stone-100 text-sm tracking-widest">
                 {incentive.code}
               </p>
             </div>

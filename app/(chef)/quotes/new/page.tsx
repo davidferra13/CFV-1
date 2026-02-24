@@ -9,7 +9,7 @@ import { getPricingSuggestion } from '@/lib/analytics/pricing-suggestions'
 import { QuoteForm } from '@/components/quotes/quote-form'
 
 export default async function NewQuotePage({
-  searchParams
+  searchParams,
 }: {
   searchParams: { client_id?: string; inquiry_id?: string }
 }) {
@@ -51,8 +51,8 @@ export default async function NewQuotePage({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Create Quote</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Create Quote</h1>
+        <p className="text-stone-400 mt-1">
           Build a pricing quote. Previous client pricing is shown to help set the right price.
         </p>
       </div>

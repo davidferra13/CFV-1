@@ -2,7 +2,12 @@
 
 import { useState, useTransition, useCallback } from 'react'
 import { RefreshCw } from 'lucide-react'
-import type { SocialPost, SocialChannel, StoryGroup, SocialPostAuthor } from '@/lib/social/chef-social-actions'
+import type {
+  SocialPost,
+  SocialChannel,
+  StoryGroup,
+  SocialPostAuthor,
+} from '@/lib/social/chef-social-actions'
 import { getSocialFeed, getChannelFeed, getActiveStories } from '@/lib/social/chef-social-actions'
 import { SocialPostCard } from './social-post-card'
 import { SocialPostComposer } from './social-post-composer'
@@ -47,15 +52,18 @@ export function SocialFeedClient({
   const [hasMore, setHasMore] = useState(initialPosts.length >= 30)
   const [, startTransition] = useTransition()
 
-  const reloadFeed = useCallback((newMode?: FeedMode) => {
-    startTransition(async () => {
-      const fresh = isChannelFeed
-        ? await getChannelFeed({ channelSlug: channelSlug!, limit: 30 })
-        : await getSocialFeed({ mode: newMode ?? mode, limit: 30 })
-      setPosts(fresh)
-      setHasMore(fresh.length >= 30)
-    })
-  }, [isChannelFeed, channelSlug, mode])
+  const reloadFeed = useCallback(
+    (newMode?: FeedMode) => {
+      startTransition(async () => {
+        const fresh = isChannelFeed
+          ? await getChannelFeed({ channelSlug: channelSlug!, limit: 30 })
+          : await getSocialFeed({ mode: newMode ?? mode, limit: 30 })
+        setPosts(fresh)
+        setHasMore(fresh.length >= 30)
+      })
+    },
+    [isChannelFeed, channelSlug, mode]
+  )
 
   const reloadStories = useCallback(() => {
     startTransition(async () => {
@@ -112,11 +120,11 @@ export function SocialFeedClient({
         />
 
         {/* Feed header: mode tabs on main feed, simple refresh-only on channel feed */}
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-          <div className="flex border-b border-stone-100">
+        <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
+          <div className="flex border-b border-stone-800">
             {isChannelFeed ? (
               <div className="flex-1 flex items-center px-4 py-3">
-                <span className="text-sm font-medium text-stone-600">Channel Posts</span>
+                <span className="text-sm font-medium text-stone-400">Channel Posts</span>
               </div>
             ) : (
               tabs.map((tab) => (
@@ -126,8 +134,8 @@ export function SocialFeedClient({
                   onClick={() => switchMode(tab.value)}
                   className={`flex-1 py-3 text-sm font-medium transition-colors ${
                     mode === tab.value
-                      ? 'text-amber-700 border-b-2 border-amber-500 bg-amber-50/50'
-                      : 'text-stone-500 hover:text-stone-700 hover:bg-stone-50'
+                      ? 'text-amber-700 border-b-2 border-amber-500 bg-amber-950/50'
+                      : 'text-stone-500 hover:text-stone-300 hover:bg-stone-800'
                   }`}
                 >
                   {tab.label}
@@ -136,7 +144,7 @@ export function SocialFeedClient({
             )}
             <button
               onClick={() => reloadFeed()}
-              className="px-4 py-3 text-stone-400 hover:text-stone-600 transition-colors"
+              className="px-4 py-3 text-stone-400 hover:text-stone-400 transition-colors"
               title="Refresh feed"
             >
               <RefreshCw className="h-4 w-4" />
@@ -144,7 +152,7 @@ export function SocialFeedClient({
           </div>
 
           {/* Posts */}
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {posts.length === 0 ? (
               <div className="py-12 text-center">
                 <p className="text-stone-400 text-sm">
@@ -166,11 +174,11 @@ export function SocialFeedClient({
 
           {/* Load more */}
           {hasMore && (
-            <div className="p-4 border-t border-stone-100">
+            <div className="p-4 border-t border-stone-800">
               <button
                 onClick={loadMore}
                 disabled={loadingMore}
-                className="w-full text-sm text-amber-700 font-medium hover:text-amber-800 py-2 rounded-xl hover:bg-amber-50 transition-colors"
+                className="w-full text-sm text-amber-700 font-medium hover:text-amber-800 py-2 rounded-xl hover:bg-amber-950 transition-colors"
               >
                 {loadingMore ? 'Loading...' : 'Load more posts'}
               </button>

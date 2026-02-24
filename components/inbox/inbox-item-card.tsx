@@ -30,9 +30,7 @@ export function InboxItemCard({ item }: InboxItemCardProps) {
             {item.preview || 'No preview available'}
           </p>
         </div>
-        {!item.is_read && (
-          <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0 mt-2" />
-        )}
+        {!item.is_read && <span className="w-2 h-2 rounded-full bg-brand-500 shrink-0 mt-2" />}
       </div>
     </Link>
   )
@@ -75,10 +73,10 @@ function SourceIcon({ source }: { source: string }) {
 
 function SourceBadge({ source, contentType }: { source: string; contentType: string | null }) {
   const colors: Record<string, string> = {
-    chat: 'bg-blue-100 text-blue-700',
-    message: 'bg-emerald-100 text-emerald-700',
-    wix: 'bg-purple-100 text-purple-700',
-    notification: 'bg-amber-100 text-amber-700',
+    chat: 'bg-blue-900 text-blue-700',
+    message: 'bg-emerald-900 text-emerald-700',
+    wix: 'bg-purple-900 text-purple-700',
+    notification: 'bg-amber-900 text-amber-700',
   }
 
   const labels: Record<string, string> = {
@@ -89,7 +87,9 @@ function SourceBadge({ source, contentType }: { source: string; contentType: str
   }
 
   return (
-    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${colors[source] || 'bg-stone-100 text-stone-600'}`}>
+    <span
+      className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${colors[source] || 'bg-stone-100 text-stone-600'}`}
+    >
       {labels[source]}
     </span>
   )

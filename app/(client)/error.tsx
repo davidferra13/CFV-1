@@ -28,7 +28,7 @@ export default function ClientError({
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-20 h-20 flex items-center justify-center rounded-full bg-red-100">
+          <div className="mx-auto mb-4 w-20 h-20 flex items-center justify-center rounded-full bg-red-900">
             <svg
               className="w-10 h-10 text-red-600"
               fill="none"
@@ -50,11 +50,9 @@ export default function ClientError({
         </CardHeader>
         <CardContent className="space-y-4">
           {(error.message || error.digest) && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+            <div className="bg-red-950 border border-red-200 rounded-md p-3">
               {error.message && (
-                <p className="text-sm text-red-800 font-mono break-all">
-                  {error.message}
-                </p>
+                <p className="text-sm text-red-800 font-mono break-all">{error.message}</p>
               )}
               {error.digest && (
                 <p className="text-xs text-red-600 mt-1">Error ID: {error.digest}</p>
@@ -62,11 +60,7 @@ export default function ClientError({
             </div>
           )}
           <div className="space-y-2">
-            <Button
-              variant="primary"
-              onClick={reset}
-              className="w-full"
-            >
+            <Button variant="primary" onClick={reset} className="w-full">
               Try Again
             </Button>
             <Link href="/my-events" className="block">

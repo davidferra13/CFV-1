@@ -16,8 +16,8 @@ export default async function ModulesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100">Modules</h1>
-        <p className="text-stone-600 dark:text-stone-400 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100 dark:text-stone-100">Modules</h1>
+        <p className="text-stone-400 dark:text-stone-400 mt-1">
           Choose which features appear in your sidebar. Toggle modules on or off to keep your
           workspace focused on what you need.
         </p>

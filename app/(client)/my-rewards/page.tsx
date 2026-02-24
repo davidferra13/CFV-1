@@ -25,10 +25,10 @@ const TIER_LABELS: Record<string, string> = {
 }
 
 const TIER_BADGE: Record<string, string> = {
-  bronze: 'bg-amber-100 text-amber-800',
-  silver: 'bg-stone-200 text-stone-800',
-  gold: 'bg-yellow-100 text-yellow-800',
-  platinum: 'bg-indigo-100 text-indigo-800',
+  bronze: 'bg-amber-900 text-amber-800',
+  silver: 'bg-stone-700 text-stone-200',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-indigo-900 text-indigo-800',
 }
 
 type TierKey = (typeof TIER_ORDER)[number]
@@ -111,8 +111,8 @@ export default async function MyRewardsPage() {
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Rewards</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Rewards</h1>
+        <p className="text-stone-400 mt-1">
           Track your points, see your progress, and redeem available rewards.
         </p>
       </div>
@@ -127,11 +127,11 @@ export default async function MyRewardsPage() {
                 >
                   {TIER_LABELS[status.tier]} Member
                 </span>
-                <p className="text-2xl font-bold text-stone-900">
+                <p className="text-2xl font-bold text-stone-100">
                   {status.pointsBalance.toLocaleString()} points
                 </p>
               </div>
-              <p className="text-sm text-stone-600">
+              <p className="text-sm text-stone-400">
                 {status.totalEventsCompleted} completed events
               </p>
             </div>
@@ -139,7 +139,7 @@ export default async function MyRewardsPage() {
           </div>
 
           <div className="mt-5">
-            <div className="h-2.5 w-full bg-stone-100 rounded-full overflow-hidden">
+            <div className="h-2.5 w-full bg-stone-800 rounded-full overflow-hidden">
               {/* Dynamic progress — inline style is the only option for runtime percentages */}
               {/* eslint-disable-next-line react/forbid-dom-props */}
               <div
@@ -147,7 +147,7 @@ export default async function MyRewardsPage() {
                 style={{ width: `${progress.percent}%` }}
               />
             </div>
-            <p className="text-sm text-stone-600 mt-2">{progress.label}</p>
+            <p className="text-sm text-stone-400 mt-2">{progress.label}</p>
           </div>
         </CardContent>
       </Card>
@@ -182,7 +182,7 @@ export default async function MyRewardsPage() {
 
       {/* Pending Reward Deliveries — redeemed but not yet received */}
       {pendingRedemptions.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50/30">
+        <Card className="border-amber-200 bg-amber-950/30">
           <CardHeader>
             <CardTitle className="text-amber-900">Pending Rewards</CardTitle>
             <p className="text-sm text-amber-700 mt-1">
@@ -196,7 +196,7 @@ export default async function MyRewardsPage() {
                 className="flex items-start justify-between gap-3 py-3 border-b border-amber-100 last:border-b-0"
               >
                 <div>
-                  <p className="text-sm font-semibold text-stone-900">{r.reward_name}</p>
+                  <p className="text-sm font-semibold text-stone-100">{r.reward_name}</p>
                   <p className="text-xs text-stone-500 mt-0.5">
                     Redeemed {format(new Date(r.created_at), 'MMM d, yyyy')} · {r.points_spent} pts
                     spent
@@ -255,22 +255,22 @@ export default async function MyRewardsPage() {
         </CardHeader>
         <CardContent>
           {status.recentTransactions.length === 0 ? (
-            <p className="text-sm text-stone-600">No points activity yet.</p>
+            <p className="text-sm text-stone-400">No points activity yet.</p>
           ) : (
             <div className="space-y-3">
               {status.recentTransactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="flex items-center justify-between py-2 border-b border-stone-100 last:border-b-0"
+                  className="flex items-center justify-between py-2 border-b border-stone-800 last:border-b-0"
                 >
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{tx.description}</p>
+                    <p className="text-sm font-medium text-stone-100">{tx.description}</p>
                     <p className="text-xs text-stone-500">
                       {format(new Date(tx.created_at), 'PPP')}
                     </p>
                   </div>
                   <span
-                    className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-700'}`}
+                    className={`text-sm font-semibold ${tx.points >= 0 ? 'text-emerald-700' : 'text-stone-300'}`}
                   >
                     {tx.points >= 0 ? '+' : ''}
                     {tx.points}

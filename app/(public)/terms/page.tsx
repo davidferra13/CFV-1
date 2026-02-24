@@ -9,17 +9,17 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
-      <div className="mb-10 border-b border-stone-200 pb-8">
-        <h1 className="text-4xl font-bold tracking-tight text-stone-900">Terms of Service</h1>
+      <div className="mb-10 border-b border-stone-700 pb-8">
+        <h1 className="text-4xl font-bold tracking-tight text-stone-100">Terms of Service</h1>
         <p className="mt-3 text-sm text-stone-500">Last updated: March 21, 2026 — Version 2.0</p>
       </div>
 
       {/* Table of Contents */}
-      <nav className="mb-12 rounded-xl border border-stone-200 bg-stone-50 p-6">
+      <nav className="mb-12 rounded-xl border border-stone-700 bg-stone-800 p-6">
         <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-stone-500">
           Contents
         </p>
-        <ol className="list-decimal space-y-1 pl-5 text-sm text-brand-700">
+        <ol className="list-decimal space-y-1 pl-5 text-sm text-brand-400">
           {[
             'Acceptance of Terms',
             'Definitions',
@@ -53,10 +53,10 @@ export default function TermsPage() {
         </ol>
       </nav>
 
-      <div className="space-y-12 text-stone-700">
+      <div className="space-y-12 text-stone-300">
         {/* §1 */}
         <section id="s1">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">1. Acceptance of Terms</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">1. Acceptance of Terms</h2>
           <p className="leading-relaxed">
             By creating an account or using the ChefFlow platform at cheflowhq.com (the
             &ldquo;Service&rdquo;), you agree to be bound by these Terms of Service
@@ -73,7 +73,7 @@ export default function TermsPage() {
 
         {/* §2 */}
         <section id="s2">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">2. Definitions</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">2. Definitions</h2>
           <dl className="space-y-3 leading-relaxed">
             {[
               [
@@ -115,7 +115,7 @@ export default function TermsPage() {
               ],
             ].map(([term, def]) => (
               <div key={term} className="grid grid-cols-[160px_1fr] gap-3">
-                <dt className="font-semibold text-stone-900">{term}</dt>
+                <dt className="font-semibold text-stone-100">{term}</dt>
                 <dd>{def}</dd>
               </div>
             ))}
@@ -124,7 +124,7 @@ export default function TermsPage() {
 
         {/* §3 */}
         <section id="s3">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">
             3. Eligibility &amp; Account Creation
           </h2>
           <p className="mb-4 leading-relaxed">
@@ -158,11 +158,11 @@ export default function TermsPage() {
 
         {/* §4 */}
         <section id="s4">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">
             4. Platform Description &amp; Role Clarification
           </h2>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">What ChefFlow Provides</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">What ChefFlow Provides</h3>
           <ul className="mb-6 list-disc space-y-2 pl-5 leading-relaxed">
             <li>
               Business management tools for independent Chefs: scheduling, client CRM, financial
@@ -183,7 +183,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">What ChefFlow Does NOT Do</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">What ChefFlow Does NOT Do</h3>
           <p className="mb-3 leading-relaxed">
             ChefFlow is a software platform and payment intermediary, not a culinary service
             provider. ChefFlow does not:
@@ -202,7 +202,7 @@ export default function TermsPage() {
             <li>Control how, when, where, or what Chefs cook</li>
           </ul>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">Chef Acknowledgment</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">Chef Acknowledgment</h3>
           <p className="mb-3 leading-relaxed">By creating a Chef account, you confirm:</p>
           <ol className="mb-6 list-decimal space-y-2 pl-5 leading-relaxed">
             <li>
@@ -217,7 +217,7 @@ export default function TermsPage() {
             </li>
           </ol>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">Client Acknowledgment</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">Client Acknowledgment</h3>
           <p className="mb-3 leading-relaxed">By creating a Client account, you confirm:</p>
           <ol className="list-decimal space-y-2 pl-5 leading-relaxed">
             <li>
@@ -234,9 +234,9 @@ export default function TermsPage() {
 
         {/* §5 */}
         <section id="s5">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">5. Chef-Specific Terms</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">5. Chef-Specific Terms</h2>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             5.1 Independent Contractor Status
           </h3>
           <p className="leading-relaxed">
@@ -249,7 +249,7 @@ export default function TermsPage() {
             applicable law.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">5.2 Chef Obligations</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">5.2 Chef Obligations</h3>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>
               Maintain all licenses and permits required by applicable law, including food handler
@@ -272,7 +272,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             5.3 Stripe Connect &amp; Payments
           </h3>
           <p className="leading-relaxed">
@@ -291,7 +291,7 @@ export default function TermsPage() {
             days&apos; notice is given before any fee change.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">5.4 Chef Content</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">5.4 Chef Content</h3>
           <p className="leading-relaxed">
             Chefs retain all copyright in menus, recipes, photos, pricing, and business content they
             store on ChefFlow. By uploading content, Chefs grant ChefFlow a non-exclusive,
@@ -301,7 +301,7 @@ export default function TermsPage() {
             non-personally-identifiable data for platform analytics and improvement.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             5.5 Chef Prohibited Conduct
           </h3>
           <p className="mb-3 leading-relaxed">
@@ -329,9 +329,9 @@ export default function TermsPage() {
 
         {/* §6 */}
         <section id="s6">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">6. Client-Specific Terms</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">6. Client-Specific Terms</h2>
 
-          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-200">
             6.1 Client Relationship
           </h3>
           <p className="leading-relaxed">
@@ -341,7 +341,7 @@ export default function TermsPage() {
             agreements.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             6.2 Client Obligations
           </h3>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
@@ -357,7 +357,7 @@ export default function TermsPage() {
             <li>Pay agreed amounts on time per the payment schedule in the accepted Quote</li>
           </ul>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">6.3 Payments</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">6.3 Payments</h3>
           <p className="leading-relaxed">
             Clients authorize ChefFlow to charge payment methods on file for deposits, installments,
             and final balances as scheduled in the accepted Quote. Card payments are processed by
@@ -373,7 +373,7 @@ export default function TermsPage() {
             .
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             6.4 Chargebacks &amp; Disputes
           </h3>
           <p className="leading-relaxed">
@@ -386,7 +386,7 @@ export default function TermsPage() {
             through ChefFlow may be treated as a violation of these Terms.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             6.5 Client Prohibited Conduct
           </h3>
           <p className="mb-3 leading-relaxed">
@@ -405,11 +405,11 @@ export default function TermsPage() {
 
         {/* §7 */}
         <section id="s7">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">
             7. Payments, Fees &amp; Refunds
           </h2>
 
-          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-200">
             7.1 How Payments Work
           </h3>
           <p className="leading-relaxed">
@@ -421,7 +421,7 @@ export default function TermsPage() {
             Stripe&apos;s standard payout schedule.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">7.2 Payment Plans</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">7.2 Payment Plans</h3>
           <p className="leading-relaxed">
             Chefs may structure Events with deposit, installment, and final payment schedules set in
             the Quote. ChefFlow sends automated payment reminders per the Chef&apos;s configured
@@ -429,14 +429,14 @@ export default function TermsPage() {
             until payment is received.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">7.3 Manual Payments</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">7.3 Manual Payments</h3>
           <p className="leading-relaxed">
             Chefs may record Manual Payments (cash, Venmo, Zelle, PayPal, check) in ChefFlow&apos;s
             ledger. ChefFlow does not process, hold, verify, or dispute Manual Payments. Disputes
             involving Manual Payments are solely between the Chef and Client.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">7.4 Gift Cards</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">7.4 Gift Cards</h3>
           <p className="leading-relaxed">
             Gift card purchases are processed via Stripe Checkout. Gift card balances are
             non-refundable credits against future Events with no cash value. Gift cards expire per
@@ -444,7 +444,7 @@ export default function TermsPage() {
             purchase.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">7.5 Refunds</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">7.5 Refunds</h3>
           <p className="leading-relaxed">
             Refunds for Event cancellations are governed by the Chef&apos;s published cancellation
             policy, not by ChefFlow. If a refund is approved, ChefFlow will process the Stripe
@@ -452,7 +452,7 @@ export default function TermsPage() {
             ChefFlow&apos;s Platform Fee may be refunded at ChefFlow&apos;s sole discretion.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             7.6 Platform Fee Changes
           </h3>
           <p className="leading-relaxed">
@@ -463,7 +463,7 @@ export default function TermsPage() {
 
         {/* §8 */}
         <section id="s8">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">8. Cancellation Policy</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">8. Cancellation Policy</h2>
           <p className="mb-4 leading-relaxed">
             Each Chef publishes their own cancellation policy in their account settings. ChefFlow
             does not set or enforce universal cancellation terms between Chefs and Clients.
@@ -484,9 +484,9 @@ export default function TermsPage() {
 
         {/* §9 */}
         <section id="s9">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">9. Dispute Resolution</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">9. Dispute Resolution</h2>
 
-          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-200">
             9.1 Stripe Payment Disputes
           </h3>
           <p className="leading-relaxed">
@@ -497,7 +497,7 @@ export default function TermsPage() {
             payouts.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             9.2 Service Quality Disputes (Chef ↔ Client)
           </h3>
           <p className="leading-relaxed">
@@ -509,7 +509,7 @@ export default function TermsPage() {
             requesting party.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">
             9.3 Platform Disputes (User vs. ChefFlow)
           </h3>
           <p className="mb-3 leading-relaxed">
@@ -538,7 +538,7 @@ export default function TermsPage() {
             arbitration.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">9.4 Governing Law</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">9.4 Governing Law</h3>
           <p className="mb-3 leading-relaxed">
             These Terms are governed by applicable United States law. Jurisdiction-specific
             provisions:
@@ -563,9 +563,9 @@ export default function TermsPage() {
 
         {/* §10 */}
         <section id="s10">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">10. Intellectual Property</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">10. Intellectual Property</h2>
 
-          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-200">
             10.1 ChefFlow Platform IP
           </h3>
           <p className="leading-relaxed">
@@ -575,21 +575,21 @@ export default function TermsPage() {
             works from the ChefFlow platform without written permission.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">10.2 Chef Content</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">10.2 Chef Content</h3>
           <p className="leading-relaxed">
             Chefs retain all copyright and ownership of menus, recipes, photos, pricing, client
             notes, and other content they create and upload. ChefFlow&apos;s license to Chef content
             is limited to operating the Service (see §5.4) and terminates upon account deletion.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">10.3 Client Content</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">10.3 Client Content</h3>
           <p className="leading-relaxed">
             Clients retain rights to content they submit (event details, photos, messages,
             feedback). ChefFlow has a license to store and display this content to the relevant Chef
             solely to operate the Service.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">10.4 Feedback</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">10.4 Feedback</h3>
           <p className="leading-relaxed">
             Any feedback, suggestions, or ideas you provide to ChefFlow may be implemented by
             ChefFlow without compensation, attribution, or obligation of any kind.
@@ -598,10 +598,10 @@ export default function TermsPage() {
 
         {/* §11 */}
         <section id="s11">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">
             11. Disclaimer of Warranties
           </h2>
-          <div className="rounded-lg border border-stone-300 bg-stone-100 p-5 font-mono text-sm uppercase leading-relaxed tracking-wide text-stone-800">
+          <div className="rounded-lg border border-stone-600 bg-stone-800 p-5 font-mono text-sm uppercase leading-relaxed tracking-wide text-stone-200">
             <p>
               The service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo; without
               warranties of any kind, either express or implied, including but not limited to
@@ -628,8 +628,8 @@ export default function TermsPage() {
 
         {/* §12 */}
         <section id="s12">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">12. Limitation of Liability</h2>
-          <div className="rounded-lg border border-stone-300 bg-stone-100 p-5 font-mono text-sm uppercase leading-relaxed tracking-wide text-stone-800">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">12. Limitation of Liability</h2>
+          <div className="rounded-lg border border-stone-600 bg-stone-800 p-5 font-mono text-sm uppercase leading-relaxed tracking-wide text-stone-200">
             <p>
               To the fullest extent permitted by applicable law, Chefflow and its officers,
               directors, employees, agents, and licensors shall not be liable for any indirect,
@@ -645,7 +645,7 @@ export default function TermsPage() {
               $100.00), whichever is greater.
             </p>
           </div>
-          <p className="mt-4 leading-relaxed text-sm text-stone-600">
+          <p className="mt-4 leading-relaxed text-sm text-stone-400">
             The cap above does not apply to: ChefFlow&apos;s gross negligence or willful misconduct;
             death or personal injury directly caused by ChefFlow&apos;s negligence; fraudulent
             misrepresentation by ChefFlow; or any liability that cannot be limited by applicable law
@@ -655,9 +655,9 @@ export default function TermsPage() {
 
         {/* §13 */}
         <section id="s13">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">13. Indemnification</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">13. Indemnification</h2>
 
-          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-800">Chef Indemnification</h3>
+          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-200">Chef Indemnification</h3>
           <p className="mb-3 leading-relaxed">
             Chefs agree to defend, indemnify, and hold ChefFlow, its affiliates, officers,
             directors, employees, and agents harmless from claims, liabilities, damages, losses, and
@@ -678,7 +678,7 @@ export default function TermsPage() {
             <li>False or misleading representations in the Chef&apos;s profile</li>
           </ul>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">Client Indemnification</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">Client Indemnification</h3>
           <p className="mb-3 leading-relaxed">
             Clients agree to defend, indemnify, and hold ChefFlow harmless from claims arising from:
           </p>
@@ -693,7 +693,7 @@ export default function TermsPage() {
             <li>Client&apos;s provision of false allergen or event information</li>
           </ul>
 
-          <p className="leading-relaxed text-sm text-stone-600">
+          <p className="leading-relaxed text-sm text-stone-400">
             <strong>Mutual carve-out:</strong> Neither party is required to indemnify the other for
             claims caused by the indemnified party&apos;s own gross negligence, willful misconduct,
             or fraudulent acts.
@@ -702,11 +702,11 @@ export default function TermsPage() {
 
         {/* §14 */}
         <section id="s14">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">
             14. Account Termination &amp; Suspension
           </h2>
 
-          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-200">
             Immediate Termination (No Warning)
           </h3>
           <p className="mb-3 leading-relaxed">
@@ -722,7 +722,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 text-base font-semibold text-stone-200">
             Suspension with 14-Day Cure Period
           </h3>
           <p className="mb-3 leading-relaxed">
@@ -741,7 +741,7 @@ export default function TermsPage() {
             </li>
           </ul>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">Appeal Process</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">Appeal Process</h3>
           <p className="mb-6 leading-relaxed">
             A suspended user may appeal within 14 days by sending a written appeal to{' '}
             <a href="mailto:support@cheflowhq.com" className="text-brand-600 hover:underline">
@@ -751,7 +751,7 @@ export default function TermsPage() {
             sole discretion.
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">Effect of Termination</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">Effect of Termination</h3>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
             <li>Your right to access the Service ceases immediately</li>
             <li>You have 30 days to download your data via the account export function</li>
@@ -768,7 +768,7 @@ export default function TermsPage() {
 
         {/* §15 */}
         <section id="s15">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">
             15. Privacy &amp; Data Protection
           </h2>
           <p className="mb-4 leading-relaxed">
@@ -781,7 +781,7 @@ export default function TermsPage() {
             transmitted to and from ChefFlow is encrypted in transit (TLS) and at rest.
           </p>
 
-          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-800">AI Data Handling</h3>
+          <h3 className="mb-2 mt-6 text-base font-semibold text-stone-200">AI Data Handling</h3>
           <p className="mb-4 leading-relaxed">
             Remy conversations are processed by ChefFlow&apos;s private AI infrastructure (Ollama)
             and are <strong>never stored on ChefFlow&apos;s servers</strong>. Conversation history
@@ -797,7 +797,7 @@ export default function TermsPage() {
             features display an error rather than fall back to any external AI service.
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">GDPR (EU Users)</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">GDPR (EU Users)</h3>
           <p className="mb-6 leading-relaxed">
             ChefFlow processes EU personal data pursuant to GDPR Article 6(b) and 6(f). EU users
             have the right to access, rectify, erase, port, and restrict their personal data.
@@ -809,7 +809,7 @@ export default function TermsPage() {
             affected users of confirmed data breaches within 72 hours.
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">CCPA (California Users)</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">CCPA (California Users)</h3>
           <p className="mb-6 leading-relaxed">
             California residents have the right to know what personal information ChefFlow collects,
             request deletion, and opt out of sale (ChefFlow does not sell personal information).
@@ -820,7 +820,7 @@ export default function TermsPage() {
             .
           </p>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">PIPEDA (Canadian Users)</h3>
+          <h3 className="mb-2 text-base font-semibold text-stone-200">PIPEDA (Canadian Users)</h3>
           <p className="leading-relaxed">
             ChefFlow collects, uses, and discloses personal information with the knowledge and
             consent of the individual. Consent may be withdrawn at any time, subject to legal or
@@ -834,7 +834,7 @@ export default function TermsPage() {
 
         {/* §16 */}
         <section id="s16">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">16. Third-Party Services</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">16. Third-Party Services</h2>
           <p className="mb-4 leading-relaxed">
             The Service integrates with the following third-party providers. ChefFlow is not
             responsible for the terms, availability, security, or data practices of any third party.
@@ -842,12 +842,12 @@ export default function TermsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left">
-                  <th className="pb-2 pr-4 font-semibold text-stone-900">Provider</th>
-                  <th className="pb-2 pr-4 font-semibold text-stone-900">Purpose</th>
+                <tr className="border-b border-stone-700 text-left">
+                  <th className="pb-2 pr-4 font-semibold text-stone-100">Provider</th>
+                  <th className="pb-2 pr-4 font-semibold text-stone-100">Purpose</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {[
                   ['Stripe', 'Payment processing & Stripe Connect disbursements'],
                   ['Supabase', 'Database hosting & authentication'],
@@ -866,8 +866,8 @@ export default function TermsPage() {
                   ['OpenStreetMap', 'Address geocoding (address used; no PII stored by OSM)'],
                 ].map(([provider, purpose]) => (
                   <tr key={provider}>
-                    <td className="py-2 pr-4 font-medium text-stone-800">{provider}</td>
-                    <td className="py-2 text-stone-600">{purpose}</td>
+                    <td className="py-2 pr-4 font-medium text-stone-200">{provider}</td>
+                    <td className="py-2 text-stone-400">{purpose}</td>
                   </tr>
                 ))}
               </tbody>
@@ -877,7 +877,7 @@ export default function TermsPage() {
 
         {/* §17 */}
         <section id="s17">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">17. AI Features Disclosure</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">17. AI Features Disclosure</h2>
           <p className="mb-4 leading-relaxed">
             ChefFlow incorporates AI-assisted features to help chefs with drafting, scheduling, and
             business analysis. By using these features, you acknowledge:
@@ -917,9 +917,9 @@ export default function TermsPage() {
 
         {/* §18 */}
         <section id="s18">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">18. Acceptable Use Policy</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">18. Acceptable Use Policy</h2>
 
-          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-800">All Users</h3>
+          <h3 className="mb-2 mt-4 text-base font-semibold text-stone-200">All Users</h3>
           <ul className="mb-6 list-disc space-y-2 pl-5 leading-relaxed">
             <li>No illegal activity or facilitating illegal activity</li>
             <li>No fraud, misrepresentation, or deliberate deception</li>
@@ -931,7 +931,7 @@ export default function TermsPage() {
             <li>No resale or sublicensing of Service access without written permission</li>
           </ul>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 text-base font-semibold text-stone-200">
             Additional Prohibitions for Chefs
           </h3>
           <ul className="mb-6 list-disc space-y-2 pl-5 leading-relaxed">
@@ -944,7 +944,7 @@ export default function TermsPage() {
             <li>No undisclosed subcontracting of culinary services</li>
           </ul>
 
-          <h3 className="mb-2 text-base font-semibold text-stone-800">
+          <h3 className="mb-2 text-base font-semibold text-stone-200">
             Additional Prohibitions for Clients
           </h3>
           <ul className="list-disc space-y-2 pl-5 leading-relaxed">
@@ -962,7 +962,7 @@ export default function TermsPage() {
 
         {/* §19 */}
         <section id="s19">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">19. Loyalty Program</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">19. Loyalty Program</h2>
           <p className="mb-4 leading-relaxed">
             ChefFlow provides infrastructure for Chefs to run loyalty point programs for their
             Clients. Loyalty points:
@@ -984,7 +984,7 @@ export default function TermsPage() {
 
         {/* §20 */}
         <section id="s20">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">20. Changes to These Terms</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">20. Changes to These Terms</h2>
           <p className="leading-relaxed">
             ChefFlow reserves the right to modify these Terms at any time. For material changes, we
             will notify affected users by email and/or prominent in-app notice at least{' '}
@@ -997,10 +997,10 @@ export default function TermsPage() {
 
         {/* §21 */}
         <section id="s21">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">21. General Provisions</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">21. General Provisions</h2>
           <dl className="space-y-4 leading-relaxed">
             <div>
-              <dt className="font-semibold text-stone-900">Entire Agreement</dt>
+              <dt className="font-semibold text-stone-100">Entire Agreement</dt>
               <dd className="mt-1">
                 These Terms, together with the Privacy Policy and any service-specific addenda,
                 constitute the entire agreement between you and ChefFlow and supersede all prior
@@ -1008,7 +1008,7 @@ export default function TermsPage() {
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-stone-900">Severability</dt>
+              <dt className="font-semibold text-stone-100">Severability</dt>
               <dd className="mt-1">
                 If any provision is found to be unenforceable, it will be modified to the minimum
                 extent necessary, or severed if modification is not possible. Remaining provisions
@@ -1016,14 +1016,14 @@ export default function TermsPage() {
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-stone-900">No Waiver</dt>
+              <dt className="font-semibold text-stone-100">No Waiver</dt>
               <dd className="mt-1">
                 ChefFlow&apos;s failure to enforce any provision does not constitute a waiver of
                 ChefFlow&apos;s right to enforce it in the future.
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-stone-900">Assignment</dt>
+              <dt className="font-semibold text-stone-100">Assignment</dt>
               <dd className="mt-1">
                 You may not assign your rights or obligations without ChefFlow&apos;s prior written
                 consent. ChefFlow may assign these Terms in connection with a merger, acquisition,
@@ -1031,7 +1031,7 @@ export default function TermsPage() {
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-stone-900">Force Majeure</dt>
+              <dt className="font-semibold text-stone-100">Force Majeure</dt>
               <dd className="mt-1">
                 Neither party is liable for failure to perform obligations that are impossible due
                 to circumstances beyond their reasonable control, including pandemic, natural
@@ -1039,7 +1039,7 @@ export default function TermsPage() {
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-stone-900">Notice</dt>
+              <dt className="font-semibold text-stone-100">Notice</dt>
               <dd className="mt-1">
                 Legal notices to ChefFlow must be sent to{' '}
                 <a href="mailto:legal@cheflowhq.com" className="text-brand-600 hover:underline">
@@ -1049,7 +1049,7 @@ export default function TermsPage() {
               </dd>
             </div>
             <div>
-              <dt className="font-semibold text-stone-900">Electronic Agreement</dt>
+              <dt className="font-semibold text-stone-100">Electronic Agreement</dt>
               <dd className="mt-1">
                 These Terms are a legally binding agreement entered into electronically. Your
                 electronic agreement has the same legal effect as a physical signature.
@@ -1060,7 +1060,7 @@ export default function TermsPage() {
 
         {/* §22 */}
         <section id="s22">
-          <h2 className="mb-4 text-xl font-semibold text-stone-900">22. Contact</h2>
+          <h2 className="mb-4 text-xl font-semibold text-stone-100">22. Contact</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {[
               ['Support', 'support@cheflowhq.com'],
@@ -1068,7 +1068,7 @@ export default function TermsPage() {
               ['Privacy', 'privacy@cheflowhq.com'],
               ['Security', 'security@cheflowhq.com'],
             ].map(([label, email]) => (
-              <div key={label} className="rounded-lg border border-stone-200 p-4">
+              <div key={label} className="rounded-lg border border-stone-700 p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
                   {label}
                 </p>
@@ -1084,8 +1084,8 @@ export default function TermsPage() {
         </section>
       </div>
 
-      <div className="mt-12 border-t border-stone-200 pt-8">
-        <Link href="/" className="text-sm font-medium text-stone-600 hover:text-stone-900">
+      <div className="mt-12 border-t border-stone-700 pt-8">
+        <Link href="/" className="text-sm font-medium text-stone-400 hover:text-stone-100">
           &larr; Back to Home
         </Link>
       </div>

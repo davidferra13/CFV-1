@@ -17,7 +17,8 @@ export default async function AdminAuditPage() {
   try {
     entries = await getPlatformAuditLog(200)
   } catch {
-    note = 'admin_audit_log table not yet created. Apply the admin migrations to enable this feature.'
+    note =
+      'admin_audit_log table not yet created. Apply the admin migrations to enable this feature.'
   }
 
   return (
@@ -28,17 +29,19 @@ export default async function AdminAuditPage() {
         </div>
         <div>
           <h1 className="text-xl font-bold text-slate-900">Audit Log</h1>
-          <p className="text-sm text-slate-500">Immutable record of every sensitive platform action</p>
+          <p className="text-sm text-slate-500">
+            Immutable record of every sensitive platform action
+          </p>
         </div>
       </div>
 
       {note && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
           {note}
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         {entries.length === 0 && !note ? (
           <div className="py-12 text-center text-slate-400 text-sm">No audit log entries yet.</div>
         ) : entries.length > 0 ? (
@@ -46,11 +49,21 @@ export default async function AdminAuditPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Time</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Actor</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Action</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Target</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Details</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Time
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Actor
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Action
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Target
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Details
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -59,7 +72,9 @@ export default async function AdminAuditPage() {
                     <td className="px-4 py-2.5 text-xs text-slate-400 whitespace-nowrap">
                       {entry.ts ? new Date(String(entry.ts)).toLocaleString() : '—'}
                     </td>
-                    <td className="px-4 py-2.5 text-xs text-slate-600">{String(entry.actor_email ?? '—')}</td>
+                    <td className="px-4 py-2.5 text-xs text-slate-600">
+                      {String(entry.actor_email ?? '—')}
+                    </td>
                     <td className="px-4 py-2.5">
                       <span className="text-xs font-medium text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded font-mono">
                         {String(entry.action_type ?? '—')}

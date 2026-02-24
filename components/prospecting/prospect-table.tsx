@@ -26,7 +26,7 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-stone-200 text-left text-stone-500">
+          <tr className="border-b border-stone-700 text-left text-stone-500">
             <th className="py-3 px-3 font-medium">Prospect</th>
             <th className="py-3 px-3 font-medium">Category</th>
             <th className="py-3 px-3 font-medium">Location</th>
@@ -40,12 +40,12 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
           {prospects.map((p) => (
             <tr
               key={p.id}
-              className="border-b border-stone-100 hover:bg-stone-50 transition-colors"
+              className="border-b border-stone-800 hover:bg-stone-800 transition-colors"
             >
               <td className="py-3 px-3">
                 <Link
                   href={`/prospecting/${p.id}`}
-                  className="hover:underline font-medium text-stone-900 flex items-center gap-1.5"
+                  className="hover:underline font-medium text-stone-100 flex items-center gap-1.5"
                 >
                   {p.prospect_type === 'individual' ? (
                     <User className="h-3.5 w-3.5 text-stone-400" />
@@ -59,11 +59,11 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                 )}
               </td>
               <td className="py-3 px-3">
-                <span className="text-xs text-stone-600">
+                <span className="text-xs text-stone-400">
                   {PROSPECT_CATEGORY_LABELS[p.category as ProspectCategory] ?? p.category}
                 </span>
               </td>
-              <td className="py-3 px-3 text-stone-600">
+              <td className="py-3 px-3 text-stone-400">
                 {[p.city, p.state].filter(Boolean).join(', ') || p.region || '—'}
               </td>
               <td className="py-3 px-3">
@@ -94,7 +94,7 @@ export function ProspectTable({ prospects }: ProspectTableProps) {
                   </Badge>
                 )}
               </td>
-              <td className="py-3 px-3 text-stone-600">
+              <td className="py-3 px-3 text-stone-400">
                 {p.call_count > 0 ? (
                   <span className="text-xs">{p.call_count}x</span>
                 ) : (

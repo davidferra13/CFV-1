@@ -13,11 +13,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format } from 'date-fns'
 
-export default async function EventSchedulePage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default async function EventSchedulePage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const [event, timeline, dop, manualCompletions] = await Promise.all([
@@ -34,10 +30,10 @@ export default async function EventSchedulePage({
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">
+          <h1 className="text-3xl font-bold text-stone-100">
             Schedule: {event.occasion || 'Untitled Event'}
           </h1>
-          <p className="text-stone-600 mt-1">
+          <p className="text-stone-400 mt-1">
             {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy')}
             {event.serve_time && ` - Serve at ${event.serve_time}`}
           </p>

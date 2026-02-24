@@ -33,11 +33,11 @@ export function TestimonialPanel() {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Quote className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Testimonial Highlights</span>
+            <span className="text-sm font-medium text-stone-300">Testimonial Highlights</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -62,11 +62,11 @@ export function TestimonialPanel() {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Quote className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Testimonial Highlights</span>
+          <span className="text-sm font-medium text-stone-300">Testimonial Highlights</span>
           <Badge variant="success">{result.portfolioReady.length} ready</Badge>
           {result.needsEditing.length > 0 && (
             <Badge variant="warning">{result.needsEditing.length} need editing</Badge>
@@ -77,7 +77,7 @@ export function TestimonialPanel() {
         </Button>
       </div>
 
-      <p className="text-xs text-stone-600">{result.summary}</p>
+      <p className="text-xs text-stone-400">{result.summary}</p>
 
       {result.portfolioReady.length > 0 && (
         <div className="space-y-2">
@@ -85,9 +85,9 @@ export function TestimonialPanel() {
             Portfolio Ready
           </div>
           {result.portfolioReady.map((t, i) => (
-            <div key={i} className="border border-green-200 bg-green-50 rounded p-3 space-y-1">
+            <div key={i} className="border border-green-200 bg-green-950 rounded p-3 space-y-1">
               <div className="flex items-start justify-between gap-2">
-                <blockquote className="text-sm text-stone-800 italic leading-relaxed">
+                <blockquote className="text-sm text-stone-200 italic leading-relaxed">
                   "{t.quote}"
                 </blockquote>
                 <Button variant="ghost" onClick={() => copy(t.quote)}>
@@ -116,8 +116,8 @@ export function TestimonialPanel() {
             Needs Minor Editing
           </div>
           {result.needsEditing.map((t, i) => (
-            <div key={i} className="border border-stone-200 bg-stone-50 rounded p-3 space-y-1">
-              <blockquote className="text-sm text-stone-700 italic">"{t.quote}"</blockquote>
+            <div key={i} className="border border-stone-700 bg-stone-800 rounded p-3 space-y-1">
+              <blockquote className="text-sm text-stone-300 italic">"{t.quote}"</blockquote>
               <div className="flex items-center gap-2 text-[11px] text-stone-500">
                 <span>
                   {t.clientNameInitial} · {t.eventType}

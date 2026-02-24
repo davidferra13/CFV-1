@@ -6,13 +6,13 @@ import { HTMLAttributes } from 'react'
 type StatusTier = 'neutral' | 'pending' | 'active' | 'progress' | 'success' | 'danger' | 'muted'
 
 const TIER_STYLES: Record<StatusTier, string> = {
-  neutral: 'bg-stone-100 text-stone-600',
-  pending: 'bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200',
-  active: 'bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200',
-  progress: 'bg-sky-50 text-sky-700 ring-1 ring-inset ring-sky-200',
-  success: 'bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-300',
-  danger: 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-200',
-  muted: 'bg-stone-50 text-stone-500 ring-1 ring-inset ring-stone-200',
+  neutral: 'bg-stone-800 text-stone-400',
+  pending: 'bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800',
+  active: 'bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800',
+  progress: 'bg-sky-950 text-sky-700 ring-1 ring-inset ring-sky-800',
+  success: 'bg-emerald-900 text-emerald-800 ring-1 ring-inset ring-emerald-300',
+  danger: 'bg-red-950 text-red-700 ring-1 ring-inset ring-red-800',
+  muted: 'bg-stone-800 text-stone-500 ring-1 ring-inset ring-stone-700',
 }
 
 // Map every entity status to a visual tier

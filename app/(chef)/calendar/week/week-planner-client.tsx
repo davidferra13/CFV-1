@@ -32,16 +32,16 @@ import type { ChefCalendarEntry } from '@/lib/calendar/entry-actions'
 import { CALENDAR_COLORS } from '@/lib/calendar/colors'
 
 const BLOCK_COLORS: Record<PrepBlockType, string> = {
-  grocery_run: 'bg-green-100 text-green-800 border-green-200',
-  specialty_sourcing: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-  prep_session: 'bg-orange-100 text-orange-800 border-orange-200',
-  packing: 'bg-blue-100 text-blue-800 border-blue-200',
-  travel_to_event: 'bg-purple-100 text-purple-800 border-purple-200',
-  mental_prep: 'bg-pink-100 text-pink-800 border-pink-200',
-  equipment_prep: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  grocery_run: 'bg-green-900 text-green-800 border-green-200',
+  specialty_sourcing: 'bg-emerald-900 text-emerald-800 border-emerald-200',
+  prep_session: 'bg-orange-900 text-orange-800 border-orange-200',
+  packing: 'bg-blue-900 text-blue-800 border-blue-200',
+  travel_to_event: 'bg-purple-900 text-purple-800 border-purple-200',
+  mental_prep: 'bg-pink-900 text-pink-800 border-pink-200',
+  equipment_prep: 'bg-yellow-900 text-yellow-800 border-yellow-200',
   admin: 'bg-gray-100 text-gray-700 border-gray-200',
   cleanup: 'bg-slate-100 text-slate-700 border-slate-200',
-  custom: 'bg-indigo-100 text-indigo-800 border-indigo-200',
+  custom: 'bg-indigo-900 text-indigo-800 border-indigo-200',
 }
 
 function fmtTime(block: PrepBlock): string {
@@ -108,7 +108,7 @@ function SuggestionModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
+      <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <p className="font-semibold">Auto-schedule — {eventName}</p>
@@ -129,7 +129,7 @@ function SuggestionModal({
           {suggestions.map((s, i) => (
             <div
               key={i}
-              className={`border rounded-lg p-3 text-sm ${edits[i].included ? 'border-amber-300 bg-amber-50' : 'border-gray-200 opacity-50'}`}
+              className={`border rounded-lg p-3 text-sm ${edits[i].included ? 'border-amber-300 bg-amber-950' : 'border-gray-200 opacity-50'}`}
             >
               <div className="flex items-start gap-2">
                 <input
@@ -450,7 +450,7 @@ export function WeekPlannerClient({
       {criticalGaps.map((gap) => (
         <div
           key={gap.event_id}
-          className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900"
+          className="flex items-center justify-between rounded-lg border border-red-200 bg-red-950 px-4 py-3 text-sm text-red-900"
         >
           <div>
             <span className="font-semibold">Urgent: </span>
@@ -473,7 +473,7 @@ export function WeekPlannerClient({
       {warningGaps.map((gap) => (
         <div
           key={gap.event_id}
-          className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+          className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-900"
         >
           <div>
             <span className="font-semibold">
@@ -493,7 +493,7 @@ export function WeekPlannerClient({
       ))}
 
       {weekGaps.length === 0 && hasEvents && (
-        <div className="text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+        <div className="text-sm text-green-700 bg-green-950 border border-green-200 rounded-lg px-4 py-3">
           ✓ All events this week have required prep blocks scheduled.
         </div>
       )}
@@ -537,7 +537,7 @@ export function WeekPlannerClient({
             <div key={day.date} className="flex flex-col gap-1.5 min-w-0">
               {/* Day header */}
               <div
-                className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-600'}`}
+                className={`text-center py-1.5 rounded-lg text-xs font-semibold ${isToday ? 'bg-amber-9500 text-white' : 'bg-gray-100 text-gray-600'}`}
               >
                 <div>{format(parseISO(day.date), 'EEE')}</div>
                 <div className={`text-xs ${isToday ? 'text-amber-100' : 'text-gray-400'}`}>
@@ -563,7 +563,7 @@ export function WeekPlannerClient({
               {/* Confirmed events */}
               {day.events.map((ev) => (
                 <Link key={ev.id} href={`/events/${ev.id}`}>
-                  <div className="bg-amber-50 border border-amber-300 rounded-md px-1.5 py-1 text-xs hover:bg-amber-100 transition-colors cursor-pointer">
+                  <div className="bg-amber-950 border border-amber-300 rounded-md px-1.5 py-1 text-xs hover:bg-amber-900 transition-colors cursor-pointer">
                     <p className="font-semibold text-amber-900 truncate">
                       {ev.occasion || 'Event'}
                     </p>
@@ -577,7 +577,7 @@ export function WeekPlannerClient({
               {dayBlocks.map((block) => (
                 <div
                   key={block.id}
-                  className={`rounded-md border px-1.5 py-1 text-xs ${block.is_completed ? 'bg-green-50 border-green-200 opacity-70' : BLOCK_COLORS[block.block_type]}`}
+                  className={`rounded-md border px-1.5 py-1 text-xs ${block.is_completed ? 'bg-green-950 border-green-200 opacity-70' : BLOCK_COLORS[block.block_type]}`}
                 >
                   <div className="flex items-start justify-between gap-0.5">
                     <div className="flex-1 min-w-0">
@@ -641,11 +641,11 @@ export function WeekPlannerClient({
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs text-gray-500 pt-2">
         {[
-          { color: 'bg-amber-100 border-amber-300', label: 'Event (anchor)' },
-          { color: 'bg-orange-100 border-orange-200', label: 'Prep session' },
-          { color: 'bg-green-100 border-green-200', label: 'Grocery / Sourcing' },
-          { color: 'bg-blue-100 border-blue-200', label: 'Packing' },
-          { color: 'bg-green-50 border-green-200', label: 'Completed' },
+          { color: 'bg-amber-900 border-amber-300', label: 'Event (anchor)' },
+          { color: 'bg-orange-900 border-orange-200', label: 'Prep session' },
+          { color: 'bg-green-900 border-green-200', label: 'Grocery / Sourcing' },
+          { color: 'bg-blue-900 border-blue-200', label: 'Packing' },
+          { color: 'bg-green-950 border-green-200', label: 'Completed' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className={`w-3 h-3 rounded border ${color}`} />

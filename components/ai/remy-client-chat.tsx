@@ -184,9 +184,9 @@ export function RemyClientChat() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex w-[400px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-surface-border bg-white shadow-2xl">
+    <div className="fixed bottom-6 right-6 z-50 flex w-[400px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-surface-border bg-brand-50 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-surface-border bg-brand-950 px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
             R
@@ -228,7 +228,7 @@ export function RemyClientChat() {
                       setInput(q)
                       setTimeout(() => sendMessage(), 50)
                     }}
-                    className="rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs text-brand-700 transition-colors hover:bg-brand-100"
+                    className="rounded-full border border-brand-700 bg-brand-950 px-3 py-1.5 text-xs text-brand-400 transition-colors hover:bg-brand-900"
                   >
                     {q}
                   </button>
@@ -263,7 +263,7 @@ export function RemyClientChat() {
               <a
                 key={nav.href}
                 href={nav.href}
-                className="inline-flex items-center gap-1 rounded-full border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100"
+                className="inline-flex items-center gap-1 rounded-full border border-brand-700 bg-brand-950 px-3 py-1.5 text-xs font-medium text-brand-400 transition-colors hover:bg-brand-900"
               >
                 {nav.label}
                 <ChevronDown className="h-3 w-3 rotate-[-90deg]" />
@@ -273,7 +273,7 @@ export function RemyClientChat() {
         )}
 
         {error && (
-          <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+          <div className="mb-3 rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-xs text-red-700">
             {error}
           </div>
         )}
@@ -282,7 +282,7 @@ export function RemyClientChat() {
       </div>
 
       {/* Input */}
-      <div className="border-t border-surface-border bg-white p-3">
+      <div className="border-t border-surface-border bg-surface p-3">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}

@@ -112,7 +112,7 @@ export function TestimonialManager({ initialTestimonials, events }: Props) {
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
               filter === tab.key
                 ? 'bg-brand-600 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
             }`}
           >
             {tab.label}
@@ -139,7 +139,7 @@ export function TestimonialManager({ initialTestimonials, events }: Props) {
                   <div className="flex-1 min-w-0">
                     {/* Header */}
                     <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-semibold text-stone-900">{t.guest_name}</span>
+                      <span className="font-semibold text-stone-100">{t.guest_name}</span>
                       {t.is_approved && <Badge variant="success">Approved</Badge>}
                       {t.is_featured && <Badge variant="info">Featured</Badge>}
                       {!t.is_approved && <Badge variant="warning">Pending</Badge>}
@@ -169,7 +169,7 @@ export function TestimonialManager({ initialTestimonials, events }: Props) {
                     )}
 
                     {/* Testimonial text */}
-                    <p className="text-sm text-stone-700 leading-relaxed">
+                    <p className="text-sm text-stone-300 leading-relaxed">
                       &ldquo;{t.testimonial}&rdquo;
                     </p>
                   </div>

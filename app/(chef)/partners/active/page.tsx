@@ -39,28 +39,32 @@ export default async function ActivePartnersPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/partners" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/partners" className="text-sm text-stone-500 hover:text-stone-300">
           ← All Partners
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Active Partners</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Active Partners</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {partners.length}
           </span>
         </div>
-        <p className="text-stone-500 mt-1">Referral partners currently generating bookings for you</p>
+        <p className="text-stone-500 mt-1">
+          Referral partners currently generating bookings for you
+        </p>
       </div>
 
       {partners.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No active partners</p>
+          <p className="text-stone-400 font-medium mb-1">No active partners</p>
           <p className="text-stone-400 text-sm mb-4">Active referral partners will appear here</p>
           <div className="flex gap-3 justify-center">
             <Link href="/partners/new">
               <Button size="sm">+ Add Partner</Button>
             </Link>
             <Link href="/partners">
-              <Button variant="secondary" size="sm">View All Partners</Button>
+              <Button variant="secondary" size="sm">
+                View All Partners
+              </Button>
             </Link>
           </div>
         </Card>
@@ -70,25 +74,24 @@ export default async function ActivePartnersPage() {
             <Link
               key={partner.id}
               href={`/partners/${partner.id}`}
-              className="block rounded-lg border border-stone-200 p-4 hover:shadow-sm transition-all hover:bg-stone-50"
+              className="block rounded-lg border border-stone-700 p-4 hover:shadow-sm transition-all hover:bg-stone-800"
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-stone-900">{partner.name}</span>
+                    <span className="font-medium text-stone-100">{partner.name}</span>
                     <Badge variant={TYPE_VARIANTS[partner.partner_type] || 'default'}>
                       {TYPE_LABELS[partner.partner_type] || partner.partner_type}
                     </Badge>
-                    {partner.is_showcase_visible && (
-                      <Badge variant="success">Showcase</Badge>
-                    )}
+                    {partner.is_showcase_visible && <Badge variant="success">Showcase</Badge>}
                   </div>
                   {partner.contact_name && (
                     <p className="text-sm text-stone-500 mt-1">Contact: {partner.contact_name}</p>
                   )}
                   {partner.partner_locations && partner.partner_locations.length > 0 && (
                     <p className="text-xs text-stone-400 mt-1">
-                      {partner.partner_locations.length} location{partner.partner_locations.length !== 1 ? 's' : ''}
+                      {partner.partner_locations.length} location
+                      {partner.partner_locations.length !== 1 ? 's' : ''}
                     </p>
                   )}
                 </div>
@@ -96,15 +99,19 @@ export default async function ActivePartnersPage() {
                   <div className="flex gap-4 text-sm">
                     <div>
                       <span className="text-stone-400">Referrals</span>
-                      <p className="font-semibold text-stone-900">{partner.inquiry_count}</p>
+                      <p className="font-semibold text-stone-100">{partner.inquiry_count}</p>
                     </div>
                     <div>
                       <span className="text-stone-400">Events</span>
-                      <p className="font-semibold text-stone-900">{partner.completed_event_count}</p>
+                      <p className="font-semibold text-stone-100">
+                        {partner.completed_event_count}
+                      </p>
                     </div>
                     <div>
                       <span className="text-stone-400">Revenue</span>
-                      <p className="font-semibold text-stone-900">{formatCents(partner.total_revenue_cents)}</p>
+                      <p className="font-semibold text-stone-100">
+                        {formatCents(partner.total_revenue_cents)}
+                      </p>
                     </div>
                   </div>
                   <p className="text-xs text-stone-400">

@@ -4,7 +4,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getExpenses } from '@/lib/expenses/actions'
 import { EXPENSE_CATEGORIES } from '@/lib/constants/expense-categories'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -16,15 +23,16 @@ export default async function FoodIngredientsExpensesPage() {
   await requireChef()
   const allExpenses = await getExpenses()
 
-  const expenses = allExpenses
-    .filter(e => CATEGORIES.includes(e.category as typeof CATEGORIES[number]))
+  const expenses = allExpenses.filter((e) =>
+    CATEGORIES.includes(e.category as (typeof CATEGORIES)[number])
+  )
 
-  const totalByCategory = CATEGORIES.map(cat => ({
+  const totalByCategory = CATEGORIES.map((cat) => ({
     cat,
     label: EXPENSE_CATEGORIES[cat].label,
     color: EXPENSE_CATEGORIES[cat].color,
-    total: expenses.filter(e => e.category === cat).reduce((s, e) => s + e.amount_cents, 0),
-    count: expenses.filter(e => e.category === cat).length,
+    total: expenses.filter((e) => e.category === cat).reduce((s, e) => s + e.amount_cents, 0),
+    count: expenses.filter((e) => e.category === cat).length,
   }))
 
   const grandTotal = expenses.reduce((s, e) => s + e.amount_cents, 0)
@@ -32,10 +40,14 @@ export default async function FoodIngredientsExpensesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/expenses" className="text-sm text-stone-500 hover:text-stone-700">← Expenses</Link>
+        <Link href="/finance/expenses" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Expenses
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Food &amp; Ingredients</h1>
-          <span className="bg-green-100 text-green-700 text-sm px-2 py-0.5 rounded-full">{expenses.length}</span>
+          <h1 className="text-3xl font-bold text-stone-100">Food &amp; Ingredients</h1>
+          <span className="bg-green-900 text-green-700 text-sm px-2 py-0.5 rounded-full">
+            {expenses.length}
+          </span>
         </div>
         <p className="text-stone-500 mt-1">Groceries, alcohol, and specialty items</p>
       </div>
@@ -45,17 +57,19 @@ export default async function FoodIngredientsExpensesPage() {
           <p className="text-2xl font-bold text-red-600">{formatCurrency(grandTotal)}</p>
           <p className="text-sm text-stone-500 mt-1">Total food costs</p>
         </Card>
-        {totalByCategory.map(c => (
+        {totalByCategory.map((c) => (
           <Card key={c.cat} className="p-4">
-            <p className="text-xl font-bold text-stone-900">{formatCurrency(c.total)}</p>
-            <p className="text-sm text-stone-500 mt-1">{c.label} ({c.count})</p>
+            <p className="text-xl font-bold text-stone-100">{formatCurrency(c.total)}</p>
+            <p className="text-sm text-stone-500 mt-1">
+              {c.label} ({c.count})
+            </p>
           </Card>
         ))}
       </div>
 
       {expenses.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No food &amp; ingredient expenses recorded</p>
+          <p className="text-stone-400 font-medium">No food &amp; ingredient expenses recorded</p>
         </Card>
       ) : (
         <Card>
@@ -71,24 +85,38 @@ export default async function FoodIngredientsExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {expenses.map(expense => (
+              {expenses.map((expense) => (
                 <TableRow key={expense.id}>
-                  <TableCell className="text-stone-500 text-sm">{format(new Date(expense.expense_date), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-stone-900 text-sm">{expense.description}</TableCell>
+                  <TableCell className="text-stone-500 text-sm">
+                    {format(new Date(expense.expense_date), 'MMM d, yyyy')}
+                  </TableCell>
+                  <TableCell className="text-stone-100 text-sm">{expense.description}</TableCell>
                   <TableCell>
-                    <span className={`text-xs px-2 py-0.5 rounded-full ${EXPENSE_CATEGORIES[expense.category as keyof typeof EXPENSE_CATEGORIES]?.color ?? 'bg-stone-100 text-stone-600'}`}>
-                      {EXPENSE_CATEGORIES[expense.category as keyof typeof EXPENSE_CATEGORIES]?.label ?? expense.category}
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${EXPENSE_CATEGORIES[expense.category as keyof typeof EXPENSE_CATEGORIES]?.color ?? 'bg-stone-800 text-stone-400'}`}
+                    >
+                      {EXPENSE_CATEGORIES[expense.category as keyof typeof EXPENSE_CATEGORIES]
+                        ?.label ?? expense.category}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-500 text-sm">{expense.vendor_name ?? '—'}</TableCell>
+                  <TableCell className="text-stone-500 text-sm">
+                    {expense.vendor_name ?? '—'}
+                  </TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {expense.event ? (
-                      <Link href={`/events/${expense.event.id}`} className="text-brand-600 hover:underline capitalize">
+                      <Link
+                        href={`/events/${expense.event.id}`}
+                        className="text-brand-600 hover:underline capitalize"
+                      >
                         {expense.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-900 font-semibold text-sm">{formatCurrency(expense.amount_cents)}</TableCell>
+                  <TableCell className="text-stone-100 font-semibold text-sm">
+                    {formatCurrency(expense.amount_cents)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

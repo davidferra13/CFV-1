@@ -14,10 +14,7 @@ import {
   MessageSquare,
   Heart,
 } from 'lucide-react'
-import {
-  acceptInsight,
-  dismissInsight,
-} from '@/lib/insights/actions'
+import { acceptInsight, dismissInsight } from '@/lib/insights/actions'
 import type { ChatInsight, InsightType } from '@/lib/insights/actions'
 
 const INSIGHT_ICONS: Record<InsightType, React.ReactNode> = {
@@ -80,18 +77,16 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
         {insights.map((insight) => (
           <div
             key={insight.id}
-            className="p-2 rounded-lg border border-dashed border-amber-200 bg-amber-50/50"
+            className="p-2 rounded-lg border border-dashed border-amber-200 bg-amber-950/50"
           >
             <div className="flex items-start gap-2">
               <span className={`flex-shrink-0 mt-0.5 ${INSIGHT_COLORS[insight.insight_type]}`}>
                 {INSIGHT_ICONS[insight.insight_type]}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-stone-800">{insight.title}</p>
+                <p className="text-xs font-medium text-stone-200">{insight.title}</p>
                 {insight.detail && (
-                  <p className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">
-                    {insight.detail}
-                  </p>
+                  <p className="text-[10px] text-stone-500 mt-0.5 line-clamp-2">{insight.detail}</p>
                 )}
                 <div className="flex items-center gap-1 mt-1">
                   <span className="text-[10px] text-amber-600">
@@ -107,7 +102,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
                 type="button"
                 onClick={() => handleAccept(insight.id)}
                 disabled={isPending}
-                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-green-700 bg-green-100 rounded hover:bg-green-200 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-green-700 bg-green-900 rounded hover:bg-green-200 disabled:opacity-50 transition-colors"
               >
                 <Check className="w-2.5 h-2.5" />
                 Save as Note
@@ -116,7 +111,7 @@ export function ChatInsightsPanel({ initialInsights }: ChatInsightsPanelProps) {
                 type="button"
                 onClick={() => handleDismiss(insight.id)}
                 disabled={isPending}
-                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-stone-500 bg-stone-100 rounded hover:bg-stone-200 disabled:opacity-50 transition-colors"
+                className="flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-medium text-stone-500 bg-stone-800 rounded hover:bg-stone-700 disabled:opacity-50 transition-colors"
               >
                 <X className="w-2.5 h-2.5" />
                 Dismiss

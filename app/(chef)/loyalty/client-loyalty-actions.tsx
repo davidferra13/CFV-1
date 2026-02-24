@@ -41,7 +41,7 @@ export function AwardBonusForm({ clientId }: { clientId: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 p-4 rounded-lg bg-stone-50 space-y-3">
+    <form onSubmit={handleSubmit} className="mt-3 p-4 rounded-lg bg-stone-800 space-y-3">
       {error && <p className="text-sm text-red-600">{error}</p>}
       <div className="grid grid-cols-2 gap-3">
         <div>

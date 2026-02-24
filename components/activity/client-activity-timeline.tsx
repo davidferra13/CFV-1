@@ -31,10 +31,13 @@ const CLIENT_EVENT_DESCRIPTIONS: Record<string, string> = {
   page_viewed: 'Visited the portal',
 }
 
-export function ClientActivityTimeline({ chefActivity, clientActivity }: ClientActivityTimelineProps) {
+export function ClientActivityTimeline({
+  chefActivity,
+  clientActivity,
+}: ClientActivityTimelineProps) {
   // Merge and sort by time
   const merged: TimelineEntry[] = [
-    ...chefActivity.map(e => ({
+    ...chefActivity.map((e) => ({
       id: e.id,
       source: 'chef' as const,
       description: e.summary,
@@ -42,7 +45,7 @@ export function ClientActivityTimeline({ chefActivity, clientActivity }: ClientA
       created_at: e.created_at,
       href: e.entity_id ? getEntityHref(e.entity_type, e.entity_id) : null,
     })),
-    ...clientActivity.map(e => ({
+    ...clientActivity.map((e) => ({
       id: e.id,
       source: 'client' as const,
       description: CLIENT_EVENT_DESCRIPTIONS[e.event_type] || e.event_type,
@@ -53,18 +56,18 @@ export function ClientActivityTimeline({ chefActivity, clientActivity }: ClientA
 
   if (merged.length === 0) {
     return (
-      <div className="border border-stone-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-stone-700 mb-2">Activity Timeline</h3>
+      <div className="border border-stone-700 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-stone-300 mb-2">Activity Timeline</h3>
         <p className="text-xs text-stone-400">No activity recorded yet</p>
       </div>
     )
   }
 
   return (
-    <div className="border border-stone-200 rounded-lg p-4">
-      <h3 className="text-sm font-semibold text-stone-700 mb-3">Activity Timeline</h3>
+    <div className="border border-stone-700 rounded-lg p-4">
+      <h3 className="text-sm font-semibold text-stone-300 mb-3">Activity Timeline</h3>
       <div className="space-y-1 max-h-80 overflow-y-auto">
-        {merged.slice(0, 30).map(entry => (
+        {merged.slice(0, 30).map((entry) => (
           <TimelineRow key={entry.id} entry={entry} />
         ))}
       </div>
@@ -75,26 +78,29 @@ export function ClientActivityTimeline({ chefActivity, clientActivity }: ClientA
 function TimelineRow({ entry }: { entry: TimelineEntry }) {
   const timeAgo = formatTimeAgo(entry.created_at)
 
-  const badge = entry.source === 'chef'
-    ? { bg: 'bg-emerald-100 text-emerald-700', label: 'You' }
-    : { bg: 'bg-blue-100 text-blue-700', label: 'Client' }
+  const badge =
+    entry.source === 'chef'
+      ? { bg: 'bg-emerald-900 text-emerald-700', label: 'You' }
+      : { bg: 'bg-blue-900 text-blue-700', label: 'Client' }
 
   const domainBadge = entry.domain
     ? DOMAIN_CONFIG[entry.domain as keyof typeof DOMAIN_CONFIG]
     : null
 
   const inner = (
-    <div className="flex items-center justify-between text-xs py-1.5 px-2 rounded hover:bg-stone-50 transition-colors">
+    <div className="flex items-center justify-between text-xs py-1.5 px-2 rounded hover:bg-stone-800 transition-colors">
       <div className="flex items-center gap-2 min-w-0">
         <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${badge.bg}`}>
           {badge.label}
         </span>
         {domainBadge && (
-          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${domainBadge.bgColor} ${domainBadge.color}`}>
+          <span
+            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${domainBadge.bgColor} ${domainBadge.color}`}
+          >
             {domainBadge.label}
           </span>
         )}
-        <span className="text-stone-700 truncate">{entry.description}</span>
+        <span className="text-stone-300 truncate">{entry.description}</span>
       </div>
       <span className="text-stone-400 shrink-0 ml-2">{timeAgo}</span>
     </div>
@@ -108,13 +114,20 @@ function TimelineRow({ entry }: { entry: TimelineEntry }) {
 
 function getEntityHref(entityType: string, entityId: string): string | null {
   switch (entityType) {
-    case 'event': return `/pipeline/events/${entityId}`
-    case 'inquiry': return `/pipeline/inquiries/${entityId}`
-    case 'quote': return `/pipeline/quotes/${entityId}`
-    case 'menu': return `/culinary/menus/${entityId}`
-    case 'recipe': return `/culinary/recipes/${entityId}`
-    case 'client': return `/clients/${entityId}`
-    default: return null
+    case 'event':
+      return `/pipeline/events/${entityId}`
+    case 'inquiry':
+      return `/pipeline/inquiries/${entityId}`
+    case 'quote':
+      return `/pipeline/quotes/${entityId}`
+    case 'menu':
+      return `/culinary/menus/${entityId}`
+    case 'recipe':
+      return `/culinary/recipes/${entityId}`
+    case 'client':
+      return `/clients/${entityId}`
+    default:
+      return null
   }
 }
 

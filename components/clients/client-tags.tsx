@@ -11,7 +11,7 @@ import { X, Plus } from 'lucide-react'
 interface ClientTagsProps {
   clientId: string
   initialTags: string[]
-  suggestedTags?: string[]   // All tags used by this chef (for autocomplete)
+  suggestedTags?: string[] // All tags used by this chef (for autocomplete)
 }
 
 export function ClientTags({ clientId, initialTags, suggestedTags = [] }: ClientTagsProps) {
@@ -22,7 +22,7 @@ export function ClientTags({ clientId, initialTags, suggestedTags = [] }: Client
   const inputRef = useRef<HTMLInputElement>(null)
 
   const filtered = suggestedTags.filter(
-    t => t.toLowerCase().includes(inputValue.toLowerCase()) && !tags.includes(t)
+    (t) => t.toLowerCase().includes(inputValue.toLowerCase()) && !tags.includes(t)
   )
 
   async function handleAdd(tag: string) {
@@ -32,7 +32,7 @@ export function ClientTags({ clientId, initialTags, suggestedTags = [] }: Client
       setIsAdding(false)
       return
     }
-    setTags(prev => [...prev, trimmed].sort())
+    setTags((prev) => [...prev, trimmed].sort())
     setInputValue('')
     setIsAdding(false)
     setShowSuggestions(false)
@@ -40,17 +40,17 @@ export function ClientTags({ clientId, initialTags, suggestedTags = [] }: Client
   }
 
   async function handleRemove(tag: string) {
-    setTags(prev => prev.filter(t => t !== tag))
+    setTags((prev) => prev.filter((t) => t !== tag))
     await removeClientTag(clientId, tag)
   }
 
   return (
     <div className="flex items-center gap-2 flex-wrap">
       {/* Existing tags */}
-      {tags.map(tag => (
+      {tags.map((tag) => (
         <span
           key={tag}
-          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 border border-stone-200"
+          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-stone-800 text-stone-300 border border-stone-700"
         >
           {tag}
           <button
@@ -70,26 +70,36 @@ export function ClientTags({ clientId, initialTags, suggestedTags = [] }: Client
             ref={inputRef}
             autoFocus
             value={inputValue}
-            onChange={e => { setInputValue(e.target.value); setShowSuggestions(true) }}
-            onKeyDown={e => {
+            onChange={(e) => {
+              setInputValue(e.target.value)
+              setShowSuggestions(true)
+            }}
+            onKeyDown={(e) => {
               if (e.key === 'Enter') handleAdd(inputValue)
-              if (e.key === 'Escape') { setIsAdding(false); setInputValue('') }
+              if (e.key === 'Escape') {
+                setIsAdding(false)
+                setInputValue('')
+              }
             }}
             onBlur={() => {
               // Small delay to allow suggestion click to fire
-              setTimeout(() => { setIsAdding(false); setInputValue(''); setShowSuggestions(false) }, 150)
+              setTimeout(() => {
+                setIsAdding(false)
+                setInputValue('')
+                setShowSuggestions(false)
+              }, 150)
             }}
             placeholder="Tag name…"
             maxLength={50}
-            className="text-xs border border-stone-300 rounded-full px-2.5 py-0.5 w-32 focus:outline-none focus:border-brand-400"
+            className="text-xs border border-stone-600 rounded-full px-2.5 py-0.5 w-32 focus:outline-none focus:border-brand-400"
           />
           {showSuggestions && filtered.length > 0 && (
-            <div className="absolute top-full left-0 mt-1 z-10 bg-white border border-stone-200 rounded-md shadow-md min-w-[140px]">
-              {filtered.slice(0, 6).map(t => (
+            <div className="absolute top-full left-0 mt-1 z-10 bg-surface border border-stone-700 rounded-md shadow-md min-w-[140px]">
+              {filtered.slice(0, 6).map((t) => (
                 <button
                   key={t}
                   onMouseDown={() => handleAdd(t)}
-                  className="block w-full text-left text-xs px-3 py-1.5 hover:bg-stone-50 text-stone-700"
+                  className="block w-full text-left text-xs px-3 py-1.5 hover:bg-stone-800 text-stone-300"
                 >
                   {t}
                 </button>

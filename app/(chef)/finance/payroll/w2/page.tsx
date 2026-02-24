@@ -20,10 +20,10 @@ export default async function W2Page({ searchParams }: { searchParams: { year?: 
     <div className="space-y-6">
       <div className="flex items-start justify-between flex-wrap gap-4">
         <div>
-          <Link href="/finance/payroll" className="text-sm text-stone-500 hover:text-stone-700">
+          <Link href="/finance/payroll" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Payroll
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">W-2 Summaries — {taxYear}</h1>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">W-2 Summaries — {taxYear}</h1>
           <p className="text-stone-500 mt-1">
             Annual W-2 data per employee. File with SSA by January 31.
           </p>
@@ -36,7 +36,7 @@ export default async function W2Page({ searchParams }: { searchParams: { year?: 
                 className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                   y === taxYear
                     ? 'bg-brand-600 border-brand-600 text-white'
-                    : 'border-stone-300 text-stone-600 hover:border-brand-400 hover:text-brand-600'
+                    : 'border-stone-600 text-stone-400 hover:border-brand-400 hover:text-brand-600'
                 }`}
               >
                 {y}

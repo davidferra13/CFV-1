@@ -47,16 +47,16 @@ const FEATURES = [
 export default function Home() {
   return (
     <main>
-      <section className="relative overflow-hidden border-b border-stone-200 bg-gradient-to-b from-brand-50 via-surface-accent to-white">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl" />
+      <section className="relative overflow-hidden border-b border-stone-700 bg-gradient-to-b from-brand-950 via-stone-900 to-stone-950">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-brand-900/40 blur-3xl" />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 md:pb-20 md:pt-24 lg:px-8">
-          <h1 className="max-w-4xl text-4xl font-display tracking-tight text-stone-900 md:text-6xl">
+          <h1 className="max-w-4xl text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
             The business OS built by a chef, for chefs.
           </h1>
-          <p className="mt-4 rounded-full border border-brand-200 bg-white px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-700">
+          <p className="mt-4 rounded-full border border-brand-700 bg-surface px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-400">
             Designed by Someone Who Gets It
           </p>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-600 md:text-lg">
+          <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-400 md:text-lg">
             Private dinners, grazing tables, catering — whatever your craft, manage every inquiry,
             event, menu, and payment from one calm workspace.
           </p>
@@ -69,7 +69,7 @@ export default function Home() {
             </Link>
             <Link
               href="/pricing"
-              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50"
+              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-600 bg-surface px-6 py-3 text-sm font-semibold text-stone-300 transition-colors hover:bg-stone-800"
             >
               See pricing
             </Link>
@@ -84,26 +84,26 @@ export default function Home() {
             return (
               <article
                 key={feature.title}
-                className="rounded-xl border border-stone-200 bg-white p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
+                className="rounded-xl border border-stone-700 bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
               >
-                <div className="mb-4 inline-flex rounded-lg bg-brand-50 p-2.5 text-brand-700">
+                <div className="mb-4 inline-flex rounded-lg bg-brand-950 p-2.5 text-brand-400">
                   <Icon className="h-5 w-5" />
                 </div>
-                <h2 className="text-xl font-semibold text-stone-900">{feature.title}</h2>
-                <p className="mt-2 text-sm leading-relaxed text-stone-600">{feature.description}</p>
+                <h2 className="text-xl font-semibold text-stone-100">{feature.title}</h2>
+                <p className="mt-2 text-sm leading-relaxed text-stone-400">{feature.description}</p>
               </article>
             )
           })}
         </div>
       </section>
 
-      <section className="border-y border-stone-200 bg-surface-muted">
+      <section className="border-y border-stone-700 bg-surface-muted">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="mb-10 text-center">
-            <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
+            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
               From inquiry to payout in one flow.
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
               Keep the full client lifecycle in one system, with less back-and-forth and no
               fragmented spreadsheets.
             </p>
@@ -112,16 +112,16 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-stone-200 bg-gradient-to-b from-brand-50/60 to-white">
+      <section className="border-y border-stone-700 bg-gradient-to-b from-brand-950/60 to-stone-950">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-950 text-brand-400">
               <MessageCircle className="h-7 w-7" />
             </div>
-            <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
+            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
               Not sure if ChefFlow fits your workflow?
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
               Ask Remy — our concierge knows every feature inside and out. Describe your biggest
               headache and he&apos;ll show you exactly how ChefFlow handles it.
             </p>
@@ -133,10 +133,10 @@ export default function Home() {
       <HowItWorksSection />
 
       <section className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-        <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
+        <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
           Your calmer workflow starts here.
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
           Start with the essentials, then scale your operations with confidence.
         </p>
         <Link

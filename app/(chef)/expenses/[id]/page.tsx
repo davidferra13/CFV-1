@@ -23,11 +23,7 @@ const PAYMENT_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
-export default async function ExpenseDetailPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function ExpenseDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const [expense, receiptUrl] = await Promise.all([
@@ -46,8 +42,8 @@ export default async function ExpenseDetailPage({
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">{expense.description}</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">{expense.description}</h1>
+          <p className="text-stone-400 mt-1">
             {format(new Date(expense.expense_date), 'EEEE, MMMM d, yyyy')}
             {expense.vendor_name && ` - ${expense.vendor_name}`}
           </p>
@@ -64,19 +60,19 @@ export default async function ExpenseDetailPage({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div>
             <dt className="text-sm font-medium text-stone-500">Amount</dt>
-            <dd className="text-2xl font-bold text-stone-900 mt-1">
+            <dd className="text-2xl font-bold text-stone-100 mt-1">
               {formatCurrency(expense.amount_cents)}
             </dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Category</dt>
-            <dd className="text-sm font-medium text-stone-900 mt-1">
+            <dd className="text-sm font-medium text-stone-100 mt-1">
               {getCategoryLabel(expense.category)}
             </dd>
           </div>
           <div>
             <dt className="text-sm font-medium text-stone-500">Payment</dt>
-            <dd className="text-sm font-medium text-stone-900 mt-1">
+            <dd className="text-sm font-medium text-stone-100 mt-1">
               {PAYMENT_LABELS[expense.payment_method] || expense.payment_method}
               {expense.payment_card_used && (
                 <span className="text-stone-500 ml-1">({expense.payment_card_used})</span>
@@ -87,11 +83,11 @@ export default async function ExpenseDetailPage({
             <dt className="text-sm font-medium text-stone-500">Type</dt>
             <dd className="mt-1">
               {expense.is_business ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-brand-100 text-brand-800">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-brand-900 text-brand-300">
                   Business
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-900 text-amber-800">
                   Personal
                 </span>
               )}
@@ -101,7 +97,7 @@ export default async function ExpenseDetailPage({
 
         {/* Event Link */}
         {event && (
-          <div className="mt-4 pt-4 border-t border-stone-100">
+          <div className="mt-4 pt-4 border-t border-stone-800">
             <dt className="text-sm font-medium text-stone-500">Event</dt>
             <dd className="text-sm mt-1">
               <Link href={`/events/${expense.event_id}`} className="text-brand-600 hover:underline">
@@ -116,17 +112,17 @@ export default async function ExpenseDetailPage({
 
         {/* Notes */}
         {expense.notes && (
-          <div className="mt-4 pt-4 border-t border-stone-100">
+          <div className="mt-4 pt-4 border-t border-stone-800">
             <dt className="text-sm font-medium text-stone-500">Notes</dt>
-            <dd className="text-sm text-stone-900 mt-1 whitespace-pre-wrap">{expense.notes}</dd>
+            <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">{expense.notes}</dd>
           </div>
         )}
 
         {/* Mileage */}
         {expense.mileage_miles && (
-          <div className="mt-4 pt-4 border-t border-stone-100">
+          <div className="mt-4 pt-4 border-t border-stone-800">
             <dt className="text-sm font-medium text-stone-500">Mileage</dt>
-            <dd className="text-sm text-stone-900 mt-1">
+            <dd className="text-sm text-stone-100 mt-1">
               {expense.mileage_miles} miles
               {expense.mileage_rate_per_mile_cents && (
                 <span className="text-stone-500 ml-1">
@@ -149,7 +145,7 @@ export default async function ExpenseDetailPage({
               <img
                 src={receiptUrl}
                 alt="Receipt"
-                className="w-full rounded border border-stone-200"
+                className="w-full rounded border border-stone-700"
               />
             </div>
             <div>
@@ -161,7 +157,9 @@ export default async function ExpenseDetailPage({
                 </div>
                 <div>
                   <dt className="text-stone-500">Date</dt>
-                  <dd className="font-medium">{format(new Date(expense.expense_date), 'MMM d, yyyy')}</dd>
+                  <dd className="font-medium">
+                    {format(new Date(expense.expense_date), 'MMM d, yyyy')}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-stone-500">Total</dt>

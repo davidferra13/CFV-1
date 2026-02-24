@@ -31,7 +31,7 @@ export default async function PushDinnersPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-stone-800">Push Dinners</h1>
+          <h1 className="text-xl font-semibold text-stone-200">Push Dinners</h1>
           <p className="text-sm text-stone-500 mt-0.5">
             Create a dinner concept, invite clients personally, fill your calendar on your terms.
           </p>
@@ -46,9 +46,9 @@ export default async function PushDinnersPage() {
 
       {/* List */}
       {campaigns.length === 0 ? (
-        <div className="border border-dashed border-stone-200 rounded-xl p-12 text-center space-y-3">
+        <div className="border border-dashed border-stone-700 rounded-xl p-12 text-center space-y-3">
           <Utensils className="w-10 h-10 text-stone-300 mx-auto" />
-          <h3 className="text-base font-medium text-stone-600">Push your first dinner</h3>
+          <h3 className="text-base font-medium text-stone-400">Push your first dinner</h3>
           <p className="text-sm text-stone-400 max-w-xs mx-auto">
             Create a themed dinner — Halloween, Valentine's Day, anything — and invite past clients
             with personalised messages. Get a shareable booking link to fill your seats.
@@ -79,12 +79,12 @@ export default async function PushDinnersPage() {
               <Link
                 key={campaign.id}
                 href={`/marketing/push-dinners/${campaign.id}`}
-                className="block border border-stone-200 rounded-xl bg-white p-4 hover:border-stone-300 hover:shadow-sm transition-all group"
+                className="block border border-stone-700 rounded-xl bg-surface p-4 hover:border-stone-600 hover:shadow-sm transition-all group"
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0 space-y-1.5">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-sm font-semibold text-stone-800 truncate">
+                      <span className="text-sm font-semibold text-stone-200 truncate">
                         {campaign.name}
                       </span>
                       <Badge variant={statusVariant(campaign.status)}>
@@ -101,7 +101,7 @@ export default async function PushDinnersPage() {
 
                     {seatDisplay && (
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-stone-100 rounded-full max-w-[120px]">
+                        <div className="flex-1 h-1.5 bg-stone-800 rounded-full max-w-[120px]">
                           <div
                             className="h-1.5 bg-green-500 rounded-full transition-all"
                             style={{

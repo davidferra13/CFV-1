@@ -25,31 +25,32 @@ export default async function HistoryScanPage() {
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center gap-2 text-sm text-stone-500 mb-2">
-          <Link href="/inbox" className="hover:text-stone-700">
+          <Link href="/inbox" className="hover:text-stone-300">
             Inbox
           </Link>
           <span>/</span>
           <span>Email History Scan</span>
         </div>
-        <h1 className="text-2xl font-semibold text-stone-900">Email History Scan</h1>
-        <p className="mt-1 text-sm text-stone-600">
-          Emails from your Gmail history that may be missed booking inquiries or client conversations.
-          Review each one and import what matters.
+        <h1 className="text-2xl font-semibold text-stone-100">Email History Scan</h1>
+        <p className="mt-1 text-sm text-stone-400">
+          Emails from your Gmail history that may be missed booking inquiries or client
+          conversations. Review each one and import what matters.
         </p>
       </div>
 
       {/* Scan status bar */}
       {scanStatus && (
-        <div className="mb-6 rounded-lg border border-stone-200 bg-stone-50 px-4 py-3">
+        <div className="mb-6 rounded-lg border border-stone-700 bg-stone-800 px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="text-sm">
               {scanStatus.status === 'idle' && (
                 <span className="text-stone-500">Scan starting soon&hellip;</span>
               )}
               {scanStatus.status === 'in_progress' && (
-                <span className="text-brand-700">
+                <span className="text-brand-400">
                   Scanning your email history &mdash;{' '}
-                  <strong>{scanStatus.totalProcessed.toLocaleString()}</strong> emails processed so far
+                  <strong>{scanStatus.totalProcessed.toLocaleString()}</strong> emails processed so
+                  far
                 </span>
               )}
               {scanStatus.status === 'completed' && (
@@ -60,8 +61,7 @@ export default async function HistoryScanPage() {
               )}
               {scanStatus.status === 'paused' && (
                 <span className="text-stone-500">
-                  Scan paused at {scanStatus.totalProcessed.toLocaleString()} emails.
-                  Re-enable in{' '}
+                  Scan paused at {scanStatus.totalProcessed.toLocaleString()} emails. Re-enable in{' '}
                   <Link href="/settings" className="underline">
                     Settings
                   </Link>{' '}
@@ -80,9 +80,7 @@ export default async function HistoryScanPage() {
             </div>
             <div className="text-xs text-stone-400">
               {pendingFindings.length > 0 && (
-                <span className="font-medium text-brand-600">
-                  {pendingFindings.length} pending
-                </span>
+                <span className="font-medium text-brand-600">{pendingFindings.length} pending</span>
               )}
             </div>
           </div>

@@ -33,10 +33,10 @@ export function RecipeScalingPanel({
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-3">
           <ChefHat className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Recipe Scaling</span>
+          <span className="text-sm font-medium text-stone-300">Recipe Scaling</span>
           <Badge variant="info">Auto</Badge>
         </div>
         <div className="flex items-center gap-3">
@@ -48,7 +48,7 @@ export function RecipeScalingPanel({
               max={500}
               value={targetServings}
               onChange={(e) => setTargetServings(parseInt(e.target.value) || 1)}
-              className="w-16 text-sm border border-stone-200 rounded px-2 py-1"
+              className="w-16 text-sm border border-stone-700 rounded px-2 py-1"
             />
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -73,11 +73,11 @@ export function RecipeScalingPanel({
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ChefHat className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">{result.recipeName}</span>
+          <span className="text-sm font-medium text-stone-300">{result.recipeName}</span>
           <Badge variant="info">
             {result.originalServings} → {result.targetServings} servings
           </Badge>
@@ -87,10 +87,10 @@ export function RecipeScalingPanel({
         </Button>
       </div>
 
-      {result.yieldNote && <p className="text-xs text-stone-600">{result.yieldNote}</p>}
+      {result.yieldNote && <p className="text-xs text-stone-400">{result.yieldNote}</p>}
 
       {result.techniqueAdjustments.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded p-2">
+        <div className="bg-amber-950 border border-amber-200 rounded p-2">
           <div className="text-xs font-medium text-amber-800 mb-1 flex items-center gap-1">
             <AlertCircle className="w-3 h-3" />
             Technique Changes
@@ -106,7 +106,7 @@ export function RecipeScalingPanel({
       <div className="overflow-x-auto">
         <table className="w-full text-xs">
           <thead>
-            <tr className="border-b border-stone-100">
+            <tr className="border-b border-stone-800">
               <th className="text-left py-1 pr-3 text-stone-500 font-medium">Ingredient</th>
               <th className="text-left py-1 pr-3 text-stone-500 font-medium">Original</th>
               <th className="text-left py-1 pr-3 text-stone-500 font-medium">Scaled</th>
@@ -116,11 +116,11 @@ export function RecipeScalingPanel({
           <tbody>
             {result.scaledIngredients.map((ing, i) => (
               <tr key={i} className="border-b border-stone-50">
-                <td className="py-1 pr-3 text-stone-700">{ing.name}</td>
+                <td className="py-1 pr-3 text-stone-300">{ing.name}</td>
                 <td className="py-1 pr-3 text-stone-500">
                   {ing.originalQuantity} {ing.unit}
                 </td>
-                <td className="py-1 pr-3 font-medium text-stone-800">
+                <td className="py-1 pr-3 font-medium text-stone-200">
                   {ing.scaledQuantity} {ing.unit}
                 </td>
                 <td className="py-1 text-amber-600 text-[11px]">{ing.scalingNote ?? '—'}</td>
@@ -132,9 +132,9 @@ export function RecipeScalingPanel({
 
       {result.equipmentNotes.length > 0 && (
         <div>
-          <div className="text-xs font-medium text-stone-600 mb-1">Equipment</div>
+          <div className="text-xs font-medium text-stone-400 mb-1">Equipment</div>
           {result.equipmentNotes.map((e, i) => (
-            <div key={i} className="text-xs text-stone-600">
+            <div key={i} className="text-xs text-stone-400">
               • {e}
             </div>
           ))}

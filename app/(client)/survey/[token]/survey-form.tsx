@@ -3,18 +3,26 @@
 // Survey Form — client component for the public satisfaction survey page
 // Handles all form state and calls submitSurveyResponse on submit
 
-import { useState } from "react"
-import { submitSurveyResponse } from "@/lib/surveys/actions"
-import { Button } from "@/components/ui/button"
+import { useState } from 'react'
+import { submitSurveyResponse } from '@/lib/surveys/actions'
+import { Button } from '@/components/ui/button'
 
 type Props = {
   token: string
 }
 
-function StarRating({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
+function StarRating({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: number
+  onChange: (v: number) => void
+}) {
   return (
     <div className="space-y-1">
-      <label className="block text-sm font-medium text-stone-700">{label}</label>
+      <label className="block text-sm font-medium text-stone-300">{label}</label>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
@@ -80,24 +88,32 @@ export function SurveyForm({ token }: Props) {
 
   if (submitted) {
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-8 text-center">
+      <div className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
         <div className="text-4xl mb-4">🙏</div>
-        <h2 className="text-xl font-bold text-stone-900 mb-2">Thank you!</h2>
-        <p className="text-stone-600">Your feedback means a great deal. See you at the table again soon.</p>
+        <h2 className="text-xl font-bold text-stone-100 mb-2">Thank you!</h2>
+        <p className="text-stone-400">
+          Your feedback means a great deal. See you at the table again soon.
+        </p>
       </div>
     )
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-6 space-y-6"
+    >
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
       )}
 
       {/* NPS */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-stone-700">
-          How likely are you to recommend this chef to a friend? <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-stone-300">
+          How likely are you to recommend this chef to a friend?{' '}
+          <span className="text-red-500">*</span>
         </label>
         <div className="flex flex-wrap gap-2">
           {Array.from({ length: 11 }, (_, i) => (
@@ -108,7 +124,7 @@ export function SurveyForm({ token }: Props) {
               className={`w-9 h-9 rounded-lg text-sm font-medium border transition-colors ${
                 npsScore === i
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                  : 'bg-surface text-stone-300 border-stone-700 hover:border-stone-400'
               }`}
             >
               {i}
@@ -123,20 +139,37 @@ export function SurveyForm({ token }: Props) {
 
       {/* Star ratings */}
       <div className="space-y-4">
-        <StarRating label="Overall experience *" value={overallRating} onChange={setOverallRating} />
-        <StarRating label="Food quality" value={foodQualityRating} onChange={setFoodQualityRating} />
+        <StarRating
+          label="Overall experience *"
+          value={overallRating}
+          onChange={setOverallRating}
+        />
+        <StarRating
+          label="Food quality"
+          value={foodQualityRating}
+          onChange={setFoodQualityRating}
+        />
         <StarRating label="Service" value={serviceRating} onChange={setServiceRating} />
         <StarRating label="Value for money" value={valueRating} onChange={setValueRating} />
-        <StarRating label="Presentation" value={presentationRating} onChange={setPresentationRating} />
+        <StarRating
+          label="Presentation"
+          value={presentationRating}
+          onChange={setPresentationRating}
+        />
       </div>
 
       {/* Would rebook */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-stone-700">
+        <label className="block text-sm font-medium text-stone-300">
           Would you book again? <span className="text-red-500">*</span>
         </label>
         <div className="flex gap-3">
-          {([{ label: 'Yes', value: true }, { label: 'No', value: false }] as const).map(({ label, value }) => (
+          {(
+            [
+              { label: 'Yes', value: true },
+              { label: 'No', value: false },
+            ] as const
+          ).map(({ label, value }) => (
             <button
               key={label}
               type="button"
@@ -144,7 +177,7 @@ export function SurveyForm({ token }: Props) {
               className={`px-6 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 wouldRebook === value
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400'
+                  : 'bg-surface text-stone-300 border-stone-700 hover:border-stone-400'
               }`}
             >
               {label}
@@ -156,32 +189,38 @@ export function SurveyForm({ token }: Props) {
       {/* Open text */}
       <div className="space-y-4">
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-stone-700">What was the highlight of the evening?</label>
+          <label className="block text-sm font-medium text-stone-300">
+            What was the highlight of the evening?
+          </label>
           <textarea
             value={highlightText}
             onChange={(e) => setHighlightText(e.target.value)}
             rows={2}
-            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
+            className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-600"
             placeholder="The lamb was extraordinary..."
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-stone-700">Anything we could improve?</label>
+          <label className="block text-sm font-medium text-stone-300">
+            Anything we could improve?
+          </label>
           <textarea
             value={improvementText}
             onChange={(e) => setImprovementText(e.target.value)}
             rows={2}
-            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
+            className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-600"
             placeholder="Optional"
           />
         </div>
         <div className="space-y-1">
-          <label className="block text-sm font-medium text-stone-700">Leave a short testimonial (optional)</label>
+          <label className="block text-sm font-medium text-stone-300">
+            Leave a short testimonial (optional)
+          </label>
           <textarea
             value={testimonialText}
             onChange={(e) => setTestimonialText(e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-stone-200 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-300"
+            className="w-full rounded-lg border border-stone-700 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-600"
             placeholder="This was the most memorable dinner party..."
           />
         </div>
@@ -193,10 +232,11 @@ export function SurveyForm({ token }: Props) {
           type="checkbox"
           checked={consentToDisplay}
           onChange={(e) => setConsentToDisplay(e.target.checked)}
-          className="mt-0.5 h-4 w-4 rounded border-stone-300 text-stone-900"
+          className="mt-0.5 h-4 w-4 rounded border-stone-600 text-stone-100"
         />
-        <span className="text-sm text-stone-600">
-          I consent to this feedback being displayed on the chef&apos;s profile (anonymised if preferred).
+        <span className="text-sm text-stone-400">
+          I consent to this feedback being displayed on the chef&apos;s profile (anonymised if
+          preferred).
         </span>
       </label>
 

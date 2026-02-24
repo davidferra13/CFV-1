@@ -28,7 +28,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
   return (
     <div className="space-y-4">
       {/* Summary header */}
-      <div className="flex items-center gap-4 p-4 rounded-lg border border-stone-200 bg-stone-50">
+      <div className="flex items-center gap-4 p-4 rounded-lg border border-stone-700 bg-stone-800">
         <div className="text-center">
           <div
             className={`text-3xl font-bold ${passRatePct >= 80 ? 'text-emerald-600' : passRatePct >= 60 ? 'text-amber-600' : 'text-red-600'}`}
@@ -39,7 +39,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
         </div>
         <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div>
-            <div className="text-sm font-semibold text-stone-900">{run.scenarioCount}</div>
+            <div className="text-sm font-semibold text-stone-100">{run.scenarioCount}</div>
             <div className="text-xs text-stone-500">scenarios run</div>
           </div>
           <div>
@@ -53,7 +53,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
             <div className="text-xs text-stone-500">failed</div>
           </div>
           <div>
-            <div className="text-sm font-semibold text-stone-700">
+            <div className="text-sm font-semibold text-stone-300">
               {run.completedAt
                 ? Math.round(
                     (new Date(run.completedAt).getTime() - new Date(run.startedAt).getTime()) /
@@ -85,7 +85,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
                   <div className="flex items-center gap-3">
                     <span
                       className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-                        pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-500'
+                        pct >= 80 ? 'bg-emerald-9500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-9500'
                       }`}
                     />
                     <CardTitle className="text-sm font-medium">
@@ -93,23 +93,23 @@ export function SimulationResultsPanel({ run, results }: Props) {
                     </CardTitle>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-stone-700">
+                    <span className="text-sm font-semibold text-stone-300">
                       {passed}/{total} passed ({pct}%)
                     </span>
                     <span className="text-xs text-stone-400">{isExpanded ? '▲' : '▼'}</span>
                   </div>
                 </div>
                 {/* Progress bar */}
-                <div className="mt-2 h-1.5 w-full rounded-full bg-stone-200 overflow-hidden">
+                <div className="mt-2 h-1.5 w-full rounded-full bg-stone-700 overflow-hidden">
                   <div
-                    className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-500'}`}
+                    className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-9500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-9500'}`}
                     style={{ width: `${pct}%` }}
                   />
                 </div>
               </CardHeader>
 
               {isExpanded && (
-                <CardContent className="pt-0 border-t border-stone-100">
+                <CardContent className="pt-0 border-t border-stone-800">
                   {failures.length === 0 ? (
                     <p className="text-sm text-emerald-700 py-2">
                       All scenarios passed for this module.
@@ -122,7 +122,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
                       {failures.map((r) => (
                         <div
                           key={r.scenarioId}
-                          className="rounded-lg border border-red-100 bg-red-50 p-3 space-y-2"
+                          className="rounded-lg border border-red-100 bg-red-950 p-3 space-y-2"
                         >
                           <div className="flex items-center justify-between">
                             <span className="text-xs font-medium text-red-700">
@@ -130,13 +130,13 @@ export function SimulationResultsPanel({ run, results }: Props) {
                             </span>
                             <span className="text-xs text-stone-400">{r.durationMs}ms</span>
                           </div>
-                          <div className="text-xs text-stone-600 font-medium">Scenario:</div>
-                          <pre className="text-xs text-stone-700 bg-white rounded border border-stone-200 p-2 overflow-x-auto whitespace-pre-wrap max-h-24">
+                          <div className="text-xs text-stone-400 font-medium">Scenario:</div>
+                          <pre className="text-xs text-stone-300 bg-surface rounded border border-stone-700 p-2 overflow-x-auto whitespace-pre-wrap max-h-24">
                             {r.scenarioId ?? 'No scenario text'}
                           </pre>
                           {r.failures.length > 0 && (
                             <div>
-                              <div className="text-xs text-stone-600 font-medium mb-1">
+                              <div className="text-xs text-stone-400 font-medium mb-1">
                                 Issues found:
                               </div>
                               <ul className="space-y-0.5">
@@ -157,14 +157,14 @@ export function SimulationResultsPanel({ run, results }: Props) {
                   {/* Sample passing result */}
                   {moduleResults.find((r) => r.passed) && (
                     <details className="mt-3">
-                      <summary className="text-xs text-stone-500 cursor-pointer hover:text-stone-700">
+                      <summary className="text-xs text-stone-500 cursor-pointer hover:text-stone-300">
                         Show a passing example
                       </summary>
-                      <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-50 p-3">
+                      <div className="mt-2 rounded-lg border border-emerald-100 bg-emerald-950 p-3">
                         <div className="text-xs font-medium text-emerald-700 mb-1">
                           Score: {moduleResults.find((r) => r.passed)?.score}/100
                         </div>
-                        <pre className="text-xs text-stone-700 bg-white rounded border border-stone-200 p-2 overflow-x-auto whitespace-pre-wrap max-h-32">
+                        <pre className="text-xs text-stone-300 bg-surface rounded border border-stone-700 p-2 overflow-x-auto whitespace-pre-wrap max-h-32">
                           {JSON.stringify(moduleResults.find((r) => r.passed)?.rawOutput, null, 2)}
                         </pre>
                       </div>

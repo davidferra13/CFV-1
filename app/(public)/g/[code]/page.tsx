@@ -34,7 +34,7 @@ export default async function GuestLandingPage({ params }: Props) {
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor }}>
       {/* Hero */}
-      <section className="pt-12 pb-8 px-6 bg-white/70">
+      <section className="pt-12 pb-8 px-6 bg-stone-900/70">
         <div className="max-w-lg mx-auto text-center">
           {data.chefPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -44,16 +44,16 @@ export default async function GuestLandingPage({ params }: Props) {
               className="w-24 h-24 rounded-full object-cover mx-auto mb-5 ring-4 ring-white shadow-lg"
             />
           ) : (
-            <div className="w-24 h-24 rounded-full bg-stone-200 flex items-center justify-center mx-auto mb-5 ring-4 ring-white shadow-lg">
+            <div className="w-24 h-24 rounded-full bg-stone-700 flex items-center justify-center mx-auto mb-5 ring-4 ring-white shadow-lg">
               <span className="text-2xl font-bold text-stone-500">
                 {data.chefName.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
 
-          <h1 className="text-3xl md:text-4xl font-bold text-stone-900">{data.chefName}</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-stone-100">{data.chefName}</h1>
 
-          {data.tagline && <p className="text-lg text-stone-600 mt-2">{data.tagline}</p>}
+          {data.tagline && <p className="text-lg text-stone-400 mt-2">{data.tagline}</p>}
 
           <p className="text-stone-500 mt-4 max-w-md mx-auto leading-relaxed">
             Enjoyed tonight? Leave your info and I'll reach out about cooking for you.

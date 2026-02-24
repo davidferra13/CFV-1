@@ -26,7 +26,11 @@ function addDays(date: string, days: number): string {
   return d.toISOString().split('T')[0]
 }
 
-function calculatePlan(totalCents: number, numPayments: number, eventDate: string): InstallmentPlan {
+function calculatePlan(
+  totalCents: number,
+  numPayments: number,
+  eventDate: string
+): InstallmentPlan {
   const baseAmount = Math.floor(totalCents / numPayments)
   const remainder = totalCents - baseAmount * numPayments
   const today = new Date().toISOString().split('T')[0]
@@ -60,7 +64,7 @@ export function PaymentPlanCalculator({ totalCents, eventDate, eventName }: Prop
             Payment Plan Options
           </CardTitle>
           {eventName && <p className="text-sm text-stone-500">{eventName}</p>}
-          <p className="text-lg font-semibold text-stone-900">Total: {formatCents(totalCents)}</p>
+          <p className="text-lg font-semibold text-stone-100">Total: {formatCents(totalCents)}</p>
         </CardHeader>
         <CardContent>
           {/* Plan Selector */}
@@ -71,13 +75,13 @@ export function PaymentPlanCalculator({ totalCents, eventDate, eventName }: Prop
                 onClick={() => setSelectedPlan(plan.numberOfPayments)}
                 className={`rounded-lg border p-3 text-center transition-colors ${
                   selectedPlan === plan.numberOfPayments
-                    ? 'border-brand-500 bg-brand-50 ring-1 ring-brand-500'
-                    : 'border-stone-200 hover:bg-stone-50'
+                    ? 'border-brand-500 bg-brand-950 ring-1 ring-brand-500'
+                    : 'border-stone-700 hover:bg-stone-800'
                 }`}
               >
-                <p className="text-lg font-bold text-stone-900">{plan.numberOfPayments}</p>
+                <p className="text-lg font-bold text-stone-100">{plan.numberOfPayments}</p>
                 <p className="text-xs text-stone-500">payments</p>
-                <p className="text-sm font-medium text-stone-700 mt-1">
+                <p className="text-sm font-medium text-stone-300 mt-1">
                   {formatCents(plan.installments[0].amountCents)}/ea
                 </p>
               </button>
@@ -89,15 +93,16 @@ export function PaymentPlanCalculator({ totalCents, eventDate, eventName }: Prop
             {activePlan.installments.map((inst) => (
               <div
                 key={inst.number}
-                className="flex items-center justify-between rounded-lg border border-stone-200 px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-stone-700 px-4 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center text-sm font-semibold text-stone-600">
+                  <div className="w-8 h-8 rounded-full bg-stone-800 flex items-center justify-center text-sm font-semibold text-stone-400">
                     {inst.number}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-stone-900">
-                      Payment {inst.number}{inst.number === 1 ? ' (Due now)' : ''}
+                    <p className="text-sm font-medium text-stone-100">
+                      Payment {inst.number}
+                      {inst.number === 1 ? ' (Due now)' : ''}
                     </p>
                     <div className="flex items-center gap-1 text-xs text-stone-500">
                       <Calendar className="h-3 w-3" />
@@ -110,7 +115,9 @@ export function PaymentPlanCalculator({ totalCents, eventDate, eventName }: Prop
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-stone-900">{formatCents(inst.amountCents)}</p>
+                  <p className="text-sm font-semibold text-stone-100">
+                    {formatCents(inst.amountCents)}
+                  </p>
                   {inst.number === 1 && <Badge variant="warning">Due Today</Badge>}
                 </div>
               </div>

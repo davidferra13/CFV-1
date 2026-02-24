@@ -34,7 +34,7 @@ function UnsubscribeResult({
     <div
       style={{
         fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-        backgroundColor: '#f6f9fc',
+        backgroundColor: '#0c0a09',
         minHeight: '100vh',
         display: 'flex',
         alignItems: 'center',
@@ -44,13 +44,13 @@ function UnsubscribeResult({
     >
       <div
         style={{
-          backgroundColor: '#ffffff',
+          backgroundColor: '#1c1917',
           borderRadius: '12px',
           padding: '48px 40px',
           maxWidth: '480px',
           width: '100%',
           textAlign: 'center',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
         }}
       >
         {/* Logo */}
@@ -72,24 +72,24 @@ function UnsubscribeResult({
 
         {state === 'success' ? (
           <>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#18181b', margin: '0 0 12px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#f5f5f4', margin: '0 0 12px' }}>
               You&apos;ve been unsubscribed
             </h1>
-            <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#6b7280', margin: '0 0 8px' }}>
+            <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#a8a29e', margin: '0 0 8px' }}>
               You will no longer receive marketing emails from{' '}
               {chefName ? <strong>{chefName}</strong> : 'this chef'}.
             </p>
-            <p style={{ fontSize: '13px', color: '#9ca3af', margin: '0' }}>
+            <p style={{ fontSize: '13px', color: '#78716c', margin: '0' }}>
               You&apos;ll still receive important emails about events you&apos;ve booked, quotes,
               and payments.
             </p>
           </>
         ) : (
           <>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#18181b', margin: '0 0 12px' }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#f5f5f4', margin: '0 0 12px' }}>
               Invalid link
             </h1>
-            <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#6b7280', margin: '0' }}>
+            <p style={{ fontSize: '15px', lineHeight: 1.6, color: '#a8a29e', margin: '0' }}>
               This unsubscribe link is invalid or has already been used. If you&apos;re still
               receiving unwanted emails, please reply to the email directly.
             </p>

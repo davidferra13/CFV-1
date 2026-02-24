@@ -64,7 +64,7 @@ function DeleteButton({
 
   if (state === 'done') {
     return (
-      <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+      <div className="flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-950 p-3">
         <div className="flex items-center gap-2">
           <Check className="h-4 w-4 text-emerald-600" />
           <span className="text-sm font-medium text-emerald-700">Deleted</span>
@@ -74,11 +74,11 @@ function DeleteButton({
   }
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-stone-200 bg-white p-3">
+    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface p-3">
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-stone-400" />
         <div>
-          <p className="text-sm font-medium text-stone-900">{label}</p>
+          <p className="text-sm font-medium text-stone-100">{label}</p>
           <p className="text-xs text-stone-500">
             {count} item{count !== 1 ? 's' : ''}
           </p>
@@ -86,7 +86,7 @@ function DeleteButton({
       </div>
       <div className="flex items-center gap-2">
         {state === 'confirming' && (
-          <button onClick={handleCancel} className="text-xs text-stone-500 hover:text-stone-700">
+          <button onClick={handleCancel} className="text-xs text-stone-500 hover:text-stone-300">
             Cancel
           </button>
         )}
@@ -95,8 +95,8 @@ function DeleteButton({
           disabled={state === 'deleting' || count === 0}
           className={`inline-flex items-center gap-1 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
             state === 'confirming'
-              ? 'bg-red-500 text-white hover:bg-red-600'
-              : 'border border-red-200 text-red-600 hover:bg-red-50'
+              ? 'bg-red-9500 text-white hover:bg-red-600'
+              : 'border border-red-200 text-red-600 hover:bg-red-950'
           } disabled:opacity-30 disabled:cursor-not-allowed`}
         >
           {state === 'deleting' ? (
@@ -133,9 +133,9 @@ function FeatureToggle({
   onChange: (val: boolean) => void
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-stone-200 bg-white p-3">
+    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface p-3">
       <div>
-        <p className="text-sm font-medium text-stone-900">{label}</p>
+        <p className="text-sm font-medium text-stone-100">{label}</p>
         <p className="text-xs text-stone-500">{description}</p>
       </div>
       <button
@@ -236,7 +236,7 @@ export function DataControls({
     <div className="space-y-6">
       {/* ─── Feature Toggles ───────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-stone-900 mb-1">Feature Controls</h3>
+        <h3 className="font-semibold text-stone-100 mb-1">Feature Controls</h3>
         <p className="text-xs text-stone-500 mb-3">
           Turn individual features on or off. Changes take effect immediately.
         </p>
@@ -265,7 +265,7 @@ export function DataControls({
 
       {/* ─── Data Summary ──────────────────────────────────── */}
       <div>
-        <h3 className="font-semibold text-stone-900 mb-1">Your AI Data</h3>
+        <h3 className="font-semibold text-stone-100 mb-1">Your AI Data</h3>
         <p className="text-xs text-stone-500 mb-3">
           Everything Remy knows about you. Delete individual categories or everything at once.
         </p>
@@ -292,7 +292,7 @@ export function DataControls({
       </div>
 
       {/* ─── Nuclear Delete ────────────────────────────────── */}
-      <div className="rounded-xl border-2 border-red-200 bg-red-50/50 p-4 space-y-3">
+      <div className="rounded-xl border-2 border-red-200 bg-red-950/50 p-4 space-y-3">
         <div className="flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-red-500" />
           <h3 className="font-semibold text-red-900">Delete All AI Data</h3>
@@ -305,7 +305,7 @@ export function DataControls({
           {nuclearState === 'confirming' && (
             <button
               onClick={() => setNuclearState('idle')}
-              className="text-sm text-stone-500 hover:text-stone-700"
+              className="text-sm text-stone-500 hover:text-stone-300"
             >
               Cancel
             </button>
@@ -317,8 +317,8 @@ export function DataControls({
               nuclearState === 'confirming'
                 ? 'bg-red-600 text-white hover:bg-red-700'
                 : nuclearState === 'done'
-                  ? 'bg-emerald-500 text-white'
-                  : 'bg-red-500 text-white hover:bg-red-600'
+                  ? 'bg-emerald-9500 text-white'
+                  : 'bg-red-9500 text-white hover:bg-red-600'
             } disabled:opacity-30 disabled:cursor-not-allowed`}
           >
             {nuclearState === 'deleting' ? (
@@ -347,10 +347,10 @@ export function DataControls({
       </div>
 
       {/* ─── Disable Remy ──────────────────────────────────── */}
-      <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-3">
+      <div className="rounded-xl border border-stone-700 bg-stone-800 p-4 space-y-3">
         <div className="flex items-center gap-2">
           <Power className="h-5 w-5 text-stone-500" />
-          <h3 className="font-semibold text-stone-900">Turn Off Remy</h3>
+          <h3 className="font-semibold text-stone-100">Turn Off Remy</h3>
         </div>
         <p className="text-sm text-stone-500">
           Disable all AI features immediately. Your existing data is preserved until you choose to
@@ -359,13 +359,13 @@ export function DataControls({
         <button
           onClick={handleDisableRemy}
           disabled={disabling}
-          className="inline-flex items-center gap-2 rounded-lg border border-stone-300 bg-white px-4 py-2
-                     text-sm font-medium text-stone-700 hover:bg-stone-100
+          className="inline-flex items-center gap-2 rounded-lg border border-stone-600 bg-surface px-4 py-2
+                     text-sm font-medium text-stone-300 hover:bg-stone-700
                      disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {disabling ? (
             <>
-              <div className="h-4 w-4 border-2 border-stone-300 border-t-stone-600 rounded-full animate-spin" />
+              <div className="h-4 w-4 border-2 border-stone-600 border-t-stone-600 rounded-full animate-spin" />
               Turning off...
             </>
           ) : (

@@ -58,12 +58,12 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-stone-900 mb-2">Thank you!</h2>
-        <p className="text-stone-600 max-w-sm mx-auto">
+        <h2 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h2>
+        <p className="text-stone-400 max-w-sm mx-auto">
           {chefName} will be in touch soon. Looking forward to cooking for you!
         </p>
 
-        <div className="mt-8 pt-6 border-t border-stone-200 max-w-sm mx-auto">
+        <div className="mt-8 pt-6 border-t border-stone-700 max-w-sm mx-auto">
           <p className="text-sm text-stone-500 mb-3">
             Want to browse menus, track events, and book directly?
           </p>
@@ -81,11 +81,11 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">I'd love to host my own event</h2>
+      <div className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-stone-100">I'd love to host my own event</h2>
 
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="name" className="block text-sm font-medium text-stone-300 mb-1">
             Name <span className="text-red-500">*</span>
           </label>
           <input
@@ -94,14 +94,14 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
             required
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:border-transparent text-stone-900"
+            className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:outline-none focus:ring-2 focus:border-transparent text-stone-100"
             style={{ '--tw-ring-color': primaryColor } as any}
             placeholder="Your full name"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-stone-300 mb-1">
             Email <span className="text-red-500">*</span>
           </label>
           <input
@@ -110,14 +110,14 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
             required
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:border-transparent text-stone-900"
+            className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:outline-none focus:ring-2 focus:border-transparent text-stone-100"
             style={{ '--tw-ring-color': primaryColor } as any}
             placeholder="you@example.com"
           />
         </div>
 
         <div>
-          <label htmlFor="phone" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="phone" className="block text-sm font-medium text-stone-300 mb-1">
             Phone <span className="text-stone-400 font-normal">(optional)</span>
           </label>
           <input
@@ -125,14 +125,14 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
             type="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:border-transparent text-stone-900"
+            className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:outline-none focus:ring-2 focus:border-transparent text-stone-100"
             style={{ '--tw-ring-color': primaryColor } as any}
             placeholder="(555) 123-4567"
           />
         </div>
 
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="message" className="block text-sm font-medium text-stone-300 mb-1">
             What kind of event are you thinking?{' '}
             <span className="text-stone-400 font-normal">(optional)</span>
           </label>
@@ -141,13 +141,13 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
             rows={3}
             value={form.message}
             onChange={(e) => setForm({ ...form, message: e.target.value })}
-            className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:outline-none focus:ring-2 focus:border-transparent text-stone-900 resize-none"
+            className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:outline-none focus:ring-2 focus:border-transparent text-stone-100 resize-none"
             style={{ '--tw-ring-color': primaryColor } as any}
             placeholder="Birthday dinner, date night, holiday party..."
           />
         </div>
 
-        {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>}
+        {error && <p className="text-sm text-red-600 bg-red-950 rounded-lg px-3 py-2">{error}</p>}
 
         <button
           type="submit"

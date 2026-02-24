@@ -70,11 +70,11 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
         <MessageSquare className="w-3 h-3" />
         {SENTIMENT_LABELS[analysis.overallSentiment]}
         <TrendIcon className="w-3 h-3" />
-        {analysis.riskFlag && <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />}
+        {analysis.riskFlag && <span className="w-1.5 h-1.5 bg-red-9500 rounded-full" />}
       </button>
 
       {showDetail && (
-        <div className="absolute top-6 left-0 z-20 w-72 bg-white border border-stone-200 rounded-lg shadow-lg p-3 text-xs space-y-2">
+        <div className="absolute top-6 left-0 z-20 w-72 bg-surface border border-stone-700 rounded-lg shadow-lg p-3 text-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-medium">Client Sentiment</span>
             <button onClick={() => setShowDetail(false)} className="text-stone-400">
@@ -83,7 +83,7 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
           </div>
 
           {analysis.riskFlag && analysis.riskReason && (
-            <div className="bg-red-50 border border-red-200 rounded p-2 text-red-800">
+            <div className="bg-red-950 border border-red-200 rounded p-2 text-red-800">
               <div className="font-medium mb-0.5">Risk Detected</div>
               {analysis.riskReason}
               {analysis.actionRecommendation && (

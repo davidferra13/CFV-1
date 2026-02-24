@@ -24,19 +24,17 @@ export default async function FoodCostPage() {
 
   // Food-related expense categories
   const FOOD_CATEGORIES = ['groceries', 'alcohol', 'specialty_items']
-  const foodExpenses = allExpenses.filter(e => FOOD_CATEGORIES.includes(e.category ?? ''))
+  const foodExpenses = allExpenses.filter((e) => FOOD_CATEGORIES.includes(e.category ?? ''))
   const totalFoodCostCents = foodExpenses.reduce((s, e) => s + (e.amount_cents ?? 0), 0)
 
   const grossRevenueCents = summary.totalRevenueCents
-  const foodCostPct =
-    grossRevenueCents > 0 ? (totalFoodCostCents / grossRevenueCents) * 100 : null
+  const foodCostPct = grossRevenueCents > 0 ? (totalFoodCostCents / grossRevenueCents) * 100 : null
 
   // Recipe cost stats
-  const pricedRecipes = recipes.filter(r => r.total_cost_cents && r.total_cost_cents > 0)
+  const pricedRecipes = recipes.filter((r) => r.total_cost_cents && r.total_cost_cents > 0)
   const totalRecipeCostCents = pricedRecipes.reduce((s, r) => s + (r.total_cost_cents ?? 0), 0)
-  const avgRecipeCostCents = pricedRecipes.length > 0
-    ? Math.round(totalRecipeCostCents / pricedRecipes.length)
-    : 0
+  const avgRecipeCostCents =
+    pricedRecipes.length > 0 ? Math.round(totalRecipeCostCents / pricedRecipes.length) : 0
 
   // Top 5 most expensive recipes
   const topRecipes = [...pricedRecipes]
@@ -52,14 +50,17 @@ export default async function FoodCostPage() {
     entry.count++
     entry.totalCents += r.total_cost_cents ?? 0
   }
-  const categoryBreakdown = Array.from(byCatMap.entries())
-    .sort((a, b) => b[1].totalCents - a[1].totalCents)
+  const categoryBreakdown = Array.from(byCatMap.entries()).sort(
+    (a, b) => b[1].totalCents - a[1].totalCents
+  )
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/costing" className="text-sm text-stone-500 hover:text-stone-700">← Costing</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Food Cost %</h1>
+        <Link href="/culinary/costing" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Costing
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Food Cost %</h1>
         <p className="text-stone-500 mt-1">Ingredient spend as a percentage of gross revenue</p>
       </div>
 
@@ -68,12 +69,14 @@ export default async function FoodCostPage() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-stone-500 mb-1">Food cost percentage</p>
-            <p className={`text-5xl font-bold ${foodCostPct != null ? pctColor(foodCostPct) : 'text-stone-300'}`}>
+            <p
+              className={`text-5xl font-bold ${foodCostPct != null ? pctColor(foodCostPct) : 'text-stone-300'}`}
+            >
               {foodCostPct != null ? `${foodCostPct.toFixed(1)}%` : '—'}
             </p>
             <p className="text-xs text-stone-400 mt-2">
-              ${(totalFoodCostCents / 100).toFixed(2)} food spend ÷{' '}
-              ${(grossRevenueCents / 100).toFixed(2)} gross revenue
+              ${(totalFoodCostCents / 100).toFixed(2)} food spend ÷ $
+              {(grossRevenueCents / 100).toFixed(2)} gross revenue
             </p>
           </div>
           <div className="text-right">
@@ -98,17 +101,17 @@ export default async function FoodCostPage() {
       {/* Supporting KPIs */}
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-stone-900">
+          <p className="text-2xl font-bold text-stone-100">
             ${(totalFoodCostCents / 100).toFixed(0)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Total food spend</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-stone-900">{pricedRecipes.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{pricedRecipes.length}</p>
           <p className="text-sm text-stone-500 mt-1">Recipes with full pricing</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-stone-900">
+          <p className="text-2xl font-bold text-stone-100">
             {avgRecipeCostCents > 0 ? `$${(avgRecipeCostCents / 100).toFixed(2)}` : '—'}
           </p>
           <p className="text-sm text-stone-500 mt-1">Avg recipe ingredient cost</p>
@@ -118,24 +121,30 @@ export default async function FoodCostPage() {
       <div className="grid grid-cols-2 gap-6">
         {/* Top recipes by cost */}
         <div>
-          <h2 className="text-base font-semibold text-stone-700 mb-3">Most expensive recipes</h2>
+          <h2 className="text-base font-semibold text-stone-300 mb-3">Most expensive recipes</h2>
           {topRecipes.length === 0 ? (
             <Card className="p-6 text-center">
               <p className="text-stone-400 text-sm">No recipe pricing yet</p>
-              <Link href="/culinary/costing/recipe" className="text-brand-600 hover:underline text-sm mt-2 inline-block">
+              <Link
+                href="/culinary/costing/recipe"
+                className="text-brand-600 hover:underline text-sm mt-2 inline-block"
+              >
                 View recipe costs →
               </Link>
             </Card>
           ) : (
             <Card>
-              <div className="divide-y divide-stone-100">
+              <div className="divide-y divide-stone-800">
                 {topRecipes.map((r, i) => (
                   <div key={r.id} className="px-4 py-3 flex items-center gap-3">
                     <span className="text-stone-300 text-sm w-5">{i + 1}</span>
-                    <Link href={`/culinary/recipes/${r.id}`} className="flex-1 font-medium text-stone-900 hover:text-brand-600">
+                    <Link
+                      href={`/culinary/recipes/${r.id}`}
+                      className="flex-1 font-medium text-stone-100 hover:text-brand-600"
+                    >
                       {r.name}
                     </Link>
-                    <span className="text-stone-700 font-semibold text-sm">
+                    <span className="text-stone-300 font-semibold text-sm">
                       ${((r.total_cost_cents ?? 0) / 100).toFixed(2)}
                     </span>
                   </div>
@@ -147,21 +156,23 @@ export default async function FoodCostPage() {
 
         {/* Cost by category */}
         <div>
-          <h2 className="text-base font-semibold text-stone-700 mb-3">Recipe cost by category</h2>
+          <h2 className="text-base font-semibold text-stone-300 mb-3">Recipe cost by category</h2>
           {categoryBreakdown.length === 0 ? (
             <Card className="p-6 text-center">
               <p className="text-stone-400 text-sm">No data yet</p>
             </Card>
           ) : (
             <Card>
-              <div className="divide-y divide-stone-100">
+              <div className="divide-y divide-stone-800">
                 {categoryBreakdown.map(([cat, data]) => (
                   <div key={cat} className="px-4 py-3 flex items-center gap-3">
-                    <span className="flex-1 text-sm text-stone-700 capitalize">
+                    <span className="flex-1 text-sm text-stone-300 capitalize">
                       {cat.replace(/_/g, ' ')}
                     </span>
-                    <span className="text-xs text-stone-400">{data.count} recipe{data.count !== 1 ? 's' : ''}</span>
-                    <span className="text-stone-700 font-semibold text-sm">
+                    <span className="text-xs text-stone-400">
+                      {data.count} recipe{data.count !== 1 ? 's' : ''}
+                    </span>
+                    <span className="text-stone-300 font-semibold text-sm">
                       ${(data.totalCents / 100).toFixed(2)}
                     </span>
                   </div>

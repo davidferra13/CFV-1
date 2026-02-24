@@ -48,7 +48,7 @@ export function VendorPaymentAging({ entries }: VendorPaymentAgingProps) {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-100 text-left">
+                <tr className="border-b border-stone-800 text-left">
                   <th className="pb-2 font-medium text-stone-500">Vendor</th>
                   <th className="pb-2 font-medium text-stone-500 text-right">Amount</th>
                   <th className="pb-2 font-medium text-stone-500 text-right">Days Past Due</th>
@@ -58,11 +58,11 @@ export function VendorPaymentAging({ entries }: VendorPaymentAgingProps) {
               <tbody className="divide-y divide-stone-50">
                 {entries.map((entry, i) => (
                   <tr key={i} className="py-2">
-                    <td className="py-2 text-stone-800 font-medium pr-4">{entry.vendorName}</td>
-                    <td className="py-2 text-stone-700 text-right pr-4">
+                    <td className="py-2 text-stone-200 font-medium pr-4">{entry.vendorName}</td>
+                    <td className="py-2 text-stone-300 text-right pr-4">
                       {formatCents(entry.amountCents)}
                     </td>
-                    <td className="py-2 text-stone-600 text-right pr-4">
+                    <td className="py-2 text-stone-400 text-right pr-4">
                       {entry.daysPastDue === 0 ? 'Current' : `${entry.daysPastDue}d`}
                     </td>
                     <td className="py-2 text-right">
@@ -74,11 +74,11 @@ export function VendorPaymentAging({ entries }: VendorPaymentAgingProps) {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t border-stone-200">
-                  <td colSpan={1} className="pt-3 font-semibold text-stone-800">
+                <tr className="border-t border-stone-700">
+                  <td colSpan={1} className="pt-3 font-semibold text-stone-200">
                     Total Outstanding
                   </td>
-                  <td colSpan={3} className="pt-3 text-right font-semibold text-stone-800">
+                  <td colSpan={3} className="pt-3 text-right font-semibold text-stone-200">
                     {formatCents(totalCents)}
                   </td>
                 </tr>

@@ -25,8 +25,8 @@ export default async function QueuePage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Daily Call Queue</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100">Daily Call Queue</h1>
+          <p className="text-stone-400 mt-1">
             Build your call list, work through it, log outcomes — every call is tracked.
           </p>
         </div>

@@ -163,9 +163,7 @@ export function ClientConnections({
         </div>
       </CardHeader>
       <CardContent>
-        {error && (
-          <p className="text-sm text-red-600 mb-3">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
 
         {/* Existing connections */}
         {connections.length === 0 && !adding && (
@@ -180,7 +178,7 @@ export function ClientConnections({
               <div key={conn.id}>
                 {editingId === conn.id ? (
                   /* Edit mode */
-                  <div className="p-3 rounded-lg border border-brand-200 bg-brand-50/30 space-y-2">
+                  <div className="p-3 rounded-lg border border-brand-700 bg-brand-950/30 space-y-2">
                     <div className="flex gap-2">
                       <Select
                         value={editRelationshipType}
@@ -207,23 +205,28 @@ export function ClientConnections({
                       <Button size="sm" onClick={() => handleUpdate(conn.id)} disabled={saving}>
                         {saving ? 'Saving...' : 'Save'}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => setEditingId(null)} disabled={saving}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEditingId(null)}
+                        disabled={saving}
+                      >
                         Cancel
                       </Button>
                     </div>
                   </div>
                 ) : (
                   /* Display mode */
-                  <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-stone-50 group">
+                  <div className="flex items-center justify-between py-2 px-3 rounded-lg bg-stone-800 group">
                     <div className="min-w-0">
                       <a
                         href={`/clients/${conn.connected_client_id}`}
-                        className="text-sm font-medium text-brand-700 hover:text-brand-800"
+                        className="text-sm font-medium text-brand-400 hover:text-brand-300"
                       >
                         {conn.connected_client_name}
                       </a>
                       <span className="mx-2 text-stone-300">-</span>
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-stone-200 text-stone-700">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-stone-700 text-stone-300">
                         {formatType(conn.relationship_type)}
                       </span>
                       {conn.notes && (
@@ -231,11 +234,20 @@ export function ClientConnections({
                       )}
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2">
-                      <Button variant="ghost" size="sm" onClick={() => startEdit(conn)} disabled={saving}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEdit(conn)}
+                        disabled={saving}
+                      >
                         Edit
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleRemove(conn.id)} disabled={saving}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleRemove(conn.id)}
+                        disabled={saving}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-950"
                       >
                         Remove
                       </Button>
@@ -249,7 +261,7 @@ export function ClientConnections({
 
         {/* Add connection form */}
         {adding && (
-          <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/50 space-y-3">
+          <div className="p-3 rounded-lg border border-stone-700 bg-stone-800/50 space-y-3">
             <Select
               label="Client"
               value={selectedClientId}
@@ -265,10 +277,7 @@ export function ClientConnections({
                   label="Relationship"
                   value={relationshipType}
                   onChange={(e) => setRelationshipType(e.target.value)}
-                  options={[
-                    ...RELATIONSHIP_SUGGESTIONS,
-                    { value: 'custom', label: 'Custom...' },
-                  ]}
+                  options={[...RELATIONSHIP_SUGGESTIONS, { value: 'custom', label: 'Custom...' }]}
                 />
               </div>
               {relationshipType === 'custom' && (

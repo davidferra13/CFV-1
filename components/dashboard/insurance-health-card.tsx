@@ -17,10 +17,10 @@ export function InsuranceHealthCard({ policies }: { policies: Policy[] }) {
 
   const borderColor =
     policies.length === 0 || expired.length > 0
-      ? 'border-red-200 bg-red-50'
+      ? 'border-red-200 bg-red-950'
       : expiringSoon.length > 0
-        ? 'border-amber-200 bg-amber-50'
-        : 'border-emerald-200 bg-emerald-50'
+        ? 'border-amber-200 bg-amber-950'
+        : 'border-emerald-200 bg-emerald-950'
 
   const textColor =
     policies.length === 0 || expired.length > 0

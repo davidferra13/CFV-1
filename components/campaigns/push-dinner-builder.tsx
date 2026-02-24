@@ -405,8 +405,8 @@ export function PushDinnerBuilder() {
                   step === s.num
                     ? 'bg-brand-600 text-white'
                     : s.num < step
-                      ? 'bg-green-100 text-green-700 hover:bg-green-200 cursor-pointer'
-                      : 'bg-stone-100 text-stone-400 cursor-not-allowed'
+                      ? 'bg-green-900 text-green-700 hover:bg-green-200 cursor-pointer'
+                      : 'bg-stone-800 text-stone-400 cursor-not-allowed'
                 }`}
             >
               {s.num < step ? <Check className="w-3 h-3" /> : <span>{s.num}</span>}
@@ -421,7 +421,7 @@ export function PushDinnerBuilder() {
       {step === 1 && (
         <div className="space-y-5">
           <div>
-            <h2 className="text-lg font-semibold text-stone-800">
+            <h2 className="text-lg font-semibold text-stone-200">
               What dinner do you want to push?
             </h2>
             <p className="text-sm text-stone-500 mt-0.5">
@@ -442,7 +442,7 @@ export function PushDinnerBuilder() {
                   className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
                     occasion === occ
                       ? 'bg-brand-600 text-white border-brand-600'
-                      : 'border-stone-200 text-stone-600 hover:border-brand-400 hover:text-brand-600'
+                      : 'border-stone-700 text-stone-400 hover:border-brand-400 hover:text-brand-600'
                   }`}
                 >
                   {occ}
@@ -455,7 +455,7 @@ export function PushDinnerBuilder() {
                 placeholder="Describe your occasion..."
                 value={customOccasion}
                 onChange={(e) => setCustomOccasion(e.target.value)}
-                className="mt-2 w-full text-sm border border-stone-200 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                className="mt-2 w-full text-sm border border-stone-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400"
               />
             )}
           </div>
@@ -466,7 +466,7 @@ export function PushDinnerBuilder() {
               <label className="text-xs text-stone-500 font-medium uppercase tracking-wide">
                 Date
               </label>
-              <div className="mt-1 flex items-center gap-2 border border-stone-200 rounded px-3 py-2">
+              <div className="mt-1 flex items-center gap-2 border border-stone-700 rounded px-3 py-2">
                 <Calendar className="w-4 h-4 text-stone-400" />
                 <input
                   type="date"
@@ -480,7 +480,7 @@ export function PushDinnerBuilder() {
               <label className="text-xs text-stone-500 font-medium uppercase tracking-wide">
                 Start time
               </label>
-              <div className="mt-1 flex items-center gap-2 border border-stone-200 rounded px-3 py-2">
+              <div className="mt-1 flex items-center gap-2 border border-stone-700 rounded px-3 py-2">
                 <input
                   type="time"
                   value={proposedTime}
@@ -497,7 +497,7 @@ export function PushDinnerBuilder() {
               <label className="text-xs text-stone-500 font-medium uppercase tracking-wide">
                 Max guests
               </label>
-              <div className="mt-1 flex items-center gap-2 border border-stone-200 rounded px-3 py-2">
+              <div className="mt-1 flex items-center gap-2 border border-stone-700 rounded px-3 py-2">
                 <Users className="w-4 h-4 text-stone-400" />
                 <input
                   type="number"
@@ -513,7 +513,7 @@ export function PushDinnerBuilder() {
               <label className="text-xs text-stone-500 font-medium uppercase tracking-wide">
                 Price per person
               </label>
-              <div className="mt-1 flex items-center gap-2 border border-stone-200 rounded px-3 py-2">
+              <div className="mt-1 flex items-center gap-2 border border-stone-700 rounded px-3 py-2">
                 <DollarSign className="w-4 h-4 text-stone-400" />
                 <input
                   type="number"
@@ -528,11 +528,11 @@ export function PushDinnerBuilder() {
           </div>
 
           {/* AI concept draft */}
-          <div className="border border-stone-200 rounded-lg p-4 space-y-3">
+          <div className="border border-stone-700 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-brand-600" />
-                <span className="text-sm font-medium text-stone-700">Dinner Pitch</span>
+                <span className="text-sm font-medium text-stone-300">Dinner Pitch</span>
                 <Badge variant={conceptDraft ? 'warning' : 'info'}>
                   {conceptDraft ? 'Draft' : 'Auto'}
                 </Badge>
@@ -569,7 +569,7 @@ export function PushDinnerBuilder() {
                 value={editableConcept}
                 onChange={(e) => setEditableConcept(e.target.value)}
                 rows={5}
-                className="w-full text-sm border border-stone-200 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400 resize-none"
+                className="w-full text-sm border border-stone-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400 resize-none"
               />
             ) : (
               <p className="text-xs text-stone-400">
@@ -590,7 +590,7 @@ export function PushDinnerBuilder() {
               placeholder={autoName || 'e.g. Halloween Dinner 2026'}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 w-full text-sm border border-stone-200 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400"
+              className="mt-1 w-full text-sm border border-stone-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400"
             />
           </div>
 
@@ -611,14 +611,14 @@ export function PushDinnerBuilder() {
       {step === 2 && (
         <div className="space-y-5">
           <div>
-            <h2 className="text-lg font-semibold text-stone-800">Attach a menu</h2>
+            <h2 className="text-lg font-semibold text-stone-200">Attach a menu</h2>
             <p className="text-sm text-stone-500 mt-0.5">
               Clients will see course names (not costs) on the booking page. Optional — skip if you
               prefer to describe it yourself.
             </p>
           </div>
 
-          <div className="border border-stone-200 rounded-lg p-4 text-center">
+          <div className="border border-stone-700 rounded-lg p-4 text-center">
             <Utensils className="w-8 h-8 text-stone-300 mx-auto mb-2" />
             <p className="text-sm text-stone-500">Menu picker coming soon.</p>
             <p className="text-xs text-stone-400 mt-1">
@@ -643,7 +643,7 @@ export function PushDinnerBuilder() {
       {step === 3 && (
         <div className="space-y-5">
           <div>
-            <h2 className="text-lg font-semibold text-stone-800">Who should get invited?</h2>
+            <h2 className="text-lg font-semibold text-stone-200">Who should get invited?</h2>
             <p className="text-sm text-stone-500 mt-0.5">
               Pick a segment or handpick individual clients. Only subscribed clients are shown.
             </p>
@@ -669,8 +669,8 @@ export function PushDinnerBuilder() {
                 }
                 className={`w-full text-left text-sm px-4 py-3 rounded-lg border transition-colors ${
                   segment === opt.key
-                    ? 'border-brand-500 bg-brand-50 text-brand-700'
-                    : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300'
+                    ? 'border-brand-500 bg-brand-950 text-brand-400'
+                    : 'border-stone-700 bg-surface text-stone-300 hover:border-stone-600'
                 }`}
               >
                 {opt.label}
@@ -686,28 +686,28 @@ export function PushDinnerBuilder() {
                 placeholder="Search by name or email..."
                 value={handpickSearch}
                 onChange={(e) => handleSearch(e.target.value)}
-                className="w-full text-sm border border-stone-200 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400"
+                className="w-full text-sm border border-stone-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-400"
               />
               {searchResults.length > 0 && (
-                <div className="border border-stone-200 rounded-lg divide-y divide-stone-100 max-h-48 overflow-y-auto">
+                <div className="border border-stone-700 rounded-lg divide-y divide-stone-800 max-h-48 overflow-y-auto">
                   {searchResults.map((c) => (
                     <button
                       key={c.id}
                       onClick={() => toggleClient(c)}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 text-left"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-stone-800 text-left"
                     >
                       <div
                         className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
                           selectedClients.find((s) => s.id === c.id)
                             ? 'bg-brand-600 border-brand-600'
-                            : 'border-stone-300'
+                            : 'border-stone-600'
                         }`}
                       >
                         {selectedClients.find((s) => s.id === c.id) && (
                           <Check className="w-3 h-3 text-white" />
                         )}
                       </div>
-                      <span className="text-sm text-stone-700">{c.full_name}</span>
+                      <span className="text-sm text-stone-300">{c.full_name}</span>
                       <span className="text-xs text-stone-400 ml-auto">{c.email}</span>
                     </button>
                   ))}
@@ -723,17 +723,17 @@ export function PushDinnerBuilder() {
             </div>
           )}
           {!clientsLoading && selectedClients.length > 0 && segment !== 'handpick' && (
-            <div className="border border-stone-200 rounded-lg divide-y divide-stone-100 max-h-48 overflow-y-auto">
+            <div className="border border-stone-700 rounded-lg divide-y divide-stone-800 max-h-48 overflow-y-auto">
               {selectedClients.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => toggleClient(c)}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-stone-50 text-left"
+                  className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-stone-800 text-left"
                 >
                   <div className="w-4 h-4 rounded border flex items-center justify-center shrink-0 bg-brand-600 border-brand-600">
                     <Check className="w-3 h-3 text-white" />
                   </div>
-                  <span className="text-sm text-stone-700">{c.full_name}</span>
+                  <span className="text-sm text-stone-300">{c.full_name}</span>
                   {c.last_event_occasion && (
                     <span className="text-xs text-stone-400 ml-auto truncate">
                       {c.last_event_occasion}
@@ -745,10 +745,10 @@ export function PushDinnerBuilder() {
           )}
 
           {/* Open slots panel */}
-          <div className="border border-stone-200 rounded-lg">
+          <div className="border border-stone-700 rounded-lg">
             <button
               onClick={loadOpenSlots}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm text-stone-600 hover:bg-stone-50"
+              className="w-full flex items-center justify-between px-4 py-3 text-sm text-stone-400 hover:bg-stone-800"
             >
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4 text-brand-500" />
@@ -766,7 +766,7 @@ export function PushDinnerBuilder() {
                     className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
                       proposedDate === slot.date
                         ? 'bg-brand-600 text-white border-brand-600'
-                        : 'border-stone-200 text-stone-600 hover:border-brand-400'
+                        : 'border-stone-700 text-stone-400 hover:border-brand-400'
                     }`}
                   >
                     {slot.day_of_week} {slot.date}
@@ -777,7 +777,7 @@ export function PushDinnerBuilder() {
           </div>
 
           {selectedClients.length > 0 && (
-            <div className="text-sm text-stone-600 font-medium">
+            <div className="text-sm text-stone-400 font-medium">
               {selectedClients.length} client{selectedClients.length !== 1 ? 's' : ''} selected
             </div>
           )}
@@ -808,7 +808,7 @@ export function PushDinnerBuilder() {
       {step === 4 && (
         <div className="space-y-5">
           <div>
-            <h2 className="text-lg font-semibold text-stone-800">Review personalised drafts</h2>
+            <h2 className="text-lg font-semibold text-stone-200">Review personalised drafts</h2>
             <p className="text-sm text-stone-500 mt-0.5">
               Drafts a unique message for each client based on your history together. You approve —
               nothing sends without your OK.
@@ -817,7 +817,7 @@ export function PushDinnerBuilder() {
 
           {/* Ollama offline warning */}
           {ollamaOffline && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2.5">
+            <div className="bg-amber-950 border border-amber-200 rounded-lg p-3 flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium text-amber-800">Ollama is not running</p>
@@ -902,7 +902,7 @@ export function PushDinnerBuilder() {
           {!launched ? (
             <>
               <div>
-                <h2 className="text-lg font-semibold text-stone-800">
+                <h2 className="text-lg font-semibold text-stone-200">
                   How do you want to share this dinner?
                 </h2>
                 <p className="text-sm text-stone-500 mt-0.5">
@@ -917,8 +917,8 @@ export function PushDinnerBuilder() {
                   onClick={() => toggleDeliveryMode('email')}
                   className={`w-full text-left border rounded-lg p-4 transition-colors ${
                     deliveryModes.includes('email')
-                      ? 'border-brand-500 bg-brand-50'
-                      : 'border-stone-200 bg-white hover:border-stone-300'
+                      ? 'border-brand-500 bg-brand-950'
+                      : 'border-stone-700 bg-surface hover:border-stone-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -926,7 +926,7 @@ export function PushDinnerBuilder() {
                       className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
                         deliveryModes.includes('email')
                           ? 'bg-brand-600 border-brand-600'
-                          : 'border-stone-300'
+                          : 'border-stone-600'
                       }`}
                     >
                       {deliveryModes.includes('email') && (
@@ -935,7 +935,7 @@ export function PushDinnerBuilder() {
                     </div>
                     <Mail className="w-4 h-4 text-stone-500" />
                     <div>
-                      <div className="text-sm font-medium text-stone-800">Personal email</div>
+                      <div className="text-sm font-medium text-stone-200">Personal email</div>
                       <div className="text-xs text-stone-500 mt-0.5">
                         Sends each approved draft directly to the client's inbox.{' '}
                         {approvedCount > 0
@@ -951,8 +951,8 @@ export function PushDinnerBuilder() {
                   onClick={() => toggleDeliveryMode('portal_banner')}
                   className={`w-full text-left border rounded-lg p-4 transition-colors ${
                     deliveryModes.includes('portal_banner')
-                      ? 'border-brand-500 bg-brand-50'
-                      : 'border-stone-200 bg-white hover:border-stone-300'
+                      ? 'border-brand-500 bg-brand-950'
+                      : 'border-stone-700 bg-surface hover:border-stone-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -960,7 +960,7 @@ export function PushDinnerBuilder() {
                       className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
                         deliveryModes.includes('portal_banner')
                           ? 'bg-brand-600 border-brand-600'
-                          : 'border-stone-300'
+                          : 'border-stone-600'
                       }`}
                     >
                       {deliveryModes.includes('portal_banner') && (
@@ -969,7 +969,7 @@ export function PushDinnerBuilder() {
                     </div>
                     <Bell className="w-4 h-4 text-stone-500" />
                     <div>
-                      <div className="text-sm font-medium text-stone-800">Client portal banner</div>
+                      <div className="text-sm font-medium text-stone-200">Client portal banner</div>
                       <div className="text-xs text-stone-500 mt-0.5">
                         A quiet banner appears on each client's ChefFlow dashboard next time they
                         log in. Non-invasive — they discover it on their own time. No email.
@@ -986,8 +986,8 @@ export function PushDinnerBuilder() {
                   onClick={() => toggleDeliveryMode('link_only')}
                   className={`w-full text-left border rounded-lg p-4 transition-colors ${
                     deliveryModes.includes('link_only')
-                      ? 'border-brand-500 bg-brand-50'
-                      : 'border-stone-200 bg-white hover:border-stone-300'
+                      ? 'border-brand-500 bg-brand-950'
+                      : 'border-stone-700 bg-surface hover:border-stone-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -995,7 +995,7 @@ export function PushDinnerBuilder() {
                       className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 ${
                         deliveryModes.includes('link_only')
                           ? 'bg-brand-600 border-brand-600'
-                          : 'border-stone-300'
+                          : 'border-stone-600'
                       }`}
                     >
                       {deliveryModes.includes('link_only') && (
@@ -1004,7 +1004,7 @@ export function PushDinnerBuilder() {
                     </div>
                     <Link2 className="w-4 h-4 text-stone-500" />
                     <div>
-                      <div className="text-sm font-medium text-stone-800">Shareable link only</div>
+                      <div className="text-sm font-medium text-stone-200">Shareable link only</div>
                       <div className="text-xs text-stone-500 mt-0.5">
                         You get a link + QR code to share however you want — Instagram story, text,
                         DM. You control who sees it.
@@ -1018,11 +1018,11 @@ export function PushDinnerBuilder() {
               </div>
 
               {/* Shareable link preview */}
-              <div className="bg-stone-50 border border-stone-200 rounded-lg p-4">
+              <div className="bg-stone-800 border border-stone-700 rounded-lg p-4">
                 <p className="text-xs text-stone-500 font-medium uppercase tracking-wide mb-2">
                   Your booking link
                 </p>
-                <p className="text-sm font-mono text-stone-700 break-all">
+                <p className="text-sm font-mono text-stone-300 break-all">
                   {typeof window !== 'undefined'
                     ? window.location.origin
                     : 'https://app.cheflowhq.com'}
@@ -1056,11 +1056,11 @@ export function PushDinnerBuilder() {
           ) : (
             /* Post-launch success */
             <div className="text-center space-y-4 py-8">
-              <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+              <div className="w-14 h-14 rounded-full bg-green-900 flex items-center justify-center mx-auto">
                 <Check className="w-7 h-7 text-green-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-stone-800">Dinner is live!</h2>
+                <h2 className="text-lg font-semibold text-stone-200">Dinner is live!</h2>
                 {launchResult && (
                   <p className="text-sm text-stone-500 mt-1">
                     {launchResult.sent} email{launchResult.sent !== 1 ? 's' : ''} sent

@@ -105,7 +105,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
             <TableHead>
               <button
                 onClick={() => toggleSort('name')}
-                className="flex items-center hover:text-stone-900"
+                className="flex items-center hover:text-stone-100"
               >
                 Name
                 <SortIcon field="name" />
@@ -118,7 +118,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
             <TableHead className="text-right">
               <button
                 onClick={() => toggleSort('spent')}
-                className="flex items-center hover:text-stone-900 ml-auto"
+                className="flex items-center hover:text-stone-100 ml-auto"
               >
                 Total Spent
                 <SortIcon field="spent" />
@@ -127,7 +127,7 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
             <TableHead>
               <button
                 onClick={() => toggleSort('created')}
-                className="flex items-center hover:text-stone-900"
+                className="flex items-center hover:text-stone-100"
               >
                 Created
                 <SortIcon field="created" />
@@ -156,13 +156,13 @@ export function ClientsTable({ clients, healthMap }: ClientsTableProps) {
                     return h ? <ClientHealthBadge score={h.score} tier={h.tier} /> : null
                   })()}
                 </TableCell>
-                <TableCell className="text-stone-600">{client.email}</TableCell>
-                <TableCell className="text-stone-600">{client.phone || '-'}</TableCell>
+                <TableCell className="text-stone-400">{client.email}</TableCell>
+                <TableCell className="text-stone-400">{client.phone || '-'}</TableCell>
                 <TableCell className="text-right">{client.totalEvents}</TableCell>
                 <TableCell className="text-right font-medium">
                   {formatCurrency(client.totalSpentCents)}
                 </TableCell>
-                <TableCell className="text-stone-600">
+                <TableCell className="text-stone-400">
                   {format(new Date(client.created_at), 'PP')}
                 </TableCell>
               </TableRow>

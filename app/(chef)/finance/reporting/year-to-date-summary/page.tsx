@@ -25,75 +25,94 @@ export default async function YearToDateSummaryPage() {
   ])
 
   // YTD revenue from ledger entries (non-refund)
-  const ytdRevenue = ytdEntries
-    .filter(e => !e.is_refund)
-    .reduce((s, e) => s + e.amount_cents, 0)
+  const ytdRevenue = ytdEntries.filter((e) => !e.is_refund).reduce((s, e) => s + e.amount_cents, 0)
 
-  const ytdRefunds = ytdEntries
-    .filter(e => e.is_refund)
-    .reduce((s, e) => s + e.amount_cents, 0)
+  const ytdRefunds = ytdEntries.filter((e) => e.is_refund).reduce((s, e) => s + e.amount_cents, 0)
 
   const ytdNetRevenue = ytdRevenue - ytdRefunds
   const ytdTotalExpenses = ytdExpenses.reduce((s, e) => s + e.amount_cents, 0)
   const ytdProfit = ytdNetRevenue - ytdTotalExpenses
 
   // YTD events
-  const ytdEvents = events.filter(e => new Date(e.event_date) >= startOfYear(new Date()))
-  const completedYtd = ytdEvents.filter(e => e.status === 'completed').length
-  const upcomingYtd = ytdEvents.filter(e => new Date(e.event_date) > new Date() && !['cancelled'].includes(e.status)).length
+  const ytdEvents = events.filter((e) => new Date(e.event_date) >= startOfYear(new Date()))
+  const completedYtd = ytdEvents.filter((e) => e.status === 'completed').length
+  const upcomingYtd = ytdEvents.filter(
+    (e) => new Date(e.event_date) > new Date() && !['cancelled'].includes(e.status)
+  ).length
 
   // Tips from YTD entries
   const ytdTips = ytdEntries
-    .filter(e => e.entry_type === 'tip')
+    .filter((e) => e.entry_type === 'tip')
     .reduce((s, e) => s + e.amount_cents, 0)
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-700">← Reporting</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Year-to-Date Summary</h1>
-        <p className="text-stone-500 mt-1">Financial overview for {currentYear} — Jan 1 through today ({format(new Date(), 'MMM d, yyyy')})</p>
+        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Reporting
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Year-to-Date Summary</h1>
+        <p className="text-stone-500 mt-1">
+          Financial overview for {currentYear} — Jan 1 through today (
+          {format(new Date(), 'MMM d, yyyy')})
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-5">
-          <h2 className="text-sm font-semibold text-stone-700 mb-3 uppercase tracking-wide">Revenue</h2>
+          <h2 className="text-sm font-semibold text-stone-300 mb-3 uppercase tracking-wide">
+            Revenue
+          </h2>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-stone-600">Gross revenue</span>
-              <span className="text-sm font-semibold text-green-700">{formatCurrency(ytdRevenue)}</span>
+              <span className="text-sm text-stone-400">Gross revenue</span>
+              <span className="text-sm font-semibold text-green-700">
+                {formatCurrency(ytdRevenue)}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-stone-600">Refunds</span>
-              <span className="text-sm font-semibold text-red-600">−{formatCurrency(ytdRefunds)}</span>
+              <span className="text-sm text-stone-400">Refunds</span>
+              <span className="text-sm font-semibold text-red-600">
+                −{formatCurrency(ytdRefunds)}
+              </span>
             </div>
             {ytdTips > 0 && (
               <div className="flex justify-between">
-                <span className="text-sm text-stone-600">Tips</span>
-                <span className="text-sm font-semibold text-emerald-700">+{formatCurrency(ytdTips)}</span>
+                <span className="text-sm text-stone-400">Tips</span>
+                <span className="text-sm font-semibold text-emerald-700">
+                  +{formatCurrency(ytdTips)}
+                </span>
               </div>
             )}
-            <div className="flex justify-between pt-2 border-t border-stone-100">
-              <span className="text-sm font-semibold text-stone-700">Net revenue</span>
-              <span className="text-sm font-bold text-stone-900">{formatCurrency(ytdNetRevenue)}</span>
+            <div className="flex justify-between pt-2 border-t border-stone-800">
+              <span className="text-sm font-semibold text-stone-300">Net revenue</span>
+              <span className="text-sm font-bold text-stone-100">
+                {formatCurrency(ytdNetRevenue)}
+              </span>
             </div>
           </div>
         </Card>
 
         <Card className="p-5">
-          <h2 className="text-sm font-semibold text-stone-700 mb-3 uppercase tracking-wide">Expenses</h2>
+          <h2 className="text-sm font-semibold text-stone-300 mb-3 uppercase tracking-wide">
+            Expenses
+          </h2>
           <div className="space-y-2">
             <div className="flex justify-between">
-              <span className="text-sm text-stone-600">Total expenses</span>
-              <span className="text-sm font-semibold text-red-600">{formatCurrency(ytdTotalExpenses)}</span>
+              <span className="text-sm text-stone-400">Total expenses</span>
+              <span className="text-sm font-semibold text-red-600">
+                {formatCurrency(ytdTotalExpenses)}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-stone-600">Expense entries</span>
-              <span className="text-sm text-stone-700">{ytdExpenses.length}</span>
+              <span className="text-sm text-stone-400">Expense entries</span>
+              <span className="text-sm text-stone-300">{ytdExpenses.length}</span>
             </div>
-            <div className="flex justify-between pt-2 border-t border-stone-100">
-              <span className="text-sm font-semibold text-stone-700">Est. net profit</span>
-              <span className={`text-sm font-bold ${ytdProfit >= 0 ? 'text-stone-900' : 'text-red-600'}`}>
+            <div className="flex justify-between pt-2 border-t border-stone-800">
+              <span className="text-sm font-semibold text-stone-300">Est. net profit</span>
+              <span
+                className={`text-sm font-bold ${ytdProfit >= 0 ? 'text-stone-100' : 'text-red-600'}`}
+              >
                 {formatCurrency(ytdProfit)}
               </span>
             </div>
@@ -103,11 +122,11 @@ export default async function YearToDateSummaryPage() {
 
       <div className="grid grid-cols-4 gap-4">
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-stone-900">{ytdEvents.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{ytdEvents.length}</p>
           <p className="text-sm text-stone-500 mt-1">Events in {currentYear}</p>
         </Card>
         <Card className="p-4 text-center">
-          <p className="text-2xl font-bold text-stone-600">{completedYtd}</p>
+          <p className="text-2xl font-bold text-stone-400">{completedYtd}</p>
           <p className="text-sm text-stone-500 mt-1">Completed</p>
         </Card>
         <Card className="p-4 text-center">
@@ -121,18 +140,26 @@ export default async function YearToDateSummaryPage() {
       </div>
 
       <Card className="p-5">
-        <h2 className="text-sm font-semibold text-stone-700 mb-3 uppercase tracking-wide">All-Time Summary</h2>
+        <h2 className="text-sm font-semibold text-stone-300 mb-3 uppercase tracking-wide">
+          All-Time Summary
+        </h2>
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <p className="text-xl font-bold text-green-700">{formatCurrency(summary.totalRevenueCents)}</p>
+            <p className="text-xl font-bold text-green-700">
+              {formatCurrency(summary.totalRevenueCents)}
+            </p>
             <p className="text-xs text-stone-500 mt-0.5">Gross revenue (lifetime)</p>
           </div>
           <div>
-            <p className="text-xl font-bold text-red-600">{formatCurrency(summary.totalRefundsCents)}</p>
+            <p className="text-xl font-bold text-red-600">
+              {formatCurrency(summary.totalRefundsCents)}
+            </p>
             <p className="text-xs text-stone-500 mt-0.5">Total refunds (lifetime)</p>
           </div>
           <div>
-            <p className="text-xl font-bold text-stone-900">{formatCurrency(summary.netRevenueCents)}</p>
+            <p className="text-xl font-bold text-stone-100">
+              {formatCurrency(summary.netRevenueCents)}
+            </p>
             <p className="text-xs text-stone-500 mt-0.5">Net revenue (lifetime)</p>
           </div>
         </div>

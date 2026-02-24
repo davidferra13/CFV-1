@@ -28,11 +28,11 @@ export default async function InventoryCountsPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Inventory
         </Link>
         <div className="flex items-center justify-between mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Inventory Counts</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Inventory Counts</h1>
           <AddInventoryItemForm />
         </div>
         <p className="text-stone-500 mt-1">
@@ -42,7 +42,7 @@ export default async function InventoryCountsPage() {
       </div>
 
       {items.length === 0 ? (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
           <p className="text-stone-500 text-sm">
             No inventory items tracked yet. Use the &quot;+ Track Item&quot; button above to start
             tracking, or ingredients will appear automatically through recipes and vendor invoices.

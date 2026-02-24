@@ -23,14 +23,14 @@ export default async function BusinessContinuityPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Business Continuity Plan</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Business Continuity Plan</h1>
         <p className="mt-1 text-sm text-stone-500">
           Document what happens to your business and your clients if you are suddenly unable to work
           — illness, injury, family emergency, or extended leave.
         </p>
       </div>
 
-      <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+      <div className="rounded-lg border border-blue-200 bg-blue-950 px-4 py-3">
         <p className="text-sm text-blue-900">
           A continuity plan gives your backup contacts and trusted peers the information they need
           to protect your clients and your reputation. Review and update it at least twice a year.

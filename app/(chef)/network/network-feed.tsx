@@ -29,16 +29,16 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
   const [isPreferencePending, startPreferenceTransition] = useTransition()
   const router = useRouter()
 
-  const enabledFeatures = useMemo(
-    () => preferences.filter((pref) => pref.enabled),
-    [preferences]
-  )
+  const enabledFeatures = useMemo(() => preferences.filter((pref) => pref.enabled), [preferences])
 
   const trimmedContent = content.trim()
   const remaining = 1000 - trimmedContent.length
 
   useEffect(() => {
-    if (selectedFeature && enabledFeatures.some((feature) => feature.feature_key === selectedFeature)) {
+    if (
+      selectedFeature &&
+      enabledFeatures.some((feature) => feature.feature_key === selectedFeature)
+    ) {
       return
     }
     setSelectedFeature(enabledFeatures[0]?.feature_key ?? null)
@@ -98,10 +98,10 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-stone-200 p-4 bg-white space-y-3">
+      <div className="rounded-lg border border-stone-700 p-4 bg-surface space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-stone-900">Feed Features</p>
+            <p className="text-sm font-semibold text-stone-100">Feed Features</p>
             <p className="text-xs text-stone-500 mt-0.5">
               Enable only the feed categories you want to use.
             </p>
@@ -115,10 +115,10 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
           {preferences.map((feature) => (
             <div
               key={feature.feature_key}
-              className="border border-stone-200 rounded-lg p-3 flex items-start justify-between gap-3"
+              className="border border-stone-700 rounded-lg p-3 flex items-start justify-between gap-3"
             >
               <div>
-                <p className="text-sm font-medium text-stone-900">{feature.label}</p>
+                <p className="text-sm font-medium text-stone-100">{feature.label}</p>
                 <p className="text-xs text-stone-500 mt-0.5">{feature.description}</p>
               </div>
               <button
@@ -131,12 +131,12 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
                   relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
                   transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2
                   focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-50
-                  ${feature.enabled ? 'bg-brand-600' : 'bg-stone-200'}
+                  ${feature.enabled ? 'bg-brand-600' : 'bg-stone-700'}
                 `}
               >
                 <span
                   className={`
-                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0
+                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0
                     transition duration-200 ease-in-out
                     ${feature.enabled ? 'translate-x-5' : 'translate-x-0'}
                   `}
@@ -146,20 +146,16 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
           ))}
         </div>
 
-        {preferenceError && (
-          <p className="text-sm text-red-700">{preferenceError}</p>
-        )}
+        {preferenceError && <p className="text-sm text-red-700">{preferenceError}</p>}
       </div>
 
-      <div className="rounded-lg border border-stone-200 p-4 bg-white">
-        <label className="block text-sm font-medium text-stone-700 mb-1.5">
-          Post Type
-        </label>
+      <div className="rounded-lg border border-stone-700 p-4 bg-surface">
+        <label className="block text-sm font-medium text-stone-300 mb-1.5">Post Type</label>
         <select
           value={selectedFeature ?? ''}
           onChange={(event) => setSelectedFeature(event.target.value as NetworkFeatureKey)}
           disabled={enabledFeatures.length === 0 || isPostPending}
-          className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500"
+          className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500"
         >
           {enabledFeatures.map((feature) => (
             <option key={feature.feature_key} value={feature.feature_key}>
@@ -203,20 +199,21 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
         </div>
         {enabledFeatures.length === 0 && (
           <p className="text-sm text-amber-700 mt-2">
-            All feed features are currently disabled. Re-enable at least one to post or view feed items.
+            All feed features are currently disabled. Re-enable at least one to post or view feed
+            items.
           </p>
         )}
       </div>
 
       {postError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+        <div className="rounded-lg border border-red-200 bg-red-950 p-3">
           <p className="text-sm text-red-700">{postError}</p>
         </div>
       )}
 
       {posts.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-stone-300 p-8 text-center">
-          <p className="text-sm text-stone-600">No feed posts yet.</p>
+        <div className="rounded-lg border border-dashed border-stone-600 p-8 text-center">
+          <p className="text-sm text-stone-400">No feed posts yet.</p>
           <p className="text-xs text-stone-400 mt-1">
             Share your first update to start your network feed.
           </p>
@@ -238,7 +235,7 @@ function FeedPostItem({ post }: { post: NetworkFeedPost }) {
   const featureLabel = NETWORK_FEATURE_DEFINITIONS[post.feature_key].label
 
   return (
-    <article className="rounded-lg border border-stone-200 p-4 bg-white">
+    <article className="rounded-lg border border-stone-700 p-4 bg-surface">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {post.author.profile_image_url ? (
@@ -249,12 +246,12 @@ function FeedPostItem({ post }: { post: NetworkFeedPost }) {
               className="h-10 w-10 rounded-full object-cover"
             />
           ) : (
-            <div className="h-10 w-10 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold flex items-center justify-center">
+            <div className="h-10 w-10 rounded-full bg-brand-900 text-brand-400 text-xs font-semibold flex items-center justify-center">
               {getInitials(name)}
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-stone-900 truncate">
+            <p className="text-sm font-semibold text-stone-100 truncate">
               {name}
               {post.is_mine && <span className="text-stone-500 font-normal"> (You)</span>}
             </p>
@@ -273,9 +270,7 @@ function FeedPostItem({ post }: { post: NetworkFeedPost }) {
       <div className="mt-3">
         <Badge variant="info">{featureLabel}</Badge>
       </div>
-      <p className="mt-3 text-sm text-stone-700 whitespace-pre-wrap break-words">
-        {post.content}
-      </p>
+      <p className="mt-3 text-sm text-stone-300 whitespace-pre-wrap break-words">{post.content}</p>
     </article>
   )
 }
@@ -304,8 +299,6 @@ function formatTimeAgo(dateStr: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function getFirstEnabledFeature(
-  preferences: NetworkFeaturePreference[]
-): NetworkFeatureKey | null {
+function getFirstEnabledFeature(preferences: NetworkFeaturePreference[]): NetworkFeatureKey | null {
   return preferences.find((preference) => preference.enabled)?.feature_key ?? null
 }

@@ -48,22 +48,25 @@ function Funnel({
   if (totalStarted === 0) {
     return (
       <div>
-        <h3 className="text-sm font-semibold text-stone-700 mb-2">{title}</h3>
+        <h3 className="text-sm font-semibold text-stone-300 mb-2">{title}</h3>
         <p className="text-xs text-stone-400">No data yet</p>
       </div>
     )
   }
 
-  const maxCount = Math.max(...stages.map(s => s.count), 1)
+  const maxCount = Math.max(...stages.map((s) => s.count), 1)
 
   return (
     <div>
       <div className="flex items-baseline justify-between mb-3">
-        <h3 className="text-sm font-semibold text-stone-700">{title}</h3>
+        <h3 className="text-sm font-semibold text-stone-300">{title}</h3>
         {overallRate !== null && (
           <span className="text-xs text-stone-500">
-            {convertedLabel} rate: <span className="font-semibold text-stone-900">{overallRate}%</span>
-            <span className="text-stone-400 ml-1">({totalConverted}/{totalStarted})</span>
+            {convertedLabel} rate:{' '}
+            <span className="font-semibold text-stone-100">{overallRate}%</span>
+            <span className="text-stone-400 ml-1">
+              ({totalConverted}/{totalStarted})
+            </span>
           </span>
         )}
       </div>
@@ -75,24 +78,26 @@ function Funnel({
           return (
             <div key={stage.key}>
               <div className="flex items-center justify-between text-xs mb-1">
-                <span className="text-stone-600 font-medium">{stage.label}</span>
+                <span className="text-stone-400 font-medium">{stage.label}</span>
                 <div className="flex items-center gap-3">
                   {!isFirst && stage.conversionFromPrev !== null && (
-                    <span className={`text-[10px] ${stage.conversionFromPrev >= 70 ? 'text-emerald-600' : stage.conversionFromPrev >= 40 ? 'text-amber-600' : 'text-red-500'}`}>
+                    <span
+                      className={`text-[10px] ${stage.conversionFromPrev >= 70 ? 'text-emerald-600' : stage.conversionFromPrev >= 40 ? 'text-amber-600' : 'text-red-500'}`}
+                    >
                       ↓ {stage.conversionFromPrev}%
                     </span>
                   )}
-                  <span className="font-semibold text-stone-900 w-8 text-right">{stage.count}</span>
+                  <span className="font-semibold text-stone-100 w-8 text-right">{stage.count}</span>
                 </div>
               </div>
-              <div className="h-2.5 bg-stone-100 rounded-full overflow-hidden">
+              <div className="h-2.5 bg-stone-800 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all ${
                     stage.key === 'completed' || stage.key === 'confirmed'
                       ? 'bg-emerald-400'
                       : stage.key === 'in_progress' || stage.key === 'quoted'
-                      ? 'bg-brand-400'
-                      : 'bg-stone-300'
+                        ? 'bg-brand-400'
+                        : 'bg-stone-300'
                   }`}
                   style={{ width: `${barPct}%` }}
                 />

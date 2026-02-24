@@ -45,12 +45,12 @@ function BudgetBar({
 
   const pct = Math.round((averageCents / ceilingCents) * 100)
   const overBudget = averageCents > ceilingCents
-  const barColor = overBudget ? 'bg-red-500' : pct > 85 ? 'bg-amber-400' : 'bg-emerald-500'
+  const barColor = overBudget ? 'bg-red-9500' : pct > 85 ? 'bg-amber-400' : 'bg-emerald-9500'
 
   return (
     <div className="space-y-1.5">
       <div className="flex justify-between text-sm">
-        <span className="text-stone-600">
+        <span className="text-stone-400">
           Estimated vs budget ({formatCurrency(ceilingCents)} food cost ceiling)
         </span>
         <span className={`font-semibold ${overBudget ? 'text-red-600' : 'text-emerald-700'}`}>
@@ -58,7 +58,7 @@ function BudgetBar({
           {overBudget && ' — over by ' + formatCurrency(averageCents - ceilingCents)}
         </span>
       </div>
-      <div className="h-2 rounded-full bg-stone-200 overflow-hidden">
+      <div className="h-2 rounded-full bg-stone-700 overflow-hidden">
         <div
           className={`h-full rounded-full ${barColor} transition-all`}
           style={{ width: `${Math.min(pct, 100)}%` }}
@@ -122,7 +122,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
       <Card className="p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">
+            <h2 className="text-lg font-semibold text-stone-100">
               {hasQuote ? 'Price Quote Results' : 'Ready to Price This Event'}
             </h2>
             {quote?.createdAt && (
@@ -157,16 +157,16 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
         </div>
 
         {error && (
-          <div className="mt-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+          <div className="mt-4 rounded-md bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
         {isPending && (
           <div className="mt-6 space-y-2">
-            <div className="h-4 bg-stone-100 rounded animate-pulse" />
-            <div className="h-4 bg-stone-100 rounded animate-pulse w-4/5" />
-            <div className="h-4 bg-stone-100 rounded animate-pulse w-3/5" />
+            <div className="h-4 bg-stone-800 rounded animate-pulse" />
+            <div className="h-4 bg-stone-800 rounded animate-pulse w-4/5" />
+            <div className="h-4 bg-stone-800 rounded animate-pulse w-3/5" />
             <p className="text-xs text-stone-400 mt-3">
               Checking USDA NE data, Spoonacular, and Kroger for each ingredient — this may take
               10–30s...
@@ -180,7 +180,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
         <>
           {/* MealMe setup callout — shown until MEALME_API_KEY is configured */}
           {!mealMeConfigured && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-950 px-4 py-3">
               <p className="text-sm font-medium text-emerald-900">
                 Add MealMe to see prices from your actual stores
               </p>
@@ -196,7 +196,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   mealme.ai
                 </a>{' '}
                 to get an API key, then add{' '}
-                <code className="font-mono text-xs bg-emerald-100 px-1 rounded">
+                <code className="font-mono text-xs bg-emerald-900 px-1 rounded">
                   MEALME_API_KEY
                 </code>{' '}
                 to your environment.
@@ -208,9 +208,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-200">
-                    <th className="text-left py-2 pr-4 font-medium text-stone-600">Ingredient</th>
-                    <th className="text-left py-2 pr-4 font-medium text-stone-600 whitespace-nowrap">
+                  <tr className="border-b border-stone-700">
+                    <th className="text-left py-2 pr-4 font-medium text-stone-400">Ingredient</th>
+                    <th className="text-left py-2 pr-4 font-medium text-stone-400 whitespace-nowrap">
                       Qty
                     </th>
                     <th className="text-right py-2 pr-4 font-medium text-blue-700 whitespace-nowrap">
@@ -230,7 +230,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         <span className="block text-xs font-normal">(MealMe)</span>
                       )}
                     </th>
-                    <th className="text-right py-2 font-medium text-stone-900 whitespace-nowrap">
+                    <th className="text-right py-2 font-medium text-stone-100 whitespace-nowrap">
                       Avg Estimate
                     </th>
                   </tr>
@@ -239,9 +239,9 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   {quote.items.map((item, i) => (
                     <tr
                       key={`${item.ingredientId}-${i}`}
-                      className={`border-b border-stone-100 last:border-0 ${item.hasNoApiData ? 'bg-amber-50' : ''}`}
+                      className={`border-b border-stone-800 last:border-0 ${item.hasNoApiData ? 'bg-amber-950' : ''}`}
                     >
-                      <td className="py-2 pr-4 text-stone-900">
+                      <td className="py-2 pr-4 text-stone-100">
                         {item.ingredientName}
                         {item.isOptional && (
                           <span className="ml-1.5 text-xs text-stone-400">(optional)</span>
@@ -273,15 +273,15 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                           <span className="text-xs">—</span>
                         )}
                       </td>
-                      <td className="py-2 text-right font-medium text-stone-900">
+                      <td className="py-2 text-right font-medium text-stone-100">
                         <PriceCell cents={item.averageCents} />
                       </td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
-                  <tr className="border-t-2 border-stone-300">
-                    <td colSpan={2} className="py-3 font-semibold text-stone-900">
+                  <tr className="border-t-2 border-stone-600">
+                    <td colSpan={2} className="py-3 font-semibold text-stone-100">
                       Total Estimate
                     </td>
                     <td className="py-3 text-right font-semibold text-blue-700">
@@ -302,7 +302,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                         <span className="text-xs">—</span>
                       )}
                     </td>
-                    <td className="py-3 text-right font-bold text-lg text-stone-900">
+                    <td className="py-3 text-right font-bold text-lg text-stone-100">
                       {formatCurrency(quote.averageTotalCents)}
                     </td>
                   </tr>
@@ -311,13 +311,13 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
             </div>
 
             {/* Source legend */}
-            <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-400 border-t border-stone-100 pt-4">
+            <div className="mt-4 flex flex-wrap gap-4 text-xs text-stone-400 border-t border-stone-800 pt-4">
               <span>
                 <span className="font-medium text-blue-700">USDA (NE)</span> — USDA Northeast Urban
                 average retail prices. Already NE-regional, no API key needed.
               </span>
               <span>
-                <span className="font-medium text-stone-600">Spoonacular / Kroger</span> — US
+                <span className="font-medium text-stone-400">Spoonacular / Kroger</span> — US
                 national averages. A Northeast regional multiplier is applied before averaging.
               </span>
               <span>
@@ -331,7 +331,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   : '— not configured. Add MEALME_API_KEY to see prices from your actual NE stores.'}
               </span>
               <span>
-                <span className="font-medium text-stone-600">Avg Estimate</span> — NE-calibrated
+                <span className="font-medium text-stone-400">Avg Estimate</span> — NE-calibrated
                 average of all sources. Falls back to Recipe Book if no data found.
               </span>
             </div>
@@ -340,7 +340,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
           {/* Budget check */}
           {(quote.budgetCeilingCents || quote.quotedPriceCents) && (
             <Card className="p-6">
-              <h3 className="text-sm font-semibold text-stone-700 mb-3">Budget Check</h3>
+              <h3 className="text-sm font-semibold text-stone-300 mb-3">Budget Check</h3>
               <BudgetBar
                 averageCents={quote.averageTotalCents}
                 ceilingCents={quote.budgetCeilingCents}
@@ -352,17 +352,17 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
           {/* Accuracy check — shown when chef has logged actual grocery spend post-event */}
           {quote.actualGroceryCostCents !== null && (
             <Card className="p-6">
-              <h3 className="text-sm font-semibold text-stone-700 mb-3">Accuracy Check</h3>
+              <h3 className="text-sm font-semibold text-stone-300 mb-3">Accuracy Check</h3>
               <div className="flex gap-6 text-sm mb-3">
                 <div>
                   <p className="text-stone-500 text-xs mb-0.5">Estimated</p>
-                  <p className="font-semibold text-stone-900">
+                  <p className="font-semibold text-stone-100">
                     {formatCurrency(quote.averageTotalCents)}
                   </p>
                 </div>
                 <div>
                   <p className="text-stone-500 text-xs mb-0.5">Actual spent</p>
-                  <p className="font-semibold text-stone-900">
+                  <p className="font-semibold text-stone-100">
                     {formatCurrency(quote.actualGroceryCostCents)}
                   </p>
                 </div>
@@ -389,7 +389,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
 
           {/* Actions */}
           <Card className="p-6">
-            <h3 className="text-sm font-semibold text-stone-700 mb-4">Actions</h3>
+            <h3 className="text-sm font-semibold text-stone-300 mb-4">Actions</h3>
             <div className="flex flex-wrap gap-3">
               {/* Instacart */}
               {quote.instacartLink ? (
@@ -397,7 +397,7 @@ export function GroceryQuotePanel({ eventId, initialQuote, quotedPriceCents }: P
                   <Button>Open in Instacart →</Button>
                 </a>
               ) : (
-                <div className="rounded-md border border-stone-200 px-4 py-2.5 text-sm text-stone-500 bg-stone-50">
+                <div className="rounded-md border border-stone-700 px-4 py-2.5 text-sm text-stone-500 bg-stone-800">
                   Instacart link unavailable — add INSTACART_API_KEY to enable
                 </div>
               )}

@@ -100,10 +100,10 @@ export function WorkflowSteps() {
                 <div
                   className={`flex h-11 w-11 items-center justify-center rounded-full text-lg transition-all duration-300 ${
                     isActive
-                      ? 'bg-brand-500 ring-4 ring-brand-200 scale-110'
+                      ? 'bg-brand-9500 ring-4 ring-brand-700 scale-110'
                       : revealed
-                        ? 'bg-brand-100 ring-0 scale-100'
-                        : 'bg-stone-200 ring-0 scale-100'
+                        ? 'bg-brand-900 ring-0 scale-100'
+                        : 'bg-stone-700 ring-0 scale-100'
                   }`}
                 >
                   {step.icon}
@@ -112,7 +112,7 @@ export function WorkflowSteps() {
                 {/* Label */}
                 <span
                   className={`text-[11px] font-semibold uppercase tracking-widest transition-colors duration-300 ${
-                    isActive ? 'text-brand-700' : 'text-stone-400'
+                    isActive ? 'text-brand-400' : 'text-stone-400'
                   }`}
                 >
                   {step.label}
@@ -147,8 +147,8 @@ export function WorkflowSteps() {
             key={activeStep}
             className="flex flex-col items-center text-center animate-in fade-in slide-in-from-bottom-2 duration-200"
           >
-            <div className="text-lg font-bold text-stone-900">{STEPS[activeStep].title}</div>
-            <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-600">
+            <div className="text-lg font-bold text-stone-100">{STEPS[activeStep].title}</div>
+            <p className="mt-2 max-w-sm text-sm leading-relaxed text-stone-400">
               {STEPS[activeStep].description}
             </p>
             <span className="mt-3 text-xs font-medium text-brand-600 group-hover:underline">

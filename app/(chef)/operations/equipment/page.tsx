@@ -20,7 +20,7 @@ export default async function EquipmentPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-stone-900">Equipment Inventory</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Equipment Inventory</h1>
         <p className="mt-1 text-sm text-stone-500">
           Track your owned kit, maintenance schedules, and rental costs per event.
         </p>

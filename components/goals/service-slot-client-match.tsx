@@ -23,9 +23,9 @@ export function ServiceSlotClientMatchList({
           <Link
             key={match.clientId}
             href={`/clients/${match.clientId}`}
-            className="group inline-flex flex-col rounded-md border border-stone-200 bg-stone-50 px-3 py-1.5 hover:border-brand-300 hover:bg-brand-50 transition-colors"
+            className="group inline-flex flex-col rounded-md border border-stone-700 bg-stone-800 px-3 py-1.5 hover:border-brand-600 hover:bg-brand-950 transition-colors"
           >
-            <span className="text-xs font-medium text-stone-800 group-hover:text-brand-700">
+            <span className="text-xs font-medium text-stone-200 group-hover:text-brand-400">
               {match.clientName}
             </span>
             <span className="text-xs text-stone-400">

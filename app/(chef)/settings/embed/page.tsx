@@ -17,13 +17,13 @@ export default async function EmbedSettingsPage() {
       <div>
         <Link
           href="/settings"
-          className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-700 mb-2"
+          className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-300 mb-2"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Settings
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900">Website Widget</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Website Widget</h1>
+        <p className="text-stone-400 mt-1">
           Add a booking form to your existing website. Works on Wix, Squarespace, WordPress, and any
           site that supports custom HTML.
         </p>

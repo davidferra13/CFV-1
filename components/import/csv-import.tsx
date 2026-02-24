@@ -11,23 +11,28 @@ import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { parseClientsCsv, type CsvParseResult } from '@/lib/ai/parse-csv-clients'
-import { importClient, importClients, checkClientDuplicates, type DuplicateCheckResult } from '@/lib/ai/import-actions'
+import {
+  importClient,
+  importClients,
+  checkClientDuplicates,
+  type DuplicateCheckResult,
+} from '@/lib/ai/import-actions'
 import type { ParsedClient } from '@/lib/ai/parse-client'
 
 type Phase = 'input' | 'preview' | 'saving' | 'done'
 
 const COL_COLORS: Record<string, string> = {
-  full_name: 'bg-blue-100 text-blue-800',
-  first_name: 'bg-blue-50 text-blue-700',
-  last_name: 'bg-blue-50 text-blue-700',
-  email: 'bg-green-100 text-green-800',
-  phone: 'bg-purple-100 text-purple-800',
-  notes: 'bg-yellow-100 text-yellow-800',
-  address: 'bg-orange-100 text-orange-800',
-  city: 'bg-orange-50 text-orange-700',
-  state: 'bg-orange-50 text-orange-700',
-  zip: 'bg-orange-50 text-orange-700',
-  skip: 'bg-stone-100 text-stone-400',
+  full_name: 'bg-blue-900 text-blue-800',
+  first_name: 'bg-blue-950 text-blue-700',
+  last_name: 'bg-blue-950 text-blue-700',
+  email: 'bg-green-900 text-green-800',
+  phone: 'bg-purple-900 text-purple-800',
+  notes: 'bg-yellow-900 text-yellow-800',
+  address: 'bg-orange-900 text-orange-800',
+  city: 'bg-orange-950 text-orange-700',
+  state: 'bg-orange-950 text-orange-700',
+  zip: 'bg-orange-950 text-orange-700',
+  skip: 'bg-stone-800 text-stone-400',
 }
 
 export function CsvImport() {
@@ -47,7 +52,7 @@ export function CsvImport() {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = ev => {
+    reader.onload = (ev) => {
       setRawText((ev.target?.result as string) || '')
     }
     reader.readAsText(file)
@@ -64,7 +69,7 @@ export function CsvImport() {
     if (result.clients.length > 0) {
       try {
         const dupes = await checkClientDuplicates(
-          result.clients.map(c => ({ full_name: c.full_name, email: c.email }))
+          result.clients.map((c) => ({ full_name: c.full_name, email: c.email }))
         )
         setDuplicates(dupes)
       } catch {
@@ -84,7 +89,7 @@ export function CsvImport() {
   }
 
   const toggleSkip = (index: number) => {
-    setSkippedClients(prev => {
+    setSkippedClients((prev) => {
       const next = new Set(prev)
       next.has(index) ? next.delete(index) : next.add(index)
       return next
@@ -131,9 +136,7 @@ export function CsvImport() {
   const activeClients = parseResult
     ? parseResult.clients.filter((_, i) => !skippedClients.has(i))
     : []
-  const duplicateCount = parseResult
-    ? parseResult.clients.filter(c => isDuplicate(c)).length
-    : 0
+  const duplicateCount = parseResult ? parseResult.clients.filter((c) => isDuplicate(c)).length : 0
 
   return (
     <div className="space-y-6">
@@ -156,10 +159,7 @@ export function CsvImport() {
 
           {/* File upload */}
           <div className="flex items-center gap-4">
-            <Button
-              variant="secondary"
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
               Upload CSV File
             </Button>
             <span className="text-sm text-stone-500">or paste CSV text below</span>
@@ -176,7 +176,7 @@ export function CsvImport() {
           <Textarea
             placeholder={`Paste CSV content here, or upload a file above.\n\nExample:\nName,Email,Phone,Notes\nJohn Smith,john@example.com,555-1234,Regular client — nut allergy\nSarah Jones,sarah@example.com,555-5678,Prefers weekends`}
             value={rawText}
-            onChange={e => setRawText(e.target.value)}
+            onChange={(e) => setRawText(e.target.value)}
             rows={10}
             className="font-mono text-sm"
           />
@@ -200,8 +200,16 @@ export function CsvImport() {
           {/* Column mapping */}
           <Card className="p-4 space-y-3">
             <div className="flex items-center gap-3">
-              <h3 className="text-sm font-semibold text-stone-900">Column Detection</h3>
-              <Badge variant={parseResult.confidence === 'high' ? 'success' : parseResult.confidence === 'medium' ? 'warning' : 'error'}>
+              <h3 className="text-sm font-semibold text-stone-100">Column Detection</h3>
+              <Badge
+                variant={
+                  parseResult.confidence === 'high'
+                    ? 'success'
+                    : parseResult.confidence === 'medium'
+                      ? 'warning'
+                      : 'error'
+                }
+              >
                 {parseResult.confidence} confidence
               </Badge>
               {parseResult.format !== 'unknown' && (
@@ -225,9 +233,7 @@ export function CsvImport() {
                       <span>{col.detected.replace(/_/g, ' ')}</span>
                     </>
                   )}
-                  {col.detected === 'skip' && (
-                    <span className="opacity-50">ignored</span>
-                  )}
+                  {col.detected === 'skip' && <span className="opacity-50">ignored</span>}
                 </span>
               ))}
             </div>
@@ -237,9 +243,9 @@ export function CsvImport() {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-stone-200">
+                    <tr className="border-b border-stone-700">
                       {parseResult.columnMappings
-                        .filter(m => m.detected !== 'skip')
+                        .filter((m) => m.detected !== 'skip')
                         .map((m, i) => (
                           <th
                             key={i}
@@ -252,13 +258,13 @@ export function CsvImport() {
                   </thead>
                   <tbody>
                     {parseResult.previewRows.map((row, ri) => (
-                      <tr key={ri} className="border-b border-stone-100">
+                      <tr key={ri} className="border-b border-stone-800">
                         {parseResult.columnMappings
-                          .filter(m => m.detected !== 'skip')
+                          .filter((m) => m.detected !== 'skip')
                           .map((m, ci) => (
                             <td
                               key={ci}
-                              className="py-1.5 pr-4 text-stone-700 max-w-[200px] truncate"
+                              className="py-1.5 pr-4 text-stone-300 max-w-[200px] truncate"
                             >
                               {row[m.index] || '—'}
                             </td>
@@ -280,24 +286,30 @@ export function CsvImport() {
           {parseResult.warnings.length > 0 && (
             <Alert variant="warning" title="Heads up">
               <ul className="list-disc list-inside space-y-1 text-sm">
-                {parseResult.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                {parseResult.warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
               </ul>
             </Alert>
           )}
 
           {/* Duplicate warning */}
           {duplicateCount > 0 && (
-            <Alert variant="warning" title={`${duplicateCount} possible duplicate${duplicateCount !== 1 ? 's' : ''} detected`}>
-              Clients marked below may already exist in your account.
-              You can skip them or import anyway — duplicates can be merged later.
+            <Alert
+              variant="warning"
+              title={`${duplicateCount} possible duplicate${duplicateCount !== 1 ? 's' : ''} detected`}
+            >
+              Clients marked below may already exist in your account. You can skip them or import
+              anyway — duplicates can be merged later.
             </Alert>
           )}
 
           {/* Summary + client list */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <h3 className="text-sm font-semibold text-stone-900">
-                {parseResult.clients.length} client{parseResult.clients.length !== 1 ? 's' : ''} to import
+              <h3 className="text-sm font-semibold text-stone-100">
+                {parseResult.clients.length} client{parseResult.clients.length !== 1 ? 's' : ''} to
+                import
               </h3>
               {parseResult.skippedRows > 0 && (
                 <span className="text-xs text-stone-500">
@@ -315,14 +327,14 @@ export function CsvImport() {
                     key={i}
                     className={`flex items-center gap-3 p-3 rounded-lg border text-sm transition-opacity ${
                       skipped
-                        ? 'border-stone-200 bg-stone-50 opacity-40'
+                        ? 'border-stone-700 bg-stone-800 opacity-40'
                         : dupe
-                        ? 'border-yellow-200 bg-yellow-50'
-                        : 'border-stone-200 bg-white'
+                          ? 'border-yellow-200 bg-yellow-950'
+                          : 'border-stone-700 bg-surface'
                     }`}
                   >
                     <div className="flex-1 min-w-0">
-                      <span className="font-medium text-stone-900">{client.full_name}</span>
+                      <span className="font-medium text-stone-100">{client.full_name}</span>
                       {client.email && (
                         <span className="ml-2 text-stone-500 text-xs">{client.email}</span>
                       )}
@@ -330,12 +342,14 @@ export function CsvImport() {
                         <span className="ml-2 text-stone-500 text-xs">{client.phone}</span>
                       )}
                       {dupe && (
-                        <Badge variant="warning" className="ml-2 text-xs">possible duplicate</Badge>
+                        <Badge variant="warning" className="ml-2 text-xs">
+                          possible duplicate
+                        </Badge>
                       )}
                     </div>
                     <button
                       onClick={() => toggleSkip(i)}
-                      className="text-xs text-stone-500 hover:text-stone-700 shrink-0"
+                      className="text-xs text-stone-500 hover:text-stone-300 shrink-0"
                     >
                       {skipped ? 'Restore' : 'Skip'}
                     </button>
@@ -351,10 +365,10 @@ export function CsvImport() {
               <input
                 type="checkbox"
                 checked={confirmed}
-                onChange={e => setConfirmed(e.target.checked)}
-                className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                onChange={(e) => setConfirmed(e.target.checked)}
+                className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
-              <span className="text-sm text-stone-700">
+              <span className="text-sm text-stone-300">
                 The column mapping looks right — import these clients
               </span>
             </label>
@@ -377,7 +391,7 @@ export function CsvImport() {
       {phase === 'saving' && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mb-4" />
-          <p className="text-stone-600">Importing clients...</p>
+          <p className="text-stone-400">Importing clients...</p>
         </div>
       )}
 

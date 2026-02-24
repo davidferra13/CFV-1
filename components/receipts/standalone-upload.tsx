@@ -80,7 +80,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
 
   if (state === 'success') {
     return (
-      <div className="border border-green-200 bg-green-50 rounded-lg p-4 space-y-2">
+      <div className="border border-green-200 bg-green-950 rounded-lg p-4 space-y-2">
         <p className="text-sm font-medium text-green-800">
           Receipt uploaded and queued for extraction.
         </p>
@@ -102,13 +102,13 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
   }
 
   return (
-    <div className="border border-stone-200 rounded-lg p-4 space-y-4 bg-white">
-      <p className="text-sm font-semibold text-stone-800">Upload a Receipt</p>
+    <div className="border border-stone-700 rounded-lg p-4 space-y-4 bg-surface">
+      <p className="text-sm font-semibold text-stone-200">Upload a Receipt</p>
 
       {/* File picker */}
       {state === 'idle' && (
         <div>
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-300 rounded-lg p-6 cursor-pointer hover:border-stone-400 transition-colors">
+          <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-600 rounded-lg p-6 cursor-pointer hover:border-stone-400 transition-colors">
             <span className="text-stone-400 text-sm mb-1">
               Tap to choose a photo or take one now
             </span>
@@ -128,7 +128,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
       {/* Preview */}
       {state === 'previewing' && preview && (
         <div className="space-y-3">
-          <div className="w-full max-h-48 overflow-hidden rounded border border-stone-200">
+          <div className="w-full max-h-48 overflow-hidden rounded border border-stone-700">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={preview} alt="Receipt preview" className="object-contain w-full max-h-48" />
           </div>
@@ -149,13 +149,13 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
         <div className="space-y-3">
           {/* Event selector */}
           <div>
-            <label className="block text-xs font-medium text-stone-600 mb-1">
+            <label className="block text-xs font-medium text-stone-400 mb-1">
               Link to Event <span className="font-normal text-stone-400">(optional)</span>
             </label>
             <select
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
-              className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 bg-white text-stone-800"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-surface text-stone-200"
             >
               <option value="">— No event (standalone receipt) —</option>
               {events.map((ev) => (
@@ -168,13 +168,13 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
 
           {/* Client selector */}
           <div>
-            <label className="block text-xs font-medium text-stone-600 mb-1">
+            <label className="block text-xs font-medium text-stone-400 mb-1">
               Link to Client <span className="font-normal text-stone-400">(optional)</span>
             </label>
             <select
               value={selectedClientId}
               onChange={(e) => setSelectedClientId(e.target.value)}
-              className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 bg-white text-stone-800"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-surface text-stone-200"
             >
               <option value="">— No client —</option>
               {clients.map((c) => (
@@ -187,7 +187,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
 
           {/* Notes */}
           <div>
-            <label className="block text-xs font-medium text-stone-600 mb-1">
+            <label className="block text-xs font-medium text-stone-400 mb-1">
               Note <span className="font-normal text-stone-400">(optional)</span>
             </label>
             <input
@@ -195,7 +195,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Annual equipment purchase, farmers market run…"
-              className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 bg-white text-stone-800 placeholder:text-stone-300"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-surface text-stone-200 placeholder:text-stone-300"
             />
           </div>
 

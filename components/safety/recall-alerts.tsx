@@ -32,7 +32,7 @@ export function RecallAlerts({ alerts }: Props) {
 
   if (visible.length === 0) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+      <div className="flex items-center gap-2 rounded-md border border-green-200 bg-green-950 px-4 py-3 text-green-800">
         <CheckCircle className="h-5 w-5 shrink-0 text-green-600" />
         <span className="text-sm font-medium">No active recalls match your ingredients.</span>
       </div>
@@ -51,13 +51,13 @@ export function RecallAlerts({ alerts }: Props) {
       {visible.map((alert) => (
         <div
           key={alert.id}
-          className="relative rounded-md border border-amber-300 bg-amber-50 px-4 py-3 pr-10"
+          className="relative rounded-md border border-amber-300 bg-amber-950 px-4 py-3 pr-10"
         >
           <button
             type="button"
             disabled={isPending}
             onClick={() => handleDismiss(alert.id)}
-            className="absolute right-2 top-2 rounded p-1 text-amber-600 hover:bg-amber-100 disabled:opacity-50"
+            className="absolute right-2 top-2 rounded p-1 text-amber-600 hover:bg-amber-900 disabled:opacity-50"
             aria-label="Dismiss recall alert"
           >
             <X className="h-4 w-4" />

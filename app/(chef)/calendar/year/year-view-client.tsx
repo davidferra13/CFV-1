@@ -36,9 +36,9 @@ function WeekCell({ week, isCurrentWeek, href }: WeekCellProps) {
 
   let bg = 'bg-gray-50 hover:bg-gray-100 text-gray-400'
   if (hasEvents && hasGaps) {
-    bg = 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-red-400 border-2'
+    bg = 'bg-amber-950 hover:bg-amber-900 text-amber-900 border-red-400 border-2'
   } else if (hasEvents) {
-    bg = 'bg-amber-50 hover:bg-amber-100 text-amber-900'
+    bg = 'bg-amber-950 hover:bg-amber-900 text-amber-900'
   }
 
   const ring = isCurrentWeek ? 'ring-2 ring-amber-500 ring-offset-1' : ''
@@ -141,7 +141,7 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
           </Link>
           <Link
             href="/calendar/week"
-            className="px-3 py-1.5 text-sm bg-amber-500 text-white rounded-lg hover:bg-amber-600"
+            className="px-3 py-1.5 text-sm bg-amber-9500 text-white rounded-lg hover:bg-amber-600"
           >
             Week Planner
           </Link>
@@ -154,14 +154,14 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
           <div className="text-lg font-bold text-gray-900">{summary.total_events}</div>
           <div className="text-xs text-gray-500">Events</div>
         </div>
-        <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg px-3 py-2">
           <div className="text-lg font-bold text-amber-800">
             {fullyScheduledWeeks} / {eventWeeks}
           </div>
           <div className="text-xs text-amber-600">Fully Scheduled</div>
         </div>
         <div
-          className={`border rounded-lg px-3 py-2 ${summary.total_gaps > 0 ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}
+          className={`border rounded-lg px-3 py-2 ${summary.total_gaps > 0 ? 'bg-red-950 border-red-200' : 'bg-green-950 border-green-200'}`}
         >
           <div
             className={`text-lg font-bold ${summary.total_gaps > 0 ? 'text-red-700' : 'text-green-700'}`}
@@ -201,8 +201,8 @@ export function YearViewClient({ summary, year, currentYear }: Props) {
       <div className="flex flex-wrap gap-4 text-xs text-gray-500 pt-2 border-t border-gray-100">
         {[
           { color: 'bg-gray-50 border-gray-200', label: 'No events' },
-          { color: 'bg-amber-50 border-amber-200', label: 'Events, fully scheduled' },
-          { color: 'bg-amber-50 border-red-400 border-2', label: 'Events with gaps' },
+          { color: 'bg-amber-950 border-amber-200', label: 'Events, fully scheduled' },
+          { color: 'bg-amber-950 border-red-400 border-2', label: 'Events with gaps' },
           { color: 'ring-2 ring-amber-500 bg-gray-50 border-gray-200', label: 'Current week' },
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">

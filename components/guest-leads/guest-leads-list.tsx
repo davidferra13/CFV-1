@@ -78,7 +78,7 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               filter === s
                 ? 'bg-stone-900 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
             }`}
           >
             {s === 'all' ? 'All' : STATUS_BADGES[s]?.label || s}
@@ -105,13 +105,13 @@ export function GuestLeadsList({ leads }: { leads: GuestLead[] }) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="font-semibold text-stone-900">{lead.name}</h3>
+                      <h3 className="font-semibold text-stone-100">{lead.name}</h3>
                       <Badge variant={badge.variant}>{badge.label}</Badge>
                     </div>
                     <p className="text-sm text-stone-500 mt-0.5">{lead.email}</p>
                     {lead.phone && <p className="text-sm text-stone-500">{lead.phone}</p>}
                     {lead.message && (
-                      <p className="text-sm text-stone-600 mt-2 bg-stone-50 rounded-lg px-3 py-2">
+                      <p className="text-sm text-stone-400 mt-2 bg-stone-800 rounded-lg px-3 py-2">
                         "{lead.message}"
                       </p>
                     )}

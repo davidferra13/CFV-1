@@ -26,49 +26,49 @@ const FILTER_DEFS: FilterDef[] = [
   {
     key: 'showEvents',
     label: 'Events',
-    activeColor: 'bg-amber-100 text-amber-800 border-amber-300',
+    activeColor: 'bg-amber-900 text-amber-800 border-amber-300',
     dotColor: '#F59E0B',
   },
   {
     key: 'showDraftEvents',
     label: 'Drafts',
-    activeColor: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+    activeColor: 'bg-yellow-900 text-yellow-800 border-yellow-300',
     dotColor: '#FDE68A',
   },
   {
     key: 'showPrepBlocks',
     label: 'Prep',
-    activeColor: 'bg-green-100 text-green-800 border-green-300',
+    activeColor: 'bg-green-900 text-green-800 border-green-300',
     dotColor: '#16A34A',
   },
   {
     key: 'showCalls',
     label: 'Calls',
-    activeColor: 'bg-blue-100 text-blue-800 border-blue-300',
+    activeColor: 'bg-blue-900 text-blue-800 border-blue-300',
     dotColor: '#3B82F6',
   },
   {
     key: 'showPersonal',
     label: 'Personal',
-    activeColor: 'bg-purple-100 text-purple-800 border-purple-300',
+    activeColor: 'bg-purple-900 text-purple-800 border-purple-300',
     dotColor: '#7C3AED',
   },
   {
     key: 'showBusiness',
     label: 'Business',
-    activeColor: 'bg-teal-100 text-teal-800 border-teal-300',
+    activeColor: 'bg-teal-900 text-teal-800 border-teal-300',
     dotColor: '#0D9488',
   },
   {
     key: 'showIntentions',
     label: 'Goals',
-    activeColor: 'bg-green-50 text-green-700 border-green-200',
+    activeColor: 'bg-green-950 text-green-700 border-green-200',
     dotColor: '#4ADE80',
   },
   {
     key: 'showLeads',
     label: 'Leads',
-    activeColor: 'bg-orange-100 text-orange-800 border-orange-300',
+    activeColor: 'bg-orange-900 text-orange-800 border-orange-300',
     dotColor: '#EA580C',
   },
 ]
@@ -158,7 +158,7 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
               'px-2.5 py-1 rounded-md border text-xs font-medium transition-all',
               activeViewId === view.id
                 ? 'bg-stone-800 text-white border-stone-800'
-                : 'bg-white text-stone-500 border-stone-200 hover:border-stone-400 hover:text-stone-700',
+                : 'bg-surface text-stone-500 border-stone-700 hover:border-stone-400 hover:text-stone-300',
             ].join(' ')}
           >
             {view.name}
@@ -178,7 +178,7 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
                 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all',
                 active
                   ? def.activeColor
-                  : 'bg-stone-50 text-stone-400 border-stone-200 hover:bg-stone-100',
+                  : 'bg-stone-800 text-stone-400 border-stone-700 hover:bg-stone-700',
               ].join(' ')}
             >
               <span
@@ -193,7 +193,7 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
           <button
             type="button"
             onClick={reset}
-            className="text-xs text-stone-400 hover:text-stone-600 underline ml-1"
+            className="text-xs text-stone-400 hover:text-stone-400 underline ml-1"
           >
             Reset
           </button>

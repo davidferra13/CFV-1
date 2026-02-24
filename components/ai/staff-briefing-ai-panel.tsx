@@ -37,11 +37,11 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Staff Briefing Draft</span>
+            <span className="text-sm font-medium text-stone-300">Staff Briefing Draft</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -78,23 +78,23 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
   ]
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">{result.subject}</span>
+          <span className="text-sm font-medium text-stone-300">{result.subject}</span>
           <Badge variant="warning">Draft</Badge>
         </div>
         <div className="flex items-center gap-1">
           <button
             onClick={() => setView('full')}
-            className={`text-xs px-2 py-1 rounded ${view === 'full' ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+            className={`text-xs px-2 py-1 rounded ${view === 'full' ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
           >
             Full
           </button>
           <button
             onClick={() => setView('sections')}
-            className={`text-xs px-2 py-1 rounded ${view === 'sections' ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+            className={`text-xs px-2 py-1 rounded ${view === 'sections' ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
           >
             Sections
           </button>
@@ -109,7 +109,7 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
       </div>
 
       {view === 'full' && (
-        <pre className="text-xs text-stone-700 whitespace-pre-wrap bg-stone-50 rounded p-3 max-h-72 overflow-y-auto font-sans leading-relaxed">
+        <pre className="text-xs text-stone-300 whitespace-pre-wrap bg-stone-800 rounded p-3 max-h-72 overflow-y-auto font-sans leading-relaxed">
           {result.fullDocument}
         </pre>
       )}
@@ -119,14 +119,14 @@ export function StaffBriefingAIPanel({ eventId }: { eventId: string }) {
           {sections.map((s, i) => (
             <div
               key={i}
-              className={`rounded p-2 ${s.label === 'ALLERGENS' ? 'bg-red-50 border border-red-200' : 'bg-stone-50'}`}
+              className={`rounded p-2 ${s.label === 'ALLERGENS' ? 'bg-red-950 border border-red-200' : 'bg-stone-800'}`}
             >
               <div
                 className={`text-[11px] font-medium mb-0.5 ${s.label === 'ALLERGENS' ? 'text-red-700' : 'text-stone-500'}`}
               >
                 {s.label}
               </div>
-              <div className="text-xs text-stone-700 whitespace-pre-wrap">{s.content}</div>
+              <div className="text-xs text-stone-300 whitespace-pre-wrap">{s.content}</div>
             </div>
           ))}
         </div>

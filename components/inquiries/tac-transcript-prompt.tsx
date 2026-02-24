@@ -44,14 +44,14 @@ export function TacTranscriptPrompt({
 
   return (
     <>
-      <div className="rounded-lg border border-amber-400/40 bg-amber-50/60 p-3 space-y-2">
+      <div className="rounded-lg border border-amber-400/40 bg-amber-950/60 p-3 space-y-2">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2 min-w-0">
             <Badge variant="warning" className="shrink-0 mt-0.5">
               Transcript
             </Badge>
             <div>
-              <p className="text-sm font-medium text-stone-800">
+              <p className="text-sm font-medium text-stone-200">
                 Save your TakeAChef conversation with {displayName}
               </p>
               <p className="text-xs text-stone-500 mt-0.5">
@@ -62,7 +62,7 @@ export function TacTranscriptPrompt({
           </div>
           <button
             type="button"
-            className="text-stone-400 hover:text-stone-600 text-lg leading-none shrink-0"
+            className="text-stone-400 hover:text-stone-400 text-lg leading-none shrink-0"
             onClick={handleDismiss}
             aria-label="Dismiss"
           >

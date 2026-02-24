@@ -60,7 +60,7 @@ export function FriendsList({ friends: initialFriends }: FriendsListProps) {
   return (
     <div className="space-y-4">
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+        <div className="bg-red-950 border border-red-200 rounded-lg p-3">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
@@ -73,7 +73,7 @@ export function FriendsList({ friends: initialFriends }: FriendsListProps) {
             placeholder="Filter connections..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="block w-full rounded-lg border border-stone-300 bg-white pl-10 pr-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            className="block w-full rounded-lg border border-stone-600 bg-surface pl-10 pr-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
           />
         </div>
       )}
@@ -100,11 +100,7 @@ export function FriendsList({ friends: initialFriends }: FriendsListProps) {
                   >
                     Remove
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setConfirmRemove(null)}
-                  >
+                  <Button size="sm" variant="ghost" onClick={() => setConfirmRemove(null)}>
                     Cancel
                   </Button>
                 </div>

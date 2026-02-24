@@ -29,7 +29,7 @@ const EVENT_DESCRIPTIONS: Record<string, string> = {
 const HIDDEN_FROM_FEED = new Set(['session_heartbeat'])
 
 export function ClientActivityFeed({ events }: ClientActivityFeedProps) {
-  const displayEvents = events.filter(e => !HIDDEN_FROM_FEED.has(e.event_type))
+  const displayEvents = events.filter((e) => !HIDDEN_FROM_FEED.has(e.event_type))
 
   if (displayEvents.length === 0) {
     return (
@@ -41,7 +41,7 @@ export function ClientActivityFeed({ events }: ClientActivityFeedProps) {
 
   return (
     <div className="space-y-1">
-      {displayEvents.map(event => (
+      {displayEvents.map((event) => (
         <ClientActivityRow key={event.id} event={event} />
       ))}
     </div>
@@ -68,11 +68,18 @@ function ClientActivityRow({ event }: { event: ActivityEvent }) {
           <p className="text-xs text-stone-400 mt-0.5 truncate">{detailParts.join(' | ')}</p>
         )}
       </div>
-      <span className="text-xs text-stone-400 shrink-0 mt-0.5">{formatTimeAgo(event.created_at)}</span>
+      <span className="text-xs text-stone-400 shrink-0 mt-0.5">
+        {formatTimeAgo(event.created_at)}
+      </span>
     </div>
   )
 
-  if (href) return <Link href={href} className="block">{content}</Link>
+  if (href)
+    return (
+      <Link href={href} className="block">
+        {content}
+      </Link>
+    )
   return content
 }
 
@@ -99,8 +106,10 @@ function buildMetadataParts(event: ActivityEvent): string[] {
   // New rich metadata fields
   const occasion = typeof metadata.occasion === 'string' ? metadata.occasion : null
   const eventStatus = typeof metadata.event_status === 'string' ? metadata.event_status : null
-  const paymentAmountCents = typeof metadata.payment_amount_cents === 'number' ? metadata.payment_amount_cents : null
-  const totalQuotedCents = typeof metadata.total_quoted_cents === 'number' ? metadata.total_quoted_cents : null
+  const paymentAmountCents =
+    typeof metadata.payment_amount_cents === 'number' ? metadata.payment_amount_cents : null
+  const totalQuotedCents =
+    typeof metadata.total_quoted_cents === 'number' ? metadata.total_quoted_cents : null
   const documentType = typeof metadata.document_type === 'string' ? metadata.document_type : null
   const isPending = metadata.is_pending === true
 
@@ -121,8 +130,8 @@ function buildMetadataParts(event: ActivityEvent): string[] {
 
 function ActorBadge({ type }: { type: string }) {
   const config: Record<string, { bg: string; label: string }> = {
-    client: { bg: 'bg-blue-100 text-blue-700', label: 'Client' },
-    chef: { bg: 'bg-emerald-100 text-emerald-700', label: 'Chef' },
+    client: { bg: 'bg-blue-900 text-blue-700', label: 'Client' },
+    chef: { bg: 'bg-emerald-900 text-emerald-700', label: 'Chef' },
     system: { bg: 'bg-stone-100 text-stone-600', label: 'System' },
   }
   const c = config[type] || config.system

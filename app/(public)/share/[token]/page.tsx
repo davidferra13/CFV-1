@@ -46,7 +46,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               Hosted by {eventData.chefName}
             </p>
           )}
-          <h1 className="text-3xl sm:text-4xl font-bold text-stone-900 mb-3">
+          <h1 className="text-3xl sm:text-4xl font-bold text-stone-100 mb-3">
             {eventData.occasion || 'Private Dinner'}
           </h1>
           <Badge variant="success">{statusLabel}</Badge>
@@ -68,7 +68,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               {eventData.eventDate && (
                 <div>
                   <div className="text-sm text-stone-500 mb-1">Date</div>
-                  <div className="font-medium text-stone-900">
+                  <div className="font-medium text-stone-100">
                     {format(new Date(eventData.eventDate), 'EEEE, MMMM do, yyyy')}
                   </div>
                 </div>
@@ -77,7 +77,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               {eventData.serveTime && (
                 <div>
                   <div className="text-sm text-stone-500 mb-1">Dinner Time</div>
-                  <div className="font-medium text-stone-900">
+                  <div className="font-medium text-stone-100">
                     {eventData.serveTime.slice(0, 5)}
                   </div>
                 </div>
@@ -86,7 +86,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               {eventData.arrivalTime && (
                 <div>
                   <div className="text-sm text-stone-500 mb-1">Arrival Time</div>
-                  <div className="font-medium text-stone-900">
+                  <div className="font-medium text-stone-100">
                     {eventData.arrivalTime.slice(0, 5)}
                   </div>
                 </div>
@@ -96,7 +96,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               {eventData.guestCount && (
                 <div>
                   <div className="text-sm text-stone-500 mb-1">Expected Guests</div>
-                  <div className="font-medium text-stone-900">{eventData.guestCount} guests</div>
+                  <div className="font-medium text-stone-100">{eventData.guestCount} guests</div>
                 </div>
               )}
 
@@ -104,7 +104,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               {eventData.serviceStyle && (
                 <div>
                   <div className="text-sm text-stone-500 mb-1">Service Style</div>
-                  <div className="font-medium text-stone-900 capitalize">
+                  <div className="font-medium text-stone-100 capitalize">
                     {eventData.serviceStyle.replace('_', ' ')}
                   </div>
                 </div>
@@ -113,9 +113,9 @@ export default async function SharePage({ params }: { params: { token: string } 
 
             {/* Location */}
             {eventData.location && (
-              <div className="pt-3 border-t border-stone-100">
+              <div className="pt-3 border-t border-stone-800">
                 <div className="text-sm text-stone-500 mb-1">Location</div>
-                <div className="font-medium text-stone-900">
+                <div className="font-medium text-stone-100">
                   {[
                     eventData.location.address,
                     eventData.location.city,
@@ -126,16 +126,16 @@ export default async function SharePage({ params }: { params: { token: string } 
                     .join(', ')}
                 </div>
                 {eventData.location.notes && (
-                  <p className="text-sm text-stone-600 mt-1">{eventData.location.notes}</p>
+                  <p className="text-sm text-stone-400 mt-1">{eventData.location.notes}</p>
                 )}
               </div>
             )}
 
             {/* Special Requests */}
             {eventData.specialRequests && (
-              <div className="pt-3 border-t border-stone-100">
+              <div className="pt-3 border-t border-stone-800">
                 <div className="text-sm text-stone-500 mb-1">Special Requests</div>
-                <div className="text-stone-900">{eventData.specialRequests}</div>
+                <div className="text-stone-100">{eventData.specialRequests}</div>
               </div>
             )}
           </CardContent>
@@ -151,9 +151,9 @@ export default async function SharePage({ params }: { params: { token: string } 
               <div className="space-y-4">
                 {eventData.menus.map((menu) => (
                   <div key={menu.id}>
-                    <h4 className="font-semibold text-stone-900">{menu.name}</h4>
+                    <h4 className="font-semibold text-stone-100">{menu.name}</h4>
                     {menu.description && (
-                      <p className="text-stone-600 text-sm mt-1">{menu.description}</p>
+                      <p className="text-stone-400 text-sm mt-1">{menu.description}</p>
                     )}
                     {menu.service_style && (
                       <span className="inline-block mt-1 text-xs text-stone-500 capitalize">
@@ -182,7 +182,7 @@ export default async function SharePage({ params }: { params: { token: string } 
                       {eventData.dietaryInfo.restrictions.map((r: string) => (
                         <span
                           key={r}
-                          className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium"
+                          className="px-2.5 py-1 bg-amber-950 text-amber-700 rounded-full text-xs font-medium"
                         >
                           {r}
                         </span>
@@ -197,7 +197,7 @@ export default async function SharePage({ params }: { params: { token: string } 
                     {eventData.dietaryInfo.allergies.map((a: string) => (
                       <span
                         key={a}
-                        className="px-2.5 py-1 bg-red-50 text-red-700 rounded-full text-xs font-medium"
+                        className="px-2.5 py-1 bg-red-950 text-red-700 rounded-full text-xs font-medium"
                       >
                         {a}
                       </span>
@@ -219,7 +219,7 @@ export default async function SharePage({ params }: { params: { token: string } 
               <div className="space-y-2">
                 {eventData.guestList.map((guest, i) => (
                   <div key={i} className="flex items-center justify-between py-1.5">
-                    <span className="text-stone-900">{guest.full_name}</span>
+                    <span className="text-stone-100">{guest.full_name}</span>
                     <Badge
                       variant={
                         guest.rsvp_status === 'attending'
@@ -293,13 +293,13 @@ export default async function SharePage({ params }: { params: { token: string } 
         </Card>
 
         {/* Create Account CTA */}
-        <div className="text-center py-6 border-t border-stone-200">
+        <div className="text-center py-6 border-t border-stone-700">
           <p className="text-sm text-stone-500 mb-2">
             Want to save your profile for future events?
           </p>
           <a
             href={`/auth/client-signup${existingGuest ? `?guest_token=${existingGuest.guest_token}` : ''}`}
-            className="text-brand-600 hover:text-brand-700 font-medium text-sm"
+            className="text-brand-600 hover:text-brand-400 font-medium text-sm"
           >
             Create a free account
           </a>

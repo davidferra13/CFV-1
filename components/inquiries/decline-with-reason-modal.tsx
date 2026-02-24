@@ -39,22 +39,22 @@ export function DeclineWithReasonModal({ inquiryId, onCancel }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
+      <div className="bg-surface rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
         <div>
-          <h2 className="text-base font-semibold text-stone-900">Decline Inquiry</h2>
+          <h2 className="text-base font-semibold text-stone-100">Decline Inquiry</h2>
           <p className="text-sm text-stone-500 mt-1">
             Select a reason (optional but helps you track patterns).
           </p>
         </div>
 
         <div className="space-y-1.5">
-          {COMMON_DECLINE_REASONS.map(reason => (
+          {COMMON_DECLINE_REASONS.map((reason) => (
             <label
               key={reason}
               className={`flex items-center gap-2.5 rounded-lg border px-3 py-2 cursor-pointer transition-colors ${
                 selected === reason
-                  ? 'border-brand-400 bg-brand-50'
-                  : 'border-stone-200 hover:border-stone-300'
+                  ? 'border-brand-400 bg-brand-950'
+                  : 'border-stone-700 hover:border-stone-600'
               }`}
             >
               <input
@@ -65,7 +65,7 @@ export function DeclineWithReasonModal({ inquiryId, onCancel }: Props) {
                 onChange={() => setSelected(reason)}
                 className="sr-only"
               />
-              <span className="text-sm text-stone-700">{reason}</span>
+              <span className="text-sm text-stone-300">{reason}</span>
             </label>
           ))}
         </div>
@@ -75,20 +75,15 @@ export function DeclineWithReasonModal({ inquiryId, onCancel }: Props) {
             type="text"
             placeholder="Describe the reason…"
             value={customReason}
-            onChange={e => setCustomReason(e.target.value)}
-            className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            onChange={(e) => setCustomReason(e.target.value)}
+            className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="flex gap-2 pt-1">
-          <Button
-            variant="danger"
-            onClick={handleDecline}
-            disabled={loading}
-            className="flex-1"
-          >
+          <Button variant="danger" onClick={handleDecline} disabled={loading} className="flex-1">
             {loading ? 'Declining…' : 'Decline Inquiry'}
           </Button>
           <Button variant="ghost" onClick={onCancel} disabled={loading}>

@@ -72,15 +72,15 @@ export function DashboardQuickSettings({
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-stone-200 bg-white p-4 shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-stone-700 bg-surface p-4 shadow-lg">
           <div className="mb-3">
-            <p className="text-sm font-semibold text-stone-900">Reorder Dashboard</p>
+            <p className="text-sm font-semibold text-stone-100">Reorder Dashboard</p>
             <p className="text-xs text-stone-500">Use up/down to reorder visible widgets.</p>
           </div>
 
           <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
             {visibleWidgets.length === 0 && (
-              <p className="rounded-md border border-dashed border-stone-300 p-3 text-xs text-stone-500">
+              <p className="rounded-md border border-dashed border-stone-600 p-3 text-xs text-stone-500">
                 No visible widgets. Enable them in Settings.
               </p>
             )}
@@ -88,9 +88,11 @@ export function DashboardQuickSettings({
             {visibleWidgets.map((widget, index) => (
               <div
                 key={widget.id}
-                className="flex items-center justify-between gap-2 rounded-md border border-stone-200 p-2"
+                className="flex items-center justify-between gap-2 rounded-md border border-stone-700 p-2"
               >
-                <p className="text-xs font-medium text-stone-800">{DASHBOARD_WIDGET_LABELS[widget.id]}</p>
+                <p className="text-xs font-medium text-stone-200">
+                  {DASHBOARD_WIDGET_LABELS[widget.id]}
+                </p>
                 <div className="flex gap-1">
                   <Button
                     type="button"
@@ -117,12 +119,13 @@ export function DashboardQuickSettings({
             ))}
           </div>
 
-          {error && (
-            <p className="mt-3 text-xs text-red-600">{error}</p>
-          )}
+          {error && <p className="mt-3 text-xs text-red-600">{error}</p>}
 
           <div className="mt-4 flex items-center justify-between gap-2">
-            <Link href="/settings/dashboard" className="text-xs text-brand-600 hover:text-brand-700">
+            <Link
+              href="/settings/dashboard"
+              className="text-xs text-brand-600 hover:text-brand-400"
+            >
               Manage widget visibility
             </Link>
             <div className="flex gap-2">
@@ -135,12 +138,7 @@ export function DashboardQuickSettings({
               >
                 Close
               </Button>
-              <Button
-                type="button"
-                size="sm"
-                onClick={handleSave}
-                disabled={isPending}
-              >
+              <Button type="button" size="sm" onClick={handleSave} disabled={isPending}>
                 {isPending ? 'Saving...' : 'Save'}
               </Button>
             </div>

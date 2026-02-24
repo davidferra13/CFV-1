@@ -43,7 +43,7 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
             href={`/api/documents/contract/${contract.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-stone-600 underline hover:text-stone-900"
+            className="text-sm text-stone-400 underline hover:text-stone-100"
           >
             Download PDF
           </a>
@@ -52,9 +52,9 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
 
       {/* Contract body preview — shown for draft contracts */}
       {contract?.status === 'draft' && contract.body_snapshot && (
-        <div className="mb-4 rounded-lg border border-stone-200 bg-stone-50 p-3">
+        <div className="mb-4 rounded-lg border border-stone-700 bg-stone-800 p-3">
           <p className="text-xs text-stone-500 mb-1 font-medium">Contract preview</p>
-          <pre className="whitespace-pre-wrap text-xs text-stone-700 leading-relaxed line-clamp-6 overflow-hidden">
+          <pre className="whitespace-pre-wrap text-xs text-stone-300 leading-relaxed line-clamp-6 overflow-hidden">
             {contract.body_snapshot.slice(0, 200)}
             {contract.body_snapshot.length > 200 ? '…' : ''}
           </pre>
@@ -70,15 +70,11 @@ export async function ContractSection({ eventId, eventStatus }: Props) {
 
       {/* Void reason — shown for voided contracts */}
       {contract?.status === 'voided' && (contract as any).void_reason && (
-        <p className="text-sm text-stone-500 mb-4">
-          Reason: {(contract as any).void_reason}
-        </p>
+        <p className="text-sm text-stone-500 mb-4">Reason: {(contract as any).void_reason}</p>
       )}
 
       {/* No contract yet */}
-      {!contract && (
-        <p className="text-sm text-stone-500 mb-4">No contract generated yet.</p>
-      )}
+      {!contract && <p className="text-sm text-stone-500 mb-4">No contract generated yet.</p>}
 
       {/* Interactive buttons — delegated to the existing client component */}
       <SendContractButton

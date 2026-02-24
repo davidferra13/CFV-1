@@ -30,12 +30,12 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 
 // ── Reaction config ──────────────────────────────────────────
 export const REACTIONS: Array<{ type: ReactionType; emoji: string; label: string }> = [
-  { type: 'like',        emoji: '👍', label: 'Like'       },
-  { type: 'fire',        emoji: '🔥', label: 'Fire'       },
-  { type: 'clap',        emoji: '👏', label: 'Clap'       },
-  { type: 'wow',         emoji: '😮', label: 'Wow'        },
-  { type: 'hungry',      emoji: '😋', label: 'Hungry'     },
-  { type: 'insightful',  emoji: '💡', label: 'Insightful' },
+  { type: 'like', emoji: '👍', label: 'Like' },
+  { type: 'fire', emoji: '🔥', label: 'Fire' },
+  { type: 'clap', emoji: '👏', label: 'Clap' },
+  { type: 'wow', emoji: '😮', label: 'Wow' },
+  { type: 'hungry', emoji: '😋', label: 'Hungry' },
+  { type: 'insightful', emoji: '💡', label: 'Insightful' },
 ]
 
 function getReactionEmoji(type: ReactionType | null): string {
@@ -54,9 +54,12 @@ function ChefAvatar({ author, size = 40 }: { author: SocialPost['author']; size?
   return (
     <Avatar style={{ width: size, height: size }}>
       {author.profile_image_url && (
-        <AvatarImage src={author.profile_image_url} alt={author.display_name ?? author.business_name} />
+        <AvatarImage
+          src={author.profile_image_url}
+          alt={author.display_name ?? author.business_name}
+        />
       )}
-      <AvatarFallback className="bg-amber-100 text-amber-800 text-xs font-semibold">
+      <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
         {initials}
       </AvatarFallback>
     </Avatar>
@@ -69,10 +72,13 @@ function MediaGrid({ urls, types }: { urls: string[]; types: string[] }) {
 
   const count = urls.length
   const gridClass =
-    count === 1 ? 'grid-cols-1' :
-    count === 2 ? 'grid-cols-2' :
-    count === 3 ? 'grid-cols-3' :
-    'grid-cols-2'
+    count === 1
+      ? 'grid-cols-1'
+      : count === 2
+        ? 'grid-cols-2'
+        : count === 3
+          ? 'grid-cols-3'
+          : 'grid-cols-2'
 
   return (
     <div className={`grid ${gridClass} gap-1 rounded-xl overflow-hidden`}>
@@ -81,16 +87,10 @@ function MediaGrid({ urls, types }: { urls: string[]; types: string[] }) {
         return (
           <div
             key={i}
-            className={`relative bg-stone-100 ${count === 1 ? 'aspect-video' : 'aspect-square'}`}
+            className={`relative bg-stone-800 ${count === 1 ? 'aspect-video' : 'aspect-square'}`}
           >
             {isVideo ? (
-              <video
-                src={url}
-                className="w-full h-full object-cover"
-                controls
-                playsInline
-                muted
-              />
+              <video src={url} className="w-full h-full object-cover" controls playsInline muted />
             ) : (
               <Image
                 src={url}
@@ -138,8 +138,8 @@ function ReactionBar({
         disabled={pending}
         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
           myReaction
-            ? 'bg-amber-50 text-amber-700 border border-amber-200'
-            : 'text-stone-600 hover:bg-stone-100'
+            ? 'bg-amber-950 text-amber-700 border border-amber-200'
+            : 'text-stone-400 hover:bg-stone-700'
         }`}
       >
         <span>{myReaction ? getReactionEmoji(myReaction) : '👍'}</span>
@@ -147,14 +147,14 @@ function ReactionBar({
       </button>
 
       {showPicker && (
-        <div className="absolute bottom-full left-0 mb-2 bg-white rounded-2xl shadow-lg border border-stone-200 p-2 flex gap-1 z-20">
+        <div className="absolute bottom-full left-0 mb-2 bg-surface rounded-2xl shadow-lg border border-stone-700 p-2 flex gap-1 z-20">
           {REACTIONS.map((r) => (
             <button
               key={r.type}
               onClick={() => handleReaction(r.type)}
               title={r.label}
-              className={`text-xl p-1.5 rounded-xl hover:bg-stone-100 transition-all hover:scale-125 ${
-                myReaction === r.type ? 'bg-amber-50 ring-1 ring-amber-300 scale-125' : ''
+              className={`text-xl p-1.5 rounded-xl hover:bg-stone-700 transition-all hover:scale-125 ${
+                myReaction === r.type ? 'bg-amber-950 ring-1 ring-amber-300 scale-125' : ''
               }`}
             >
               {r.emoji}
@@ -167,7 +167,11 @@ function ReactionBar({
 }
 
 // ── Comment input ────────────────────────────────────────────
-function CommentInput({ postId, parentId, onAdded }: {
+function CommentInput({
+  postId,
+  parentId,
+  onAdded,
+}: {
   postId: string
   parentId?: string
   onAdded: () => void
@@ -194,7 +198,7 @@ function CommentInput({ postId, parentId, onAdded }: {
           if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) submit()
         }}
         rows={1}
-        className="flex-1 resize-none text-sm border border-stone-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
+        className="flex-1 resize-none text-sm border border-stone-700 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent"
         placeholder={parentId ? 'Write a reply...' : 'Add a comment...'}
         maxLength={2000}
       />
@@ -211,7 +215,11 @@ function CommentInput({ postId, parentId, onAdded }: {
 }
 
 // ── Single comment ───────────────────────────────────────────
-function CommentRow({ comment, postId, onRefresh }: {
+function CommentRow({
+  comment,
+  postId,
+  onRefresh,
+}: {
   comment: SocialComment
   postId: string
   onRefresh: () => void
@@ -226,7 +234,7 @@ function CommentRow({ comment, postId, onRefresh }: {
   function handleCommentReaction() {
     const next = !reacted
     setReacted(next)
-    setReactionCount((c) => next ? c + 1 : Math.max(0, c - 1))
+    setReactionCount((c) => (next ? c + 1 : Math.max(0, c - 1)))
     startCommentTransition(async () => {
       await toggleCommentReaction({ commentId: comment.id, reaction: 'like' })
     })
@@ -240,18 +248,25 @@ function CommentRow({ comment, postId, onRefresh }: {
             {comment.author.profile_image_url && (
               <AvatarImage src={comment.author.profile_image_url} alt={authorName} />
             )}
-            <AvatarFallback className="bg-stone-200 text-stone-600 text-xs">
+            <AvatarFallback className="bg-stone-700 text-stone-400 text-xs">
               {authorName.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </Link>
         <div className="flex-1 min-w-0">
-          <div className="bg-stone-50 rounded-xl px-3 py-2">
-            <Link href={`/network/${comment.chef_id}`} className="text-sm font-semibold text-stone-900 hover:underline">
+          <div className="bg-stone-800 rounded-xl px-3 py-2">
+            <Link
+              href={`/network/${comment.chef_id}`}
+              className="text-sm font-semibold text-stone-100 hover:underline"
+            >
               {authorName}
             </Link>
-            <p className="text-sm text-stone-700 mt-0.5 whitespace-pre-wrap break-words">
-              {comment.is_deleted ? <em className="text-stone-400">Comment removed</em> : comment.content}
+            <p className="text-sm text-stone-300 mt-0.5 whitespace-pre-wrap break-words">
+              {comment.is_deleted ? (
+                <em className="text-stone-400">Comment removed</em>
+              ) : (
+                comment.content
+              )}
             </p>
           </div>
           <div className="flex items-center gap-3 mt-1 px-1">
@@ -263,7 +278,7 @@ function CommentRow({ comment, postId, onRefresh }: {
                 <button
                   type="button"
                   onClick={() => setShowReplyInput((s) => !s)}
-                  className="text-xs font-medium text-stone-500 hover:text-stone-700"
+                  className="text-xs font-medium text-stone-500 hover:text-stone-300"
                 >
                   Reply
                 </button>
@@ -271,10 +286,11 @@ function CommentRow({ comment, postId, onRefresh }: {
                   type="button"
                   onClick={handleCommentReaction}
                   className={`text-xs font-medium transition-colors ${
-                    reacted ? 'text-amber-600' : 'text-stone-500 hover:text-stone-700'
+                    reacted ? 'text-amber-600' : 'text-stone-500 hover:text-stone-300'
                   }`}
                 >
-                  {reacted ? '👍' : 'Like'}{reactionCount > 0 ? ` ${reactionCount}` : ''}
+                  {reacted ? '👍' : 'Like'}
+                  {reactionCount > 0 ? ` ${reactionCount}` : ''}
                 </button>
               </>
             )}
@@ -282,7 +298,14 @@ function CommentRow({ comment, postId, onRefresh }: {
 
           {showReplyInput && (
             <div className="mt-2">
-              <CommentInput postId={postId} parentId={comment.id} onAdded={() => { setShowReplyInput(false); onRefresh() }} />
+              <CommentInput
+                postId={postId}
+                parentId={comment.id}
+                onAdded={() => {
+                  setShowReplyInput(false)
+                  onRefresh()
+                }}
+              />
             </div>
           )}
 
@@ -291,13 +314,19 @@ function CommentRow({ comment, postId, onRefresh }: {
               onClick={() => setShowReplies((s) => !s)}
               className="mt-1 text-xs font-medium text-amber-700 hover:text-amber-800 flex items-center gap-1"
             >
-              {showReplies ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-              {showReplies ? 'Hide' : `View ${comment.replies_count} ${comment.replies_count === 1 ? 'reply' : 'replies'}`}
+              {showReplies ? (
+                <ChevronUp className="h-3 w-3" />
+              ) : (
+                <ChevronDown className="h-3 w-3" />
+              )}
+              {showReplies
+                ? 'Hide'
+                : `View ${comment.replies_count} ${comment.replies_count === 1 ? 'reply' : 'replies'}`}
             </button>
           )}
 
           {showReplies && comment.replies?.length && (
-            <div className="mt-2 space-y-2 pl-2 border-l-2 border-stone-100">
+            <div className="mt-2 space-y-2 pl-2 border-l-2 border-stone-800">
               {comment.replies.map((reply) => (
                 <CommentRow key={reply.id} comment={reply} postId={postId} onRefresh={onRefresh} />
               ))}
@@ -331,14 +360,14 @@ function CommentsSection({ postId, commentsCount }: { postId: string; commentsCo
     <div>
       <button
         onClick={toggle}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-stone-600 hover:bg-stone-100 transition-colors"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-stone-400 hover:bg-stone-700 transition-colors"
       >
         <MessageCircle className="h-4 w-4" />
         <span>{commentsCount > 0 ? commentsCount : 'Comment'}</span>
       </button>
 
       {open && (
-        <div className="mt-3 space-y-3 border-t border-stone-100 pt-3">
+        <div className="mt-3 space-y-3 border-t border-stone-800 pt-3">
           <CommentInput postId={postId} onAdded={loadComments} />
           {loading ? (
             <p className="text-sm text-stone-400 text-center py-2">Loading comments...</p>
@@ -386,7 +415,9 @@ export function SocialPostCard({
   function handleSave() {
     setIsSaved((s) => !s)
     setSavesCount((c) => (isSaved ? Math.max(0, c - 1) : c + 1))
-    startTransition(async () => { await toggleSavePost(post.id) })
+    startTransition(async () => {
+      await toggleSavePost(post.id)
+    })
   }
 
   function handleShare() {
@@ -406,7 +437,7 @@ export function SocialPostCard({
   }
 
   return (
-    <article className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
+    <article className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-start justify-between p-4 pb-0">
         <div className="flex items-center gap-3">
@@ -414,7 +445,10 @@ export function SocialPostCard({
             <ChefAvatar author={post.author} />
           </Link>
           <div>
-            <Link href={`/network/${post.chef_id}`} className="font-semibold text-stone-900 hover:underline text-sm">
+            <Link
+              href={`/network/${post.chef_id}`}
+              className="font-semibold text-stone-100 hover:underline text-sm"
+            >
               {authorName}
             </Link>
             <div className="flex items-center gap-2 mt-0.5">
@@ -445,16 +479,16 @@ export function SocialPostCard({
           {post.is_mine && (
             <button
               onClick={() => setShowMenu((s) => !s)}
-              className="p-1.5 rounded-lg hover:bg-stone-100 text-stone-400"
+              className="p-1.5 rounded-lg hover:bg-stone-700 text-stone-400"
             >
               <MoreHorizontal className="h-4 w-4" />
             </button>
           )}
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-white border border-stone-200 rounded-xl shadow-lg z-10 min-w-[140px]">
+            <div className="absolute right-0 top-full mt-1 bg-surface border border-stone-700 rounded-xl shadow-lg z-10 min-w-[140px]">
               <button
                 onClick={handleDelete}
-                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl"
+                className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-950 rounded-xl"
               >
                 Delete post
               </button>
@@ -474,7 +508,7 @@ export function SocialPostCard({
         )}
 
         {/* Main text */}
-        <p className="text-sm text-stone-800 whitespace-pre-wrap break-words leading-relaxed">
+        <p className="text-sm text-stone-200 whitespace-pre-wrap break-words leading-relaxed">
           {post.content}
         </p>
 
@@ -502,11 +536,11 @@ export function SocialPostCard({
 
         {/* Poll */}
         {post.poll_question && post.poll_options && (
-          <div className="mt-3 border border-stone-200 rounded-xl p-3 space-y-2">
-            <p className="text-sm font-medium text-stone-800">{post.poll_question}</p>
+          <div className="mt-3 border border-stone-700 rounded-xl p-3 space-y-2">
+            <p className="text-sm font-medium text-stone-200">{post.poll_question}</p>
             {post.poll_options.map((opt) => (
               <div key={opt.id} className="flex items-center justify-between text-sm">
-                <span className="text-stone-600">{opt.text}</span>
+                <span className="text-stone-400">{opt.text}</span>
                 <span className="text-stone-400 text-xs">{opt.votes} votes</span>
               </div>
             ))}
@@ -515,17 +549,24 @@ export function SocialPostCard({
       </div>
 
       {/* Stats row */}
-      {(reactionsCount > 0 || post.comments_count > 0 || savesCount > 0 || post.shares_count > 0) && (
+      {(reactionsCount > 0 ||
+        post.comments_count > 0 ||
+        savesCount > 0 ||
+        post.shares_count > 0) && (
         <div className="px-4 pt-2 pb-0">
-          <div className="flex items-center justify-between text-xs text-stone-400 pb-2 border-b border-stone-100">
+          <div className="flex items-center justify-between text-xs text-stone-400 pb-2 border-b border-stone-800">
             <div className="flex items-center gap-3">
               {reactionsCount > 0 && (
-                <span>{reactionsCount} {reactionsCount === 1 ? 'reaction' : 'reactions'}</span>
+                <span>
+                  {reactionsCount} {reactionsCount === 1 ? 'reaction' : 'reactions'}
+                </span>
               )}
             </div>
             <div className="flex items-center gap-3">
               {post.comments_count > 0 && (
-                <span>{post.comments_count} {post.comments_count === 1 ? 'comment' : 'comments'}</span>
+                <span>
+                  {post.comments_count} {post.comments_count === 1 ? 'comment' : 'comments'}
+                </span>
               )}
               {savesCount > 0 && <span>{savesCount} saves</span>}
               {post.shares_count > 0 && <span>{post.shares_count} shares</span>}
@@ -548,7 +589,7 @@ export function SocialPostCard({
         <button
           onClick={handleSave}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            isSaved ? 'text-amber-700 bg-amber-50' : 'text-stone-600 hover:bg-stone-100'
+            isSaved ? 'text-amber-700 bg-amber-950' : 'text-stone-400 hover:bg-stone-700'
           }`}
         >
           {isSaved ? <BookmarkCheck className="h-4 w-4" /> : <Bookmark className="h-4 w-4" />}
@@ -558,7 +599,7 @@ export function SocialPostCard({
         <button
           onClick={handleShare}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-            copied ? 'text-green-700 bg-green-50' : 'text-stone-600 hover:bg-stone-100'
+            copied ? 'text-green-700 bg-green-950' : 'text-stone-400 hover:bg-stone-700'
           }`}
         >
           {copied ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}

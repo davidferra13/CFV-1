@@ -18,26 +18,26 @@ import {
 import { formatMinutesAsDuration } from '@/lib/events/time-tracking'
 
 const CATEGORY_OPTIONS: { value: ManualLaborCategory; label: string }[] = [
-  { value: 'planning',          label: 'Planning & Menu Design' },
-  { value: 'admin',             label: 'Admin & Bookkeeping' },
-  { value: 'client_comms',      label: 'Client Communication' },
-  { value: 'marketing',         label: 'Marketing & Social Media' },
-  { value: 'recipe_dev',        label: 'Recipe Development' },
+  { value: 'planning', label: 'Planning & Menu Design' },
+  { value: 'admin', label: 'Admin & Bookkeeping' },
+  { value: 'client_comms', label: 'Client Communication' },
+  { value: 'marketing', label: 'Marketing & Social Media' },
+  { value: 'recipe_dev', label: 'Recipe Development' },
   { value: 'shopping_sourcing', label: 'Shopping & Sourcing' },
-  { value: 'prep_work',         label: 'Prep Work' },
-  { value: 'cooking_service',   label: 'Cooking & Service' },
-  { value: 'cleanup',           label: 'Cleanup & Reset' },
-  { value: 'travel',            label: 'Travel' },
-  { value: 'learning',          label: 'Learning & Training' },
-  { value: 'charity',           label: 'Charity / Volunteer' },
-  { value: 'other',             label: 'Other' },
+  { value: 'prep_work', label: 'Prep Work' },
+  { value: 'cooking_service', label: 'Cooking & Service' },
+  { value: 'cleanup', label: 'Cleanup & Reset' },
+  { value: 'travel', label: 'Travel' },
+  { value: 'learning', label: 'Learning & Training' },
+  { value: 'charity', label: 'Charity / Volunteer' },
+  { value: 'other', label: 'Other' },
 ]
 
 const QUICK_LOG_PRESETS = [
   { label: '15m', value: '0.25' },
-  { label: '30m', value: '0.5'  },
-  { label: '1h',  value: '1'    },
-  { label: '2h',  value: '2'    },
+  { label: '30m', value: '0.5' },
+  { label: '1h', value: '1' },
+  { label: '2h', value: '2' },
 ] as const
 
 function getCategoryLabel(category: ManualLaborCategory | null): string {
@@ -47,20 +47,20 @@ function getCategoryLabel(category: ManualLaborCategory | null): string {
 
 function getEncouragementMessage(todayMinutes: number, hasWeekHistory: boolean): string {
   if (todayMinutes === 0 && !hasWeekHistory)
-    return "Start building your labor log — every hour you track helps you understand your true value."
+    return 'Start building your labor log — every hour you track helps you understand your true value.'
   if (todayMinutes === 0 && hasWeekHistory)
     return "Add today's hours — even 30 minutes of planning or admin counts."
   if (todayMinutes < 60)
-    return "Good start! Mental work counts too — log any planning, emails, or admin time."
+    return 'Good start! Mental work counts too — log any planning, emails, or admin time.'
   if (todayMinutes < 240)
     return "You've been tracking well today. Keep capturing all the invisible work."
-  return "Great tracking today! Consistent logs reveal what your time is truly worth."
+  return 'Great tracking today! Consistent logs reveal what your time is truly worth.'
 }
 
 function getStreakMilestoneLabel(streak: number): string {
   if (streak >= 30) return `${streak} days in a row — one month of consistent tracking!`
   if (streak >= 14) return `${streak} days in a row — two weeks strong!`
-  if (streak >= 7)  return `${streak} days in a row — one full week!`
+  if (streak >= 7) return `${streak} days in a row — one full week!`
   return `${streak} ${streak === 1 ? 'day' : 'days'} in a row`
 }
 
@@ -150,11 +150,12 @@ export function HoursLogWidget({
   }
 
   const showStreakBanner = trackingStreak > 0 || !todayLogged
-  const streakMessage = trackingStreak === 0
-    ? "Log today's hours to start a streak."
-    : !todayLogged
-      ? `${trackingStreak} day streak — log today to keep it going!`
-      : getStreakMilestoneLabel(trackingStreak)
+  const streakMessage =
+    trackingStreak === 0
+      ? "Log today's hours to start a streak."
+      : !todayLogged
+        ? `${trackingStreak} day streak — log today to keep it going!`
+        : getStreakMilestoneLabel(trackingStreak)
 
   return (
     <Card>
@@ -164,23 +165,29 @@ export function HoursLogWidget({
       <CardContent className="space-y-4">
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="rounded-lg border border-stone-200 p-3">
+          <div className="rounded-lg border border-stone-700 p-3">
             <p className="text-xs uppercase tracking-wide text-stone-500">Today</p>
-            <p className="text-xl font-semibold text-stone-900 mt-1">{formatMinutesAsDuration(todayMinutes)}</p>
+            <p className="text-xl font-semibold text-stone-100 mt-1">
+              {formatMinutesAsDuration(todayMinutes)}
+            </p>
           </div>
-          <div className="rounded-lg border border-stone-200 p-3">
+          <div className="rounded-lg border border-stone-700 p-3">
             <p className="text-xs uppercase tracking-wide text-stone-500">Last 7 Days</p>
-            <p className="text-xl font-semibold text-stone-900 mt-1">{formatMinutesAsDuration(weekMinutes)}</p>
+            <p className="text-xl font-semibold text-stone-100 mt-1">
+              {formatMinutesAsDuration(weekMinutes)}
+            </p>
           </div>
-          <div className="rounded-lg border border-stone-200 p-3">
+          <div className="rounded-lg border border-stone-700 p-3">
             <p className="text-xs uppercase tracking-wide text-stone-500">All Time</p>
-            <p className="text-xl font-semibold text-stone-900 mt-1">{formatMinutesAsDuration(allTimeMinutes)}</p>
+            <p className="text-xl font-semibold text-stone-100 mt-1">
+              {formatMinutesAsDuration(allTimeMinutes)}
+            </p>
           </div>
         </div>
 
         {/* Streak */}
         {showStreakBanner && (
-          <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+          <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-950 px-3 py-2">
             {trackingStreak > 0 && (
               <span className="text-amber-700 text-sm font-mono" aria-hidden="true">
                 {'▰'.repeat(Math.min(trackingStreak, 7))}
@@ -199,11 +206,15 @@ export function HoursLogWidget({
         {/* Week category breakdown */}
         {weekCategoryBreakdown.length > 0 ? (
           <div className="space-y-1">
-            <p className="text-xs font-medium text-stone-500 uppercase tracking-wide">This week by category</p>
+            <p className="text-xs font-medium text-stone-500 uppercase tracking-wide">
+              This week by category
+            </p>
             {weekCategoryBreakdown.map((entry) => (
-              <div key={entry.key} className="flex justify-between text-xs text-stone-600">
+              <div key={entry.key} className="flex justify-between text-xs text-stone-400">
                 <span>{entry.label}</span>
-                <span className="font-medium text-stone-800">{formatMinutesAsDuration(entry.minutes)}</span>
+                <span className="font-medium text-stone-200">
+                  {formatMinutesAsDuration(entry.minutes)}
+                </span>
               </div>
             ))}
           </div>
@@ -218,7 +229,8 @@ export function HoursLogWidget({
         {/* All-time top activity (secondary, only when week breakdown is shown) */}
         {weekCategoryBreakdown.length > 0 && topActivity && (
           <p className="text-xs text-stone-400">
-            All-time top: {topActivity.label} ({formatMinutesAsDuration(topActivity.minutes)}, {topActivity.sharePercent}%)
+            All-time top: {topActivity.label} ({formatMinutesAsDuration(topActivity.minutes)},{' '}
+            {topActivity.sharePercent}%)
           </p>
         )}
 
@@ -236,8 +248,8 @@ export function HoursLogWidget({
                   disabled={submitting}
                   className={`rounded-md border px-3 py-1 text-xs disabled:opacity-50 transition-colors ${
                     hours === p.value
-                      ? 'border-stone-500 bg-stone-100 text-stone-900 font-semibold'
-                      : 'border-stone-300 text-stone-700 hover:bg-stone-100'
+                      ? 'border-stone-500 bg-stone-800 text-stone-100 font-semibold'
+                      : 'border-stone-600 text-stone-300 hover:bg-stone-700'
                   }`}
                 >
                   {p.label}
@@ -302,23 +314,19 @@ export function HoursLogWidget({
           </Alert>
         )}
 
-        {success && (
-          <Alert variant="success">
-            {success}
-          </Alert>
-        )}
+        {success && <Alert variant="success">{success}</Alert>}
 
         {/* Recent Entries */}
         <div>
-          <h3 className="text-sm font-semibold text-stone-700 mb-2">Recent Manual Entries</h3>
+          <h3 className="text-sm font-semibold text-stone-300 mb-2">Recent Manual Entries</h3>
           {recentEntries.length === 0 ? (
             <p className="text-sm text-stone-500">No manual entries yet.</p>
           ) : (
             <div className="space-y-2">
               {recentEntries.slice(0, 5).map((entry) => (
-                <div key={entry.id} className="rounded-lg border border-stone-200 px-3 py-2">
+                <div key={entry.id} className="rounded-lg border border-stone-700 px-3 py-2">
                   <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium text-stone-800">
+                    <p className="text-sm font-medium text-stone-200">
                       {formatEntryDate(entry.loggedFor)}
                       {entry.category && (
                         <span className="ml-2 text-xs font-normal text-stone-500">
@@ -326,11 +334,11 @@ export function HoursLogWidget({
                         </span>
                       )}
                     </p>
-                    <p className="text-sm text-stone-600">{formatMinutesAsDuration(entry.minutes)}</p>
+                    <p className="text-sm text-stone-400">
+                      {formatMinutesAsDuration(entry.minutes)}
+                    </p>
                   </div>
-                  {entry.note && (
-                    <p className="text-xs text-stone-500 mt-1">{entry.note}</p>
-                  )}
+                  {entry.note && <p className="text-xs text-stone-500 mt-1">{entry.note}</p>}
                 </div>
               ))}
             </div>

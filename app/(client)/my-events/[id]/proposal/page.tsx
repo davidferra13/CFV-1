@@ -17,7 +17,10 @@ import type { Database } from '@/types/database'
 type EventStatus = Database['public']['Enums']['event_status']
 
 function getStatusBadge(status: EventStatus) {
-  const variants: Record<EventStatus, { variant: 'default' | 'success' | 'warning' | 'error' | 'info'; label: string }> = {
+  const variants: Record<
+    EventStatus,
+    { variant: 'default' | 'success' | 'warning' | 'error' | 'info'; label: string }
+  > = {
     draft: { variant: 'default', label: 'Draft' },
     proposed: { variant: 'warning', label: 'Pending Your Review' },
     accepted: { variant: 'warning', label: 'Payment Due' },
@@ -31,11 +34,7 @@ function getStatusBadge(status: EventStatus) {
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
 
-export default async function UnifiedProposalPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function UnifiedProposalPage({ params }: { params: { id: string } }) {
   await requireClient()
 
   const [event, contract] = await Promise.all([
@@ -48,7 +47,7 @@ export default async function UnifiedProposalPage({
   }
 
   const financial = event.financial
-  const quotedPriceCents = financial?.quotedPriceCents ?? (event.quoted_price_cents ?? 0)
+  const quotedPriceCents = financial?.quotedPriceCents ?? event.quoted_price_cents ?? 0
   const depositAmountCents = event.deposit_amount_cents ?? 0
   const totalPaidCents = financial?.totalPaidCents ?? 0
   const outstandingBalanceCents = financial?.outstandingBalanceCents ?? quotedPriceCents
@@ -80,10 +79,15 @@ export default async function UnifiedProposalPage({
       <div className="mb-6">
         <Link
           href={`/my-events/${event.id}`}
-          className="text-brand-600 hover:text-brand-700 flex items-center gap-2 text-sm"
+          className="text-brand-600 hover:text-brand-400 flex items-center gap-2 text-sm"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Back to Event
         </Link>
@@ -92,9 +96,7 @@ export default async function UnifiedProposalPage({
       {/* Page heading */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
-            Your Proposal
-          </h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">Your Proposal</h1>
           {getStatusBadge(event.status)}
         </div>
         <p className="text-stone-500 text-sm">
@@ -110,33 +112,43 @@ export default async function UnifiedProposalPage({
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">Occasion</div>
-              <div className="font-medium text-stone-900">{event.occasion || '—'}</div>
+              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">
+                Occasion
+              </div>
+              <div className="font-medium text-stone-100">{event.occasion || '—'}</div>
             </div>
 
             <div>
-              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">Date</div>
-              <div className="font-medium text-stone-900">
+              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">
+                Date
+              </div>
+              <div className="font-medium text-stone-100">
                 {format(new Date(event.event_date), 'PPP')}
               </div>
             </div>
 
             <div>
-              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">Guests</div>
-              <div className="font-medium text-stone-900">{event.guest_count ?? '—'}</div>
+              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">
+                Guests
+              </div>
+              <div className="font-medium text-stone-100">{event.guest_count ?? '—'}</div>
             </div>
 
             <div className="sm:col-span-1">
-              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">Location</div>
-              <div className="font-medium text-stone-900">
+              <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">
+                Location
+              </div>
+              <div className="font-medium text-stone-100">
                 {locationParts.length > 0 ? locationParts.join(', ') : '—'}
               </div>
             </div>
 
             {event.special_requests && (
               <div className="sm:col-span-2">
-                <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">Special Requests</div>
-                <div className="text-stone-900 text-sm">{event.special_requests}</div>
+                <div className="text-xs font-medium uppercase tracking-wider text-stone-500 mb-1">
+                  Special Requests
+                </div>
+                <div className="text-stone-100 text-sm">{event.special_requests}</div>
               </div>
             )}
           </div>
@@ -153,17 +165,11 @@ export default async function UnifiedProposalPage({
             {event.menus.map((menu: any) => (
               <div key={menu.id}>
                 <div className="flex items-center gap-2 mb-1">
-                  <h4 className="font-semibold text-stone-900">{menu.name}</h4>
-                  {menu.status === 'approved' && (
-                    <Badge variant="success">Approved</Badge>
-                  )}
-                  {menu.status === 'draft' && (
-                    <Badge variant="default">Draft</Badge>
-                  )}
+                  <h4 className="font-semibold text-stone-100">{menu.name}</h4>
+                  {menu.status === 'approved' && <Badge variant="success">Approved</Badge>}
+                  {menu.status === 'draft' && <Badge variant="default">Draft</Badge>}
                 </div>
-                {menu.description && (
-                  <p className="text-stone-600 text-sm">{menu.description}</p>
-                )}
+                {menu.description && <p className="text-stone-400 text-sm">{menu.description}</p>}
                 {menu.service_style && (
                   <p className="text-stone-500 text-xs mt-1">Service style: {menu.service_style}</p>
                 )}
@@ -182,16 +188,16 @@ export default async function UnifiedProposalPage({
           <CardContent>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-stone-600">Total Service Fee</span>
-                <span className="font-semibold text-stone-900 text-lg">
+                <span className="text-stone-400">Total Service Fee</span>
+                <span className="font-semibold text-stone-100 text-lg">
                   {formatCurrency(quotedPriceCents)}
                 </span>
               </div>
 
               {depositAmountCents > 0 && (
                 <div className="flex justify-between items-center text-sm">
-                  <span className="text-stone-600">Deposit Required</span>
-                  <span className="font-medium text-stone-700">
+                  <span className="text-stone-400">Deposit Required</span>
+                  <span className="font-medium text-stone-300">
                     {formatCurrency(depositAmountCents)}
                   </span>
                 </div>
@@ -200,14 +206,16 @@ export default async function UnifiedProposalPage({
               {totalPaidCents > 0 && (
                 <>
                   <div className="flex justify-between items-center text-sm">
-                    <span className="text-stone-600">Amount Paid</span>
+                    <span className="text-stone-400">Amount Paid</span>
                     <span className="font-medium text-emerald-600">
                       {formatCurrency(totalPaidCents)}
                     </span>
                   </div>
                   <div className="pt-3 border-t flex justify-between items-center">
-                    <span className="font-semibold text-stone-900">Balance Due</span>
-                    <span className={`text-xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-emerald-600'}`}>
+                    <span className="font-semibold text-stone-100">Balance Due</span>
+                    <span
+                      className={`text-xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-emerald-600'}`}
+                    >
                       {formatCurrency(outstandingBalanceCents)}
                     </span>
                   </div>
@@ -237,9 +245,7 @@ export default async function UnifiedProposalPage({
               <Alert variant="success" className="mb-4">
                 <p className="font-medium text-sm">Contract signed</p>
                 {contract.signed_at && (
-                  <p className="text-sm">
-                    Signed on {format(new Date(contract.signed_at), 'PPP')}
-                  </p>
+                  <p className="text-sm">Signed on {format(new Date(contract.signed_at), 'PPP')}</p>
                 )}
               </Alert>
             )}
@@ -255,7 +261,7 @@ export default async function UnifiedProposalPage({
 
             {/* Contract body */}
             {contract.body_snapshot && (
-              <pre className="whitespace-pre-wrap text-sm text-stone-700 font-sans bg-stone-50 rounded-lg p-4 border border-stone-200 max-h-96 overflow-y-auto">
+              <pre className="whitespace-pre-wrap text-sm text-stone-300 font-sans bg-stone-800 rounded-lg p-4 border border-stone-700 max-h-96 overflow-y-auto">
                 {contract.body_snapshot}
               </pre>
             )}
@@ -279,10 +285,10 @@ export default async function UnifiedProposalPage({
 
       {/* ── SECTION 5: Accept Proposal (proposed state) ───────────────────── */}
       {event.status === 'proposed' && (
-        <Card className="mb-6 border-brand-200 bg-brand-50">
+        <Card className="mb-6 border-brand-700 bg-brand-950">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-stone-900 mb-2">Ready to accept?</h3>
-            <p className="text-stone-600 text-sm mb-4">
+            <h3 className="font-semibold text-stone-100 mb-2">Ready to accept?</h3>
+            <p className="text-stone-400 text-sm mb-4">
               Review the details above and click Accept Proposal to move forward. You&apos;ll then
               be asked to{contractExists ? ' sign the contract and' : ''} make your payment.
             </p>
@@ -300,10 +306,10 @@ export default async function UnifiedProposalPage({
 
       {/* ── SECTION 6: Payment CTA (accepted state, contract satisfied) ───── */}
       {canPay && (
-        <Card className="mb-6 border-emerald-200 bg-emerald-50">
+        <Card className="mb-6 border-emerald-200 bg-emerald-950">
           <CardContent className="pt-6">
-            <h3 className="font-semibold text-stone-900 mb-2">Complete your booking</h3>
-            <p className="text-stone-600 text-sm mb-4">
+            <h3 className="font-semibold text-stone-100 mb-2">Complete your booking</h3>
+            <p className="text-stone-400 text-sm mb-4">
               {depositAmountCents > 0
                 ? `A deposit of ${formatCurrency(depositAmountCents)} secures your event date.`
                 : `Payment of ${formatCurrency(outstandingBalanceCents)} is required to confirm your event.`}
@@ -321,11 +327,14 @@ export default async function UnifiedProposalPage({
       )}
 
       {/* Contract must be signed before payment */}
-      {event.status === 'accepted' && contractExists && !contractSigned && outstandingBalanceCents > 0 && (
-        <Alert variant="info" className="mb-6">
-          <p className="font-medium text-sm">Sign the contract above to unlock payment.</p>
-        </Alert>
-      )}
+      {event.status === 'accepted' &&
+        contractExists &&
+        !contractSigned &&
+        outstandingBalanceCents > 0 && (
+          <Alert variant="info" className="mb-6">
+            <p className="font-medium text-sm">Sign the contract above to unlock payment.</p>
+          </Alert>
+        )}
 
       {/* ── STATUS MESSAGES for paid / confirmed / in_progress / completed ── */}
       {event.status === 'paid' && (

@@ -33,13 +33,21 @@ function DiscoverChefCard({
       <Link href={`/network/${chef.id}`}>
         <Avatar className="w-10 h-10 flex-shrink-0">
           {chef.profile_image_url && <AvatarImage src={chef.profile_image_url} alt={authorName} />}
-          <AvatarFallback className="bg-amber-100 text-amber-800 text-xs font-semibold">
-            {authorName.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2)}
+          <AvatarFallback className="bg-amber-900 text-amber-800 text-xs font-semibold">
+            {authorName
+              .split(' ')
+              .map((w: string) => w[0])
+              .join('')
+              .toUpperCase()
+              .slice(0, 2)}
           </AvatarFallback>
         </Avatar>
       </Link>
       <div className="flex-1 min-w-0">
-        <Link href={`/network/${chef.id}`} className="text-sm font-semibold text-stone-900 hover:underline block truncate">
+        <Link
+          href={`/network/${chef.id}`}
+          className="text-sm font-semibold text-stone-100 hover:underline block truncate"
+        >
           {authorName}
         </Link>
         {(chef.city || chef.state) && (
@@ -70,12 +78,12 @@ export function SocialDiscoverPanel({
     <div className="space-y-6">
       {/* Suggested chefs */}
       {suggestedChefs.length > 0 && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-4">
+        <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-3">
             <Users className="h-4 w-4 text-amber-600" />
-            <h3 className="text-sm font-semibold text-stone-800">Chefs to Follow</h3>
+            <h3 className="text-sm font-semibold text-stone-200">Chefs to Follow</h3>
           </div>
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {suggestedChefs.map((chef) => (
               <DiscoverChefCard key={chef.id} chef={chef} isFollowing={false} />
             ))}
@@ -91,10 +99,10 @@ export function SocialDiscoverPanel({
 
       {/* Trending hashtags */}
       {trendingHashtags.length > 0 && (
-        <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-4">
+        <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="h-4 w-4 text-amber-600" />
-            <h3 className="text-sm font-semibold text-stone-800">Trending This Week</h3>
+            <h3 className="text-sm font-semibold text-stone-200">Trending This Week</h3>
           </div>
           <div className="space-y-2">
             {trendingHashtags.slice(0, 10).map((item, i) => (

@@ -20,7 +20,7 @@ export function MobileDashboardExpander({ children }: MobileDashboardExpanderPro
       <div className="md:hidden">
         <button
           onClick={() => setExpanded(!expanded)}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-stone-200 bg-stone-50 text-stone-600 text-sm font-medium hover:bg-stone-100 active:bg-stone-200 transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg border border-stone-700 bg-stone-800 text-stone-400 text-sm font-medium hover:bg-stone-700 active:bg-stone-600 transition-colors"
         >
           {expanded ? (
             <>

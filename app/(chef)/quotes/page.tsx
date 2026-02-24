@@ -58,19 +58,19 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
             href={`/quotes/${quote.id}`}
             className={`block rounded-lg border p-4 hover:shadow-sm transition-all ${
               quote.status === 'sent'
-                ? 'border-l-4 border-l-brand-500 bg-brand-50/50 hover:bg-brand-50'
-                : 'border-stone-200 hover:bg-stone-50'
+                ? 'border-l-4 border-l-brand-500 bg-brand-950/50 hover:bg-brand-950'
+                : 'border-stone-700 hover:bg-stone-800'
             }`}
           >
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-medium text-stone-900">{clientName}</span>
+                  <span className="font-medium text-stone-100">{clientName}</span>
                   <QuoteStatusBadge status={quote.status as any} />
                   {quote.pricing_model && <PricingModelBadge model={quote.pricing_model as any} />}
                 </div>
                 {quote.quote_name && (
-                  <p className="text-sm text-stone-600 mt-1">{quote.quote_name}</p>
+                  <p className="text-sm text-stone-400 mt-1">{quote.quote_name}</p>
                 )}
                 {quote.inquiry?.confirmed_occasion && (
                   <p className="text-xs text-stone-500 mt-1">
@@ -79,7 +79,7 @@ async function QuoteList({ filter }: { filter: QuoteFilter }) {
                 )}
               </div>
               <div className="text-right flex-shrink-0">
-                <p className="text-lg font-semibold text-stone-900">
+                <p className="text-lg font-semibold text-stone-100">
                   {formatCurrency(quote.total_quoted_cents)}
                 </p>
                 {quote.price_per_person_cents && quote.guest_count_estimated && (
@@ -126,8 +126,8 @@ export default async function QuotesPage({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Quotes</h1>
-          <p className="text-stone-600 mt-1">Create and track pricing quotes for your clients</p>
+          <h1 className="text-3xl font-bold text-stone-100">Quotes</h1>
+          <p className="text-stone-400 mt-1">Create and track pricing quotes for your clients</p>
         </div>
         <Link href="/quotes/new">
           <Button>+ New Quote</Button>

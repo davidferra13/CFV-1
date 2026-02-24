@@ -30,11 +30,11 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
+          <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">
             {quote.quote_name || 'Quote'}
           </h1>
           {(quote.inquiry as any)?.confirmed_occasion && (
-            <p className="text-stone-600 mt-1">{(quote.inquiry as any).confirmed_occasion}</p>
+            <p className="text-stone-400 mt-1">{(quote.inquiry as any).confirmed_occasion}</p>
           )}
         </div>
         <div className="flex items-center gap-2">
@@ -42,7 +42,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
             href={`/api/documents/quote-client/${params.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="inline-flex items-center rounded-lg border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
           >
             Download PDF
           </a>
@@ -54,7 +54,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
 
       {/* Status Banner */}
       {quote.status === 'accepted' && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-950 border border-green-200 rounded-lg p-4">
           <p className="text-green-800 font-medium">
             You accepted this quote on{' '}
             {quote.accepted_at && format(new Date(quote.accepted_at), 'MMMM d, yyyy')}.
@@ -63,7 +63,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
       )}
 
       {quote.status === 'rejected' && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-950 border border-red-200 rounded-lg p-4">
           <p className="text-red-800 font-medium">
             You declined this quote on{' '}
             {quote.rejected_at && format(new Date(quote.rejected_at), 'MMMM d, yyyy')}.
@@ -76,7 +76,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
         <h2 className="text-xl font-semibold mb-4">Pricing Summary</h2>
         <div className="space-y-4">
           <div className="text-center py-4 border-b">
-            <p className="text-3xl sm:text-4xl font-bold text-stone-900">
+            <p className="text-3xl sm:text-4xl font-bold text-stone-100">
               {formatCurrency(quote.total_quoted_cents)}
             </p>
             {quote.pricing_model === 'per_person' &&
@@ -94,8 +94,8 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
 
           {quote.deposit_required && quote.deposit_amount_cents && (
             <div className="flex justify-between items-center text-sm">
-              <span className="text-stone-600">Deposit required</span>
-              <span className="font-medium text-stone-900">
+              <span className="text-stone-400">Deposit required</span>
+              <span className="font-medium text-stone-100">
                 {formatCurrency(quote.deposit_amount_cents)}
                 {quote.deposit_percentage && ` (${quote.deposit_percentage}%)`}
               </span>
@@ -104,8 +104,8 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
 
           {quote.valid_until && (
             <div className="flex justify-between items-center text-sm">
-              <span className="text-stone-600">Valid until</span>
-              <span className="font-medium text-stone-900">
+              <span className="text-stone-400">Valid until</span>
+              <span className="font-medium text-stone-100">
                 {format(new Date(quote.valid_until), 'MMMM d, yyyy')}
                 {new Date(quote.valid_until) < new Date() && (
                   <Badge variant="warning" className="ml-2">
@@ -125,7 +125,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
             <h2 className="text-xl font-semibold">Event Details</h2>
             <Link
               href={`/my-inquiries/${(quote.inquiry as any).id}`}
-              className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+              className="text-sm text-brand-600 hover:text-brand-400 font-medium"
             >
               View Inquiry →
             </Link>
@@ -134,7 +134,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
             {(quote.inquiry as any).confirmed_occasion && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Occasion</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {(quote.inquiry as any).confirmed_occasion}
                 </dd>
               </div>
@@ -142,7 +142,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
             {(quote.inquiry as any).confirmed_date && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Date</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {format(new Date((quote.inquiry as any).confirmed_date), 'EEEE, MMMM d, yyyy')}
                 </dd>
               </div>
@@ -150,7 +150,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
             {(quote.inquiry as any).confirmed_guest_count && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Guests</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {(quote.inquiry as any).confirmed_guest_count} guests
                 </dd>
               </div>
@@ -163,7 +163,7 @@ export default async function ClientQuoteDetailPage({ params }: { params: { id: 
       {quote.pricing_notes && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">What&apos;s Included</h2>
-          <p className="text-sm text-stone-700 whitespace-pre-wrap">{quote.pricing_notes}</p>
+          <p className="text-sm text-stone-300 whitespace-pre-wrap">{quote.pricing_notes}</p>
         </Card>
       )}
 

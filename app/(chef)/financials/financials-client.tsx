@@ -88,19 +88,19 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
   refund: 'Refund',
   adjustment: 'Adjustment',
   add_on: 'Add-On',
-  credit: 'Credit'
+  credit: 'Credit',
 }
 
 const ENTRY_TYPE_COLORS: Record<string, string> = {
-  payment: 'bg-green-100 text-green-800',
-  deposit: 'bg-brand-100 text-brand-800',
-  installment: 'bg-brand-100 text-brand-800',
-  final_payment: 'bg-green-100 text-green-800',
-  tip: 'bg-purple-100 text-purple-800',
-  refund: 'bg-red-100 text-red-800',
-  adjustment: 'bg-stone-100 text-stone-800',
-  add_on: 'bg-orange-100 text-orange-800',
-  credit: 'bg-teal-100 text-teal-800'
+  payment: 'bg-green-900 text-green-800',
+  deposit: 'bg-brand-900 text-brand-300',
+  installment: 'bg-brand-900 text-brand-300',
+  final_payment: 'bg-green-900 text-green-800',
+  tip: 'bg-purple-900 text-purple-800',
+  refund: 'bg-red-900 text-red-800',
+  adjustment: 'bg-stone-800 text-stone-200',
+  add_on: 'bg-orange-900 text-orange-800',
+  credit: 'bg-teal-900 text-teal-800',
 }
 
 const CALENDAR_ENTRY_TYPE_LABELS: Record<string, string> = {
@@ -131,17 +131,17 @@ export function FinancialsClient({
     let filtered = ledgerEntries
 
     if (filterType !== 'all') {
-      filtered = filtered.filter(e => e.entry_type === filterType)
+      filtered = filtered.filter((e) => e.entry_type === filterType)
     }
 
     if (startDate) {
-      filtered = filtered.filter(e => new Date(e.created_at) >= new Date(startDate))
+      filtered = filtered.filter((e) => new Date(e.created_at) >= new Date(startDate))
     }
 
     if (endDate) {
       const endDateTime = new Date(endDate)
       endDateTime.setHours(23, 59, 59, 999)
-      filtered = filtered.filter(e => new Date(e.created_at) <= endDateTime)
+      filtered = filtered.filter((e) => new Date(e.created_at) <= endDateTime)
     }
 
     return filtered
@@ -153,7 +153,7 @@ export function FinancialsClient({
   // Calculate running balance
   const entriesWithBalance = useMemo(() => {
     let balance = 0
-    return filteredEntries.map(entry => {
+    return filteredEntries.map((entry) => {
       balance += entry.amount_cents
       return { ...entry, balance }
     })
@@ -165,7 +165,7 @@ export function FinancialsClient({
       const csv = await exportLedgerCSV({
         entryType: filterType !== 'all' ? filterType : undefined,
         startDate: startDate || undefined,
-        endDate: endDate || undefined
+        endDate: endDate || undefined,
       })
 
       // Download CSV
@@ -213,8 +213,8 @@ export function FinancialsClient({
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Financials</h1>
-          <p className="text-stone-600 mt-1">View your financial performance and ledger</p>
+          <h1 className="text-3xl font-bold text-stone-100">Financials</h1>
+          <p className="text-stone-400 mt-1">View your financial performance and ledger</p>
         </div>
         <Button onClick={handleExportAllEvents} disabled={exportingAll} variant="secondary">
           {exportingAll ? 'Exporting...' : 'Export All Events'}
@@ -246,7 +246,7 @@ export function FinancialsClient({
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Net Revenue</div>
-            <div className="text-3xl font-bold text-stone-900 mt-2">
+            <div className="text-3xl font-bold text-stone-100 mt-2">
               {formatCurrency(financials.netRevenueCents)}
             </div>
             <p className="text-xs text-stone-500 mt-1">Revenue minus refunds</p>
@@ -270,47 +270,60 @@ export function FinancialsClient({
           <Card>
             <CardHeader>
               <CardTitle>
-                {format(new Date(monthlySummary.year, monthlySummary.month - 1), 'MMMM yyyy')} Overview
+                {format(new Date(monthlySummary.year, monthlySummary.month - 1), 'MMMM yyyy')}{' '}
+                Overview
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
                   <p className="text-sm text-stone-500">Revenue</p>
-                  <p className="text-xl font-bold text-emerald-600">{formatCurrency(monthlySummary.totalRevenueCents)}</p>
+                  <p className="text-xl font-bold text-emerald-600">
+                    {formatCurrency(monthlySummary.totalRevenueCents)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Expenses</p>
-                  <p className="text-xl font-bold text-stone-900">{formatCurrency(monthlySummary.totalExpensesCents)}</p>
+                  <p className="text-xl font-bold text-stone-100">
+                    {formatCurrency(monthlySummary.totalExpensesCents)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Profit</p>
-                  <p className={`text-xl font-bold ${monthlySummary.totalProfitCents >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                  <p
+                    className={`text-xl font-bold ${monthlySummary.totalProfitCents >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                  >
                     {formatCurrency(monthlySummary.totalProfitCents)}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Avg Food Cost</p>
-                  <p className="text-xl font-bold text-stone-900">{monthlySummary.averageFoodCostPercent}%</p>
+                  <p className="text-xl font-bold text-stone-100">
+                    {monthlySummary.averageFoodCostPercent}%
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-stone-500">Events</p>
-                  <p className="text-xl font-bold text-stone-900">{monthlySummary.eventCount}</p>
+                  <p className="text-xl font-bold text-stone-100">{monthlySummary.eventCount}</p>
                 </div>
               </div>
 
               {/* Revenue Target Progress */}
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="text-stone-500">Progress toward {formatCurrency(monthlySummary.targetRevenueCents)}</span>
+                  <span className="text-stone-500">
+                    Progress toward {formatCurrency(monthlySummary.targetRevenueCents)}
+                  </span>
                   <span className="font-medium">{monthlySummary.revenueProgressPercent}%</span>
                 </div>
-                <div className="w-full bg-stone-200 rounded-full h-2">
+                <div className="w-full bg-stone-700 rounded-full h-2">
                   <div
                     className={`h-2 rounded-full ${
-                      monthlySummary.revenueProgressPercent >= 100 ? 'bg-green-500' :
-                      monthlySummary.revenueProgressPercent >= 50 ? 'bg-brand-500' :
-                      'bg-stone-400'
+                      monthlySummary.revenueProgressPercent >= 100
+                        ? 'bg-green-9500'
+                        : monthlySummary.revenueProgressPercent >= 50
+                          ? 'bg-brand-9500'
+                          : 'bg-stone-400'
                     }`}
                     style={{ width: `${Math.min(monthlySummary.revenueProgressPercent, 100)}%` }}
                   />
@@ -326,60 +339,69 @@ export function FinancialsClient({
               </CardHeader>
               <CardContent className="space-y-4">
                 {!revenueGoal.enabled ? (
-                  <p className="text-sm text-stone-600">
-                    Revenue goals are currently off. Enable them in Settings to receive booking and calendar suggestions.
+                  <p className="text-sm text-stone-400">
+                    Revenue goals are currently off. Enable them in Settings to receive booking and
+                    calendar suggestions.
                   </p>
                 ) : (
                   <>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div>
                         <p className="text-sm text-stone-500">Monthly Target</p>
-                        <p className="text-xl font-bold text-stone-900">
+                        <p className="text-xl font-bold text-stone-100">
                           {formatCurrency(revenueGoal.monthly.targetCents)}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-stone-500">Projected</p>
-                        <p className="text-xl font-bold text-stone-900">
+                        <p className="text-xl font-bold text-stone-100">
                           {formatCurrency(revenueGoal.monthly.projectedCents)}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-stone-500">Gap</p>
-                        <p className={`text-xl font-bold ${revenueGoal.monthly.gapCents > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        <p
+                          className={`text-xl font-bold ${revenueGoal.monthly.gapCents > 0 ? 'text-amber-600' : 'text-emerald-600'}`}
+                        >
                           {formatCurrency(revenueGoal.monthly.gapCents)}
                         </p>
                       </div>
                       <div>
                         <p className="text-sm text-stone-500">Dinners Needed</p>
-                        <p className="text-xl font-bold text-stone-900">
+                        <p className="text-xl font-bold text-stone-100">
                           {revenueGoal.dinnersNeededThisMonth}
                         </p>
                       </div>
                     </div>
 
-                    <div className="w-full bg-stone-200 rounded-full h-2">
+                    <div className="w-full bg-stone-700 rounded-full h-2">
                       <div
-                        className={`h-2 rounded-full ${revenueGoal.monthly.progressPercent >= 100 ? 'bg-green-500' : 'bg-brand-500'}`}
-                        style={{ width: `${Math.min(100, Math.max(0, revenueGoal.monthly.progressPercent))}%` }}
+                        className={`h-2 rounded-full ${revenueGoal.monthly.progressPercent >= 100 ? 'bg-green-9500' : 'bg-brand-9500'}`}
+                        style={{
+                          width: `${Math.min(100, Math.max(0, revenueGoal.monthly.progressPercent))}%`,
+                        }}
                       />
                     </div>
 
                     {revenueGoal.openDatesThisMonth.length > 0 && (
-                      <p className="text-sm text-stone-600">
-                        Open dates this month: {revenueGoal.openDatesThisMonth.slice(0, 6).join(', ')}
+                      <p className="text-sm text-stone-400">
+                        Open dates this month:{' '}
+                        {revenueGoal.openDatesThisMonth.slice(0, 6).join(', ')}
                         {revenueGoal.openDatesThisMonth.length > 6 ? ', ...' : ''}
                       </p>
                     )}
 
                     {revenueGoal.recommendations.length > 0 && (
                       <div className="space-y-2">
-                        <p className="text-sm font-medium text-stone-700">Top Recommendations</p>
+                        <p className="text-sm font-medium text-stone-300">Top Recommendations</p>
                         {revenueGoal.recommendations.slice(0, 3).map((rec) => (
-                          <div key={rec.id} className="rounded-md border border-stone-200 p-3">
-                            <p className="text-sm font-semibold text-stone-900">{rec.title}</p>
-                            <p className="text-sm text-stone-600 mt-1">{rec.description}</p>
-                            <Link href={rec.href} className="text-sm text-brand-600 hover:text-brand-700 mt-2 inline-block">
+                          <div key={rec.id} className="rounded-md border border-stone-700 p-3">
+                            <p className="text-sm font-semibold text-stone-100">{rec.title}</p>
+                            <p className="text-sm text-stone-400 mt-1">{rec.description}</p>
+                            <Link
+                              href={rec.href}
+                              className="text-sm text-brand-600 hover:text-brand-400 mt-2 inline-block"
+                            >
                               Open <span aria-hidden="true">&rarr;</span>
                             </Link>
                           </div>
@@ -401,43 +423,68 @@ export function FinancialsClient({
               <CardContent>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-stone-50 border-b">
+                    <thead className="bg-stone-800 border-b">
                       <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">Event</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">Date</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">Client</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">Revenue</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">Expenses</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">Profit</th>
-                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">Margin</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">
+                          Event
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">
+                          Date
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase">
+                          Client
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">
+                          Revenue
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">
+                          Expenses
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">
+                          Profit
+                        </th>
+                        <th className="px-4 py-3 text-right text-xs font-medium text-stone-500 uppercase">
+                          Margin
+                        </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-stone-200">
+                    <tbody className="bg-surface divide-y divide-stone-700">
                       {monthlySummary.eventBreakdown.map((evt) => (
-                        <tr key={evt.eventId} className="hover:bg-stone-50">
+                        <tr key={evt.eventId} className="hover:bg-stone-800">
                           <td className="px-4 py-3 text-sm">
-                            <Link href={`/events/${evt.eventId}`} className="text-brand-600 hover:underline">
+                            <Link
+                              href={`/events/${evt.eventId}`}
+                              className="text-brand-600 hover:underline"
+                            >
                               {evt.occasion || 'Untitled'}
                             </Link>
                           </td>
-                          <td className="px-4 py-3 text-sm text-stone-900">
+                          <td className="px-4 py-3 text-sm text-stone-100">
                             {format(new Date(evt.eventDate), 'MMM d')}
                           </td>
-                          <td className="px-4 py-3 text-sm text-stone-600">{evt.clientName}</td>
+                          <td className="px-4 py-3 text-sm text-stone-400">{evt.clientName}</td>
                           <td className="px-4 py-3 text-sm text-right text-emerald-600 font-medium">
                             {formatCurrency(evt.revenueCents)}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-stone-900">
+                          <td className="px-4 py-3 text-sm text-right text-stone-100">
                             {evt.expensesCents > 0 ? formatCurrency(evt.expensesCents) : '-'}
                           </td>
-                          <td className={`px-4 py-3 text-sm text-right font-medium ${evt.profitCents >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                          <td
+                            className={`px-4 py-3 text-sm text-right font-medium ${evt.profitCents >= 0 ? 'text-emerald-600' : 'text-red-600'}`}
+                          >
                             {evt.expensesCents > 0 ? formatCurrency(evt.profitCents) : '-'}
                           </td>
-                          <td className={`px-4 py-3 text-sm text-right font-medium ${
-                            evt.profitMargin >= 60 ? 'text-emerald-600' :
-                            evt.profitMargin >= 40 ? 'text-yellow-600' :
-                            evt.profitMargin > 0 ? 'text-red-600' : 'text-stone-400'
-                          }`}>
+                          <td
+                            className={`px-4 py-3 text-sm text-right font-medium ${
+                              evt.profitMargin >= 60
+                                ? 'text-emerald-600'
+                                : evt.profitMargin >= 40
+                                  ? 'text-yellow-600'
+                                  : evt.profitMargin > 0
+                                    ? 'text-red-600'
+                                    : 'text-stone-400'
+                            }`}
+                          >
                             {evt.expensesCents > 0 ? `${Math.round(evt.profitMargin)}%` : '-'}
                           </td>
                         </tr>
@@ -452,92 +499,123 @@ export function FinancialsClient({
       )}
 
       {/* Other Income — market/class/festival revenue */}
-      {marketIncome && marketIncome.length > 0 && (() => {
-        const incomeEntries = marketIncome.filter(e => e.revenue_type === 'income')
-        const promoEntries = marketIncome.filter(e => e.revenue_type === 'promotional')
-        const completedIncomeCents = incomeEntries
-          .filter(e => e.is_completed && e.actual_revenue_cents != null)
-          .reduce((sum, e) => sum + (e.actual_revenue_cents ?? 0), 0)
-        const expectedPendingCents = incomeEntries
-          .filter(e => !e.is_completed && e.expected_revenue_cents != null)
-          .reduce((sum, e) => sum + (e.expected_revenue_cents ?? 0), 0)
+      {marketIncome &&
+        marketIncome.length > 0 &&
+        (() => {
+          const incomeEntries = marketIncome.filter((e) => e.revenue_type === 'income')
+          const promoEntries = marketIncome.filter((e) => e.revenue_type === 'promotional')
+          const completedIncomeCents = incomeEntries
+            .filter((e) => e.is_completed && e.actual_revenue_cents != null)
+            .reduce((sum, e) => sum + (e.actual_revenue_cents ?? 0), 0)
+          const expectedPendingCents = incomeEntries
+            .filter((e) => !e.is_completed && e.expected_revenue_cents != null)
+            .reduce((sum, e) => sum + (e.expected_revenue_cents ?? 0), 0)
 
-        return (
-          <Card>
-            <CardHeader>
-              <CardTitle>Other Income — Markets &amp; Classes</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Summary strip */}
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-stone-500">Confirmed Income</p>
-                  <p className="text-xl font-bold text-emerald-600">{formatCurrency(completedIncomeCents)}</p>
-                  <p className="text-xs text-stone-400">From completed events</p>
+          return (
+            <Card>
+              <CardHeader>
+                <CardTitle>Other Income — Markets &amp; Classes</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Summary strip */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm text-stone-500">Confirmed Income</p>
+                    <p className="text-xl font-bold text-emerald-600">
+                      {formatCurrency(completedIncomeCents)}
+                    </p>
+                    <p className="text-xs text-stone-400">From completed events</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-stone-500">Expected (Upcoming)</p>
+                    <p className="text-xl font-bold text-amber-600">
+                      {formatCurrency(expectedPendingCents)}
+                    </p>
+                    <p className="text-xs text-stone-400">From planned events</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-stone-500">Promotional Appearances</p>
+                    <p className="text-xl font-bold text-stone-400">{promoEntries.length}</p>
+                    <p className="text-xs text-stone-400">No direct revenue</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-stone-500">Expected (Upcoming)</p>
-                  <p className="text-xl font-bold text-amber-600">{formatCurrency(expectedPendingCents)}</p>
-                  <p className="text-xs text-stone-400">From planned events</p>
-                </div>
-                <div>
-                  <p className="text-sm text-stone-500">Promotional Appearances</p>
-                  <p className="text-xl font-bold text-stone-600">{promoEntries.length}</p>
-                  <p className="text-xs text-stone-400">No direct revenue</p>
-                </div>
-              </div>
 
-              {/* Income entry table */}
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-stone-50 border-b">
-                    <tr>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Date</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Type</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Title</th>
-                      <th className="px-3 py-2 text-right text-xs font-medium text-stone-500 uppercase">Expected</th>
-                      <th className="px-3 py-2 text-right text-xs font-medium text-stone-500 uppercase">Actual</th>
-                      <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-stone-200">
-                    {marketIncome.map((entry, i) => (
-                      <tr key={i} className="hover:bg-stone-50">
-                        <td className="px-3 py-2 text-sm text-stone-900 whitespace-nowrap">
-                          {format(new Date(entry.start_date), 'MMM d, yyyy')}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-stone-600 whitespace-nowrap">
-                          {CALENDAR_ENTRY_TYPE_LABELS[entry.entry_type] ?? entry.entry_type}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-stone-900">{entry.title}</td>
-                        <td className="px-3 py-2 text-sm text-right text-stone-600">
-                          {entry.revenue_type === 'income' && entry.expected_revenue_cents != null
-                            ? formatCurrency(entry.expected_revenue_cents)
-                            : <span className="text-stone-400">—</span>}
-                        </td>
-                        <td className="px-3 py-2 text-sm text-right font-medium">
-                          {entry.actual_revenue_cents != null
-                            ? <span className="text-emerald-600">{formatCurrency(entry.actual_revenue_cents)}</span>
-                            : <span className="text-stone-400">—</span>}
-                        </td>
-                        <td className="px-3 py-2 text-sm">
-                          {entry.revenue_type === 'promotional' ? (
-                            <span className="inline-flex px-2 py-0.5 text-xs rounded bg-purple-100 text-purple-700">Promotional</span>
-                          ) : entry.is_completed ? (
-                            <span className="inline-flex px-2 py-0.5 text-xs rounded bg-green-100 text-green-700">Completed</span>
-                          ) : (
-                            <span className="inline-flex px-2 py-0.5 text-xs rounded bg-amber-100 text-amber-700">Upcoming</span>
-                          )}
-                        </td>
+                {/* Income entry table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-stone-800 border-b">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">
+                          Date
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">
+                          Type
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">
+                          Title
+                        </th>
+                        <th className="px-3 py-2 text-right text-xs font-medium text-stone-500 uppercase">
+                          Expected
+                        </th>
+                        <th className="px-3 py-2 text-right text-xs font-medium text-stone-500 uppercase">
+                          Actual
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-medium text-stone-500 uppercase">
+                          Status
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        )
-      })()}
+                    </thead>
+                    <tbody className="bg-surface divide-y divide-stone-700">
+                      {marketIncome.map((entry, i) => (
+                        <tr key={i} className="hover:bg-stone-800">
+                          <td className="px-3 py-2 text-sm text-stone-100 whitespace-nowrap">
+                            {format(new Date(entry.start_date), 'MMM d, yyyy')}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-stone-400 whitespace-nowrap">
+                            {CALENDAR_ENTRY_TYPE_LABELS[entry.entry_type] ?? entry.entry_type}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-stone-100">{entry.title}</td>
+                          <td className="px-3 py-2 text-sm text-right text-stone-400">
+                            {entry.revenue_type === 'income' &&
+                            entry.expected_revenue_cents != null ? (
+                              formatCurrency(entry.expected_revenue_cents)
+                            ) : (
+                              <span className="text-stone-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-right font-medium">
+                            {entry.actual_revenue_cents != null ? (
+                              <span className="text-emerald-600">
+                                {formatCurrency(entry.actual_revenue_cents)}
+                              </span>
+                            ) : (
+                              <span className="text-stone-400">—</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-2 text-sm">
+                            {entry.revenue_type === 'promotional' ? (
+                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-purple-900 text-purple-700">
+                                Promotional
+                              </span>
+                            ) : entry.is_completed ? (
+                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-green-900 text-green-700">
+                                Completed
+                              </span>
+                            ) : (
+                              <span className="inline-flex px-2 py-0.5 text-xs rounded bg-amber-900 text-amber-700">
+                                Upcoming
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })()}
 
       {/* Ledger Entries */}
       <Card>
@@ -553,11 +631,9 @@ export function FinancialsClient({
           {/* Filters */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pb-4 border-b">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                Entry Type
-              </label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Entry Type</label>
               <select
-                className="w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="w-full px-3 py-2 border border-stone-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
                 aria-label="Filter by entry type"
@@ -572,33 +648,25 @@ export function FinancialsClient({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                Start Date
-              </label>
-              <Input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
+              <label className="block text-sm font-medium text-stone-300 mb-1">Start Date</label>
+              <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                End Date
-              </label>
-              <Input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-              />
+              <label className="block text-sm font-medium text-stone-300 mb-1">End Date</label>
+              <Input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
             </div>
           </div>
 
           {/* Filtered balance warning */}
           {isFiltered && (
-            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-sm text-amber-800">
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-950 border border-amber-200 rounded-md text-sm text-amber-800">
               <svg className="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                <path
+                  fillRule="evenodd"
+                  d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.168 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z"
+                  clipRule="evenodd"
+                />
               </svg>
               Balance shown reflects filtered entries only
             </div>
@@ -606,13 +674,11 @@ export function FinancialsClient({
 
           {/* Table */}
           {entriesWithBalance.length === 0 ? (
-            <div className="text-center py-8 text-stone-500">
-              No ledger entries found.
-            </div>
+            <div className="text-center py-8 text-stone-500">No ledger entries found.</div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-stone-50 border-b">
+                <thead className="bg-stone-800 border-b">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wider">
                       Date
@@ -639,23 +705,23 @@ export function FinancialsClient({
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-stone-200">
+                <tbody className="bg-surface divide-y divide-stone-700">
                   {entriesWithBalance.map((entry) => (
-                    <tr key={entry.id} className="hover:bg-stone-50">
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-stone-900">
+                    <tr key={entry.id} className="hover:bg-stone-800">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-stone-100">
                         {format(new Date(entry.created_at), 'MMM dd, yyyy')}
                         <br />
                         <span className="text-xs text-stone-500">
                           {format(new Date(entry.created_at), 'HH:mm:ss')}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-stone-900">
+                      <td className="px-4 py-3 text-sm text-stone-100">
                         {entry.event?.occasion || 'N/A'}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap">
                         <span
                           className={`inline-flex px-2 py-1 text-xs font-medium rounded ${
-                            ENTRY_TYPE_COLORS[entry.entry_type] || 'bg-stone-100 text-stone-800'
+                            ENTRY_TYPE_COLORS[entry.entry_type] || 'bg-stone-800 text-stone-200'
                           }`}
                         >
                           {ENTRY_TYPE_LABELS[entry.entry_type] || entry.entry_type}
@@ -669,10 +735,10 @@ export function FinancialsClient({
                         {entry.amount_cents > 0 ? '+' : ''}
                         {formatCurrency(entry.amount_cents)}
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-stone-900">
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-medium text-stone-100">
                         {formatCurrency(entry.balance)}
                       </td>
-                      <td className="px-4 py-3 text-sm text-stone-600">
+                      <td className="px-4 py-3 text-sm text-stone-400">
                         {entry.description}
                         {entry.transaction_reference && (
                           <div className="text-xs text-stone-400 mt-1">

@@ -16,12 +16,12 @@ export default async function VendorsPage() {
   const vendors = await listVendors()
 
   const preferred = vendors.filter((v: any) => v.is_preferred)
-  const rest      = vendors.filter((v: any) => !v.is_preferred)
+  const rest = vendors.filter((v: any) => !v.is_preferred)
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Vendor Directory</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Vendor Directory</h1>
         <p className="mt-1 text-sm text-stone-500">
           Your go-to suppliers for groceries, specialty ingredients, equipment, and more.
         </p>

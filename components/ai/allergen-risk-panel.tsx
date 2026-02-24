@@ -8,10 +8,10 @@ import { getEventAllergenRisk, type AllergenRiskResult } from '@/lib/ai/allergen
 import { toast } from 'sonner'
 
 const RISK_COLORS: Record<string, string> = {
-  safe: 'text-green-700 bg-green-50',
-  may_contain: 'text-amber-700 bg-amber-50',
-  contains: 'text-red-700 bg-red-50',
-  unknown: 'text-stone-500 bg-stone-100',
+  safe: 'text-green-700 bg-green-950',
+  may_contain: 'text-amber-700 bg-amber-950',
+  contains: 'text-red-700 bg-red-950',
+  unknown: 'text-stone-500 bg-stone-800',
 }
 
 const RISK_LABELS: Record<string, string> = {
@@ -39,11 +39,11 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-4 h-4 text-red-500" />
-            <span className="text-sm font-medium text-stone-700">Allergen Risk Matrix</span>
+            <span className="text-sm font-medium text-stone-300">Allergen Risk Matrix</span>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
@@ -71,11 +71,11 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
   )
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ShieldAlert className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-medium text-stone-700">Allergen Risk Matrix</span>
+          <span className="text-sm font-medium text-stone-300">Allergen Risk Matrix</span>
           <Badge variant={hasIssues ? 'error' : 'success'}>
             {hasIssues ? 'Issues Found' : 'All Clear'}
           </Badge>
@@ -90,7 +90,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
           {result.safetyFlags.map((flag, i) => (
             <div
               key={i}
-              className="flex items-start gap-2 text-xs text-red-700 bg-red-50 rounded p-2"
+              className="flex items-start gap-2 text-xs text-red-700 bg-red-950 rounded p-2"
             >
               <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
               {flag}
@@ -103,7 +103,7 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-stone-100">
+              <tr className="border-b border-stone-800">
                 <th className="text-left py-1 pr-3 text-stone-500 font-medium">Dish</th>
                 <th className="text-left py-1 pr-3 text-stone-500 font-medium">Guest</th>
                 <th className="text-left py-1 pr-3 text-stone-500 font-medium">Risk</th>
@@ -113,8 +113,8 @@ export function AllergenRiskPanel({ eventId }: { eventId: string }) {
             <tbody>
               {result.rows.map((row, i) => (
                 <tr key={i} className="border-b border-stone-50">
-                  <td className="py-1 pr-3 text-stone-700">{row.dish}</td>
-                  <td className="py-1 pr-3 text-stone-600">{row.guestName}</td>
+                  <td className="py-1 pr-3 text-stone-300">{row.dish}</td>
+                  <td className="py-1 pr-3 text-stone-400">{row.guestName}</td>
                   <td className="py-1 pr-3">
                     <span
                       className={`px-1.5 py-0.5 rounded text-[11px] font-medium ${RISK_COLORS[row.riskLevel]}`}

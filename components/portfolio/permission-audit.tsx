@@ -27,12 +27,12 @@ export function PermissionAudit({ entries }: { entries: AuditEntry[] }) {
       <Card>
         <CardContent className="py-4">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-stone-700">Portfolio Permission Summary</p>
+            <p className="text-sm font-medium text-stone-300">Portfolio Permission Summary</p>
             <p className="text-sm text-stone-500">
               {restricted.length} of {total} clients restricted
             </p>
           </div>
-          <div className="h-2 bg-stone-200 rounded-full overflow-hidden mt-2">
+          <div className="h-2 bg-stone-700 rounded-full overflow-hidden mt-2">
             <div
               className="h-full rounded-full bg-emerald-500 transition-all"
               style={{
@@ -49,7 +49,7 @@ export function PermissionAudit({ entries }: { entries: AuditEntry[] }) {
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{entry.display_name}</p>
+                  <p className="text-sm font-medium text-stone-100">{entry.display_name}</p>
                   <p className="text-xs text-stone-500">
                     {entry.event_count} event{entry.event_count !== 1 ? 's' : ''}
                   </p>

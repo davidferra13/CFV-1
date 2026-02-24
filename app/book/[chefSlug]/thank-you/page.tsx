@@ -12,13 +12,13 @@ export default function BookingThankYouPage({
   const isInstantBook = searchParams.mode === 'instant'
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-white rounded-xl border border-stone-200 p-8 text-center space-y-4 shadow-sm">
+    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-surface rounded-xl border border-stone-700 p-8 text-center space-y-4 shadow-sm">
         <div className="text-5xl">{isInstantBook ? '✅' : '🎉'}</div>
-        <h1 className="text-2xl font-bold text-stone-900">
+        <h1 className="text-2xl font-bold text-stone-100">
           {isInstantBook ? 'Booking Confirmed!' : 'Request Received!'}
         </h1>
-        <p className="text-stone-600">
+        <p className="text-stone-400">
           {isInstantBook
             ? 'Your deposit has been processed and your event is booked. Your chef will be in touch with next steps.'
             : 'Your booking request has been submitted. Expect a response within 24 hours.'}

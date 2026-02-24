@@ -51,7 +51,12 @@ export function PartnerDetailClient({
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   async function handleDeleteLocation(id: string) {
-    if (!confirm('Remove this location? If it has linked inquiries or events, it will be deactivated instead.')) return
+    if (
+      !confirm(
+        'Remove this location? If it has linked inquiries or events, it will be deactivated instead.'
+      )
+    )
+      return
     setDeletingId(id)
     try {
       await deletePartnerLocation(id)
@@ -64,11 +69,11 @@ export function PartnerDetailClient({
   }
 
   function getLocationImages(locationId: string) {
-    return images.filter(img => img.location_id === locationId)
+    return images.filter((img) => img.location_id === locationId)
   }
 
   function getGeneralImages() {
-    return images.filter(img => !img.location_id)
+    return images.filter((img) => !img.location_id)
   }
 
   return (
@@ -85,17 +90,19 @@ export function PartnerDetailClient({
         return (
           <div
             key={loc.id}
-            className={`rounded-lg border p-4 ${loc.is_active ? 'border-stone-200' : 'border-stone-100 bg-stone-50 opacity-75'}`}
+            className={`rounded-lg border p-4 ${loc.is_active ? 'border-stone-700' : 'border-stone-800 bg-stone-800 opacity-75'}`}
           >
             <div className="flex justify-between items-start gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-stone-400" />
-                  <span className="font-medium text-stone-900">{loc.name}</span>
+                  <span className="font-medium text-stone-100">{loc.name}</span>
                   {!loc.is_active && <Badge variant="error">Inactive</Badge>}
                 </div>
                 {cityState && <p className="text-sm text-stone-500 mt-1 ml-6">{cityState}</p>}
-                {loc.description && <p className="text-sm text-stone-600 mt-1 ml-6">{loc.description}</p>}
+                {loc.description && (
+                  <p className="text-sm text-stone-400 mt-1 ml-6">{loc.description}</p>
+                )}
                 {loc.max_guest_count && (
                   <p className="text-xs text-stone-400 mt-1 ml-6 flex items-center gap-1">
                     <Users className="h-3 w-3" /> Up to {loc.max_guest_count} guests
@@ -107,11 +114,11 @@ export function PartnerDetailClient({
                 <div className="flex gap-3 text-xs text-center">
                   <div>
                     <p className="text-stone-400">Referrals</p>
-                    <p className="font-semibold text-stone-700">{loc.inquiry_count}</p>
+                    <p className="font-semibold text-stone-300">{loc.inquiry_count}</p>
                   </div>
                   <div>
                     <p className="text-stone-400">Events</p>
-                    <p className="font-semibold text-stone-700">{loc.event_count}</p>
+                    <p className="font-semibold text-stone-300">{loc.event_count}</p>
                   </div>
                 </div>
 
@@ -121,7 +128,7 @@ export function PartnerDetailClient({
                       href={loc.booking_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-1.5 rounded hover:bg-stone-100"
+                      className="p-1.5 rounded hover:bg-stone-700"
                       title="Open booking link"
                     >
                       <ExternalLink className="h-4 w-4 text-stone-400" />
@@ -130,7 +137,7 @@ export function PartnerDetailClient({
                   <button
                     onClick={() => handleDeleteLocation(loc.id)}
                     disabled={deletingId === loc.id}
-                    className="p-1.5 rounded hover:bg-red-50 text-stone-400 hover:text-red-600 text-xs"
+                    className="p-1.5 rounded hover:bg-red-950 text-stone-400 hover:text-red-600 text-xs"
                     title="Remove location"
                   >
                     {deletingId === loc.id ? '...' : 'Remove'}
@@ -142,7 +149,7 @@ export function PartnerDetailClient({
             {/* Location Images */}
             {locImages.length > 0 && (
               <div className="mt-3 ml-6 flex gap-2 overflow-x-auto">
-                {locImages.map(img => (
+                {locImages.map((img) => (
                   <div key={img.id} className="flex-shrink-0 relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
@@ -165,10 +172,10 @@ export function PartnerDetailClient({
 
       {/* General Partner Images */}
       {getGeneralImages().length > 0 && (
-        <div className="pt-4 border-t border-stone-100">
-          <p className="text-sm font-medium text-stone-700 mb-2">General Images</p>
+        <div className="pt-4 border-t border-stone-800">
+          <p className="text-sm font-medium text-stone-300 mb-2">General Images</p>
           <div className="flex gap-2 overflow-x-auto">
-            {getGeneralImages().map(img => (
+            {getGeneralImages().map((img) => (
               <div key={img.id} className="flex-shrink-0 relative">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -190,7 +197,7 @@ export function PartnerDetailClient({
       {/* Add Location */}
       {showAddLocation ? (
         <Card className="p-4 border-dashed">
-          <h3 className="text-sm font-semibold text-stone-900 mb-3">Add New Location</h3>
+          <h3 className="text-sm font-semibold text-stone-100 mb-3">Add New Location</h3>
           <LocationForm
             partnerId={partnerId}
             onSuccess={() => {
@@ -200,11 +207,7 @@ export function PartnerDetailClient({
           />
         </Card>
       ) : (
-        <Button
-          variant="secondary"
-          size="sm"
-          onClick={() => setShowAddLocation(true)}
-        >
+        <Button variant="secondary" size="sm" onClick={() => setShowAddLocation(true)}>
           + Add Location
         </Button>
       )}

@@ -45,8 +45,8 @@ export function NotificationBell({ collapsed = false }: { collapsed?: boolean })
         aria-expanded={open}
         className={`relative flex items-center justify-center rounded-lg transition-colors ${
           open
-            ? 'bg-stone-100 text-stone-700'
-            : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
+            ? 'bg-stone-800 text-stone-300'
+            : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
         } ${collapsed ? 'w-10 h-10' : 'w-8 h-8'}`}
       >
         <Bell className="w-[18px] h-[18px]" />

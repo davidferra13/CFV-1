@@ -337,12 +337,12 @@ export default async function EventDetailPage({
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">
               {event.occasion || 'Untitled Event'}
             </h1>
             <EventStatusBadge status={event.status} />
           </div>
-          <p className="text-stone-600 mt-1">
+          <p className="text-stone-400 mt-1">
             {format(new Date(event.event_date), "EEEE, MMMM d, yyyy 'at' h:mm a")}
             {(event as any).event_timezone && (
               <span className="ml-2 text-xs text-stone-400 font-normal">
@@ -381,15 +381,15 @@ export default async function EventDetailPage({
 
       {/* Collaborator role banner — shown when viewing another chef's event */}
       {!isEventOwner && myCollaboratorRow && (
-        <div className="rounded-lg border border-brand-200 bg-brand-50/50 px-4 py-3 flex items-center gap-3">
+        <div className="rounded-lg border border-brand-700 bg-brand-950/50 px-4 py-3 flex items-center gap-3">
           <div className="flex-1">
-            <p className="text-sm font-medium text-brand-900">
+            <p className="text-sm font-medium text-brand-200">
               You are collaborating on this event as{' '}
               <span className="font-semibold">
                 {COLLAB_ROLE_LABELS[myCollaboratorRow.role] ?? myCollaboratorRow.role}
               </span>
             </p>
-            <p className="text-xs text-brand-700 mt-0.5">
+            <p className="text-xs text-brand-400 mt-0.5">
               This event is owned by another chef. Some sections may be limited to the owner.
             </p>
           </div>
@@ -405,7 +405,7 @@ export default async function EventDetailPage({
       {['accepted', 'paid'].includes(event.status) &&
         (event as any).deposit_amount_cents > 0 &&
         totalPaid < (event as any).deposit_amount_cents && (
-          <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3">
+          <div className="rounded-lg border border-amber-300 bg-amber-950 px-4 py-3">
             <p className="text-sm font-medium text-amber-900">
               Awaiting {formatCurrency((event as any).deposit_amount_cents - totalPaid)} deposit
             </p>
@@ -441,10 +441,10 @@ export default async function EventDetailPage({
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-sm font-semibold text-stone-700">Preparation Progress</h3>
+                <h3 className="text-sm font-semibold text-stone-300">Preparation Progress</h3>
                 <Link
                   href={`/events/${event.id}/schedule`}
-                  className="text-xs text-brand-600 hover:text-brand-700"
+                  className="text-xs text-brand-600 hover:text-brand-400"
                 >
                   View full schedule &rarr;
                 </Link>
@@ -461,10 +461,10 @@ export default async function EventDetailPage({
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-1">
-                <h3 className="text-sm font-semibold text-stone-700">Packing</h3>
+                <h3 className="text-sm font-semibold text-stone-300">Packing</h3>
                 <Link
                   href={`/events/${event.id}/pack`}
-                  className="text-xs text-brand-600 hover:text-brand-700"
+                  className="text-xs text-brand-600 hover:text-brand-400"
                 >
                   Open checklist &rarr;
                 </Link>
@@ -472,7 +472,7 @@ export default async function EventDetailPage({
               {(event as any).car_packed ? (
                 <p className="text-sm text-emerald-700 font-medium">Car packed</p>
               ) : packingConfirmedCount > 0 ? (
-                <p className="text-sm text-stone-600">
+                <p className="text-sm text-stone-400">
                   {packingConfirmedCount} item{packingConfirmedCount !== 1 ? 's' : ''} confirmed
                   packed
                 </p>
@@ -481,7 +481,7 @@ export default async function EventDetailPage({
               )}
             </div>
             {(event as any).car_packed && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-800">
                 Packed
               </span>
             )}
@@ -516,7 +516,7 @@ export default async function EventDetailPage({
             <dl className="space-y-3">
               <div>
                 <dt className="text-sm font-medium text-stone-500">Location</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {[
                     event.location_address,
                     event.location_city,
@@ -547,7 +547,7 @@ export default async function EventDetailPage({
               {(event as any).referral_partner && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Partner Venue</dt>
-                  <dd className="text-sm text-stone-900 mt-1">
+                  <dd className="text-sm text-stone-100 mt-1">
                     <Link
                       href={`/partners/${(event as any).referral_partner_id}`}
                       className="text-brand-600 hover:underline font-medium"
@@ -578,19 +578,19 @@ export default async function EventDetailPage({
               )}
               <div>
                 <dt className="text-sm font-medium text-stone-500">Number of Guests</dt>
-                <dd className="text-sm text-stone-900 mt-1">{event.guest_count}</dd>
+                <dd className="text-sm text-stone-100 mt-1">{event.guest_count}</dd>
               </div>
               {event.special_requests && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Special Requests</dt>
-                  <dd className="text-sm text-stone-900 mt-1 whitespace-pre-wrap">
+                  <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
                     {event.special_requests}
                   </dd>
                 </div>
               )}
               <div>
                 <dt className="text-sm font-medium text-stone-500">Created</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {format(new Date(event.created_at), 'MMM d, yyyy')}
                 </dd>
               </div>
@@ -603,11 +603,11 @@ export default async function EventDetailPage({
             <dl className="space-y-3">
               <div>
                 <dt className="text-sm font-medium text-stone-500">Name</dt>
-                <dd className="text-sm text-stone-900 mt-1">{event.client?.full_name}</dd>
+                <dd className="text-sm text-stone-100 mt-1">{event.client?.full_name}</dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-stone-500">Email</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   <a
                     href={`mailto:${event.client?.email}`}
                     className="text-brand-600 hover:underline"
@@ -619,7 +619,7 @@ export default async function EventDetailPage({
               {event.client?.phone && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Phone</dt>
-                  <dd className="text-sm text-stone-900 mt-1">
+                  <dd className="text-sm text-stone-100 mt-1">
                     <a
                       href={`tel:${event.client.phone}`}
                       className="text-brand-600 hover:underline"
@@ -694,7 +694,7 @@ export default async function EventDetailPage({
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-stone-900">Event Recap</h3>
+                <h3 className="font-semibold text-stone-100">Event Recap</h3>
                 <p className="text-sm text-stone-500 mt-0.5">
                   Share a keepsake page with guests — photos, messages, and a booking link.
                 </p>
@@ -744,7 +744,7 @@ export default async function EventDetailPage({
             </p>
           )}
           <MessageThread messages={messages} />
-          <div className="mt-4 pt-4 border-t border-stone-200">
+          <div className="mt-4 pt-4 border-t border-stone-700">
             <MessageLogForm
               eventId={event.id}
               clientId={event.client_id ?? undefined}
@@ -797,13 +797,13 @@ export default async function EventDetailPage({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
               <dt className="text-sm font-medium text-stone-500">Quoted Price</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                 {formatCurrency(event.quoted_price_cents ?? 0)}
               </dd>
             </div>
             <div>
               <dt className="text-sm font-medium text-stone-500">Deposit Amount</dt>
-              <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                 {formatCurrency(event.deposit_amount_cents ?? 0)}
               </dd>
             </div>
@@ -911,11 +911,11 @@ export default async function EventDetailPage({
               {eventExpenseData.expenses.map((exp) => (
                 <div
                   key={exp.id}
-                  className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-stone-800 last:border-0"
                 >
                   <div className="flex items-center gap-3">
                     <div>
-                      <p className="text-sm font-medium text-stone-900">{exp.description}</p>
+                      <p className="text-sm font-medium text-stone-100">{exp.description}</p>
                       <p className="text-xs text-stone-500">
                         {exp.vendor_name && `${exp.vendor_name} · `}
                         {format(new Date(exp.expense_date), 'MMM d')}
@@ -939,7 +939,7 @@ export default async function EventDetailPage({
 
             {/* Category Subtotals */}
             {Object.keys(eventExpenseData.subtotals).length > 0 && (
-              <div className="mt-4 pt-4 border-t border-stone-200">
+              <div className="mt-4 pt-4 border-t border-stone-700">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   {Object.entries(eventExpenseData.subtotals).map(([cat, total]) => (
                     <div key={cat}>
@@ -948,7 +948,7 @@ export default async function EventDetailPage({
                     </div>
                   ))}
                 </div>
-                <div className="flex justify-between mt-3 pt-3 border-t border-stone-100 font-medium text-sm">
+                <div className="flex justify-between mt-3 pt-3 border-t border-stone-800 font-medium text-sm">
                   <span>Total Business Expenses</span>
                   <span>{formatCurrency(eventExpenseData.totalBusinessCents)}</span>
                 </div>
@@ -979,7 +979,7 @@ export default async function EventDetailPage({
                 </div>
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Expenses</dt>
-                  <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+                  <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                     {formatCurrency(profitSummary.expenses.totalBusinessCents)}
                   </dd>
                 </div>
@@ -1059,7 +1059,7 @@ export default async function EventDetailPage({
                     </span>
                   )}
                 {profitSummary.profit.effectiveHourlyRateCents && (
-                  <span className="font-medium text-stone-700">
+                  <span className="font-medium text-stone-300">
                     Effective rate: {formatCurrency(profitSummary.profit.effectiveHourlyRateCents)}
                     /hr
                   </span>
@@ -1077,8 +1077,8 @@ export default async function EventDetailPage({
                 )}
               </div>
               {profitSummary.perGuest && (
-                <div className="mt-3 pt-3 border-t border-stone-100 flex flex-wrap gap-4 text-sm text-stone-500">
-                  <span className="font-medium text-stone-600">
+                <div className="mt-3 pt-3 border-t border-stone-800 flex flex-wrap gap-4 text-sm text-stone-500">
+                  <span className="font-medium text-stone-400">
                     Per guest ({profitSummary.perGuest.guestCount} guests):
                   </span>
                   <span>{formatCurrency(profitSummary.perGuest.revenuePerGuestCents)} revenue</span>
@@ -1101,7 +1101,7 @@ export default async function EventDetailPage({
 
         {/* Loyalty Points Awarded */}
         {event.status === 'completed' && eventLoyaltyPoints > 0 && (
-          <Card className="p-6 border-purple-200 bg-purple-50">
+          <Card className="p-6 border-purple-200 bg-purple-950">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h2 className="font-semibold text-purple-900">Loyalty Points Awarded</h2>
@@ -1272,7 +1272,7 @@ export default async function EventDetailPage({
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-xl font-semibold">Post-Event Closure</h2>
               {closureStatus.allComplete && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-900 text-green-800">
                   All Complete
                 </span>
               )}
@@ -1281,35 +1281,35 @@ export default async function EventDetailPage({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
               <div className="flex items-center gap-2">
                 <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.aarFiled ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}
+                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.aarFiled ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
                 >
                   {closureStatus.aarFiled ? '\u2713' : '\u2717'}
                 </span>
-                <span className="text-sm text-stone-700">AAR Filed</span>
+                <span className="text-sm text-stone-300">AAR Filed</span>
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.resetComplete ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}
+                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.resetComplete ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
                 >
                   {closureStatus.resetComplete ? '\u2713' : '\u2717'}
                 </span>
-                <span className="text-sm text-stone-700">Reset Complete</span>
+                <span className="text-sm text-stone-300">Reset Complete</span>
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.followUpSent ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}
+                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.followUpSent ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
                 >
                   {closureStatus.followUpSent ? '\u2713' : '\u2717'}
                 </span>
-                <span className="text-sm text-stone-700">Follow-Up Sent</span>
+                <span className="text-sm text-stone-300">Follow-Up Sent</span>
               </div>
               <div className="flex items-center gap-2">
                 <span
-                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.financiallyClosed ? 'bg-green-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}
+                  className={`flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs ${closureStatus.financiallyClosed ? 'bg-green-900 text-emerald-600' : 'bg-red-900 text-red-600'}`}
                 >
                   {closureStatus.financiallyClosed ? '\u2713' : '\u2717'}
                 </span>
-                <span className="text-sm text-stone-700">Financially Closed</span>
+                <span className="text-sm text-stone-300">Financially Closed</span>
               </div>
             </div>
 
@@ -1353,13 +1353,13 @@ export default async function EventDetailPage({
             <dl className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
               <div>
                 <dt className="text-sm font-medium text-stone-500">Calm Rating</dt>
-                <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+                <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                   {aar.calm_rating}/5
                 </dd>
               </div>
               <div>
                 <dt className="text-sm font-medium text-stone-500">Preparation Rating</dt>
-                <dd className="text-xl sm:text-2xl font-bold text-stone-900 mt-1">
+                <dd className="text-xl sm:text-2xl font-bold text-stone-100 mt-1">
                   {aar.preparation_rating}/5
                 </dd>
               </div>
@@ -1371,7 +1371,7 @@ export default async function EventDetailPage({
                       {aar.forgotten_items.map((item: string) => (
                         <span
                           key={item}
-                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-900 text-red-800"
                         >
                           {item}
                         </span>
@@ -1383,11 +1383,11 @@ export default async function EventDetailPage({
             </dl>
 
             {(aar.what_went_well || aar.what_went_wrong) && (
-              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-stone-100">
+              <dl className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-stone-800">
                 {aar.what_went_well && (
                   <div>
                     <dt className="text-sm font-medium text-stone-500">What went well</dt>
-                    <dd className="text-sm text-stone-900 mt-1 whitespace-pre-wrap">
+                    <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
                       {aar.what_went_well}
                     </dd>
                   </div>
@@ -1395,7 +1395,7 @@ export default async function EventDetailPage({
                 {aar.what_went_wrong && (
                   <div>
                     <dt className="text-sm font-medium text-stone-500">What went wrong</dt>
-                    <dd className="text-sm text-stone-900 mt-1 whitespace-pre-wrap">
+                    <dd className="text-sm text-stone-100 mt-1 whitespace-pre-wrap">
                       {aar.what_went_wrong}
                     </dd>
                   </div>
@@ -1426,11 +1426,11 @@ export default async function EventDetailPage({
       <EventDetailSection tab="wrap" activeTab={activeTab}>
         {/* File AAR button — prominent, for completed events without AAR */}
         {event.status === 'completed' && !aar && !closureStatus && (
-          <Card className="p-6 border-brand-200 bg-brand-50">
+          <Card className="p-6 border-brand-700 bg-brand-950">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
-                <h2 className="font-semibold text-brand-900">Ready to review this dinner?</h2>
-                <p className="text-sm text-brand-700 mt-1">
+                <h2 className="font-semibold text-brand-200">Ready to review this dinner?</h2>
+                <p className="text-sm text-brand-400 mt-1">
                   File your Event Review to track what went well and what to improve.
                 </p>
               </div>
@@ -1443,7 +1443,7 @@ export default async function EventDetailPage({
 
         {/* Post-Event Debrief CTA — capture what you learned while it's fresh */}
         {event.status === 'completed' && !(event as any).debrief_completed_at && (
-          <Card className="p-6 border-amber-200 bg-amber-50">
+          <Card className="p-6 border-amber-200 bg-amber-950">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h2 className="font-semibold text-amber-900">Capture what you learned tonight</h2>
@@ -1460,7 +1460,7 @@ export default async function EventDetailPage({
 
         {/* Debrief complete indicator */}
         {event.status === 'completed' && (event as any).debrief_completed_at && (
-          <Card className="p-4 border-green-200 bg-green-50">
+          <Card className="p-4 border-green-200 bg-green-950">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-emerald-600 font-medium">&#10003;</span>
@@ -1480,7 +1480,7 @@ export default async function EventDetailPage({
 
         {/* Client Satisfaction Survey */}
         {event.status === 'completed' && event.client_id && (
-          <Card className="p-6 border-blue-200 bg-blue-50">
+          <Card className="p-6 border-blue-200 bg-blue-950">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h3 className="font-semibold text-blue-900">Client Satisfaction Survey</h3>
@@ -1521,18 +1521,18 @@ export default async function EventDetailPage({
             <div className="space-y-3">
               {transitions.map((transition) => (
                 <div key={transition.id} className="flex items-start gap-3">
-                  <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
+                  <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-9500" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       {transition.from_status && (
                         <>
-                          <span className="text-sm font-medium text-stone-900 capitalize">
+                          <span className="text-sm font-medium text-stone-100 capitalize">
                             {transition.from_status}
                           </span>
                           <span className="text-stone-400">&rarr;</span>
                         </>
                       )}
-                      <span className="text-sm font-medium text-stone-900 capitalize">
+                      <span className="text-sm font-medium text-stone-100 capitalize">
                         {transition.to_status}
                       </span>
                     </div>
@@ -1542,7 +1542,7 @@ export default async function EventDetailPage({
                     {transition.metadata &&
                       typeof transition.metadata === 'object' &&
                       'reason' in (transition.metadata as Record<string, unknown>) && (
-                        <p className="text-sm text-stone-600 mt-1">
+                        <p className="text-sm text-stone-400 mt-1">
                           Reason: {String((transition.metadata as Record<string, unknown>).reason)}
                         </p>
                       )}

@@ -47,7 +47,12 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
   }
 
   const handleDisconnect = async () => {
-    if (!confirm('Disconnect Wix? New form submissions will no longer create inquiries automatically.')) return
+    if (
+      !confirm(
+        'Disconnect Wix? New form submissions will no longer create inquiries automatically.'
+      )
+    )
+      return
     setDisconnecting(true)
     setError(null)
     try {
@@ -63,7 +68,8 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
   }
 
   const handleRegenerate = async () => {
-    if (!confirm('Regenerate webhook secret? You will need to update the URL in Wix Automations.')) return
+    if (!confirm('Regenerate webhook secret? You will need to update the URL in Wix Automations.'))
+      return
     setRegenerating(true)
     setError(null)
     try {
@@ -113,15 +119,11 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
 
         {!connection.connected ? (
           <>
-            <p className="text-sm text-stone-600">
-              Connect your Wix site to automatically capture form submissions as inquiries.
-              When someone fills out a form on your Wix website, it creates an inquiry in ChefFlow.
+            <p className="text-sm text-stone-400">
+              Connect your Wix site to automatically capture form submissions as inquiries. When
+              someone fills out a form on your Wix website, it creates an inquiry in ChefFlow.
             </p>
-            <Button
-              variant="primary"
-              onClick={handleSetup}
-              loading={connecting}
-            >
+            <Button variant="primary" onClick={handleSetup} loading={connecting}>
               Connect Wix
             </Button>
           </>
@@ -132,8 +134,9 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant="success">Connected</Badge>
-                  <span className="text-sm text-stone-600">
-                    {connection.totalSubmissions} submission{connection.totalSubmissions !== 1 ? 's' : ''} received
+                  <span className="text-sm text-stone-400">
+                    {connection.totalSubmissions} submission
+                    {connection.totalSubmissions !== 1 ? 's' : ''} received
                   </span>
                 </div>
                 {connection.lastSubmission && (
@@ -158,13 +161,13 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
             </div>
 
             {/* Webhook URL */}
-            <div className="bg-stone-50 border border-stone-200 rounded-lg p-3">
-              <p className="text-xs font-medium text-stone-700 mb-1">Webhook URL</p>
+            <div className="bg-stone-800 border border-stone-700 rounded-lg p-3">
+              <p className="text-xs font-medium text-stone-300 mb-1">Webhook URL</p>
               <p className="text-xs text-stone-500 mb-2">
                 Paste this URL into your Wix Automation&apos;s HTTP Request action.
               </p>
               <div className="flex gap-2">
-                <code className="flex-1 text-xs bg-white border border-stone-200 rounded px-2 py-1.5 overflow-x-auto whitespace-nowrap">
+                <code className="flex-1 text-xs bg-surface border border-stone-700 rounded px-2 py-1.5 overflow-x-auto whitespace-nowrap">
                   {webhookUrl}
                 </code>
                 <Button variant="secondary" size="sm" onClick={copyUrl}>
@@ -175,7 +178,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
                 <button
                   onClick={handleRegenerate}
                   disabled={regenerating}
-                  className="text-xs text-stone-400 hover:text-stone-600 underline"
+                  className="text-xs text-stone-400 hover:text-stone-400 underline"
                 >
                   {regenerating ? 'Regenerating...' : 'Regenerate secret'}
                 </button>
@@ -184,7 +187,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
 
             {/* Setup instructions */}
             <details className="text-sm">
-              <summary className="text-stone-600 cursor-pointer hover:text-stone-800 font-medium">
+              <summary className="text-stone-400 cursor-pointer hover:text-stone-200 font-medium">
                 How to set up in Wix
               </summary>
               <ol className="mt-2 ml-4 space-y-1 text-xs text-stone-500 list-decimal">
@@ -192,7 +195,9 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
                 <li>Create a new automation</li>
                 <li>Set the trigger to &ldquo;Form is submitted&rdquo;</li>
                 <li>Add an action: &ldquo;Send an HTTP request&rdquo;</li>
-                <li>Set method to <strong>POST</strong></li>
+                <li>
+                  Set method to <strong>POST</strong>
+                </li>
                 <li>Paste the webhook URL above as the target URL</li>
                 <li>Set body to &ldquo;Send entire trigger payload&rdquo;</li>
                 <li>Save and activate the automation</li>
@@ -202,16 +207,16 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
             {/* Recent submissions */}
             {recentSubmissions.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-stone-700 mb-2">Recent Submissions</h4>
+                <h4 className="text-sm font-medium text-stone-300 mb-2">Recent Submissions</h4>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {recentSubmissions.map((sub) => (
                     <div
                       key={sub.id}
-                      className="flex items-center justify-between text-xs border-b border-stone-100 py-1.5 last:border-0"
+                      className="flex items-center justify-between text-xs border-b border-stone-800 py-1.5 last:border-0"
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <StatusBadge status={sub.status} />
-                        <span className="text-stone-600 truncate">
+                        <span className="text-stone-400 truncate">
                           {sub.submitter_name || sub.submitter_email || 'Unknown'}
                           {sub.submitter_email && sub.submitter_name && (
                             <span className="text-stone-400"> ({sub.submitter_email})</span>
@@ -246,14 +251,16 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
-    pending: 'bg-amber-100 text-amber-700',
-    processing: 'bg-blue-100 text-blue-700',
-    completed: 'bg-emerald-100 text-emerald-700',
-    failed: 'bg-red-100 text-red-600',
-    duplicate: 'bg-stone-100 text-stone-600',
+    pending: 'bg-amber-900 text-amber-700',
+    processing: 'bg-blue-900 text-blue-700',
+    completed: 'bg-emerald-900 text-emerald-700',
+    failed: 'bg-red-900 text-red-600',
+    duplicate: 'bg-stone-800 text-stone-400',
   }
   return (
-    <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${colors[status] || 'bg-stone-100 text-stone-600'}`}>
+    <span
+      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${colors[status] || 'bg-stone-800 text-stone-400'}`}
+    >
       {status}
     </span>
   )

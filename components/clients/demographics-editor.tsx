@@ -66,9 +66,9 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
   if (!editing) {
     const hasData = occupation || companyName || birthday || anniversary || instagram || formality
     return (
-      <div className="rounded-lg border border-stone-200 overflow-hidden">
-        <div className="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-          <h3 className="font-medium text-stone-800">Demographics & Identity</h3>
+      <div className="rounded-lg border border-stone-700 overflow-hidden">
+        <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
+          <h3 className="font-medium text-stone-200">Demographics & Identity</h3>
           <button
             type="button"
             onClick={() => setEditing(true)}
@@ -82,43 +82,43 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
             {occupation && (
               <>
                 <span className="text-stone-500">Occupation</span>
-                <span className="text-stone-800">{occupation}</span>
+                <span className="text-stone-200">{occupation}</span>
               </>
             )}
             {companyName && (
               <>
                 <span className="text-stone-500">Company</span>
-                <span className="text-stone-800">{companyName}</span>
+                <span className="text-stone-200">{companyName}</span>
               </>
             )}
             {birthday && (
               <>
                 <span className="text-stone-500">Birthday</span>
-                <span className="text-stone-800">{formatDate(birthday)}</span>
+                <span className="text-stone-200">{formatDate(birthday)}</span>
               </>
             )}
             {anniversary && (
               <>
                 <span className="text-stone-500">Anniversary</span>
-                <span className="text-stone-800">{formatDate(anniversary)}</span>
+                <span className="text-stone-200">{formatDate(anniversary)}</span>
               </>
             )}
             {instagram && (
               <>
                 <span className="text-stone-500">Instagram</span>
-                <span className="text-stone-800">@{instagram.replace(/^@/, '')}</span>
+                <span className="text-stone-200">@{instagram.replace(/^@/, '')}</span>
               </>
             )}
             {preferredContact && (
               <>
                 <span className="text-stone-500">Preferred Contact</span>
-                <span className="text-stone-800 capitalize">{preferredContact}</span>
+                <span className="text-stone-200 capitalize">{preferredContact}</span>
               </>
             )}
             {referralSource && (
               <>
                 <span className="text-stone-500">Referral Source</span>
-                <span className="text-stone-800 capitalize">
+                <span className="text-stone-200 capitalize">
                   {referralSource.replace(/_/g, ' ')}
                   {referralDetail ? ` — ${referralDetail}` : ''}
                 </span>
@@ -127,7 +127,7 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
             {formality && (
               <>
                 <span className="text-stone-500">Formality</span>
-                <span className="text-stone-800 capitalize">{formality.replace(/_/g, ' ')}</span>
+                <span className="text-stone-200 capitalize">{formality.replace(/_/g, ' ')}</span>
               </>
             )}
           </div>
@@ -141,9 +141,9 @@ export function DemographicsEditor({ clientId, ...initial }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-brand-200 overflow-hidden">
-      <div className="px-4 py-3 bg-brand-50 border-b border-brand-200">
-        <h3 className="font-medium text-stone-800">Demographics & Identity</h3>
+    <div className="rounded-lg border border-brand-700 overflow-hidden">
+      <div className="px-4 py-3 bg-brand-950 border-b border-brand-700">
+        <h3 className="font-medium text-stone-200">Demographics & Identity</h3>
       </div>
       <div className="p-4 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

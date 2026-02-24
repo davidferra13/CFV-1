@@ -68,8 +68,8 @@ export function InquiryDeadlineForm({ inquiryId, currentDeadline, currentNextAct
   }
 
   return (
-    <form onSubmit={handleSave} className="space-y-3 border-t border-stone-200 pt-4">
-      <p className="text-sm font-medium text-stone-700">Set Follow-up Deadline</p>
+    <form onSubmit={handleSave} className="space-y-3 border-t border-stone-700 pt-4">
+      <p className="text-sm font-medium text-stone-300">Set Follow-up Deadline</p>
 
       {error && <Alert variant="error">{error}</Alert>}
 
@@ -80,7 +80,7 @@ export function InquiryDeadlineForm({ inquiryId, currentDeadline, currentNextAct
             type="datetime-local"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
-            className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
@@ -91,7 +91,7 @@ export function InquiryDeadlineForm({ inquiryId, currentDeadline, currentNextAct
             value={nextAction}
             onChange={(e) => setNextAction(e.target.value)}
             placeholder="Follow up about menu confirmation"
-            className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
       </div>

@@ -64,7 +64,7 @@ export default async function ChannelPage({ params }: { params: Promise<{ slug: 
       {/* Back */}
       <Link
         href="/network?tab=channels"
-        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-700"
+        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-300"
       >
         <ArrowLeft className="h-4 w-4" />
         All Channels
@@ -86,9 +86,9 @@ export default async function ChannelPage({ params }: { params: Promise<{ slug: 
         </div>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-stone-900">{ch.name}</h1>
+            <h1 className="text-2xl font-bold text-stone-100">{ch.name}</h1>
             {ch.is_official && (
-              <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+              <span className="text-xs bg-amber-900 text-amber-700 px-2 py-0.5 rounded-full font-medium">
                 Official
               </span>
             )}

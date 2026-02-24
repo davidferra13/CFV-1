@@ -80,9 +80,15 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
   const [rewardError, setRewardError] = useState<string | null>(null)
 
   function handleAddReward() {
-    if (!newReward.name.trim()) { setRewardError('Reward name required'); return }
+    if (!newReward.name.trim()) {
+      setRewardError('Reward name required')
+      return
+    }
     const pts = parseInt(newReward.points_required, 10)
-    if (!pts || pts <= 0) { setRewardError('Points must be a positive number'); return }
+    if (!pts || pts <= 0) {
+      setRewardError('Points must be a positive number')
+      return
+    }
     setRewardError(null)
     startTransition(async () => {
       try {
@@ -92,7 +98,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           reward_type: newReward.reward_type,
           description: newReward.description.trim() || undefined,
         })
-        setRewards(prev => [...prev, result.reward as LoyaltyReward])
+        setRewards((prev) => [...prev, result.reward as LoyaltyReward])
         setNewReward({ name: '', points_required: '', reward_type: 'free_course', description: '' })
         router.refresh()
       } catch (e) {
@@ -108,7 +114,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
   const [seedingAll, setSeedingAll] = useState(false)
 
   function setBalance(clientId: string, value: string) {
-    setBalances(prev => ({ ...prev, [clientId]: value }))
+    setBalances((prev) => ({ ...prev, [clientId]: value }))
   }
 
   async function seedClient(clientId: string) {
@@ -117,7 +123,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
     if (!pts || pts <= 0) return
     try {
       await awardBonusPoints(clientId, pts, 'Opening balance — migrated from previous records')
-      setSavedClients(prev => new Set(prev).add(clientId))
+      setSavedClients((prev) => new Set(prev).add(clientId))
       router.refresh()
     } catch (e) {
       setSeedError(e instanceof Error ? e.message : 'Failed to save balance')
@@ -127,7 +133,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
   async function handleSeedAll() {
     setSeedError(null)
     setSeedingAll(true)
-    const toSeed = clients.filter(c => {
+    const toSeed = clients.filter((c) => {
       const pts = parseInt(balances[c.id] || '0', 10)
       return pts > 0 && !savedClients.has(c.id)
     })
@@ -147,17 +153,16 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
 
   return (
     <div className="space-y-6">
-
       {/* Tab bar */}
-      <div className="flex border border-stone-200 rounded-lg overflow-hidden bg-white">
-        {tabs.map(tab => (
+      <div className="flex border border-stone-700 rounded-lg overflow-hidden bg-surface">
+        {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex-1 px-4 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
               activeTab === tab.key
                 ? 'bg-stone-900 text-white'
-                : 'text-stone-600 hover:bg-stone-50'
+                : 'text-stone-400 hover:bg-stone-800'
             }`}
           >
             {tab.done && <Check className="h-3.5 w-3.5 text-green-400" />}
@@ -174,12 +179,12 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
           </CardHeader>
           <CardContent className="space-y-5">
             {configError && (
-              <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                 {configError}
               </div>
             )}
             {configSaved && (
-              <div className="rounded-md bg-green-50 border border-green-200 px-3 py-2 text-sm text-green-700 flex items-center gap-2">
+              <div className="rounded-md bg-green-950 border border-green-200 px-3 py-2 text-sm text-green-700 flex items-center gap-2">
                 <Check className="h-4 w-4" /> Config saved
               </div>
             )}
@@ -191,7 +196,12 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                   type="number"
                   min="1"
                   value={config.points_per_guest}
-                  onChange={e => setConfig(prev => ({ ...prev, points_per_guest: parseInt(e.target.value) || 10 }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      points_per_guest: parseInt(e.target.value) || 10,
+                    }))
+                  }
                 />
                 <p className="text-xs text-stone-400">Awarded per guest served at each event</p>
               </div>
@@ -201,13 +211,18 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                   type="number"
                   min="0"
                   value={config.welcome_points}
-                  onChange={e => setConfig(prev => ({ ...prev, welcome_points: parseInt(e.target.value) || 0 }))}
+                  onChange={(e) =>
+                    setConfig((prev) => ({
+                      ...prev,
+                      welcome_points: parseInt(e.target.value) || 0,
+                    }))
+                  }
                 />
                 <p className="text-xs text-stone-400">One-time bonus on portal signup</p>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-stone-100">
+            <div className="pt-2 border-t border-stone-800">
               <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-3">
                 Lifetime Points for Tier Promotion
               </p>
@@ -218,7 +233,12 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                     type="number"
                     min="1"
                     value={config.tier_silver_min}
-                    onChange={e => setConfig(prev => ({ ...prev, tier_silver_min: parseInt(e.target.value) || 100 }))}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        tier_silver_min: parseInt(e.target.value) || 100,
+                      }))
+                    }
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -227,7 +247,12 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                     type="number"
                     min="1"
                     value={config.tier_gold_min}
-                    onChange={e => setConfig(prev => ({ ...prev, tier_gold_min: parseInt(e.target.value) || 250 }))}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        tier_gold_min: parseInt(e.target.value) || 250,
+                      }))
+                    }
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -236,12 +261,19 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                     type="number"
                     min="1"
                     value={config.tier_platinum_min}
-                    onChange={e => setConfig(prev => ({ ...prev, tier_platinum_min: parseInt(e.target.value) || 500 }))}
+                    onChange={(e) =>
+                      setConfig((prev) => ({
+                        ...prev,
+                        tier_platinum_min: parseInt(e.target.value) || 500,
+                      }))
+                    }
                   />
                 </div>
               </div>
               <p className="text-xs text-stone-400 mt-2">
-                Bronze: 0–{config.tier_silver_min - 1} · Silver: {config.tier_silver_min}–{config.tier_gold_min - 1} · Gold: {config.tier_gold_min}–{config.tier_platinum_min - 1} · Platinum: {config.tier_platinum_min}+
+                Bronze: 0–{config.tier_silver_min - 1} · Silver: {config.tier_silver_min}–
+                {config.tier_gold_min - 1} · Gold: {config.tier_gold_min}–
+                {config.tier_platinum_min - 1} · Platinum: {config.tier_platinum_min}+
               </p>
             </div>
 
@@ -270,18 +302,16 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="divide-y divide-stone-100">
-                  {rewards.map(r => (
+                <ul className="divide-y divide-stone-800">
+                  {rewards.map((r) => (
                     <li key={r.id} className="py-2.5 flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-stone-800">{r.name}</p>
-                        {r.description && (
-                          <p className="text-xs text-stone-400">{r.description}</p>
-                        )}
+                        <p className="text-sm font-medium text-stone-200">{r.name}</p>
+                        {r.description && <p className="text-xs text-stone-400">{r.description}</p>}
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge variant="info">{r.reward_type.replace(/_/g, ' ')}</Badge>
-                        <span className="text-sm font-medium text-stone-700">
+                        <span className="text-sm font-medium text-stone-300">
                           {r.points_required} pts
                         </span>
                       </div>
@@ -299,7 +329,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
             </CardHeader>
             <CardContent className="space-y-4">
               {rewardError && (
-                <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+                <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                   {rewardError}
                 </div>
               )}
@@ -308,7 +338,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                   <Label>Reward Name</Label>
                   <Input
                     value={newReward.name}
-                    onChange={e => setNewReward(prev => ({ ...prev, name: e.target.value }))}
+                    onChange={(e) => setNewReward((prev) => ({ ...prev, name: e.target.value }))}
                     placeholder="Complimentary appetizer course"
                   />
                 </div>
@@ -318,7 +348,9 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                     type="number"
                     min="1"
                     value={newReward.points_required}
-                    onChange={e => setNewReward(prev => ({ ...prev, points_required: e.target.value }))}
+                    onChange={(e) =>
+                      setNewReward((prev) => ({ ...prev, points_required: e.target.value }))
+                    }
                     placeholder="100"
                   />
                 </div>
@@ -326,8 +358,13 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                   <Label>Type</Label>
                   <select
                     value={newReward.reward_type}
-                    onChange={e => setNewReward(prev => ({ ...prev, reward_type: e.target.value as LoyaltyReward['reward_type'] }))}
-                    className="flex h-10 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    onChange={(e) =>
+                      setNewReward((prev) => ({
+                        ...prev,
+                        reward_type: e.target.value as LoyaltyReward['reward_type'],
+                      }))
+                    }
+                    className="flex h-10 w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                   >
                     <option value="free_course">Free Course</option>
                     <option value="free_dinner">Free Dinner</option>
@@ -340,7 +377,9 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                   <Label>Description (optional)</Label>
                   <Input
                     value={newReward.description}
-                    onChange={e => setNewReward(prev => ({ ...prev, description: e.target.value }))}
+                    onChange={(e) =>
+                      setNewReward((prev) => ({ ...prev, description: e.target.value }))
+                    }
                     placeholder="A bonus appetizer course added to your next dinner"
                   />
                 </div>
@@ -369,15 +408,17 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2 flex items-start gap-2">
+            <div className="rounded-md bg-amber-950 border border-amber-200 px-3 py-2 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-amber-800">
-                The points ledger is append-only. Once saved, balances can only be corrected with an additional adjustment transaction — not deleted. Enter each client&apos;s historical balance carefully.
+                The points ledger is append-only. Once saved, balances can only be corrected with an
+                additional adjustment transaction — not deleted. Enter each client&apos;s historical
+                balance carefully.
               </p>
             </div>
 
             {seedError && (
-              <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                 {seedError}
               </div>
             )}
@@ -392,22 +433,24 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
             ) : (
               <>
                 <div className="space-y-1">
-                  {clients.map(client => {
+                  {clients.map((client) => {
                     const isSaved = savedClients.has(client.id) || (client.loyalty_points ?? 0) > 0
                     const existingPoints = client.loyalty_points ?? 0
                     return (
                       <div
                         key={client.id}
                         className={`flex items-center gap-3 rounded-md px-3 py-2.5 ${
-                          isSaved ? 'bg-green-50' : 'bg-stone-50'
+                          isSaved ? 'bg-green-950' : 'bg-stone-800'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-stone-800 truncate">
+                          <p className="text-sm font-medium text-stone-200 truncate">
                             {client.full_name}
                           </p>
                           {existingPoints > 0 && (
-                            <p className="text-xs text-stone-400">{existingPoints} pts already saved</p>
+                            <p className="text-xs text-stone-400">
+                              {existingPoints} pts already saved
+                            </p>
                           )}
                         </div>
                         {isSaved ? (
@@ -421,7 +464,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                               type="number"
                               min="0"
                               value={balances[client.id] ?? ''}
-                              onChange={e => setBalance(client.id, e.target.value)}
+                              onChange={(e) => setBalance(client.id, e.target.value)}
                               placeholder="0"
                               className="w-24 text-right"
                             />
@@ -429,7 +472,11 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                             <Button
                               variant="secondary"
                               onClick={() => startTransition(() => seedClient(client.id))}
-                              disabled={isPending || !balances[client.id] || parseInt(balances[client.id], 10) <= 0}
+                              disabled={
+                                isPending ||
+                                !balances[client.id] ||
+                                parseInt(balances[client.id], 10) <= 0
+                              }
                             >
                               Save
                             </Button>
@@ -440,7 +487,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                   })}
                 </div>
 
-                {clients.some(c => !savedClients.has(c.id) && (c.loyalty_points ?? 0) === 0) && (
+                {clients.some((c) => !savedClients.has(c.id) && (c.loyalty_points ?? 0) === 0) && (
                   <Button
                     variant="primary"
                     onClick={() => startTransition(handleSeedAll)}
@@ -453,7 +500,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
               </>
             )}
 
-            <div className="pt-4 border-t border-stone-100 flex gap-3">
+            <div className="pt-4 border-t border-stone-800 flex gap-3">
               <Link href="/onboarding/recipes" className="flex-1">
                 <Button variant="primary" className="w-full">
                   Continue to Recipes

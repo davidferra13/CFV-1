@@ -176,7 +176,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
         <div>
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900">{name}</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">{name}</h1>
             <InquiryStatusBadge status={inquiry.status as any} />
             <InquiryChannelBadge channel={inquiry.channel} />
             {inquiry.client?.id && (
@@ -192,7 +192,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             )}
           </div>
           {inquiry.confirmed_occasion && (
-            <p className="text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
+            <p className="text-stone-400 mt-1">{inquiry.confirmed_occasion}</p>
           )}
           <p className="text-sm text-stone-400 mt-1">
             First contact{' '}
@@ -206,7 +206,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Missing Facts Warning */}
       {missingFacts.length > 0 && inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="bg-amber-950 border border-amber-200 rounded-lg p-4">
           <p className="text-sm font-medium text-amber-800">Missing confirmed facts:</p>
           <div className="flex gap-2 mt-2 flex-wrap">
             {missingFacts.map((fact) => (
@@ -262,12 +262,12 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           <dl className="space-y-3">
             <div>
               <dt className="text-sm font-medium text-stone-500">Name</dt>
-              <dd className="text-sm text-stone-900 mt-1">{name}</dd>
+              <dd className="text-sm text-stone-100 mt-1">{name}</dd>
             </div>
             {email && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Email</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   <a href={`mailto:${email}`} className="text-brand-600 hover:underline">
                     {email}
                   </a>
@@ -277,7 +277,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             {phone && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Phone</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   <a href={`tel:${phone}`} className="text-brand-600 hover:underline">
                     {phone}
                   </a>
@@ -310,7 +310,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             {referralSource && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Referral Source</dt>
-                <dd className="text-sm text-stone-900 mt-1">{referralSource}</dd>
+                <dd className="text-sm text-stone-100 mt-1">{referralSource}</dd>
               </div>
             )}
           </dl>
@@ -324,7 +324,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               <dt className="text-sm font-medium text-stone-500">Event Date</dt>
               <dd className="text-sm mt-1">
                 {inquiry.confirmed_date ? (
-                  <span className="text-stone-900">
+                  <span className="text-stone-100">
                     {format(new Date(inquiry.confirmed_date), 'EEEE, MMMM d, yyyy')}
                   </span>
                 ) : (
@@ -336,7 +336,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               <dt className="text-sm font-medium text-stone-500">Guest Count</dt>
               <dd className="text-sm mt-1">
                 {inquiry.confirmed_guest_count ? (
-                  <span className="text-stone-900">{inquiry.confirmed_guest_count} guests</span>
+                  <span className="text-stone-100">{inquiry.confirmed_guest_count} guests</span>
                 ) : (
                   <span className="text-stone-400 italic">Not confirmed</span>
                 )}
@@ -346,7 +346,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               <dt className="text-sm font-medium text-stone-500">Location</dt>
               <dd className="text-sm mt-1">
                 {inquiry.confirmed_location ? (
-                  <span className="text-stone-900">{inquiry.confirmed_location}</span>
+                  <span className="text-stone-100">{inquiry.confirmed_location}</span>
                 ) : (
                   <span className="text-stone-400 italic">Not confirmed</span>
                 )}
@@ -356,7 +356,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               <dt className="text-sm font-medium text-stone-500">Budget</dt>
               <dd className="text-sm mt-1">
                 {inquiry.confirmed_budget_cents ? (
-                  <span className="text-stone-900">
+                  <span className="text-stone-100">
                     {formatCurrency(inquiry.confirmed_budget_cents)}
                   </span>
                 ) : (
@@ -368,7 +368,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
               inquiry.confirmed_dietary_restrictions.length > 0 && (
                 <div>
                   <dt className="text-sm font-medium text-stone-500">Dietary Restrictions</dt>
-                  <dd className="text-sm text-stone-900 mt-1">
+                  <dd className="text-sm text-stone-100 mt-1">
                     {inquiry.confirmed_dietary_restrictions.join(', ')}
                   </dd>
                 </div>
@@ -376,7 +376,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             {inquiry.confirmed_service_expectations && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Service Expectations</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {inquiry.confirmed_service_expectations}
                 </dd>
               </div>
@@ -384,7 +384,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             {inquiry.confirmed_cannabis_preference && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Cannabis Preference</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {inquiry.confirmed_cannabis_preference}
                 </dd>
               </div>
@@ -401,19 +401,19 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             {inquiry.next_action_required && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Next Action</dt>
-                <dd className="text-sm text-stone-900 mt-1">{inquiry.next_action_required}</dd>
+                <dd className="text-sm text-stone-100 mt-1">{inquiry.next_action_required}</dd>
               </div>
             )}
             {inquiry.next_action_by && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Action By</dt>
-                <dd className="text-sm text-stone-900 mt-1">{inquiry.next_action_by}</dd>
+                <dd className="text-sm text-stone-100 mt-1">{inquiry.next_action_by}</dd>
               </div>
             )}
             {inquiry.follow_up_due_at && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Follow-up Due</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {format(new Date(inquiry.follow_up_due_at), 'MMM d, yyyy')}{' '}
                   <span className="text-stone-400">
                     ({formatDistanceToNow(new Date(inquiry.follow_up_due_at), { addSuffix: true })})
@@ -452,7 +452,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 <div className="flex justify-between items-center">
                   <Link href={`/quotes/${quote.id}`} className="flex-1 min-w-0 hover:underline">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-stone-900 text-sm">
+                      <span className="font-medium text-stone-100 text-sm">
                         {quote.quote_name || formatCurrency(quote.total_quoted_cents)}
                       </span>
                       <QuoteStatusBadge status={quote.status as any} />
@@ -462,7 +462,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                     </div>
                   </Link>
                   <div className="flex items-center gap-2 ml-2">
-                    <span className="text-sm font-semibold text-stone-900">
+                    <span className="text-sm font-semibold text-stone-100">
                       {formatCurrency(quote.total_quoted_cents)}
                     </span>
                     {(quote.status === 'sent' || quote.status === 'accepted') && (
@@ -470,7 +470,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                         href={`/api/documents/quote/${quote.id}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-stone-500 hover:text-stone-800 border border-stone-200 rounded px-2 py-0.5 hover:bg-stone-50"
+                        className="text-xs text-stone-500 hover:text-stone-200 border border-stone-700 rounded px-2 py-0.5 hover:bg-stone-800"
                       >
                         PDF
                       </a>
@@ -507,7 +507,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Communication</h2>
         <MessageThread messages={messages} />
-        <div className="mt-4 pt-4 border-t border-stone-200">
+        <div className="mt-4 pt-4 border-t border-stone-700">
           <MessageLogForm
             inquiryId={inquiry.id}
             clientId={inquiry.client_id ?? undefined}
@@ -536,7 +536,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       {convertedEventId && (
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-xl font-semibold text-stone-900">Dinner Photos</h2>
+            <h2 className="text-xl font-semibold text-stone-100">Dinner Photos</h2>
             {eventPhotos.length === 0 && (
               <span className="text-sm text-stone-400">
                 No photos uploaded yet for this dinner.{' '}

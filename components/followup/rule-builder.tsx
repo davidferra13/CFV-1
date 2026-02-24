@@ -5,10 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import {
-  createFollowupRule,
-  toggleFollowupRule,
-} from '@/lib/followup/rule-actions'
+import { createFollowupRule, toggleFollowupRule } from '@/lib/followup/rule-actions'
 import { Zap, Plus, Power } from 'lucide-react'
 
 type FollowupRule = {
@@ -76,7 +73,7 @@ export function RuleBuilder({ initialRules, templates }: Props) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-lg font-semibold text-stone-900">Follow-Up Rules</h2>
+          <h2 className="text-lg font-semibold text-stone-100">Follow-Up Rules</h2>
           <p className="text-sm text-stone-500">
             {rules.filter((r) => r.isActive).length} active rules
           </p>
@@ -88,20 +85,22 @@ export function RuleBuilder({ initialRules, templates }: Props) {
       </div>
 
       {showCreate && (
-        <Card className="border-stone-300">
+        <Card className="border-stone-600">
           <CardHeader className="py-3">
             <CardTitle className="text-base">Create Follow-Up Rule</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Trigger</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Trigger</label>
               <select
                 value={form.triggerType}
                 onChange={(e) => setForm({ ...form, triggerType: e.target.value })}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 {Object.entries(TRIGGER_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
                 ))}
               </select>
             </div>
@@ -114,23 +113,34 @@ export function RuleBuilder({ initialRules, templates }: Props) {
               onChange={(e) => setForm({ ...form, delayDays: parseInt(e.target.value || '0') })}
             />
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Email Template</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
+                Email Template
+              </label>
               <select
                 value={form.templateId}
                 onChange={(e) => setForm({ ...form, templateId: e.target.value })}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="">Select template…</option>
                 {templates.map((t) => (
-                  <option key={t.id} value={t.id}>{t.name}</option>
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button size="sm" onClick={handleCreate} loading={isPending} disabled={!form.templateId}>
+              <Button
+                size="sm"
+                onClick={handleCreate}
+                loading={isPending}
+                disabled={!form.templateId}
+              >
                 Create Rule
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -143,13 +153,15 @@ export function RuleBuilder({ initialRules, templates }: Props) {
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Zap className={`h-4 w-4 ${rule.isActive ? 'text-amber-500' : 'text-stone-300'}`} />
+                  <Zap
+                    className={`h-4 w-4 ${rule.isActive ? 'text-amber-500' : 'text-stone-300'}`}
+                  />
                   <div>
                     <div className="flex items-center gap-2">
                       <Badge variant={TRIGGER_BADGES[rule.triggerType] || 'default'}>
                         {TRIGGER_LABELS[rule.triggerType] || rule.triggerType}
                       </Badge>
-                      <span className="text-sm text-stone-600">
+                      <span className="text-sm text-stone-400">
                         → Wait {rule.delayDays} day{rule.delayDays !== 1 ? 's' : ''} → Send email
                       </span>
                     </div>
@@ -176,7 +188,9 @@ export function RuleBuilder({ initialRules, templates }: Props) {
       {rules.length === 0 && !showCreate && (
         <div className="text-center py-8">
           <Zap className="h-12 w-12 text-stone-300 mx-auto mb-3" />
-          <p className="text-sm text-stone-500">No follow-up rules yet. Create automatic follow-ups for key events.</p>
+          <p className="text-sm text-stone-500">
+            No follow-up rules yet. Create automatic follow-ups for key events.
+          </p>
         </div>
       )}
     </div>

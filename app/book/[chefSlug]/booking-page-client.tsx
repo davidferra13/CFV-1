@@ -31,23 +31,19 @@ export function BookingPageClient({ chefSlug, bookingConfig }: Props) {
       {!selectedDate ? (
         <>
           <div>
-            <h2 className="text-lg font-semibold text-stone-900 mb-1">Select a date</h2>
+            <h2 className="text-lg font-semibold text-stone-100 mb-1">Select a date</h2>
             <p className="text-sm text-stone-500">
               {isInstantBook
                 ? 'Green dates are available. Click a date to book instantly.'
                 : 'Green dates are available. Click a date to begin your booking request.'}
             </p>
           </div>
-          <BookingCalendar
-            chefSlug={chefSlug}
-            onSelectDate={setSelectedDate}
-            selectedDate={null}
-          />
+          <BookingCalendar chefSlug={chefSlug} onSelectDate={setSelectedDate} selectedDate={null} />
         </>
       ) : (
         <>
           <div>
-            <h2 className="text-lg font-semibold text-stone-900 mb-1">
+            <h2 className="text-lg font-semibold text-stone-100 mb-1">
               {isInstantBook ? 'Book your event' : 'Your details'}
             </h2>
             <p className="text-sm text-stone-500">

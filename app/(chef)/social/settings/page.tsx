@@ -11,7 +11,7 @@ export default async function SocialSettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h2 className="text-lg font-semibold text-stone-900">Queue Settings</h2>
+        <h2 className="text-lg font-semibold text-stone-100">Queue Settings</h2>
         <p className="text-sm text-stone-500 mt-0.5">
           Configure your posting schedule, then generate your annual content calendar.
         </p>

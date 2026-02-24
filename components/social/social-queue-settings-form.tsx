@@ -121,14 +121,14 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
     <div className="space-y-8">
       {/* Target Year */}
       <div>
-        <label htmlFor="target-year" className="block text-sm font-medium text-stone-700 mb-1.5">
+        <label htmlFor="target-year" className="block text-sm font-medium text-stone-300 mb-1.5">
           Target Year
         </label>
         <select
           id="target-year"
           value={targetYear}
           onChange={(e) => setTargetYear(Number(e.target.value))}
-          className="w-40 px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white"
+          className="w-40 px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-surface"
         >
           {[2025, 2026, 2027, 2028].map((y) => (
             <option key={y} value={y}>
@@ -140,7 +140,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
 
       {/* Posts Per Week */}
       <div>
-        <label htmlFor="posts-per-week" className="block text-sm font-medium text-stone-700 mb-1.5">
+        <label htmlFor="posts-per-week" className="block text-sm font-medium text-stone-300 mb-1.5">
           Posts Per Week
           <span className="ml-2 font-normal text-stone-400">
             ({postsPerWeek}/week = ~{postsPerWeek * 52} posts/year)
@@ -156,7 +156,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
             onChange={(e) => setPostsPerWeek(Number(e.target.value))}
             className="w-48"
           />
-          <span className="text-2xl font-bold text-stone-800 w-8">{postsPerWeek}</span>
+          <span className="text-2xl font-bold text-stone-200 w-8">{postsPerWeek}</span>
         </div>
         <div className="flex gap-2 mt-2">
           {[3, 5, 7, 14].map((n) => (
@@ -168,7 +168,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
                 'px-3 py-1 text-xs rounded-full border transition-colors',
                 postsPerWeek === n
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'border-stone-200 text-stone-500 hover:border-stone-300',
+                  : 'border-stone-700 text-stone-500 hover:border-stone-600',
               ].join(' ')}
             >
               {n}×/week
@@ -179,14 +179,14 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
 
       {/* Timezone */}
       <div>
-        <label htmlFor="timezone" className="block text-sm font-medium text-stone-700 mb-1.5">
+        <label htmlFor="timezone" className="block text-sm font-medium text-stone-300 mb-1.5">
           Timezone
         </label>
         <select
           id="timezone"
           value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
-          className="w-72 px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-white"
+          className="w-72 px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-surface"
         >
           {TIMEZONES.map((tz) => (
             <option key={tz} value={tz}>
@@ -200,7 +200,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
       <div>
         <div className="flex items-center justify-between mb-3">
           <div>
-            <label className="text-sm font-medium text-stone-700">Posting Schedule</label>
+            <label className="text-sm font-medium text-stone-300">Posting Schedule</label>
             <p className="text-xs text-stone-400 mt-0.5">
               Which days and times to post each week. Add one slot per scheduled post.
             </p>
@@ -217,7 +217,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
                 value={slot.day}
                 onChange={(e) => updateSlot(i, 'day', Number(e.target.value))}
                 aria-label={`Day for slot ${i + 1}`}
-                className="px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                className="px-3 py-2 border border-stone-600 rounded-lg text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
               >
                 {DAY_LABELS.slice(1).map((label, di) => (
                   <option key={di + 1} value={di + 1}>
@@ -230,7 +230,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
                 value={slot.time}
                 onChange={(e) => updateSlot(i, 'time', e.target.value)}
                 aria-label={`Time for slot ${i + 1}`}
-                className="px-3 py-2 border border-stone-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                className="px-3 py-2 border border-stone-600 rounded-lg text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
               />
               <button
                 type="button"
@@ -250,7 +250,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
 
       {/* Reserved slots */}
       <div>
-        <label htmlFor="holdout-slots" className="block text-sm font-medium text-stone-700 mb-1.5">
+        <label htmlFor="holdout-slots" className="block text-sm font-medium text-stone-300 mb-1.5">
           Reserved Slots Per Month
           <span className="ml-2 font-normal text-stone-400">(kept empty for timely content)</span>
         </label>
@@ -264,15 +264,15 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
             onChange={(e) => setHoldoutSlots(Number(e.target.value))}
             className="w-48"
           />
-          <span className="text-2xl font-bold text-stone-800 w-8">{holdoutSlots}</span>
+          <span className="text-2xl font-bold text-stone-200 w-8">{holdoutSlots}</span>
         </div>
       </div>
 
       {/* Estimate */}
-      <div className="bg-stone-50 rounded-xl border border-stone-200 px-5 py-4">
-        <p className="text-sm text-stone-600">
+      <div className="bg-stone-800 rounded-xl border border-stone-700 px-5 py-4">
+        <p className="text-sm text-stone-400">
           Your schedule will generate approximately{' '}
-          <span className="font-bold text-stone-900">{estimatedTotal}</span> posts for {targetYear}.
+          <span className="font-bold text-stone-100">{estimatedTotal}</span> posts for {targetYear}.
           {estimatedTotal >= 250 && (
             <span className="text-emerald-600 ml-1">
               That&apos;s {Math.round((estimatedTotal / 52) * 10) / 10} posts/week — a full content
@@ -290,13 +290,13 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
 
       {/* Error / success */}
       {error && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+        <div className="flex items-center gap-2 rounded-lg bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           {error}
         </div>
       )}
       {success && (
-        <div className="rounded-lg bg-emerald-50 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
+        <div className="rounded-lg bg-emerald-950 border border-emerald-200 px-3 py-2 text-sm text-emerald-700">
           Settings saved successfully.
         </div>
       )}
@@ -325,12 +325,12 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
       {confirmRegenerate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setConfirmRegenerate(false)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center gap-3 text-amber-700">
               <AlertCircle className="w-6 h-6 flex-shrink-0" />
-              <h3 className="font-semibold text-stone-900">Replace all posts?</h3>
+              <h3 className="font-semibold text-stone-100">Replace all posts?</h3>
             </div>
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-stone-400">
               This will delete all <strong>{postCount}</strong> existing posts for{' '}
               {settings.target_year} and generate a fresh set. Any content you&apos;ve written will
               be permanently lost.

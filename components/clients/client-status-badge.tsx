@@ -8,10 +8,10 @@ import { useState, useTransition } from 'react'
 import { updateClientStatus } from '@/lib/clients/actions'
 
 const STATUS_STYLES: Record<string, string> = {
-  active: 'bg-emerald-100 text-emerald-800',
-  dormant: 'bg-stone-200 text-stone-600',
-  repeat_ready: 'bg-blue-100 text-blue-800',
-  vip: 'bg-purple-100 text-purple-800',
+  active: 'bg-emerald-900 text-emerald-800',
+  dormant: 'bg-stone-700 text-stone-400',
+  repeat_ready: 'bg-blue-900 text-blue-800',
+  vip: 'bg-purple-900 text-purple-800',
 }
 
 const STATUS_LABELS: Record<string, string> = {
@@ -50,33 +50,42 @@ export function ClientStatusBadge({ clientId, initialStatus }: Props) {
     <div className="relative inline-block">
       <button
         type="button"
-        onClick={() => setOpen(v => !v)}
+        onClick={() => setOpen((v) => !v)}
         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold cursor-pointer hover:opacity-80 transition-opacity ${STATUS_STYLES[status] ?? STATUS_STYLES.active}`}
         title="Click to change status"
       >
         {STATUS_LABELS[status] ?? status}
         <svg className="h-3 w-3 opacity-60" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+          <path
+            fillRule="evenodd"
+            d="M5.23 7.21a.75.75 0 011.06.02L10 11.17l3.71-3.94a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+            clipRule="evenodd"
+          />
         </svg>
       </button>
 
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 mt-1 w-36 bg-white border border-stone-200 rounded-lg shadow-lg z-20 py-1">
-            {ALL_STATUSES.map(s => (
+          <div className="absolute left-0 mt-1 w-36 bg-surface border border-stone-700 rounded-lg shadow-lg z-20 py-1">
+            {ALL_STATUSES.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => handleChange(s)}
-                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-stone-50 transition-colors flex items-center gap-2 ${s === status ? 'font-semibold' : ''}`}
+                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-stone-800 transition-colors flex items-center gap-2 ${s === status ? 'font-semibold' : ''}`}
               >
-                <span className={`inline-block w-2 h-2 rounded-full ${
-                  s === 'active' ? 'bg-emerald-500' :
-                  s === 'dormant' ? 'bg-stone-400' :
-                  s === 'repeat_ready' ? 'bg-blue-500' :
-                  'bg-purple-500'
-                }`} />
+                <span
+                  className={`inline-block w-2 h-2 rounded-full ${
+                    s === 'active'
+                      ? 'bg-emerald-9500'
+                      : s === 'dormant'
+                        ? 'bg-stone-400'
+                        : s === 'repeat_ready'
+                          ? 'bg-blue-9500'
+                          : 'bg-purple-9500'
+                  }`}
+                />
                 {STATUS_LABELS[s]}
               </button>
             ))}

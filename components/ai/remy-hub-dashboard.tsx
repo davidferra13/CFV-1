@@ -78,7 +78,7 @@ function MemoryTab() {
     return (
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="animate-pulse rounded-lg bg-stone-100 h-16" />
+          <div key={i} className="animate-pulse rounded-lg bg-stone-800 h-16" />
         ))}
       </div>
     )
@@ -108,11 +108,11 @@ function MemoryTab() {
         {memories.map((m) => (
           <div
             key={m.id}
-            className="flex items-start gap-3 rounded-lg border border-stone-200 bg-white p-3 group"
+            className="flex items-start gap-3 rounded-lg border border-stone-700 bg-surface p-3 group"
           >
             <Brain className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-stone-800">{m.content}</p>
+              <p className="text-sm text-stone-200">{m.content}</p>
               <div className="flex items-center gap-2 mt-1.5">
                 <Badge variant="default">{CATEGORY_LABELS[m.category] ?? m.category}</Badge>
                 <span className="text-xs text-stone-400">Importance: {m.importance}/10</span>
@@ -123,7 +123,7 @@ function MemoryTab() {
               type="button"
               onClick={() => handleDelete(m.id)}
               disabled={deleting === m.id}
-              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-stone-400 hover:text-red-500 hover:bg-red-50 transition-all disabled:opacity-50"
+              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-md text-stone-400 hover:text-red-500 hover:bg-red-950 transition-all disabled:opacity-50"
               aria-label="Delete memory"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -162,7 +162,7 @@ function SettingsTab() {
     return (
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="animate-pulse rounded-lg bg-stone-100 h-20" />
+          <div key={i} className="animate-pulse rounded-lg bg-stone-800 h-20" />
         ))}
       </div>
     )
@@ -183,8 +183,8 @@ function SettingsTab() {
       <div
         className={`rounded-xl border p-4 flex items-center gap-3 ${
           prefs.remy_enabled
-            ? 'border-emerald-200 bg-emerald-50/50'
-            : 'border-stone-200 bg-stone-50'
+            ? 'border-emerald-200 bg-emerald-950/50'
+            : 'border-stone-700 bg-stone-800'
         }`}
       >
         <Bot
@@ -192,7 +192,7 @@ function SettingsTab() {
         />
         <div>
           <p
-            className={`text-sm font-medium ${prefs.remy_enabled ? 'text-emerald-900' : 'text-stone-700'}`}
+            className={`text-sm font-medium ${prefs.remy_enabled ? 'text-emerald-900' : 'text-stone-300'}`}
           >
             {prefs.remy_enabled
               ? "Remy is active and running on ChefFlow's private infrastructure."
@@ -209,13 +209,13 @@ function SettingsTab() {
       </div>
 
       {/* How It Works */}
-      <details className="rounded-xl border border-stone-200 bg-white">
+      <details className="rounded-xl border border-stone-700 bg-surface">
         <summary className="cursor-pointer px-5 py-4">
-          <span className="text-sm font-semibold text-stone-900">
+          <span className="text-sm font-semibold text-stone-100">
             How It Works — Data Flow Diagram
           </span>
         </summary>
-        <div className="border-t border-stone-200 p-5">
+        <div className="border-t border-stone-700 p-5">
           <DataFlowAnimated />
         </div>
       </details>
@@ -224,9 +224,9 @@ function SettingsTab() {
       <DataControls initialPrefs={prefs} initialSummary={summary} onRefresh={load} />
 
       {/* Privacy promise */}
-      <div className="rounded-xl bg-stone-50 border border-stone-200 p-5 space-y-3">
-        <h3 className="font-semibold text-stone-900">Our Promise</h3>
-        <div className="text-sm text-stone-600 space-y-2">
+      <div className="rounded-xl bg-stone-800 border border-stone-700 p-5 space-y-3">
+        <h3 className="font-semibold text-stone-100">Our Promise</h3>
+        <div className="text-sm text-stone-400 space-y-2">
           <p>
             <strong>We will never:</strong> Send your data to external AI services, use your data to
             train any model, share your information with third parties, or make it difficult to
@@ -252,11 +252,11 @@ export function RemyHubDashboard() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-100 border border-brand-200">
+        <div className="flex items-center justify-center w-12 h-12 rounded-2xl bg-brand-900 border border-brand-700">
           <Bot className="w-6 h-6 text-brand-600" />
         </div>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-stone-900">Remy</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-stone-100">Remy</h1>
           <p className="text-sm text-stone-500">
             Your AI assistant — research, drafts, memory, and task execution
           </p>
@@ -264,7 +264,7 @@ export function RemyHubDashboard() {
       </div>
 
       {/* Tab Bar */}
-      <div className="border-b border-stone-200">
+      <div className="border-b border-stone-700">
         <nav className="flex gap-1 -mb-px" aria-label="Remy tabs">
           {TABS.map((tab) => {
             const Icon = tab.icon
@@ -276,8 +276,8 @@ export function RemyHubDashboard() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors ${
                   isActive
-                    ? 'border-brand-500 text-brand-700'
-                    : 'border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300'
+                    ? 'border-brand-500 text-brand-400'
+                    : 'border-transparent text-stone-500 hover:text-stone-300 hover:border-stone-600'
                 }`}
               >
                 <Icon className="w-4 h-4" />

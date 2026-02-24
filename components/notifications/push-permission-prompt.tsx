@@ -56,9 +56,9 @@ export function PushPermissionPrompt() {
       aria-label="Enable push notifications"
       className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm"
     >
-      <div className="flex items-start gap-3 rounded-xl border border-stone-200 bg-white p-4 shadow-lg">
+      <div className="flex items-start gap-3 rounded-xl border border-stone-700 bg-surface p-4 shadow-lg">
         {/* Bell icon */}
-        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+        <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-900 text-amber-600">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 20 20"
@@ -75,12 +75,10 @@ export function PushPermissionPrompt() {
 
         {/* Text + actions */}
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-stone-900">
-            Stay in the loop
-          </p>
+          <p className="text-sm font-medium text-stone-100">Stay in the loop</p>
           <p className="mt-0.5 text-xs text-stone-500">
-            Get instant alerts for new inquiries, messages, and bookings — even
-            when the app is closed.
+            Get instant alerts for new inquiries, messages, and bookings — even when the app is
+            closed.
           </p>
           <div className="mt-3 flex items-center gap-2">
             <button
@@ -92,7 +90,7 @@ export function PushPermissionPrompt() {
             </button>
             <button
               onClick={handleDismiss}
-              className="text-xs text-stone-400 hover:text-stone-600 transition-colors"
+              className="text-xs text-stone-400 hover:text-stone-400 transition-colors"
             >
               Not now
             </button>
@@ -103,7 +101,7 @@ export function PushPermissionPrompt() {
         <button
           onClick={handleDismiss}
           aria-label="Dismiss"
-          className="mt-0.5 text-stone-400 hover:text-stone-600 transition-colors"
+          className="mt-0.5 text-stone-400 hover:text-stone-400 transition-colors"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"

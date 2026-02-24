@@ -137,18 +137,12 @@ export function DishPhotoUpload({
             'relative overflow-hidden rounded-lg transition-colors w-16 h-16 flex items-center justify-center',
             photoUrl
               ? 'group'
-              : 'border-2 border-dashed border-stone-200 hover:border-amber-400 text-stone-300 hover:text-amber-500',
+              : 'border-2 border-dashed border-stone-700 hover:border-amber-400 text-stone-300 hover:text-amber-500',
           ].join(' ')}
         >
           {photoUrl ? (
             <>
-              <Image
-                src={photoUrl}
-                alt="Dish"
-                fill
-                className="object-cover"
-                sizes="64px"
-              />
+              <Image src={photoUrl} alt="Dish" fill className="object-cover" sizes="64px" />
               {/* Replace overlay on hover */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
                 <CameraIcon className="w-5 h-5 text-white" />
@@ -160,9 +154,7 @@ export function DishPhotoUpload({
             <CameraIcon className="w-5 h-5" />
           )}
         </button>
-        {error && (
-          <p className="text-xs text-red-500 mt-1 w-16 break-words">{error}</p>
-        )}
+        {error && <p className="text-xs text-red-500 mt-1 w-16 break-words">{error}</p>}
       </div>
     )
   }
@@ -180,7 +172,7 @@ export function DishPhotoUpload({
           onChange={handleFileChange}
         />
         <div
-          className="relative w-full rounded-xl overflow-hidden bg-stone-100 group"
+          className="relative w-full rounded-xl overflow-hidden bg-stone-800 group"
           style={{ aspectRatio: '16/9', maxHeight: '320px' }}
         >
           <Image
@@ -197,7 +189,7 @@ export function DishPhotoUpload({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={isPending}
-              className="bg-white text-stone-900 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-stone-50 transition-colors"
+              className="bg-surface text-stone-100 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-stone-800 transition-colors"
             >
               Replace
             </button>
@@ -205,14 +197,14 @@ export function DishPhotoUpload({
               type="button"
               onClick={handleRemove}
               disabled={isPending}
-              className="bg-white text-red-600 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-red-50 transition-colors"
+              className="bg-surface text-red-600 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-red-950 transition-colors"
             >
               Remove
             </button>
           </div>
           {isPending && (
-            <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-              <span className="text-sm text-stone-600 animate-pulse">Uploading…</span>
+            <div className="absolute inset-0 bg-stone-900/50 flex items-center justify-center">
+              <span className="text-sm text-stone-400 animate-pulse">Uploading…</span>
             </div>
           )}
         </div>
@@ -235,7 +227,7 @@ export function DishPhotoUpload({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={isPending}
-        className="w-full border-2 border-dashed border-stone-200 hover:border-amber-400 hover:bg-amber-50/30 transition-colors rounded-xl flex flex-col items-center justify-center gap-2 py-8 group"
+        className="w-full border-2 border-dashed border-stone-700 hover:border-amber-400 hover:bg-amber-950/30 transition-colors rounded-xl flex flex-col items-center justify-center gap-2 py-8 group"
       >
         {isPending ? (
           <span className="text-sm text-stone-500 animate-pulse">Uploading…</span>
@@ -245,9 +237,7 @@ export function DishPhotoUpload({
             <span className="text-sm font-medium text-stone-500 group-hover:text-amber-600 transition-colors">
               Add a photo of this dish
             </span>
-            <span className="text-xs text-stone-400">
-              JPEG · PNG · HEIC · WebP · max 10 MB
-            </span>
+            <span className="text-xs text-stone-400">JPEG · PNG · HEIC · WebP · max 10 MB</span>
           </>
         )}
       </button>

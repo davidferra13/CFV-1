@@ -17,12 +17,12 @@ export default async function SeasonalNotesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-300">
           ← Recipe Book
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Seasonal Notes</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Seasonal Notes</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {recipes.length} recipes
           </span>
         </div>
@@ -31,7 +31,7 @@ export default async function SeasonalNotesPage() {
         </p>
       </div>
 
-      <Card className="p-4 bg-sky-50 border-sky-200">
+      <Card className="p-4 bg-sky-950 border-sky-200">
         <p className="text-sm font-medium text-sky-800">Seasonal notes in ChefFlow</p>
         <p className="text-sm text-sky-700 mt-1">
           Seasonal guidance lives in each recipe&apos;s <strong>Notes</strong> and{' '}
@@ -42,7 +42,7 @@ export default async function SeasonalNotesPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{recipes.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{recipes.length}</p>
           <p className="text-sm text-stone-500 mt-1">Total recipes</p>
         </Card>
         <Card className="p-4">
@@ -57,7 +57,7 @@ export default async function SeasonalNotesPage() {
 
       {withNotes.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No recipes with notes yet</p>
+          <p className="text-stone-400 font-medium">No recipes with notes yet</p>
           <p className="text-stone-400 text-sm mt-1">
             Open any recipe and add notes or adaptations to capture seasonal guidance
           </p>
@@ -74,16 +74,16 @@ export default async function SeasonalNotesPage() {
             <Card key={recipe.id} className="p-4">
               <Link
                 href={`/culinary/recipes/${recipe.id}`}
-                className="font-semibold text-stone-900 hover:text-brand-600"
+                className="font-semibold text-stone-100 hover:text-brand-600"
               >
                 {recipe.name}
               </Link>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500 capitalize">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-stone-800 text-stone-500 capitalize">
                   {recipe.category}
                 </span>
                 {(recipe as any).adaptations && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-amber-900 text-amber-700">
                     Has adaptations
                   </span>
                 )}

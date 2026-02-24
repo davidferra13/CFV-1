@@ -20,18 +20,14 @@ export function UnifiedClientTimeline({ items }: UnifiedClientTimelineProps) {
   const visible = showAll ? items : items.slice(0, INITIAL_SHOW)
 
   if (items.length === 0) {
-    return (
-      <div className="text-sm text-stone-400 py-4 text-center">
-        No activity recorded yet
-      </div>
-    )
+    return <div className="text-sm text-stone-400 py-4 text-center">No activity recorded yet</div>
   }
 
   return (
     <div>
       <div className="relative">
         {/* Vertical line */}
-        <div className="absolute left-[7px] top-2 bottom-2 w-px bg-stone-200" aria-hidden="true" />
+        <div className="absolute left-[7px] top-2 bottom-2 w-px bg-stone-700" aria-hidden="true" />
 
         <div className="space-y-0">
           {visible.map((item, idx) => (
@@ -43,7 +39,7 @@ export function UnifiedClientTimeline({ items }: UnifiedClientTimelineProps) {
       {items.length > INITIAL_SHOW && !showAll && (
         <button
           onClick={() => setShowAll(true)}
-          className="mt-3 text-xs text-brand-600 hover:text-brand-700 font-medium"
+          className="mt-3 text-xs text-brand-600 hover:text-brand-400 font-medium"
         >
           Show {items.length - INITIAL_SHOW} more entries
         </button>
@@ -57,7 +53,9 @@ function TimelineRow({ item, isLast }: { item: UnifiedTimelineItem; isLast: bool
   const timeLabel = formatTimeLabel(item.timestamp)
 
   const inner = (
-    <div className={`flex items-start gap-3 py-2 pl-6 pr-1 rounded-md hover:bg-stone-50 transition-colors group ${isLast ? '' : ''}`}>
+    <div
+      className={`flex items-start gap-3 py-2 pl-6 pr-1 rounded-md hover:bg-stone-800 transition-colors group ${isLast ? '' : ''}`}
+    >
       {/* Dot */}
       <div
         className="absolute left-[3px] mt-[6px] h-2 w-2 rounded-full border-2 border-white bg-stone-300 group-hover:bg-brand-400 transition-colors"
@@ -66,23 +64,25 @@ function TimelineRow({ item, isLast }: { item: UnifiedTimelineItem; isLast: bool
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${cfg.className}`}>
+          <span
+            className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${cfg.className}`}
+          >
             {cfg.label}
           </span>
           {item.actor && item.actor !== 'system' && (
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${
-              item.actor === 'client'
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-emerald-100 text-emerald-700'
-            }`}>
+            <span
+              className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${
+                item.actor === 'client'
+                  ? 'bg-blue-900 text-blue-700'
+                  : 'bg-emerald-900 text-emerald-700'
+              }`}
+            >
               {item.actor === 'client' ? 'Client' : 'You'}
             </span>
           )}
-          <span className="text-xs text-stone-700 truncate">{item.summary}</span>
+          <span className="text-xs text-stone-300 truncate">{item.summary}</span>
         </div>
-        {item.detail && (
-          <p className="text-xs text-stone-400 mt-0.5 truncate">{item.detail}</p>
-        )}
+        {item.detail && <p className="text-xs text-stone-400 mt-0.5 truncate">{item.detail}</p>}
       </div>
 
       <span className="text-[11px] text-stone-400 shrink-0 mt-0.5">{timeLabel}</span>
@@ -109,5 +109,9 @@ function formatTimeLabel(dateStr: string): string {
   if (diffDays === 1) return 'Yesterday'
   if (diffDays < 7) return `${diffDays}d ago`
   if (diffDays < 30) return `${Math.floor(diffDays / 7)}w ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: diffDays > 365 ? 'numeric' : undefined })
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: diffDays > 365 ? 'numeric' : undefined,
+  })
 }

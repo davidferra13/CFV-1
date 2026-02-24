@@ -26,7 +26,8 @@ export function ChatInboxItem({
   isOnline = false,
   basePath,
 }: ChatInboxItemProps) {
-  const name = conversation.other_participant_name || conversation.other_participant_email || 'Unknown'
+  const name =
+    conversation.other_participant_name || conversation.other_participant_email || 'Unknown'
   const initial = name.charAt(0).toUpperCase()
   const isLastMessageFromMe = conversation.last_message_sender_id === currentUserId
 
@@ -40,12 +41,12 @@ export function ChatInboxItem({
   return (
     <Link
       href={`${basePath}/${conversation.id}`}
-      className="flex items-center gap-3 px-4 py-3 hover:bg-stone-50 transition-colors border-b border-stone-100 last:border-b-0"
+      className="flex items-center gap-3 px-4 py-3 hover:bg-stone-800 transition-colors border-b border-stone-800 last:border-b-0"
     >
       {/* Avatar */}
       <div className="relative flex-shrink-0">
-        <div className="w-11 h-11 rounded-full bg-stone-200 flex items-center justify-center">
-          <span className="text-base font-medium text-stone-600">{initial}</span>
+        <div className="w-11 h-11 rounded-full bg-stone-700 flex items-center justify-center">
+          <span className="text-base font-medium text-stone-400">{initial}</span>
         </div>
         <div className="absolute -bottom-0.5 -right-0.5">
           <ChatPresenceDot online={isOnline} />
@@ -56,24 +57,30 @@ export function ChatInboxItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between mb-0.5">
           <div className="flex items-center gap-2 min-w-0">
-            <p className={`text-sm truncate ${conversation.unread_count > 0 ? 'font-semibold text-stone-900' : 'font-medium text-stone-800'}`}>
+            <p
+              className={`text-sm truncate ${conversation.unread_count > 0 ? 'font-semibold text-stone-100' : 'font-medium text-stone-200'}`}
+            >
               {name}
             </p>
             {contextBadge && (
-              <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500">
+              <span className="flex-shrink-0 text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-500">
                 {contextBadge}
               </span>
             )}
           </div>
           {conversation.last_message_at && (
-            <span className={`flex-shrink-0 text-xs ${conversation.unread_count > 0 ? 'text-brand-600 font-medium' : 'text-stone-400'}`}>
+            <span
+              className={`flex-shrink-0 text-xs ${conversation.unread_count > 0 ? 'text-brand-600 font-medium' : 'text-stone-400'}`}
+            >
               {formatMessageTime(conversation.last_message_at)}
             </span>
           )}
         </div>
 
         <div className="flex items-center justify-between">
-          <p className={`text-xs truncate pr-2 ${conversation.unread_count > 0 ? 'text-stone-700' : 'text-stone-500'}`}>
+          <p
+            className={`text-xs truncate pr-2 ${conversation.unread_count > 0 ? 'text-stone-300' : 'text-stone-500'}`}
+          >
             {conversation.last_message_preview
               ? `${isLastMessageFromMe ? 'You: ' : ''}${conversation.last_message_preview}`
               : 'No messages yet'}

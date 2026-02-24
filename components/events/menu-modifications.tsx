@@ -8,7 +8,11 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { logMenuModification, deleteMenuModification, uploadModificationPhoto } from '@/lib/menus/modifications'
+import {
+  logMenuModification,
+  deleteMenuModification,
+  uploadModificationPhoto,
+} from '@/lib/menus/modifications'
 
 const MODIFICATION_TYPES = [
   { value: 'substitution', label: 'Substituted' },
@@ -112,7 +116,7 @@ export function MenuModifications({
     startTransition(async () => {
       const result = await uploadModificationPhoto(targetModId, eventId, formData)
       if (result.success) {
-        setSessionPhotoUrls(prev => ({ ...prev, [targetModId]: result.signedUrl }))
+        setSessionPhotoUrls((prev) => ({ ...prev, [targetModId]: result.signedUrl }))
       }
       setUploadingPhotoFor(null)
     })
@@ -142,7 +146,10 @@ export function MenuModifications({
         />
 
         {mods.length === 0 && !isAdding && (
-          <p className="text-sm text-stone-500">No menu changes recorded. Log any differences between what was proposed and what was served.</p>
+          <p className="text-sm text-stone-500">
+            No menu changes recorded. Log any differences between what was proposed and what was
+            served.
+          </p>
         )}
 
         {mods.length > 0 && (
@@ -151,33 +158,41 @@ export function MenuModifications({
               const sessionUrl = sessionPhotoUrls[m.id] ?? null
               const hasPhoto = !!sessionUrl || !!m.photo_url
               return (
-                <div key={m.id} className="py-2 border-b border-stone-100 last:border-0">
+                <div key={m.id} className="py-2 border-b border-stone-800 last:border-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-700 capitalize">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-800 text-stone-300 capitalize">
                           {m.modification_type.replace('_', ' ')}
                         </span>
                         {hasPhoto && (
-                          <span className="text-xs text-emerald-600 font-medium">photo attached</span>
+                          <span className="text-xs text-emerald-600 font-medium">
+                            photo attached
+                          </span>
                         )}
                       </div>
                       {m.original_description && m.actual_description && (
-                        <p className="text-sm text-stone-900 mt-1">{m.original_description} &rarr; {m.actual_description}</p>
+                        <p className="text-sm text-stone-100 mt-1">
+                          {m.original_description} &rarr; {m.actual_description}
+                        </p>
                       )}
                       {m.original_description && !m.actual_description && (
-                        <p className="text-sm text-stone-900 mt-1">{m.original_description} (not served)</p>
+                        <p className="text-sm text-stone-100 mt-1">
+                          {m.original_description} (not served)
+                        </p>
                       )}
                       {!m.original_description && m.actual_description && (
-                        <p className="text-sm text-stone-900 mt-1">Added: {m.actual_description}</p>
+                        <p className="text-sm text-stone-100 mt-1">Added: {m.actual_description}</p>
                       )}
-                      {m.reason && <p className="text-xs text-stone-500 mt-0.5">Reason: {m.reason}</p>}
+                      {m.reason && (
+                        <p className="text-xs text-stone-500 mt-0.5">Reason: {m.reason}</p>
+                      )}
                       {sessionUrl && (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={sessionUrl}
                           alt="Modification proof"
-                          className="mt-2 max-h-32 rounded-md border border-stone-200 object-contain bg-stone-50"
+                          className="mt-2 max-h-32 rounded-md border border-stone-700 object-contain bg-stone-800"
                         />
                       )}
                     </div>
@@ -188,7 +203,7 @@ export function MenuModifications({
                           size="sm"
                           onClick={() => handleAddPhotoClick(m.id)}
                           disabled={uploadingPhotoFor === m.id}
-                          className="text-stone-500 hover:text-stone-700 text-xs"
+                          className="text-stone-500 hover:text-stone-300 text-xs"
                         >
                           {uploadingPhotoFor === m.id ? 'Uploading...' : 'Add Photo'}
                         </Button>
@@ -211,9 +226,9 @@ export function MenuModifications({
         )}
 
         {isAdding && (
-          <div className="space-y-3 border rounded-lg p-4 bg-stone-50">
+          <div className="space-y-3 border rounded-lg p-4 bg-stone-800">
             <div>
-              <label className="text-xs font-medium text-stone-600">Change Type</label>
+              <label className="text-xs font-medium text-stone-400">Change Type</label>
               <Select
                 options={[...MODIFICATION_TYPES]}
                 value={modType}
@@ -222,25 +237,41 @@ export function MenuModifications({
             </div>
             {modType !== 'addition' && (
               <div>
-                <label className="text-xs font-medium text-stone-600">Original (what was planned)</label>
-                <Input placeholder="e.g., Cauliflower puree" value={original} onChange={(e) => setOriginal(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">
+                  Original (what was planned)
+                </label>
+                <Input
+                  placeholder="e.g., Cauliflower puree"
+                  value={original}
+                  onChange={(e) => setOriginal(e.target.value)}
+                />
               </div>
             )}
             {modType !== 'removal' && (
               <div>
-                <label className="text-xs font-medium text-stone-600">Actual (what was served)</label>
-                <Input placeholder="e.g., Parsnip puree" value={actual} onChange={(e) => setActual(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">
+                  Actual (what was served)
+                </label>
+                <Input
+                  placeholder="e.g., Parsnip puree"
+                  value={actual}
+                  onChange={(e) => setActual(e.target.value)}
+                />
               </div>
             )}
             <div>
-              <label className="text-xs font-medium text-stone-600">Reason</label>
-              <Input placeholder="Why the change?" value={reason} onChange={(e) => setReason(e.target.value)} />
+              <label className="text-xs font-medium text-stone-400">Reason</label>
+              <Input
+                placeholder="Why the change?"
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+              />
               <div className="flex flex-wrap gap-1 mt-1">
                 {COMMON_REASONS.map((r) => (
                   <button
                     key={r}
                     type="button"
-                    className="text-xs px-2 py-0.5 rounded-full bg-stone-200 text-stone-600 hover:bg-stone-300"
+                    className="text-xs px-2 py-0.5 rounded-full bg-stone-700 text-stone-400 hover:bg-stone-300"
                     onClick={() => setReason(r)}
                   >
                     {r}
@@ -252,7 +283,12 @@ export function MenuModifications({
               <Button size="sm" onClick={handleAdd} disabled={saving || (!original && !actual)}>
                 {saving ? 'Saving...' : 'Log Change'}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setIsAdding(false)} disabled={saving}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAdding(false)}
+                disabled={saving}
+              >
                 Cancel
               </Button>
             </div>

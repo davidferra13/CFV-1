@@ -6,7 +6,10 @@
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
-import { enableHistoricalEmailScan, disableHistoricalEmailScan } from '@/lib/gmail/historical-scan-actions'
+import {
+  enableHistoricalEmailScan,
+  disableHistoricalEmailScan,
+} from '@/lib/gmail/historical-scan-actions'
 import type { HistoricalScanStatus } from '@/lib/gmail/historical-scan-actions'
 
 interface HistoricalScanSectionProps {
@@ -62,14 +65,14 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
   }
 
   return (
-    <div className="mt-4 border-t border-stone-100 pt-4">
+    <div className="mt-4 border-t border-stone-800 pt-4">
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-stone-900">Historical Email Scan</p>
+          <p className="text-sm font-medium text-stone-100">Historical Email Scan</p>
           <p className="mt-0.5 text-xs text-stone-500">
             Scan your complete Gmail history (last {status.lookbackDays / 365} years) to find
-            booking inquiries you may have missed. Processes in the background — nothing is
-            imported automatically.
+            booking inquiries you may have missed. Processes in the background — nothing is imported
+            automatically.
           </p>
 
           {/* Scan status detail */}
@@ -89,7 +92,9 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
                 </p>
               )}
               {status.status === 'paused' && (
-                <p className="text-xs text-stone-400">Paused at {status.totalProcessed.toLocaleString()} emails</p>
+                <p className="text-xs text-stone-400">
+                  Paused at {status.totalProcessed.toLocaleString()} emails
+                </p>
               )}
             </div>
           )}
@@ -98,7 +103,7 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
           {enabled && (status.status === 'in_progress' || status.status === 'completed') && (
             <Link
               href="/inbox/history-scan"
-              className="mt-1.5 inline-block text-xs font-medium text-brand-600 hover:text-brand-700 underline underline-offset-2"
+              className="mt-1.5 inline-block text-xs font-medium text-brand-600 hover:text-brand-400 underline underline-offset-2"
             >
               Review Findings &rarr;
             </Link>
@@ -116,12 +121,12 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
             relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
             transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2
             focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-50
-            ${enabled ? 'bg-brand-600' : 'bg-stone-200'}
+            ${enabled ? 'bg-brand-600' : 'bg-stone-700'}
           `}
         >
           <span
             className={`
-              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0
+              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0
               transition duration-200 ease-in-out
               ${enabled ? 'translate-x-5' : 'translate-x-0'}
             `}

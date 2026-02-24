@@ -33,13 +33,18 @@ type Props = {
 export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: Props) {
   if (!slug) {
     return (
-      <div className="rounded-xl border border-stone-200 bg-white p-16 text-center">
+      <div className="rounded-xl border border-stone-700 bg-surface p-16 text-center">
         <div className="text-stone-300 mb-4">
           <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.5}
+              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+            />
           </svg>
         </div>
-        <p className="font-medium text-stone-700">No public profile URL set</p>
+        <p className="font-medium text-stone-300">No public profile URL set</p>
         <p className="text-sm text-stone-500 mt-2">
           Set up your profile URL to preview your public page.
         </p>
@@ -55,7 +60,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
 
   if (!publicProfileData) {
     return (
-      <div className="rounded-xl border border-stone-200 bg-white p-16 text-center">
+      <div className="rounded-xl border border-stone-700 bg-surface p-16 text-center">
         <p className="text-stone-500 text-sm">Could not load public profile preview.</p>
       </div>
     )
@@ -83,7 +88,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
     <div className={isMobile ? 'flex justify-center' : undefined}>
       <div
         className={[
-          'rounded-xl border-2 border-stone-200 overflow-y-auto',
+          'rounded-xl border-2 border-stone-700 overflow-y-auto',
           isMobile ? 'w-[390px]' : 'w-full',
         ].join(' ')}
         style={{ maxHeight: '680px' }}
@@ -91,7 +96,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
         {/* Mirrors app/(public)/chef/[slug]/page.tsx exactly */}
         <div className="min-h-screen" style={pageBackgroundStyle}>
           {/* Hero Section */}
-          <section className="py-16 md:py-24 bg-white/70 backdrop-blur-[1px]">
+          <section className="py-16 md:py-24 bg-stone-900/70 backdrop-blur-[1px]">
             <div className="max-w-4xl mx-auto px-6 text-center">
               {chef.logo_url && (
                 <div className="flex justify-center mb-6">
@@ -112,39 +117,36 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
                   className="w-28 h-28 rounded-full object-cover mx-auto mb-6 ring-4 ring-white shadow-lg"
                 />
               ) : (
-                <div className="w-28 h-28 rounded-full bg-stone-200 flex items-center justify-center mx-auto mb-6 ring-4 ring-white shadow-lg">
+                <div className="w-28 h-28 rounded-full bg-stone-700 flex items-center justify-center mx-auto mb-6 ring-4 ring-white shadow-lg">
                   <span className="text-3xl font-bold text-stone-500">
                     {chef.display_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
               )}
 
-              <h1 className="text-4xl md:text-5xl font-bold text-stone-900">
-                {chef.display_name}
-              </h1>
+              <h1 className="text-4xl md:text-5xl font-bold text-stone-100">{chef.display_name}</h1>
 
               {chef.tagline && (
-                <p className="text-lg md:text-xl text-stone-600 mt-3 max-w-2xl mx-auto">
+                <p className="text-lg md:text-xl text-stone-400 mt-3 max-w-2xl mx-auto">
                   {chef.tagline}
                 </p>
               )}
 
               {chef.bio && (
-                <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed">
-                  {chef.bio}
-                </p>
+                <p className="text-stone-500 mt-6 max-w-xl mx-auto leading-relaxed">{chef.bio}</p>
               )}
             </div>
           </section>
 
           {/* Partner Showcase */}
           {partners.length > 0 && (
-            <section className="py-16 px-6 bg-white/70">
+            <section className="py-16 px-6 bg-stone-900/70">
               <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl font-bold text-stone-900">Where I Cook</h2>
-                  <p className="text-stone-600 mt-3 max-w-xl mx-auto">
-                    Book one of these amazing venues and enjoy a private dining experience with a personal chef
+                  <h2 className="text-3xl font-bold text-stone-100">Where I Cook</h2>
+                  <p className="text-stone-400 mt-3 max-w-xl mx-auto">
+                    Book one of these amazing venues and enjoy a private dining experience with a
+                    personal chef
                   </p>
                 </div>
                 <PartnerShowcase partners={partners as any} chefName={chef.display_name} />
@@ -153,12 +155,12 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
           )}
 
           {/* CTA Section */}
-          <section className="py-16 px-6 bg-white/75">
+          <section className="py-16 px-6 bg-surface/75">
             <div className="max-w-2xl mx-auto text-center">
-              <h2 className="text-2xl font-bold text-stone-900">Ready to Book?</h2>
-              <p className="text-stone-600 mt-3">
-                Choose a venue above and hire {chef.display_name} for an unforgettable dining experience.
-                Or tell us about your event and we&apos;ll be in touch.
+              <h2 className="text-2xl font-bold text-stone-100">Ready to Book?</h2>
+              <p className="text-stone-400 mt-3">
+                Choose a venue above and hire {chef.display_name} for an unforgettable dining
+                experience. Or tell us about your event and we&apos;ll be in touch.
               </p>
               {(!preferWebsite || !hasWebsiteLink) && slug && (
                 <a

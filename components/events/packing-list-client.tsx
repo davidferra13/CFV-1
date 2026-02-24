@@ -42,31 +42,35 @@ function ItemRow({
       onClick={() => onToggle(id)}
       className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
         checked
-          ? 'bg-green-50 border border-green-200'
-          : 'bg-white border border-stone-200 hover:bg-stone-50'
+          ? 'bg-green-950 border border-green-200'
+          : 'bg-surface border border-stone-700 hover:bg-stone-800'
       }`}
     >
       {/* Large checkbox — easy to tap on mobile */}
       <div
         className={`flex-shrink-0 w-7 h-7 rounded border-2 flex items-center justify-center mt-0.5 ${
-          checked
-            ? 'bg-green-500 border-green-500'
-            : 'border-stone-400 bg-white'
+          checked ? 'bg-green-9500 border-green-500' : 'border-stone-400 bg-surface'
         }`}
       >
         {checked && (
-          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+          <svg
+            className="w-4 h-4 text-white"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={3}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         )}
       </div>
       <div className="flex-1 min-w-0">
-        <span className={`text-sm font-medium ${checked ? 'line-through text-stone-400' : 'text-stone-900'}`}>
+        <span
+          className={`text-sm font-medium ${checked ? 'line-through text-stone-400' : 'text-stone-100'}`}
+        >
           {label}
         </span>
-        {sublabel && (
-          <span className="block text-xs text-stone-400 mt-0.5">{sublabel}</span>
-        )}
+        {sublabel && <span className="block text-xs text-stone-400 mt-0.5">{sublabel}</span>}
       </div>
     </button>
   )
@@ -91,30 +95,32 @@ function Section({
 }) {
   if (items.length === 0) return null
 
-  const checkedCount = items.filter(item => checkedState[item.id]).length
+  const checkedCount = items.filter((item) => checkedState[item.id]).length
 
   return (
     <Card className="p-4 space-y-2">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-stone-900 text-sm uppercase tracking-wide">{title}</h3>
+          <h3 className="font-semibold text-stone-100 text-sm uppercase tracking-wide">{title}</h3>
           {subtitle && <p className="text-xs text-stone-500 mt-0.5">{subtitle}</p>}
         </div>
-        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-          checkedCount === items.length
-            ? 'bg-green-100 text-green-700'
-            : 'bg-stone-100 text-stone-600'
-        }`}>
+        <span
+          className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+            checkedCount === items.length
+              ? 'bg-green-900 text-green-700'
+              : 'bg-stone-800 text-stone-400'
+          }`}
+        >
           {checkedCount} / {items.length}
         </span>
       </div>
       {warning && (
-        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
+        <p className="text-xs text-amber-700 bg-amber-950 border border-amber-200 rounded px-2 py-1">
           {warning}
         </p>
       )}
       <div className="space-y-1.5">
-        {items.map(item => (
+        {items.map((item) => (
           <ItemRow
             key={item.id}
             id={item.id}
@@ -135,9 +141,15 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
   const storageKey = `packing-${eventId}`
 
   const {
-    coldItems, frozenItems, roomTempItems, fragileItems,
-    standardKitItems, mustBringEquipment, eventEquipment,
-    courseVerification, totalFoodItems,
+    coldItems,
+    frozenItems,
+    roomTempItems,
+    fragileItems,
+    standardKitItems,
+    mustBringEquipment,
+    eventEquipment,
+    courseVerification,
+    totalFoodItems,
   } = packingData
 
   // Build all item lists with stable IDs
@@ -220,20 +232,23 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
     }
   }, [storageKey])
 
-  const toggle = useCallback((id: string) => {
-    setChecked(prev => {
-      const newValue = !prev[id]
-      const next = { ...prev, [id]: newValue }
-      try {
-        localStorage.setItem(storageKey, JSON.stringify(next))
-      } catch {
-        // ignore
-      }
-      // Sync to DB in background — fire-and-forget, localStorage is source of truth
-      togglePackingConfirmation(eventId, id, newValue).catch(() => {})
-      return next
-    })
-  }, [storageKey, eventId])
+  const toggle = useCallback(
+    (id: string) => {
+      setChecked((prev) => {
+        const newValue = !prev[id]
+        const next = { ...prev, [id]: newValue }
+        try {
+          localStorage.setItem(storageKey, JSON.stringify(next))
+        } catch {
+          // ignore
+        }
+        // Sync to DB in background — fire-and-forget, localStorage is source of truth
+        togglePackingConfirmation(eventId, id, newValue).catch(() => {})
+        return next
+      })
+    },
+    [storageKey, eventId]
+  )
 
   const handleMarkPacked = async () => {
     setIsSubmitting(true)
@@ -267,7 +282,7 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
   // ─── Progress ───────────────────────────────────────────────────────────────
 
   const totalItems = allItems.length
-  const checkedCount = allItems.filter(item => checked[item.id]).length
+  const checkedCount = allItems.filter((item) => checked[item.id]).length
   const allChecked = totalItems > 0 && checkedCount === totalItems
 
   // ─── Render ─────────────────────────────────────────────────────────────────
@@ -275,18 +290,18 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
   return (
     <div className="space-y-4">
       {/* Overall progress bar */}
-      <div className="bg-white border border-stone-200 rounded-lg px-4 py-3">
+      <div className="bg-surface border border-stone-700 rounded-lg px-4 py-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-stone-700">
+          <span className="text-sm font-medium text-stone-300">
             {checkedCount} of {totalItems} items packed
           </span>
           {allChecked && !submitted && (
             <span className="text-xs text-emerald-600 font-medium">All items checked!</span>
           )}
         </div>
-        <div className="w-full bg-stone-100 rounded-full h-2">
+        <div className="w-full bg-stone-800 rounded-full h-2">
           <div
-            className="bg-green-500 h-2 rounded-full transition-all duration-300"
+            className="bg-green-9500 h-2 rounded-full transition-all duration-300"
             style={{ width: totalItems > 0 ? `${(checkedCount / totalItems) * 100}%` : '0%' }}
           />
         </div>
@@ -338,19 +353,23 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
       {/* Component verification */}
       {courseVerification.length > 0 && (
         <Card className="p-4">
-          <h3 className="font-semibold text-stone-900 text-sm uppercase tracking-wide mb-2">
+          <h3 className="font-semibold text-stone-100 text-sm uppercase tracking-wide mb-2">
             Component Verification
           </h3>
           <div className="space-y-1">
             {courseVerification.map(({ courseNumber, courseName, count }) => (
               <div key={courseNumber} className="flex items-center justify-between text-sm">
-                <span className="text-stone-700">Course {courseNumber} — {courseName}</span>
-                <span className="text-stone-500 font-medium">{count} item{count !== 1 ? 's' : ''}</span>
+                <span className="text-stone-300">
+                  Course {courseNumber} — {courseName}
+                </span>
+                <span className="text-stone-500 font-medium">
+                  {count} item{count !== 1 ? 's' : ''}
+                </span>
               </div>
             ))}
-            <div className="flex items-center justify-between text-sm border-t border-stone-100 pt-1 mt-1">
-              <span className="text-stone-900 font-semibold">Total food items</span>
-              <span className="text-stone-900 font-bold">{totalFoodItems}</span>
+            <div className="flex items-center justify-between text-sm border-t border-stone-800 pt-1 mt-1">
+              <span className="text-stone-100 font-semibold">Total food items</span>
+              <span className="text-stone-100 font-bold">{totalFoodItems}</span>
             </div>
           </div>
         </Card>
@@ -358,9 +377,7 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
 
       {/* Mark Car Packed / Reset */}
       <div className="space-y-2 pt-2">
-        {error && (
-          <p className="text-sm text-red-600 text-center">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-600 text-center">{error}</p>}
 
         {!submitted ? (
           <Button
@@ -369,7 +386,11 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
             className="w-full"
             variant="primary"
           >
-            {isSubmitting ? 'Saving...' : allChecked ? 'Mark Car Packed' : `${totalItems - checkedCount} items remaining`}
+            {isSubmitting
+              ? 'Saving...'
+              : allChecked
+                ? 'Mark Car Packed'
+                : `${totalItems - checkedCount} items remaining`}
           </Button>
         ) : (
           <div className="text-center py-2">
@@ -380,7 +401,7 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
         <button
           type="button"
           onClick={handleReset}
-          className="w-full text-xs text-stone-400 hover:text-stone-600 py-2"
+          className="w-full text-xs text-stone-400 hover:text-stone-400 py-2"
         >
           Reset checklist
         </button>

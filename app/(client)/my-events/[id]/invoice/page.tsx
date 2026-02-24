@@ -9,11 +9,7 @@ import { getInvoiceDataForClient } from '@/lib/events/invoice-actions'
 import { InvoiceView } from '@/components/events/invoice-view'
 import { Button } from '@/components/ui/button'
 
-export default async function ClientInvoicePage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function ClientInvoicePage({ params }: { params: { id: string } }) {
   await requireClient()
 
   const invoice = await getInvoiceDataForClient(params.id)
@@ -24,13 +20,15 @@ export default async function ClientInvoicePage({
       {/* Nav */}
       <div className="flex justify-between items-center">
         <Link href={`/my-events/${params.id}`}>
-          <Button variant="ghost" size="sm">&larr; Back to Event</Button>
+          <Button variant="ghost" size="sm">
+            &larr; Back to Event
+          </Button>
         </Link>
         <a
           href={`/api/documents/invoice/${params.id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+          className="inline-flex items-center rounded-lg border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
         >
           Download PDF
         </a>

@@ -52,7 +52,7 @@ export function RSVPTrackerPanel({ guests, totalExpected, shareUrl, occasion }: 
 
   return (
     <Card className="p-4">
-      <h3 className="font-semibold text-stone-900 mb-3">RSVP Tracker</h3>
+      <h3 className="font-semibold text-stone-100 mb-3">RSVP Tracker</h3>
 
       {/* Status bars */}
       <div className="grid grid-cols-4 gap-2 mb-4">
@@ -75,7 +75,7 @@ export function RSVPTrackerPanel({ guests, totalExpected, shareUrl, occasion }: 
       </div>
 
       {/* Progress */}
-      <div className="w-full bg-stone-200 rounded-full h-2 mb-3">
+      <div className="w-full bg-stone-700 rounded-full h-2 mb-3">
         <div
           className="h-2 rounded-full bg-emerald-500 transition-all"
           style={{ width: `${totalExpected > 0 ? (responded / totalExpected) * 100 : 0}%` }}

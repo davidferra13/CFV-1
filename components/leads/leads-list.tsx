@@ -28,7 +28,7 @@ export function LeadsList({ submissions }: { submissions: Submission[] }) {
     return (
       <Card className="p-12 text-center">
         <Globe className="w-12 h-12 text-stone-300 mx-auto mb-4" />
-        <h2 className="text-lg font-semibold text-stone-700">No unclaimed leads</h2>
+        <h2 className="text-lg font-semibold text-stone-300">No unclaimed leads</h2>
         <p className="text-stone-500 mt-1">
           When someone submits the contact form on your website, it will appear here.
         </p>
@@ -93,9 +93,7 @@ function LeadCard({
 
   const timeAgo = formatDistanceToNow(new Date(submission.created_at), { addSuffix: true })
   const truncatedMessage =
-    submission.message.length > 200
-      ? submission.message.slice(0, 200) + '...'
-      : submission.message
+    submission.message.length > 200 ? submission.message.slice(0, 200) + '...' : submission.message
 
   return (
     <Card className="p-5">
@@ -104,7 +102,7 @@ function LeadCard({
           {/* Header */}
           <div className="flex items-center gap-2 mb-1">
             <Globe className="w-4 h-4 text-brand-500 flex-shrink-0" />
-            <h3 className="font-semibold text-stone-900 truncate">{submission.name}</h3>
+            <h3 className="font-semibold text-stone-100 truncate">{submission.name}</h3>
             <span className="text-xs text-stone-400 flex-shrink-0">{timeAgo}</span>
           </div>
 
@@ -116,30 +114,19 @@ function LeadCard({
 
           {/* Subject */}
           {submission.subject && (
-            <p className="text-sm font-medium text-stone-700 mb-1">
-              {submission.subject}
-            </p>
+            <p className="text-sm font-medium text-stone-300 mb-1">{submission.subject}</p>
           )}
 
           {/* Message */}
-          <p className="text-sm text-stone-600 leading-relaxed">
-            {truncatedMessage}
-          </p>
+          <p className="text-sm text-stone-400 leading-relaxed">{truncatedMessage}</p>
 
           {/* Error */}
-          {error && (
-            <p className="text-sm text-red-600 mt-2">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
         </div>
 
         {/* Actions */}
         <div className="flex flex-col gap-2 flex-shrink-0">
-          <Button
-            size="sm"
-            onClick={handleClaim}
-            loading={claiming}
-            disabled={dismissing}
-          >
+          <Button size="sm" onClick={handleClaim} loading={claiming} disabled={dismissing}>
             Claim
             <ArrowRight className="w-3.5 h-3.5" />
           </Button>

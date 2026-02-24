@@ -51,7 +51,7 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
               placeholder="Label (e.g., Website embed)"
-              className="flex-1 border border-stone-300 rounded px-3 py-2 text-sm"
+              className="flex-1 border border-stone-600 rounded px-3 py-2 text-sm"
             />
             <Button onClick={handleGenerate} disabled={isPending}>
               {isPending ? 'Generating...' : 'Generate'}
@@ -62,7 +62,7 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
 
       {activeTokens.length > 0 && (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-stone-700">Active Links</h3>
+          <h3 className="text-sm font-medium text-stone-300">Active Links</h3>
           {activeTokens.map((token) => {
             const url = `${typeof window !== 'undefined' ? window.location.origin : ''}/availability/${token.token}`
             return (
@@ -71,7 +71,7 @@ export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-stone-900 truncate">
+                        <p className="text-sm font-medium text-stone-100 truncate">
                           {token.label || 'Untitled'}
                         </p>
                         <Badge variant="success">Active</Badge>

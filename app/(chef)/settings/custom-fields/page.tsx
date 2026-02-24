@@ -12,10 +12,10 @@ export default async function CustomFieldsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Custom Fields</h1>
-        <p className="text-stone-600 mt-1">
-          Add extra fields to events, clients, and recipes to capture information
-          specific to your business.
+        <h1 className="text-3xl font-bold text-stone-100">Custom Fields</h1>
+        <p className="text-stone-400 mt-1">
+          Add extra fields to events, clients, and recipes to capture information specific to your
+          business.
         </p>
       </div>
       <CustomFieldBuilder initialGrouped={grouped} />

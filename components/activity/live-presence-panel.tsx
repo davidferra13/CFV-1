@@ -8,8 +8,8 @@ import { createClient } from '@/lib/supabase/client'
 import type { ActiveClient, ActivityEventType } from '@/lib/activity/types'
 
 // Presence buckets
-const ONLINE_WINDOW_MS = 5 * 60 * 1000    // 5 minutes = "Online Now"
-const RECENT_WINDOW_MS = 30 * 60 * 1000   // 30 minutes = "Recently Active"
+const ONLINE_WINDOW_MS = 5 * 60 * 1000 // 5 minutes = "Online Now"
+const RECENT_WINDOW_MS = 30 * 60 * 1000 // 30 minutes = "Recently Active"
 
 // Human-readable labels for each event type (including all new ones)
 const EVENT_LABELS: Record<string, string> = {
@@ -62,7 +62,7 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
 
   // Cache of client names we've seen, so Realtime rows can be enriched without a DB call
   const clientNamesRef = useRef<Map<string, string>>(
-    new Map(initialClients.map(c => [c.client_id, c.client_name]))
+    new Map(initialClients.map((c) => [c.client_id, c.client_name]))
   )
 
   useEffect(() => {
@@ -95,11 +95,11 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
           const clientId = row.client_id
 
           function applyPresenceUpdate(resolvedName: string) {
-            setClients(prev => {
+            setClients((prev) => {
               const now = Date.now()
               // Remove clients older than RECENT_WINDOW_MS
               const still_visible = prev.filter(
-                c => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
+                (c) => now - new Date(c.last_activity).getTime() < RECENT_WINDOW_MS
               )
               const updatedEntry: ActiveClient = {
                 client_id: clientId,
@@ -110,12 +110,13 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
                 last_entity_id: row.entity_id,
                 metadata: row.metadata ?? undefined,
               }
-              const existingIndex = still_visible.findIndex(c => c.client_id === clientId)
+              const existingIndex = still_visible.findIndex((c) => c.client_id === clientId)
               if (existingIndex >= 0) {
                 const next = [...still_visible]
                 next[existingIndex] = updatedEntry
                 return next.sort(
-                  (a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
+                  (a, b) =>
+                    new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime()
                 )
               }
               return [updatedEntry, ...still_visible]
@@ -149,14 +150,14 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
     }
   }, [tenantId])
 
-  const onlineNow = clients.filter(c => isOnlineNow(c.last_activity))
-  const recentlyActive = clients.filter(c => !isOnlineNow(c.last_activity))
+  const onlineNow = clients.filter((c) => isOnlineNow(c.last_activity))
+  const recentlyActive = clients.filter((c) => !isOnlineNow(c.last_activity))
 
   if (clients.length === 0) {
     return (
-      <div className="border border-stone-200 rounded-lg p-4">
+      <div className="border border-stone-700 rounded-lg p-4">
         <div className="flex items-center gap-2 mb-2">
-          <h3 className="text-sm font-semibold text-stone-700">Client Activity</h3>
+          <h3 className="text-sm font-semibold text-stone-300">Client Activity</h3>
           <span className="w-2 h-2 rounded-full bg-stone-300" />
         </div>
         <p className="text-xs text-stone-400">No clients active in the last 30 minutes</p>
@@ -165,17 +166,20 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
   }
 
   return (
-    <div className="border border-stone-200 rounded-lg p-4">
+    <div className="border border-stone-700 rounded-lg p-4">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-stone-700">Client Activity</h3>
+        <h3 className="text-sm font-semibold text-stone-300">Client Activity</h3>
         <div className="flex items-center gap-3">
           {onlineNow.length > 0 && (
             <span className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-9500 animate-pulse" />
               {onlineNow.length} online now
             </span>
           )}
-          <Link href="/clients/presence" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
+          <Link
+            href="/clients/presence"
+            className="text-xs text-brand-600 hover:text-brand-400 font-medium"
+          >
             View all →
           </Link>
         </div>
@@ -183,17 +187,17 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
 
       <div className="space-y-1">
         {/* Online Now */}
-        {onlineNow.map(client => (
+        {onlineNow.map((client) => (
           <ClientRow key={client.client_id} client={client} isOnline={true} />
         ))}
 
         {/* Recently Active */}
         {recentlyActive.length > 0 && onlineNow.length > 0 && (
-          <div className="pt-1 mt-1 border-t border-stone-100">
+          <div className="pt-1 mt-1 border-t border-stone-800">
             <p className="text-[10px] text-stone-400 px-2 py-1">Recently Active</p>
           </div>
         )}
-        {recentlyActive.map(client => (
+        {recentlyActive.map((client) => (
           <ClientRow key={client.client_id} client={client} isOnline={false} />
         ))}
       </div>
@@ -202,43 +206,46 @@ export function LivePresencePanel({ tenantId, initialClients }: LivePresencePane
 }
 
 function ClientRow({ client, isOnline }: { client: ActiveClient; isOnline: boolean }) {
-  const isHighIntent = client.event_type === 'payment_page_visited' || client.event_type === 'proposal_viewed'
+  const isHighIntent =
+    client.event_type === 'payment_page_visited' || client.event_type === 'proposal_viewed'
 
   return (
     <Link
       href={`/clients/${client.client_id}`}
       className={`flex items-center justify-between text-xs rounded px-2 py-1.5 -mx-2 transition-colors group ${
-        isOnline ? 'hover:bg-stone-50' : 'opacity-60 hover:opacity-80 hover:bg-stone-50'
+        isOnline ? 'hover:bg-stone-800' : 'opacity-60 hover:opacity-80 hover:bg-stone-800'
       }`}
     >
       <div className="flex items-center gap-2 min-w-0">
         {/* Avatar with online indicator */}
         <div className="relative shrink-0">
-          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-            isHighIntent
-              ? 'bg-amber-100 text-amber-700'
-              : 'bg-brand-100 text-brand-700'
-          }`}>
+          <span
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
+              isHighIntent ? 'bg-amber-900 text-amber-700' : 'bg-brand-900 text-brand-400'
+            }`}
+          >
             {client.client_name.charAt(0).toUpperCase()}
           </span>
           {isOnline && (
-            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-white" />
+            <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-9500 border border-white" />
           )}
         </div>
 
         <div className="min-w-0">
-          <span className={`font-medium block truncate ${isOnline ? 'text-stone-800' : 'text-stone-600'}`}>
+          <span
+            className={`font-medium block truncate ${isOnline ? 'text-stone-200' : 'text-stone-400'}`}
+          >
             {client.client_name}
           </span>
-          <span className={`block truncate ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-400'}`}>
+          <span
+            className={`block truncate ${isHighIntent ? 'text-amber-600 font-medium' : 'text-stone-400'}`}
+          >
             {getLabel(client.event_type)}
           </span>
         </div>
       </div>
 
-      <span className="text-stone-400 shrink-0 ml-2">
-        {formatTimeAgo(client.last_activity)}
-      </span>
+      <span className="text-stone-400 shrink-0 ml-2">{formatTimeAgo(client.last_activity)}</span>
     </Link>
   )
 }

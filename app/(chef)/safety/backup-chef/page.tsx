@@ -21,7 +21,7 @@ export default async function BackupChefPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Backup Chef Protocol</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Backup Chef Protocol</h1>
         <p className="mt-1 text-sm text-stone-500">
           Trusted chefs and culinary professionals who can step in if you are suddenly unable to
           execute an event. Keep this list current and have the conversation before an emergency
@@ -29,7 +29,7 @@ export default async function BackupChefPage() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
         <p className="text-sm text-amber-900">
           <span className="font-medium">Best practice:</span> Confirm availability with each backup
           chef at least once per quarter. Provide them access to your prep notes and client

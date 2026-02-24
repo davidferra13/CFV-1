@@ -11,11 +11,7 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { draftResponseForInquiry } from '@/lib/ai/correspondence'
-import {
-  createDraftMessage,
-  approveAndSendMessage,
-  updateDraftMessage,
-} from '@/lib/gmail/actions'
+import { createDraftMessage, approveAndSendMessage, updateDraftMessage } from '@/lib/gmail/actions'
 
 interface InquiryResponseComposerProps {
   inquiryId: string
@@ -185,8 +181,10 @@ export function InquiryResponseComposer({
           Generate Draft (preview only)
         </Button>
         {draftState && (
-          <div className="mt-4 bg-stone-50 rounded-lg p-4">
-            <p className="text-xs text-stone-500 mb-2">Preview only — cannot send without client email</p>
+          <div className="mt-4 bg-stone-800 rounded-lg p-4">
+            <p className="text-xs text-stone-500 mb-2">
+              Preview only — cannot send without client email
+            </p>
             <p className="text-sm whitespace-pre-wrap">{draftState.draft}</p>
           </div>
         )}
@@ -199,36 +197,41 @@ export function InquiryResponseComposer({
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Response Draft</h2>
         {!draftState && (
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleGenerateDraft}
-            loading={generating}
-          >
+          <Button variant="primary" size="sm" onClick={handleGenerateDraft} loading={generating}>
             {generating ? 'Generating...' : 'Generate Draft'}
           </Button>
         )}
       </div>
 
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
-      {success && <Alert variant="success" className="mb-4">{success}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" className="mb-4">
+          {success}
+        </Alert>
+      )}
 
       {draftState && (
         <div className="space-y-4">
           {/* Lifecycle Context */}
           <div className="flex flex-wrap gap-2">
-            <Badge variant="default">
-              {draftState.lifecycleState.replace(/_/g, ' ')}
-            </Badge>
-            <Badge variant="default">
-              {draftState.emailStage} stage
-            </Badge>
-            <Badge variant={draftState.confidence === 'high' ? 'success' : draftState.confidence === 'medium' ? 'warning' : 'error'}>
+            <Badge variant="default">{draftState.lifecycleState.replace(/_/g, ' ')}</Badge>
+            <Badge variant="default">{draftState.emailStage} stage</Badge>
+            <Badge
+              variant={
+                draftState.confidence === 'high'
+                  ? 'success'
+                  : draftState.confidence === 'medium'
+                    ? 'warning'
+                    : 'error'
+              }
+            >
               {draftState.confidence} confidence
             </Badge>
-            {draftState.pricingAllowed && (
-              <Badge variant="success">pricing allowed</Badge>
-            )}
+            {draftState.pricingAllowed && <Badge variant="success">pricing allowed</Badge>}
           </div>
 
           {/* Flags */}
@@ -247,11 +250,13 @@ export function InquiryResponseComposer({
 
           {/* Missing Data */}
           {draftState.missingBlocking.length > 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+            <div className="bg-amber-950 border border-amber-200 rounded-lg p-3">
               <p className="text-xs font-medium text-amber-800">Missing blocking data:</p>
               <div className="flex gap-1.5 mt-1 flex-wrap">
                 {draftState.missingBlocking.map((field) => (
-                  <Badge key={field} variant="warning">{field}</Badge>
+                  <Badge key={field} variant="warning">
+                    {field}
+                  </Badge>
                 ))}
               </div>
             </div>
@@ -266,10 +271,10 @@ export function InquiryResponseComposer({
                 value={editedSubject}
                 onChange={(e) => setEditedSubject(e.target.value)}
                 aria-label="Email subject"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             ) : (
-              <p className="text-sm text-stone-900 bg-stone-50 rounded-lg px-3 py-2">
+              <p className="text-sm text-stone-100 bg-stone-800 rounded-lg px-3 py-2">
                 {editedSubject || '(no subject)'}
               </p>
             )}
@@ -286,10 +291,10 @@ export function InquiryResponseComposer({
                 onChange={(e) => setEditedBody(e.target.value)}
                 rows={12}
                 aria-label="Email body"
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-y"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm font-mono focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none resize-y"
               />
             ) : (
-              <div className="bg-stone-50 rounded-lg p-4 text-sm whitespace-pre-wrap">
+              <div className="bg-stone-800 rounded-lg p-4 text-sm whitespace-pre-wrap">
                 {editedBody}
               </div>
             )}
@@ -298,19 +303,11 @@ export function InquiryResponseComposer({
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
             {isEditing ? (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsEditing(false)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setIsEditing(false)}>
                 Done Editing
               </Button>
             ) : (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsEditing(true)}
-              >
+              <Button variant="secondary" size="sm" onClick={() => setIsEditing(true)}>
                 Edit
               </Button>
             )}
@@ -331,11 +328,7 @@ export function InquiryResponseComposer({
             >
               Regenerate
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleDiscard}
-            >
+            <Button variant="ghost" size="sm" onClick={handleDiscard}>
               Discard
             </Button>
           </div>
@@ -345,7 +338,8 @@ export function InquiryResponseComposer({
       {/* Empty State */}
       {!draftState && !generating && !success && (
         <p className="text-sm text-stone-500">
-          Generate a contextual response draft based on lifecycle state, client history, and brand voice.
+          Generate a contextual response draft based on lifecycle state, client history, and brand
+          voice.
         </p>
       )}
     </Card>

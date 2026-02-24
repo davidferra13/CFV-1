@@ -82,8 +82,8 @@ export function GratuitySettings({ initialSettings }: Props) {
             key={m.value}
             className={`flex items-start gap-3 cursor-pointer rounded-lg border p-3 transition-colors ${
               mode === m.value
-                ? 'border-brand-400 bg-brand-50/60'
-                : 'border-stone-200 hover:bg-stone-50'
+                ? 'border-brand-400 bg-brand-950/60'
+                : 'border-stone-700 hover:bg-stone-800'
             }`}
           >
             <input
@@ -95,7 +95,7 @@ export function GratuitySettings({ initialSettings }: Props) {
               className="mt-0.5 accent-brand-600"
             />
             <div>
-              <p className="text-sm font-medium text-stone-900">{m.label}</p>
+              <p className="text-sm font-medium text-stone-100">{m.label}</p>
               <p className="text-xs text-stone-500 mt-0.5">{m.description}</p>
             </div>
           </label>
@@ -103,10 +103,10 @@ export function GratuitySettings({ initialSettings }: Props) {
       </div>
 
       {mode === 'auto_service_fee' && (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 space-y-3">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-3 space-y-3">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Service fee percentage
               </label>
               <div className="flex items-center gap-2">
@@ -118,13 +118,13 @@ export function GratuitySettings({ initialSettings }: Props) {
                   min="0"
                   max="100"
                   step="0.5"
-                  className="w-24 border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                  className="w-24 border border-stone-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
                 />
                 <span className="text-sm text-stone-500">%</span>
               </div>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-stone-600 mb-1">
+              <label className="block text-xs font-medium text-stone-400 mb-1">
                 Line item label on quote
               </label>
               <input
@@ -132,14 +132,14 @@ export function GratuitySettings({ initialSettings }: Props) {
                 value={label}
                 onChange={(e) => setLabel(e.target.value)}
                 placeholder={pct ? `${pct}% service charge` : 'Service charge'}
-                className="w-full border border-stone-300 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
               />
             </div>
           </div>
           {pct && (
             <p className="text-xs text-stone-500">
               Quote will show:{' '}
-              <span className="font-medium text-stone-700">&ldquo;{previewLabel}&rdquo;</span>
+              <span className="font-medium text-stone-300">&ldquo;{previewLabel}&rdquo;</span>
             </p>
           )}
         </div>

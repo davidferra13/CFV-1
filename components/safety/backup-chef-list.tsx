@@ -42,11 +42,11 @@ export function BackupChefList({ contacts }: { contacts: Contact[] }) {
           <CardContent className="py-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="font-medium text-stone-900">{contact.name}</p>
+                <p className="font-medium text-stone-100">{contact.name}</p>
                 {contact.relationship && (
                   <p className="text-xs text-stone-500">{contact.relationship}</p>
                 )}
-                <div className="flex flex-wrap gap-2 mt-2 text-sm text-stone-600">
+                <div className="flex flex-wrap gap-2 mt-2 text-sm text-stone-400">
                   {contact.phone && <span>{contact.phone}</span>}
                   {contact.email && <span>{contact.email}</span>}
                 </div>

@@ -48,10 +48,7 @@ const DOC_LABELS: Record<string, string> = {
 
 // ─── Spec resolver ────────────────────────────────────────────────────────────
 
-async function resolveSpec(
-  eventId: string,
-  type: string,
-): Promise<InteractiveDocSpec | null> {
+async function resolveSpec(eventId: string, type: string): Promise<InteractiveDocSpec | null> {
   switch (type) {
     case 'summary': {
       const data = await fetchEventSummaryData(eventId)
@@ -121,14 +118,12 @@ export default async function InteractivePage({
         <div>
           <Link
             href={`/events/${params.id}`}
-            className="text-sm text-stone-500 hover:text-stone-700 mb-1 block"
+            className="text-sm text-stone-500 hover:text-stone-300 mb-1 block"
           >
             ← Back to event
           </Link>
-          <h1 className="text-2xl font-bold text-stone-900">{spec.title}</h1>
-          {spec.subtitle && (
-            <p className="text-stone-500 text-sm mt-0.5">{spec.subtitle}</p>
-          )}
+          <h1 className="text-2xl font-bold text-stone-100">{spec.title}</h1>
+          {spec.subtitle && <p className="text-stone-500 text-sm mt-0.5">{spec.subtitle}</p>}
         </div>
 
         <a href={pdfUrl} target="_blank" rel="noopener noreferrer" className="shrink-0 mt-6">
@@ -141,21 +136,17 @@ export default async function InteractivePage({
       {/* Header pills — event, client, date, guests, etc. */}
       {spec.headerPills.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {spec.headerPills.map(pill => (
-            <div key={pill.label} className="bg-stone-100 rounded-lg px-3 py-1.5">
+          {spec.headerPills.map((pill) => (
+            <div key={pill.label} className="bg-stone-800 rounded-lg px-3 py-1.5">
               <p className="text-xs text-stone-500">{pill.label}</p>
-              <p className="text-sm font-medium text-stone-900">{pill.value}</p>
+              <p className="text-sm font-medium text-stone-100">{pill.value}</p>
             </div>
           ))}
         </div>
       )}
 
       {/* Interactive checklist / reference view */}
-      <InteractiveDocClient
-        eventId={params.id}
-        docType={type}
-        spec={spec}
-      />
+      <InteractiveDocClient eventId={params.id} docType={type} spec={spec} />
     </div>
   )
 }

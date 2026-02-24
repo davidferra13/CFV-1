@@ -31,10 +31,10 @@ export default async function SalesTaxRemittancesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/sales-tax" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance/sales-tax" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Sales Tax
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Remittance History</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Remittance History</h1>
         <p className="text-stone-500 mt-1">
           Complete record of all sales tax remittances made to state authorities.
         </p>
@@ -44,7 +44,7 @@ export default async function SalesTaxRemittancesPage() {
         <Card>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Total Collected</p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {formatCurrency(summary.collectedCents)}
             </p>
           </CardContent>
@@ -58,7 +58,7 @@ export default async function SalesTaxRemittancesPage() {
             <p className="text-xs text-stone-400 mt-1">{remittances.length} filings</p>
           </CardContent>
         </Card>
-        <Card className={summary.outstandingCents > 0 ? 'border-amber-200 bg-amber-50' : ''}>
+        <Card className={summary.outstandingCents > 0 ? 'border-amber-200 bg-amber-950' : ''}>
           <CardContent className="pt-4">
             <p className="text-xs text-stone-500 uppercase font-medium">Outstanding</p>
             <p
@@ -80,7 +80,7 @@ export default async function SalesTaxRemittancesPage() {
           ) : (
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200">
+                <tr className="border-b border-stone-700">
                   <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">
                     Period
                   </th>
@@ -98,15 +98,15 @@ export default async function SalesTaxRemittancesPage() {
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100">
+              <tbody className="divide-y divide-stone-800">
                 {remittances.map((r) => (
-                  <tr key={r.id} className="hover:bg-stone-50">
-                    <td className="px-6 py-3 font-medium text-stone-900">{r.period}</td>
-                    <td className="px-6 py-3 text-stone-600">
+                  <tr key={r.id} className="hover:bg-stone-800">
+                    <td className="px-6 py-3 font-medium text-stone-100">{r.period}</td>
+                    <td className="px-6 py-3 text-stone-400">
                       {r.periodStart} → {r.periodEnd}
                     </td>
-                    <td className="px-6 py-3 text-stone-600">{r.remittedAt}</td>
-                    <td className="px-6 py-3 text-right font-semibold text-stone-900">
+                    <td className="px-6 py-3 text-stone-400">{r.remittedAt}</td>
+                    <td className="px-6 py-3 text-right font-semibold text-stone-100">
                       {formatCurrency(r.amountRemittedCents)}
                     </td>
                     <td className="px-6 py-3 font-mono text-xs text-stone-500">
@@ -116,11 +116,11 @@ export default async function SalesTaxRemittancesPage() {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-stone-200 bg-stone-50">
-                  <td colSpan={3} className="px-6 py-3 font-bold text-stone-700">
+                <tr className="border-t-2 border-stone-700 bg-stone-800">
+                  <td colSpan={3} className="px-6 py-3 font-bold text-stone-300">
                     Total
                   </td>
-                  <td className="px-6 py-3 text-right font-bold text-stone-900">
+                  <td className="px-6 py-3 text-right font-bold text-stone-100">
                     {formatCurrency(totalRemitted)}
                   </td>
                   <td />

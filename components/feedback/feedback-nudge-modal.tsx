@@ -34,7 +34,11 @@ export function FeedbackNudgeModal() {
   }, [])
 
   function dismiss() {
-    try { localStorage.setItem(STORAGE_KEY, '1') } catch { /* ok */ }
+    try {
+      localStorage.setItem(STORAGE_KEY, '1')
+    } catch {
+      /* ok */
+    }
     setVisible(false)
   }
 
@@ -50,7 +54,11 @@ export function FeedbackNudgeModal() {
       } catch {
         // Fail silently — feedback loss is acceptable
       }
-      try { localStorage.setItem(STORAGE_KEY, '1') } catch { /* ok */ }
+      try {
+        localStorage.setItem(STORAGE_KEY, '1')
+      } catch {
+        /* ok */
+      }
       setSubmitted(true)
     })
   }
@@ -63,7 +71,7 @@ export function FeedbackNudgeModal() {
       onClick={dismiss}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-5 animate-in zoom-in-95 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-5 animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -71,11 +79,13 @@ export function FeedbackNudgeModal() {
       >
         {submitted ? (
           <>
-            <div className="text-5xl" aria-hidden="true">🙏</div>
-            <h2 id="feedback-nudge-title" className="text-xl font-bold text-stone-900">
+            <div className="text-5xl" aria-hidden="true">
+              🙏
+            </div>
+            <h2 id="feedback-nudge-title" className="text-xl font-bold text-stone-100">
               Thank you!
             </h2>
-            <p className="text-stone-600 text-sm leading-relaxed">
+            <p className="text-stone-400 text-sm leading-relaxed">
               Your feedback goes directly to the team and shapes what we build next.
             </p>
             <button
@@ -88,8 +98,10 @@ export function FeedbackNudgeModal() {
           </>
         ) : (
           <>
-            <div className="text-5xl" aria-hidden="true">👋</div>
-            <h2 id="feedback-nudge-title" className="text-xl font-bold text-stone-900">
+            <div className="text-5xl" aria-hidden="true">
+              👋
+            </div>
+            <h2 id="feedback-nudge-title" className="text-xl font-bold text-stone-100">
               How&apos;s ChefFlow treating you?
             </h2>
             <p className="text-stone-500 text-sm leading-relaxed">
@@ -105,9 +117,10 @@ export function FeedbackNudgeModal() {
                   onClick={() => setSelected(s.value)}
                   title={s.label}
                   className={`flex flex-col items-center gap-1 p-2.5 rounded-xl border-2 transition-colors text-xs font-medium w-16
-                    ${selected === s.value
-                      ? 'border-stone-900 bg-stone-50 text-stone-900'
-                      : 'border-stone-200 text-stone-500 hover:border-stone-400'
+                    ${
+                      selected === s.value
+                        ? 'border-stone-900 bg-stone-800 text-stone-100'
+                        : 'border-stone-700 text-stone-500 hover:border-stone-400'
                     }`}
                 >
                   <span className="text-2xl">{s.emoji}</span>
@@ -124,7 +137,7 @@ export function FeedbackNudgeModal() {
                 placeholder="Anything specific? (optional)"
                 maxLength={2000}
                 rows={3}
-                className="w-full text-sm rounded-lg border border-stone-200 px-3 py-2 resize-none text-stone-900 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/20"
+                className="w-full text-sm rounded-lg border border-stone-700 px-3 py-2 resize-none text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-900/20"
               />
             )}
 
@@ -140,7 +153,7 @@ export function FeedbackNudgeModal() {
             <button
               type="button"
               onClick={dismiss}
-              className="text-stone-400 text-xs hover:text-stone-600 transition-colors"
+              className="text-stone-400 text-xs hover:text-stone-400 transition-colors"
             >
               Skip for now
             </button>

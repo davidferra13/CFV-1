@@ -80,7 +80,15 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
         quantity: parseFloat(quantity),
         unit,
         estimatedCostCents: costCents ?? 0,
-        reason: reason as 'overcooked' | 'leftover' | 'spoilage' | 'overportioned' | 'trim' | 'mistake' | 'expired' | 'other',
+        reason: reason as
+          | 'overcooked'
+          | 'leftover'
+          | 'spoilage'
+          | 'overportioned'
+          | 'trim'
+          | 'mistake'
+          | 'expired'
+          | 'other',
         notes: notes.trim() || undefined,
       })
       setSuccess(true)
@@ -93,7 +101,7 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Trash2 className="h-5 w-5 text-stone-600" />
+          <Trash2 className="h-5 w-5 text-stone-400" />
           Log Waste
         </CardTitle>
       </CardHeader>
@@ -146,11 +154,9 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
           />
 
           <div className="w-full">
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
-              Notes
-            </label>
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">Notes</label>
             <textarea
-              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 min-h-[72px] resize-y"
+              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 min-h-[72px] resize-y"
               placeholder="Additional details..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -158,13 +164,9 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
             />
           </div>
 
-          {error && (
-            <p className="text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
-          {success && (
-            <p className="text-sm text-emerald-600">Waste entry logged successfully.</p>
-          )}
+          {success && <p className="text-sm text-emerald-600">Waste entry logged successfully.</p>}
 
           <Button
             type="submit"

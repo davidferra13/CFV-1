@@ -10,11 +10,7 @@ import { Button } from '@/components/ui/button'
 
 export const metadata: Metadata = { title: 'Day View — ChefFlow' }
 
-export default async function DayViewPage({
-  searchParams,
-}: {
-  searchParams: { date?: string }
-}) {
+export default async function DayViewPage({ searchParams }: { searchParams: { date?: string } }) {
   const user = await requireChef()
 
   const today = new Date().toISOString().split('T')[0]
@@ -26,26 +22,28 @@ export default async function DayViewPage({
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Day View</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Day View</h1>
         </div>
         <div className="flex gap-2">
           <Link href="/calendar">
-            <Button variant="secondary" size="sm">Month</Button>
+            <Button variant="secondary" size="sm">
+              Month
+            </Button>
           </Link>
           <Link href="/calendar/week">
-            <Button variant="secondary" size="sm">Week</Button>
+            <Button variant="secondary" size="sm">
+              Week
+            </Button>
           </Link>
           <Link href="/calendar/year">
-            <Button variant="secondary" size="sm">Year</Button>
+            <Button variant="secondary" size="sm">
+              Year
+            </Button>
           </Link>
         </div>
       </div>
 
-      <DayViewClient
-        date={date}
-        items={items}
-        chefId={user.tenantId!}
-      />
+      <DayViewClient date={date} items={items} chefId={user.tenantId!} />
     </div>
   )
 }

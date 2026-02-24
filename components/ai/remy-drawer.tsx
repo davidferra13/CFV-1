@@ -196,13 +196,13 @@ const markdownComponents = {
     const isBlock = className?.includes('language-')
     if (isBlock) {
       return (
-        <code className="block bg-stone-200 dark:bg-stone-700 rounded px-2 py-1 text-xs font-mono my-1 overflow-x-auto">
+        <code className="block bg-stone-700 dark:bg-stone-700 rounded px-2 py-1 text-xs font-mono my-1 overflow-x-auto">
           {children}
         </code>
       )
     }
     return (
-      <code className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-xs font-mono">
+      <code className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-xs font-mono">
         {children}
       </code>
     )
@@ -212,7 +212,7 @@ const markdownComponents = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-brand-600 dark:text-brand-400 underline hover:text-brand-700"
+      className="text-brand-600 dark:text-brand-400 underline hover:text-brand-400"
     >
       {children}
     </a>
@@ -227,11 +227,11 @@ const markdownComponents = {
     <h3 className="text-sm font-semibold mb-1">{children}</h3>
   ),
   blockquote: ({ children }: { children?: React.ReactNode }) => (
-    <blockquote className="border-l-2 border-brand-400 pl-2 italic text-stone-600 dark:text-stone-400 my-1">
+    <blockquote className="border-l-2 border-brand-400 pl-2 italic text-stone-400 dark:text-stone-400 my-1">
       {children}
     </blockquote>
   ),
-  hr: () => <hr className="border-stone-300 dark:border-stone-600 my-2" />,
+  hr: () => <hr className="border-stone-600 dark:border-stone-600 my-2" />,
 }
 
 // ─── Voice Settings ──────────────────────────────────────────────────────────
@@ -1194,13 +1194,13 @@ export function RemyDrawer() {
         <div className="fixed top-0 right-0 bottom-0 z-50 w-12 bg-brand-600 shadow-2xl flex flex-col items-center py-3 gap-2 border-l border-brand-700">
           <button
             onClick={() => setCollapsed(false)}
-            className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10"
+            className="text-white/80 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-stone-800/10"
             aria-label="Expand Remy"
             title="Expand Remy"
           >
             <ChevronsLeft className="h-5 w-5" />
           </button>
-          <div className="w-8 h-8 rounded-full bg-white/15 flex items-center justify-center mt-1">
+          <div className="w-8 h-8 rounded-full bg-surface/15 flex items-center justify-center mt-1">
             <Bot className="h-4 w-4 text-white" />
           </div>
           {loading && <Loader2 className="h-4 w-4 animate-spin text-white/80 mt-1" />}
@@ -1225,7 +1225,7 @@ export function RemyDrawer() {
       {/* Drawer panel — no overlay, page remains interactive */}
       {open && !collapsed && (
         <div
-          className="fixed top-0 right-0 bottom-0 z-50 bg-white dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-200 dark:border-stone-700"
+          className="fixed top-0 right-0 bottom-0 z-50 bg-surface dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-700 dark:border-stone-700"
           style={{ width: `min(${drawerWidth}px, 100vw)` }}
         >
           {/* Left-edge resize handle */}
@@ -1235,7 +1235,7 @@ export function RemyDrawer() {
             title="Drag to resize"
           />
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-stone-200 dark:border-stone-700 bg-brand-600">
+          <div className="flex items-center justify-between p-4 border-b border-stone-700 dark:border-stone-700 bg-brand-600">
             <div className="flex items-center gap-2">
               {showConversationList ? (
                 <button
@@ -1348,7 +1348,7 @@ export function RemyDrawer() {
 
           {/* Voice settings panel */}
           {showVoiceSettings && (
-            <div className="border-b border-stone-200 dark:border-stone-700 bg-stone-50 dark:bg-stone-800/50 px-4 py-3 space-y-3 max-h-[320px] overflow-y-auto">
+            <div className="border-b border-stone-700 dark:border-stone-700 bg-stone-800 dark:bg-stone-800/50 px-4 py-3 space-y-3 max-h-[320px] overflow-y-auto">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase tracking-wide">
                   Voice Settings
@@ -1358,7 +1358,7 @@ export function RemyDrawer() {
                     setVoiceSettings(DEFAULT_VOICE_SETTINGS)
                     saveVoiceSettings(DEFAULT_VOICE_SETTINGS)
                   }}
-                  className="text-xs text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                  className="text-xs text-stone-400 hover:text-stone-400 dark:hover:text-stone-300 transition-colors"
                 >
                   Reset
                 </button>
@@ -1366,7 +1366,7 @@ export function RemyDrawer() {
 
               {/* Voice selector */}
               <div>
-                <label className="block text-xs font-medium text-stone-600 dark:text-stone-300 mb-1">
+                <label className="block text-xs font-medium text-stone-400 dark:text-stone-300 mb-1">
                   Voice
                 </label>
                 <div className="flex gap-1.5">
@@ -1374,7 +1374,7 @@ export function RemyDrawer() {
                     value={voiceSettings.voiceURI ?? ''}
                     onChange={(e) => updateVoiceSetting('voiceURI', e.target.value || null)}
                     title="Select voice"
-                    className="flex-1 text-xs rounded-md border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-700 px-2 py-1.5 text-stone-800 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="flex-1 text-xs rounded-md border border-stone-600 dark:border-stone-600 bg-surface dark:bg-stone-700 px-2 py-1.5 text-stone-200 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
                   >
                     <option value="">System default</option>
                     {availableVoices
@@ -1399,7 +1399,7 @@ export function RemyDrawer() {
                   <button
                     type="button"
                     onClick={() => handlePreviewVoice(voiceSettings.voiceURI)}
-                    className="text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-md px-2.5 py-1.5 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors whitespace-nowrap"
+                    className="text-xs bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-md px-2.5 py-1.5 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors whitespace-nowrap"
                   >
                     Preview
                   </button>
@@ -1409,7 +1409,7 @@ export function RemyDrawer() {
               {/* Speed slider */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-400 dark:text-stone-300">
                     Speed
                   </label>
                   <span className="text-xs text-stone-400 tabular-nums">
@@ -1424,7 +1424,7 @@ export function RemyDrawer() {
                   value={voiceSettings.rate}
                   onChange={(e) => updateVoiceSetting('rate', parseFloat(e.target.value))}
                   title="Speech speed"
-                  className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                  className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
                 <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
                   <span>Slow</span>
@@ -1436,7 +1436,7 @@ export function RemyDrawer() {
               {/* Pitch slider */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-400 dark:text-stone-300">
                     Pitch
                   </label>
                   <span className="text-xs text-stone-400 tabular-nums">
@@ -1451,7 +1451,7 @@ export function RemyDrawer() {
                   value={voiceSettings.pitch}
                   onChange={(e) => updateVoiceSetting('pitch', parseFloat(e.target.value))}
                   title="Speech pitch"
-                  className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                  className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
                 <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
                   <span>Lower</span>
@@ -1463,7 +1463,7 @@ export function RemyDrawer() {
               {/* Volume slider */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-medium text-stone-600 dark:text-stone-300">
+                  <label className="text-xs font-medium text-stone-400 dark:text-stone-300">
                     Volume
                   </label>
                   <span className="text-xs text-stone-400 tabular-nums">
@@ -1478,7 +1478,7 @@ export function RemyDrawer() {
                   value={voiceSettings.volume}
                   onChange={(e) => updateVoiceSetting('volume', parseFloat(e.target.value))}
                   title="Speech volume"
-                  className="w-full h-1.5 bg-stone-200 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
+                  className="w-full h-1.5 bg-stone-700 dark:bg-stone-600 rounded-full appearance-none cursor-pointer accent-brand-600"
                 />
                 <div className="flex justify-between text-[10px] text-stone-400 mt-0.5">
                   <span>Quiet</span>
@@ -1498,7 +1498,7 @@ export function RemyDrawer() {
               <div className="p-3">
                 <button
                   onClick={handleNewConversation}
-                  className="w-full flex items-center gap-2 text-sm bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-lg px-3 py-2.5 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors mb-2"
+                  className="w-full flex items-center gap-2 text-sm bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-lg px-3 py-2.5 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors mb-2"
                 >
                   <Plus className="h-4 w-4" />
                   New conversation
@@ -1510,15 +1510,15 @@ export function RemyDrawer() {
                     key={conv.id}
                     className={`group flex items-center gap-2 rounded-lg px-3 py-2.5 cursor-pointer transition-colors ${
                       conv.id === currentConversationId
-                        ? 'bg-stone-100 dark:bg-stone-800'
-                        : 'hover:bg-stone-50 dark:hover:bg-stone-800/50'
+                        ? 'bg-stone-800 dark:bg-stone-800'
+                        : 'hover:bg-stone-800 dark:hover:bg-stone-800/50'
                     }`}
                   >
                     <button
                       onClick={() => handleSelectConversation(conv.id)}
                       className="flex-1 text-left min-w-0"
                     >
-                      <p className="text-sm font-medium text-stone-900 dark:text-stone-100 truncate">
+                      <p className="text-sm font-medium text-stone-100 dark:text-stone-100 truncate">
                         {conv.title}
                       </p>
                       {conv.lastMessage && (
@@ -1553,8 +1553,8 @@ export function RemyDrawer() {
                 {/* Welcome message */}
                 {messages.length === 0 && !streamingContent && (
                   <div className="space-y-4">
-                    <div className="bg-stone-50 dark:bg-stone-800 rounded-xl p-4">
-                      <p className="text-sm text-stone-700 dark:text-stone-300">
+                    <div className="bg-stone-800 dark:bg-stone-800 rounded-xl p-4">
+                      <p className="text-sm text-stone-300 dark:text-stone-300">
                         Hey chef! I&apos;m <span className="font-semibold">Remy</span>, your kitchen
                         companion. I can check your schedule, look up clients, draft messages,
                         crunch numbers, <strong>search the web</strong> — whatever you need.
@@ -1562,7 +1562,7 @@ export function RemyDrawer() {
                       <p className="text-xs text-stone-400 mt-2 flex items-center gap-1">
                         <Globe className="h-3 w-3" />
                         Web search enabled. Conversations stay in your browser. Press{' '}
-                        <kbd className="bg-stone-200 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
+                        <kbd className="bg-stone-700 dark:bg-stone-700 rounded px-1 py-0.5 text-[10px] font-mono">
                           Ctrl+K
                         </kbd>{' '}
                         anytime.
@@ -1576,7 +1576,7 @@ export function RemyDrawer() {
                           <button
                             key={starter.text}
                             onClick={() => handleSend(starter.text)}
-                            className="flex items-center gap-2 text-left text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors text-stone-700 dark:text-stone-300"
+                            className="flex items-center gap-2 text-left text-sm bg-surface dark:bg-stone-800 border border-stone-700 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors text-stone-300 dark:text-stone-300"
                           >
                             <Icon className="h-4 w-4 text-brand-600 flex-shrink-0" />
                             {starter.text}
@@ -1600,7 +1600,7 @@ export function RemyDrawer() {
                           <>
                             <button
                               onClick={() => handleSpeak(msg.id, msg.content)}
-                              className={`bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 transition-colors ${
+                              className={`bg-surface dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 transition-colors ${
                                 speakingId === msg.id
                                   ? 'text-brand-600 dark:text-brand-400'
                                   : 'text-stone-400 hover:text-brand-600'
@@ -1615,7 +1615,7 @@ export function RemyDrawer() {
                             </button>
                             <button
                               onClick={() => handleCopy(msg.id, msg.content)}
-                              className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
+                              className="bg-surface dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
                               title="Copy message"
                             >
                               {copiedId === msg.id ? (
@@ -1628,7 +1628,7 @@ export function RemyDrawer() {
                         )}
                         <button
                           onClick={() => handleDeleteMessage(msg.id)}
-                          className="bg-white dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-200 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
+                          className="bg-surface dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
                           title="Remove message"
                         >
                           <X className="h-3 w-3" />
@@ -1640,7 +1640,7 @@ export function RemyDrawer() {
                         className={`rounded-xl px-4 py-2.5 text-sm ${
                           msg.role === 'user'
                             ? 'bg-brand-600 text-white'
-                            : 'bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100'
+                            : 'bg-stone-800 dark:bg-stone-800 text-stone-100 dark:text-stone-100'
                         }`}
                       >
                         {msg.role === 'user' ? (
@@ -1681,7 +1681,7 @@ export function RemyDrawer() {
                                 key={nav.href}
                                 href={nav.href}
                                 onClick={() => setOpen(false)}
-                                className="inline-flex items-center gap-1 text-xs bg-brand-50 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-100 dark:hover:bg-brand-900/50 transition-colors"
+                                className="inline-flex items-center gap-1 text-xs bg-brand-950 dark:bg-brand-900/30 text-brand-400 dark:text-brand-300 rounded-full px-3 py-1 hover:bg-brand-900 dark:hover:bg-brand-900/50 transition-colors"
                               >
                                 <ArrowRight className="h-3 w-3" />
                                 {nav.label}
@@ -1708,9 +1708,9 @@ export function RemyDrawer() {
                                 {items.map((item) => (
                                   <div
                                     key={item.id}
-                                    className="group/mem flex items-start gap-1.5 rounded-lg px-2 py-1.5 hover:bg-stone-50 dark:hover:bg-stone-700/50 transition-colors"
+                                    className="group/mem flex items-start gap-1.5 rounded-lg px-2 py-1.5 hover:bg-stone-800 dark:hover:bg-stone-700/50 transition-colors"
                                   >
-                                    <span className="flex-1 text-xs text-stone-700 dark:text-stone-300 leading-relaxed">
+                                    <span className="flex-1 text-xs text-stone-300 dark:text-stone-300 leading-relaxed">
                                       {item.content}
                                       {item.importance >= 8 && (
                                         <span
@@ -1749,7 +1749,7 @@ export function RemyDrawer() {
                         <button
                           key={s.label}
                           onClick={() => handleSend(s.message)}
-                          className="flex items-center gap-2 text-left text-sm bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-50 dark:hover:bg-stone-700 transition-colors text-stone-700 dark:text-stone-300"
+                          className="flex items-center gap-2 text-left text-sm bg-surface dark:bg-stone-800 border border-stone-700 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors text-stone-300 dark:text-stone-300"
                         >
                           <ArrowRight className="h-4 w-4 text-brand-600 flex-shrink-0" />
                           {s.label}
@@ -1762,7 +1762,7 @@ export function RemyDrawer() {
                 {loading && streamingContent && (
                   <div className="flex justify-start">
                     <div className="max-w-[85%] space-y-1">
-                      <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-900 dark:text-stone-100">
+                      <div className="bg-stone-800 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-100 dark:text-stone-100">
                         <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm]}
@@ -1786,7 +1786,7 @@ export function RemyDrawer() {
                 {/* Loading indicator (before streaming starts) */}
                 {loading && !streamingContent && (
                   <div className="flex justify-start">
-                    <div className="bg-stone-100 dark:bg-stone-800 rounded-xl px-4 py-3 flex items-center gap-2">
+                    <div className="bg-stone-800 dark:bg-stone-800 rounded-xl px-4 py-3 flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
                       <span className="text-xs text-stone-500">
                         {getThinkingMessage(elapsedSec, streamingIntent)}
@@ -1807,7 +1807,7 @@ export function RemyDrawer() {
               </div>
 
               {/* Input */}
-              <div className="p-4 border-t border-stone-200 dark:border-stone-700">
+              <div className="p-4 border-t border-stone-700 dark:border-stone-700">
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
                     <textarea
@@ -1824,12 +1824,12 @@ export function RemyDrawer() {
                         }
                       }}
                       placeholder="Ask Remy anything..."
-                      className="w-full resize-none rounded-lg border border-stone-300 dark:border-stone-600 px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
+                      className="w-full resize-none rounded-lg border border-stone-600 dark:border-stone-600 px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-stone-800 dark:text-stone-100 min-h-[40px] max-h-32"
                       rows={1}
                     />
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute right-2 bottom-2 text-stone-400 hover:text-stone-600 dark:hover:text-stone-300 transition-colors"
+                      className="absolute right-2 bottom-2 text-stone-400 hover:text-stone-400 dark:hover:text-stone-300 transition-colors"
                       title="Attach file (.txt, .md, .csv, .json, images)"
                     >
                       <Paperclip className="h-4 w-4" />
@@ -1841,7 +1841,7 @@ export function RemyDrawer() {
                       className={`flex items-center justify-center rounded-lg p-2 transition-colors ${
                         isListening
                           ? 'bg-red-500 text-white animate-pulse'
-                          : 'bg-stone-100 dark:bg-stone-700 text-stone-500 hover:text-brand-600 hover:bg-stone-200 dark:hover:bg-stone-600'
+                          : 'bg-stone-800 dark:bg-stone-700 text-stone-500 hover:text-brand-600 hover:bg-stone-700 dark:hover:bg-stone-600'
                       }`}
                       title={isListening ? 'Stop listening' : 'Voice input'}
                       aria-label={isListening ? 'Stop voice input' : 'Start voice input'}

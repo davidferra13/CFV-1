@@ -6,11 +6,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { updateChefPreferences } from '@/lib/chef/actions'
-import type {
-  ChefPreferences,
-  DefaultStore,
-  RevenueGoalCustom,
-} from '@/lib/scheduling/types'
+import type { ChefPreferences, DefaultStore, RevenueGoalCustom } from '@/lib/scheduling/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -18,9 +14,10 @@ import { StoreAutocomplete } from '@/components/ui/store-autocomplete'
 
 function createCustomGoal(): RevenueGoalCustom {
   return {
-    id: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-      ? crypto.randomUUID()
-      : `goal-${Date.now()}`,
+    id:
+      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : `goal-${Date.now()}`,
     label: '',
     target_cents: 0,
     period_start: '',
@@ -91,9 +88,10 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
           default_packing_minutes: packingMinutes,
           target_margin_percent: targetMargin,
           target_monthly_revenue_cents: Math.max(0, Math.round(targetMonthlyRevenueDollars * 100)),
-          target_annual_revenue_cents: targetAnnualRevenueDollars.trim() === ''
-            ? null
-            : Math.max(0, Math.round(Number(targetAnnualRevenueDollars) * 100)),
+          target_annual_revenue_cents:
+            targetAnnualRevenueDollars.trim() === ''
+              ? null
+              : Math.max(0, Math.round(Number(targetAnnualRevenueDollars) * 100)),
           revenue_goal_program_enabled: revenueGoalProgramEnabled,
           revenue_goal_nudge_level: revenueGoalNudgeLevel,
           revenue_goal_custom: customGoals
@@ -150,16 +148,28 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">City</label>
-              <Input value={homeCity} onChange={(e) => setHomeCity(e.target.value)} placeholder="City" />
+              <label className="block text-sm font-medium text-stone-300 mb-1">City</label>
+              <Input
+                value={homeCity}
+                onChange={(e) => setHomeCity(e.target.value)}
+                placeholder="City"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">State</label>
-              <Input value={homeState} onChange={(e) => setHomeState(e.target.value)} placeholder="State" />
+              <label className="block text-sm font-medium text-stone-300 mb-1">State</label>
+              <Input
+                value={homeState}
+                onChange={(e) => setHomeState(e.target.value)}
+                placeholder="State"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">ZIP</label>
-              <Input value={homeZip} onChange={(e) => setHomeZip(e.target.value)} placeholder="ZIP" />
+              <label className="block text-sm font-medium text-stone-300 mb-1">ZIP</label>
+              <Input
+                value={homeZip}
+                onChange={(e) => setHomeZip(e.target.value)}
+                placeholder="ZIP"
+              />
             </div>
           </div>
         </CardContent>
@@ -180,16 +190,16 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
           </p>
 
           {stores.length === 0 && (
-            <p className="text-sm text-stone-500 border border-dashed border-stone-300 rounded-md p-3">
+            <p className="text-sm text-stone-500 border border-dashed border-stone-600 rounded-md p-3">
               No default stores yet. Add at least one store to speed up route planning.
             </p>
           )}
 
           {stores.map((store, index) => (
-            <div key={index} className="rounded-lg border border-stone-200 p-3 space-y-3">
+            <div key={index} className="rounded-lg border border-stone-700 p-3 space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Store</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Store</label>
                   <StoreAutocomplete
                     value={store.name}
                     onChange={(value) => updateStore(index, { name: value })}
@@ -204,7 +214,7 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Address</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">Address</label>
                   <Input
                     value={store.address || ''}
                     onChange={(e) => updateStore(index, { address: e.target.value })}
@@ -236,7 +246,9 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Prep Time (hours)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">
+                Prep Time (hours)
+              </label>
               <Input
                 type="number"
                 step="0.5"
@@ -247,7 +259,9 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Shopping (min)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">
+                Shopping (min)
+              </label>
               <Input
                 type="number"
                 min="15"
@@ -257,7 +271,7 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Packing (min)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Packing (min)</label>
               <Input
                 type="number"
                 min="10"
@@ -267,7 +281,7 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Buffer (min)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Buffer (min)</label>
               <Input
                 type="number"
                 min="0"
@@ -292,15 +306,17 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               id="shopDayBefore"
               checked={shopDayBefore}
               onChange={(e) => setShopDayBefore(e.target.checked)}
-              className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+              className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
             />
-            <label htmlFor="shopDayBefore" className="text-sm text-stone-700">
+            <label htmlFor="shopDayBefore" className="text-sm text-stone-300">
               Shop the day before events (recommended)
             </label>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Target Profit Margin (%)</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">
+              Target Profit Margin (%)
+            </label>
             <Input
               type="number"
               min="0"
@@ -324,16 +340,16 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               id="revenueGoalProgramEnabled"
               checked={revenueGoalProgramEnabled}
               onChange={(e) => setRevenueGoalProgramEnabled(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+              className="mt-1 h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
             />
-            <label htmlFor="revenueGoalProgramEnabled" className="text-sm text-stone-700">
+            <label htmlFor="revenueGoalProgramEnabled" className="text-sm text-stone-300">
               Enable goal-driven revenue coaching and nudges
             </label>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Monthly Revenue Goal ($)
               </label>
               <Input
@@ -345,7 +361,7 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Annual Revenue Goal ($)
               </label>
               <Input
@@ -358,12 +374,16 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Nudge Intensity</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">
+                Nudge Intensity
+              </label>
               <select
                 disabled={!revenueGoalProgramEnabled}
                 value={revenueGoalNudgeLevel}
-                onChange={(e) => setRevenueGoalNudgeLevel(e.target.value as 'gentle' | 'standard' | 'aggressive')}
-                className="w-full px-3 py-2 border border-stone-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:bg-stone-100"
+                onChange={(e) =>
+                  setRevenueGoalNudgeLevel(e.target.value as 'gentle' | 'standard' | 'aggressive')
+                }
+                className="w-full px-3 py-2 border border-stone-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:bg-stone-800"
               >
                 <option value="gentle">Gentle</option>
                 <option value="standard">Standard</option>
@@ -374,23 +394,31 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-medium text-stone-700">Custom Goals</p>
-              <Button type="button" variant="secondary" size="sm" onClick={addCustomGoal} disabled={!revenueGoalProgramEnabled}>
+              <p className="text-sm font-medium text-stone-300">Custom Goals</p>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={addCustomGoal}
+                disabled={!revenueGoalProgramEnabled}
+              >
                 + Add Goal
               </Button>
             </div>
 
             {customGoals.length === 0 && (
-              <p className="text-sm text-stone-500 border border-dashed border-stone-300 rounded-md p-3">
+              <p className="text-sm text-stone-500 border border-dashed border-stone-600 rounded-md p-3">
                 No custom goals yet. Add seasonal or campaign goals if needed.
               </p>
             )}
 
             {customGoals.map((goal) => (
-              <div key={goal.id} className="rounded-lg border border-stone-200 p-3 space-y-3">
+              <div key={goal.id} className="rounded-lg border border-stone-700 p-3 space-y-3">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Goal Label</label>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Goal Label
+                    </label>
                     <Input
                       disabled={!revenueGoalProgramEnabled}
                       value={goal.label}
@@ -399,7 +427,7 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Start</label>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">Start</label>
                     <Input
                       type="date"
                       disabled={!revenueGoalProgramEnabled}
@@ -408,7 +436,7 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">End</label>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">End</label>
                     <Input
                       type="date"
                       disabled={!revenueGoalProgramEnabled}
@@ -420,23 +448,27 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
 
                 <div className="flex items-center justify-between gap-4">
                   <div className="w-full max-w-xs">
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Target ($)</label>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Target ($)
+                    </label>
                     <Input
                       type="number"
                       min="0"
                       disabled={!revenueGoalProgramEnabled}
                       value={Math.round(goal.target_cents / 100)}
-                      onChange={(e) => updateCustomGoal(goal.id, { target_cents: Number(e.target.value) * 100 })}
+                      onChange={(e) =>
+                        updateCustomGoal(goal.id, { target_cents: Number(e.target.value) * 100 })
+                      }
                     />
                   </div>
                   <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-2 text-sm text-stone-700">
+                    <label className="flex items-center gap-2 text-sm text-stone-300">
                       <input
                         type="checkbox"
                         disabled={!revenueGoalProgramEnabled}
                         checked={goal.enabled}
                         onChange={(e) => updateCustomGoal(goal.id, { enabled: e.target.checked })}
-                        className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                        className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
                       />
                       Enabled
                     </label>
@@ -459,13 +491,13 @@ export function PreferencesForm({ preferences }: { preferences: ChefPreferences 
       </Card>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className="bg-red-950 border border-red-200 rounded-lg p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-950 border border-green-200 rounded-lg p-4">
           <p className="text-sm text-green-700">Preferences saved successfully.</p>
         </div>
       )}

@@ -42,7 +42,12 @@ type Props = {
   onSetActivePlatform: (p: SocialPlatform | 'master') => void
 }
 
-export function SocialCaptionEditor({ captions, activePlatform, onChange, onSetActivePlatform }: Props) {
+export function SocialCaptionEditor({
+  captions,
+  activePlatform,
+  onChange,
+  onSetActivePlatform,
+}: Props) {
   const tabs: { key: SocialPlatform | 'master'; label: string }[] = [
     { key: 'master', label: 'Master' },
     ...PLATFORM_CAPTION_KEYS.map(({ platform }) => ({
@@ -90,7 +95,7 @@ export function SocialCaptionEditor({ captions, activePlatform, onChange, onSetA
                 'px-3 py-1.5 text-xs font-medium rounded-md whitespace-nowrap transition-colors flex items-center gap-1',
                 isActive
                   ? 'bg-stone-900 text-white'
-                  : 'text-stone-500 hover:text-stone-700 hover:bg-stone-100',
+                  : 'text-stone-500 hover:text-stone-300 hover:bg-stone-700',
               ].join(' ')}
             >
               {label}
@@ -121,7 +126,7 @@ export function SocialCaptionEditor({ captions, activePlatform, onChange, onSetA
               <button
                 type="button"
                 onClick={handleAutoFill}
-                className="text-xs text-stone-400 hover:text-stone-600 underline underline-offset-2"
+                className="text-xs text-stone-400 hover:text-stone-400 underline underline-offset-2"
               >
                 Auto-fill from master
               </button>

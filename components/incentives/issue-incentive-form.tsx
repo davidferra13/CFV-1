@@ -84,7 +84,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Type selector */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">Type</label>
+        <label className="block text-sm font-medium text-stone-300 mb-2">Type</label>
         <div className="flex gap-3">
           {(['gift_card', 'voucher'] as const).map((t) => (
             <button
@@ -97,7 +97,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
                 type === t
                   ? 'bg-brand-600 text-white border-brand-600'
-                  : 'bg-white text-stone-700 border-stone-300 hover:border-brand-400'
+                  : 'bg-surface text-stone-300 border-stone-600 hover:border-brand-400'
               }`}
             >
               {t === 'gift_card' ? 'Gift Card' : 'Voucher'}
@@ -108,7 +108,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
 
       {/* Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-stone-300 mb-1">
           Title <span className="text-red-500">*</span>
         </label>
         <input
@@ -117,14 +117,14 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder={type === 'gift_card' ? 'Summer Gift Card' : 'Welcome Voucher'}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           required
         />
       </div>
 
       {/* Value */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
+        <label className="block text-sm font-medium text-stone-300 mb-1">
           Value <span className="text-red-500">*</span>
         </label>
         {type === 'voucher' && (
@@ -135,7 +135,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                 !usePercent
                   ? 'bg-stone-800 text-white border-stone-800'
-                  : 'bg-white text-stone-600 border-stone-300 hover:border-stone-500'
+                  : 'bg-surface text-stone-400 border-stone-600 hover:border-stone-500'
               }`}
             >
               $ Fixed
@@ -146,7 +146,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                 usePercent
                   ? 'bg-stone-800 text-white border-stone-800'
-                  : 'bg-white text-stone-600 border-stone-300 hover:border-stone-500'
+                  : 'bg-surface text-stone-400 border-stone-600 hover:border-stone-500'
               }`}
             >
               % Percent
@@ -162,14 +162,18 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               placeholder="15"
               min={1}
               max={100}
-              className="w-full pl-3 pr-8 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full pl-3 pr-8 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">%</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">
+              %
+            </span>
           </div>
         ) : (
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">
+              $
+            </span>
             <input
               type="number"
               value={amountDollars}
@@ -177,7 +181,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               placeholder="50.00"
               min={0.01}
               step={0.01}
-              className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full pl-7 pr-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               required
             />
           </div>
@@ -187,14 +191,14 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
       {/* Target client (optional) */}
       {clients.length > 0 && (
         <div>
-          <label htmlFor="targetClient" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="targetClient" className="block text-sm font-medium text-stone-300 mb-1">
             For Client <span className="text-stone-400 font-normal">(optional)</span>
           </label>
           <select
             id="targetClient"
             value={targetClientId}
             onChange={(e) => setTargetClientId(e.target.value)}
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             <option value="">Anyone</option>
             {clients.map((c) => (
@@ -208,7 +212,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
 
       {/* Expiry */}
       <div>
-        <label htmlFor="expiresAt" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="expiresAt" className="block text-sm font-medium text-stone-300 mb-1">
           Expires On <span className="text-stone-400 font-normal">(optional)</span>
         </label>
         <input
@@ -216,13 +220,13 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
           type="date"
           value={expiresAt}
           onChange={(e) => setExpiresAt(e.target.value)}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
       {/* Max redemptions */}
       <div>
-        <label htmlFor="maxRedemptions" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="maxRedemptions" className="block text-sm font-medium text-stone-300 mb-1">
           Max Redemptions
         </label>
         <input
@@ -232,7 +236,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
           onChange={(e) => setMaxRedemptions(e.target.value)}
           min={1}
           max={1000}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <p className="text-xs text-stone-500 mt-1">
           {type === 'gift_card'
@@ -243,8 +247,9 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
 
       {/* Custom code */}
       <div>
-        <label htmlFor="customCode" className="block text-sm font-medium text-stone-700 mb-1">
-          Custom Code <span className="text-stone-400 font-normal">(optional — auto-generated if blank)</span>
+        <label htmlFor="customCode" className="block text-sm font-medium text-stone-300 mb-1">
+          Custom Code{' '}
+          <span className="text-stone-400 font-normal">(optional — auto-generated if blank)</span>
         </label>
         <input
           id="customCode"
@@ -252,13 +257,13 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
           value={customCode}
           onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
           placeholder={type === 'gift_card' ? 'GFT-SUMMER24' : 'VCH-WELCOME'}
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
       {/* Internal note */}
       <div>
-        <label htmlFor="note" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="note" className="block text-sm font-medium text-stone-300 mb-1">
           Internal Note <span className="text-stone-400 font-normal">(optional)</span>
         </label>
         <textarea
@@ -267,12 +272,12 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
           onChange={(e) => setNote(e.target.value)}
           rows={2}
           placeholder="Context for your records..."
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
         />
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <p className="text-sm text-red-600 bg-red-950 border border-red-200 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
@@ -282,7 +287,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
           <button
             type="button"
             onClick={onCancel}
-            className="flex-1 py-2 px-4 rounded-lg border border-stone-300 text-sm font-medium text-stone-700 hover:bg-stone-50"
+            className="flex-1 py-2 px-4 rounded-lg border border-stone-600 text-sm font-medium text-stone-300 hover:bg-stone-800"
           >
             Cancel
           </button>

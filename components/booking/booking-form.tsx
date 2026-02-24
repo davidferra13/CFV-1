@@ -15,7 +15,7 @@ import type { BookingConfig } from '@/app/book/[chefSlug]/booking-page-client'
 
 type Props = {
   chefSlug: string
-  selectedDate: string  // YYYY-MM-DD pre-filled from calendar
+  selectedDate: string // YYYY-MM-DD pre-filled from calendar
   onBack: () => void
   bookingConfig?: BookingConfig
 }
@@ -47,9 +47,10 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
     if (!isInstantBook || !bookingConfig?.basePriceCents) return null
 
     const guests = parseInt(guestCount) || 1
-    const totalCents = bookingConfig.pricingType === 'per_person'
-      ? bookingConfig.basePriceCents * guests
-      : bookingConfig.basePriceCents
+    const totalCents =
+      bookingConfig.pricingType === 'per_person'
+        ? bookingConfig.basePriceCents * guests
+        : bookingConfig.basePriceCents
 
     let depositCents: number
     if (bookingConfig.depositType === 'fixed' && bookingConfig.depositFixedCents) {
@@ -66,7 +67,14 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
     e.preventDefault()
     setError(null)
 
-    if (!fullName.trim() || !email.trim() || !occasion.trim() || !guestCount || !serveTime || !address.trim()) {
+    if (
+      !fullName.trim() ||
+      !email.trim() ||
+      !occasion.trim() ||
+      !guestCount ||
+      !serveTime ||
+      !address.trim()
+    ) {
       setError('Please fill in all required fields.')
       return
     }
@@ -115,16 +123,19 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-lg bg-stone-50 border border-stone-200 px-4 py-2.5 flex items-center gap-3">
-        <span className="text-sm font-medium text-stone-700">Date selected:</span>
-        <span className="text-sm font-semibold text-stone-900">
+      <div className="rounded-lg bg-stone-800 border border-stone-700 px-4 py-2.5 flex items-center gap-3">
+        <span className="text-sm font-medium text-stone-300">Date selected:</span>
+        <span className="text-sm font-semibold text-stone-100">
           {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', {
-            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
           })}
         </span>
         <button
           type="button"
-          className="ml-auto text-xs text-stone-500 underline hover:text-stone-700"
+          className="ml-auto text-xs text-stone-500 underline hover:text-stone-300"
           onClick={onBack}
         >
           Change
@@ -211,7 +222,7 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
 
       {/* Instant-book pricing summary */}
       {isInstantBook && pricing && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4 space-y-2">
+        <div className="rounded-lg border border-green-200 bg-green-950 p-4 space-y-2">
           <p className="text-sm font-medium text-green-800">Pricing Summary</p>
           <div className="flex justify-between text-sm text-green-700">
             <span>
@@ -226,7 +237,8 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
             <span>{formatDollars(pricing.depositCents)}</span>
           </div>
           <p className="text-xs text-green-600">
-            Remaining balance of {formatDollars(pricing.totalCents - pricing.depositCents)} due before event.
+            Remaining balance of {formatDollars(pricing.totalCents - pricing.depositCents)} due
+            before event.
           </p>
         </div>
       )}
@@ -245,8 +257,12 @@ export function BookingForm({ chefSlug, selectedDate, onBack, bookingConfig }: P
         className="w-full"
       >
         {loading
-          ? (isInstantBook ? 'Preparing checkout…' : 'Sending…')
-          : (isInstantBook ? `Pay ${pricing ? formatDollars(pricing.depositCents) : ''} Deposit & Book` : 'Submit Request')}
+          ? isInstantBook
+            ? 'Preparing checkout…'
+            : 'Sending…'
+          : isInstantBook
+            ? `Pay ${pricing ? formatDollars(pricing.depositCents) : ''} Deposit & Book`
+            : 'Submit Request'}
       </Button>
 
       <p className="text-xs text-center text-stone-400">

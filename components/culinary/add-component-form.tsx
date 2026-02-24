@@ -80,9 +80,9 @@ export function AddComponentForm({ defaultCategory, dishes }: Props) {
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <label className="text-sm font-medium text-stone-700">Component Name *</label>
+          <label className="text-sm font-medium text-stone-300">Component Name *</label>
           <input
-            className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="e.g. Red Wine Reduction, Herb Crust"
@@ -90,9 +90,9 @@ export function AddComponentForm({ defaultCategory, dishes }: Props) {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-stone-700">Category</label>
+            <label className="text-sm font-medium text-stone-300">Category</label>
             <select
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
             >
@@ -104,9 +104,9 @@ export function AddComponentForm({ defaultCategory, dishes }: Props) {
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Dish *</label>
+            <label className="text-sm font-medium text-stone-300">Dish *</label>
             <select
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.dish_id}
               onChange={(e) => setForm({ ...form, dish_id: e.target.value })}
             >
@@ -121,20 +121,20 @@ export function AddComponentForm({ defaultCategory, dishes }: Props) {
           </div>
         </div>
         <div>
-          <label className="text-sm font-medium text-stone-700">Execution Notes</label>
+          <label className="text-sm font-medium text-stone-300">Execution Notes</label>
           <input
-            className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             value={form.execution_notes}
             onChange={(e) => setForm({ ...form, execution_notes: e.target.value })}
             placeholder="Optional prep or plating notes"
           />
         </div>
-        <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
           <input
             type="checkbox"
             checked={form.is_make_ahead}
             onChange={(e) => setForm({ ...form, is_make_ahead: e.target.checked })}
-            className="rounded border-stone-300"
+            className="rounded border-stone-600"
           />
           Make-ahead component
         </label>

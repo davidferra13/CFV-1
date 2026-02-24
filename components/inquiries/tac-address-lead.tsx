@@ -74,10 +74,10 @@ export function TacAddressLead({
     <div
       className={`rounded-lg border p-3 space-y-2 ${
         isStale
-          ? 'border-red-400/40 bg-red-50/50'
+          ? 'border-red-400/40 bg-red-950/50'
           : isUrgent
-            ? 'border-orange-400/40 bg-orange-50/50'
-            : 'border-amber-400/40 bg-amber-50/50'
+            ? 'border-orange-400/40 bg-orange-950/50'
+            : 'border-amber-400/40 bg-amber-950/50'
       }`}
     >
       {/* Header */}

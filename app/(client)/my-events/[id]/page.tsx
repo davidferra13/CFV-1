@@ -91,7 +91,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
       <div className="mb-6">
         <Link
           href="/my-events"
-          className="text-brand-600 hover:text-brand-700 flex items-center gap-2"
+          className="text-brand-600 hover:text-brand-400 flex items-center gap-2"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -109,7 +109,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-stone-900 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-stone-100 mb-2">
               {event.occasion || 'Upcoming Event'}
             </h1>
             {getStatusBadge(event.status)}
@@ -130,7 +130,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             </div>
             <Link
               href={`/my-events/${event.id}/proposal`}
-              className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-brand-700 hover:text-brand-800 bg-white border border-brand-200 px-3 py-1.5 rounded-lg shadow-sm transition"
+              className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-brand-400 hover:text-brand-300 bg-surface border border-brand-700 px-3 py-1.5 rounded-lg shadow-sm transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -182,20 +182,20 @@ export default async function EventDetailPage({ params }: { params: { id: string
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <div className="text-sm text-stone-600 mb-1">Date & Time</div>
-              <div className="font-medium text-stone-900">
+              <div className="text-sm text-stone-400 mb-1">Date & Time</div>
+              <div className="font-medium text-stone-100">
                 {format(new Date(event.event_date), 'PPP')}
               </div>
             </div>
 
             <div>
-              <div className="text-sm text-stone-600 mb-1">Guest Count</div>
-              <div className="font-medium text-stone-900">{event.guest_count} guests</div>
+              <div className="text-sm text-stone-400 mb-1">Guest Count</div>
+              <div className="font-medium text-stone-100">{event.guest_count} guests</div>
             </div>
 
             <div className="sm:col-span-2">
-              <div className="text-sm text-stone-600 mb-1">Location</div>
-              <div className="font-medium text-stone-900">
+              <div className="text-sm text-stone-400 mb-1">Location</div>
+              <div className="font-medium text-stone-100">
                 {[
                   event.location_address,
                   event.location_city,
@@ -209,15 +209,15 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
             {event.special_requests && (
               <div className="sm:col-span-2">
-                <div className="text-sm text-stone-600 mb-1">Special Requests</div>
-                <div className="text-stone-900">{event.special_requests}</div>
+                <div className="text-sm text-stone-400 mb-1">Special Requests</div>
+                <div className="text-stone-100">{event.special_requests}</div>
               </div>
             )}
           </div>
 
           {/* Calendar add buttons — shown when event is locked in */}
           {['paid', 'confirmed', 'in_progress'].includes(event.status) && (
-            <div className="mt-4 pt-4 border-t border-stone-100">
+            <div className="mt-4 pt-4 border-t border-stone-800">
               <CalendarAddButtons
                 eventId={event.id}
                 occasion={event.occasion || 'Private Chef Dinner'}
@@ -242,14 +242,14 @@ export default async function EventDetailPage({ params }: { params: { id: string
         <CardContent>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-stone-600">Total Price</span>
-              <span className="font-semibold text-stone-900">
+              <span className="text-stone-400">Total Price</span>
+              <span className="font-semibold text-stone-100">
                 {formatCurrency(quotedPriceCents)}
               </span>
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-stone-600">Amount Paid</span>
+              <span className="text-stone-400">Amount Paid</span>
               <span className="font-semibold text-emerald-600">
                 {formatCurrency(totalPaidCents)}
               </span>
@@ -257,9 +257,9 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
             <div className="pt-3 border-t">
               <div className="flex justify-between items-center">
-                <span className="text-lg font-semibold text-stone-900">Balance Due</span>
+                <span className="text-lg font-semibold text-stone-100">Balance Due</span>
                 <span
-                  className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-900'}`}
+                  className={`text-2xl font-bold ${outstandingBalanceCents > 0 ? 'text-red-700' : 'text-stone-100'}`}
                 >
                   {formatCurrency(outstandingBalanceCents)}
                 </span>
@@ -280,7 +280,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
             {(event.deposit_amount_cents ?? 0) > 0 && (
               <div className="mt-3 pt-3 border-t">
-                <div className="text-sm text-stone-600">
+                <div className="text-sm text-stone-400">
                   <div className="flex justify-between">
                     <span>Deposit Amount</span>
                     <span className="font-medium">
@@ -303,7 +303,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
               href={`/api/documents/receipt/${event.id}`}
               documentType="receipt"
               entityId={event.id}
-              className="text-sm font-medium text-brand-600 hover:text-brand-700"
+              className="text-sm font-medium text-brand-600 hover:text-brand-400"
             >
               Download Receipt
             </TrackedDownloadLink>
@@ -316,12 +316,12 @@ export default async function EventDetailPage({ params }: { params: { id: string
                   className="flex justify-between items-center py-2 border-b last:border-b-0"
                 >
                   <div>
-                    <div className="font-medium text-stone-900">{entry.description}</div>
-                    <div className="text-sm text-stone-600">
+                    <div className="font-medium text-stone-100">{entry.description}</div>
+                    <div className="text-sm text-stone-400">
                       {format(new Date(entry.created_at), 'PPP')}
                     </div>
                   </div>
-                  <div className="font-semibold text-stone-900">
+                  <div className="font-semibold text-stone-100">
                     {formatCurrency(entry.amount_cents)}
                   </div>
                 </div>
@@ -344,9 +344,9 @@ export default async function EventDetailPage({ params }: { params: { id: string
             <div className="space-y-6">
               {event.menus.map((menu: any) => (
                 <div key={menu.id}>
-                  <h4 className="font-semibold text-stone-900 mb-2">{menu.name}</h4>
+                  <h4 className="font-semibold text-stone-100 mb-2">{menu.name}</h4>
                   {menu.description && (
-                    <p className="text-stone-600 text-sm mb-2">{menu.description}</p>
+                    <p className="text-stone-400 text-sm mb-2">{menu.description}</p>
                   )}
                 </div>
               ))}
@@ -364,7 +364,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
               <CardTitle>Printable Menu</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-stone-600 text-sm mb-4">
+              <p className="text-stone-400 text-sm mb-4">
                 Your printable guest menu is ready. Download and print it to place on the dining
                 table.
               </p>
@@ -409,7 +409,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
         {['proposed', 'accepted'].includes(event.status) && (
           <Link href={`/my-events/${event.id}/proposal`} className="flex-1">
-            <button className="w-full border border-stone-300 bg-white text-stone-700 px-6 py-3 rounded-lg font-semibold hover:bg-stone-50 transition text-sm">
+            <button className="w-full border border-stone-600 bg-surface text-stone-300 px-6 py-3 rounded-lg font-semibold hover:bg-stone-800 transition text-sm">
               View Full Proposal
             </button>
           </Link>
@@ -432,8 +432,8 @@ export default async function EventDetailPage({ params }: { params: { id: string
           <CardContent className="space-y-4">
             <ShareEventButton eventId={event.id} existingShare={activeShare} />
             {guests.length > 0 && (
-              <div className="pt-4 border-t border-stone-100">
-                <h4 className="text-sm font-medium text-stone-700 mb-3">Guest Responses</h4>
+              <div className="pt-4 border-t border-stone-800">
+                <h4 className="text-sm font-medium text-stone-300 mb-3">Guest Responses</h4>
                 <ClientRSVPSummary
                   guests={guests}
                   summary={{

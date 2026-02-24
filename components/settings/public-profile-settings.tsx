@@ -113,13 +113,13 @@ export function PublicProfileSettings({
 
       {/* Profile */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Public Profile</h2>
+        <h2 className="text-lg font-semibold text-stone-100">Public Profile</h2>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Tagline</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Tagline</label>
           <Textarea
             value={tagline}
-            onChange={e => setTagline(e.target.value)}
+            onChange={(e) => setTagline(e.target.value)}
             placeholder="Private chef creating unforgettable dining experiences in the mountains..."
             rows={2}
           />
@@ -128,41 +128,43 @@ export function PublicProfileSettings({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Primary Color</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Primary Color</label>
             <input
               type="color"
               value={primaryColor}
-              onChange={e => setPrimaryColor(e.target.value)}
-              className="h-10 w-full rounded-md border border-stone-300 bg-white px-2"
+              onChange={(e) => setPrimaryColor(e.target.value)}
+              className="h-10 w-full rounded-md border border-stone-600 bg-surface px-2"
             />
             <p className="text-xs text-stone-400 mt-1">Used for call-to-action buttons and links</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Background Color</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">
+              Background Color
+            </label>
             <input
               type="color"
               value={backgroundColor}
-              onChange={e => setBackgroundColor(e.target.value)}
-              className="h-10 w-full rounded-md border border-stone-300 bg-white px-2"
+              onChange={(e) => setBackgroundColor(e.target.value)}
+              className="h-10 w-full rounded-md border border-stone-600 bg-surface px-2"
             />
             <p className="text-xs text-stone-400 mt-1">Used as page background color fallback</p>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Background Image</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Background Image</label>
           <input
             type="file"
             accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
-            onChange={e => setSelectedBackgroundFile(e.target.files?.[0] ?? null)}
-            className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+            onChange={(e) => setSelectedBackgroundFile(e.target.files?.[0] ?? null)}
+            className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
           />
           <p className="mt-1 text-xs text-stone-400">Upload JPEG, PNG, HEIC, or WebP (max 10MB)</p>
           {backgroundImageUrl && !selectedBackgroundFile && (
             <button
               type="button"
-              className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+              className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
               onClick={() => setBackgroundImageUrl('')}
             >
               Remove current background image
@@ -172,7 +174,7 @@ export function PublicProfileSettings({
             <div className="mt-3">
               <p className="text-xs text-stone-500 mb-2">Background Preview</p>
               <div
-                className="h-28 w-full rounded-md border border-stone-200 bg-cover bg-center"
+                className="h-28 w-full rounded-md border border-stone-700 bg-cover bg-center"
                 style={{
                   backgroundImage: `url(${backgroundPreviewUrl || backgroundImageUrl})`,
                 }}
@@ -188,9 +190,10 @@ export function PublicProfileSettings({
 
       {/* Showcase Partners */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-900">Partner Showcase</h2>
+        <h2 className="text-lg font-semibold text-stone-100">Partner Showcase</h2>
         <p className="text-sm text-stone-500">
-          Toggle which partners appear on your public profile. Only active, visible partners will be shown.
+          Toggle which partners appear on your public profile. Only active, visible partners will be
+          shown.
         </p>
 
         {partners.length === 0 ? (
@@ -199,20 +202,20 @@ export function PublicProfileSettings({
           </p>
         ) : (
           <div className="space-y-2">
-            {partners.map(p => (
+            {partners.map((p) => (
               <div
                 key={p.id}
-                className="flex items-center justify-between p-3 rounded-lg border border-stone-200"
+                className="flex items-center justify-between p-3 rounded-lg border border-stone-700"
               >
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={p.is_showcase_visible}
-                    onChange={e => handleToggleShowcase(p.id, e.target.checked)}
-                    className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                    onChange={(e) => handleToggleShowcase(p.id, e.target.checked)}
+                    className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
                   />
                   <div>
-                    <span className="font-medium text-stone-900">{p.name}</span>
+                    <span className="font-medium text-stone-100">{p.name}</span>
                     <Badge variant="default" className="ml-2">
                       {TYPE_LABELS[p.partner_type] || p.partner_type}
                     </Badge>

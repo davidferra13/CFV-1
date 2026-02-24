@@ -41,18 +41,18 @@ export function RevenuePathPanel({
   return (
     <div className="space-y-4">
       {/* Tab bar */}
-      <div className="flex gap-1 border-b border-stone-200">
+      <div className="flex gap-1 border-b border-stone-700">
         <button
           onClick={() => setActiveTab('services')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'services'
-              ? 'border-brand-600 text-brand-700'
-              : 'border-transparent text-stone-500 hover:text-stone-700'
+              ? 'border-brand-600 text-brand-400'
+              : 'border-transparent text-stone-500 hover:text-stone-300'
           }`}
         >
           My Service Types
           {initialServiceTypes.length > 0 && (
-            <span className="ml-2 rounded-full bg-stone-100 px-1.5 py-0.5 text-xs text-stone-600">
+            <span className="ml-2 rounded-full bg-stone-800 px-1.5 py-0.5 text-xs text-stone-400">
               {initialServiceTypes.length}
             </span>
           )}
@@ -61,8 +61,8 @@ export function RevenuePathPanel({
           onClick={() => setActiveTab('calculator')}
           className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
             activeTab === 'calculator'
-              ? 'border-brand-600 text-brand-700'
-              : 'border-transparent text-stone-500 hover:text-stone-700'
+              ? 'border-brand-600 text-brand-400'
+              : 'border-transparent text-stone-500 hover:text-stone-300'
           }`}
         >
           Build My Path
@@ -79,13 +79,13 @@ export function RevenuePathPanel({
 
       {activeTab === 'calculator' &&
         (initialServiceTypes.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-stone-300 p-10 text-center space-y-2">
+          <div className="rounded-lg border border-dashed border-stone-600 p-10 text-center space-y-2">
             <p className="text-stone-500 text-sm">
               Add at least one service type before building your path.
             </p>
             <button
               onClick={() => setActiveTab('services')}
-              className="text-sm font-medium text-brand-600 hover:text-brand-700"
+              className="text-sm font-medium text-brand-600 hover:text-brand-400"
             >
               Add service types →
             </button>

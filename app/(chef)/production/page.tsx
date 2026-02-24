@@ -39,7 +39,7 @@ const STATUS_DOT: Record<string, string> = {
   paid: 'bg-purple-500',
   confirmed: 'bg-emerald-500',
   in_progress: 'bg-amber-500',
-  completed: 'bg-stone-500',
+  completed: 'bg-stone-8000',
   cancelled: 'bg-red-400',
 }
 
@@ -96,7 +96,7 @@ export default async function ProductionCalendarPage({
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Production Calendar</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Production Calendar</h1>
           <p className="text-stone-500 text-sm mt-0.5">
             Monthly overview of all events, revenue, and staffing.
           </p>
@@ -106,16 +106,16 @@ export default async function ProductionCalendarPage({
         <div className="flex items-center gap-3">
           <Link
             href={`/production?month=${prevMonth}`}
-            className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-50"
+            className="rounded-lg border border-stone-700 px-3 py-1.5 text-sm text-stone-400 hover:bg-stone-800"
           >
             ← Prev
           </Link>
-          <span className="text-base font-semibold text-stone-900 min-w-[140px] text-center">
+          <span className="text-base font-semibold text-stone-100 min-w-[140px] text-center">
             {format(currentMonth, 'MMMM yyyy')}
           </span>
           <Link
             href={`/production?month=${nextMonth}`}
-            className="rounded-lg border border-stone-200 px-3 py-1.5 text-sm text-stone-600 hover:bg-stone-50"
+            className="rounded-lg border border-stone-700 px-3 py-1.5 text-sm text-stone-400 hover:bg-stone-800"
           >
             Next →
           </Link>
@@ -124,26 +124,26 @@ export default async function ProductionCalendarPage({
 
       {/* Summary row */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
+        <div className="rounded-xl border border-stone-700 bg-surface p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Events</p>
-          <p className="text-2xl font-bold text-stone-900">{activeMonthEvents.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{activeMonthEvents.length}</p>
         </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
+        <div className="rounded-xl border border-stone-700 bg-surface p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Total Guests</p>
-          <p className="text-2xl font-bold text-stone-900">{totalGuests}</p>
+          <p className="text-2xl font-bold text-stone-100">{totalGuests}</p>
         </div>
-        <div className="rounded-xl border border-stone-200 bg-white p-4">
+        <div className="rounded-xl border border-stone-700 bg-surface p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Projected Revenue</p>
-          <p className="text-2xl font-bold text-stone-900">
+          <p className="text-2xl font-bold text-stone-100">
             {projectedRevenue > 0 ? formatCurrency(projectedRevenue) : '—'}
           </p>
         </div>
       </div>
 
       {/* Calendar grid */}
-      <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+      <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
         {/* Day-of-week headers */}
-        <div className="grid grid-cols-7 border-b border-stone-100">
+        <div className="grid grid-cols-7 border-b border-stone-800">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
             <div key={d} className="py-2 text-center text-xs font-semibold text-stone-400">
               {d}
@@ -157,7 +157,7 @@ export default async function ProductionCalendarPage({
           {Array.from({ length: leadingBlanks }).map((_, i) => (
             <div
               key={`blank-${i}`}
-              className="min-h-[90px] border-b border-r border-stone-100 bg-stone-50/30"
+              className="min-h-[90px] border-b border-r border-stone-800 bg-stone-800/30"
             />
           ))}
 
@@ -176,7 +176,7 @@ export default async function ProductionCalendarPage({
             return (
               <div
                 key={day.toISOString()}
-                className="min-h-[90px] border-b border-r border-stone-100 p-1.5 relative"
+                className="min-h-[90px] border-b border-r border-stone-800 p-1.5 relative"
               >
                 {/* Date number */}
                 <div
@@ -213,7 +213,7 @@ export default async function ProductionCalendarPage({
                         <span
                           className={`w-1.5 h-1.5 rounded-full shrink-0 ${STATUS_DOT[e.status] ?? 'bg-stone-400'}`}
                         />
-                        <span className="text-xs font-medium text-stone-900 truncate">
+                        <span className="text-xs font-medium text-stone-100 truncate">
                           {e.occasion ?? 'Event'}
                         </span>
                       </div>
@@ -237,7 +237,7 @@ export default async function ProductionCalendarPage({
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-xs text-stone-500">
-        <span className="font-medium text-stone-700">Status:</span>
+        <span className="font-medium text-stone-300">Status:</span>
         {Object.entries(STATUS_DOT).map(([status, dotClass]) => (
           <span key={status} className="flex items-center gap-1">
             <span className={`w-2 h-2 rounded-full ${dotClass}`} />
@@ -249,7 +249,7 @@ export default async function ProductionCalendarPage({
       {/* Event list below calendar */}
       {monthEvents.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-base font-semibold text-stone-900">
+          <h2 className="text-base font-semibold text-stone-100">
             {format(currentMonth, 'MMMM')} Events
           </h2>
           <div className="space-y-2">
@@ -259,14 +259,14 @@ export default async function ProductionCalendarPage({
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className="flex items-center justify-between rounded-lg border border-stone-200 bg-white px-4 py-3 hover:bg-stone-50 transition-colors"
+                  className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface px-4 py-3 hover:bg-stone-800 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span
                       className={`w-2.5 h-2.5 rounded-full shrink-0 ${STATUS_DOT[e.status] ?? 'bg-stone-400'}`}
                     />
                     <div className="min-w-0">
-                      <p className="text-sm font-medium text-stone-900 truncate">
+                      <p className="text-sm font-medium text-stone-100 truncate">
                         {e.occasion ?? 'Event'}
                       </p>
                       <p className="text-xs text-stone-500">
@@ -278,7 +278,7 @@ export default async function ProductionCalendarPage({
                   </div>
                   <div className="flex items-center gap-3 shrink-0">
                     {e.quoted_price_cents ? (
-                      <span className="text-sm font-medium text-stone-700">
+                      <span className="text-sm font-medium text-stone-300">
                         {formatCurrency(e.quoted_price_cents)}
                       </span>
                     ) : null}

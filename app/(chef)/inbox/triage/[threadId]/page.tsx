@@ -7,11 +7,7 @@ import { ThreadDetailClient } from '@/components/communication/thread-detail-cli
 
 export const metadata: Metadata = { title: 'Thread — ChefFlow' }
 
-export default async function ThreadDetailPage({
-  params,
-}: {
-  params: { threadId: string }
-}) {
+export default async function ThreadDetailPage({ params }: { params: { threadId: string } }) {
   await requireChef()
 
   let detail
@@ -26,9 +22,11 @@ export default async function ThreadDetailPage({
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-32">
       <div className="flex items-center gap-2 text-sm text-stone-500">
-        <Link href="/inbox" className="hover:text-stone-700">Inbox</Link>
+        <Link href="/inbox" className="hover:text-stone-300">
+          Inbox
+        </Link>
         <span>›</span>
-        <span className="text-stone-900">{displayName}</span>
+        <span className="text-stone-100">{displayName}</span>
       </div>
 
       <ThreadDetailClient detail={detail} threadId={params.threadId} />

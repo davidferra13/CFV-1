@@ -65,17 +65,13 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
 
   if (showSuccess) {
     return (
-      <Card className="bg-white/90">
+      <Card className="bg-stone-900/90">
         <CardContent className="py-12 text-center">
-          <h2 className="text-2xl font-bold text-stone-900 mb-2">Profile Submitted</h2>
-          <p className="text-stone-600 mb-6">
+          <h2 className="text-2xl font-bold text-stone-100 mb-2">Profile Submitted</h2>
+          <p className="text-stone-400 mb-6">
             Thanks. Your partner profile was created for {chefName}.
           </p>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => setShowSuccess(false)}
-          >
+          <Button type="button" variant="secondary" onClick={() => setShowSuccess(false)}>
             Submit another profile
           </Button>
         </CardContent>
@@ -84,10 +80,10 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
   }
 
   return (
-    <Card className="bg-white/90">
+    <Card className="bg-stone-900/90">
       <CardContent className="p-6 md:p-8">
         {submitError && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="mb-6 p-4 bg-red-950 border border-red-200 rounded-md">
             <p className="text-red-700 text-sm">{submitError}</p>
           </div>
         )}
@@ -101,13 +97,13 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
           />
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">
               Partner Type <span className="text-red-500 ml-1">*</span>
             </label>
             <select
               value={partnerType}
               onChange={(e) => setPartnerType(e.target.value as PartnerType)}
-              className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             >
               {PARTNER_TYPE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -117,30 +113,13 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
             </select>
           </div>
 
-          <Input
-            label="Contact Name"
-            name="contact_name"
-            placeholder="Primary contact"
-          />
+          <Input label="Contact Name" name="contact_name" placeholder="Primary contact" />
 
-          <Input
-            label="Email"
-            name="email"
-            type="email"
-            placeholder="name@example.com"
-          />
+          <Input label="Email" name="email" type="email" placeholder="name@example.com" />
 
-          <Input
-            label="Phone"
-            name="phone"
-            placeholder="(555) 123-4567"
-          />
+          <Input label="Phone" name="phone" placeholder="(555) 123-4567" />
 
-          <Input
-            label="Website"
-            name="website"
-            placeholder="https://example.com"
-          />
+          <Input label="Website" name="website" placeholder="https://example.com" />
 
           <Input
             label="Booking URL"

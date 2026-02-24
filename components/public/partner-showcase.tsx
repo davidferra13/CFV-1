@@ -51,16 +51,10 @@ const SEASON_LABELS: Record<string, string> = {
   winter: 'Winter',
 }
 
-export function PartnerShowcase({
-  partners,
-  chefName,
-}: {
-  partners: Partner[]
-  chefName: string
-}) {
+export function PartnerShowcase({ partners, chefName }: { partners: Partner[]; chefName: string }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-      {partners.map(partner => (
+      {partners.map((partner) => (
         <PartnerCard key={partner.id} partner={partner} chefName={chefName} />
       ))}
     </div>
@@ -72,16 +66,16 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
   const [seasonFilter, setSeasonFilter] = useState<string | null>(null)
 
   const allImages = partner.partner_images || []
-  const seasons = [...new Set(allImages.map(img => img.season).filter(Boolean))] as string[]
+  const seasons = [...new Set(allImages.map((img) => img.season).filter(Boolean))] as string[]
   const filteredImages = seasonFilter
-    ? allImages.filter(img => img.season === seasonFilter)
+    ? allImages.filter((img) => img.season === seasonFilter)
     : allImages
 
   const hasLocations = partner.partner_locations.length > 0
   const bookingUrl = partner.booking_url
 
   return (
-    <div className="rounded-2xl border border-stone-200 overflow-hidden bg-white shadow-sm hover:shadow-md transition-shadow">
+    <div className="rounded-2xl border border-stone-700 overflow-hidden bg-surface shadow-sm hover:shadow-md transition-shadow">
       {/* Cover Image */}
       {partner.cover_image_url ? (
         <div className="relative h-56 overflow-hidden">
@@ -92,7 +86,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
             className="w-full h-full object-cover"
           />
           <div className="absolute top-3 left-3">
-            <span className="px-3 py-1 bg-white/90 backdrop-blur rounded-full text-xs font-medium text-stone-700">
+            <span className="px-3 py-1 bg-stone-900/90 backdrop-blur rounded-full text-xs font-medium text-stone-300">
               {TYPE_LABELS[partner.partner_type] || 'Partner'}
             </span>
           </div>
@@ -107,22 +101,22 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
 
       {/* Content */}
       <div className="p-6">
-        <h3 className="text-xl font-bold text-stone-900">{partner.name}</h3>
+        <h3 className="text-xl font-bold text-stone-100">{partner.name}</h3>
 
         {partner.description && (
-          <p className="text-stone-600 mt-2 text-sm leading-relaxed">{partner.description}</p>
+          <p className="text-stone-400 mt-2 text-sm leading-relaxed">{partner.description}</p>
         )}
 
         {/* Locations */}
         {hasLocations && (
           <div className="mt-4 space-y-2">
-            {partner.partner_locations.map(loc => {
+            {partner.partner_locations.map((loc) => {
               const cityState = [loc.city, loc.state].filter(Boolean).join(', ')
               return (
                 <div key={loc.id} className="flex items-start gap-2 text-sm">
                   <MapPin className="h-4 w-4 text-stone-400 mt-0.5 flex-shrink-0" />
                   <div>
-                    <span className="text-stone-700 font-medium">{loc.name}</span>
+                    <span className="text-stone-300 font-medium">{loc.name}</span>
                     {cityState && <span className="text-stone-400 ml-1">— {cityState}</span>}
                     {loc.max_guest_count && (
                       <span className="text-stone-400 ml-2 inline-flex items-center gap-0.5">
@@ -151,10 +145,11 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
           <div className="mt-4">
             <button
               onClick={() => setExpanded(!expanded)}
-              className="text-sm text-brand-600 hover:text-brand-800 flex items-center gap-1"
+              className="text-sm text-brand-600 hover:text-brand-300 flex items-center gap-1"
             >
               {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              {expanded ? 'Hide' : 'View'} Gallery ({allImages.length} photo{allImages.length !== 1 ? 's' : ''})
+              {expanded ? 'Hide' : 'View'} Gallery ({allImages.length} photo
+              {allImages.length !== 1 ? 's' : ''})
             </button>
 
             {expanded && (
@@ -165,17 +160,21 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
                     <button
                       onClick={() => setSeasonFilter(null)}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                        !seasonFilter ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        !seasonFilter
+                          ? 'bg-stone-900 text-white'
+                          : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
                       }`}
                     >
                       All
                     </button>
-                    {seasons.map(s => (
+                    {seasons.map((s) => (
                       <button
                         key={s}
                         onClick={() => setSeasonFilter(s)}
                         className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                          seasonFilter === s ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                          seasonFilter === s
+                            ? 'bg-stone-900 text-white'
+                            : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
                         }`}
                       >
                         {SEASON_LABELS[s] || s}
@@ -186,7 +185,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
 
                 {/* Image Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                  {filteredImages.map(img => (
+                  {filteredImages.map((img) => (
                     <div key={img.id} className="relative rounded-lg overflow-hidden aspect-[4/3]">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
@@ -200,7 +199,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
                         </div>
                       )}
                       {img.season && (
-                        <span className="absolute top-2 right-2 text-[10px] bg-white/90 backdrop-blur px-2 py-0.5 rounded-full font-medium">
+                        <span className="absolute top-2 right-2 text-[10px] bg-stone-900/90 backdrop-blur px-2 py-0.5 rounded-full font-medium">
                           {SEASON_LABELS[img.season] || img.season}
                         </span>
                       )}
@@ -226,7 +225,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
           )}
           <a
             href="/contact"
-            className={`inline-flex items-center justify-center px-4 py-2.5 border border-stone-300 text-stone-700 rounded-lg text-sm font-medium hover:bg-stone-50 transition-colors ${bookingUrl ? '' : 'flex-1'}`}
+            className={`inline-flex items-center justify-center px-4 py-2.5 border border-stone-600 text-stone-300 rounded-lg text-sm font-medium hover:bg-stone-800 transition-colors ${bookingUrl ? '' : 'flex-1'}`}
           >
             Hire {chefName}
           </a>

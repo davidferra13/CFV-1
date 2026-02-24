@@ -26,8 +26,12 @@ export default async function OperationsHubPage() {
       label: 'Equipment Inventory',
       description: 'Track your owned kit, maintenance schedules, and rental costs per event',
       icon: '🔧',
-      badge: overdueEquipment.length > 0 ? `${overdueEquipment.length} due for maintenance` : `${equipment.length} items`,
-      badgeColor: overdueEquipment.length > 0 ? 'text-amber-700 bg-amber-50' : 'text-stone-500 bg-stone-100',
+      badge:
+        overdueEquipment.length > 0
+          ? `${overdueEquipment.length} due for maintenance`
+          : `${equipment.length} items`,
+      badgeColor:
+        overdueEquipment.length > 0 ? 'text-amber-700 bg-amber-950' : 'text-stone-500 bg-stone-800',
     },
     {
       href: '/operations/kitchen-rentals',
@@ -35,7 +39,7 @@ export default async function OperationsHubPage() {
       description: 'Log commercial kitchen bookings — hours, costs, and event linkages',
       icon: '🏠',
       badge: `${kitchenRentals.length} booking${kitchenRentals.length !== 1 ? 's' : ''}`,
-      badgeColor: 'text-stone-500 bg-stone-100',
+      badgeColor: 'text-stone-500 bg-stone-800',
     },
   ]
 
@@ -43,7 +47,11 @@ export default async function OperationsHubPage() {
 
   const stats = [
     { label: 'Equipment items', value: equipment.length },
-    { label: 'Maintenance due', value: overdueEquipment.length, highlight: overdueEquipment.length > 0 },
+    {
+      label: 'Maintenance due',
+      value: overdueEquipment.length,
+      highlight: overdueEquipment.length > 0,
+    },
     { label: 'Kitchen rentals', value: kitchenRentals.length },
     {
       label: 'Kitchen rental spend',
@@ -54,16 +62,18 @@ export default async function OperationsHubPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Operations</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Operations</h1>
         <p className="text-stone-500 mt-1">Equipment inventory and kitchen rental tracking</p>
       </div>
 
       {/* Quick stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {stats.map(s => (
+        {stats.map((s) => (
           <Card key={s.label}>
             <CardContent className="pt-4 pb-4">
-              <p className={`text-2xl font-bold ${(s as any).highlight ? 'text-amber-700' : 'text-stone-900'}`}>
+              <p
+                className={`text-2xl font-bold ${(s as any).highlight ? 'text-amber-700' : 'text-stone-100'}`}
+              >
                 {s.value}
               </p>
               <p className="text-sm text-stone-500 mt-0.5">{s.label}</p>
@@ -74,7 +84,7 @@ export default async function OperationsHubPage() {
 
       {/* Nav tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {tiles.map(tile => (
+        {tiles.map((tile) => (
           <Link key={tile.href} href={tile.href}>
             <Card className="h-full hover:shadow-md transition-shadow cursor-pointer group">
               <CardContent className="pt-5 pb-5">
@@ -82,10 +92,12 @@ export default async function OperationsHubPage() {
                   <span className="text-2xl">{tile.icon}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-stone-900 group-hover:text-brand-700 transition-colors">
+                      <p className="font-semibold text-stone-100 group-hover:text-brand-400 transition-colors">
                         {tile.label}
                       </p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${tile.badgeColor}`}>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-medium ${tile.badgeColor}`}
+                      >
                         {tile.badge}
                       </span>
                     </div>

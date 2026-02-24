@@ -32,7 +32,20 @@ export default async function StaffLaborPage() {
   const monthResults = await Promise.all(monthPromises)
 
   // Build the labor-by-month series for the chart
-  const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const MONTH_NAMES = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   const laborByMonth = monthResults.map((r: any) => ({
     month: MONTH_NAMES[r.month - 1],
     laborCents: r.totalLaborCents ?? 0,
@@ -52,19 +65,16 @@ export default async function StaffLaborPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/staff" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/staff" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Staff Roster
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Labor Dashboard</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Labor Dashboard</h1>
         <p className="text-stone-500 mt-1">
           Track labor costs against revenue. Target 20-30% labor ratio for healthy margins.
         </p>
       </div>
 
-      <LaborDashboard
-        laborByMonth={laborByMonth}
-        currentMonthDetail={currentMonthDetail}
-      />
+      <LaborDashboard laborByMonth={laborByMonth} currentMonthDetail={currentMonthDetail} />
     </div>
   )
 }

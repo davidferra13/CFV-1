@@ -54,7 +54,7 @@ export function RemovalTaskTracker({ request }: { request: RemovalRequest }) {
         </div>
       </CardHeader>
       <CardContent>
-        {request.reason && <p className="text-sm text-stone-600 mb-3">{request.reason}</p>}
+        {request.reason && <p className="text-sm text-stone-400 mb-3">{request.reason}</p>}
 
         <div className="space-y-2">
           {request.tasks.map((task) => (
@@ -64,10 +64,10 @@ export function RemovalTaskTracker({ request }: { request: RemovalRequest }) {
                 checked={task.completed}
                 disabled={isPending || request.status === 'completed'}
                 onChange={(e) => handleToggle(task.id, e.target.checked)}
-                className="w-4 h-4 rounded border-stone-300"
+                className="w-4 h-4 rounded border-stone-600"
               />
               <span
-                className={`text-sm ${task.completed ? 'text-stone-400 line-through' : 'text-stone-700'}`}
+                className={`text-sm ${task.completed ? 'text-stone-400 line-through' : 'text-stone-300'}`}
               >
                 {task.label}
               </span>
@@ -76,7 +76,7 @@ export function RemovalTaskTracker({ request }: { request: RemovalRequest }) {
         </div>
 
         {allComplete && request.status !== 'completed' && (
-          <div className="mt-4 pt-3 border-t border-stone-200">
+          <div className="mt-4 pt-3 border-t border-stone-700">
             <Button onClick={handleComplete} disabled={isPending}>
               {isPending ? 'Completing...' : 'Mark Request Complete'}
             </Button>

@@ -11,14 +11,8 @@ import {
   type CategoryPreference,
   type SmsSettings,
 } from '@/lib/notifications/settings-actions'
-import {
-  TIER_CHANNEL_DEFAULTS,
-  DEFAULT_TIER_MAP,
-} from '@/lib/notifications/tier-config'
-import {
-  type NotificationCategory,
-  CATEGORY_LABELS,
-} from '@/lib/notifications/types'
+import { TIER_CHANNEL_DEFAULTS, DEFAULT_TIER_MAP } from '@/lib/notifications/tier-config'
+import { type NotificationCategory, CATEGORY_LABELS } from '@/lib/notifications/types'
 
 // Chef-facing categories only (omit client-facing)
 const CHEF_CATEGORIES: NotificationCategory[] = [
@@ -33,17 +27,21 @@ const CHEF_CATEGORIES: NotificationCategory[] = [
 
 // Representative action for each category (used to compute tier default)
 const CATEGORY_REPRESENTATIVE_ACTION: Partial<Record<NotificationCategory, string>> = {
-  inquiry:  'new_inquiry',
-  quote:    'quote_accepted',
-  event:    'event_paid',
-  payment:  'payment_received',
-  chat:     'new_message',
-  client:   'client_signup',
-  loyalty:  'gift_card_purchased',
-  system:   'system_alert',
+  inquiry: 'new_inquiry',
+  quote: 'quote_accepted',
+  event: 'event_paid',
+  payment: 'payment_received',
+  chat: 'new_message',
+  client: 'client_signup',
+  loyalty: 'gift_card_purchased',
+  system: 'system_alert',
 }
 
-function getTierDefault(category: NotificationCategory): { email: boolean; push: boolean; sms: boolean } {
+function getTierDefault(category: NotificationCategory): {
+  email: boolean
+  push: boolean
+  sms: boolean
+} {
   const action = CATEGORY_REPRESENTATIVE_ACTION[category] as keyof typeof DEFAULT_TIER_MAP
   const tier = DEFAULT_TIER_MAP[action]
   return TIER_CHANNEL_DEFAULTS[tier]
@@ -71,13 +69,13 @@ function ChannelToggle({ label, checked, disabled, onChange }: ChannelToggleProp
         className={[
           'relative inline-flex h-5 w-9 shrink-0 rounded-full border-2 border-transparent transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2',
-          checked ? 'bg-stone-900' : 'bg-stone-200',
+          checked ? 'bg-stone-900' : 'bg-stone-700',
           disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer',
         ].join(' ')}
       >
         <span
           className={[
-            'pointer-events-none block h-4 w-4 rounded-full bg-white shadow transition-transform',
+            'pointer-events-none block h-4 w-4 rounded-full bg-surface shadow transition-transform',
             checked ? 'translate-x-4' : 'translate-x-0',
           ].join(' ')}
         />
@@ -104,14 +102,17 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
   const [channels, setChannels] = useState<
     Record<NotificationCategory, { email: boolean; push: boolean; sms: boolean }>
   >(() => {
-    const result = {} as Record<NotificationCategory, { email: boolean; push: boolean; sms: boolean }>
+    const result = {} as Record<
+      NotificationCategory,
+      { email: boolean; push: boolean; sms: boolean }
+    >
     for (const cat of CHEF_CATEGORIES) {
       const defaults = getTierDefault(cat)
       const saved = prefMap.get(cat)
       result[cat] = {
         email: saved?.email_enabled ?? defaults.email,
-        push:  saved?.push_enabled  ?? defaults.push,
-        sms:   saved?.sms_enabled   ?? defaults.sms,
+        push: saved?.push_enabled ?? defaults.push,
+        sms: saved?.sms_enabled ?? defaults.sms,
       }
     }
     return result
@@ -126,7 +127,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
   const handleChannelToggle = (
     category: NotificationCategory,
     channel: 'email' | 'push' | 'sms',
-    value: boolean,
+    value: boolean
   ) => {
     setChannels((prev) => ({
       ...prev,
@@ -160,10 +161,9 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
 
   return (
     <div className="space-y-8">
-
       {/* ─── Browser Push ───────────────────────────────────────────── */}
-      <section className="rounded-xl border border-stone-200 bg-white p-5">
-        <h2 className="text-base font-semibold text-stone-900">Browser Push Notifications</h2>
+      <section className="rounded-xl border border-stone-700 bg-surface p-5">
+        <h2 className="text-base font-semibold text-stone-100">Browser Push Notifications</h2>
         <p className="mt-1 text-sm text-stone-500">
           Instant alerts delivered to this browser, even when the tab is closed.
         </p>
@@ -174,7 +174,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
               <p className="text-sm text-green-700 font-medium">Enabled on this device</p>
             )}
             {pushState === 'default' && (
-              <p className="text-sm text-stone-600">Not yet enabled on this device</p>
+              <p className="text-sm text-stone-400">Not yet enabled on this device</p>
             )}
             {pushState === 'denied' && (
               <p className="text-sm text-red-600">
@@ -182,9 +182,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
               </p>
             )}
             {pushState === 'unsupported' && (
-              <p className="text-sm text-stone-400">
-                Not supported on this browser or device.
-              </p>
+              <p className="text-sm text-stone-400">Not supported on this browser or device.</p>
             )}
           </div>
 
@@ -196,23 +194,19 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
               className={[
                 'shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50',
                 pushState === 'subscribed'
-                  ? 'border border-stone-300 bg-white text-stone-700 hover:bg-stone-50'
+                  ? 'border border-stone-600 bg-surface text-stone-300 hover:bg-stone-800'
                   : 'bg-stone-900 text-white hover:bg-stone-800',
               ].join(' ')}
             >
-              {pushLoading
-                ? '…'
-                : pushState === 'subscribed'
-                ? 'Disable push'
-                : 'Enable push'}
+              {pushLoading ? '…' : pushState === 'subscribed' ? 'Disable push' : 'Enable push'}
             </button>
           )}
         </div>
       </section>
 
       {/* ─── SMS Setup ──────────────────────────────────────────────── */}
-      <section className="rounded-xl border border-stone-200 bg-white p-5">
-        <h2 className="text-base font-semibold text-stone-900">SMS Alerts</h2>
+      <section className="rounded-xl border border-stone-700 bg-surface p-5">
+        <h2 className="text-base font-semibold text-stone-100">SMS Alerts</h2>
         <p className="mt-1 text-sm text-stone-500">
           Text messages for critical-tier notifications: new inquiries, payments, and disputes.
           Requires Twilio setup (see docs).
@@ -220,7 +214,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
 
         <div className="mt-4 space-y-3">
           <div>
-            <label className="block text-sm font-medium text-stone-700" htmlFor="sms-phone">
+            <label className="block text-sm font-medium text-stone-300" htmlFor="sms-phone">
               Phone number (E.164 format, e.g. +14155551234)
             </label>
             <input
@@ -229,7 +223,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
               placeholder="+14155551234"
               value={smsPhone}
               onChange={(e) => setSmsPhone(e.target.value)}
-              className="mt-1 block w-full max-w-xs rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
+              className="mt-1 block w-full max-w-xs rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
             />
           </div>
 
@@ -238,9 +232,9 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
               type="checkbox"
               checked={smsOptIn}
               onChange={(e) => setSmsOptIn(e.target.checked)}
-              className="mt-0.5 rounded border-stone-300 accent-stone-900"
+              className="mt-0.5 rounded border-stone-600 accent-stone-900"
             />
-            <span className="text-sm text-stone-700">
+            <span className="text-sm text-stone-300">
               I agree to receive SMS notifications from ChefFlow. Message and data rates may apply.
             </span>
           </label>
@@ -261,9 +255,9 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
       </section>
 
       {/* ─── Per-Category Toggles ────────────────────────────────────── */}
-      <section className="rounded-xl border border-stone-200 bg-white">
-        <div className="border-b border-stone-200 p-5">
-          <h2 className="text-base font-semibold text-stone-900">Channel Overrides by Category</h2>
+      <section className="rounded-xl border border-stone-700 bg-surface">
+        <div className="border-b border-stone-700 p-5">
+          <h2 className="text-base font-semibold text-stone-100">Channel Overrides by Category</h2>
           <p className="mt-1 text-sm text-stone-500">
             Defaults come from the notification tier system. Toggle here to override per category.
           </p>
@@ -272,7 +266,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-stone-100">
+              <tr className="border-b border-stone-800">
                 <th className="px-5 py-3 text-left text-xs font-medium text-stone-500 uppercase tracking-wide">
                   Category
                 </th>
@@ -289,8 +283,8 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
             </thead>
             <tbody className="divide-y divide-stone-50">
               {CHEF_CATEGORIES.map((cat) => (
-                <tr key={cat} className="hover:bg-stone-50/50">
-                  <td className="px-5 py-3 text-sm font-medium text-stone-900">
+                <tr key={cat} className="hover:bg-stone-800/50">
+                  <td className="px-5 py-3 text-sm font-medium text-stone-100">
                     {CATEGORY_LABELS[cat]}
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -322,10 +316,10 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
           </table>
         </div>
 
-        <div className="border-t border-stone-100 px-5 py-3">
+        <div className="border-t border-stone-800 px-5 py-3">
           <p className="text-xs text-stone-400">
-            SMS toggles are disabled until you save a phone number and opt in above.
-            Push toggles are disabled if push is unsupported or denied by the browser.
+            SMS toggles are disabled until you save a phone number and opt in above. Push toggles
+            are disabled if push is unsupported or denied by the browser.
           </p>
         </div>
       </section>

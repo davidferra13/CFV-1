@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats } from '@/lib/clients/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = { title: 'Most Frequent Clients - ChefFlow' }
@@ -13,18 +20,18 @@ export default async function MostFrequentPage() {
   const clients = await getClientsWithStats()
 
   const ranked = [...clients]
-    .filter(c => (c.totalEvents ?? 0) > 0)
+    .filter((c) => (c.totalEvents ?? 0) > 0)
     .sort((a, b) => (b.totalEvents ?? 0) - (a.totalEvents ?? 0))
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/clients/insights" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients/insights" className="text-sm text-stone-500 hover:text-stone-300">
           ← Client Insights
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Most Frequent Clients</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Most Frequent Clients</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {ranked.length}
           </span>
         </div>
@@ -33,8 +40,10 @@ export default async function MostFrequentPage() {
 
       {ranked.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No event data yet</p>
-          <p className="text-stone-400 text-sm">Frequent clients will appear here once events are completed</p>
+          <p className="text-stone-400 font-medium mb-1">No event data yet</p>
+          <p className="text-stone-400 text-sm">
+            Frequent clients will appear here once events are completed
+          </p>
         </Card>
       ) : (
         <Card>
@@ -51,14 +60,18 @@ export default async function MostFrequentPage() {
             </TableHeader>
             <TableBody>
               {ranked.map((client, i) => {
-                const avgPerEvent = (client.totalEvents ?? 0) > 0
-                  ? Math.round((client.totalSpentCents ?? 0) / (client.totalEvents ?? 1))
-                  : 0
+                const avgPerEvent =
+                  (client.totalEvents ?? 0) > 0
+                    ? Math.round((client.totalSpentCents ?? 0) / (client.totalEvents ?? 1))
+                    : 0
                 return (
                   <TableRow key={client.id}>
                     <TableCell className="text-stone-400 font-mono text-sm">#{i + 1}</TableCell>
                     <TableCell className="font-medium">
-                      <Link href={`/clients/${client.id}`} className="text-brand-600 hover:text-brand-800 hover:underline">
+                      <Link
+                        href={`/clients/${client.id}`}
+                        className="text-brand-600 hover:text-brand-300 hover:underline"
+                      >
                         {client.full_name}
                       </Link>
                       {client.email && (
@@ -66,13 +79,15 @@ export default async function MostFrequentPage() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <span className="text-stone-900 font-bold">{client.totalEvents ?? 0}</span>
+                      <span className="text-stone-100 font-bold">{client.totalEvents ?? 0}</span>
                       <span className="text-stone-400 text-sm ml-1">events</span>
                     </TableCell>
-                    <TableCell className="text-stone-600 text-sm">
-                      {(client.totalSpentCents ?? 0) > 0 ? formatCurrency(client.totalSpentCents ?? 0) : '—'}
+                    <TableCell className="text-stone-400 text-sm">
+                      {(client.totalSpentCents ?? 0) > 0
+                        ? formatCurrency(client.totalSpentCents ?? 0)
+                        : '—'}
                     </TableCell>
-                    <TableCell className="text-stone-600 text-sm">
+                    <TableCell className="text-stone-400 text-sm">
                       {avgPerEvent > 0 ? formatCurrency(avgPerEvent) : '—'}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">

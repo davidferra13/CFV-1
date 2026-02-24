@@ -41,22 +41,22 @@ export function LostReasonPrompt({ quoteId, onDismiss }: LostReasonPromptProps) 
 
   if (submitted) {
     return (
-      <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+      <div className="rounded-xl border border-green-200 bg-green-950 px-4 py-3 text-sm text-green-800">
         Feedback recorded. Thanks for tracking this.
       </div>
     )
   }
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 space-y-3">
+    <div className="rounded-xl border border-stone-700 bg-stone-800 p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium text-stone-800">
+        <p className="text-sm font-medium text-stone-200">
           Quick feedback — why did this quote not convert?
           <span className="ml-1 font-normal text-stone-500">(optional)</span>
         </p>
         <button
           onClick={onDismiss}
-          className="shrink-0 text-stone-400 hover:text-stone-600 transition-colors"
+          className="shrink-0 text-stone-400 hover:text-stone-400 transition-colors"
           aria-label="Dismiss"
         >
           <X className="h-4 w-4" />
@@ -74,7 +74,7 @@ export function LostReasonPrompt({ quoteId, onDismiss }: LostReasonPromptProps) 
               onChange={() => setSelected(opt.value)}
               className="text-brand-600 focus:ring-brand-500"
             />
-            <span className="text-sm text-stone-700 group-hover:text-stone-900">{opt.label}</span>
+            <span className="text-sm text-stone-300 group-hover:text-stone-100">{opt.label}</span>
           </label>
         ))}
       </div>
@@ -85,7 +85,7 @@ export function LostReasonPrompt({ quoteId, onDismiss }: LostReasonPromptProps) 
           onChange={(e) => setNotes(e.target.value)}
           rows={2}
           placeholder="Please describe..."
-          className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+          className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm text-stone-100 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
         />
       )}
 
@@ -101,7 +101,7 @@ export function LostReasonPrompt({ quoteId, onDismiss }: LostReasonPromptProps) 
         </button>
         <button
           onClick={onDismiss}
-          className="rounded-md border border-stone-300 px-3 py-1.5 text-xs font-medium text-stone-600 hover:bg-stone-100 transition-colors"
+          className="rounded-md border border-stone-600 px-3 py-1.5 text-xs font-medium text-stone-400 hover:bg-stone-700 transition-colors"
         >
           Skip
         </button>

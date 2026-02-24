@@ -12,16 +12,16 @@ function StarDisplay({ value }: { value: number | null }) {
     <span className="text-amber-500 font-semibold text-sm">
       {'★'.repeat(value)}
       {'☆'.repeat(5 - value)}
-      <span className="ml-1 text-stone-600">{value}/5</span>
+      <span className="ml-1 text-stone-400">{value}/5</span>
     </span>
   )
 }
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-white rounded-xl border border-stone-200 p-4">
+    <div className="bg-surface rounded-xl border border-stone-700 p-4">
       <p className="text-xs text-stone-500 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-stone-900">{value}</p>
+      <p className="text-2xl font-bold text-stone-100">{value}</p>
     </div>
   )
 }
@@ -37,7 +37,7 @@ export default async function SurveysPage() {
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-stone-900">Client Surveys</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Client Surveys</h1>
         <p className="mt-1 text-stone-500">
           Post-event feedback collected automatically when events complete.
         </p>
@@ -49,11 +49,7 @@ export default async function SurveysPage() {
           <StatCard label="Surveys sent" value={stats.total} />
           <StatCard
             label="Response rate"
-            value={
-              stats.total > 0
-                ? `${Math.round((stats.submitted / stats.total) * 100)}%`
-                : '—'
-            }
+            value={stats.total > 0 ? `${Math.round((stats.submitted / stats.total) * 100)}%` : '—'}
           />
           <StatCard
             label="Avg. overall"
@@ -72,12 +68,12 @@ export default async function SurveysPage() {
 
       {/* No surveys yet */}
       {surveys.length === 0 && (
-        <div className="text-center py-20 bg-white rounded-2xl border border-stone-200">
+        <div className="text-center py-20 bg-surface rounded-2xl border border-stone-700">
           <div className="text-4xl mb-3">📋</div>
-          <h2 className="text-lg font-semibold text-stone-900 mb-1">No surveys yet</h2>
+          <h2 className="text-lg font-semibold text-stone-100 mb-1">No surveys yet</h2>
           <p className="text-stone-500 max-w-sm mx-auto text-sm">
-            A survey is automatically sent to clients when you mark an event as
-            completed. Responses will appear here.
+            A survey is automatically sent to clients when you mark an event as completed. Responses
+            will appear here.
           </p>
         </div>
       )}
@@ -91,14 +87,11 @@ export default async function SurveysPage() {
             const isSubmitted = survey.submitted_at !== null
 
             return (
-              <div
-                key={survey.id}
-                className="bg-white rounded-xl border border-stone-200 p-5"
-              >
+              <div key={survey.id} className="bg-surface rounded-xl border border-stone-700 p-5">
                 {/* Row header */}
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div>
-                    <p className="font-medium text-stone-900">{clientName}</p>
+                    <p className="font-medium text-stone-100">{clientName}</p>
                     <p className="text-sm text-stone-500">{occasion}</p>
                   </div>
                   <Badge variant={isSubmitted ? 'success' : 'default'}>
@@ -130,9 +123,9 @@ export default async function SurveysPage() {
 
                     {/* Would book again */}
                     {survey.would_book_again && (
-                      <p className="text-sm text-stone-600 mb-2">
+                      <p className="text-sm text-stone-400 mb-2">
                         <span className="text-stone-400">Book again: </span>
-                        <span className="capitalize font-medium text-stone-900">
+                        <span className="capitalize font-medium text-stone-100">
                           {survey.would_book_again}
                         </span>
                       </p>
@@ -140,9 +133,9 @@ export default async function SurveysPage() {
 
                     {/* Highlight */}
                     {survey.highlight_text && (
-                      <div className="bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 mb-2">
+                      <div className="bg-amber-950 border border-amber-100 rounded-lg px-3 py-2 mb-2">
                         <p className="text-xs text-amber-700 font-medium mb-0.5">Highlight</p>
-                        <p className="text-sm text-stone-700">{survey.highlight_text}</p>
+                        <p className="text-sm text-stone-300">{survey.highlight_text}</p>
                       </div>
                     )}
 

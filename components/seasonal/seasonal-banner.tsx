@@ -5,10 +5,10 @@
 import type { SeasonalPalette, MicroWindow } from '@/lib/seasonal/types'
 
 const SEASON_TINTS: Record<string, string> = {
-  Winter: 'bg-sky-50 border-sky-200',
-  Spring: 'bg-emerald-50 border-emerald-200',
-  Summer: 'bg-amber-50 border-amber-200',
-  Autumn: 'bg-orange-50 border-orange-200',
+  Winter: 'bg-sky-950 border-sky-200',
+  Spring: 'bg-emerald-950 border-emerald-200',
+  Summer: 'bg-amber-950 border-amber-200',
+  Autumn: 'bg-orange-950 border-orange-200',
 }
 
 const SEASON_TEXT: Record<string, string> = {
@@ -28,10 +28,11 @@ export function SeasonalBanner({
   endingMicroWindows: MicroWindow[]
 }) {
   if (!palette) return null
-  if (!palette.sensory_anchor && activeMicroWindows.length === 0 && endingMicroWindows.length === 0) return null
+  if (!palette.sensory_anchor && activeMicroWindows.length === 0 && endingMicroWindows.length === 0)
+    return null
 
-  const tintClass = SEASON_TINTS[palette.season_name] || 'bg-stone-50 border-stone-200'
-  const textClass = SEASON_TEXT[palette.season_name] || 'text-stone-800'
+  const tintClass = SEASON_TINTS[palette.season_name] || 'bg-stone-800 border-stone-700'
+  const textClass = SEASON_TEXT[palette.season_name] || 'text-stone-200'
 
   return (
     <div className={`rounded-xl border p-4 ${tintClass} mb-6`}>
@@ -41,9 +42,7 @@ export function SeasonalBanner({
             {palette.season_name}
           </h3>
           {palette.sensory_anchor && (
-            <p className={`text-sm mt-1 ${textClass} opacity-80`}>
-              {palette.sensory_anchor}
-            </p>
+            <p className={`text-sm mt-1 ${textClass} opacity-80`}>{palette.sensory_anchor}</p>
           )}
         </div>
       </div>
@@ -52,14 +51,14 @@ export function SeasonalBanner({
       {(activeMicroWindows.length > 0 || endingMicroWindows.length > 0) && (
         <div className="flex flex-wrap gap-2 mt-3">
           {activeMicroWindows.map((w, i) => {
-            const isEnding = endingMicroWindows.some(e => e.ingredient === w.ingredient)
+            const isEnding = endingMicroWindows.some((e) => e.ingredient === w.ingredient)
             return (
               <span
                 key={`active-${i}`}
                 className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${
                   isEnding
-                    ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-200'
-                    : 'bg-white/70 text-stone-600 ring-1 ring-stone-200'
+                    ? 'bg-amber-900 text-amber-700 ring-1 ring-amber-800'
+                    : 'bg-stone-900/70 text-stone-400 ring-1 ring-stone-700'
                 }`}
               >
                 {w.ingredient}
@@ -69,11 +68,11 @@ export function SeasonalBanner({
           })}
           {/* Show ending-only items not already shown as active */}
           {endingMicroWindows
-            .filter(e => !activeMicroWindows.some(a => a.ingredient === e.ingredient))
+            .filter((e) => !activeMicroWindows.some((a) => a.ingredient === e.ingredient))
             .map((w, i) => (
               <span
                 key={`ending-${i}`}
-                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 ring-1 ring-amber-200"
+                className="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full bg-amber-900 text-amber-700 ring-1 ring-amber-800"
               >
                 {w.ingredient}
                 <span className="text-[10px] opacity-70">ending soon</span>

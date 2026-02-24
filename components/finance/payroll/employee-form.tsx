@@ -89,7 +89,7 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         {saved && (
-          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
             <CheckCircle className="h-4 w-4" />
             Saved.
           </div>
@@ -102,7 +102,7 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
             onChange={(e) => setForm({ ...form, name: e.target.value })}
           />
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">
               SSN (last 4 digits)
             </label>
             <Input
@@ -153,7 +153,7 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">
               W-4 Filing Status
             </label>
             <select
@@ -164,7 +164,7 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
                   filingStatus: e.target.value as Employee['filingStatus'],
                 })
               }
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
             >
               {Object.entries(FILING_STATUS_LABELS).map(([val, label]) => (
                 <option key={val} value={val}>
@@ -184,11 +184,11 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">Pay Type</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">Pay Type</label>
             <select
               value={form.payType}
               onChange={(e) => setForm({ ...form, payType: e.target.value as 'hourly' | 'salary' })}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
             >
               {Object.entries(PAY_TYPE_LABELS).map(([val, label]) => (
                 <option key={val} value={val}>
@@ -199,7 +199,7 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
           </div>
           {form.payType === 'hourly' ? (
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
                 Hourly Rate ($)
               </label>
               <Input
@@ -217,7 +217,7 @@ export function EmployeeForm({ employee, onSaved, onCancel }: Props) {
             </div>
           ) : (
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
                 Annual Salary ($)
               </label>
               <Input

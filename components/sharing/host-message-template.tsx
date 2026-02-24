@@ -48,12 +48,12 @@ export function HostMessageTemplate({ shareUrl, occasion, eventDate, chefName }:
   }
 
   return (
-    <div className="mt-4 pt-4 border-t border-stone-100">
+    <div className="mt-4 pt-4 border-t border-stone-800">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-sm font-medium text-stone-700">Message for Host</h4>
+        <h4 className="text-sm font-medium text-stone-300">Message for Host</h4>
         <button
           onClick={() => setShowPreview(!showPreview)}
-          className="text-xs text-stone-500 hover:text-stone-700"
+          className="text-xs text-stone-500 hover:text-stone-300"
         >
           {showPreview ? 'Hide' : 'Preview'}
         </button>
@@ -63,7 +63,7 @@ export function HostMessageTemplate({ shareUrl, occasion, eventDate, chefName }:
       </p>
 
       {showPreview && (
-        <pre className="text-sm text-stone-700 bg-stone-50 rounded-lg p-4 mb-3 whitespace-pre-wrap font-sans leading-relaxed">
+        <pre className="text-sm text-stone-300 bg-stone-800 rounded-lg p-4 mb-3 whitespace-pre-wrap font-sans leading-relaxed">
           {message}
         </pre>
       )}

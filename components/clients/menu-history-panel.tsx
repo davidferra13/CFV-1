@@ -20,23 +20,23 @@ function EventMenuRow({ entry }: { entry: MenuHistoryEntry }) {
   })
 
   return (
-    <div className="border-b border-stone-100 last:border-0 py-2">
+    <div className="border-b border-stone-800 last:border-0 py-2">
       <button
         type="button"
-        onClick={() => hasContent && setOpen(o => !o)}
+        onClick={() => hasContent && setOpen((o) => !o)}
         className={`w-full text-left flex items-start justify-between gap-2 ${hasContent ? 'cursor-pointer' : 'cursor-default'}`}
       >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href={`/events/${entry.eventId}`}
-              className="text-sm font-medium text-stone-900 hover:text-brand-600"
-              onClick={e => e.stopPropagation()}
+              className="text-sm font-medium text-stone-100 hover:text-brand-600"
+              onClick={(e) => e.stopPropagation()}
             >
               {entry.occasion || 'Event'}
             </Link>
             {entry.cuisineType && (
-              <span className="text-xs px-1.5 py-0.5 rounded bg-stone-100 text-stone-500">
+              <span className="text-xs px-1.5 py-0.5 rounded bg-stone-800 text-stone-500">
                 {entry.cuisineType}
               </span>
             )}
@@ -50,46 +50,51 @@ function EventMenuRow({ entry }: { entry: MenuHistoryEntry }) {
           {!open && hasDishes && (
             <p className="text-xs text-stone-400 mt-0.5 truncate">
               {entry.dishes
-                .flatMap(d => d.componentNames)
+                .flatMap((d) => d.componentNames)
                 .slice(0, 4)
                 .join(', ')}
-              {entry.dishes.flatMap(d => d.componentNames).length > 4 && ' …'}
+              {entry.dishes.flatMap((d) => d.componentNames).length > 4 && ' …'}
             </p>
           )}
         </div>
         {hasContent && (
-          <span className="text-stone-400 text-xs shrink-0 mt-0.5">
-            {open ? '▲' : '▼'}
-          </span>
+          <span className="text-stone-400 text-xs shrink-0 mt-0.5">{open ? '▲' : '▼'}</span>
         )}
       </button>
 
       {open && hasContent && (
         <div className="mt-2 pl-1 space-y-2">
           {entry.isSimpleMode && entry.simpleContent ? (
-            <pre className="whitespace-pre-wrap text-xs text-stone-600 font-sans">{entry.simpleContent}</pre>
+            <pre className="whitespace-pre-wrap text-xs text-stone-400 font-sans">
+              {entry.simpleContent}
+            </pre>
           ) : (
             entry.dishes.map((dish, i) => (
               <div key={i}>
-                <p className="text-xs font-medium text-stone-600 uppercase tracking-wide">
-                  {dish.courseName}{dish.dishName ? ` — ${dish.dishName}` : ''}
+                <p className="text-xs font-medium text-stone-400 uppercase tracking-wide">
+                  {dish.courseName}
+                  {dish.dishName ? ` — ${dish.dishName}` : ''}
                 </p>
                 {dish.componentNames.length > 0 ? (
-                  <p className="text-xs text-stone-500 mt-0.5">
-                    {dish.componentNames.join(', ')}
-                  </p>
+                  <p className="text-xs text-stone-500 mt-0.5">{dish.componentNames.join(', ')}</p>
                 ) : (
                   <p className="text-xs text-stone-400 mt-0.5 italic">No components</p>
                 )}
                 {(dish.allergenFlags.length > 0 || dish.dietaryTags.length > 0) && (
                   <div className="flex flex-wrap gap-1 mt-1">
-                    {dish.allergenFlags.map(f => (
-                      <span key={f} className="text-[10px] px-1 py-0.5 rounded bg-red-50 text-red-600 font-medium">
+                    {dish.allergenFlags.map((f) => (
+                      <span
+                        key={f}
+                        className="text-[10px] px-1 py-0.5 rounded bg-red-950 text-red-600 font-medium"
+                      >
                         {f}
                       </span>
                     ))}
-                    {dish.dietaryTags.map(t => (
-                      <span key={t} className="text-[10px] px-1 py-0.5 rounded bg-emerald-50 text-emerald-700">
+                    {dish.dietaryTags.map((t) => (
+                      <span
+                        key={t}
+                        className="text-[10px] px-1 py-0.5 rounded bg-emerald-950 text-emerald-700"
+                      >
                         {t}
                       </span>
                     ))}
@@ -112,7 +117,9 @@ export function MenuHistoryPanel({ history }: { history: ClientMenuHistory }) {
           <CardTitle className="text-lg">Culinary History</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-stone-500">No completed events yet — menu history will appear here after the first dinner.</p>
+          <p className="text-sm text-stone-500">
+            No completed events yet — menu history will appear here after the first dinner.
+          </p>
         </CardContent>
       </Card>
     )
@@ -127,18 +134,18 @@ export function MenuHistoryPanel({ history }: { history: ClientMenuHistory }) {
         {/* Aggregates — what's been served most */}
         {history.topComponents.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1.5">Frequently Served</p>
+            <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1.5">
+              Frequently Served
+            </p>
             <div className="flex flex-wrap gap-1.5">
-              {history.topComponents.map(c => (
+              {history.topComponents.map((c) => (
                 <span
                   key={c.name}
-                  className="text-xs px-2 py-0.5 rounded-full bg-brand-50 text-brand-700 border border-brand-100"
+                  className="text-xs px-2 py-0.5 rounded-full bg-brand-950 text-brand-400 border border-brand-100"
                   title={`Served ${c.count} time${c.count !== 1 ? 's' : ''}`}
                 >
                   {c.name}
-                  {c.count > 1 && (
-                    <span className="ml-1 text-brand-400">×{c.count}</span>
-                  )}
+                  {c.count > 1 && <span className="ml-1 text-brand-400">×{c.count}</span>}
                 </span>
               ))}
             </div>
@@ -147,8 +154,10 @@ export function MenuHistoryPanel({ history }: { history: ClientMenuHistory }) {
 
         {history.cuisinesServed.length > 0 && (
           <div>
-            <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1.5">Cuisines Served</p>
-            <p className="text-sm text-stone-700">{history.cuisinesServed.join(', ')}</p>
+            <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-1.5">
+              Cuisines Served
+            </p>
+            <p className="text-sm text-stone-300">{history.cuisinesServed.join(', ')}</p>
           </div>
         )}
 
@@ -158,7 +167,7 @@ export function MenuHistoryPanel({ history }: { history: ClientMenuHistory }) {
             Past Events ({history.totalEvents})
           </p>
           <div>
-            {history.entries.map(entry => (
+            {history.entries.map((entry) => (
               <EventMenuRow key={entry.eventId} entry={entry} />
             ))}
           </div>

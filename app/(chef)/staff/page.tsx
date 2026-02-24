@@ -31,17 +31,19 @@ export default async function StaffRosterPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Staff Roster</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Staff Roster</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Manage your sous chefs, kitchen assistants, and service staff. Assign them to events
-          and track hours and labor costs.
+          Manage your sous chefs, kitchen assistants, and service staff. Assign them to events and
+          track hours and labor costs.
         </p>
       </div>
 
       {/* Active staff */}
       <div className="space-y-3">
         {active.length === 0 ? (
-          <p className="text-sm text-stone-500">No active staff yet. Add your first team member below.</p>
+          <p className="text-sm text-stone-500">
+            No active staff yet. Add your first team member below.
+          </p>
         ) : (
           active.map((member: any) => (
             <Card key={member.id}>
@@ -49,7 +51,7 @@ export default async function StaffRosterPage() {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-stone-900">{member.name}</span>
+                      <span className="font-medium text-stone-100">{member.name}</span>
                       <Badge variant="default">{ROLE_LABELS[member.role] ?? member.role}</Badge>
                     </div>
                     <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-stone-500">
@@ -59,9 +61,7 @@ export default async function StaffRosterPage() {
                       {member.phone && <span>{member.phone}</span>}
                       {member.email && <span>{member.email}</span>}
                     </div>
-                    {member.notes && (
-                      <p className="mt-1 text-xs text-stone-400">{member.notes}</p>
-                    )}
+                    {member.notes && <p className="mt-1 text-xs text-stone-400">{member.notes}</p>}
                   </div>
                   <form
                     action={async () => {
@@ -106,8 +106,13 @@ export default async function StaffRosterPage() {
           </summary>
           <div className="mt-3 space-y-2">
             {inactive.map((member: any) => (
-              <div key={member.id} className="flex items-center justify-between rounded-lg border border-stone-200 px-4 py-2 text-sm text-stone-400">
-                <span>{member.name} — {ROLE_LABELS[member.role] ?? member.role}</span>
+              <div
+                key={member.id}
+                className="flex items-center justify-between rounded-lg border border-stone-700 px-4 py-2 text-sm text-stone-400"
+              >
+                <span>
+                  {member.name} — {ROLE_LABELS[member.role] ?? member.role}
+                </span>
               </div>
             ))}
           </div>

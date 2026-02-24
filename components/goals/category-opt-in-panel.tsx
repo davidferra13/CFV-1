@@ -54,10 +54,10 @@ export function CategoryOptInPanel({
   }
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-5 space-y-4">
+    <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-semibold text-stone-900">
+          <h3 className="text-sm font-semibold text-stone-100">
             {isFirstTime ? 'Which life areas do you want to track?' : 'Goal Categories'}
           </h3>
           <p className="text-xs text-stone-500 mt-0.5">
@@ -69,7 +69,7 @@ export function CategoryOptInPanel({
         {onDismiss && !isFirstTime && (
           <button
             onClick={onDismiss}
-            className="rounded-full p-1 text-stone-400 hover:text-stone-600 transition-colors"
+            className="rounded-full p-1 text-stone-400 hover:text-stone-400 transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -90,9 +90,9 @@ export function CategoryOptInPanel({
               className={`text-left rounded-lg border-2 px-3 py-2.5 transition-all ${
                 isEnabled
                   ? locked
-                    ? 'border-stone-300 bg-stone-50 cursor-default opacity-70'
-                    : 'border-brand-500 bg-brand-50'
-                  : 'border-stone-200 bg-white hover:border-stone-300'
+                    ? 'border-stone-600 bg-stone-800 cursor-default opacity-70'
+                    : 'border-brand-500 bg-brand-950'
+                  : 'border-stone-700 bg-surface hover:border-stone-600'
               }`}
             >
               <div className="flex items-center gap-2">
@@ -100,7 +100,7 @@ export function CategoryOptInPanel({
                   className={`h-4 w-4 flex-shrink-0 ${isEnabled ? 'text-brand-600' : 'text-stone-400'}`}
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-stone-900 truncate">{meta.label}</p>
+                  <p className="text-xs font-medium text-stone-100 truncate">{meta.label}</p>
                   <p className="text-xs text-stone-400 truncate">{meta.description}</p>
                 </div>
                 {isEnabled && !locked && (
@@ -116,7 +116,7 @@ export function CategoryOptInPanel({
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 rounded-md bg-red-50 border border-red-200 px-3 py-2">
+        <p className="text-sm text-red-600 rounded-md bg-red-950 border border-red-200 px-3 py-2">
           {error}
         </p>
       )}
@@ -125,7 +125,7 @@ export function CategoryOptInPanel({
         {onDismiss && (
           <button
             onClick={onDismiss}
-            className="text-sm text-stone-500 hover:text-stone-700 transition-colors"
+            className="text-sm text-stone-500 hover:text-stone-300 transition-colors"
           >
             {isFirstTime ? 'Skip for now' : 'Cancel'}
           </button>

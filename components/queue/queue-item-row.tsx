@@ -9,13 +9,16 @@ import { QueueIcon } from './queue-icon'
 import type { QueueItem, QueueUrgency, QueueDomain } from '@/lib/queue/types'
 
 const URGENCY_STYLES: Record<QueueUrgency, string> = {
-  critical: 'border-l-4 border-l-red-500 bg-red-50/50',
-  high: 'border-l-4 border-l-amber-500 bg-amber-50/30',
+  critical: 'border-l-4 border-l-red-500 bg-red-950/50',
+  high: 'border-l-4 border-l-amber-500 bg-amber-950/30',
   normal: 'border-l-4 border-l-brand-400',
   low: 'border-l-4 border-l-stone-300',
 }
 
-const URGENCY_BADGE: Record<QueueUrgency, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const URGENCY_BADGE: Record<
+  QueueUrgency,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   critical: { label: 'Critical', variant: 'error' },
   high: { label: 'High', variant: 'warning' },
   normal: { label: 'Normal', variant: 'success' },
@@ -55,31 +58,27 @@ export function QueueItemRow({ item }: Props) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="font-medium text-stone-900 text-sm">{item.title}</span>
+              <span className="font-medium text-stone-100 text-sm">{item.title}</span>
               <Badge variant={badge.variant}>{badge.label}</Badge>
               <span className="text-xs text-stone-400">{DOMAIN_LABELS[item.domain]}</span>
             </div>
-            <p className="text-sm text-stone-600 mt-1">{item.description}</p>
-            {item.blocks && (
-              <p className="text-xs text-red-600 mt-1">Blocks: {item.blocks}</p>
-            )}
+            <p className="text-sm text-stone-400 mt-1">{item.description}</p>
+            {item.blocks && <p className="text-xs text-red-600 mt-1">Blocks: {item.blocks}</p>}
           </div>
         </div>
         <div className="text-right flex-shrink-0">
-          <p className="text-sm font-medium text-stone-900 truncate max-w-[160px]">
+          <p className="text-sm font-medium text-stone-100 truncate max-w-[160px]">
             {item.context.primaryLabel}
           </p>
           {item.context.secondaryLabel && (
             <p className="text-xs text-stone-500">{item.context.secondaryLabel}</p>
           )}
           {item.context.amountCents != null && item.context.amountCents > 0 && (
-            <p className="text-sm font-semibold text-stone-900 mt-0.5">
+            <p className="text-sm font-semibold text-stone-100 mt-0.5">
               {formatCurrency(item.context.amountCents)}
             </p>
           )}
-          {timeDisplay && (
-            <p className="text-xs text-stone-400 mt-1">{timeDisplay}</p>
-          )}
+          {timeDisplay && <p className="text-xs text-stone-400 mt-1">{timeDisplay}</p>}
         </div>
       </div>
     </Link>

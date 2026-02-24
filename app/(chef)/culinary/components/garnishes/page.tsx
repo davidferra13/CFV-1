@@ -25,13 +25,13 @@ export default async function GarnishesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-300">
           ← Components
         </Link>
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Garnishes</h1>
-            <span className="bg-lime-100 text-lime-700 text-sm px-2 py-0.5 rounded-full">
+            <h1 className="text-3xl font-bold text-stone-100">Garnishes</h1>
+            <span className="bg-lime-900 text-lime-700 text-sm px-2 py-0.5 rounded-full">
               {garnishes.length}
             </span>
           </div>
@@ -43,7 +43,7 @@ export default async function GarnishesPage() {
       {garnishes.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
           <Card className="p-4">
-            <p className="text-2xl font-bold text-stone-900">{garnishes.length}</p>
+            <p className="text-2xl font-bold text-stone-100">{garnishes.length}</p>
             <p className="text-sm text-stone-500 mt-1">Garnish components</p>
           </Card>
           <Card className="p-4">
@@ -55,7 +55,7 @@ export default async function GarnishesPage() {
 
       {garnishes.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No garnish components yet</p>
+          <p className="text-stone-400 font-medium">No garnish components yet</p>
           <p className="text-stone-400 text-sm mt-1">
             Add components to dishes inside a menu and categorize them as &quot;garnish&quot;
           </p>
@@ -74,7 +74,7 @@ export default async function GarnishesPage() {
             <TableBody>
               {garnishes.map((comp) => (
                 <TableRow key={comp.id}>
-                  <TableCell className="font-medium text-stone-900">{comp.name}</TableCell>
+                  <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
                   <TableCell className="text-stone-500 text-sm">{comp.dish_name ?? '—'}</TableCell>
                   <TableCell className="text-stone-500 text-sm">
                     {comp.menu_id ? (
@@ -92,7 +92,7 @@ export default async function GarnishesPage() {
                     {comp.recipe_id ? (
                       <Link
                         href={`/culinary/recipes/${comp.recipe_id}`}
-                        className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
+                        className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
                       >
                         Linked
                       </Link>

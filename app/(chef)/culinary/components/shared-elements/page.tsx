@@ -35,13 +35,13 @@ export default async function SharedElementsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/culinary/components" className="text-sm text-stone-500 hover:text-stone-300">
           ← Components
         </Link>
         <div className="flex items-center justify-between mt-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold text-stone-900">Shared Elements</h1>
-            <span className="bg-sky-100 text-sky-700 text-sm px-2 py-0.5 rounded-full">
+            <h1 className="text-3xl font-bold text-stone-100">Shared Elements</h1>
+            <span className="bg-sky-900 text-sky-700 text-sm px-2 py-0.5 rounded-full">
               {shared.length}
             </span>
           </div>
@@ -54,7 +54,7 @@ export default async function SharedElementsPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{shared.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{shared.length}</p>
           <p className="text-sm text-stone-500 mt-1">Recipe-linked components</p>
         </Card>
         <Card className="p-4">
@@ -71,7 +71,7 @@ export default async function SharedElementsPage() {
 
       {shared.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No shared elements yet</p>
+          <p className="text-stone-400 font-medium">No shared elements yet</p>
           <p className="text-stone-400 text-sm mt-1">
             Link a recipe to a menu component to make it a shared, reusable element
           </p>
@@ -92,9 +92,9 @@ export default async function SharedElementsPage() {
             <TableBody>
               {shared.map((comp) => (
                 <TableRow key={comp.id}>
-                  <TableCell className="font-medium text-stone-900">{comp.name}</TableCell>
+                  <TableCell className="font-medium text-stone-100">{comp.name}</TableCell>
                   <TableCell>
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-600 capitalize">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-stone-800 text-stone-400 capitalize">
                       {comp.category}
                     </span>
                   </TableCell>
@@ -114,7 +114,7 @@ export default async function SharedElementsPage() {
                   <TableCell>
                     <Link
                       href={`/culinary/recipes/${comp.recipe_id}`}
-                      className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
+                      className="text-xs bg-green-900 text-green-700 px-2 py-0.5 rounded-full hover:bg-green-200"
                     >
                       View Recipe
                     </Link>

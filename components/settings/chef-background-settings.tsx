@@ -77,30 +77,30 @@ export function ChefBackgroundSettings({
         {success && <Alert variant="success">{success}</Alert>}
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Background Color</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Background Color</label>
           <input
             type="color"
             value={backgroundColor}
             onChange={(e) => setBackgroundColor(e.target.value)}
-            className="h-10 w-full rounded-md border border-stone-300 bg-white px-2"
+            className="h-10 w-full rounded-md border border-stone-600 bg-surface px-2"
           />
           <p className="text-xs text-stone-500 mt-1">Used as fallback when no image is set.</p>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Background Image</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Background Image</label>
           <input
             type="file"
             accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
             onChange={(e) => setSelectedBackgroundFile(e.target.files?.[0] ?? null)}
-            className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 file:mr-3 file:rounded-md file:border-0 file:bg-brand-50 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-700"
+            className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
           />
           <p className="mt-1 text-xs text-stone-500">Upload JPEG, PNG, HEIC, or WebP (max 10MB)</p>
           {backgroundImageUrl && !selectedBackgroundFile && (
             <button
               type="button"
               onClick={() => setBackgroundImageUrl('')}
-              className="mt-2 text-sm text-stone-600 underline hover:text-stone-800"
+              className="mt-2 text-sm text-stone-400 underline hover:text-stone-200"
             >
               Remove current background image
             </button>
@@ -110,10 +110,13 @@ export function ChefBackgroundSettings({
         <div>
           <p className="text-xs text-stone-500 mb-2">Preview</p>
           <div
-            className="h-28 w-full rounded-md border border-stone-200 bg-cover bg-center"
+            className="h-28 w-full rounded-md border border-stone-700 bg-cover bg-center"
             style={{
               backgroundColor,
-              backgroundImage: (previewUrl || backgroundImageUrl) ? `url(${previewUrl || backgroundImageUrl})` : undefined,
+              backgroundImage:
+                previewUrl || backgroundImageUrl
+                  ? `url(${previewUrl || backgroundImageUrl})`
+                  : undefined,
             }}
           />
         </div>

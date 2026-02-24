@@ -69,9 +69,8 @@ export function YearEndClientControls({
     rows.push(['Category', 'Amount (USD)', '% of Revenue'])
     const sortedExpenses = Object.entries(pl.expensesByCategory).sort((a, b) => b[1] - a[1])
     for (const [category, amount] of sortedExpenses) {
-      const pct = pl.netRevenueCents > 0
-        ? `${Math.round((amount / pl.netRevenueCents) * 100)}%`
-        : '—'
+      const pct =
+        pl.netRevenueCents > 0 ? `${Math.round((amount / pl.netRevenueCents) * 100)}%` : '—'
       rows.push([category.replace(/_/g, ' '), centsToDollars(amount), pct])
     }
     rows.push(['TOTAL EXPENSES', centsToDollars(pl.totalExpensesCents)])
@@ -96,9 +95,9 @@ export function YearEndClientControls({
     rows.push([])
     rows.push(['IMPORTANT: Consult a licensed tax professional for official filings.'])
 
-    const csv = rows.map(row =>
-      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
-    ).join('\n')
+    const csv = rows
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
 
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
@@ -113,11 +112,11 @@ export function YearEndClientControls({
 
   const mailtoBody = encodeURIComponent(
     `Hi,\n\nPlease find my ChefFlow ${pl.year} Year-End Financial Summary attached.\n\n` +
-    `Year: ${pl.year}\n` +
-    `Net Revenue: $${(pl.netRevenueCents / 100).toFixed(2)}\n` +
-    `Total Expenses: $${(pl.totalExpensesCents / 100).toFixed(2)}\n` +
-    `Estimated Net Income: $${(pl.netProfitCents / 100).toFixed(2)}\n\n` +
-    `(Please attach the downloaded CSV file)\n`
+      `Year: ${pl.year}\n` +
+      `Net Revenue: $${(pl.netRevenueCents / 100).toFixed(2)}\n` +
+      `Total Expenses: $${(pl.totalExpensesCents / 100).toFixed(2)}\n` +
+      `Estimated Net Income: $${(pl.netProfitCents / 100).toFixed(2)}\n\n` +
+      `(Please attach the downloaded CSV file)\n`
   )
   const mailtoSubject = encodeURIComponent(`ChefFlow ${pl.year} Year-End Financial Summary`)
   const mailtoHref = `mailto:?subject=${mailtoSubject}&body=${mailtoBody}`
@@ -127,10 +126,12 @@ export function YearEndClientControls({
       <select
         value={selectedYear}
         onChange={handleYearChange}
-        className="text-sm border border-stone-300 rounded-md px-3 py-2 text-stone-700 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="text-sm border border-stone-600 rounded-md px-3 py-2 text-stone-300 bg-surface focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
-        {yearOptions.map(y => (
-          <option key={y} value={y}>{y}</option>
+        {yearOptions.map((y) => (
+          <option key={y} value={y}>
+            {y}
+          </option>
         ))}
       </select>
       <div className="flex gap-2">
@@ -142,7 +143,7 @@ export function YearEndClientControls({
         </button>
         <a
           href={mailtoHref}
-          className="text-sm px-4 py-2 rounded-md border border-stone-300 text-stone-700 hover:bg-stone-50 transition-colors"
+          className="text-sm px-4 py-2 rounded-md border border-stone-600 text-stone-300 hover:bg-stone-800 transition-colors"
         >
           Email to Myself
         </a>

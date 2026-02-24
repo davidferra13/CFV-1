@@ -18,14 +18,14 @@ export default async function TemplatesPage() {
       <div className="flex justify-between items-start">
         <div>
           <div className="flex items-center gap-2">
-            <Link href="/settings" className="text-sm text-brand-600 hover:text-brand-700">
+            <Link href="/settings" className="text-sm text-brand-600 hover:text-brand-400">
               Settings
             </Link>
             <span className="text-stone-400">/</span>
             <span className="text-sm text-stone-500">Response Templates</span>
           </div>
-          <h1 className="text-3xl font-bold text-stone-900 mt-2">Response Templates</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100 mt-2">Response Templates</h1>
+          <p className="text-stone-400 mt-1">
             Pre-written messages you can quickly copy and customize when logging communication.
           </p>
         </div>

@@ -4,7 +4,11 @@
 
 import { useState } from 'react'
 import { format } from 'date-fns'
-import { addInstallment, markInstallmentPaid, deleteInstallment } from '@/lib/finance/payment-plan-actions'
+import {
+  addInstallment,
+  markInstallmentPaid,
+  deleteInstallment,
+} from '@/lib/finance/payment-plan-actions'
 import type { PaymentPlanInstallment } from '@/lib/finance/payment-plan-actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { CheckCircle, Trash2, Plus } from 'lucide-react'
@@ -21,19 +25,19 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
   const [submitting, setSubmitting] = useState(false)
 
   const totalPlanned = installments.reduce((s, i) => s + i.amountCents, 0)
-  const totalPaid = installments.filter(i => i.paidAt).reduce((s, i) => s + i.amountCents, 0)
+  const totalPaid = installments.filter((i) => i.paidAt).reduce((s, i) => s + i.amountCents, 0)
   const remaining = totalPlanned - totalPaid
 
   async function handleMarkPaid(installment: PaymentPlanInstallment) {
     await markInstallmentPaid(installment.id, eventId)
-    setInstallments(prev => prev.map(i =>
-      i.id === installment.id ? { ...i, paidAt: new Date().toISOString() } : i
-    ))
+    setInstallments((prev) =>
+      prev.map((i) => (i.id === installment.id ? { ...i, paidAt: new Date().toISOString() } : i))
+    )
   }
 
   async function handleDelete(id: string) {
     await deleteInstallment(id, eventId)
-    setInstallments(prev => prev.filter(i => i.id !== id))
+    setInstallments((prev) => prev.filter((i) => i.id !== id))
   }
 
   async function handleAdd(e: React.FormEvent<HTMLFormElement>) {
@@ -54,15 +58,15 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
       {/* Summary bar */}
       {installments.length > 0 && (
         <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-md bg-stone-50 p-2">
+          <div className="rounded-md bg-stone-800 p-2">
             <p className="text-xs text-stone-500">Total Planned</p>
-            <p className="font-semibold text-stone-900 text-sm">{formatCurrency(totalPlanned)}</p>
+            <p className="font-semibold text-stone-100 text-sm">{formatCurrency(totalPlanned)}</p>
           </div>
-          <div className="rounded-md bg-emerald-50 p-2">
+          <div className="rounded-md bg-emerald-950 p-2">
             <p className="text-xs text-emerald-700">Paid</p>
             <p className="font-semibold text-emerald-800 text-sm">{formatCurrency(totalPaid)}</p>
           </div>
-          <div className="rounded-md bg-amber-50 p-2">
+          <div className="rounded-md bg-amber-950 p-2">
             <p className="text-xs text-amber-700">Remaining</p>
             <p className="font-semibold text-amber-800 text-sm">{formatCurrency(remaining)}</p>
           </div>
@@ -71,26 +75,30 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
 
       {/* Installment list */}
       {installments.length === 0 && !isAdding && (
-        <p className="text-sm text-stone-400 text-center py-4">No installments yet. Add one to create a payment schedule.</p>
+        <p className="text-sm text-stone-400 text-center py-4">
+          No installments yet. Add one to create a payment schedule.
+        </p>
       )}
 
       <div className="space-y-2">
-        {installments.map(inst => (
+        {installments.map((inst) => (
           <div
             key={inst.id}
             className={`flex items-center justify-between rounded-md border px-3 py-2 ${
-              inst.paidAt ? 'border-emerald-200 bg-emerald-50/50' : 'border-stone-200'
+              inst.paidAt ? 'border-emerald-200 bg-emerald-950/50' : 'border-stone-700'
             }`}
           >
             <div className="min-w-0">
-              <p className="text-sm font-medium text-stone-900">{inst.label}</p>
+              <p className="text-sm font-medium text-stone-100">{inst.label}</p>
               <p className="text-xs text-stone-500">
                 Due {format(new Date(inst.dueDate), 'MMM d, yyyy')}
                 {inst.paidAt && ` · Paid ${format(new Date(inst.paidAt), 'MMM d')}`}
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-3">
-              <span className="text-sm font-semibold text-stone-900">{formatCurrency(inst.amountCents)}</span>
+              <span className="text-sm font-semibold text-stone-100">
+                {formatCurrency(inst.amountCents)}
+              </span>
               {!inst.paidAt && (
                 <button
                   onClick={() => handleMarkPaid(inst)}
@@ -100,9 +108,7 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
                   <CheckCircle className="h-4 w-4" />
                 </button>
               )}
-              {inst.paidAt && (
-                <span className="text-emerald-600 text-xs font-medium">✓</span>
-              )}
+              {inst.paidAt && <span className="text-emerald-600 text-xs font-medium">✓</span>}
               <button
                 onClick={() => handleDelete(inst.id)}
                 className="text-stone-300 hover:text-red-500 transition-colors"
@@ -117,30 +123,60 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
 
       {/* Add installment form */}
       {isAdding ? (
-        <form onSubmit={handleAdd} className="border border-stone-200 rounded-md p-3 space-y-2">
+        <form onSubmit={handleAdd} className="border border-stone-700 rounded-md p-3 space-y-2">
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-xs text-stone-600">Label</label>
-              <input name="label" required placeholder="e.g. Deposit" className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 mt-0.5" />
+              <label className="text-xs text-stone-400">Label</label>
+              <input
+                name="label"
+                required
+                placeholder="e.g. Deposit"
+                className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5"
+              />
             </div>
             <div>
-              <label className="text-xs text-stone-600">Amount ($)</label>
-              <input name="amountDollars" type="number" step="0.01" min="0.01" required placeholder="0.00" className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 mt-0.5" />
+              <label className="text-xs text-stone-400">Amount ($)</label>
+              <input
+                name="amountDollars"
+                type="number"
+                step="0.01"
+                min="0.01"
+                required
+                placeholder="0.00"
+                className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5"
+              />
             </div>
           </div>
           <div>
-            <label className="text-xs text-stone-600">Due Date</label>
-            <input name="dueDate" type="date" required className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 mt-0.5" />
+            <label className="text-xs text-stone-400">Due Date</label>
+            <input
+              name="dueDate"
+              type="date"
+              required
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5"
+            />
           </div>
           <div>
-            <label className="text-xs text-stone-600">Notes (optional)</label>
-            <input name="notes" placeholder="Any notes…" className="w-full text-sm border border-stone-200 rounded px-2 py-1.5 mt-0.5" />
+            <label className="text-xs text-stone-400">Notes (optional)</label>
+            <input
+              name="notes"
+              placeholder="Any notes…"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 mt-0.5"
+            />
           </div>
           <div className="flex gap-2 pt-1">
-            <button type="submit" disabled={submitting} className="text-xs font-medium px-3 py-1.5 bg-brand-600 text-white rounded hover:bg-brand-700 disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="text-xs font-medium px-3 py-1.5 bg-brand-600 text-white rounded hover:bg-brand-700 disabled:opacity-50"
+            >
               {submitting ? 'Adding…' : 'Add Installment'}
             </button>
-            <button type="button" onClick={() => setIsAdding(false)} className="text-xs text-stone-500 hover:text-stone-700 px-2">
+            <button
+              type="button"
+              onClick={() => setIsAdding(false)}
+              className="text-xs text-stone-500 hover:text-stone-300 px-2"
+            >
               Cancel
             </button>
           </div>
@@ -148,7 +184,7 @@ export function PaymentPlanPanel({ eventId, initialInstallments, quotedPriceCent
       ) : (
         <button
           onClick={() => setIsAdding(true)}
-          className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-700 font-medium transition-colors"
+          className="flex items-center gap-1.5 text-sm text-brand-600 hover:text-brand-400 font-medium transition-colors"
         >
           <Plus className="h-4 w-4" />
           Add installment

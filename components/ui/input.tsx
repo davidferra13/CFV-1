@@ -15,11 +15,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     const isPassword = type === 'password'
 
     const inputClasses = `
-      block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900
+      block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100
       placeholder:text-stone-400
       transition-[border-color,box-shadow] duration-150
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
-      disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500
+      disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500
       ${error ? 'border-red-300 focus:border-red-400 focus:ring-red-500/20' : ''}
       ${isPassword ? 'pr-10' : ''}
       ${className}
@@ -28,7 +28,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="block text-sm font-medium text-stone-300 mb-1.5">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
@@ -47,7 +47,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
                 e.preventDefault()
                 setShowPassword(!showPassword)
               }}
-              className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-400 hover:text-stone-600"
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-400 hover:text-stone-400"
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >

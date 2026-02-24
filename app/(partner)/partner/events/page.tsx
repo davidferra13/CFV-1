@@ -13,9 +13,9 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 const STATUS_CLASS: Record<string, string> = {
-  confirmed: 'bg-blue-50 text-blue-700',
-  in_progress: 'bg-amber-50 text-amber-700',
-  completed: 'bg-green-50 text-green-700',
+  confirmed: 'bg-blue-950 text-blue-700',
+  in_progress: 'bg-amber-950 text-amber-700',
+  completed: 'bg-green-950 text-green-700',
 }
 
 export default async function PartnerEventsPage() {
@@ -26,23 +26,23 @@ export default async function PartnerEventsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Events</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Events</h1>
         <p className="mt-1 text-sm text-stone-500">
           All events hosted at your locations — {recentEvents.length} total.
         </p>
       </div>
 
       {recentEvents.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-stone-300 bg-white p-10 text-center">
+        <div className="rounded-xl border border-dashed border-stone-600 bg-surface p-10 text-center">
           <CalendarDays size={32} className="mx-auto text-stone-300 mb-3" />
           <p className="text-sm text-stone-500">
             No events yet. Check back after your first booking.
           </p>
         </div>
       ) : (
-        <div className="rounded-xl border border-stone-200 bg-white overflow-hidden">
+        <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-stone-50 border-b border-stone-200">
+            <thead className="bg-stone-800 border-b border-stone-700">
               <tr>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Date</th>
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Occasion</th>
@@ -55,20 +55,20 @@ export default async function PartnerEventsPage() {
                 <th className="text-left px-4 py-3 text-stone-500 font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-stone-800">
               {recentEvents.map((evt) => {
                 const loc = evt.partner_location_id ? locationMap[evt.partner_location_id] : null
-                const statusClass = STATUS_CLASS[evt.status] ?? 'bg-stone-100 text-stone-600'
+                const statusClass = STATUS_CLASS[evt.status] ?? 'bg-stone-800 text-stone-400'
                 return (
-                  <tr key={evt.id} className="hover:bg-stone-50">
-                    <td className="px-4 py-3 text-stone-700">
+                  <tr key={evt.id} className="hover:bg-stone-800">
+                    <td className="px-4 py-3 text-stone-300">
                       {format(new Date(evt.event_date), 'MMM d, yyyy')}
                     </td>
-                    <td className="px-4 py-3 text-stone-700">{evt.occasion ?? '—'}</td>
+                    <td className="px-4 py-3 text-stone-300">{evt.occasion ?? '—'}</td>
                     <td className="px-4 py-3 text-stone-500 hidden md:table-cell">
                       {loc?.name ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-right text-stone-700 hidden sm:table-cell">
+                    <td className="px-4 py-3 text-right text-stone-300 hidden sm:table-cell">
                       {evt.guest_count ?? '—'}
                     </td>
                     <td className="px-4 py-3">

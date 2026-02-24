@@ -42,12 +42,13 @@ export default async function WasteTrackingPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/inventory" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Inventory
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Waste Tracking</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Waste Tracking</h1>
         <p className="text-stone-500 mt-1">
-          Log food waste after each event or prep session. Track cost by reason and identify patterns to reduce waste.
+          Log food waste after each event or prep session. Track cost by reason and identify
+          patterns to reduce waste.
         </p>
       </div>
 
@@ -56,7 +57,7 @@ export default async function WasteTrackingPage() {
 
       {/* Log new waste entry */}
       <div className="max-w-xl">
-        <h2 className="text-lg font-semibold text-stone-900 mb-3">Log Waste</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-3">Log Waste</h2>
         <WasteLogForm />
       </div>
     </div>

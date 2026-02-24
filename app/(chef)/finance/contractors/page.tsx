@@ -31,10 +31,10 @@ export default async function ContractorsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Finance
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">1099 Contractors</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">1099 Contractors</h1>
         <p className="text-stone-500 mt-1">
           Track contractor payments, generate 1099 forms, and manage compliance
         </p>

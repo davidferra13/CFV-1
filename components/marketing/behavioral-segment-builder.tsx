@@ -6,10 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Plus, Trash2, X, Filter, Users, Search } from 'lucide-react'
-import {
-  buildBehavioralSegment,
-  getSegmentPreview,
-} from '@/lib/marketing/segmentation-actions'
+import { buildBehavioralSegment, getSegmentPreview } from '@/lib/marketing/segmentation-actions'
 import { toast } from 'sonner'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -35,7 +32,9 @@ interface BehavioralSegmentBuilderProps {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function BehavioralSegmentBuilder({ segments: initialSegments }: BehavioralSegmentBuilderProps) {
+export function BehavioralSegmentBuilder({
+  segments: initialSegments,
+}: BehavioralSegmentBuilderProps) {
   const [segments, setSegments] = useState<Segment[]>(initialSegments)
   const [isPending, startTransition] = useTransition()
   const [showBuilder, setShowBuilder] = useState(false)
@@ -70,7 +69,10 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
     if (lastEventBefore) criteria.lastEventBefore = lastEventBefore
     if (lastEventAfter) criteria.lastEventAfter = lastEventAfter
     if (tagsInput.trim()) {
-      criteria.tags = tagsInput.split(',').map(t => t.trim()).filter(Boolean)
+      criteria.tags = tagsInput
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean)
     }
     return criteria
   }
@@ -107,11 +109,14 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
           filters: criteria,
         })
         if (result.segment) {
-          setSegments(prev => [...prev, {
-            id: result.segment.id,
-            name: result.segment.name,
-            filterCriteria: result.segment.filters as unknown as FilterCriteria,
-          }])
+          setSegments((prev) => [
+            ...prev,
+            {
+              id: result.segment.id,
+              name: result.segment.name,
+              filterCriteria: result.segment.filters as unknown as FilterCriteria,
+            },
+          ])
         }
         resetBuilder()
         toast.success('Segment created')
@@ -124,7 +129,7 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
 
   function handleDelete(segmentId: string) {
     // Delete action not yet available on the server; remove from local state only
-    setSegments(prev => prev.filter(s => s.id !== segmentId))
+    setSegments((prev) => prev.filter((s) => s.id !== segmentId))
     toast.success('Segment removed')
   }
 
@@ -132,7 +137,8 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
     const parts: string[] = []
     if (criteria.minEvents != null) parts.push(`Min ${criteria.minEvents} events`)
     if (criteria.maxEvents != null) parts.push(`Max ${criteria.maxEvents} events`)
-    if (criteria.minSpendCents != null) parts.push(`Min spend $${(criteria.minSpendCents / 100).toFixed(2)}`)
+    if (criteria.minSpendCents != null)
+      parts.push(`Min spend $${(criteria.minSpendCents / 100).toFixed(2)}`)
     if (criteria.lastEventBefore) parts.push(`Last event before ${criteria.lastEventBefore}`)
     if (criteria.lastEventAfter) parts.push(`Last event after ${criteria.lastEventAfter}`)
     if (criteria.tags && criteria.tags.length > 0) parts.push(`Tags: ${criteria.tags.join(', ')}`)
@@ -151,13 +157,13 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
       <CardContent className="space-y-6">
         {/* Builder Form */}
         {showBuilder && (
-          <div className="rounded-lg border border-brand-200 bg-brand-50/30 p-4 space-y-4">
+          <div className="rounded-lg border border-brand-700 bg-brand-950/30 p-4 space-y-4">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-stone-100 flex items-center gap-2">
                 <Filter className="h-4 w-4" />
                 Build Segment
               </h4>
-              <button onClick={resetBuilder} className="text-stone-400 hover:text-stone-600">
+              <button onClick={resetBuilder} className="text-stone-400 hover:text-stone-400">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -165,7 +171,7 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
             <Input
               label="Segment Name"
               value={segmentName}
-              onChange={e => setSegmentName(e.target.value)}
+              onChange={(e) => setSegmentName(e.target.value)}
               placeholder="e.g., High-Frequency VIP Clients"
               required
             />
@@ -175,7 +181,7 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
                 label="Min Events"
                 type="number"
                 value={minEvents}
-                onChange={e => setMinEvents(e.target.value)}
+                onChange={(e) => setMinEvents(e.target.value)}
                 placeholder="e.g., 3"
                 helperText="Minimum completed events"
               />
@@ -183,7 +189,7 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
                 label="Max Events"
                 type="number"
                 value={maxEvents}
-                onChange={e => setMaxEvents(e.target.value)}
+                onChange={(e) => setMaxEvents(e.target.value)}
                 placeholder="e.g., 10"
                 helperText="Maximum completed events"
               />
@@ -193,7 +199,7 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
               label="Min Total Spend ($)"
               type="number"
               value={minSpendDollars}
-              onChange={e => setMinSpendDollars(e.target.value)}
+              onChange={(e) => setMinSpendDollars(e.target.value)}
               placeholder="e.g., 5000"
               helperText="Minimum lifetime spend in dollars"
             />
@@ -203,14 +209,14 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
                 label="Last Event Before"
                 type="date"
                 value={lastEventBefore}
-                onChange={e => setLastEventBefore(e.target.value)}
+                onChange={(e) => setLastEventBefore(e.target.value)}
                 helperText="Clients whose last event was before this date"
               />
               <Input
                 label="Last Event After"
                 type="date"
                 value={lastEventAfter}
-                onChange={e => setLastEventAfter(e.target.value)}
+                onChange={(e) => setLastEventAfter(e.target.value)}
                 helperText="Clients whose last event was after this date"
               />
             </div>
@@ -218,16 +224,16 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
             <Input
               label="Tags (comma-separated)"
               value={tagsInput}
-              onChange={e => setTagsInput(e.target.value)}
+              onChange={(e) => setTagsInput(e.target.value)}
               placeholder="e.g., vip, corporate, repeat"
               helperText="Filter by client tags"
             />
 
             {/* Preview Count */}
             {previewCount !== null && (
-              <div className="rounded-lg bg-stone-100 p-3 flex items-center gap-2">
-                <Users className="h-4 w-4 text-stone-600" />
-                <span className="text-sm font-medium text-stone-900">
+              <div className="rounded-lg bg-stone-800 p-3 flex items-center gap-2">
+                <Users className="h-4 w-4 text-stone-400" />
+                <span className="text-sm font-medium text-stone-100">
                   {previewCount} client{previewCount !== 1 ? 's' : ''} match this segment
                 </span>
               </div>
@@ -241,7 +247,9 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
               <Button size="sm" onClick={handleSave} loading={isPending}>
                 Save Segment
               </Button>
-              <Button size="sm" variant="ghost" onClick={resetBuilder}>Cancel</Button>
+              <Button size="sm" variant="ghost" onClick={resetBuilder}>
+                Cancel
+              </Button>
             </div>
           </div>
         )}
@@ -249,16 +257,16 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
         {/* Existing Segments */}
         {segments.length > 0 && (
           <div className="space-y-2">
-            {segments.map(segment => (
+            {segments.map((segment) => (
               <div
                 key={segment.id}
-                className="rounded-lg border border-stone-200 p-4 hover:bg-stone-50 transition-colors"
+                className="rounded-lg border border-stone-700 p-4 hover:bg-stone-800 transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium text-stone-900">{segment.name}</p>
+                  <p className="text-sm font-medium text-stone-100">{segment.name}</p>
                   <button
                     onClick={() => handleDelete(segment.id)}
-                    className="p-1.5 rounded text-stone-400 hover:text-red-500 hover:bg-stone-100"
+                    className="p-1.5 rounded text-stone-400 hover:text-red-500 hover:bg-stone-700"
                     title="Delete segment"
                   >
                     <Trash2 className="h-4 w-4" />
@@ -266,7 +274,9 @@ export function BehavioralSegmentBuilder({ segments: initialSegments }: Behavior
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   {formatCriteria(segment.filterCriteria).map((label, i) => (
-                    <Badge key={i} variant="info">{label}</Badge>
+                    <Badge key={i} variant="info">
+                      {label}
+                    </Badge>
                   ))}
                 </div>
               </div>

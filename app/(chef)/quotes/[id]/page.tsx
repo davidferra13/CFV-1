@@ -13,11 +13,7 @@ import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
 
-export default async function QuoteDetailPage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const [quote, versionHistory] = await Promise.all([
@@ -35,12 +31,12 @@ export default async function QuoteDetailPage({
       <div className="flex justify-between items-start">
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-3xl font-bold text-stone-900">
+            <h1 className="text-3xl font-bold text-stone-100">
               {quote.quote_name || `Quote for ${quote.client?.full_name || 'Unknown'}`}
             </h1>
             <QuoteStatusBadge status={quote.status as any} />
           </div>
-          <p className="text-stone-600 mt-1">
+          <p className="text-stone-400 mt-1">
             {quote.client?.full_name || 'Unknown Client'}
             {quote.client?.email && ` - ${quote.client.email}`}
           </p>
@@ -52,7 +48,7 @@ export default async function QuoteDetailPage({
 
       {/* Frozen Snapshot Notice */}
       {quote.snapshot_frozen && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className="bg-green-950 border border-green-200 rounded-lg p-4">
           <p className="text-sm font-medium text-green-800">
             Pricing snapshot frozen at acceptance. Original pricing is preserved.
           </p>
@@ -74,7 +70,7 @@ export default async function QuoteDetailPage({
           <dl className="space-y-3">
             <div>
               <dt className="text-sm font-medium text-stone-500">Total Quoted</dt>
-              <dd className="text-2xl font-bold text-stone-900 mt-1">
+              <dd className="text-2xl font-bold text-stone-100 mt-1">
                 {formatCurrency(quote.total_quoted_cents)}
               </dd>
             </div>
@@ -89,7 +85,7 @@ export default async function QuoteDetailPage({
             {quote.price_per_person_cents && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Per Person</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {formatCurrency(quote.price_per_person_cents)}
                 </dd>
               </div>
@@ -97,9 +93,7 @@ export default async function QuoteDetailPage({
             {quote.guest_count_estimated && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Estimated Guests</dt>
-                <dd className="text-sm text-stone-900 mt-1">
-                  {quote.guest_count_estimated}
-                </dd>
+                <dd className="text-sm text-stone-100 mt-1">{quote.guest_count_estimated}</dd>
               </div>
             )}
           </dl>
@@ -113,8 +107,11 @@ export default async function QuoteDetailPage({
               <dt className="text-sm font-medium text-stone-500">Deposit Required</dt>
               <dd className="text-sm mt-1">
                 {quote.deposit_required ? (
-                  <span className="text-stone-900">
-                    Yes - {quote.deposit_amount_cents ? formatCurrency(quote.deposit_amount_cents) : 'Amount TBD'}
+                  <span className="text-stone-100">
+                    Yes -{' '}
+                    {quote.deposit_amount_cents
+                      ? formatCurrency(quote.deposit_amount_cents)
+                      : 'Amount TBD'}
                     {quote.deposit_percentage && ` (${quote.deposit_percentage}%)`}
                   </span>
                 ) : (
@@ -126,10 +123,12 @@ export default async function QuoteDetailPage({
               <dt className="text-sm font-medium text-stone-500">Valid Until</dt>
               <dd className="text-sm mt-1">
                 {quote.valid_until ? (
-                  <span className="text-stone-900">
+                  <span className="text-stone-100">
                     {format(new Date(quote.valid_until), 'MMMM d, yyyy')}
                     {new Date(quote.valid_until) < new Date() && (
-                      <Badge variant="warning" className="ml-2">Expired</Badge>
+                      <Badge variant="warning" className="ml-2">
+                        Expired
+                      </Badge>
                     )}
                   </span>
                 ) : (
@@ -140,7 +139,7 @@ export default async function QuoteDetailPage({
             {quote.sent_at && (
               <div>
                 <dt className="text-sm font-medium text-stone-500">Sent At</dt>
-                <dd className="text-sm text-stone-900 mt-1">
+                <dd className="text-sm text-stone-100 mt-1">
                   {format(new Date(quote.sent_at), "MMM d, yyyy 'at' h:mm a")}
                 </dd>
               </div>
@@ -172,9 +171,9 @@ export default async function QuoteDetailPage({
           <div className="flex flex-wrap gap-4">
             {quote.inquiry && (
               <Link href={`/inquiries/${quote.inquiry.id}`}>
-                <div className="border rounded-lg p-3 hover:bg-stone-50 transition-colors">
-                  <p className="text-sm font-medium text-stone-900">Inquiry</p>
-                  <p className="text-sm text-stone-600">
+                <div className="border rounded-lg p-3 hover:bg-stone-800 transition-colors">
+                  <p className="text-sm font-medium text-stone-100">Inquiry</p>
+                  <p className="text-sm text-stone-400">
                     {quote.inquiry.confirmed_occasion || 'Untitled'} - {quote.inquiry.status}
                   </p>
                 </div>
@@ -182,11 +181,12 @@ export default async function QuoteDetailPage({
             )}
             {quote.event && (
               <Link href={`/events/${quote.event.id}`}>
-                <div className="border rounded-lg p-3 hover:bg-stone-50 transition-colors">
-                  <p className="text-sm font-medium text-stone-900">Event</p>
-                  <p className="text-sm text-stone-600">
+                <div className="border rounded-lg p-3 hover:bg-stone-800 transition-colors">
+                  <p className="text-sm font-medium text-stone-100">Event</p>
+                  <p className="text-sm text-stone-400">
                     {quote.event.occasion || 'Untitled'}
-                    {quote.event.event_date && ` - ${format(new Date(quote.event.event_date), 'MMM d, yyyy')}`}
+                    {quote.event.event_date &&
+                      ` - ${format(new Date(quote.event.event_date), 'MMM d, yyyy')}`}
                   </p>
                 </div>
               </Link>
@@ -202,7 +202,7 @@ export default async function QuoteDetailPage({
       {quote.pricing_notes && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Pricing Notes</h2>
-          <p className="text-sm text-stone-700 whitespace-pre-wrap">{quote.pricing_notes}</p>
+          <p className="text-sm text-stone-300 whitespace-pre-wrap">{quote.pricing_notes}</p>
           <p className="text-xs text-stone-400 mt-2">Visible to client when quote is sent</p>
         </Card>
       )}
@@ -210,7 +210,7 @@ export default async function QuoteDetailPage({
       {quote.internal_notes && (
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Internal Notes</h2>
-          <p className="text-sm text-stone-700 whitespace-pre-wrap">{quote.internal_notes}</p>
+          <p className="text-sm text-stone-300 whitespace-pre-wrap">{quote.internal_notes}</p>
           <p className="text-xs text-stone-400 mt-2">Chef eyes only - not visible to client</p>
         </Card>
       )}
@@ -230,18 +230,18 @@ export default async function QuoteDetailPage({
           <div className="space-y-3">
             {quote.transitions.map((transition) => (
               <div key={transition.id} className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-500" />
+                <div className="flex-shrink-0 w-2 h-2 mt-2 rounded-full bg-brand-9500" />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     {transition.from_status && (
                       <>
-                        <span className="text-sm font-medium text-stone-900 capitalize">
+                        <span className="text-sm font-medium text-stone-100 capitalize">
                           {(transition.from_status as string).replace('_', ' ')}
                         </span>
                         <span className="text-stone-400">&rarr;</span>
                       </>
                     )}
-                    <span className="text-sm font-medium text-stone-900 capitalize">
+                    <span className="text-sm font-medium text-stone-100 capitalize">
                       {(transition.to_status as string).replace('_', ' ')}
                     </span>
                   </div>

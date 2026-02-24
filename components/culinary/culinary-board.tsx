@@ -39,18 +39,18 @@ export function CulinaryBoard({ userWords, isAdmin }: CulinaryBoardProps) {
       {/* Header + Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-stone-600 mt-1">
+          <p className="text-stone-400 mt-1">
             {allWords.length} words across {11} categories — your complete culinary vocabulary
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           {/* View toggle */}
-          <div className="inline-flex rounded-lg border border-stone-200 bg-white p-0.5">
+          <div className="inline-flex rounded-lg border border-stone-700 bg-surface p-0.5">
             <button
               onClick={() => setView('board')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                view === 'board' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
+                view === 'board' ? 'bg-stone-900 text-white' : 'text-stone-400 hover:text-stone-100'
               }`}
             >
               Board
@@ -58,7 +58,7 @@ export function CulinaryBoard({ userWords, isAdmin }: CulinaryBoardProps) {
             <button
               onClick={() => setView('list')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                view === 'list' ? 'bg-stone-900 text-white' : 'text-stone-600 hover:text-stone-900'
+                view === 'list' ? 'bg-stone-900 text-white' : 'text-stone-400 hover:text-stone-100'
               }`}
             >
               List
@@ -69,7 +69,7 @@ export function CulinaryBoard({ userWords, isAdmin }: CulinaryBoardProps) {
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                   view === 'admin'
                     ? 'bg-stone-900 text-white'
-                    : 'text-stone-600 hover:text-stone-900'
+                    : 'text-stone-400 hover:text-stone-100'
                 }`}
               >
                 Submissions

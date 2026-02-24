@@ -30,7 +30,7 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
     <Card className="p-5">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h3 className="font-semibold text-stone-900">Guest Pipeline</h3>
+          <h3 className="font-semibold text-stone-100">Guest Pipeline</h3>
           <p className="text-sm text-stone-500 mt-0.5">
             Display this QR code at your event to capture guest interest
           </p>
@@ -54,7 +54,7 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
             alt="Guest QR Code"
             width={120}
             height={120}
-            className="rounded-lg border border-stone-200"
+            className="rounded-lg border border-stone-700"
           />
         </div>
 
@@ -74,7 +74,7 @@ export function GuestCodePanel({ eventId, guestCode, guestLeadCount }: Props) {
             href={landingUrl}
             target="_blank"
             rel="noreferrer"
-            className="block text-xs text-stone-400 hover:text-stone-600 truncate text-center"
+            className="block text-xs text-stone-400 hover:text-stone-400 truncate text-center"
           >
             {landingUrl}
           </a>

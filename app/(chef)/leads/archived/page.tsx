@@ -3,14 +3,21 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getInquiries } from '@/lib/inquiries/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { format } from 'date-fns'
 
 export const metadata: Metadata = { title: 'Archived Leads - ChefFlow' }
 
 const STATUS_STYLES: Record<string, string> = {
-  declined: 'bg-red-100 text-red-600',
-  expired: 'bg-stone-200 text-stone-500',
+  declined: 'bg-red-900 text-red-600',
+  expired: 'bg-stone-700 text-stone-500',
 }
 
 export default async function ArchivedLeadsPage() {
@@ -20,18 +27,18 @@ export default async function ArchivedLeadsPage() {
     status: ['declined', 'expired'] as any,
   })
 
-  const declined = inquiries.filter(i => i.status === 'declined')
-  const expired = inquiries.filter(i => i.status === 'expired')
+  const declined = inquiries.filter((i) => i.status === 'declined')
+  const expired = inquiries.filter((i) => i.status === 'expired')
 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/leads" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/leads" className="text-sm text-stone-500 hover:text-stone-300">
           ← Leads
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Archived</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Archived</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {inquiries.length}
           </span>
         </div>
@@ -53,8 +60,10 @@ export default async function ArchivedLeadsPage() {
 
       {inquiries.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium mb-1">No archived leads</p>
-          <p className="text-stone-400 text-sm">Declined and expired website inquiries will appear here</p>
+          <p className="text-stone-400 font-medium mb-1">No archived leads</p>
+          <p className="text-stone-400 text-sm">
+            Declined and expired website inquiries will appear here
+          </p>
         </Card>
       ) : (
         <Card>
@@ -69,7 +78,7 @@ export default async function ArchivedLeadsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {inquiries.map(inquiry => (
+              {inquiries.map((inquiry) => (
                 <TableRow key={inquiry.id}>
                   <TableCell className="font-medium">
                     <p>{inquiry.client?.full_name ?? '—'}</p>
@@ -77,20 +86,24 @@ export default async function ArchivedLeadsPage() {
                       <p className="text-xs text-stone-400 mt-0.5">{inquiry.client.email}</p>
                     )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-400 text-sm">
                     {format(new Date(inquiry.created_at), 'MMM d, yyyy')}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm capitalize">
+                  <TableCell className="text-stone-400 text-sm capitalize">
                     {inquiry.confirmed_occasion?.replace(/_/g, ' ') ?? '—'}
                   </TableCell>
                   <TableCell>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[inquiry.status] ?? 'bg-stone-100 text-stone-600'}`}>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${STATUS_STYLES[inquiry.status] ?? 'bg-stone-800 text-stone-400'}`}
+                    >
                       {inquiry.status}
                     </span>
                   </TableCell>
                   <TableCell>
                     <Link href={`/inquiries/${inquiry.id}`}>
-                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">View</span>
+                      <span className="text-xs text-brand-600 hover:underline cursor-pointer">
+                        View
+                      </span>
                     </Link>
                   </TableCell>
                 </TableRow>

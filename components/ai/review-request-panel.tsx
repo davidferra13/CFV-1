@@ -31,11 +31,11 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-500" />
-            <span className="text-sm font-medium text-stone-700">Review Request</span>
+            <span className="text-sm font-medium text-stone-300">Review Request</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -60,23 +60,23 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Star className="w-4 h-4 text-amber-500" />
-          <span className="text-sm font-medium text-stone-700">Review Request Draft</span>
+          <span className="text-sm font-medium text-stone-300">Review Request Draft</span>
           <Badge variant="warning">Draft</Badge>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setView('email')}
-            className={`text-xs px-2 py-1 rounded ${view === 'email' ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+            className={`text-xs px-2 py-1 rounded ${view === 'email' ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
           >
             Email
           </button>
           <button
             onClick={() => setView('sms')}
-            className={`text-xs px-2 py-1 rounded ${view === 'sms' ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+            className={`text-xs px-2 py-1 rounded ${view === 'sms' ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
           >
             SMS/DM
           </button>
@@ -88,13 +88,13 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
 
       {view === 'email' && (
         <div className="space-y-2">
-          <div className="bg-stone-50 rounded p-2">
+          <div className="bg-stone-800 rounded p-2">
             <div className="text-[11px] text-stone-400 mb-0.5">Subject</div>
-            <div className="text-sm text-stone-700">{result.subject}</div>
+            <div className="text-sm text-stone-300">{result.subject}</div>
           </div>
-          <div className="bg-stone-50 rounded p-2">
+          <div className="bg-stone-800 rounded p-2">
             <div className="text-[11px] text-stone-400 mb-0.5">Body</div>
-            <div className="text-sm text-stone-700 whitespace-pre-wrap">{result.body}</div>
+            <div className="text-sm text-stone-300 whitespace-pre-wrap">{result.body}</div>
           </div>
           <Button
             variant="secondary"
@@ -108,8 +108,8 @@ export function ReviewRequestPanel({ eventId }: { eventId: string }) {
 
       {view === 'sms' && (
         <div className="space-y-2">
-          <div className="bg-stone-50 rounded p-2">
-            <div className="text-sm text-stone-700">{result.shortVersion}</div>
+          <div className="bg-stone-800 rounded p-2">
+            <div className="text-sm text-stone-300">{result.shortVersion}</div>
             <div className="text-[11px] text-stone-400 mt-1">
               {result.shortVersion.length} characters
             </div>

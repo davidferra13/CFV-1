@@ -76,7 +76,7 @@ export function BillingClient({ status, upgraded }: Props) {
     <div className="space-y-6">
       {/* Post-upgrade success message */}
       {upgraded && (
-        <div className="rounded-xl bg-green-50 border border-green-200 p-4 flex items-center gap-3">
+        <div className="rounded-xl bg-green-950 border border-green-200 p-4 flex items-center gap-3">
           <Sparkles size={18} className="text-green-600 shrink-0" />
           <p className="text-sm font-medium text-green-800">
             Welcome to ChefFlow Pro! Your subscription is now active.
@@ -85,10 +85,10 @@ export function BillingClient({ status, upgraded }: Props) {
       )}
 
       {/* Status Card */}
-      <div className="rounded-xl border border-stone-200 bg-white p-6">
+      <div className="rounded-xl border border-stone-700 bg-surface p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">
+            <h2 className="text-lg font-semibold text-stone-100">
               {isPro ? 'ChefFlow Pro' : 'ChefFlow Free'}
             </h2>
             <p className="mt-0.5 text-sm text-stone-500">
@@ -102,9 +102,9 @@ export function BillingClient({ status, upgraded }: Props) {
           <StatusBadge status={status} />
         </div>
 
-        <div className="mt-4 border-t border-stone-100 pt-4 space-y-2">
+        <div className="mt-4 border-t border-stone-800 pt-4 space-y-2">
           {status.isGrandfathered && (
-            <div className="flex items-center gap-2 text-sm text-stone-600">
+            <div className="flex items-center gap-2 text-sm text-stone-400">
               <Star size={15} className="text-amber-500 shrink-0" />
               <span>
                 You're on the founding member plan — full Pro access, no subscription charge. Ever.
@@ -113,7 +113,7 @@ export function BillingClient({ status, upgraded }: Props) {
           )}
 
           {status.isTrial && status.daysRemaining !== null && (
-            <div className="flex items-center gap-2 text-sm text-stone-600">
+            <div className="flex items-center gap-2 text-sm text-stone-400">
               <Clock size={15} className="text-amber-500 shrink-0" />
               <span>
                 {status.daysRemaining} day{status.daysRemaining === 1 ? '' : 's'} remaining in your
@@ -123,7 +123,7 @@ export function BillingClient({ status, upgraded }: Props) {
           )}
 
           {status.isActive && status.subscriptionCurrentPeriodEnd && (
-            <div className="flex items-center gap-2 text-sm text-stone-600">
+            <div className="flex items-center gap-2 text-sm text-stone-400">
               <CheckCircle2 size={15} className="text-green-500 shrink-0" />
               <span>
                 Next billing date:{' '}
@@ -168,14 +168,14 @@ export function BillingClient({ status, upgraded }: Props) {
       {/* Free vs Pro Comparison */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Free Tier */}
-        <div className="rounded-xl border border-stone-200 bg-white p-6">
+        <div className="rounded-xl border border-stone-700 bg-surface p-6">
           <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-base font-semibold text-stone-900">Free</h3>
+            <h3 className="text-base font-semibold text-stone-100">Free</h3>
             <span className="text-xs text-stone-400 font-medium">Forever</span>
           </div>
           <ul className="space-y-2">
             {FREE_FEATURES.map((feature) => (
-              <li key={feature} className="flex items-start gap-2.5 text-sm text-stone-700">
+              <li key={feature} className="flex items-start gap-2.5 text-sm text-stone-300">
                 <CheckCircle2 size={14} className="shrink-0 text-green-500 mt-0.5" />
                 {feature}
               </li>
@@ -184,9 +184,9 @@ export function BillingClient({ status, upgraded }: Props) {
         </div>
 
         {/* Pro Tier */}
-        <div className="rounded-xl border-2 border-brand-300 bg-gradient-to-b from-brand-50/50 to-white p-6">
+        <div className="rounded-xl border-2 border-brand-600 bg-gradient-to-b from-brand-50/50 to-white p-6">
           <div className="flex items-center gap-2 mb-4">
-            <h3 className="text-base font-semibold text-stone-900">Pro</h3>
+            <h3 className="text-base font-semibold text-stone-100">Pro</h3>
             <Sparkles size={14} className="text-brand-500" />
           </div>
           <p className="text-xs text-stone-500 mb-3">Everything in Free, plus:</p>
@@ -200,7 +200,7 @@ export function BillingClient({ status, upgraded }: Props) {
                   {category.features.map((feature) => (
                     <li
                       key={feature.slug}
-                      className="flex items-start gap-2.5 text-sm text-stone-700"
+                      className="flex items-start gap-2.5 text-sm text-stone-300"
                     >
                       <Sparkles size={12} className="shrink-0 text-brand-500 mt-0.5" />
                       {feature.label}

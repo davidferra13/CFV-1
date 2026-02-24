@@ -91,7 +91,7 @@ async function EventsList({ status }: { status: EventStatus }) {
               <TableCell className="font-medium">
                 <Link
                   href={`/events/${event.id}`}
-                  className="text-brand-600 hover:text-brand-800 hover:underline"
+                  className="text-brand-600 hover:text-brand-300 hover:underline"
                 >
                   {event.occasion || 'Untitled Event'}
                 </Link>
@@ -147,21 +147,21 @@ export default async function EventsPage({
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Events</h1>
-          <p className="text-stone-600 mt-1">Manage your events and proposals</p>
+          <h1 className="text-3xl font-bold text-stone-100">Events</h1>
+          <p className="text-stone-400 mt-1">Manage your events and proposals</p>
         </div>
         <div className="flex items-center gap-2">
           {/* View toggle */}
           <div
             data-info="view-toggle"
-            className="flex border border-stone-200 rounded-lg overflow-hidden"
+            className="flex border border-stone-700 rounded-lg overflow-hidden"
           >
             <Link
               href={`/events?status=${status}&view=list`}
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                 view === 'list'
                   ? 'bg-stone-900 text-white'
-                  : 'bg-white text-stone-600 hover:bg-stone-50'
+                  : 'bg-surface text-stone-400 hover:bg-stone-800'
               }`}
             >
               List
@@ -171,7 +171,7 @@ export default async function EventsPage({
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                 view === 'kanban'
                   ? 'bg-stone-900 text-white'
-                  : 'bg-white text-stone-600 hover:bg-stone-50'
+                  : 'bg-surface text-stone-400 hover:bg-stone-800'
               }`}
             >
               Board

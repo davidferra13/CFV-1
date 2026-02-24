@@ -13,7 +13,12 @@ interface MiniCalendarProps {
   onMonthChange?: (year: number, month: number) => void
 }
 
-export function MiniCalendar({ events, selectedDate, onDateSelect, onMonthChange }: MiniCalendarProps) {
+export function MiniCalendar({
+  events,
+  selectedDate,
+  onDateSelect,
+  onMonthChange,
+}: MiniCalendarProps) {
   const today = new Date()
   const [viewYear, setViewYear] = useState(today.getFullYear())
   const [viewMonth, setViewMonth] = useState(today.getMonth())
@@ -109,25 +114,37 @@ export function MiniCalendar({ events, selectedDate, onDateSelect, onMonthChange
       <div className="flex items-center justify-between mb-2">
         <button
           onClick={goPrevMonth}
-          className="p-1 rounded hover:bg-stone-100 text-stone-500 transition-colors"
+          className="p-1 rounded hover:bg-stone-700 text-stone-500 transition-colors"
           aria-label="Previous month"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
           </svg>
         </button>
         <button
           onClick={goToToday}
-          className="text-sm font-semibold text-stone-700 hover:text-brand-600 transition-colors"
+          className="text-sm font-semibold text-stone-300 hover:text-brand-600 transition-colors"
         >
           {monthLabel}
         </button>
         <button
           onClick={goNextMonth}
-          className="p-1 rounded hover:bg-stone-100 text-stone-500 transition-colors"
+          className="p-1 rounded hover:bg-stone-700 text-stone-500 transition-colors"
           aria-label="Next month"
         >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
           </svg>
         </button>
@@ -135,8 +152,11 @@ export function MiniCalendar({ events, selectedDate, onDateSelect, onMonthChange
 
       {/* Day headers */}
       <div className="grid grid-cols-7 mb-1">
-        {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map(d => (
-          <div key={d} className="text-center text-[10px] font-semibold text-stone-400 uppercase py-1">
+        {['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'].map((d) => (
+          <div
+            key={d}
+            className="text-center text-[10px] font-semibold text-stone-400 uppercase py-1"
+          >
             {d}
           </div>
         ))}
@@ -156,9 +176,9 @@ export function MiniCalendar({ events, selectedDate, onDateSelect, onMonthChange
               className={`
                 relative w-full aspect-square flex items-center justify-center text-xs rounded-full
                 transition-all
-                ${!day.isCurrentMonth ? 'text-stone-300' : 'text-stone-700'}
+                ${!day.isCurrentMonth ? 'text-stone-300' : 'text-stone-300'}
                 ${isToday && !isSelected ? 'text-brand-600 font-bold' : ''}
-                ${isSelected ? 'bg-brand-500 text-white font-bold' : 'hover:bg-stone-100'}
+                ${isSelected ? 'bg-brand-9500 text-white font-bold' : 'hover:bg-stone-700'}
               `}
             >
               {day.dayNum}

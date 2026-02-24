@@ -97,22 +97,21 @@ export function ChatFileUpload({ onUpload, onCancel }: ChatFileUploadProps) {
   const isImage = file ? isImageType(file.type) : false
 
   return (
-    <div className="border-t border-stone-200 bg-white p-4">
+    <div className="border-t border-stone-700 bg-surface p-4">
       {!file ? (
         <label
           className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${
-            dragOver
-              ? 'border-brand-400 bg-brand-50'
-              : 'border-stone-300 hover:border-brand-400'
+            dragOver ? 'border-brand-400 bg-brand-950' : 'border-stone-600 hover:border-brand-400'
           }`}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+          onDragOver={(e) => {
+            e.preventDefault()
+            setDragOver(true)
+          }}
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
         >
           <Upload className="w-8 h-8 text-stone-400 mb-2" />
-          <span className="text-sm text-stone-500">
-            Drop a file here or click to select
-          </span>
+          <span className="text-sm text-stone-500">Drop a file here or click to select</span>
           <span className="text-xs text-stone-400 mt-1">
             Images (10MB) or documents (25MB): PDF, Word, Excel, CSV, TXT
           </span>
@@ -136,15 +135,11 @@ export function ChatFileUpload({ onUpload, onCancel }: ChatFileUploadProps) {
                 className="max-h-48 rounded-lg object-cover"
               />
             ) : (
-              <div className="flex items-center gap-3 bg-stone-50 border border-stone-200 rounded-lg p-4 pr-8">
+              <div className="flex items-center gap-3 bg-stone-800 border border-stone-700 rounded-lg p-4 pr-8">
                 {getFileIcon(file.type)}
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-stone-800 truncate">
-                    {file.name}
-                  </p>
-                  <p className="text-xs text-stone-500">
-                    {formatFileSize(file.size)}
-                  </p>
+                  <p className="text-sm font-medium text-stone-200 truncate">{file.name}</p>
+                  <p className="text-xs text-stone-500">{formatFileSize(file.size)}</p>
                 </div>
               </div>
             )}
@@ -169,7 +164,7 @@ export function ChatFileUpload({ onUpload, onCancel }: ChatFileUploadProps) {
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             placeholder="Add a caption (optional)"
-            className="w-full text-sm border border-stone-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
 
           {/* Actions */}
@@ -177,7 +172,7 @@ export function ChatFileUpload({ onUpload, onCancel }: ChatFileUploadProps) {
             <button
               onClick={onCancel}
               disabled={uploading}
-              className="px-4 py-2 text-sm text-stone-600 hover:text-stone-800 disabled:opacity-50"
+              className="px-4 py-2 text-sm text-stone-400 hover:text-stone-200 disabled:opacity-50"
             >
               Cancel
             </button>

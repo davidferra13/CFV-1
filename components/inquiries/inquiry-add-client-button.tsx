@@ -16,7 +16,12 @@ type Props = {
   prefillPhone?: string
 }
 
-export function InquiryAddClientButton({ inquiryId, prefillName, prefillEmail, prefillPhone }: Props) {
+export function InquiryAddClientButton({
+  inquiryId,
+  prefillName,
+  prefillEmail,
+  prefillPhone,
+}: Props) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [fullName, setFullName] = useState(prefillName ?? '')
@@ -47,15 +52,20 @@ export function InquiryAddClientButton({ inquiryId, prefillName, prefillEmail, p
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-3 space-y-3 rounded-lg border border-stone-200 bg-stone-50 p-4">
-      <p className="text-xs font-semibold text-stone-700 uppercase tracking-wide">Create Client Record</p>
+    <form
+      onSubmit={handleSubmit}
+      className="mt-3 space-y-3 rounded-lg border border-stone-700 bg-stone-800 p-4"
+    >
+      <p className="text-xs font-semibold text-stone-300 uppercase tracking-wide">
+        Create Client Record
+      </p>
 
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
 
       <div>
-        <label htmlFor="add-client-name" className="block text-xs font-medium text-stone-600 mb-1">Full Name *</label>
+        <label htmlFor="add-client-name" className="block text-xs font-medium text-stone-400 mb-1">
+          Full Name *
+        </label>
         <input
           id="add-client-name"
           type="text"
@@ -63,12 +73,14 @@ export function InquiryAddClientButton({ inquiryId, prefillName, prefillEmail, p
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Jane Smith"
-          className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
       <div>
-        <label htmlFor="add-client-email" className="block text-xs font-medium text-stone-600 mb-1">Email *</label>
+        <label htmlFor="add-client-email" className="block text-xs font-medium text-stone-400 mb-1">
+          Email *
+        </label>
         <input
           id="add-client-email"
           type="email"
@@ -76,19 +88,21 @@ export function InquiryAddClientButton({ inquiryId, prefillName, prefillEmail, p
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="jane@example.com"
-          className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
       <div>
-        <label htmlFor="add-client-phone" className="block text-xs font-medium text-stone-600 mb-1">Phone</label>
+        <label htmlFor="add-client-phone" className="block text-xs font-medium text-stone-400 mb-1">
+          Phone
+        </label>
         <input
           id="add-client-phone"
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="+1 (555) 000-0000"
-          className="w-full text-sm border border-stone-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full text-sm border border-stone-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
@@ -96,7 +110,16 @@ export function InquiryAddClientButton({ inquiryId, prefillName, prefillEmail, p
         <Button type="submit" variant="primary" size="sm" disabled={loading}>
           {loading ? 'Saving...' : 'Create & Link'}
         </Button>
-        <Button type="button" variant="secondary" size="sm" onClick={() => { setOpen(false); setError(null) }} disabled={loading}>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={() => {
+            setOpen(false)
+            setError(null)
+          }}
+          disabled={loading}
+        >
           Cancel
         </Button>
       </div>

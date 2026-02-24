@@ -50,28 +50,34 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
   } = invoice
 
   const locationStr = [event.locationCity, event.locationState].filter(Boolean).join(', ')
-  const pricingLabel = event.pricingModel === 'per_person' && invoice.pricePerPersonCents
-    ? `${formatCents(invoice.pricePerPersonCents)} per person × ${event.guestCount}`
-    : 'Flat rate'
+  const pricingLabel =
+    event.pricingModel === 'per_person' && invoice.pricePerPersonCents
+      ? `${formatCents(invoice.pricePerPersonCents)} per person × ${event.guestCount}`
+      : 'Flat rate'
 
   return (
-    <div className="max-w-2xl mx-auto bg-white border border-stone-200 rounded-lg overflow-hidden print:shadow-none print:border-0">
+    <div className="max-w-2xl mx-auto bg-surface border border-stone-700 rounded-lg overflow-hidden print:shadow-none print:border-0">
       {/* ── Section 1: INVOICE Header ── */}
-      <div className="px-8 py-6 bg-stone-50 border-b border-stone-200">
+      <div className="px-8 py-6 bg-stone-800 border-b border-stone-700">
         <div className="flex justify-between items-start">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-stone-900">INVOICE</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-stone-100">INVOICE</h1>
             {invoiceNumber && (
               <p className="text-stone-500 mt-1 font-mono text-sm">{invoiceNumber}</p>
             )}
           </div>
-          <div className="text-right text-sm text-stone-600">
-            <p className="font-semibold text-stone-900">{chef.businessName}</p>
+          <div className="text-right text-sm text-stone-400">
+            <p className="font-semibold text-stone-100">{chef.businessName}</p>
             <p>{chef.email}</p>
             {chef.phone && <p>{chef.phone}</p>}
             {invoiceIssuedAt && (
               <p className="mt-2 text-xs text-stone-400">
-                Issued {new Date(invoiceIssuedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                Issued{' '}
+                {new Date(invoiceIssuedAt).toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
               </p>
             )}
           </div>
@@ -82,14 +88,18 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
         {/* ── Section 2: Client + Event Info ── */}
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Bill To</h2>
-            <p className="font-semibold text-stone-900">{client.displayName}</p>
-            <p className="text-stone-600 text-sm">{client.email}</p>
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
+              Bill To
+            </h2>
+            <p className="font-semibold text-stone-100">{client.displayName}</p>
+            <p className="text-stone-400 text-sm">{client.email}</p>
           </div>
           <div>
-            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Event</h2>
-            <p className="font-semibold text-stone-900">{event.occasion || 'Private Dinner'}</p>
-            <p className="text-stone-600 text-sm">{event.formattedDate}</p>
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
+              Event
+            </h2>
+            <p className="font-semibold text-stone-100">{event.occasion || 'Private Dinner'}</p>
+            <p className="text-stone-400 text-sm">{event.formattedDate}</p>
             {locationStr && <p className="text-stone-500 text-sm">{locationStr}</p>}
             <p className="text-stone-500 text-sm">{event.guestCount} guests</p>
           </div>
@@ -97,31 +107,35 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
 
         {/* ── Section 3: Line Item ── */}
         <div>
-          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Service</h2>
-          <div className="border border-stone-200 rounded-lg overflow-hidden">
+          <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
+            Service
+          </h2>
+          <div className="border border-stone-700 rounded-lg overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-stone-50 border-b border-stone-200">
+              <thead className="bg-stone-800 border-b border-stone-700">
                 <tr>
-                  <th className="text-left px-4 py-3 font-medium text-stone-600">Description</th>
-                  <th className="text-right px-4 py-3 font-medium text-stone-600">Amount</th>
+                  <th className="text-left px-4 py-3 font-medium text-stone-400">Description</th>
+                  <th className="text-right px-4 py-3 font-medium text-stone-400">Amount</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-stone-100">
+                <tr className="border-b border-stone-800">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-stone-900">
+                    <p className="font-medium text-stone-100">
                       Private dinner service{event.occasion ? ` — ${event.occasion}` : ''}
                     </p>
                     <p className="text-xs text-stone-500 mt-0.5">{pricingLabel}</p>
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold text-stone-900">
+                  <td className="px-4 py-3 text-right font-semibold text-stone-100">
                     {quotedPriceCents ? formatCents(quotedPriceCents) : '—'}
                   </td>
                 </tr>
                 {depositAmountCents && (
-                  <tr className="bg-stone-50">
+                  <tr className="bg-stone-800">
                     <td className="px-4 py-3 text-stone-500 text-sm">Deposit required</td>
-                    <td className="px-4 py-3 text-right text-stone-600 text-sm">{formatCents(depositAmountCents)}</td>
+                    <td className="px-4 py-3 text-right text-stone-400 text-sm">
+                      {formatCents(depositAmountCents)}
+                    </td>
                   </tr>
                 )}
               </tbody>
@@ -132,42 +146,58 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
         {/* ── Section 4: Payment History ── */}
         {paymentEntries.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">Payment History</h2>
-            <div className="border border-stone-200 rounded-lg overflow-hidden">
+            <h2 className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-2">
+              Payment History
+            </h2>
+            <div className="border border-stone-700 rounded-lg overflow-hidden">
               <table className="w-full text-sm">
-                <thead className="bg-stone-50 border-b border-stone-200">
+                <thead className="bg-stone-800 border-b border-stone-700">
                   <tr>
-                    <th className="text-left px-4 py-3 font-medium text-stone-600">Date</th>
-                    <th className="text-left px-4 py-3 font-medium text-stone-600">Type</th>
-                    <th className="text-left px-4 py-3 font-medium text-stone-600">Method</th>
-                    <th className="text-right px-4 py-3 font-medium text-stone-600">Amount</th>
+                    <th className="text-left px-4 py-3 font-medium text-stone-400">Date</th>
+                    <th className="text-left px-4 py-3 font-medium text-stone-400">Type</th>
+                    <th className="text-left px-4 py-3 font-medium text-stone-400">Method</th>
+                    <th className="text-right px-4 py-3 font-medium text-stone-400">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-stone-100">
+                <tbody className="divide-y divide-stone-800">
                   {paymentEntries.map((entry) => (
-                    <tr key={entry.id} className={entry.isRefund ? 'bg-red-50' : entry.isTip ? 'bg-purple-50' : ''}>
-                      <td className="px-4 py-3 text-stone-600">{entry.date}</td>
+                    <tr
+                      key={entry.id}
+                      className={entry.isRefund ? 'bg-red-950' : entry.isTip ? 'bg-purple-950' : ''}
+                    >
+                      <td className="px-4 py-3 text-stone-400">{entry.date}</td>
                       <td className="px-4 py-3">
-                        <span className={`font-medium ${
-                          entry.isRefund ? 'text-red-700' :
-                          entry.isTip ? 'text-purple-700' :
-                          'text-stone-900'
-                        }`}>
+                        <span
+                          className={`font-medium ${
+                            entry.isRefund
+                              ? 'text-red-700'
+                              : entry.isTip
+                                ? 'text-purple-700'
+                                : 'text-stone-100'
+                          }`}
+                        >
                           {ENTRY_TYPE_LABELS[entry.entryType] ?? entry.entryType}
                         </span>
                         {entry.transactionReference && (
-                          <span className="text-xs text-stone-400 ml-2">ref: {entry.transactionReference}</span>
+                          <span className="text-xs text-stone-400 ml-2">
+                            ref: {entry.transactionReference}
+                          </span>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-stone-600">
+                      <td className="px-4 py-3 text-stone-400">
                         {PAYMENT_METHOD_LABELS[entry.paymentMethod] ?? entry.paymentMethod}
                       </td>
-                      <td className={`px-4 py-3 text-right font-medium ${
-                        entry.isRefund ? 'text-red-700' :
-                        entry.isTip ? 'text-purple-700' :
-                        'text-stone-900'
-                      }`}>
-                        {entry.isRefund ? '−' : ''}{formatCents(Math.abs(entry.amountCents))}
+                      <td
+                        className={`px-4 py-3 text-right font-medium ${
+                          entry.isRefund
+                            ? 'text-red-700'
+                            : entry.isTip
+                              ? 'text-purple-700'
+                              : 'text-stone-100'
+                        }`}
+                      >
+                        {entry.isRefund ? '−' : ''}
+                        {formatCents(Math.abs(entry.amountCents))}
                       </td>
                     </tr>
                   ))}
@@ -178,22 +208,22 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
         )}
 
         {/* ── Section 5: Balance Summary ── */}
-        <div className="border border-stone-200 rounded-lg p-5">
+        <div className="border border-stone-700 rounded-lg p-5">
           <div className="space-y-2">
             {quotedPriceCents !== null && (
-              <div className="flex justify-between text-sm text-stone-600">
+              <div className="flex justify-between text-sm text-stone-400">
                 <span>Service total</span>
                 <span>{formatCents(quotedPriceCents)}</span>
               </div>
             )}
             {totalPaidCents > 0 && (
-              <div className="flex justify-between text-sm text-stone-600">
+              <div className="flex justify-between text-sm text-stone-400">
                 <span>Total paid</span>
                 <span className="text-green-700">{formatCents(totalPaidCents)}</span>
               </div>
             )}
             {totalRefundedCents > 0 && (
-              <div className="flex justify-between text-sm text-stone-600">
+              <div className="flex justify-between text-sm text-stone-400">
                 <span>Refunded</span>
                 <span className="text-red-700">−{formatCents(totalRefundedCents)}</span>
               </div>
@@ -204,12 +234,14 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
                 <span className="text-purple-700">{formatCents(tipAmountCents)}</span>
               </div>
             )}
-            <div className="border-t border-stone-200 pt-2 mt-2">
+            <div className="border-t border-stone-700 pt-2 mt-2">
               <div className="flex justify-between items-center">
-                <span className="font-semibold text-stone-900">
+                <span className="font-semibold text-stone-100">
                   {isPaidInFull ? 'Balance' : 'Balance due'}
                 </span>
-                <span className={`text-lg font-bold ${isPaidInFull ? 'text-green-700' : 'text-stone-900'}`}>
+                <span
+                  className={`text-lg font-bold ${isPaidInFull ? 'text-green-700' : 'text-stone-100'}`}
+                >
                   {isPaidInFull ? 'PAID IN FULL' : formatCents(balanceDueCents)}
                 </span>
               </div>

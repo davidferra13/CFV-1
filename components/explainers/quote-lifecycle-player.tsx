@@ -10,7 +10,7 @@ import { QuoteLifecycleComposition } from '@/lib/remotion/quote-lifecycle-compos
 
 export function QuoteLifecyclePlayer() {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={QuoteLifecycleComposition}
         compositionWidth={640}

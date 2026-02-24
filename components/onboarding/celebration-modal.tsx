@@ -20,16 +20,21 @@ interface Props {
   shouldCelebrate: boolean
 }
 
-const MILESTONE_CONTENT: Record<CelebrationMilestone, { emoji: string; title: string; message: string }> = {
+const MILESTONE_CONTENT: Record<
+  CelebrationMilestone,
+  { emoji: string; title: string; message: string }
+> = {
   first_client: {
     emoji: '🎉',
     title: 'Your first client!',
-    message: 'You just added your first client. Build that relationship — it\'s the foundation of everything.',
+    message:
+      "You just added your first client. Build that relationship — it's the foundation of everything.",
   },
   first_event_completed: {
     emoji: '✅',
     title: 'First event complete!',
-    message: 'You did it — your first event is in the books. The ledger is updated, the timeline is locked. On to the next one.',
+    message:
+      'You did it — your first event is in the books. The ledger is updated, the timeline is locked. On to the next one.',
   },
   first_payment_received: {
     emoji: '💰',
@@ -44,7 +49,8 @@ const MILESTONE_CONTENT: Record<CelebrationMilestone, { emoji: string; title: st
   first_quote_sent: {
     emoji: '📋',
     title: 'First quote sent!',
-    message: 'Your first proposal is in a client\'s hands. Follow up in 48 hours if you hear nothing.',
+    message:
+      "Your first proposal is in a client's hands. Follow up in 48 hours if you hear nothing.",
   },
 }
 
@@ -79,17 +85,19 @@ export function CelebrationModal({ milestone, shouldCelebrate }: Props) {
       onClick={() => setVisible(false)}
     >
       <div
-        className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-4 animate-in zoom-in-95 duration-300"
+        className="bg-surface rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-4 animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="celebration-title"
       >
-        <div className="text-6xl" aria-hidden="true">{content.emoji}</div>
-        <h2 id="celebration-title" className="text-2xl font-bold text-stone-900">
+        <div className="text-6xl" aria-hidden="true">
+          {content.emoji}
+        </div>
+        <h2 id="celebration-title" className="text-2xl font-bold text-stone-100">
           {content.title}
         </h2>
-        <p className="text-stone-600 text-sm leading-relaxed">{content.message}</p>
+        <p className="text-stone-400 text-sm leading-relaxed">{content.message}</p>
         <button
           type="button"
           onClick={() => setVisible(false)}

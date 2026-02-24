@@ -5,7 +5,14 @@ import { getEvents } from '@/lib/events/actions'
 import { exportRevenueByClientCSV } from '@/lib/finance/export-actions'
 import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const metadata: Metadata = { title: 'Revenue by Client - ChefFlow' }
@@ -15,13 +22,16 @@ export default async function RevenueByClientPage() {
   const events = await getEvents()
 
   // Group events by client
-  const clientMap = new Map<string, {
-    id: string
-    name: string
-    eventCount: number
-    totalRevenue: number
-    completedRevenue: number
-  }>()
+  const clientMap = new Map<
+    string,
+    {
+      id: string
+      name: string
+      eventCount: number
+      totalRevenue: number
+      completedRevenue: number
+    }
+  >()
 
   for (const event of events) {
     if (!event.client) continue
@@ -44,8 +54,7 @@ export default async function RevenueByClientPage() {
     }
   }
 
-  const clients = Array.from(clientMap.values())
-    .sort((a, b) => b.totalRevenue - a.totalRevenue)
+  const clients = Array.from(clientMap.values()).sort((a, b) => b.totalRevenue - a.totalRevenue)
 
   const totalRevenue = clients.reduce((s, c) => s + c.totalRevenue, 0)
   const topClient = clients[0]
@@ -53,10 +62,12 @@ export default async function RevenueByClientPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-700">← Reporting</Link>
+        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Reporting
+        </Link>
         <div className="flex items-start justify-between mt-1">
           <div>
-            <h1 className="text-3xl font-bold text-stone-900">Revenue by Client</h1>
+            <h1 className="text-3xl font-bold text-stone-100">Revenue by Client</h1>
             <p className="text-stone-500 mt-1">Lifetime value and booking frequency per client</p>
           </div>
           <CSVDownloadButton action={exportRevenueByClientCSV} label="Export CSV" />
@@ -69,20 +80,22 @@ export default async function RevenueByClientPage() {
           <p className="text-sm text-stone-500 mt-1">Total across {clients.length} clients</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{clients.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{clients.length}</p>
           <p className="text-sm text-stone-500 mt-1">Clients with events</p>
         </Card>
         {topClient && (
           <Card className="p-4">
-            <p className="text-lg font-bold text-stone-900 truncate">{topClient.name}</p>
-            <p className="text-sm text-stone-500 mt-1">Top client — {formatCurrency(topClient.totalRevenue)}</p>
+            <p className="text-lg font-bold text-stone-100 truncate">{topClient.name}</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Top client — {formatCurrency(topClient.totalRevenue)}
+            </p>
           </Card>
         )}
       </div>
 
       {clients.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No client revenue data</p>
+          <p className="text-stone-400 font-medium">No client revenue data</p>
         </Card>
       ) : (
         <Card>
@@ -106,11 +119,19 @@ export default async function RevenueByClientPage() {
                       {client.name}
                     </Link>
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{client.eventCount}</TableCell>
-                  <TableCell className="text-stone-900 font-semibold text-sm">{formatCurrency(client.totalRevenue)}</TableCell>
-                  <TableCell className="text-green-700 text-sm">{formatCurrency(client.completedRevenue)}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">{client.eventCount}</TableCell>
+                  <TableCell className="text-stone-100 font-semibold text-sm">
+                    {formatCurrency(client.totalRevenue)}
+                  </TableCell>
+                  <TableCell className="text-green-700 text-sm">
+                    {formatCurrency(client.completedRevenue)}
+                  </TableCell>
                   <TableCell className="text-stone-500 text-sm">
-                    {formatCurrency(client.eventCount > 0 ? Math.round(client.totalRevenue / client.eventCount) : 0)}
+                    {formatCurrency(
+                      client.eventCount > 0
+                        ? Math.round(client.totalRevenue / client.eventCount)
+                        : 0
+                    )}
                   </TableCell>
                 </TableRow>
               ))}

@@ -58,18 +58,20 @@ export function SequenceTimeline({ sequences }: Props) {
           <CardContent>
             <div className="relative pl-6">
               {/* Vertical line */}
-              <div className="absolute left-2.5 top-0 bottom-0 w-px bg-stone-200" />
+              <div className="absolute left-2.5 top-0 bottom-0 w-px bg-stone-700" />
 
               {seq.steps.map((step, i) => (
                 <div key={step.id} className="relative pb-4 last:pb-0">
                   {/* Dot */}
-                  <div className={`absolute -left-3.5 w-5 h-5 rounded-full flex items-center justify-center ${
-                    step.status === 'sent'
-                      ? 'bg-emerald-100'
-                      : step.status === 'skipped'
-                      ? 'bg-stone-100'
-                      : 'bg-white border-2 border-stone-200'
-                  }`}>
+                  <div
+                    className={`absolute -left-3.5 w-5 h-5 rounded-full flex items-center justify-center ${
+                      step.status === 'sent'
+                        ? 'bg-emerald-900'
+                        : step.status === 'skipped'
+                          ? 'bg-stone-800'
+                          : 'bg-surface border-2 border-stone-700'
+                    }`}
+                  >
                     {step.status === 'sent' ? (
                       <Check className="h-3 w-3 text-emerald-600" />
                     ) : step.status === 'skipped' ? (
@@ -82,13 +84,15 @@ export function SequenceTimeline({ sequences }: Props) {
                   {/* Content */}
                   <div className="ml-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-stone-900">
+                      <span className="text-sm font-medium text-stone-100">
                         Step {step.stepNumber}: {step.stepType}
                       </span>
                       <Badge variant={STEP_STATUS_BADGE[step.status]}>{step.status}</Badge>
                     </div>
                     <p className="text-xs text-stone-500 mt-0.5">
-                      {step.delayDays > 0 ? `+${step.delayDays} day${step.delayDays !== 1 ? 's' : ''}` : 'Immediately'}
+                      {step.delayDays > 0
+                        ? `+${step.delayDays} day${step.delayDays !== 1 ? 's' : ''}`
+                        : 'Immediately'}
                       {step.templateName && ` · ${step.templateName}`}
                       {step.sentAt && ` · Sent ${new Date(step.sentAt).toLocaleDateString()}`}
                     </p>

@@ -348,7 +348,7 @@ export function CalendarView({
             style={{ backgroundColor: dotColor }}
           />
           <div className="min-w-0">
-            <span className="font-medium text-stone-900">{arg.event.title}</span>
+            <span className="font-medium text-stone-100">{arg.event.title}</span>
             <span className="text-stone-500 ml-2 text-sm">{props.clientName}</span>
             {props.guestCount > 0 && (
               <span className="text-stone-400 ml-2 text-sm">{props.guestCount} guests</span>
@@ -405,10 +405,10 @@ export function CalendarView({
             Today
           </Button>
           {isCalendarView && (
-            <div className="flex items-center border border-stone-200 rounded-lg overflow-hidden">
+            <div className="flex items-center border border-stone-700 rounded-lg overflow-hidden">
               <button
                 onClick={goPrev}
-                className="px-2.5 py-1.5 hover:bg-stone-100 transition-colors text-stone-600"
+                className="px-2.5 py-1.5 hover:bg-stone-700 transition-colors text-stone-400"
                 aria-label="Previous"
               >
                 <svg
@@ -423,7 +423,7 @@ export function CalendarView({
               </button>
               <button
                 onClick={goNext}
-                className="px-2.5 py-1.5 hover:bg-stone-100 transition-colors text-stone-600 border-l border-stone-200"
+                className="px-2.5 py-1.5 hover:bg-stone-700 transition-colors text-stone-400 border-l border-stone-700"
                 aria-label="Next"
               >
                 <svg
@@ -438,23 +438,23 @@ export function CalendarView({
               </button>
             </div>
           )}
-          <h2 className="text-lg font-semibold text-stone-900 ml-2">{title}</h2>
+          <h2 className="text-lg font-semibold text-stone-100 ml-2">{title}</h2>
           {isLoading && (
-            <div className="w-4 h-4 border-2 border-brand-300 border-t-brand-600 rounded-full animate-spin ml-2" />
+            <div className="w-4 h-4 border-2 border-brand-600 border-t-brand-600 rounded-full animate-spin ml-2" />
           )}
         </div>
 
         {/* Right: View Switcher + Create */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center border border-stone-200 rounded-lg overflow-hidden">
+          <div className="flex items-center border border-stone-700 rounded-lg overflow-hidden">
             {(Object.entries(VIEW_LABELS) as [ViewType, string][]).map(([view, label]) => (
               <button
                 key={view}
                 onClick={() => changeView(view)}
-                className={`px-3 py-1.5 text-sm font-medium transition-colors border-r border-stone-200 last:border-r-0 ${
+                className={`px-3 py-1.5 text-sm font-medium transition-colors border-r border-stone-700 last:border-r-0 ${
                   currentView === view
-                    ? 'bg-brand-500 text-white'
-                    : 'text-stone-600 hover:bg-stone-100'
+                    ? 'bg-brand-9500 text-white'
+                    : 'text-stone-400 hover:bg-stone-700'
                 }`}
               >
                 {label}
@@ -480,7 +480,7 @@ export function CalendarView({
       <div className="flex gap-5">
         {/* Mini Calendar Sidebar (hidden on mobile) */}
         <div className="hidden xl:block w-52 flex-shrink-0 space-y-5">
-          <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-3">
+          <div className="bg-surface rounded-xl border border-stone-700 shadow-sm p-3">
             <MiniCalendar
               events={events}
               selectedDate={selectedDate}
@@ -489,7 +489,7 @@ export function CalendarView({
           </div>
 
           {/* Keyboard shortcuts help */}
-          <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-3">
+          <div className="bg-surface rounded-xl border border-stone-700 shadow-sm p-3">
             <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
               Shortcuts
             </h4>
@@ -505,7 +505,7 @@ export function CalendarView({
               ].map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between">
                   <span>{label}</span>
-                  <kbd className="px-1.5 py-0.5 bg-stone-100 rounded text-[10px] font-mono font-medium text-stone-600">
+                  <kbd className="px-1.5 py-0.5 bg-stone-800 rounded text-[10px] font-mono font-medium text-stone-400">
                     {key}
                   </kbd>
                 </div>
@@ -517,9 +517,9 @@ export function CalendarView({
         {/* Calendar / Agenda */}
         <div className="flex-1 min-w-0">
           {isCalendarView ? (
-            <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+            <div className="bg-surface rounded-xl border border-stone-700 shadow-sm overflow-hidden">
               {viewSeason && (
-                <div className="p-3 border-b bg-stone-50">
+                <div className="p-3 border-b bg-stone-800">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
@@ -531,12 +531,12 @@ export function CalendarView({
                         </div>
                       </div>
                       {viewSeason.sensory_anchor && (
-                        <div className="text-xs text-stone-600 italic mt-1">
+                        <div className="text-xs text-stone-400 italic mt-1">
                           The Vibe: {viewSeason.sensory_anchor}
                         </div>
                       )}
                       {viewSeason.micro_windows && viewSeason.micro_windows.length > 0 && (
-                        <div className="text-xs text-stone-600 mt-1">
+                        <div className="text-xs text-stone-400 mt-1">
                           Peak Ingredients:{' '}
                           {viewSeason.micro_windows
                             .map((m) => m.ingredient)
@@ -545,7 +545,7 @@ export function CalendarView({
                         </div>
                       )}
                       {viewSeason.proven_wins && viewSeason.proven_wins.length > 0 && (
-                        <div className="text-xs text-stone-600 mt-1">
+                        <div className="text-xs text-stone-400 mt-1">
                           Go-To Dishes:{' '}
                           {viewSeason.proven_wins
                             .map((p) => p.dish_name)
@@ -700,7 +700,7 @@ export function CalendarView({
           Completed
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-amber-100 border border-amber-400" /> Prep Day
+          <span className="w-3 h-3 rounded bg-amber-900 border border-amber-400" /> Prep Day
         </span>
         <span className="flex items-center gap-1.5">
           <span
@@ -712,17 +712,17 @@ export function CalendarView({
           />{' '}
           Tentative Hold
         </span>
-        <span className="mx-2 border-l border-stone-200" />
+        <span className="mx-2 border-l border-stone-700" />
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Ready
+          <span className="w-2.5 h-2.5 rounded-full bg-green-9500" /> Ready
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500" /> Partial
+          <span className="w-2.5 h-2.5 rounded-full bg-yellow-9500" /> Partial
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Not Started
+          <span className="w-2.5 h-2.5 rounded-full bg-red-9500" /> Not Started
         </span>
-        <span className="mx-2 border-l border-stone-200" />
+        <span className="mx-2 border-l border-stone-700" />
         <span className="flex items-center gap-1.5">
           <span
             className="w-3 h-3 rounded"

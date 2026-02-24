@@ -21,7 +21,7 @@ export default async function NewEventPage() {
       <div className="flex items-center gap-6">
         <p className="text-sm text-stone-500">
           Prefer a step-by-step guide?{' '}
-          <a href="/events/new/wizard" className="text-brand-600 hover:text-brand-700 font-medium">
+          <a href="/events/new/wizard" className="text-brand-600 hover:text-brand-400 font-medium">
             Try the event wizard &rarr;
           </a>
         </p>
@@ -29,7 +29,7 @@ export default async function NewEventPage() {
           Or{' '}
           <a
             href="/events/new/from-text"
-            className="text-brand-600 hover:text-brand-700 font-medium"
+            className="text-brand-600 hover:text-brand-400 font-medium"
           >
             just describe it &rarr;
           </a>
@@ -37,8 +37,8 @@ export default async function NewEventPage() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Create New Event</h1>
-        <p className="text-stone-600 mt-1">Fill in the details for your new event</p>
+        <h1 className="text-3xl font-bold text-stone-100">Create New Event</h1>
+        <p className="text-stone-400 mt-1">Fill in the details for your new event</p>
       </div>
 
       <EventForm

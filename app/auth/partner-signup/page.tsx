@@ -28,13 +28,13 @@ function PartnerSignupForm() {
 
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-stone-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-stone-800 px-4">
         <div className="w-full max-w-sm text-center">
-          <h1 className="text-xl font-bold text-stone-900 mb-2">Invalid invite link</h1>
+          <h1 className="text-xl font-bold text-stone-100 mb-2">Invalid invite link</h1>
           <p className="text-sm text-stone-500 mb-6">
             This link is missing the invite token. Ask your chef to send you a new invite.
           </p>
-          <Link href="/auth/signin" className="text-sm text-stone-600 underline">
+          <Link href="/auth/signin" className="text-sm text-stone-400 underline">
             Sign in instead
           </Link>
         </div>
@@ -86,11 +86,11 @@ function PartnerSignupForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-stone-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-stone-800 px-4">
       <div className="w-full max-w-sm">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-stone-900">Claim your partner account</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Claim your partner account</h1>
           <p className="mt-2 text-sm text-stone-500">
             Create an account to access your partner showcase — see stats, photos, and event history
             from your space.
@@ -100,20 +100,20 @@ function PartnerSignupForm() {
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Email</label>
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
               autoComplete="email"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
               placeholder="you@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Password</label>
             <input
               type="password"
               value={password}
@@ -121,13 +121,13 @@ function PartnerSignupForm() {
               required
               minLength={8}
               autoComplete="new-password"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-stone-400"
               placeholder="Min. 8 characters"
             />
           </div>
 
           {error && (
-            <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+            <div className="rounded-lg bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
@@ -147,7 +147,7 @@ function PartnerSignupForm() {
 
         <p className="mt-6 text-center text-xs text-stone-400">
           Already have an account?{' '}
-          <Link href="/auth/signin?portal=partner" className="underline text-stone-600">
+          <Link href="/auth/signin?portal=partner" className="underline text-stone-400">
             Sign in
           </Link>
         </p>
@@ -160,7 +160,7 @@ export default function PartnerSignupPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-stone-50">
+        <div className="min-h-screen flex items-center justify-center bg-stone-800">
           <div className="text-sm text-stone-400">Loading…</div>
         </div>
       }

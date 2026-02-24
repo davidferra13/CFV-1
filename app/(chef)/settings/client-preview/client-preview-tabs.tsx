@@ -18,7 +18,7 @@ type Tab = 'public' | 'portal'
 type DeviceFrame = 'desktop' | 'mobile'
 
 type PortalData = {
-  clientId: string  // tracked so we can detect staleness when the client changes while on the Public tab
+  clientId: string // tracked so we can detect staleness when the client changes while on the Public tab
   events: Awaited<ReturnType<typeof getPreviewClientEvents>>
   quotes: Awaited<ReturnType<typeof getPreviewClientQuotes>>
   loyaltyStatus: Awaited<ReturnType<typeof getPreviewClientLoyaltyStatus>>
@@ -56,7 +56,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
   const [isPending, startTransition] = useTransition()
 
   function loadClientData(clientId: string) {
-    const client = clients.find(c => c.id === clientId)
+    const client = clients.find((c) => c.id === clientId)
     if (!client) return
 
     startTransition(async () => {
@@ -73,7 +73,11 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
     setActiveTab(tab)
     // Load (or reload) when switching to portal if we have no data yet,
     // or if the user changed the client selector while they were on the Public tab.
-    if (tab === 'portal' && selectedClientId && (!portalData || portalData.clientId !== selectedClientId)) {
+    if (
+      tab === 'portal' &&
+      selectedClientId &&
+      (!portalData || portalData.clientId !== selectedClientId)
+    ) {
       loadClientData(selectedClientId)
     }
   }
@@ -90,14 +94,14 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-3 justify-between">
         {/* Tab switcher */}
-        <div className="flex rounded-lg border border-stone-200 bg-white p-1 gap-1">
+        <div className="flex rounded-lg border border-stone-700 bg-surface p-1 gap-1">
           <button
             onClick={() => handleTabSwitch('public')}
             className={[
               'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
               activeTab === 'public'
                 ? 'bg-stone-900 text-white'
-                : 'text-stone-600 hover:bg-stone-50',
+                : 'text-stone-400 hover:bg-stone-800',
             ].join(' ')}
           >
             Public Profile
@@ -108,7 +112,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
               'px-4 py-1.5 text-sm font-medium rounded-md transition-colors',
               activeTab === 'portal'
                 ? 'bg-stone-900 text-white'
-                : 'text-stone-600 hover:bg-stone-50',
+                : 'text-stone-400 hover:bg-stone-800',
             ].join(' ')}
           >
             Client Portal
@@ -118,15 +122,15 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
         {/* Right-side controls */}
         <div className="flex items-center gap-2">
           {/* Device frame toggle */}
-          <div className="flex rounded-lg border border-stone-200 bg-white p-1 gap-1">
+          <div className="flex rounded-lg border border-stone-700 bg-surface p-1 gap-1">
             <button
               onClick={() => setDeviceFrame('desktop')}
               title="Desktop view"
               className={[
                 'p-1.5 rounded-md transition-colors',
                 deviceFrame === 'desktop'
-                  ? 'bg-stone-100 text-stone-900'
-                  : 'text-stone-400 hover:text-stone-600',
+                  ? 'bg-stone-800 text-stone-100'
+                  : 'text-stone-400 hover:text-stone-400',
               ].join(' ')}
             >
               <Monitor className="w-4 h-4" />
@@ -137,8 +141,8 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
               className={[
                 'p-1.5 rounded-md transition-colors',
                 deviceFrame === 'mobile'
-                  ? 'bg-stone-100 text-stone-900'
-                  : 'text-stone-400 hover:text-stone-600',
+                  ? 'bg-stone-800 text-stone-100'
+                  : 'text-stone-400 hover:text-stone-400',
               ].join(' ')}
             >
               <Smartphone className="w-4 h-4" />
@@ -151,7 +155,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
               href={`/chef/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-stone-700 bg-surface text-stone-300 hover:bg-stone-800 transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Open Live Page
@@ -164,13 +168,13 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       {activeTab === 'portal' && clients.length > 0 && (
         <div className="flex items-center gap-3">
           <Eye className="w-4 h-4 text-stone-400 flex-shrink-0" />
-          <span className="text-sm font-medium text-stone-700">Previewing as:</span>
+          <span className="text-sm font-medium text-stone-300">Previewing as:</span>
           <select
             value={selectedClientId}
-            onChange={e => handleClientChange(e.target.value)}
-            className="text-sm border border-stone-200 rounded-lg px-3 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-stone-300 text-stone-800"
+            onChange={(e) => handleClientChange(e.target.value)}
+            className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-surface focus:outline-none focus:ring-2 focus:ring-stone-600 text-stone-200"
           >
-            {clients.map(c => (
+            {clients.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.full_name} ({c.email})
               </option>
@@ -180,17 +184,22 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       )}
 
       {/* Preview mode banner */}
-      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-800">
+      <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-950 px-4 py-2.5 text-sm text-amber-800">
         <Eye className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <span>
           <strong>Preview Mode</strong> — This is exactly what your clients see.
-          {activeTab === 'portal' && ' Buttons are shown but disabled — no actions can be taken from here.'}
+          {activeTab === 'portal' &&
+            ' Buttons are shown but disabled — no actions can be taken from here.'}
         </span>
       </div>
 
       {/* Content */}
       {activeTab === 'public' ? (
-        <PublicProfilePreview slug={slug} publicProfileData={publicProfileData} deviceFrame={deviceFrame} />
+        <PublicProfilePreview
+          slug={slug}
+          publicProfileData={publicProfileData}
+          deviceFrame={deviceFrame}
+        />
       ) : (
         <ClientPortalPreview
           clients={clients}

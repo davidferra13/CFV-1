@@ -63,10 +63,14 @@ export function QuickReceiptCapture({ eventId }: Props) {
 
   if (state === 'success') {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div className="rounded-lg border border-emerald-200 bg-emerald-950 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-emerald-800">Receipt uploaded — OCR processing in background</p>
-          <p className="text-xs text-emerald-600 mt-0.5">Line items will be ready for review shortly.</p>
+          <p className="text-sm font-semibold text-emerald-800">
+            Receipt uploaded — OCR processing in background
+          </p>
+          <p className="text-xs text-emerald-600 mt-0.5">
+            Line items will be ready for review shortly.
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -84,20 +88,16 @@ export function QuickReceiptCapture({ eventId }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-stone-50 p-4">
+    <div className="rounded-lg border border-stone-700 bg-stone-800 p-4">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h3 className="text-sm font-semibold text-stone-800">Quick Receipt Capture</h3>
+          <h3 className="text-sm font-semibold text-stone-200">Quick Receipt Capture</h3>
           <p className="text-xs text-stone-500 mt-0.5">
             Snap a receipt now — OCR extracts line items automatically
           </p>
         </div>
         {state === 'idle' && (
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-          >
+          <Button variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>
             Upload Receipt
           </Button>
         )}
@@ -120,7 +120,7 @@ export function QuickReceiptCapture({ eventId }: Props) {
           <img
             src={previewUrl}
             alt="Receipt preview"
-            className="max-h-48 w-full object-contain rounded-md border border-stone-200 bg-white"
+            className="max-h-48 w-full object-contain rounded-md border border-stone-700 bg-surface"
           />
           <p className="text-xs text-stone-500 truncate">{file?.name}</p>
           <div className="flex gap-2">
@@ -135,7 +135,7 @@ export function QuickReceiptCapture({ eventId }: Props) {
       )}
 
       {state === 'uploading' && (
-        <div className="flex items-center gap-2 text-sm text-stone-600 py-1">
+        <div className="flex items-center gap-2 text-sm text-stone-400 py-1">
           <span
             className="inline-block w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin"
             aria-hidden="true"

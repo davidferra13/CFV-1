@@ -74,9 +74,7 @@ function Step1({
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-stone-900">Set Up Your Profile</h2>
-        <p className="mt-1 text-stone-500">
-          Your name and bio appear on your public profile page
-        </p>
+        <p className="mt-1 text-stone-500">Your name and bio appear on your public profile page</p>
       </div>
 
       <div className="space-y-4">
@@ -115,7 +113,10 @@ function Step1({
 
         <p className="text-xs text-stone-400">
           Profile photo can be added in{' '}
-          <a href="/settings/my-profile" className="underline">Settings → My Profile</a>.
+          <a href="/settings/my-profile" className="underline">
+            Settings → My Profile
+          </a>
+          .
         </p>
       </div>
 
@@ -259,7 +260,10 @@ function Step3({
     checking: { text: 'Checking availability…', color: 'text-stone-400' },
     available: { text: 'Available!', color: 'text-green-600' },
     taken: { text: 'Already taken — try another', color: 'text-red-600' },
-    invalid: { text: 'Only lowercase letters, numbers, and hyphens (min 3 chars)', color: 'text-amber-600' },
+    invalid: {
+      text: 'Only lowercase letters, numbers, and hyphens (min 3 chars)',
+      color: 'text-amber-600',
+    },
   }
 
   const canSave = slugStatus === 'available' && slug.length >= 3
@@ -268,9 +272,7 @@ function Step3({
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-stone-900">Your Public URL</h2>
-        <p className="mt-1 text-stone-500">
-          Clients will find your profile at this address
-        </p>
+        <p className="mt-1 text-stone-500">Clients will find your profile at this address</p>
       </div>
 
       <div className="space-y-2">
@@ -343,13 +345,11 @@ function Step4({
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-stone-900">Get Paid</h2>
-        <p className="mt-1 text-stone-500">
-          Connect Stripe so clients can pay you directly
-        </p>
+        <p className="mt-1 text-stone-500">Connect Stripe so clients can pay you directly</p>
       </div>
 
       {connectStatus.connected ? (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-2">
+        <div className="bg-green-950 border border-green-200 rounded-xl p-4 space-y-2">
           <div className="flex items-center gap-2 text-sm font-medium text-green-800">
             <span className="text-green-500">✓</span>
             Stripe account connected
@@ -365,10 +365,10 @@ function Step4({
         </div>
       ) : connectStatus.pending ? (
         <div className="space-y-4">
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+          <div className="bg-amber-950 border border-amber-200 rounded-xl p-4">
             <p className="text-sm text-amber-800">
-              Your Stripe account was created but onboarding isn&apos;t complete yet.
-              Click below to continue where you left off.
+              Your Stripe account was created but onboarding isn&apos;t complete yet. Click below to
+              continue where you left off.
             </p>
           </div>
           <Button variant="primary" loading={loading} onClick={handleConnect}>
@@ -405,7 +405,9 @@ function Step4({
         onClick={onContinue}
         className="block text-sm text-stone-400 hover:text-stone-600 underline"
       >
-        {connectStatus.connected ? 'Continue to finish' : 'Skip for now — connect later in Settings'}
+        {connectStatus.connected
+          ? 'Continue to finish'
+          : 'Skip for now — connect later in Settings'}
       </button>
     </div>
   )
@@ -441,25 +443,24 @@ function Step5({
           <span className="text-green-500">✓</span>
           Public profile URL configured
         </div>
-        <div className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
-          connectStatus.connected
-            ? 'text-stone-700 bg-stone-50'
-            : 'text-amber-700 bg-amber-50'
-        }`}>
-          {connectStatus.connected
-            ? <><span className="text-green-500">✓</span> Stripe payments connected</>
-            : <><span className="text-amber-500">!</span> Stripe not connected — add later in Settings</>
-          }
+        <div
+          className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
+            connectStatus.connected ? 'text-stone-700 bg-stone-50' : 'text-amber-700 bg-amber-950'
+          }`}
+        >
+          {connectStatus.connected ? (
+            <>
+              <span className="text-green-500">✓</span> Stripe payments connected
+            </>
+          ) : (
+            <>
+              <span className="text-amber-500">!</span> Stripe not connected — add later in Settings
+            </>
+          )}
         </div>
       </div>
 
-      <Button
-        variant="primary"
-        size="lg"
-        className="w-full"
-        loading={finishing}
-        onClick={onFinish}
-      >
+      <Button variant="primary" size="lg" className="w-full" loading={finishing} onClick={onFinish}>
         Go to Dashboard
       </Button>
     </div>
@@ -571,23 +572,12 @@ export function OnboardingWizard({
                 saving={isPending}
               />
             )}
-            {step === 4 && (
-              <Step4
-                connectStatus={connectStatus}
-                onContinue={goNext}
-              />
-            )}
+            {step === 4 && <Step4 connectStatus={connectStatus} onContinue={goNext} />}
             {step === 5 && (
-              <Step5
-                connectStatus={connectStatus}
-                onFinish={handleFinish}
-                finishing={isPending}
-              />
+              <Step5 connectStatus={connectStatus} onFinish={handleFinish} finishing={isPending} />
             )}
 
-            {stepError && (
-              <p className="mt-4 text-sm text-red-600">{stepError}</p>
-            )}
+            {stepError && <p className="mt-4 text-sm text-red-600">{stepError}</p>}
           </CardContent>
 
           {step > 1 && step < TOTAL_STEPS && (

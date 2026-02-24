@@ -63,7 +63,9 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
     return (
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Actions</h2>
-        <p className="text-green-700">This quote has been accepted by the client. Pricing is frozen.</p>
+        <p className="text-green-700">
+          This quote has been accepted by the client. Pricing is frozen.
+        </p>
       </Card>
     )
   }
@@ -91,11 +93,7 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
         <div className="flex flex-wrap gap-2">
           {quote.status === 'draft' && (
             <>
-              <Button
-                onClick={() => handleTransition('sent')}
-                loading={loading}
-                disabled={loading}
-              >
+              <Button onClick={() => handleTransition('sent')} loading={loading} disabled={loading}>
                 Send to Client
               </Button>
               <Button
@@ -105,12 +103,7 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
               >
                 Edit Quote
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                disabled={loading}
-              >
+              <Button variant="ghost" size="sm" onClick={handleDelete} disabled={loading}>
                 Delete
               </Button>
             </>
@@ -143,23 +136,22 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           )}
 
           {quote.status === 'expired' && (
-            <Button
-              onClick={() => handleTransition('draft')}
-              loading={loading}
-              disabled={loading}
-            >
+            <Button onClick={() => handleTransition('draft')} loading={loading} disabled={loading}>
               Revise & Resend
             </Button>
           )}
         </div>
 
         {/* Status-specific help text */}
-        <div className="text-sm text-stone-600">
+        <div className="text-sm text-stone-400">
           {quote.status === 'draft' && (
             <p>This quote is in draft. Review pricing and send it to the client when ready.</p>
           )}
           {quote.status === 'sent' && (
-            <p>Quote sent to client. Waiting for their response. You can also mark it manually if they respond outside the portal.</p>
+            <p>
+              Quote sent to client. Waiting for their response. You can also mark it manually if
+              they respond outside the portal.
+            </p>
           )}
           {quote.status === 'expired' && (
             <p>This quote expired. You can revise it and send a new version.</p>

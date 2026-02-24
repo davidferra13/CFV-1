@@ -38,7 +38,7 @@ export function PrepBlockNudgeBanner({ eventId }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 flex items-center gap-3">
+    <div className="rounded-lg border border-amber-300 bg-amber-950 px-4 py-3 flex items-center gap-3">
       <div className="flex-1">
         <p className="text-sm font-medium text-amber-900">No prep blocks scheduled</p>
         <p className="text-xs text-amber-700 mt-0.5">
@@ -56,12 +56,7 @@ export function PrepBlockNudgeBanner({ eventId }: Props) {
         >
           Auto-schedule
         </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          disabled={loading}
-          onClick={() => setDismissed(true)}
-        >
+        <Button type="button" variant="ghost" disabled={loading} onClick={() => setDismissed(true)}>
           Dismiss
         </Button>
       </div>

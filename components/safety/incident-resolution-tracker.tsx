@@ -67,7 +67,7 @@ export function IncidentResolutionTracker({ incident }: { incident: IncidentData
               />
               <span
                 className={
-                  step.completed ? 'line-through text-stone-400 text-sm' : 'text-sm text-stone-700'
+                  step.completed ? 'line-through text-stone-400 text-sm' : 'text-sm text-stone-300'
                 }
               >
                 {step.label}
@@ -82,7 +82,7 @@ export function IncidentResolutionTracker({ incident }: { incident: IncidentData
             value={newStep}
             onChange={(e) => setNewStep(e.target.value)}
             placeholder="Add follow-up step..."
-            className="flex-1 border border-stone-300 rounded px-3 py-1.5 text-sm"
+            className="flex-1 border border-stone-600 rounded px-3 py-1.5 text-sm"
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddStep())}
           />
           <Button
@@ -95,8 +95,8 @@ export function IncidentResolutionTracker({ incident }: { incident: IncidentData
           </Button>
         </div>
 
-        <div className="pt-3 border-t border-stone-100">
-          <p className="text-sm font-medium text-stone-700 mb-2">Resolution Status</p>
+        <div className="pt-3 border-t border-stone-800">
+          <p className="text-sm font-medium text-stone-300 mb-2">Resolution Status</p>
           <div className="flex gap-2">
             {(['open', 'in_progress', 'resolved'] as const).map((s) => (
               <Button

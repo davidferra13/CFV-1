@@ -43,7 +43,7 @@ export default async function GiftCardsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Gift Cards & Vouchers</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Gift Cards & Vouchers</h1>
           <p className="text-stone-500 mt-1">
             Issue codes to reward clients or sell gift cards via your public profile.
           </p>
@@ -55,19 +55,19 @@ export default async function GiftCardsPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <Card>
           <CardContent className="pt-5">
-            <div className="text-2xl font-bold text-stone-900">{stats.totalIssued}</div>
+            <div className="text-2xl font-bold text-stone-100">{stats.totalIssued}</div>
             <div className="text-sm text-stone-500 mt-0.5">Total Issued</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <div className="text-2xl font-bold text-stone-900">{stats.totalRedeemed}</div>
+            <div className="text-2xl font-bold text-stone-100">{stats.totalRedeemed}</div>
             <div className="text-sm text-stone-500 mt-0.5">Times Redeemed</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <div className="text-2xl font-bold text-stone-900">
+            <div className="text-2xl font-bold text-stone-100">
               {formatCurrency(stats.totalValueAppliedCents)}
             </div>
             <div className="text-sm text-stone-500 mt-0.5">Value Applied</div>
@@ -75,7 +75,7 @@ export default async function GiftCardsPage() {
         </Card>
         <Card>
           <CardContent className="pt-5">
-            <div className="text-2xl font-bold text-stone-900">
+            <div className="text-2xl font-bold text-stone-100">
               {stats.giftCardCount} / {stats.voucherCount}
             </div>
             <div className="text-sm text-stone-500 mt-0.5">GC / Vouchers</div>
@@ -97,7 +97,7 @@ export default async function GiftCardsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-stone-200">
+                  <tr className="border-b border-stone-700">
                     <th className="text-left py-3 pr-4 font-medium text-stone-500 text-xs uppercase tracking-wide">
                       Code
                     </th>
@@ -144,10 +144,10 @@ export default async function GiftCardsPage() {
                     return (
                       <tr
                         key={incentive.id}
-                        className="border-b border-stone-100 hover:bg-stone-50"
+                        className="border-b border-stone-800 hover:bg-stone-800"
                       >
                         <td className="py-3 pr-4">
-                          <span className="font-mono text-xs bg-stone-100 px-2 py-0.5 rounded text-stone-800">
+                          <span className="font-mono text-xs bg-stone-800 px-2 py-0.5 rounded text-stone-200">
                             {incentive.code}
                           </span>
                           <div className="text-xs text-stone-400 mt-0.5 capitalize">
@@ -157,24 +157,24 @@ export default async function GiftCardsPage() {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 pr-4 text-stone-700 max-w-[160px] truncate">
+                        <td className="py-3 pr-4 text-stone-300 max-w-[160px] truncate">
                           {incentive.title}
                         </td>
-                        <td className="py-3 pr-4 text-stone-700">
+                        <td className="py-3 pr-4 text-stone-300">
                           {incentive.discount_percent != null
                             ? `${incentive.discount_percent}% off`
                             : incentive.amount_cents != null
                               ? formatCurrency(incentive.amount_cents)
                               : '—'}
                         </td>
-                        <td className="py-3 pr-4 text-stone-700">
+                        <td className="py-3 pr-4 text-stone-300">
                           {isGiftCard && incentive.remaining_balance_cents != null ? (
                             formatCurrency(incentive.remaining_balance_cents)
                           ) : (
                             <span className="text-stone-400">—</span>
                           )}
                         </td>
-                        <td className="py-3 pr-4 text-stone-700">
+                        <td className="py-3 pr-4 text-stone-300">
                           {incentive.redemptions_used} / {incentive.max_redemptions}
                         </td>
                         <td className="py-3 pr-4">

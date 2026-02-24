@@ -41,9 +41,7 @@ export function LogFeedbackButton() {
   const [rating, setRating] = useState<number | null>(null)
   const [clientId, setClientId] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
-  const [feedbackDate, setFeedbackDate] = useState(
-    new Date().toISOString().split('T')[0]
-  )
+  const [feedbackDate, setFeedbackDate] = useState(new Date().toISOString().split('T')[0])
 
   // Fetch clients when modal opens
   useEffect(() => {
@@ -97,9 +95,7 @@ export function LogFeedbackButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
-        + Log Feedback
-      </Button>
+      <Button onClick={() => setOpen(true)}>+ Log Feedback</Button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -107,12 +103,12 @@ export function LogFeedbackButton() {
           <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-stone-900">Log Feedback</h3>
+              <h3 className="text-lg font-semibold text-stone-100">Log Feedback</h3>
               <button
                 onClick={handleClose}
-                className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+                className="text-stone-400 hover:text-stone-400 text-xl leading-none"
               >
                 &times;
               </button>
@@ -122,7 +118,11 @@ export function LogFeedbackButton() {
               Capture verbal feedback, Google reviews, or any external testimonials.
             </p>
 
-            {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+            {error && (
+              <Alert variant="error" className="mb-4">
+                {error}
+              </Alert>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Source */}
@@ -137,7 +137,7 @@ export function LogFeedbackButton() {
 
               {/* Feedback Text */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Feedback <span className="text-red-500">*</span>
                 </label>
                 <Textarea
@@ -151,7 +151,7 @@ export function LogFeedbackButton() {
 
               {/* Rating */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Rating (optional)
                 </label>
                 <div className="flex gap-1">
@@ -178,7 +178,7 @@ export function LogFeedbackButton() {
                     <button
                       type="button"
                       onClick={() => setRating(null)}
-                      className="text-xs text-stone-400 hover:text-stone-600 ml-2"
+                      className="text-xs text-stone-400 hover:text-stone-400 ml-2"
                     >
                       Clear
                     </button>
@@ -203,7 +203,7 @@ export function LogFeedbackButton() {
 
               {/* Source URL */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Link (optional)
                 </label>
                 <Input
@@ -219,9 +219,7 @@ export function LogFeedbackButton() {
 
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
-                  Date
-                </label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Date</label>
                 <Input
                   type="date"
                   value={feedbackDate}

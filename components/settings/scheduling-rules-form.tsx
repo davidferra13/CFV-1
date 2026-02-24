@@ -16,9 +16,7 @@ type Props = {
 }
 
 export function SchedulingRulesForm({ initialRules }: Props) {
-  const [blockedDays, setBlockedDays] = useState<number[]>(
-    initialRules?.blocked_days_of_week ?? []
-  )
+  const [blockedDays, setBlockedDays] = useState<number[]>(initialRules?.blocked_days_of_week ?? [])
   const [preferredDays, setPreferredDays] = useState<number[]>(
     initialRules?.preferred_days_of_week ?? []
   )
@@ -31,9 +29,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
   const [bufferDays, setBufferDays] = useState<string>(
     initialRules?.min_buffer_days?.toString() ?? '0'
   )
-  const [leadDays, setLeadDays] = useState<string>(
-    initialRules?.min_lead_days?.toString() ?? '0'
-  )
+  const [leadDays, setLeadDays] = useState<string>(initialRules?.min_lead_days?.toString() ?? '0')
 
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -50,12 +46,12 @@ export function SchedulingRulesForm({ initialRules }: Props) {
 
     try {
       const result = await upsertSchedulingRules({
-        blocked_days_of_week:   blockedDays,
+        blocked_days_of_week: blockedDays,
         preferred_days_of_week: preferredDays,
-        max_events_per_week:    maxPerWeek ? parseInt(maxPerWeek) : null,
-        max_events_per_month:   maxPerMonth ? parseInt(maxPerMonth) : null,
-        min_buffer_days:        parseInt(bufferDays) || 0,
-        min_lead_days:          parseInt(leadDays) || 0,
+        max_events_per_week: maxPerWeek ? parseInt(maxPerWeek) : null,
+        max_events_per_month: maxPerMonth ? parseInt(maxPerMonth) : null,
+        min_buffer_days: parseInt(bufferDays) || 0,
+        min_lead_days: parseInt(leadDays) || 0,
       })
 
       if (result.success) {
@@ -72,14 +68,15 @@ export function SchedulingRulesForm({ initialRules }: Props) {
   }
 
   const inputCls =
-    'w-full border border-stone-300 rounded-lg px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500'
+    'w-full border border-stone-600 rounded-lg px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500'
 
   return (
     <div className="space-y-5">
       {/* Blocked days */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">
-          Blocked days of week <span className="text-stone-400 font-normal">(hard block — cannot be overridden)</span>
+        <label className="block text-sm font-medium text-stone-300 mb-2">
+          Blocked days of week{' '}
+          <span className="text-stone-400 font-normal">(hard block — cannot be overridden)</span>
         </label>
         <div className="flex gap-2 flex-wrap">
           {DOW_LABELS.map((label, dow) => {
@@ -92,8 +89,8 @@ export function SchedulingRulesForm({ initialRules }: Props) {
                 className={[
                   'px-3 py-1.5 rounded-full border text-sm font-medium transition-all',
                   blocked
-                    ? 'bg-red-100 text-red-800 border-red-300'
-                    : 'bg-stone-50 text-stone-500 border-stone-200 hover:bg-stone-100',
+                    ? 'bg-red-900 text-red-800 border-red-300'
+                    : 'bg-stone-800 text-stone-500 border-stone-700 hover:bg-stone-700',
                 ].join(' ')}
               >
                 {label}
@@ -110,8 +107,11 @@ export function SchedulingRulesForm({ initialRules }: Props) {
 
       {/* Preferred days */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">
-          Preferred days <span className="text-stone-400 font-normal">(advisory only — shows warning if chef books outside these)</span>
+        <label className="block text-sm font-medium text-stone-300 mb-2">
+          Preferred days{' '}
+          <span className="text-stone-400 font-normal">
+            (advisory only — shows warning if chef books outside these)
+          </span>
         </label>
         <div className="flex gap-2 flex-wrap">
           {DOW_LABELS.map((label, dow) => {
@@ -124,8 +124,8 @@ export function SchedulingRulesForm({ initialRules }: Props) {
                 className={[
                   'px-3 py-1.5 rounded-full border text-sm font-medium transition-all',
                   preferred
-                    ? 'bg-green-100 text-green-800 border-green-300'
-                    : 'bg-stone-50 text-stone-500 border-stone-200 hover:bg-stone-100',
+                    ? 'bg-green-900 text-green-800 border-green-300'
+                    : 'bg-stone-800 text-stone-500 border-stone-700 hover:bg-stone-700',
                 ].join(' ')}
               >
                 {label}
@@ -138,7 +138,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
       {/* Numeric rules */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Max events per week
           </label>
           <input
@@ -152,7 +152,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Max events per month
           </label>
           <input
@@ -166,7 +166,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Min buffer days between events
           </label>
           <input
@@ -180,7 +180,7 @@ export function SchedulingRulesForm({ initialRules }: Props) {
           <p className="text-xs text-stone-400 mt-1">Days required between events</p>
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Min lead days (advance notice)
           </label>
           <input

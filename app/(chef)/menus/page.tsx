@@ -20,8 +20,8 @@ export default async function MenusPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Menus</h1>
-          <p className="text-stone-600 mt-1">Manage your menu templates</p>
+          <h1 className="text-3xl font-bold text-stone-100">Menus</h1>
+          <p className="text-stone-400 mt-1">Manage your menu templates</p>
         </div>
         <Link href="/menus/new">
           <Button>Create Menu</Button>

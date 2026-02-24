@@ -22,10 +22,10 @@ const URGENCY_LABELS: Record<QueueUrgency, string> = {
 }
 
 const URGENCY_COLORS: Record<QueueUrgency, string> = {
-  critical: 'bg-red-100 text-red-700 border-red-200',
-  high: 'bg-amber-100 text-amber-700 border-amber-200',
-  normal: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  low: 'bg-stone-100 text-stone-600 border-stone-200',
+  critical: 'bg-red-900 text-red-700 border-red-200',
+  high: 'bg-amber-900 text-amber-700 border-amber-200',
+  normal: 'bg-emerald-900 text-emerald-700 border-emerald-200',
+  low: 'bg-stone-800 text-stone-400 border-stone-700',
 }
 
 interface Props {
@@ -54,12 +54,12 @@ export function QueueFilters({
 
   // Only show domains that have items
   const activeDomains = (Object.keys(DOMAIN_LABELS) as QueueDomain[]).filter(
-    d => (domainCounts[d] || 0) > 0
+    (d) => (domainCounts[d] || 0) > 0
   )
 
   // Only show urgencies that have items
   const activeUrgencies = (Object.keys(URGENCY_LABELS) as QueueUrgency[]).filter(
-    u => (urgencyCounts[u] || 0) > 0
+    (u) => (urgencyCounts[u] || 0) > 0
   )
 
   return (
@@ -72,7 +72,7 @@ export function QueueFilters({
           active={domainFilter === 'all'}
           onClick={() => onDomainChange('all')}
         />
-        {activeDomains.map(domain => (
+        {activeDomains.map((domain) => (
           <FilterPill
             key={domain}
             label={DOMAIN_LABELS[domain]}
@@ -93,7 +93,7 @@ export function QueueFilters({
             onClick={() => onUrgencyChange('all')}
             variant="urgency"
           />
-          {activeUrgencies.map(urgency => (
+          {activeUrgencies.map((urgency) => (
             <FilterPill
               key={urgency}
               label={URGENCY_LABELS[urgency]}
@@ -125,21 +125,20 @@ function FilterPill({
   variant?: 'domain' | 'urgency'
   colorClass?: string
 }) {
-  const baseClass = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer'
+  const baseClass =
+    'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer'
   const activeClass = active
     ? colorClass
       ? `${colorClass} ring-1 ring-offset-1`
       : variant === 'domain'
-        ? 'bg-brand-100 text-brand-700 border-brand-200 ring-1 ring-brand-300 ring-offset-1'
+        ? 'bg-brand-900 text-brand-400 border-brand-700 ring-1 ring-brand-600 ring-offset-1'
         : 'bg-stone-800 text-white border-stone-800'
-    : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-50'
+    : 'bg-surface text-stone-400 border-stone-700 hover:bg-stone-800'
 
   return (
     <button className={`${baseClass} ${activeClass}`} onClick={onClick}>
       {label}
-      <span className={`text-[10px] ${active ? 'opacity-80' : 'text-stone-400'}`}>
-        {count}
-      </span>
+      <span className={`text-[10px] ${active ? 'opacity-80' : 'text-stone-400'}`}>{count}</span>
     </button>
   )
 }

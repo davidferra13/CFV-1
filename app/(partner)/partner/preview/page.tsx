@@ -48,7 +48,7 @@ export default async function PartnerPreviewPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Preview Your Public Page</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Preview Your Public Page</h1>
           <p className="mt-1 text-sm text-stone-500">
             This is exactly how clients see you on{' '}
             {chef?.business_name ?? chef?.display_name ?? 'the chef'}'s page.
@@ -59,7 +59,7 @@ export default async function PartnerPreviewPage() {
             href={`/chef/${chef.slug}#partners`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm font-medium text-stone-600 hover:text-stone-900 border border-stone-200 rounded-lg px-3 py-2"
+            className="flex items-center gap-2 text-sm font-medium text-stone-400 hover:text-stone-100 border border-stone-700 rounded-lg px-3 py-2"
           >
             <ExternalLink size={14} />
             Live page
@@ -71,8 +71,8 @@ export default async function PartnerPreviewPage() {
       <div
         className={`flex items-center gap-3 rounded-xl border p-4 ${
           partner?.is_showcase_visible
-            ? 'border-green-200 bg-green-50'
-            : 'border-amber-200 bg-amber-50'
+            ? 'border-green-200 bg-green-950'
+            : 'border-amber-200 bg-amber-950'
         }`}
       >
         {partner?.is_showcase_visible ? (
@@ -80,7 +80,7 @@ export default async function PartnerPreviewPage() {
         ) : (
           <EyeOff size={16} className="text-amber-600 shrink-0" />
         )}
-        <p className="text-sm font-medium text-stone-800">
+        <p className="text-sm font-medium text-stone-200">
           {partner?.is_showcase_visible
             ? 'Your profile is live and visible to clients.'
             : 'Your profile is not yet visible. Your chef needs to enable it.'}
@@ -88,10 +88,10 @@ export default async function PartnerPreviewPage() {
       </div>
 
       {/* ── Showcase card — what clients see ─────────────────────────────── */}
-      <div className="rounded-2xl border border-stone-200 bg-white overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-stone-700 bg-surface overflow-hidden shadow-sm">
         {/* Cover image */}
         {partner?.cover_image_url ? (
-          <div className="h-48 overflow-hidden bg-stone-100">
+          <div className="h-48 overflow-hidden bg-stone-800">
             <img
               src={partner.cover_image_url}
               alt={partner?.name ?? ''}
@@ -106,9 +106,9 @@ export default async function PartnerPreviewPage() {
 
         <div className="p-6 space-y-4">
           <div>
-            <h2 className="text-xl font-bold text-stone-900">{partner?.name}</h2>
+            <h2 className="text-xl font-bold text-stone-100">{partner?.name}</h2>
             {partner?.description && (
-              <p className="mt-2 text-sm text-stone-600">{partner.description}</p>
+              <p className="mt-2 text-sm text-stone-400">{partner.description}</p>
             )}
           </div>
 
@@ -119,7 +119,7 @@ export default async function PartnerPreviewPage() {
                 href={partner.website}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-medium text-stone-600 underline"
+                className="text-xs font-medium text-stone-400 underline"
               >
                 Website
               </a>
@@ -129,7 +129,7 @@ export default async function PartnerPreviewPage() {
                 href={partner.booking_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs font-medium text-stone-600 underline"
+                className="text-xs font-medium text-stone-400 underline"
               >
                 Book this space
               </a>
@@ -139,7 +139,7 @@ export default async function PartnerPreviewPage() {
           {/* Locations */}
           {activeLocations.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-stone-700 mb-2">
+              <h3 className="text-sm font-semibold text-stone-300 mb-2">
                 Spaces ({activeLocations.length})
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -148,17 +148,17 @@ export default async function PartnerPreviewPage() {
                   return (
                     <div
                       key={loc.id}
-                      className="rounded-lg border border-stone-100 overflow-hidden"
+                      className="rounded-lg border border-stone-800 overflow-hidden"
                     >
                       {thumb ? (
-                        <div className="h-24 bg-stone-100 overflow-hidden">
+                        <div className="h-24 bg-stone-800 overflow-hidden">
                           <img src={thumb} alt={loc.name} className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="h-24 bg-stone-50" />
+                        <div className="h-24 bg-stone-800" />
                       )}
                       <div className="p-3">
-                        <p className="text-sm font-medium text-stone-800">{loc.name}</p>
+                        <p className="text-sm font-medium text-stone-200">{loc.name}</p>
                         {(loc.city || loc.state) && (
                           <p className="text-xs text-stone-500">
                             {[loc.city, loc.state].filter(Boolean).join(', ')}
@@ -180,12 +180,12 @@ export default async function PartnerPreviewPage() {
           {/* Photo gallery */}
           {allImages.length > 0 && (
             <div>
-              <h3 className="text-sm font-semibold text-stone-700 mb-2">Gallery</h3>
+              <h3 className="text-sm font-semibold text-stone-300 mb-2">Gallery</h3>
               <div className="grid grid-cols-3 gap-2">
                 {allImages.slice(0, 6).map((img: any) => (
                   <div
                     key={img.id}
-                    className="aspect-square rounded-lg overflow-hidden bg-stone-100"
+                    className="aspect-square rounded-lg overflow-hidden bg-stone-800"
                   >
                     <img
                       src={img.image_url}

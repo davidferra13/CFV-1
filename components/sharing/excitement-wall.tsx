@@ -87,7 +87,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-stone-900">
+        <h3 className="text-lg font-semibold text-stone-100">
           Guest Wall{' '}
           {messages.length > 0 && (
             <span className="text-stone-400 font-normal text-sm ml-1">({messages.length})</span>
@@ -96,7 +96,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
         {!showForm && (
           <button
             onClick={() => setShowForm(true)}
-            className="text-sm font-medium text-brand-600 hover:text-brand-700"
+            className="text-sm font-medium text-brand-600 hover:text-brand-400"
           >
             {posted ? 'Post another' : 'Share your excitement'}
           </button>
@@ -107,7 +107,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
       {showForm && (
         <form
           onSubmit={handlePost}
-          className="bg-white rounded-xl border border-stone-200 p-4 space-y-3"
+          className="bg-surface rounded-xl border border-stone-700 p-4 space-y-3"
         >
           {!guestName && (
             <input
@@ -116,7 +116,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
               required
-              className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
+              className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400"
             />
           )}
 
@@ -126,7 +126,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
             placeholder="Can't wait for this dinner! 🎉"
             rows={2}
             required
-            className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none"
+            className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none"
           />
 
           {/* Quick emoji selector */}
@@ -138,7 +138,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
                 type="button"
                 onClick={() => setEmoji(emoji === e ? undefined : e)}
                 className={`text-lg hover:scale-110 transition-transform ${
-                  emoji === e ? 'scale-125 ring-2 ring-brand-300 rounded' : ''
+                  emoji === e ? 'scale-125 ring-2 ring-brand-600 rounded' : ''
                 }`}
               >
                 {e}
@@ -152,7 +152,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-3 py-1.5 text-sm text-stone-500 hover:text-stone-700"
+                className="px-3 py-1.5 text-sm text-stone-500 hover:text-stone-300"
               >
                 Cancel
               </button>
@@ -173,17 +173,17 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
       {/* Messages feed */}
       {loading ? (
         <div className="text-center py-6">
-          <div className="w-6 h-6 border-2 border-stone-300 border-t-brand-600 rounded-full animate-spin mx-auto" />
+          <div className="w-6 h-6 border-2 border-stone-600 border-t-brand-600 rounded-full animate-spin mx-auto" />
         </div>
       ) : messages.length === 0 ? (
-        <div className="text-center py-6 bg-stone-50 rounded-xl border border-dashed border-stone-300">
+        <div className="text-center py-6 bg-stone-800 rounded-xl border border-dashed border-stone-600">
           <p className="text-stone-500 text-sm">
             No messages yet. Be the first to share your excitement!
           </p>
           {!showForm && (
             <button
               onClick={() => setShowForm(true)}
-              className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-700"
+              className="mt-2 text-sm font-medium text-brand-600 hover:text-brand-400"
             >
               Post a message
             </button>
@@ -194,21 +194,21 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`bg-white rounded-xl border p-4 ${
-                msg.is_pinned ? 'border-brand-200 bg-brand-50/30' : 'border-stone-200'
+              className={`bg-surface rounded-xl border p-4 ${
+                msg.is_pinned ? 'border-brand-700 bg-brand-950/30' : 'border-stone-700'
               }`}
             >
               <div className="flex items-start gap-3">
                 {/* Avatar */}
-                <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center flex-shrink-0">
-                  <span className="text-sm font-semibold text-stone-600">
+                <div className="w-8 h-8 rounded-full bg-stone-700 flex items-center justify-center flex-shrink-0">
+                  <span className="text-sm font-semibold text-stone-400">
                     {msg.guest_name.charAt(0).toUpperCase()}
                   </span>
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-stone-900 text-sm">{msg.guest_name}</span>
+                    <span className="font-medium text-stone-100 text-sm">{msg.guest_name}</span>
                     {msg.is_pinned && (
                       <span className="text-xs text-brand-600 font-medium">pinned</span>
                     )}
@@ -216,7 +216,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
                       {timeAgo(msg.created_at)}
                     </span>
                   </div>
-                  <p className="text-stone-700 text-sm mt-0.5">
+                  <p className="text-stone-300 text-sm mt-0.5">
                     {msg.emoji && <span className="mr-1">{msg.emoji}</span>}
                     {msg.message}
                   </p>

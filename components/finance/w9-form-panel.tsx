@@ -104,7 +104,7 @@ export function W9FormPanel({ staffMembers }: Props) {
   return (
     <div className="space-y-6">
       {missing.length > 0 && (
-        <Card className="border-amber-200 bg-amber-50">
+        <Card className="border-amber-200 bg-amber-950">
           <CardContent className="py-3">
             <div className="flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
@@ -132,7 +132,7 @@ export function W9FormPanel({ staffMembers }: Props) {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200">
+              <tr className="border-b border-stone-700">
                 <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">
                   Name
                 </th>
@@ -148,14 +148,14 @@ export function W9FormPanel({ staffMembers }: Props) {
                 <th className="px-6 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-stone-800">
               {staffMembers.map((s) => {
                 const isSaved = saved.has(s.id)
                 const isOnFile = s.w9Collected || isSaved
                 return (
                   <tr key={s.id}>
-                    <td className="px-6 py-3 font-medium text-stone-900">{s.name}</td>
-                    <td className="px-6 py-3 text-right text-stone-600">
+                    <td className="px-6 py-3 font-medium text-stone-100">{s.name}</td>
+                    <td className="px-6 py-3 text-right text-stone-400">
                       {formatCents(s.ytdPaymentsCents)}
                     </td>
                     <td className="px-6 py-3 text-center">
@@ -191,7 +191,7 @@ export function W9FormPanel({ staffMembers }: Props) {
       </Card>
 
       {selected && (
-        <Card className="border-stone-300">
+        <Card className="border-stone-600">
           <CardHeader>
             <CardTitle className="text-base">
               W-9 Information — {staffMembers.find((s) => s.id === selected)?.name}
@@ -200,13 +200,13 @@ export function W9FormPanel({ staffMembers }: Props) {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">
                   Entity Type
                 </label>
                 <select
                   value={form.contractorType ?? ''}
                   onChange={(e) => setForm({ ...form, contractorType: e.target.value || null })}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                 >
                   <option value="">Select…</option>
                   <option value="individual">Individual</option>
@@ -218,13 +218,13 @@ export function W9FormPanel({ staffMembers }: Props) {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">TIN Type</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">TIN Type</label>
                 <select
                   value={form.tinType ?? ''}
                   onChange={(e) =>
                     setForm({ ...form, tinType: (e.target.value as 'ssn' | 'ein') || null })
                   }
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                 >
                   <option value="">Select…</option>
                   <option value="ssn">SSN (Social Security Number)</option>
@@ -290,13 +290,13 @@ export function W9FormPanel({ staffMembers }: Props) {
                 onChange={(e) => setForm({ ...form, w9Collected: e.target.checked })}
                 className="rounded"
               />
-              <label htmlFor="w9_collected" className="text-sm text-stone-700">
+              <label htmlFor="w9_collected" className="text-sm text-stone-300">
                 W-9 form physically received and on file
               </label>
             </div>
 
             {form.w9Collected && (
-              <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+              <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
                 <CheckCircle className="h-4 w-4" />
                 W-9 marked as on file
               </div>

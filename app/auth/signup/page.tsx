@@ -125,7 +125,7 @@ function SignUpForm() {
         <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto"></div>
-            <p className="mt-4 text-stone-600">Loading invitation...</p>
+            <p className="mt-4 text-stone-400">Loading invitation...</p>
           </div>
         </div>
       )
@@ -135,8 +135,8 @@ function SignUpForm() {
       <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
         <div className="max-w-md w-full">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-            <p className="text-stone-600 mt-2">Complete your client registration</p>
+            <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+            <p className="text-stone-400 mt-2">Complete your client registration</p>
           </div>
 
           <Card>
@@ -207,8 +207,8 @@ function SignUpForm() {
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">Manage your chef work, your way</p>
+          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+          <p className="text-stone-400 mt-2">Manage your chef work, your way</p>
         </div>
 
         <Card>
@@ -269,7 +269,7 @@ function SignUpForm() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-stone-500">Or continue with</span>
+                  <span className="bg-surface px-2 text-stone-500">Or continue with</span>
                 </div>
               </div>
 
@@ -284,18 +284,18 @@ function SignUpForm() {
                 Sign up with Google
               </Button>
 
-              <div className="text-sm text-center text-stone-600">
+              <div className="text-sm text-center text-stone-400">
                 Already have an account?{' '}
                 <Link
                   href="/auth/signin"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-brand-600 hover:text-brand-400 font-medium"
                 >
                   Sign in
                 </Link>
                 <span className="mx-1">·</span>
                 <Link
                   href="/auth/client-signup"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-brand-600 hover:text-brand-400 font-medium"
                 >
                   Client sign up
                 </Link>

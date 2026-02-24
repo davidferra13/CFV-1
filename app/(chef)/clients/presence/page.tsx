@@ -14,10 +14,13 @@ export default async function ClientPresencePage() {
 
   const [activeClients, recentActivityResult] = await Promise.all([
     getActiveClientsWithContext(60).catch(() => []),
-    getRecentClientActivity({ limit: 30, daysBack: 1 }).catch(() => ({ items: [], nextCursor: null })),
+    getRecentClientActivity({ limit: 30, daysBack: 1 }).catch(() => ({
+      items: [],
+      nextCursor: null,
+    })),
   ])
 
-  const onlineCount = activeClients.filter(c => {
+  const onlineCount = activeClients.filter((c) => {
     return Date.now() - new Date(c.last_activity).getTime() < 5 * 60 * 1000
   }).length
 
@@ -25,11 +28,11 @@ export default async function ClientPresencePage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/clients" className="text-sm text-stone-500 hover:text-stone-300">
           ← Clients
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-2xl font-bold text-stone-900">Client Portal Monitoring</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Client Portal Monitoring</h1>
           {onlineCount > 0 && (
             <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -38,8 +41,8 @@ export default async function ClientPresencePage() {
           )}
         </div>
         <p className="text-stone-500 mt-1 text-sm">
-          Real-time view of who&apos;s on your portal and what they&apos;re doing.
-          Updates automatically as clients browse.
+          Real-time view of who&apos;s on your portal and what they&apos;re doing. Updates
+          automatically as clients browse.
         </p>
       </div>
 

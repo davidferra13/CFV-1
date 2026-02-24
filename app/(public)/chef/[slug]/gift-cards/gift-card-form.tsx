@@ -70,12 +70,13 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-stone-200 p-6 space-y-6">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-surface rounded-xl border border-stone-700 p-6 space-y-6"
+    >
       {/* Amount picker */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-3">
-          Gift card amount
-        </label>
+        <label className="block text-sm font-medium text-stone-300 mb-3">Gift card amount</label>
         <div className="grid grid-cols-4 gap-2 mb-3">
           {PRESET_AMOUNTS.map((cents) => (
             <button
@@ -88,7 +89,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
               className={`py-2 rounded-lg text-sm font-medium border transition-colors ${
                 selectedPreset === cents && !customAmount
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-700 border-stone-300 hover:border-stone-500'
+                  : 'bg-surface text-stone-300 border-stone-600 hover:border-stone-500'
               }`}
             >
               {formatCurrency(cents)}
@@ -98,7 +99,9 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
         <div className="flex items-center gap-2">
           <span className="text-stone-500 text-sm shrink-0">Custom:</span>
           <div className="relative flex-1">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">$</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">
+              $
+            </span>
             <input
               type="number"
               min="5"
@@ -110,7 +113,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
                 setSelectedPreset(null)
               }}
               placeholder="Enter amount"
-              className="w-full pl-7 pr-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full pl-7 pr-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
         </div>
@@ -118,29 +121,27 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
 
       {/* Recipient */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-stone-700">
-          Send to
-        </label>
+        <label className="block text-sm font-medium text-stone-300">Send to</label>
         <input
           type="email"
           required
           value={recipientEmail}
           onChange={(e) => setRecipientEmail(e.target.value)}
           placeholder="Recipient's email address"
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <input
           type="text"
           value={recipientName}
           onChange={(e) => setRecipientName(e.target.value)}
           placeholder="Recipient's name (optional)"
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
       {/* Personal message */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
+        <label className="block text-sm font-medium text-stone-300 mb-1">
           Personal message (optional)
         </label>
         <textarea
@@ -149,23 +150,21 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder="Add a personal note to your gift..."
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
         />
         <p className="text-xs text-stone-400 mt-1">{message.length}/500</p>
       </div>
 
       {/* Buyer email */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">
-          Your email
-        </label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">Your email</label>
         <input
           type="email"
           required
           value={buyerEmail}
           onChange={(e) => setBuyerEmail(e.target.value)}
           placeholder="your@email.com"
-          className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <p className="text-xs text-stone-500 mt-1">
           We&apos;ll send a purchase confirmation to this address.
@@ -174,7 +173,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
 
       {/* Error */}
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <p className="text-sm text-red-600 bg-red-950 border border-red-200 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
@@ -182,7 +181,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
       {/* Submit */}
       <button
         type="submit"
-        disabled={loading || (!finalAmountCents)}
+        disabled={loading || !finalAmountCents}
         className="w-full py-3 bg-stone-900 text-white font-semibold rounded-lg hover:bg-stone-800 disabled:opacity-50 transition-colors"
       >
         {loading
@@ -191,7 +190,8 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
       </button>
 
       <p className="text-xs text-stone-500 text-center">
-        Secure checkout powered by Stripe. {chefName}&apos;s gift cards are delivered by email immediately after payment.
+        Secure checkout powered by Stripe. {chefName}&apos;s gift cards are delivered by email
+        immediately after payment.
       </p>
     </form>
   )

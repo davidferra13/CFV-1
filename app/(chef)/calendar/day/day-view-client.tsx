@@ -112,7 +112,7 @@ export function DayViewClient({ date, items, chefId }: Props) {
           </Button>
         </Link>
         <div className="text-center">
-          <p className={`text-lg font-semibold ${isToday ? 'text-brand-600' : 'text-stone-900'}`}>
+          <p className={`text-lg font-semibold ${isToday ? 'text-brand-600' : 'text-stone-100'}`}>
             {format(parseISO(date + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}
           </p>
           {isToday && <p className="text-xs text-brand-500 font-medium">Today</p>}
@@ -163,7 +163,7 @@ export function DayViewClient({ date, items, chefId }: Props) {
       </div>
 
       {/* Time grid */}
-      <div className="border border-stone-200 rounded-xl overflow-hidden">
+      <div className="border border-stone-700 rounded-xl overflow-hidden">
         {Array.from({ length: SLOT_COUNT }, (_, slotIndex) => {
           const isHour = slotIndex % 2 === 0
           const label = isHour ? slotToLabel(slotIndex) : ''
@@ -176,7 +176,7 @@ export function DayViewClient({ date, items, chefId }: Props) {
               key={slotIndex}
               className={[
                 'flex min-h-[40px] group',
-                isHour ? 'border-t border-stone-200' : 'border-t border-stone-100',
+                isHour ? 'border-t border-stone-700' : 'border-t border-stone-800',
               ].join(' ')}
             >
               {/* Time label column */}
@@ -186,7 +186,7 @@ export function DayViewClient({ date, items, chefId }: Props) {
 
               {/* Content column */}
               <div
-                className="flex-1 px-2 py-0.5 cursor-pointer hover:bg-stone-50 transition-colors min-h-[40px] flex flex-col gap-1"
+                className="flex-1 px-2 py-0.5 cursor-pointer hover:bg-stone-800 transition-colors min-h-[40px] flex flex-col gap-1"
                 onClick={() => (slotItems.length === 0 ? openNewEntry(slotIndex) : undefined)}
                 title={slotItems.length === 0 ? `Add entry at ${slotToTime(slotIndex)}` : undefined}
               >
@@ -202,7 +202,7 @@ export function DayViewClient({ date, items, chefId }: Props) {
                   >
                     <div>
                       <span
-                        className={`font-medium ${CATEGORY_TEXT_COLORS[item.category] ?? 'text-stone-800'}`}
+                        className={`font-medium ${CATEGORY_TEXT_COLORS[item.category] ?? 'text-stone-200'}`}
                       >
                         {item.title}
                       </span>

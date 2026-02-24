@@ -10,7 +10,7 @@ import { SettingsRoadmapComposition } from '@/lib/remotion/settings-roadmap-comp
 
 export function SettingsRoadmapPlayer() {
   return (
-    <div className="rounded-xl border border-stone-200 bg-white shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={SettingsRoadmapComposition}
         compositionWidth={640}

@@ -26,20 +26,21 @@ export default async function StaffPerformancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/staff" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/staff" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Staff Roster
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Staff Performance</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Staff Performance</h1>
         <p className="text-stone-500 mt-1">
           Review team reliability, punctuality, and ratings. Click column headers to sort.
         </p>
       </div>
 
       {formattedScores.length === 0 ? (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-8 text-center">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
           <p className="text-stone-500 text-sm">
-            No performance data yet. Performance scores are computed from event assignments and clock entries.
-            Start assigning staff to events and tracking hours to build performance data.
+            No performance data yet. Performance scores are computed from event assignments and
+            clock entries. Start assigning staff to events and tracking hours to build performance
+            data.
           </p>
         </div>
       ) : (

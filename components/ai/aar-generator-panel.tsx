@@ -26,11 +26,11 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ClipboardList className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">After-Action Report</span>
+            <span className="text-sm font-medium text-stone-300">After-Action Report</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -56,23 +56,23 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ClipboardList className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">After-Action Report</span>
+          <span className="text-sm font-medium text-stone-300">After-Action Report</span>
           <Badge variant="warning">Draft</Badge>
         </div>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setTab('summary')}
-            className={`text-xs px-2 py-1 rounded ${tab === 'summary' ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+            className={`text-xs px-2 py-1 rounded ${tab === 'summary' ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
           >
             Summary
           </button>
           <button
             onClick={() => setTab('full')}
-            className={`text-xs px-2 py-1 rounded ${tab === 'full' ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+            className={`text-xs px-2 py-1 rounded ${tab === 'full' ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
           >
             Full Report
           </button>
@@ -84,7 +84,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
 
       {tab === 'summary' && (
         <div className="space-y-3">
-          <p className="text-sm text-stone-700">{result.executiveSummary}</p>
+          <p className="text-sm text-stone-300">{result.executiveSummary}</p>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -94,7 +94,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
               </div>
               <ul className="space-y-0.5">
                 {result.whatWentWell.map((item, i) => (
-                  <li key={i} className="text-xs text-stone-600">
+                  <li key={i} className="text-xs text-stone-400">
                     • {item}
                   </li>
                 ))}
@@ -107,7 +107,7 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
               </div>
               <ul className="space-y-0.5">
                 {result.whatCouldImprove.map((item, i) => (
-                  <li key={i} className="text-xs text-stone-600">
+                  <li key={i} className="text-xs text-stone-400">
                     • {item}
                   </li>
                 ))}
@@ -117,10 +117,10 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
 
           {result.nextTimeList.length > 0 && (
             <div>
-              <div className="text-xs font-medium text-stone-600 mb-1">Next Time I'll...</div>
+              <div className="text-xs font-medium text-stone-400 mb-1">Next Time I'll...</div>
               <ul className="space-y-0.5">
                 {result.nextTimeList.map((item, i) => (
-                  <li key={i} className="text-xs text-stone-600">
+                  <li key={i} className="text-xs text-stone-400">
                     • {item}
                   </li>
                 ))}
@@ -128,14 +128,14 @@ export function AARGeneratorPanel({ eventId }: { eventId: string }) {
             </div>
           )}
 
-          <div className="text-xs text-stone-600 border-t border-stone-100 pt-2">
+          <div className="text-xs text-stone-400 border-t border-stone-800 pt-2">
             <span className="font-medium">Financial:</span> {result.financialReflection}
           </div>
         </div>
       )}
 
       {tab === 'full' && (
-        <pre className="text-xs text-stone-700 whitespace-pre-wrap bg-stone-50 rounded p-3 max-h-72 overflow-y-auto font-sans leading-relaxed">
+        <pre className="text-xs text-stone-300 whitespace-pre-wrap bg-stone-800 rounded p-3 max-h-72 overflow-y-auto font-sans leading-relaxed">
           {result.fullNarrative}
         </pre>
       )}

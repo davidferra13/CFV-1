@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
 }
 
 export default function LoyaltyLoading() {
@@ -34,7 +34,7 @@ export default function LoyaltyLoading() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="border border-stone-100 rounded-lg p-4 space-y-2">
+                <div key={i} className="border border-stone-800 rounded-lg p-4 space-y-2">
                   <Bone className="h-4 w-40" />
                   <Bone className="h-3 w-full" />
                   <Bone className="h-3 w-3/4" />

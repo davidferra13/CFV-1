@@ -47,16 +47,16 @@ export default function PayrollEmployeesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/payroll" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance/payroll" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Payroll
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Employee Roster</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Employee Roster</h1>
         <p className="text-stone-500 mt-1">Manage W-2 employees, W-4 settings, and pay rates.</p>
       </div>
 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-sm text-stone-600 cursor-pointer">
+          <label className="flex items-center gap-2 text-sm text-stone-400 cursor-pointer">
             <input
               type="checkbox"
               checked={showTerminated}
@@ -106,7 +106,7 @@ export default function PayrollEmployeesPage() {
         <CardContent className="p-0">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200">
+              <tr className="border-b border-stone-700">
                 <th className="text-left px-6 py-3 text-xs font-medium text-stone-500 uppercase">
                   Name
                 </th>
@@ -125,10 +125,10 @@ export default function PayrollEmployeesPage() {
                 <th className="px-6 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-stone-100">
+            <tbody className="divide-y divide-stone-800">
               {employees.map((e) => (
-                <tr key={e.id} className="hover:bg-stone-50">
-                  <td className="px-6 py-3 font-medium text-stone-900">
+                <tr key={e.id} className="hover:bg-stone-800">
+                  <td className="px-6 py-3 font-medium text-stone-100">
                     {e.name}
                     {e.ssnLast4 && (
                       <span className="block text-xs text-stone-400 font-normal">
@@ -141,8 +141,8 @@ export default function PayrollEmployeesPage() {
                       {EMPLOYEE_STATUS_LABELS[e.status] ?? e.status}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3 text-stone-600">{PAY_TYPE_LABELS[e.payType]}</td>
-                  <td className="px-4 py-3 text-right text-stone-600">
+                  <td className="px-4 py-3 text-stone-400">{PAY_TYPE_LABELS[e.payType]}</td>
+                  <td className="px-4 py-3 text-right text-stone-400">
                     {e.payType === 'hourly'
                       ? `${formatCurrency(e.hourlyRateCents ?? 0)}/hr`
                       : `${formatCurrency(e.annualSalaryCents ?? 0)}/yr`}

@@ -21,14 +21,15 @@ export function SocialPostPreflight({ post }: Props) {
       <div className="flex items-center gap-2 text-sm text-amber-700">
         <AlertCircle className="w-4 h-4 flex-shrink-0" />
         <span className="font-medium">
-          {post.preflight_missing_items.length} item{post.preflight_missing_items.length !== 1 ? 's' : ''} missing
+          {post.preflight_missing_items.length} item
+          {post.preflight_missing_items.length !== 1 ? 's' : ''} missing
         </span>
       </div>
       <div className="flex flex-wrap gap-1.5 ml-6">
         {post.preflight_missing_items.map((item) => (
           <span
             key={item}
-            className="text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+            className="text-xs px-2 py-0.5 rounded-full bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800"
           >
             {item}
           </span>

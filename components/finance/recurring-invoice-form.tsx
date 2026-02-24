@@ -57,7 +57,15 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
       })
       setInvoices((prev) => [created, ...prev])
       setShowCreate(false)
-      setForm({ clientId: '', frequency: 'monthly', amountCents: 0, description: '', nextSendDate: '', lateFeeCents: 0, lateFeeDays: 30 })
+      setForm({
+        clientId: '',
+        frequency: 'monthly',
+        amountCents: 0,
+        description: '',
+        nextSendDate: '',
+        lateFeeCents: 0,
+        lateFeeDays: 30,
+      })
     })
   }
 
@@ -82,19 +90,23 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Active Invoices</p>
-            <p className="text-2xl font-semibold text-stone-900">{invoices.filter((i) => i.isActive).length}</p>
+            <p className="text-2xl font-semibold text-stone-100">
+              {invoices.filter((i) => i.isActive).length}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Est. Monthly Revenue</p>
-            <p className="text-2xl font-semibold text-emerald-600">{formatCents(totalMonthlyCents)}</p>
+            <p className="text-2xl font-semibold text-emerald-600">
+              {formatCents(totalMonthlyCents)}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Total</p>
-            <p className="text-2xl font-semibold text-stone-600">{invoices.length}</p>
+            <p className="text-2xl font-semibold text-stone-400">{invoices.length}</p>
           </CardContent>
         </Card>
       </div>
@@ -108,33 +120,37 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
 
       {/* Create Form */}
       {showCreate && (
-        <Card className="border-stone-300">
+        <Card className="border-stone-600">
           <CardHeader className="py-3">
             <CardTitle className="text-base">New Recurring Invoice</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Client</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Client</label>
               <select
                 value={form.clientId}
                 onChange={(e) => setForm({ ...form, clientId: e.target.value })}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 <option value="">Select client…</option>
                 {clients.map((c) => (
-                  <option key={c.id} value={c.id}>{c.full_name}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.full_name}
+                  </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Frequency</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Frequency</label>
               <select
                 value={form.frequency}
                 onChange={(e) => setForm({ ...form, frequency: e.target.value as any })}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 {Object.entries(FREQUENCY_LABELS).map(([k, v]) => (
-                  <option key={k} value={k}>{v}</option>
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
                 ))}
               </select>
             </div>
@@ -144,7 +160,12 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
               min="0"
               step="0.01"
               value={(form.amountCents / 100).toString()}
-              onChange={(e) => setForm({ ...form, amountCents: Math.round(parseFloat(e.target.value || '0') * 100) })}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  amountCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                })
+              }
             />
             <Input
               label="Description"
@@ -165,7 +186,12 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
                 min="0"
                 step="0.01"
                 value={(form.lateFeeCents / 100).toString()}
-                onChange={(e) => setForm({ ...form, lateFeeCents: Math.round(parseFloat(e.target.value || '0') * 100) })}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    lateFeeCents: Math.round(parseFloat(e.target.value || '0') * 100),
+                  })
+                }
               />
               <Input
                 label="Late After (days)"
@@ -176,10 +202,17 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
               />
             </div>
             <div className="flex gap-2 pt-2">
-              <Button size="sm" onClick={handleCreate} loading={isPending} disabled={!form.clientId || !form.nextSendDate}>
+              <Button
+                size="sm"
+                onClick={handleCreate}
+                loading={isPending}
+                disabled={!form.clientId || !form.nextSendDate}
+              >
                 Create
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setShowCreate(false)}>Cancel</Button>
+              <Button size="sm" variant="ghost" onClick={() => setShowCreate(false)}>
+                Cancel
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -194,14 +227,14 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
                 <div>
                   <div className="flex items-center gap-2">
                     <RefreshCw className="h-4 w-4 text-stone-400" />
-                    <span className="text-sm font-medium text-stone-900">
+                    <span className="text-sm font-medium text-stone-100">
                       {inv.clientName || 'Client'}
                     </span>
                     <Badge variant={inv.isActive ? 'success' : 'default'}>
                       {inv.isActive ? FREQUENCY_LABELS[inv.frequency] : 'Paused'}
                     </Badge>
                   </div>
-                  <p className="text-sm text-stone-600 mt-0.5">{formatCents(inv.amountCents)}</p>
+                  <p className="text-sm text-stone-400 mt-0.5">{formatCents(inv.amountCents)}</p>
                   {inv.description && <p className="text-xs text-stone-500">{inv.description}</p>}
                   <p className="text-xs text-stone-400 mt-1">
                     Next: {inv.nextSendDate}
@@ -209,7 +242,12 @@ export function RecurringInvoiceForm({ initialInvoices, clients }: Props) {
                   </p>
                 </div>
                 {inv.isActive && (
-                  <Button size="sm" variant="ghost" onClick={() => handlePause(inv.id)} disabled={isPending}>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => handlePause(inv.id)}
+                    disabled={isPending}
+                  >
                     <Pause className="h-3.5 w-3.5" />
                     Pause
                   </Button>

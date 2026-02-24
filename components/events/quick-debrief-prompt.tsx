@@ -49,7 +49,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
 
   if (step === 'done') {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 flex items-center gap-3">
+      <div className="rounded-lg border border-emerald-200 bg-emerald-950 px-4 py-3 flex items-center gap-3">
         <span className="text-emerald-600 text-lg">✅</span>
         <div>
           <p className="text-sm font-semibold text-emerald-900">Debrief saved!</p>
@@ -62,7 +62,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
   }
 
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+    <div className="rounded-lg border border-amber-200 bg-amber-950 p-4">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div>
           <p className="text-sm font-semibold text-amber-900">Quick Debrief — while it's fresh</p>
@@ -104,7 +104,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
           <input
             name="wentWell"
             placeholder="e.g. The risotto timing was perfect"
-            className="w-full text-sm border border-amber-200 bg-white rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
+            className="w-full text-sm border border-amber-200 bg-surface rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
           />
         </div>
 
@@ -116,7 +116,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
           <input
             name="doDifferently"
             placeholder="e.g. Prep the sauce 30 min earlier"
-            className="w-full text-sm border border-amber-200 bg-white rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
+            className="w-full text-sm border border-amber-200 bg-surface rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
           />
         </div>
 

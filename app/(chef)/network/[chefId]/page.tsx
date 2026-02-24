@@ -24,11 +24,7 @@ export async function generateMetadata({
   return { title: 'Chef Profile — Chef Community' }
 }
 
-export default async function ChefProfilePage({
-  params,
-}: {
-  params: Promise<{ chefId: string }>
-}) {
+export default async function ChefProfilePage({ params }: { params: Promise<{ chefId: string }> }) {
   const user = await requireChef()
   const { chefId } = await params
 
@@ -60,26 +56,31 @@ export default async function ChefProfilePage({
       {/* Back */}
       <Link
         href="/network"
-        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-700"
+        className="inline-flex items-center gap-1.5 text-sm text-stone-500 hover:text-stone-300"
       >
         <ArrowLeft className="h-4 w-4" />
         Community
       </Link>
 
       {/* Profile header */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-6">
+      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-6">
         <div className="flex items-start gap-6">
           <Avatar className="w-20 h-20 flex-shrink-0">
             {profile.profile_image_url && (
               <AvatarImage src={profile.profile_image_url} alt={authorName} />
             )}
-            <AvatarFallback className="bg-amber-100 text-amber-800 text-2xl font-bold">
-              {authorName.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)}
+            <AvatarFallback className="bg-amber-900 text-amber-800 text-2xl font-bold">
+              {authorName
+                .split(' ')
+                .map((w) => w[0])
+                .join('')
+                .toUpperCase()
+                .slice(0, 2)}
             </AvatarFallback>
           </Avatar>
 
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-stone-900">{authorName}</h1>
+            <h1 className="text-2xl font-bold text-stone-100">{authorName}</h1>
             {profile.business_name !== authorName && (
               <p className="text-stone-500 text-sm">{profile.business_name}</p>
             )}
@@ -90,21 +91,21 @@ export default async function ChefProfilePage({
               </p>
             )}
             {profile.bio && (
-              <p className="text-stone-600 text-sm mt-2 leading-relaxed">{profile.bio}</p>
+              <p className="text-stone-400 text-sm mt-2 leading-relaxed">{profile.bio}</p>
             )}
 
             {/* Stats */}
             <div className="flex items-center gap-6 mt-3">
               <div className="text-center">
-                <p className="text-lg font-bold text-stone-900">{profile.post_count}</p>
+                <p className="text-lg font-bold text-stone-100">{profile.post_count}</p>
                 <p className="text-xs text-stone-400">Posts</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-stone-900">{profile.followers_count}</p>
+                <p className="text-lg font-bold text-stone-100">{profile.followers_count}</p>
                 <p className="text-xs text-stone-400">Followers</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-stone-900">{profile.following_count}</p>
+                <p className="text-lg font-bold text-stone-100">{profile.following_count}</p>
                 <p className="text-xs text-stone-400">Following</p>
               </div>
             </div>
@@ -120,10 +121,10 @@ export default async function ChefProfilePage({
       </div>
 
       {/* Posts grid */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-stone-100 flex items-center gap-2">
+      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-stone-800 flex items-center gap-2">
           <Grid3X3 className="h-4 w-4 text-stone-400" />
-          <h2 className="text-sm font-semibold text-stone-700">Posts</h2>
+          <h2 className="text-sm font-semibold text-stone-300">Posts</h2>
         </div>
 
         {posts.length === 0 ? (
@@ -131,7 +132,7 @@ export default async function ChefProfilePage({
             <p className="text-stone-400 text-sm">No public posts yet</p>
           </div>
         ) : (
-          <div className="divide-y divide-stone-100">
+          <div className="divide-y divide-stone-800">
             {posts.map((post) => (
               <div key={post.id} className="p-4">
                 <SocialPostCard post={post} />

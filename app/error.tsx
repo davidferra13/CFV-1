@@ -25,7 +25,7 @@ export default function Error({
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-24 h-24 flex items-center justify-center rounded-full bg-red-100">
+          <div className="mx-auto mb-4 w-24 h-24 flex items-center justify-center rounded-full bg-red-900">
             <svg
               className="w-12 h-12 text-red-600"
               fill="none"
@@ -43,20 +43,14 @@ export default function Error({
           <CardTitle className="text-2xl">Something went wrong</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="bg-red-950 border border-red-200 rounded-md p-4">
             <p className="text-sm text-red-800 font-mono break-all">
               {error.message || 'An unexpected error occurred'}
             </p>
-            {error.digest && (
-              <p className="text-xs text-red-600 mt-2">Error ID: {error.digest}</p>
-            )}
+            {error.digest && <p className="text-xs text-red-600 mt-2">Error ID: {error.digest}</p>}
           </div>
           <div className="space-y-2">
-            <Button
-              variant="primary"
-              onClick={reset}
-              className="w-full"
-            >
+            <Button variant="primary" onClick={reset} className="w-full">
               Try Again
             </Button>
             <Link href="/" className="block">

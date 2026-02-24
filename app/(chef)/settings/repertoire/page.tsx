@@ -14,14 +14,14 @@ export default async function RepertoirePage() {
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
         <div className="flex items-center gap-2 text-sm">
-          <Link href="/settings" className="text-brand-600 hover:text-brand-700">
+          <Link href="/settings" className="text-brand-600 hover:text-brand-400">
             Settings
           </Link>
           <span className="text-stone-400">/</span>
           <span className="text-stone-500">Seasonal Palettes</span>
         </div>
-        <h1 className="text-3xl font-bold text-stone-900 mt-2">Seasonal Palettes</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100 mt-2">Seasonal Palettes</h1>
+        <p className="text-stone-400 mt-1">
           Keep track of what&apos;s available each season so you can plan menus without guessing.
         </p>
       </div>

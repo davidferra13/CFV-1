@@ -84,8 +84,8 @@ function SignInForm() {
     <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-stone-900">ChefFlow</h1>
-          <p className="text-stone-600 mt-2">Sign in to your account</p>
+          <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
+          <p className="text-stone-400 mt-2">Sign in to your account</p>
         </div>
 
         <Card>
@@ -123,14 +123,14 @@ function SignInForm() {
                     type="checkbox"
                     checked={formData.rememberMe}
                     onChange={(e) => setFormData({ ...formData, rememberMe: e.target.checked })}
-                    className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                    className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
                   />
-                  <span className="text-sm text-stone-600">Stay signed in</span>
+                  <span className="text-sm text-stone-400">Stay signed in</span>
                 </label>
 
                 <Link
                   href="/auth/forgot-password"
-                  className="text-sm text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-sm text-brand-600 hover:text-brand-400 font-medium"
                 >
                   Forgot password?
                 </Link>
@@ -147,7 +147,7 @@ function SignInForm() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-stone-500">Or continue with</span>
+                  <span className="bg-surface px-2 text-stone-500">Or continue with</span>
                 </div>
               </div>
 
@@ -162,18 +162,18 @@ function SignInForm() {
                 Sign in with Google
               </Button>
 
-              <div className="text-sm text-center text-stone-600">
+              <div className="text-sm text-center text-stone-400">
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/signup"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-brand-600 hover:text-brand-400 font-medium"
                 >
                   Chef sign up
                 </Link>{' '}
                 or{' '}
                 <Link
                   href="/auth/client-signup"
-                  className="text-brand-600 hover:text-brand-700 font-medium"
+                  className="text-brand-600 hover:text-brand-400 font-medium"
                 >
                   Client sign up
                 </Link>

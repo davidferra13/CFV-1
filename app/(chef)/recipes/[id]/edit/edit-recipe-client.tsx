@@ -16,9 +16,20 @@ import {
 } from '@/lib/recipes/actions'
 
 const RECIPE_CATEGORIES = [
-  'sauce', 'protein', 'starch', 'vegetable', 'fruit', 'dessert',
-  'bread', 'pasta', 'soup', 'salad', 'appetizer', 'condiment',
-  'beverage', 'other'
+  'sauce',
+  'protein',
+  'starch',
+  'vegetable',
+  'fruit',
+  'dessert',
+  'bread',
+  'pasta',
+  'soup',
+  'salad',
+  'appetizer',
+  'condiment',
+  'beverage',
+  'other',
 ]
 
 type ExistingIngredient = {
@@ -46,7 +57,9 @@ type NewIngredient = {
   is_optional: boolean
 }
 
-type RecipeDetail = NonNullable<Awaited<ReturnType<typeof import('@/lib/recipes/actions').getRecipeById>>>
+type RecipeDetail = NonNullable<
+  Awaited<ReturnType<typeof import('@/lib/recipes/actions').getRecipeById>>
+>
 
 type Props = {
   recipe: RecipeDetail
@@ -72,7 +85,7 @@ export function EditRecipeClient({ recipe }: Props) {
 
   // Ingredients state
   const [existingIngredients, setExistingIngredients] = useState<ExistingIngredient[]>(
-    recipe.ingredients.map(ri => ({
+    recipe.ingredients.map((ri) => ({
       id: ri.id,
       quantity: ri.quantity,
       unit: ri.unit,
@@ -89,24 +102,36 @@ export function EditRecipeClient({ recipe }: Props) {
   const [modifiedIngredients, setModifiedIngredients] = useState<Set<string>>(new Set())
 
   const updateExisting = (id: string, field: string, value: unknown) => {
-    setExistingIngredients(prev =>
-      prev.map(ei => ei.id === id ? { ...ei, [field]: value } : ei)
+    setExistingIngredients((prev) =>
+      prev.map((ei) => (ei.id === id ? { ...ei, [field]: value } : ei))
     )
-    setModifiedIngredients(prev => new Set(prev).add(id))
+    setModifiedIngredients((prev) => new Set(prev).add(id))
   }
 
   const removeExisting = (id: string) => {
-    setExistingIngredients(prev => prev.filter(ei => ei.id !== id))
-    setRemovedIngredientIds(prev => [...prev, id])
+    setExistingIngredients((prev) => prev.filter((ei) => ei.id !== id))
+    setRemovedIngredientIds((prev) => [...prev, id])
   }
 
   const addNewRow = () => {
-    setNewIngredients([...newIngredients, {
-      name: '', quantity: 1, unit: '', category: 'other', preparation_notes: '', is_optional: false
-    }])
+    setNewIngredients([
+      ...newIngredients,
+      {
+        name: '',
+        quantity: 1,
+        unit: '',
+        category: 'other',
+        preparation_notes: '',
+        is_optional: false,
+      },
+    ])
   }
 
-  const updateNew = (index: number, field: keyof NewIngredient, value: string | number | boolean) => {
+  const updateNew = (
+    index: number,
+    field: keyof NewIngredient,
+    value: string | number | boolean
+  ) => {
     const updated = [...newIngredients]
     updated[index] = { ...updated[index], [field]: value }
     setNewIngredients(updated)
@@ -136,10 +161,15 @@ export function EditRecipeClient({ recipe }: Props) {
         notes: notes.trim() || null,
         prep_time_minutes: prepTime ? parseInt(prepTime) : null,
         cook_time_minutes: cookTime ? parseInt(cookTime) : null,
-        total_time_minutes: (prepTime && cookTime) ? parseInt(prepTime) + parseInt(cookTime) : null,
+        total_time_minutes: prepTime && cookTime ? parseInt(prepTime) + parseInt(cookTime) : null,
         yield_quantity: yieldQty ? parseFloat(yieldQty) : null,
         yield_unit: yieldUnit.trim() || null,
-        dietary_tags: dietaryTags ? dietaryTags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        dietary_tags: dietaryTags
+          ? dietaryTags
+              .split(',')
+              .map((t) => t.trim())
+              .filter(Boolean)
+          : [],
       })
 
       // Remove deleted ingredients
@@ -161,7 +191,7 @@ export function EditRecipeClient({ recipe }: Props) {
       }
 
       // Add new ingredients
-      const validNew = newIngredients.filter(ing => ing.name.trim())
+      const validNew = newIngredients.filter((ing) => ing.name.trim())
       const startOrder = existingIngredients.length
       for (let i = 0; i < validNew.length; i++) {
         const ing = validNew[i]
@@ -190,8 +220,8 @@ export function EditRecipeClient({ recipe }: Props) {
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Edit Recipe</h1>
-          <p className="text-stone-600 mt-1">Editing: {recipe.name}</p>
+          <h1 className="text-3xl font-bold text-stone-100">Edit Recipe</h1>
+          <p className="text-stone-400 mt-1">Editing: {recipe.name}</p>
         </div>
         <Link href={`/recipes/${recipe.id}`}>
           <Button variant="ghost">Cancel</Button>
@@ -208,33 +238,31 @@ export function EditRecipeClient({ recipe }: Props) {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Recipe Name <span className="text-red-500">*</span>
               </label>
-              <Input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
+              <Input type="text" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Category <span className="text-red-500">*</span>
               </label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border border-stone-300 rounded-md px-3 py-2 text-sm bg-white"
+                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-surface"
               >
-                {RECIPE_CATEGORIES.map(cat => (
-                  <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                {RECIPE_CATEGORIES.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </option>
                 ))}
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Description</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Description</label>
             <Input
               type="text"
               value={description}
@@ -243,16 +271,12 @@ export function EditRecipeClient({ recipe }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Method</label>
-            <Textarea
-              value={method}
-              onChange={(e) => setMethod(e.target.value)}
-              rows={4}
-            />
+            <label className="block text-sm font-medium text-stone-300 mb-1">Method</label>
+            <Textarea value={method} onChange={(e) => setMethod(e.target.value)} rows={4} />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Detailed Method</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Detailed Method</label>
             <Textarea
               value={methodDetailed}
               onChange={(e) => setMethodDetailed(e.target.value)}
@@ -262,25 +286,35 @@ export function EditRecipeClient({ recipe }: Props) {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Prep (min)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Prep (min)</label>
               <Input type="number" value={prepTime} onChange={(e) => setPrepTime(e.target.value)} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Cook (min)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Cook (min)</label>
               <Input type="number" value={cookTime} onChange={(e) => setCookTime(e.target.value)} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Yield</label>
-              <Input type="number" value={yieldQty} onChange={(e) => setYieldQty(e.target.value)} step="0.25" />
+              <label className="block text-sm font-medium text-stone-300 mb-1">Yield</label>
+              <Input
+                type="number"
+                value={yieldQty}
+                onChange={(e) => setYieldQty(e.target.value)}
+                step="0.25"
+              />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Yield Unit</label>
-              <Input type="text" value={yieldUnit} onChange={(e) => setYieldUnit(e.target.value)} placeholder="servings" />
+              <label className="block text-sm font-medium text-stone-300 mb-1">Yield Unit</label>
+              <Input
+                type="text"
+                value={yieldUnit}
+                onChange={(e) => setYieldUnit(e.target.value)}
+                placeholder="servings"
+              />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Dietary Tags</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Dietary Tags</label>
             <Input
               type="text"
               value={dietaryTags}
@@ -290,12 +324,8 @@ export function EditRecipeClient({ recipe }: Props) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-            />
+            <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
+            <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} />
           </div>
         </CardContent>
       </Card>
@@ -335,18 +365,15 @@ export function EditRecipeClient({ recipe }: Props) {
             {existingIngredients.map((ei) => (
               <div key={ei.id} className="flex gap-2 items-center">
                 <div className="flex-1 min-w-[140px]">
-                  <Input
-                    type="text"
-                    value={ei.ingredient.name}
-                    disabled
-                    className="bg-stone-50"
-                  />
+                  <Input type="text" value={ei.ingredient.name} disabled className="bg-stone-800" />
                 </div>
                 <div className="w-20">
                   <Input
                     type="number"
                     value={ei.quantity}
-                    onChange={(e) => updateExisting(ei.id, 'quantity', parseFloat(e.target.value) || 0)}
+                    onChange={(e) =>
+                      updateExisting(ei.id, 'quantity', parseFloat(e.target.value) || 0)
+                    }
                     step="0.25"
                   />
                 </div>
@@ -361,7 +388,9 @@ export function EditRecipeClient({ recipe }: Props) {
                   <Input
                     type="text"
                     value={ei.preparation_notes || ''}
-                    onChange={(e) => updateExisting(ei.id, 'preparation_notes', e.target.value || null)}
+                    onChange={(e) =>
+                      updateExisting(ei.id, 'preparation_notes', e.target.value || null)
+                    }
                     placeholder="diced"
                   />
                 </div>
@@ -377,7 +406,10 @@ export function EditRecipeClient({ recipe }: Props) {
 
             {/* New ingredients */}
             {newIngredients.map((ing, index) => (
-              <div key={`new-${index}`} className="flex gap-2 items-center border-l-2 border-brand-200 pl-2">
+              <div
+                key={`new-${index}`}
+                className="flex gap-2 items-center border-l-2 border-brand-700 pl-2"
+              >
                 <div className="flex-1 min-w-[140px]">
                   <Input
                     type="text"
@@ -421,7 +453,9 @@ export function EditRecipeClient({ recipe }: Props) {
             ))}
 
             {existingIngredients.length === 0 && newIngredients.length === 0 && (
-              <p className="text-stone-500 text-center py-4">No ingredients. Click &ldquo;Add Ingredient&rdquo; to start.</p>
+              <p className="text-stone-500 text-center py-4">
+                No ingredients. Click &ldquo;Add Ingredient&rdquo; to start.
+              </p>
             )}
           </div>
         </CardContent>
@@ -430,7 +464,9 @@ export function EditRecipeClient({ recipe }: Props) {
       {/* Save/Cancel */}
       <div className="flex justify-end gap-3">
         <Link href={`/recipes/${recipe.id}`}>
-          <Button variant="ghost" disabled={loading}>Cancel</Button>
+          <Button variant="ghost" disabled={loading}>
+            Cancel
+          </Button>
         </Link>
         <Button onClick={handleSave} disabled={loading || !name.trim()}>
           {loading ? 'Saving...' : 'Save Changes'}

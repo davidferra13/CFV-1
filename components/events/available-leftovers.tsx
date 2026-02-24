@@ -41,7 +41,7 @@ export function AvailableLeftovers({ eventId, items: initialItems }: Props) {
   }
 
   return (
-    <Card className="border-green-200 bg-green-50/40">
+    <Card className="border-green-200 bg-green-950/40">
       <CardHeader>
         <CardTitle className="text-base text-green-900">
           Available Carry-Forward ({items.length})
@@ -59,23 +59,34 @@ export function AvailableLeftovers({ eventId, items: initialItems }: Props) {
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-medium text-stone-900 truncate">{item.ingredientName}</p>
-                  {item.useByDate && (() => {
-                    const daysLeft = differenceInDays(parseISO(item.useByDate!), new Date())
-                    if (daysLeft < 0) return <span className="text-xs text-red-600 font-medium">past use-by</span>
-                    if (daysLeft <= 3) return <span className="text-xs text-amber-600 font-medium">use within {daysLeft}d</span>
-                    return null
-                  })()}
+                  <p className="text-sm font-medium text-stone-100 truncate">
+                    {item.ingredientName}
+                  </p>
+                  {item.useByDate &&
+                    (() => {
+                      const daysLeft = differenceInDays(parseISO(item.useByDate!), new Date())
+                      if (daysLeft < 0)
+                        return <span className="text-xs text-red-600 font-medium">past use-by</span>
+                      if (daysLeft <= 3)
+                        return (
+                          <span className="text-xs text-amber-600 font-medium">
+                            use within {daysLeft}d
+                          </span>
+                        )
+                      return null
+                    })()}
                 </div>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-0.5">
                   <span className="text-xs text-stone-500">
                     From:{' '}
-                    <span className="font-medium text-stone-700">
+                    <span className="font-medium text-stone-300">
                       {item.sourceEventOccasion ?? 'Event'}
                     </span>{' '}
-                    ({item.sourceEventDate
+                    (
+                    {item.sourceEventDate
                       ? format(new Date(item.sourceEventDate), 'MMM d')
-                      : 'recent'})
+                      : 'recent'}
+                    )
                   </span>
                   {item.estimatedCostCents && (
                     <span className="text-xs text-green-700 font-medium">

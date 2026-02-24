@@ -152,11 +152,11 @@ function EventCard({
               )}
             </div>
 
-            <h3 className="text-lg font-semibold text-stone-900 mb-2">
+            <h3 className="text-lg font-semibold text-stone-100 mb-2">
               {event.occasion || 'Untitled Event'}
             </h3>
 
-            <div className="space-y-1 text-sm text-stone-600">
+            <div className="space-y-1 text-sm text-stone-400">
               <div className="flex items-center gap-2">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -205,10 +205,10 @@ function EventCard({
             {quotedPrice > 0 && ['proposed', 'accepted'].includes(event.status) && (
               <div className="mt-4 pt-4 border-t">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-stone-600">
+                  <span className="text-sm text-stone-400">
                     {event.status === 'accepted' ? 'Balance Due:' : 'Total Price:'}
                   </span>
-                  <span className="text-lg font-bold text-stone-900">
+                  <span className="text-lg font-bold text-stone-100">
                     {formatCurrency(quotedPrice)}
                   </span>
                 </div>
@@ -240,17 +240,17 @@ function EmptyState({ message }: { message: string }) {
             />
           </svg>
         </div>
-        <p className="text-stone-600">{message}</p>
+        <p className="text-stone-400">{message}</p>
       </CardContent>
     </Card>
   )
 }
 
 const TIER_COLORS: Record<string, string> = {
-  bronze: 'bg-amber-100 text-amber-800',
-  silver: 'bg-stone-200 text-stone-800',
-  gold: 'bg-yellow-100 text-yellow-800',
-  platinum: 'bg-purple-100 text-purple-800',
+  bronze: 'bg-amber-900 text-amber-800',
+  silver: 'bg-stone-700 text-stone-200',
+  gold: 'bg-yellow-900 text-yellow-800',
+  platinum: 'bg-purple-900 text-purple-800',
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -329,8 +329,8 @@ export default async function MyEventsPage() {
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-stone-900">My Events</h1>
-        <p className="text-stone-600 mt-2">Manage your upcoming events and view past bookings</p>
+        <h1 className="text-3xl font-bold text-stone-100">My Events</h1>
+        <p className="text-stone-400 mt-2">Manage your upcoming events and view past bookings</p>
       </div>
 
       {/* Post-event review banner — shown for most recent unreviewed completed event */}
@@ -346,7 +346,7 @@ export default async function MyEventsPage() {
       {/* Loyalty Status */}
       {loyaltyStatus &&
         (loyaltyStatus.pointsBalance > 0 || loyaltyStatus.totalEventsCompleted > 0) && (
-          <Card className="mb-8 border-purple-200 bg-purple-50">
+          <Card className="mb-8 border-purple-200 bg-purple-950">
             <CardContent className="p-6">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-4">
@@ -380,7 +380,7 @@ export default async function MyEventsPage() {
 
       {/* Upcoming Events */}
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold text-stone-900 mb-4">Upcoming Events</h2>
+        <h2 className="text-2xl font-semibold text-stone-100 mb-4">Upcoming Events</h2>
         {upcoming.length > 0 ? (
           <div className="space-y-4">
             {upcoming.map((event) => (
@@ -395,11 +395,11 @@ export default async function MyEventsPage() {
       {/* Past Events */}
       <section className="mb-12">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-semibold text-stone-900">Past Events</h2>
+          <h2 className="text-2xl font-semibold text-stone-100">Past Events</h2>
           {pastTotalCount > 5 && (
             <Link
               href="/my-events/history"
-              className="text-sm text-stone-500 hover:text-stone-700 underline underline-offset-2"
+              className="text-sm text-stone-500 hover:text-stone-300 underline underline-offset-2"
             >
               View all {pastTotalCount} past events
             </Link>
@@ -432,7 +432,7 @@ export default async function MyEventsPage() {
       {/* Cancelled Events */}
       {cancelled.length > 0 && (
         <section>
-          <h2 className="text-2xl font-semibold text-stone-900 mb-4">Cancelled Events</h2>
+          <h2 className="text-2xl font-semibold text-stone-100 mb-4">Cancelled Events</h2>
           <div className="space-y-4">
             {cancelled.map((event) => (
               <EventCard key={event.id} event={event as ClientEvent} />

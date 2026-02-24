@@ -21,7 +21,7 @@ export function PhotoConsentSummary({ guests }: { guests: Guest[] }) {
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold text-stone-900">Photo Consent</h3>
+        <h3 className="font-semibold text-stone-100">Photo Consent</h3>
         <Badge
           variant={
             allConsented
@@ -36,26 +36,26 @@ export function PhotoConsentSummary({ guests }: { guests: Guest[] }) {
       </div>
 
       {/* Progress bar */}
-      <div className="w-full bg-stone-200 rounded-full h-2 mb-3">
+      <div className="w-full bg-stone-700 rounded-full h-2 mb-3">
         <div
-          className={`h-2 rounded-full transition-all ${allConsented ? 'bg-emerald-500' : 'bg-brand-500'}`}
+          className={`h-2 rounded-full transition-all ${allConsented ? 'bg-emerald-9500' : 'bg-brand-9500'}`}
           style={{ width: `${percentage}%` }}
         />
       </div>
 
       {allConsented ? (
-        <p className="text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+        <p className="text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
           All attending guests have consented to photo sharing. You're clear to post!
         </p>
       ) : (
         <div className="space-y-2">
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-stone-400">
             {notConsented.length} guest{notConsented.length !== 1 ? 's' : ''} ha
             {notConsented.length !== 1 ? 've' : 's'}n't consented to photo sharing. Be mindful when
             posting event photos.
           </p>
           <details className="text-xs text-stone-500">
-            <summary className="cursor-pointer hover:text-stone-700 font-medium">
+            <summary className="cursor-pointer hover:text-stone-300 font-medium">
               Who hasn't consented
             </summary>
             <ul className="mt-1 space-y-0.5 ml-3">

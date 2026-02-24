@@ -22,7 +22,9 @@ export function PersonalInfoEditor({
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [preferredName, setPreferredName] = useState(initialData.preferred_name ?? '')
-  const [partnerPreferredName, setPartnerPreferredName] = useState(initialData.partner_preferred_name ?? '')
+  const [partnerPreferredName, setPartnerPreferredName] = useState(
+    initialData.partner_preferred_name ?? ''
+  )
   const [familyNotes, setFamilyNotes] = useState(initialData.family_notes ?? '')
 
   async function handleSave() {
@@ -55,19 +57,21 @@ export function PersonalInfoEditor({
         </CardHeader>
         <CardContent>
           {!hasData ? (
-            <p className="text-sm text-stone-500">Add nicknames, partner info, and family notes for personalized service.</p>
+            <p className="text-sm text-stone-500">
+              Add nicknames, partner info, and family notes for personalized service.
+            </p>
           ) : (
             <dl className="space-y-2">
               {preferredName && (
                 <div>
                   <dt className="text-xs font-medium text-stone-500">Preferred Name / Nickname</dt>
-                  <dd className="text-sm text-stone-900">{preferredName}</dd>
+                  <dd className="text-sm text-stone-100">{preferredName}</dd>
                 </div>
               )}
               {initialData.partner_name && (
                 <div>
                   <dt className="text-xs font-medium text-stone-500">Partner</dt>
-                  <dd className="text-sm text-stone-900">
+                  <dd className="text-sm text-stone-100">
                     {initialData.partner_name}
                     {partnerPreferredName && ` (goes by "${partnerPreferredName}")`}
                   </dd>
@@ -76,7 +80,7 @@ export function PersonalInfoEditor({
               {familyNotes && (
                 <div>
                   <dt className="text-xs font-medium text-stone-500">Family Notes</dt>
-                  <dd className="text-sm text-stone-900 whitespace-pre-wrap">{familyNotes}</dd>
+                  <dd className="text-sm text-stone-100 whitespace-pre-wrap">{familyNotes}</dd>
                 </div>
               )}
             </dl>
@@ -94,7 +98,7 @@ export function PersonalInfoEditor({
       <CardContent>
         <div className="space-y-3">
           <div>
-            <label className="text-xs font-medium text-stone-600">Preferred Name / Nickname</label>
+            <label className="text-xs font-medium text-stone-400">Preferred Name / Nickname</label>
             <Input
               placeholder='e.g., "Murr" instead of Mary'
               value={preferredName}
@@ -102,7 +106,7 @@ export function PersonalInfoEditor({
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-stone-600">Partner Preferred Name</label>
+            <label className="text-xs font-medium text-stone-400">Partner Preferred Name</label>
             <Input
               placeholder='e.g., "Mike" instead of Michael'
               value={partnerPreferredName}
@@ -110,7 +114,7 @@ export function PersonalInfoEditor({
             />
           </div>
           <div>
-            <label className="text-xs font-medium text-stone-600">Family Notes</label>
+            <label className="text-xs font-medium text-stone-400">Family Notes</label>
             <Textarea
               placeholder="Children, babysitter situations, extended family connections..."
               value={familyNotes}

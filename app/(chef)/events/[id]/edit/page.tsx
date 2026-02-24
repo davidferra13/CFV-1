@@ -9,11 +9,7 @@ import { getPartnersWithLocations } from '@/lib/partners/actions'
 import { EventForm } from '@/components/events/event-form'
 import { Alert } from '@/components/ui/alert'
 
-export default async function EditEventPage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default async function EditEventPage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const event = await getEventById(params.id)
@@ -54,8 +50,8 @@ export default async function EditEventPage({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Edit Event</h1>
-        <p className="text-stone-600 mt-1">Update event details</p>
+        <h1 className="text-3xl font-bold text-stone-100">Edit Event</h1>
+        <p className="text-stone-400 mt-1">Update event details</p>
       </div>
 
       {event.status === 'proposed' && (
@@ -65,7 +61,13 @@ export default async function EditEventPage({
         </Alert>
       )}
 
-      <EventForm clients={clients} mode="edit" event={formEvent} partners={partners} partnerLocations={partnerLocations} />
+      <EventForm
+        clients={clients}
+        mode="edit"
+        event={formEvent}
+        partners={partners}
+        partnerLocations={partnerLocations}
+      />
     </div>
   )
 }

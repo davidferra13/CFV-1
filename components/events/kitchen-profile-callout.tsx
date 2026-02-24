@@ -52,7 +52,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
     <Card className="p-6">
       <div className="flex items-start justify-between mb-3">
         <div>
-          <h2 className="text-base font-semibold text-stone-900">Kitchen Profile</h2>
+          <h2 className="text-base font-semibold text-stone-100">Kitchen Profile</h2>
           {profile?.kitchen_profile_updated_at && (
             <p className="text-xs text-stone-400 mt-0.5">
               Last updated {format(new Date(profile.kitchen_profile_updated_at), 'MMM d, yyyy')}
@@ -61,7 +61,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
         </div>
         <Link
           href={`/clients/${clientId}`}
-          className="text-xs text-brand-600 hover:text-brand-700 font-medium shrink-0"
+          className="text-xs text-brand-600 hover:text-brand-400 font-medium shrink-0"
           target="_blank"
           rel="noopener"
         >
@@ -70,7 +70,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
       </div>
 
       {!profile || !hasNotes ? (
-        <div className="rounded-md bg-amber-50 border border-amber-200 px-3 py-2.5">
+        <div className="rounded-md bg-amber-950 border border-amber-200 px-3 py-2.5">
           <p className="text-sm text-amber-800">
             No kitchen notes on file for this client.{' '}
             <Link
@@ -89,7 +89,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
           {profile.kitchen_size && (
             <div className="flex gap-6 text-sm">
               <span className="text-stone-500 font-medium w-28 shrink-0">Size</span>
-              <span className="text-stone-800">{profile.kitchen_size}</span>
+              <span className="text-stone-200">{profile.kitchen_size}</span>
             </div>
           )}
 
@@ -99,7 +99,7 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
             return (
               <div key={f.key} className="flex gap-6 text-sm">
                 <span className="text-stone-500 font-medium w-28 shrink-0">{f.label}</span>
-                <span className="text-stone-800">{val}</span>
+                <span className="text-stone-200">{val}</span>
               </div>
             )
           })}
@@ -107,14 +107,14 @@ export function KitchenProfileCallout({ clientId, profile }: KitchenProfileCallo
           {profile.kitchen_constraints && (
             <div className="flex gap-6 text-sm">
               <span className="text-stone-500 font-medium w-28 shrink-0">General notes</span>
-              <span className="text-stone-800">{profile.kitchen_constraints}</span>
+              <span className="text-stone-200">{profile.kitchen_constraints}</span>
             </div>
           )}
 
           {profile.equipment_available && profile.equipment_available.length > 0 && (
             <div className="flex gap-6 text-sm">
               <span className="text-stone-500 font-medium w-28 shrink-0">Available</span>
-              <span className="text-stone-800">{profile.equipment_available.join(', ')}</span>
+              <span className="text-stone-200">{profile.equipment_available.join(', ')}</span>
             </div>
           )}
 

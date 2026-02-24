@@ -100,7 +100,7 @@ export function QuickCapture() {
           />
           <div className="fixed bottom-44 right-4 z-40 flex flex-col gap-3 sm:hidden">
             <div className="flex items-center gap-2 justify-end">
-              <span className="bg-white text-stone-700 text-sm font-medium px-3 py-1 rounded-full shadow-md">
+              <span className="bg-surface text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
                 Capture Receipt
               </span>
               <button
@@ -112,7 +112,7 @@ export function QuickCapture() {
               </button>
             </div>
             <div className="flex items-center gap-2 justify-end">
-              <span className="bg-white text-stone-700 text-sm font-medium px-3 py-1 rounded-full shadow-md">
+              <span className="bg-surface text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
                 Quick Expense
               </span>
               <button
@@ -131,46 +131,44 @@ export function QuickCapture() {
       {showExpenseForm && (
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40"
-          onClick={e => { if (e.target === e.currentTarget) setShowExpenseForm(false) }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowExpenseForm(false)
+          }}
         >
-          <div className="bg-white w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 space-y-4 shadow-xl">
-            <h3 className="text-lg font-bold text-stone-900">Quick Expense</h3>
+          <div className="bg-surface w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 space-y-4 shadow-xl">
+            <h3 className="text-lg font-bold text-stone-100">Quick Expense</h3>
             <p className="text-xs text-stone-500 -mt-2">
               Logged as today, category: Other, payment: Card. Edit from Expenses to adjust.
             </p>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                Amount ($)
-              </label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Amount ($)</label>
               <input
                 type="number"
                 inputMode="decimal"
                 step="0.01"
                 min="0"
                 value={amount}
-                onChange={e => setAmount(e.target.value)}
+                onChange={(e) => setAmount(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="0.00"
-                className="w-full border border-stone-300 rounded-xl px-4 py-3 text-xl focus:ring-2 focus:ring-stone-500 focus:outline-none"
+                className="w-full border border-stone-600 rounded-xl px-4 py-3 text-xl focus:ring-2 focus:ring-stone-500 focus:outline-none"
                 autoFocus
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
-                What was it?
-              </label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">What was it?</label>
               <input
                 value={description}
-                onChange={e => setDescription(e.target.value)}
+                onChange={(e) => setDescription(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="e.g., Groceries at Whole Foods"
-                className="w-full border border-stone-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-stone-500 focus:outline-none"
+                className="w-full border border-stone-600 rounded-xl px-4 py-3 focus:ring-2 focus:ring-stone-500 focus:outline-none"
               />
             </div>
             <div className="flex gap-3 pt-1">
               <button
                 onClick={() => setShowExpenseForm(false)}
-                className="flex-1 py-3 rounded-xl border border-stone-300 text-stone-700 font-medium hover:bg-stone-50 transition-colors"
+                className="flex-1 py-3 rounded-xl border border-stone-600 text-stone-300 font-medium hover:bg-stone-800 transition-colors"
               >
                 Cancel
               </button>

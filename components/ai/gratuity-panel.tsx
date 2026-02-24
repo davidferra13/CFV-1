@@ -32,11 +32,11 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <DollarSign className="w-4 h-4 text-green-600" />
-            <span className="text-sm font-medium text-stone-700">Gratuity Approach</span>
+            <span className="text-sm font-medium text-stone-300">Gratuity Approach</span>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
             {loading ? (
@@ -60,11 +60,11 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <DollarSign className="w-4 h-4 text-green-600" />
-          <span className="text-sm font-medium text-stone-700">Gratuity Approach</span>
+          <span className="text-sm font-medium text-stone-300">Gratuity Approach</span>
           <Badge variant="info">{APPROACH_LABELS[result.approach]}</Badge>
         </div>
         <Button variant="ghost" onClick={run} disabled={loading}>
@@ -72,26 +72,26 @@ export function GratuityPanel({ eventId }: { eventId: string }) {
         </Button>
       </div>
 
-      <div className="text-xs text-stone-600">{result.approachRationale}</div>
+      <div className="text-xs text-stone-400">{result.approachRationale}</div>
 
       {result.suggestedGratuityRangePercent && (
-        <div className="bg-green-50 rounded p-2 text-xs text-green-800">
+        <div className="bg-green-950 rounded p-2 text-xs text-green-800">
           Suggested range: {result.suggestedGratuityRangePercent.min}%–
           {result.suggestedGratuityRangePercent.max}%
         </div>
       )}
 
       {result.verbalScript && (
-        <div className="bg-stone-50 rounded p-2">
+        <div className="bg-stone-800 rounded p-2">
           <div className="text-[11px] text-stone-400 mb-0.5">Verbal script</div>
-          <div className="text-sm text-stone-700 italic">"{result.verbalScript}"</div>
+          <div className="text-sm text-stone-300 italic">"{result.verbalScript}"</div>
         </div>
       )}
 
       {result.messageDraft && (
-        <div className="bg-stone-50 rounded p-2">
+        <div className="bg-stone-800 rounded p-2">
           <div className="text-[11px] text-stone-400 mb-0.5">Message line to include</div>
-          <div className="text-sm text-stone-700">{result.messageDraft}</div>
+          <div className="text-sm text-stone-300">{result.messageDraft}</div>
         </div>
       )}
 

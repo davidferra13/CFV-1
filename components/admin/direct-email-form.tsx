@@ -38,7 +38,7 @@ export function DirectEmailForm() {
         value={to}
         onChange={(e) => setTo(e.target.value)}
         placeholder="recipient@email.com"
-        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
+        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-800"
         disabled={isPending}
       />
       <input
@@ -46,14 +46,14 @@ export function DirectEmailForm() {
         value={subject}
         onChange={(e) => setSubject(e.target.value)}
         placeholder="Subject"
-        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200"
+        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-800"
         disabled={isPending}
       />
       <textarea
         value={body}
         onChange={(e) => setBody(e.target.value)}
         placeholder="Message body…"
-        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none"
+        className="w-full px-3 py-2.5 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-800 resize-none"
         rows={5}
         disabled={isPending}
       />

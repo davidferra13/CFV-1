@@ -19,13 +19,13 @@ function formatCents(cents: number): string {
 
 const STATUS_COLORS: Record<string, string> = {
   draft: 'bg-slate-100 text-slate-600',
-  proposed: 'bg-yellow-100 text-yellow-700',
-  accepted: 'bg-blue-100 text-blue-700',
-  paid: 'bg-indigo-100 text-indigo-700',
-  confirmed: 'bg-purple-100 text-purple-700',
-  in_progress: 'bg-orange-100 text-orange-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  proposed: 'bg-yellow-900 text-yellow-700',
+  accepted: 'bg-blue-900 text-blue-700',
+  paid: 'bg-indigo-900 text-indigo-700',
+  confirmed: 'bg-purple-900 text-purple-700',
+  in_progress: 'bg-orange-900 text-orange-700',
+  completed: 'bg-green-900 text-green-700',
+  cancelled: 'bg-red-900 text-red-700',
 }
 
 export default async function AdminChefDetailPage({ params }: { params: { chefId: string } }) {
@@ -125,7 +125,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
                 showScore
               />
               {accountStatus === 'suspended' && (
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700 border border-red-200">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-900 text-red-700 border border-red-200">
                   Suspended
                 </span>
               )}
@@ -145,21 +145,21 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
 
       {/* Financial Summary */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <DollarSign size={14} className="text-green-500" />
             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">GMV</p>
           </div>
           <p className="text-xl font-bold text-slate-900">{formatCents(totalGMV)}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <CalendarRange size={14} className="text-blue-500" />
             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Events</p>
           </div>
           <p className="text-xl font-bold text-slate-900">{events.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
           <div className="flex items-center gap-2 mb-1">
             <Users size={14} className="text-purple-500" />
             <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Clients</p>
@@ -169,7 +169,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Health Score Breakdown */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
           <Activity size={14} className="text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">
@@ -211,7 +211,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Events */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
           <h2 className="text-sm font-semibold text-slate-700">Recent Events</h2>
         </div>
@@ -260,7 +260,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Clients */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
           <h2 className="text-sm font-semibold text-slate-700">Clients ({clients.length})</h2>
         </div>
@@ -286,7 +286,7 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
       </div>
 
       {/* Ledger (last 50) */}
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-slate-700">Ledger (last 50 entries)</h2>
           <span className="text-xs text-slate-400">Expenses: {formatCents(totalExpenses)}</span>

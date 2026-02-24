@@ -71,12 +71,12 @@ export function InventoryCountForm({ items }: { items: InventoryCount[] }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ClipboardCheck className="h-5 w-5 text-stone-600" />
+          <ClipboardCheck className="h-5 w-5 text-stone-400" />
           Inventory Count
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="divide-y divide-stone-100">
+        <div className="divide-y divide-stone-800">
           {items.map((item) => {
             const currentCount = counts[item.id]
             const changed = currentCount !== item.currentQty
@@ -89,7 +89,7 @@ export function InventoryCountForm({ items }: { items: InventoryCount[] }) {
                 {/* Item info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-stone-900 truncate">
+                    <span className="font-medium text-stone-100 truncate">
                       {item.ingredientName}
                     </span>
                     {parBadge(currentCount, item.parLevel)}

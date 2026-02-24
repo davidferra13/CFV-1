@@ -7,8 +7,18 @@ import Link from 'next/link'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 const MONTH_NAMES = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ]
 
 export default async function SocialMonthPage({ params }: { params: { month: string } }) {
@@ -37,12 +47,10 @@ export default async function SocialMonthPage({ params }: { params: { month: str
             </Button>
           </Link>
           <div>
-            <h2 className="text-xl font-semibold text-stone-900">
+            <h2 className="text-xl font-semibold text-stone-100">
               {MONTH_NAMES[monthNum - 1]} {planner.settings.target_year}
             </h2>
-            <p className="text-sm text-stone-500">
-              {monthPosts.length} posts this month
-            </p>
+            <p className="text-sm text-stone-500">{monthPosts.length} posts this month</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

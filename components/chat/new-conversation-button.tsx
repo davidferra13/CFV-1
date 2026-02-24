@@ -41,9 +41,7 @@ export function NewConversationButton() {
     if (!search.trim()) return clients
     const q = search.toLowerCase()
     return clients.filter(
-      (c) =>
-        c.full_name.toLowerCase().includes(q) ||
-        c.email.toLowerCase().includes(q)
+      (c) => c.full_name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
     )
   }, [clients, search])
 
@@ -74,9 +72,7 @@ export function NewConversationButton() {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)}>
-        + New Conversation
-      </Button>
+      <Button onClick={() => setOpen(true)}>+ New Conversation</Button>
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -84,12 +80,12 @@ export function NewConversationButton() {
           <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
+          <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-stone-900">New Conversation</h3>
+              <h3 className="text-lg font-semibold text-stone-100">New Conversation</h3>
               <button
                 onClick={handleClose}
-                className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+                className="text-stone-400 hover:text-stone-400 text-xl leading-none"
               >
                 &times;
               </button>
@@ -112,7 +108,7 @@ export function NewConversationButton() {
             </div>
 
             {/* Client List */}
-            <div className="max-h-64 overflow-y-auto border border-stone-200 rounded-lg divide-y divide-stone-100">
+            <div className="max-h-64 overflow-y-auto border border-stone-700 rounded-lg divide-y divide-stone-800">
               {loading ? (
                 <div className="p-8 text-center text-sm text-stone-400">Loading clients...</div>
               ) : filtered.length === 0 ? (
@@ -125,9 +121,9 @@ export function NewConversationButton() {
                     key={client.id}
                     onClick={() => handleSelect(client)}
                     disabled={creating}
-                    className="w-full text-left px-4 py-3 hover:bg-stone-50 transition-colors disabled:opacity-50"
+                    className="w-full text-left px-4 py-3 hover:bg-stone-800 transition-colors disabled:opacity-50"
                   >
-                    <div className="font-medium text-stone-900 text-sm">{client.full_name}</div>
+                    <div className="font-medium text-stone-100 text-sm">{client.full_name}</div>
                     <div className="text-xs text-stone-500">{client.email}</div>
                   </button>
                 ))

@@ -26,12 +26,12 @@ export default async function RecipeTagsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/culinary/recipes" className="text-sm text-stone-500 hover:text-stone-300">
           ← Recipe Book
         </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Recipe Tags</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">
+          <h1 className="text-3xl font-bold text-stone-100">Recipe Tags</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
             {tagList.length} tags
           </span>
         </div>
@@ -40,7 +40,7 @@ export default async function RecipeTagsPage() {
 
       {tagList.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No tagged recipes yet</p>
+          <p className="text-stone-400 font-medium">No tagged recipes yet</p>
           <p className="text-stone-400 text-sm mt-1">
             Add dietary tags when creating or editing recipes
           </p>
@@ -51,13 +51,13 @@ export default async function RecipeTagsPage() {
             {tagList.map(([tag, tagRecipes]) => (
               <span
                 key={tag}
-                className="bg-stone-100 text-stone-700 text-sm px-3 py-1 rounded-full font-medium"
+                className="bg-stone-800 text-stone-300 text-sm px-3 py-1 rounded-full font-medium"
               >
                 {tag} ({tagRecipes.length})
               </span>
             ))}
             {untaggedCount > 0 && (
-              <span className="bg-stone-50 text-stone-400 text-sm px-3 py-1 rounded-full">
+              <span className="bg-stone-800 text-stone-400 text-sm px-3 py-1 rounded-full">
                 {untaggedCount} untagged
               </span>
             )}
@@ -66,7 +66,7 @@ export default async function RecipeTagsPage() {
           <div className="space-y-6">
             {tagList.map(([tag, tagRecipes]) => (
               <div key={tag}>
-                <h2 className="text-base font-semibold text-stone-800 mb-3 capitalize">{tag}</h2>
+                <h2 className="text-base font-semibold text-stone-200 mb-3 capitalize">{tag}</h2>
                 <div className="grid grid-cols-2 gap-2">
                   {tagRecipes.map((recipe) => (
                     <Card key={recipe.id} className="p-3">

@@ -25,18 +25,21 @@ interface CampaignDetailPageProps {
   params: { id: string }
 }
 
-const STATUS_BADGE: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'error' }> = {
-  draft:     { label: 'Draft',     variant: 'default' },
+const STATUS_BADGE: Record<
+  string,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' }
+> = {
+  draft: { label: 'Draft', variant: 'default' },
   scheduled: { label: 'Scheduled', variant: 'warning' },
-  sending:   { label: 'Sending…',  variant: 'warning' },
-  sent:      { label: 'Sent',      variant: 'success' },
+  sending: { label: 'Sending…', variant: 'warning' },
+  sent: { label: 'Sent', variant: 'success' },
   cancelled: { label: 'Cancelled', variant: 'default' },
 }
 
 const CHANNEL_ICON: Record<string, string> = {
-  email:     '✉',
-  sms:       '💬',
-  call:      '📞',
+  email: '✉',
+  sms: '💬',
+  call: '📞',
   instagram: '📸',
 }
 
@@ -60,12 +63,17 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Link href="/marketing" className="text-sm text-stone-500 hover:text-stone-700 mb-2 inline-block">
+          <Link
+            href="/marketing"
+            className="text-sm text-stone-500 hover:text-stone-300 mb-2 inline-block"
+          >
             ← Campaigns
           </Link>
-          <h1 className="text-2xl font-bold text-stone-900">{campaign.name}</h1>
+          <h1 className="text-2xl font-bold text-stone-100">{campaign.name}</h1>
           <div className="flex items-center gap-2 mt-1">
-            <Badge variant="default">{CAMPAIGN_TYPE_LABELS[campaign.campaign_type] ?? campaign.campaign_type}</Badge>
+            <Badge variant="default">
+              {CAMPAIGN_TYPE_LABELS[campaign.campaign_type] ?? campaign.campaign_type}
+            </Badge>
             <Badge variant={statusCfg.variant}>{statusCfg.label}</Badge>
             {campaign.sent_at && (
               <span className="text-sm text-stone-500">
@@ -74,17 +82,25 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
             )}
           </div>
         </div>
-        {isSent && (
-          <SaveTemplateButton campaignId={campaign.id} campaignName={campaign.name} />
-        )}
+        {isSent && <SaveTemplateButton campaignId={campaign.id} campaignName={campaign.name} />}
       </div>
 
       {/* Stats Row */}
       {isSent && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatCard label="Sent" value={stats.sent} total={stats.total} />
-          <StatCard label="Opened" value={stats.opened} total={stats.sent} suffix={`${stats.open_rate}%`} />
-          <StatCard label="Clicked" value={stats.clicked} total={stats.sent} suffix={`${stats.click_rate}%`} />
+          <StatCard
+            label="Opened"
+            value={stats.opened}
+            total={stats.sent}
+            suffix={`${stats.open_rate}%`}
+          />
+          <StatCard
+            label="Clicked"
+            value={stats.clicked}
+            total={stats.sent}
+            suffix={`${stats.click_rate}%`}
+          />
           <StatCard label="Unsubscribed" value={stats.unsubscribed} total={stats.sent} />
         </div>
       )}
@@ -94,9 +110,9 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
         <Card>
           <CardContent className="pt-4 pb-4">
             <div className="flex items-center gap-3">
-              <div className="text-2xl font-bold text-stone-900">{attribution.bookings}</div>
+              <div className="text-2xl font-bold text-stone-100">{attribution.bookings}</div>
               <div>
-                <p className="text-sm font-medium text-stone-900">
+                <p className="text-sm font-medium text-stone-100">
                   {attribution.bookings === 1 ? 'client booked' : 'clients booked'} within 30 days
                 </p>
                 {attribution.revenue_cents > 0 && (
@@ -113,14 +129,16 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       {/* Subject + Message Preview */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-medium text-stone-500 uppercase tracking-wide">Message</CardTitle>
+          <CardTitle className="text-sm font-medium text-stone-500 uppercase tracking-wide">
+            Message
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
           <div>
             <span className="text-xs text-stone-400 uppercase tracking-wide mr-2">Subject</span>
-            <span className="text-sm font-medium text-stone-900">{campaign.subject}</span>
+            <span className="text-sm font-medium text-stone-100">{campaign.subject}</span>
           </div>
-          <pre className="whitespace-pre-wrap text-sm text-stone-700 bg-stone-50 rounded-md p-4 border border-stone-100 max-h-48 overflow-y-auto">
+          <pre className="whitespace-pre-wrap text-sm text-stone-300 bg-stone-800 rounded-md p-4 border border-stone-800 max-h-48 overflow-y-auto">
             {campaign.body_html}
           </pre>
         </CardContent>
@@ -133,31 +151,19 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
             <CardTitle className="text-base">Recipients ({recipients.length})</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {recipients.map((r: any) => (
                 <div key={r.id} className="flex items-center justify-between px-6 py-3 gap-4">
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{r.email}</p>
-                    {r.error_message && (
-                      <p className="text-xs text-red-500">{r.error_message}</p>
-                    )}
+                    <p className="text-sm font-medium text-stone-100">{r.email}</p>
+                    {r.error_message && <p className="text-xs text-red-500">{r.error_message}</p>}
                   </div>
                   <div className="flex items-center gap-2 text-xs text-stone-400 shrink-0">
-                    {r.opened_at && (
-                      <span className="text-emerald-600 font-medium">Opened</span>
-                    )}
-                    {r.clicked_at && (
-                      <span className="text-blue-600 font-medium">Clicked</span>
-                    )}
-                    {r.unsubscribed_at && (
-                      <span className="text-stone-400">Unsubscribed</span>
-                    )}
-                    {r.sent_at && !r.error_message && !r.opened_at && (
-                      <span>Delivered</span>
-                    )}
-                    {r.error_message && (
-                      <span className="text-red-500">Failed</span>
-                    )}
+                    {r.opened_at && <span className="text-emerald-600 font-medium">Opened</span>}
+                    {r.clicked_at && <span className="text-blue-600 font-medium">Clicked</span>}
+                    {r.unsubscribed_at && <span className="text-stone-400">Unsubscribed</span>}
+                    {r.sent_at && !r.error_message && !r.opened_at && <span>Delivered</span>}
+                    {r.error_message && <span className="text-red-500">Failed</span>}
                   </div>
                 </div>
               ))}
@@ -169,7 +175,10 @@ export default async function CampaignDetailPage({ params }: CampaignDetailPageP
       {!isSent && campaign.status === 'draft' && (
         <p className="text-sm text-stone-500 text-center">
           This campaign is a draft.{' '}
-          <Link href="/marketing" className="underline">Go to Campaigns</Link> to send it.
+          <Link href="/marketing" className="underline">
+            Go to Campaigns
+          </Link>{' '}
+          to send it.
         </p>
       )}
     </div>
@@ -191,7 +200,7 @@ function StatCard({
     <Card>
       <CardContent className="pt-4 pb-4">
         <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{label}</p>
-        <p className="text-2xl font-bold text-stone-900">{suffix ?? value}</p>
+        <p className="text-2xl font-bold text-stone-100">{suffix ?? value}</p>
         {!suffix && total > 0 && (
           <p className="text-xs text-stone-400">{Math.round((value / total) * 100)}%</p>
         )}

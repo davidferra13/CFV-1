@@ -153,17 +153,17 @@ export default async function HelpArticlePage({ params }: Props) {
     <div className="max-w-3xl mx-auto space-y-6">
       <Link
         href="/help"
-        className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-700 transition-colors"
+        className="flex items-center gap-2 text-sm text-stone-500 hover:text-stone-300 transition-colors"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to Help Center
       </Link>
 
-      <h1 className="text-3xl font-bold text-stone-900">{article.title}</h1>
+      <h1 className="text-3xl font-bold text-stone-100">{article.title}</h1>
 
       <Card>
         <CardContent className="py-6">
-          <pre className="whitespace-pre-wrap text-sm text-stone-700 font-sans leading-relaxed">
+          <pre className="whitespace-pre-wrap text-sm text-stone-300 font-sans leading-relaxed">
             {article.content}
           </pre>
         </CardContent>
@@ -175,7 +175,7 @@ export default async function HelpArticlePage({ params }: Props) {
             Still have questions?{' '}
             <a
               href="mailto:support@cheflowhq.com"
-              className="text-stone-900 font-medium hover:underline"
+              className="text-stone-100 font-medium hover:underline"
             >
               Contact support
             </a>

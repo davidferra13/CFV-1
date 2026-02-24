@@ -39,15 +39,13 @@ export function PostEventBanner({ eventId, occasion, eventDate, chefName }: Prop
   })
 
   return (
-    <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-5">
+    <div className="mb-8 rounded-xl border border-amber-200 bg-amber-950 p-5">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="text-2xl">★</div>
           <div>
-            <p className="font-semibold text-stone-900">
-              How was your dinner with {chefName}?
-            </p>
-            <p className="text-sm text-stone-600 mt-0.5">
+            <p className="font-semibold text-stone-100">How was your dinner with {chefName}?</p>
+            <p className="text-sm text-stone-400 mt-0.5">
               {occasion || 'Your event'} &mdash; {displayDate}
             </p>
           </div>
@@ -61,7 +59,7 @@ export function PostEventBanner({ eventId, occasion, eventDate, chefName }: Prop
           <button
             type="button"
             onClick={handleDismiss}
-            className="text-sm text-stone-400 hover:text-stone-600"
+            className="text-sm text-stone-400 hover:text-stone-400"
             aria-label="Dismiss"
           >
             ✕

@@ -81,7 +81,7 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
   return (
     <div className="space-y-6">
       {totalDeduction > 0 && (
-        <Card className="border-emerald-200 bg-emerald-50">
+        <Card className="border-emerald-200 bg-emerald-950">
           <CardContent className="py-3">
             <div className="flex items-center justify-between">
               <div>
@@ -96,7 +96,7 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
         </Card>
       )}
 
-      <Card className="border-amber-200 bg-amber-50">
+      <Card className="border-amber-200 bg-amber-950">
         <CardContent className="py-3">
           <p className="text-sm text-amber-800">
             <strong>Note:</strong> Section 179 and depreciation deductions require IRS Form 4562.
@@ -119,7 +119,7 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-medium text-stone-900">{item.name}</p>
+                      <p className="font-medium text-stone-100">{item.name}</p>
                       <Badge variant="default">{item.category}</Badge>
                       {item.depreciationMethod && (
                         <Badge variant="info">
@@ -139,10 +139,10 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
 
                     {/* Current year deduction */}
                     {schedule && (
-                      <div className="mt-3 p-3 bg-stone-50 rounded-lg">
+                      <div className="mt-3 p-3 bg-stone-800 rounded-lg">
                         <div className="flex items-center justify-between">
                           <div>
-                            <p className="text-sm font-medium text-stone-900">
+                            <p className="text-sm font-medium text-stone-100">
                               {taxYear} Deduction: {formatCents(schedule.annualDepreciationCents)}
                             </p>
                             <p className="text-xs text-stone-500">
@@ -184,9 +184,9 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
 
                 {/* Edit form */}
                 {isEditing && (
-                  <div className="mt-4 border-t border-stone-100 pt-4 space-y-3">
+                  <div className="mt-4 border-t border-stone-800 pt-4 space-y-3">
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                      <label className="block text-sm font-medium text-stone-300 mb-1.5">
                         Depreciation Method
                       </label>
                       <select
@@ -194,7 +194,7 @@ export function DepreciationSchedulePanel({ equipment, taxYear }: Props) {
                         onChange={(e) =>
                           setEditForm({ ...editForm, depreciationMethod: e.target.value as any })
                         }
-                        className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                        className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                       >
                         <option value="straight_line">
                           Straight-Line (spread over useful life)

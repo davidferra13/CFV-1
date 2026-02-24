@@ -47,7 +47,7 @@ export function CertificationList({ certs }: { certs: Certification[] }) {
           <CardContent className="py-4">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <p className="text-sm font-medium text-stone-900">
+                <p className="text-sm font-medium text-stone-100">
                   {cert.cert_name ?? cert.name ?? 'Untitled certification'}
                 </p>
                 {cert.issuing_body && (

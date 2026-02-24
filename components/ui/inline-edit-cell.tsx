@@ -106,7 +106,7 @@ export function InlineEditCell({
           onBlur={commit}
           disabled={saving}
           placeholder={placeholder}
-          className="w-full px-2 py-1 text-sm border border-brand-400 rounded focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white disabled:opacity-60"
+          className="w-full px-2 py-1 text-sm border border-brand-400 rounded focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface disabled:opacity-60"
         />
         {saving && (
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-stone-400">
@@ -114,7 +114,7 @@ export function InlineEditCell({
           </span>
         )}
         {error && (
-          <div className="absolute left-0 top-full mt-1 z-10 bg-red-50 border border-red-200 text-red-700 text-xs px-2 py-1 rounded shadow-sm whitespace-nowrap">
+          <div className="absolute left-0 top-full mt-1 z-10 bg-red-950 border border-red-200 text-red-700 text-xs px-2 py-1 rounded shadow-sm whitespace-nowrap">
             {error}
           </div>
         )}
@@ -137,11 +137,9 @@ export function InlineEditCell({
         }
       }}
       title="Double-click to edit"
-      className={`group relative inline-flex items-center gap-1.5 cursor-text rounded px-1 -mx-1 hover:bg-stone-100 transition-colors select-none ${className}`}
+      className={`group relative inline-flex items-center gap-1.5 cursor-text rounded px-1 -mx-1 hover:bg-stone-700 transition-colors select-none ${className}`}
     >
-      <span className={rawValue ? '' : 'text-stone-400 italic'}>
-        {shown}
-      </span>
+      <span className={rawValue ? '' : 'text-stone-400 italic'}>{shown}</span>
       {/* Pencil icon — visible on hover */}
       <svg
         className="w-3.5 h-3.5 text-stone-400 opacity-0 group-hover:opacity-100 transition-opacity shrink-0"

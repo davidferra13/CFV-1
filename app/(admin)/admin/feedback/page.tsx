@@ -9,17 +9,21 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = { title: 'Feedback - Admin' }
 
 const SENTIMENT_DISPLAY: Record<string, { emoji: string; label: string; color: string }> = {
-  love:        { emoji: '😍', label: 'Love it',    color: 'bg-emerald-100 text-emerald-800' },
-  frustrated:  { emoji: '😤', label: 'Frustrated', color: 'bg-red-100 text-red-800'         },
-  suggestion:  { emoji: '💡', label: 'Suggestion', color: 'bg-yellow-100 text-yellow-800'   },
-  bug:         { emoji: '🐛', label: 'Bug',        color: 'bg-orange-100 text-orange-800'   },
-  other:       { emoji: '💬', label: 'Other',      color: 'bg-slate-100 text-slate-700'     },
+  love: { emoji: '😍', label: 'Love it', color: 'bg-emerald-900 text-emerald-800' },
+  frustrated: { emoji: '😤', label: 'Frustrated', color: 'bg-red-900 text-red-800' },
+  suggestion: { emoji: '💡', label: 'Suggestion', color: 'bg-yellow-900 text-yellow-800' },
+  bug: { emoji: '🐛', label: 'Bug', color: 'bg-orange-900 text-orange-800' },
+  other: { emoji: '💬', label: 'Other', color: 'bg-slate-100 text-slate-700' },
 }
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleString('en-US', {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: 'numeric', minute: '2-digit', hour12: true,
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
   })
 }
 
@@ -33,11 +37,7 @@ export default async function AdminFeedbackPage() {
     .order('created_at', { ascending: false })
 
   if (error) {
-    return (
-      <div className="p-6 text-red-600 text-sm">
-        Failed to load feedback: {error.message}
-      </div>
-    )
+    return <div className="p-6 text-red-600 text-sm">Failed to load feedback: {error.message}</div>
   }
 
   const feedback = rows ?? []
@@ -59,7 +59,10 @@ export default async function AdminFeedbackPage() {
       {/* Summary chips */}
       <div className="flex flex-wrap gap-2">
         {Object.entries(SENTIMENT_DISPLAY).map(([key, { emoji, label, color }]) => (
-          <span key={key} className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${color}`}>
+          <span
+            key={key}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${color}`}
+          >
             {emoji} {label} — {counts[key] ?? 0}
           </span>
         ))}
@@ -97,21 +100,23 @@ export default async function AdminFeedbackPage() {
                       {formatDate(row.created_at)}
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${s.color}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${s.color}`}
+                      >
                         {s.emoji} {s.label}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-slate-200">
                       <span title={row.message}>
-                        {row.message.length > 140
-                          ? row.message.slice(0, 140) + '…'
-                          : row.message}
+                        {row.message.length > 140 ? row.message.slice(0, 140) + '…' : row.message}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-slate-400 text-xs">
-                      {row.anonymous
-                        ? <span className="italic text-slate-500">Anonymous</span>
-                        : <span className="capitalize">{row.user_role ?? '—'}</span>}
+                      {row.anonymous ? (
+                        <span className="italic text-slate-500">Anonymous</span>
+                      ) : (
+                        <span className="capitalize">{row.user_role ?? '—'}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 text-slate-500 text-xs font-mono truncate max-w-[140px]">
                       {row.page_context ?? '—'}

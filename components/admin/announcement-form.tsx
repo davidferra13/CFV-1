@@ -4,7 +4,11 @@
 // Calls setAnnouncement / clearAnnouncement server actions.
 
 import { useState, useTransition } from 'react'
-import { setAnnouncement, clearAnnouncement, type AnnouncementType } from '@/lib/admin/platform-actions'
+import {
+  setAnnouncement,
+  clearAnnouncement,
+  type AnnouncementType,
+} from '@/lib/admin/platform-actions'
 
 type Props = {
   currentText: string
@@ -12,9 +16,9 @@ type Props = {
 }
 
 const TYPE_OPTIONS: { value: AnnouncementType; label: string; color: string }[] = [
-  { value: 'info',     label: 'Info (blue)',     color: 'bg-blue-100 text-blue-700' },
-  { value: 'warning',  label: 'Warning (amber)', color: 'bg-amber-100 text-amber-700' },
-  { value: 'critical', label: 'Critical (red)',  color: 'bg-red-100 text-red-700' },
+  { value: 'info', label: 'Info (blue)', color: 'bg-blue-900 text-blue-700' },
+  { value: 'warning', label: 'Warning (amber)', color: 'bg-amber-900 text-amber-700' },
+  { value: 'critical', label: 'Critical (red)', color: 'bg-red-900 text-red-700' },
 ]
 
 export function AnnouncementForm({ currentText, currentType }: Props) {
@@ -26,9 +30,10 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
   function handleSet() {
     startTransition(async () => {
       const result = await setAnnouncement(text, type)
-      setFeedback(result.success
-        ? { ok: true, msg: text.trim() ? 'Announcement set.' : 'Announcement cleared.' }
-        : { ok: false, msg: result.error ?? 'Failed.' }
+      setFeedback(
+        result.success
+          ? { ok: true, msg: text.trim() ? 'Announcement set.' : 'Announcement cleared.' }
+          : { ok: false, msg: result.error ?? 'Failed.' }
       )
     })
   }
@@ -74,11 +79,15 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
 
       {/* Live preview */}
       {text.trim() && (
-        <div className={`rounded-lg px-4 py-3 text-sm font-medium ${
-          type === 'info'     ? 'bg-blue-50 text-blue-800 border border-blue-200' :
-          type === 'warning'  ? 'bg-amber-50 text-amber-800 border border-amber-200' :
-                                'bg-red-50 text-red-800 border border-red-200'
-        }`}>
+        <div
+          className={`rounded-lg px-4 py-3 text-sm font-medium ${
+            type === 'info'
+              ? 'bg-blue-950 text-blue-800 border border-blue-200'
+              : type === 'warning'
+                ? 'bg-amber-950 text-amber-800 border border-amber-200'
+                : 'bg-red-950 text-red-800 border border-red-200'
+          }`}
+        >
           <span className="font-semibold mr-1">Preview:</span> {text}
         </div>
       )}
@@ -87,7 +96,7 @@ export function AnnouncementForm({ currentText, currentType }: Props) {
         <button
           onClick={handleSet}
           disabled={isPending}
-          className="px-4 py-2 bg-amber-500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
+          className="px-4 py-2 bg-amber-9500 text-white text-sm font-medium rounded-lg hover:bg-amber-600 disabled:opacity-50 transition-colors"
         >
           {isPending ? 'Saving…' : 'Set Announcement'}
         </button>

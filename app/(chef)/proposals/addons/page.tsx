@@ -18,11 +18,11 @@ export default async function ProposalAddonsPage() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <Link href="/proposals" className="text-sm text-stone-500 hover:text-stone-700">
+          <Link href="/proposals" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Proposals
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Proposal Add-Ons</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Proposal Add-Ons</h1>
+          <p className="text-stone-400 mt-1">
             Create optional add-on packages that clients can select when reviewing proposals.
           </p>
         </div>

@@ -20,10 +20,13 @@ type Props = {
   revisionNotes: string | null
 }
 
-const STATUS_CONFIG: Record<ApprovalStatus, { label: string; variant: 'default' | 'warning' | 'success' | 'error' | 'info' }> = {
-  not_sent:           { label: 'Not Sent',         variant: 'default' },
-  sent:               { label: 'Awaiting Approval', variant: 'warning' },
-  approved:           { label: 'Approved',          variant: 'success' },
+const STATUS_CONFIG: Record<
+  ApprovalStatus,
+  { label: string; variant: 'default' | 'warning' | 'success' | 'error' | 'info' }
+> = {
+  not_sent: { label: 'Not Sent', variant: 'default' },
+  sent: { label: 'Awaiting Approval', variant: 'warning' },
+  approved: { label: 'Approved', variant: 'success' },
   revision_requested: { label: 'Revision Requested', variant: 'error' },
 }
 
@@ -50,7 +53,7 @@ export function MenuApprovalStatus({ eventId, status, sentAt, approvedAt, revisi
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-stone-700">Menu Approval</span>
+        <span className="text-sm font-medium text-stone-300">Menu Approval</span>
         <Badge variant={config.variant}>{config.label}</Badge>
       </div>
 
@@ -83,7 +86,7 @@ export function MenuApprovalStatus({ eventId, status, sentAt, approvedAt, revisi
       )}
 
       {status === 'revision_requested' && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 space-y-2">
+        <div className="rounded-lg border border-amber-200 bg-amber-950 p-3 space-y-2">
           <p className="text-xs font-medium text-amber-800">Client requested revisions:</p>
           <p className="text-xs text-amber-700">{revisionNotes}</p>
           <Button size="sm" onClick={handleSend} disabled={loading}>

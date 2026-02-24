@@ -22,8 +22,10 @@ export default async function WebhooksPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Webhooks</h1>
-        <p className="text-stone-600 mt-1">Send real-time data to external services when events occur</p>
+        <h1 className="text-3xl font-bold text-stone-100">Webhooks</h1>
+        <p className="text-stone-400 mt-1">
+          Send real-time data to external services when events occur
+        </p>
       </div>
       <WebhookManager endpoints={endpoints} />
     </div>

@@ -15,11 +15,7 @@ function formatMonth(yyyyMm: string): string {
   return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 }
 
-export default async function GoalHistoryPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default async function GoalHistoryPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()
   const { id: goalId } = await params
 
@@ -29,11 +25,14 @@ export default async function GoalHistoryPage({
   if (!goal) {
     return (
       <div className="max-w-3xl mx-auto space-y-6">
-        <Link href="/goals" className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700">
+        <Link
+          href="/goals"
+          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300"
+        >
           <ChevronLeft className="h-4 w-4" />
           Back to Goals
         </Link>
-        <p className="text-stone-600">Goal not found.</p>
+        <p className="text-stone-400">Goal not found.</p>
       </div>
     )
   }
@@ -44,13 +43,17 @@ export default async function GoalHistoryPage({
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <Link href="/goals" className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 transition-colors mb-4">
+        <Link
+          href="/goals"
+          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 transition-colors mb-4"
+        >
           <ChevronLeft className="h-4 w-4" />
           Back to Goals
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900">{goal.label}</h1>
+        <h1 className="text-3xl font-bold text-stone-100">{goal.label}</h1>
         <p className="text-stone-500 text-sm mt-1">
-          {formatPeriod(goal.periodStart, goal.periodEnd)} · Target: {formatGoalValue(goal.targetValue, goal.goalType)}
+          {formatPeriod(goal.periodStart, goal.periodEnd)} · Target:{' '}
+          {formatGoalValue(goal.targetValue, goal.goalType)}
         </p>
       </div>
 
@@ -76,41 +79,43 @@ export default async function GoalHistoryPage({
           <CardContent className="overflow-x-auto pt-4">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-left">
-                  <th className="pb-2 pr-4 font-medium text-stone-600">Month</th>
-                  <th className="pb-2 pr-4 font-medium text-stone-600">Progress</th>
-                  <th className="pb-2 pr-4 font-medium text-stone-600">Current</th>
-                  <th className="pb-2 pr-4 font-medium text-stone-600">Target</th>
-                  <th className="pb-2 pr-4 font-medium text-stone-600">Gap</th>
-                  {revenue && (
-                    <th className="pb-2 font-medium text-stone-600">Events needed</th>
-                  )}
+                <tr className="border-b border-stone-700 text-left">
+                  <th className="pb-2 pr-4 font-medium text-stone-400">Month</th>
+                  <th className="pb-2 pr-4 font-medium text-stone-400">Progress</th>
+                  <th className="pb-2 pr-4 font-medium text-stone-400">Current</th>
+                  <th className="pb-2 pr-4 font-medium text-stone-400">Target</th>
+                  <th className="pb-2 pr-4 font-medium text-stone-400">Gap</th>
+                  {revenue && <th className="pb-2 font-medium text-stone-400">Events needed</th>}
                 </tr>
               </thead>
               <tbody>
                 {snapshots.map((snap) => {
                   const onTrack = snap.progressPercent >= 100
                   return (
-                    <tr key={snap.id} className="border-b border-stone-100">
-                      <td className="py-2 pr-4 text-stone-700">{formatMonth(snap.snapshotMonth)}</td>
+                    <tr key={snap.id} className="border-b border-stone-800">
+                      <td className="py-2 pr-4 text-stone-300">
+                        {formatMonth(snap.snapshotMonth)}
+                      </td>
                       <td className="py-2 pr-4">
-                        <span className={`font-medium ${onTrack ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        <span
+                          className={`font-medium ${onTrack ? 'text-emerald-600' : 'text-amber-600'}`}
+                        >
                           {snap.progressPercent}%
                         </span>
                       </td>
-                      <td className="py-2 pr-4 text-stone-700">
+                      <td className="py-2 pr-4 text-stone-300">
                         {formatGoalValue(snap.currentValue, goal.goalType)}
                       </td>
-                      <td className="py-2 pr-4 text-stone-700">
+                      <td className="py-2 pr-4 text-stone-300">
                         {formatGoalValue(snap.targetValue, goal.goalType)}
                       </td>
-                      <td className={`py-2 pr-4 ${snap.gapValue > 0 ? 'text-amber-600' : 'text-emerald-600'}`}>
+                      <td
+                        className={`py-2 pr-4 ${snap.gapValue > 0 ? 'text-amber-600' : 'text-emerald-600'}`}
+                      >
                         {snap.gapValue > 0 ? formatGoalValue(snap.gapValue, goal.goalType) : '✓'}
                       </td>
                       {revenue && (
-                        <td className="py-2 text-stone-700">
-                          {snap.eventsNeeded ?? '—'}
-                        </td>
+                        <td className="py-2 text-stone-300">{snap.eventsNeeded ?? '—'}</td>
                       )}
                     </tr>
                   )

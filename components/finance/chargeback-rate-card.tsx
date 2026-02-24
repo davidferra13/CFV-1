@@ -20,19 +20,19 @@ export function ChargebackRateCard({ rate }: ChargebackRateCardProps) {
 
   const rateConfig = {
     green: {
-      bg: 'bg-emerald-50 border-emerald-200',
+      bg: 'bg-emerald-950 border-emerald-200',
       labelColor: 'text-emerald-700',
-      dot: 'bg-emerald-500',
+      dot: 'bg-emerald-9500',
     },
     amber: {
-      bg: 'bg-amber-50 border-amber-200',
+      bg: 'bg-amber-950 border-amber-200',
       labelColor: 'text-amber-700',
-      dot: 'bg-amber-500',
+      dot: 'bg-amber-9500',
     },
     red: {
-      bg: 'bg-red-50 border-red-200',
+      bg: 'bg-red-950 border-red-200',
       labelColor: 'text-red-700',
-      dot: 'bg-red-500',
+      dot: 'bg-red-9500',
     },
   }
 

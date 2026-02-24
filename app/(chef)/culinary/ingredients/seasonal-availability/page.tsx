@@ -11,33 +11,78 @@ const SEASONS = [
   {
     name: 'Spring',
     months: 'Mar – May',
-    color: 'bg-green-100 text-green-800 border-green-200',
-    keywords: ['spring', 'pea', 'asparagus', 'ramp', 'fiddlehead', 'morel', 'strawberr', 'radish', 'artichoke'],
+    color: 'bg-green-900 text-green-800 border-green-200',
+    keywords: [
+      'spring',
+      'pea',
+      'asparagus',
+      'ramp',
+      'fiddlehead',
+      'morel',
+      'strawberr',
+      'radish',
+      'artichoke',
+    ],
   },
   {
     name: 'Summer',
     months: 'Jun – Aug',
-    color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-    keywords: ['summer', 'tomato', 'corn', 'zucchini', 'basil', 'peach', 'blueberr', 'cucumber', 'pepper', 'eggplant', 'fig'],
+    color: 'bg-yellow-900 text-yellow-800 border-yellow-200',
+    keywords: [
+      'summer',
+      'tomato',
+      'corn',
+      'zucchini',
+      'basil',
+      'peach',
+      'blueberr',
+      'cucumber',
+      'pepper',
+      'eggplant',
+      'fig',
+    ],
   },
   {
     name: 'Fall',
     months: 'Sep – Nov',
-    color: 'bg-orange-100 text-orange-800 border-orange-200',
-    keywords: ['fall', 'autumn', 'squash', 'pumpkin', 'apple', 'pear', 'mushroom', 'chanterelle', 'grape', 'sweet potato'],
+    color: 'bg-orange-900 text-orange-800 border-orange-200',
+    keywords: [
+      'fall',
+      'autumn',
+      'squash',
+      'pumpkin',
+      'apple',
+      'pear',
+      'mushroom',
+      'chanterelle',
+      'grape',
+      'sweet potato',
+    ],
   },
   {
     name: 'Winter',
     months: 'Dec – Feb',
-    color: 'bg-blue-100 text-blue-800 border-blue-200',
-    keywords: ['winter', 'citrus', 'lemon', 'orange', 'grapefruit', 'kale', 'root', 'turnip', 'celeri', 'parsnip', 'truffle'],
+    color: 'bg-blue-900 text-blue-800 border-blue-200',
+    keywords: [
+      'winter',
+      'citrus',
+      'lemon',
+      'orange',
+      'grapefruit',
+      'kale',
+      'root',
+      'turnip',
+      'celeri',
+      'parsnip',
+      'truffle',
+    ],
   },
 ]
 
 function guessSeason(name: string): string | null {
   const lower = name.toLowerCase()
   for (const season of SEASONS) {
-    if (season.keywords.some(kw => lower.includes(kw))) return season.name
+    if (season.keywords.some((kw) => lower.includes(kw))) return season.name
   }
   return null
 }
@@ -63,14 +108,18 @@ export default async function SeasonalAvailabilityPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/culinary/ingredients" className="text-sm text-stone-500 hover:text-stone-700">← Ingredients</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Seasonal Availability</h1>
-        <p className="text-stone-500 mt-1">Ingredients sorted by likely peak season based on name</p>
+        <Link href="/culinary/ingredients" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Ingredients
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Seasonal Availability</h1>
+        <p className="text-stone-500 mt-1">
+          Ingredients sorted by likely peak season based on name
+        </p>
       </div>
 
-      <Card className="p-4 bg-stone-50 border-stone-200">
-        <p className="text-sm font-medium text-stone-700">How seasonality works in ChefFlow</p>
-        <p className="text-sm text-stone-600 mt-1">
+      <Card className="p-4 bg-stone-800 border-stone-700">
+        <p className="text-sm font-medium text-stone-300">How seasonality works in ChefFlow</p>
+        <p className="text-sm text-stone-400 mt-1">
           ChefFlow does not have a dedicated seasonality field on ingredients. The groupings below
           are estimated from ingredient names using common seasonal keywords (northern hemisphere).
           To track precise seasonal windows, add notes to the ingredient&apos;s vendor or use the
@@ -79,7 +128,7 @@ export default async function SeasonalAvailabilityPage() {
       </Card>
 
       <div className="grid grid-cols-2 gap-4">
-        {SEASONS.map(season => {
+        {SEASONS.map((season) => {
           const items = bySeason.get(season.name) ?? []
           return (
             <Card key={season.name} className={`p-5 border ${season.color}`}>
@@ -94,7 +143,7 @@ export default async function SeasonalAvailabilityPage() {
                 <p className="text-xs opacity-60">No ingredients matched</p>
               ) : (
                 <ul className="space-y-1">
-                  {items.slice(0, 8).map(ing => (
+                  {items.slice(0, 8).map((ing) => (
                     <li key={ing.id} className="text-sm flex items-center justify-between">
                       <span>{ing.name}</span>
                       {ing.preferred_vendor && (
@@ -114,15 +163,18 @@ export default async function SeasonalAvailabilityPage() {
 
       {unmatched.length > 0 && (
         <div>
-          <h2 className="text-sm font-semibold text-stone-600 mb-2">
+          <h2 className="text-sm font-semibold text-stone-400 mb-2">
             Year-round / Unclassified ({unmatched.length})
           </h2>
           <Card className="p-4">
             <div className="flex flex-wrap gap-2">
               {unmatched
                 .sort((a, b) => a.name.localeCompare(b.name))
-                .map(ing => (
-                  <span key={ing.id} className="text-xs bg-stone-100 text-stone-600 px-2 py-1 rounded-full">
+                .map((ing) => (
+                  <span
+                    key={ing.id}
+                    className="text-xs bg-stone-800 text-stone-400 px-2 py-1 rounded-full"
+                  >
                     {ing.name}
                   </span>
                 ))}

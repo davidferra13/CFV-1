@@ -27,7 +27,7 @@ export default async function ReceiptLibraryPage() {
     <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold text-stone-900">Receipt Library</h1>
+        <h1 className="text-xl font-bold text-stone-100">Receipt Library</h1>
         <p className="text-stone-500 text-sm mt-1">
           Every receipt you've ever uploaded — across all events or standalone.
         </p>
@@ -37,8 +37,8 @@ export default async function ReceiptLibraryPage() {
       <StandaloneUpload events={events} clients={clients} />
 
       {/* Instructions */}
-      <Card className="p-4 bg-stone-50 border-stone-200">
-        <p className="text-sm text-stone-600">
+      <Card className="p-4 bg-stone-800 border-stone-700">
+        <p className="text-sm text-stone-400">
           Upload receipts for any expense — groceries, equipment, gas, supplies, or anything else.
           Optionally link to an event or client for reporting. Use <strong>Auto-Extract</strong> to
           read line items automatically, then tag each item as <em>business</em> or{' '}

@@ -155,9 +155,9 @@ export function TacTranscriptPaste({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <Card className="w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-stone-200 flex items-center justify-between">
+        <div className="p-4 border-b border-stone-700 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold text-stone-900">Paste TakeAChef Conversation</h3>
+            <h3 className="text-lg font-semibold text-stone-100">Paste TakeAChef Conversation</h3>
             <p className="text-xs text-stone-500 mt-0.5">
               Open the conversation on TakeAChef, select all the messages (Ctrl+A), copy, and paste
               below
@@ -165,7 +165,7 @@ export function TacTranscriptPaste({
           </div>
           <button
             type="button"
-            className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+            className="text-stone-400 hover:text-stone-400 text-xl leading-none"
             onClick={onClose}
           >
             &times;
@@ -176,7 +176,7 @@ export function TacTranscriptPaste({
           {!preview ? (
             <>
               <textarea
-                className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm text-stone-800 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+                className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-200 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
                 rows={12}
                 placeholder="Paste the full TakeAChef conversation here..."
                 value={rawText}
@@ -199,7 +199,7 @@ export function TacTranscriptPaste({
                 </Badge>
                 <button
                   type="button"
-                  className="text-xs text-stone-500 hover:text-stone-700 underline"
+                  className="text-xs text-stone-500 hover:text-stone-300 underline"
                   onClick={() => setPreview(null)}
                 >
                   Edit text
@@ -214,8 +214,8 @@ export function TacTranscriptPaste({
                     <div
                       className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
                         msg.direction === 'outbound'
-                          ? 'bg-brand-500/10 text-stone-800'
-                          : 'bg-stone-100 text-stone-800'
+                          ? 'bg-brand-9500/10 text-stone-200'
+                          : 'bg-stone-800 text-stone-200'
                       }`}
                     >
                       {msg.senderName && (
@@ -239,7 +239,7 @@ export function TacTranscriptPaste({
           {error && <p className="text-xs text-red-600">{error}</p>}
         </div>
 
-        <div className="p-4 border-t border-stone-200 flex justify-end gap-2">
+        <div className="p-4 border-t border-stone-700 flex justify-end gap-2">
           <Button variant="ghost" onClick={onClose} disabled={saving}>
             Cancel
           </Button>

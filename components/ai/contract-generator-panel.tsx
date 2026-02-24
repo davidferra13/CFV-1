@@ -38,11 +38,11 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Service Agreement Draft</span>
+            <span className="text-sm font-medium text-stone-300">Service Agreement Draft</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -67,11 +67,11 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FileText className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">{result.title}</span>
+          <span className="text-sm font-medium text-stone-300">{result.title}</span>
           <Badge variant="warning">Draft</Badge>
         </div>
         <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
         </div>
       </div>
 
-      <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded p-2 text-xs text-amber-800">
+      <div className="flex items-start gap-2 bg-amber-950 border border-amber-200 rounded p-2 text-xs text-amber-800">
         <AlertTriangle className="w-3 h-3 mt-0.5 flex-shrink-0" />
         {result.disclaimer}
       </div>
@@ -96,9 +96,9 @@ export function ContractGeneratorPanel({ eventId }: { eventId: string }) {
       {expanded && (
         <div className="space-y-3 max-h-96 overflow-y-auto">
           {result.sections.map((section, i) => (
-            <div key={i} className="border-b border-stone-100 pb-2">
-              <h4 className="text-xs font-semibold text-stone-700 mb-1">{section.heading}</h4>
-              <p className="text-xs text-stone-600 whitespace-pre-wrap">{section.content}</p>
+            <div key={i} className="border-b border-stone-800 pb-2">
+              <h4 className="text-xs font-semibold text-stone-300 mb-1">{section.heading}</h4>
+              <p className="text-xs text-stone-400 whitespace-pre-wrap">{section.content}</p>
             </div>
           ))}
         </div>

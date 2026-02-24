@@ -148,17 +148,17 @@ export function FavoriteChefEditor({ chefs: initialChefs }: FavoriteChefEditorPr
       </CardHeader>
       <CardContent className="space-y-4">
         {isPending && (
-          <div className="absolute inset-0 bg-white/50 z-10 rounded-xl pointer-events-none" />
+          <div className="absolute inset-0 bg-stone-900/50 z-10 rounded-xl pointer-events-none" />
         )}
 
         {/* Add / Edit Form */}
         {(showAddForm || editingId) && (
-          <div className="rounded-lg border border-brand-200 bg-brand-50/30 p-4 space-y-3">
+          <div className="rounded-lg border border-brand-700 bg-brand-950/30 p-4 space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-sm font-semibold text-stone-900">
+              <h4 className="text-sm font-semibold text-stone-100">
                 {editingId ? 'Edit Favorite Chef' : 'Add a Culinary Hero'}
               </h4>
-              <button onClick={resetForm} className="text-stone-400 hover:text-stone-600">
+              <button onClick={resetForm} className="text-stone-400 hover:text-stone-400">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -172,7 +172,7 @@ export function FavoriteChefEditor({ chefs: initialChefs }: FavoriteChefEditorPr
             />
 
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">
                 Why they inspire you
               </label>
               <textarea
@@ -181,7 +181,7 @@ export function FavoriteChefEditor({ chefs: initialChefs }: FavoriteChefEditorPr
                 placeholder="What about their work, philosophy, or craft inspires you?"
                 rows={3}
                 maxLength={1000}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
               />
             </div>
 
@@ -216,10 +216,10 @@ export function FavoriteChefEditor({ chefs: initialChefs }: FavoriteChefEditorPr
           {chefs.map((chef, index) => (
             <div
               key={chef.id}
-              className="flex items-start gap-3 rounded-lg border border-stone-200 p-3 hover:bg-stone-50 transition-colors"
+              className="flex items-start gap-3 rounded-lg border border-stone-700 p-3 hover:bg-stone-800 transition-colors"
             >
               {/* Number badge */}
-              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-semibold">
+              <div className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-900 text-brand-400 flex items-center justify-center text-sm font-semibold">
                 {index + 1}
               </div>
 
@@ -235,7 +235,7 @@ export function FavoriteChefEditor({ chefs: initialChefs }: FavoriteChefEditorPr
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-stone-900">{chef.chefName}</p>
+                  <p className="text-sm font-semibold text-stone-100">{chef.chefName}</p>
                   {chef.websiteUrl && (
                     <a
                       href={chef.websiteUrl}
@@ -256,13 +256,13 @@ export function FavoriteChefEditor({ chefs: initialChefs }: FavoriteChefEditorPr
               <div className="flex gap-1 flex-shrink-0">
                 <button
                   onClick={() => startEdit(chef)}
-                  className="p-1.5 rounded text-stone-400 hover:text-brand-600 hover:bg-stone-100"
+                  className="p-1.5 rounded text-stone-400 hover:text-brand-600 hover:bg-stone-700"
                 >
                   <Edit2 className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => handleDelete(chef.id)}
-                  className="p-1.5 rounded text-stone-400 hover:text-red-500 hover:bg-stone-100"
+                  className="p-1.5 rounded text-stone-400 hover:text-red-500 hover:bg-stone-700"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>

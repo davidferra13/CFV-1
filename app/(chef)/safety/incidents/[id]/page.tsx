@@ -43,7 +43,7 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">
+          <h1 className="text-2xl font-bold text-stone-100">
             {(incident as any).title ?? 'Incident Report'}
           </h1>
           <p className="mt-1 text-sm text-stone-500">
@@ -69,7 +69,7 @@ export default async function IncidentDetailPage({ params }: { params: { id: str
         <CardHeader>
           <CardTitle className="text-base">Incident Details</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-sm text-stone-700">
+        <CardContent className="space-y-3 text-sm text-stone-300">
           {(incident as any).incident_date && (
             <div className="flex gap-2">
               <span className="font-medium text-stone-500 w-28 shrink-0">Date</span>

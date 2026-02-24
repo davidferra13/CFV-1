@@ -49,7 +49,7 @@ export function Form941Panel({ taxYear, summaries }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">
         <strong>Reference only.</strong> File Form 941 via IRS-approved payroll software or with
         your payroll accountant. This tool tracks and computes the numbers for your records.
       </div>
@@ -101,14 +101,14 @@ export function Form941Panel({ taxYear, summaries }: Props) {
                     </div>
                     <div>
                       <p className="text-xs text-stone-400">Total Taxes (Line 6)</p>
-                      <p className="font-bold text-stone-900">
+                      <p className="font-bold text-stone-100">
                         {formatCurrency(s.totalTaxesCents)}
                       </p>
                     </div>
                     {s.confirmationNumber && (
                       <div>
                         <p className="text-xs text-stone-400">Confirmation #</p>
-                        <p className="font-mono text-xs text-stone-600">{s.confirmationNumber}</p>
+                        <p className="font-mono text-xs text-stone-400">{s.confirmationNumber}</p>
                       </div>
                     )}
                   </div>

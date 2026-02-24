@@ -37,7 +37,7 @@ export default async function CalendarPage({
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-start justify-between flex-wrap gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Calendar</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Calendar</h1>
           <p className="mt-1 text-sm text-stone-500">
             Your complete schedule — events, prep, personal commitments, and goals.
           </p>
@@ -62,8 +62,8 @@ export default async function CalendarPage({
       </div>
 
       {unifiedItems.length === 0 && waitlistEntries.length === 0 && (
-        <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-50">
+        <div className="rounded-xl border border-stone-700 bg-surface p-8 text-center">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-950">
             <svg
               className="h-7 w-7 text-brand-600"
               fill="none"
@@ -78,7 +78,7 @@ export default async function CalendarPage({
               />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-stone-900">Your calendar is empty</h2>
+          <h2 className="text-lg font-semibold text-stone-100">Your calendar is empty</h2>
           <p className="mt-2 text-sm text-stone-500 max-w-md mx-auto">
             Events, prep days, and personal commitments will appear here once you start scheduling.
           </p>

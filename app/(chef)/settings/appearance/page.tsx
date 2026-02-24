@@ -10,8 +10,10 @@ export default async function AppearancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900 dark:text-stone-100">Appearance</h1>
-        <p className="text-stone-600 dark:text-stone-400 mt-1">Customize how ChefFlow looks for you</p>
+        <h1 className="text-3xl font-bold text-stone-100 dark:text-stone-100">Appearance</h1>
+        <p className="text-stone-400 dark:text-stone-400 mt-1">
+          Customize how ChefFlow looks for you
+        </p>
       </div>
       <Card className="dark:bg-stone-800 dark:border-stone-700">
         <CardHeader>
@@ -20,8 +22,10 @@ export default async function AppearancePage() {
         <CardContent>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-stone-700 dark:text-stone-300">Color Theme</p>
-              <p className="text-sm text-stone-500 dark:text-stone-400">Switch between light and dark mode</p>
+              <p className="text-sm font-medium text-stone-300 dark:text-stone-300">Color Theme</p>
+              <p className="text-sm text-stone-500 dark:text-stone-400">
+                Switch between light and dark mode
+              </p>
             </div>
             <ThemeToggle />
           </div>

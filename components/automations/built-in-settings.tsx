@@ -248,14 +248,14 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
               ].map(({ label, state, setter }) => (
                 <label
                   key={label}
-                  className="flex items-center gap-2 text-xs text-stone-600 cursor-pointer"
+                  className="flex items-center gap-2 text-xs text-stone-400 cursor-pointer"
                 >
                   <input
                     type="checkbox"
                     checked={state}
                     onChange={(e) => setter(e.target.checked)}
                     aria-label={label}
-                    className="rounded border-stone-300 text-brand-600 focus:ring-brand-500 h-3.5 w-3.5"
+                    className="rounded border-stone-600 text-brand-600 focus:ring-brand-500 h-3.5 w-3.5"
                   />
                   {label}
                 </label>
@@ -314,7 +314,7 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
                     min={1}
                     step={1}
                     onChange={(e) => setDepositFixedDollars(parseFloat(e.target.value) || 0)}
-                    className="w-20 border border-stone-300 rounded px-2 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="w-20 border border-stone-600 rounded px-2 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
                   />
                 </InlineParam>
               )}
@@ -383,7 +383,7 @@ export function BuiltInSettings({ settings }: BuiltInSettingsProps) {
                 onChange={(e) => setAutoResponseTemplate(e.target.value)}
                 rows={4}
                 placeholder={`Hi [Name],\n\nThanks for reaching out! I'd love to learn more about your [Occasion]...`}
-                className="w-full text-xs border border-stone-300 rounded-md px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+                className="w-full text-xs border border-stone-600 rounded-md px-2.5 py-2 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
                 maxLength={2000}
               />
               <p className="text-[10px] text-stone-400 mt-1">
@@ -414,7 +414,7 @@ function SettingRow({
 }) {
   return (
     <div
-      className={`rounded-lg border p-3 transition-colors ${enabled ? 'border-stone-200 bg-white' : 'border-stone-100 bg-stone-50'}`}
+      className={`rounded-lg border p-3 transition-colors ${enabled ? 'border-stone-700 bg-surface' : 'border-stone-800 bg-stone-800'}`}
     >
       <div className="flex items-start gap-3">
         {/* Toggle */}
@@ -428,14 +428,14 @@ function SettingRow({
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-surface shadow ring-0 transition duration-200 ease-in-out ${
               enabled ? 'translate-x-4' : 'translate-x-0'
             }`}
           />
         </button>
         {/* Text */}
         <div className="flex-1 min-w-0">
-          <p className={`text-sm font-medium ${enabled ? 'text-stone-800' : 'text-stone-400'}`}>
+          <p className={`text-sm font-medium ${enabled ? 'text-stone-200' : 'text-stone-400'}`}>
             {title}
           </p>
           <p className={`text-xs mt-0.5 ${enabled ? 'text-stone-500' : 'text-stone-400'}`}>
@@ -450,7 +450,7 @@ function SettingRow({
 
 function InlineParam({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-2 text-xs text-stone-600">
+    <div className="flex items-center gap-2 text-xs text-stone-400">
       <span>{label}</span>
       {children}
     </div>
@@ -481,7 +481,7 @@ function NumberInput({
           const n = parseInt(e.target.value, 10)
           if (!isNaN(n) && n >= min && n <= max) onChange(n)
         }}
-        className="w-16 border border-stone-300 rounded px-2 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
+        className="w-16 border border-stone-600 rounded px-2 py-0.5 text-xs text-center focus:outline-none focus:ring-1 focus:ring-brand-500"
       />
       <span>{suffix}</span>
     </>

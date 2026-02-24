@@ -16,7 +16,9 @@ type Props = {
 export function LTVChart({ points, totalLifetimeValueCents }: Props) {
   if (points.length === 0) {
     return (
-      <p className="text-sm text-stone-400 italic">No completed events yet — LTV will appear here once events are closed.</p>
+      <p className="text-sm text-stone-400 italic">
+        No completed events yet — LTV will appear here once events are closed.
+      </p>
     )
   }
 
@@ -24,13 +26,15 @@ export function LTVChart({ points, totalLifetimeValueCents }: Props) {
     // Single event — no trajectory to chart, just show the number
     return (
       <div className="text-center py-2">
-        <p className="text-2xl font-bold text-stone-900">{formatCurrency(totalLifetimeValueCents)}</p>
+        <p className="text-2xl font-bold text-stone-100">
+          {formatCurrency(totalLifetimeValueCents)}
+        </p>
         <p className="text-xs text-stone-500 mt-1">from 1 event</p>
       </div>
     )
   }
 
-  const maxCumulative = Math.max(...points.map(p => p.cumulativeCents), 1)
+  const maxCumulative = Math.max(...points.map((p) => p.cumulativeCents), 1)
 
   // Map cumulative to discrete height classes (proportional)
   function barHeightClass(cumulativeCents: number): string {
@@ -58,9 +62,7 @@ export function LTVChart({ points, totalLifetimeValueCents }: Props) {
           >
             <div
               className={`w-full rounded-t-sm transition-colors ${
-                i === points.length - 1
-                  ? 'bg-brand-600'
-                  : 'bg-brand-300 group-hover:bg-brand-400'
+                i === points.length - 1 ? 'bg-brand-600' : 'bg-brand-800 group-hover:bg-brand-400'
               } ${barHeightClass(point.cumulativeCents)}`}
               title={`${point.occasion ?? 'Event'} (${format(new Date(point.eventDate), 'MMM d')}): ${formatCurrency(point.cumulativeCents)} LTV`}
             />
@@ -80,17 +82,17 @@ export function LTVChart({ points, totalLifetimeValueCents }: Props) {
       {/* Summary stats below the chart */}
       <div className="mt-3 grid grid-cols-3 gap-2 text-center text-xs">
         <div>
-          <p className="font-semibold text-stone-800">{formatCurrency(totalLifetimeValueCents)}</p>
+          <p className="font-semibold text-stone-200">{formatCurrency(totalLifetimeValueCents)}</p>
           <p className="text-stone-500">Total LTV</p>
         </div>
         <div>
-          <p className="font-semibold text-stone-800">
+          <p className="font-semibold text-stone-200">
             {formatCurrency(Math.round(totalLifetimeValueCents / points.length))}
           </p>
           <p className="text-stone-500">Avg / event</p>
         </div>
         <div>
-          <p className="font-semibold text-stone-800">
+          <p className="font-semibold text-stone-200">
             {formatCurrency(points[points.length - 1].revenueCents)}
           </p>
           <p className="text-stone-500">Last event</p>

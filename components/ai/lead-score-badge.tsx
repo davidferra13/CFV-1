@@ -8,9 +8,9 @@ import { scoreInquiry, type LeadScore } from '@/lib/ai/lead-scoring'
 import { toast } from 'sonner'
 
 const TIER_COLORS: Record<string, string> = {
-  hot: 'text-red-700 bg-red-50 border border-red-200',
-  warm: 'text-amber-700 bg-amber-50 border border-amber-200',
-  cold: 'text-blue-700 bg-blue-50 border border-blue-200',
+  hot: 'text-red-700 bg-red-950 border border-red-200',
+  warm: 'text-amber-700 bg-amber-950 border border-amber-200',
+  cold: 'text-blue-700 bg-blue-950 border border-blue-200',
 }
 
 export function LeadScoreBadge({
@@ -62,22 +62,22 @@ export function LeadScoreBadge({
       </button>
 
       {showDetail && (
-        <div className="absolute top-6 right-0 z-20 w-64 bg-white border border-stone-200 rounded-lg shadow-lg p-3 text-xs space-y-2">
+        <div className="absolute top-6 right-0 z-20 w-64 bg-surface border border-stone-700 rounded-lg shadow-lg p-3 text-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="font-medium text-stone-700">Lead Score: {score.score}/100</span>
+            <span className="font-medium text-stone-300">Lead Score: {score.score}/100</span>
             <button
               onClick={() => setShowDetail(false)}
-              className="text-stone-400 hover:text-stone-600"
+              className="text-stone-400 hover:text-stone-400"
             >
               ✕
             </button>
           </div>
-          <p className="text-stone-600">{score.recommendation}</p>
+          <p className="text-stone-400">{score.recommendation}</p>
           {score.strengths.length > 0 && (
             <div>
               <div className="text-green-700 font-medium mb-0.5">Strengths</div>
               {score.strengths.map((s, i) => (
-                <div key={i} className="text-stone-600">
+                <div key={i} className="text-stone-400">
                   + {s}
                 </div>
               ))}
@@ -87,7 +87,7 @@ export function LeadScoreBadge({
             <div>
               <div className="text-red-700 font-medium mb-0.5">Weaknesses</div>
               {score.weaknesses.map((w, i) => (
-                <div key={i} className="text-stone-600">
+                <div key={i} className="text-stone-400">
                   - {w}
                 </div>
               ))}

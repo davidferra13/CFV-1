@@ -17,13 +17,13 @@ export default async function ChefMyProfilePage() {
       <div>
         <Link
           href="/settings"
-          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-700 mb-2"
+          className="inline-flex items-center gap-1 text-sm text-stone-500 hover:text-stone-300 mb-2"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Settings
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900">My Profile</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">My Profile</h1>
+        <p className="text-stone-400 mt-1">
           Manage the core profile details used across your client portal and public page.
         </p>
       </div>

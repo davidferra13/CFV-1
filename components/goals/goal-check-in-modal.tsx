@@ -45,31 +45,31 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full sm:max-w-md mx-auto bg-white rounded-t-2xl sm:rounded-2xl shadow-xl p-6 space-y-4">
+      <div className="relative w-full sm:max-w-md mx-auto bg-surface rounded-t-2xl sm:rounded-2xl shadow-xl p-6 space-y-4">
         <div className="flex items-start justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-stone-900">Log Progress</h2>
+            <h2 className="text-lg font-semibold text-stone-100">Log Progress</h2>
             <p className="text-sm text-stone-500 mt-0.5 truncate max-w-[260px]">{goal.label}</p>
           </div>
           <button
             onClick={onClose}
-            className="rounded-full p-1.5 text-stone-400 hover:text-stone-600 hover:bg-stone-100 transition-colors"
+            className="rounded-full p-1.5 text-stone-400 hover:text-stone-400 hover:bg-stone-700 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Current progress context */}
-        <div className="rounded-lg bg-stone-50 px-4 py-3 text-sm">
+        <div className="rounded-lg bg-stone-800 px-4 py-3 text-sm">
           <div className="flex justify-between">
             <span className="text-stone-500">Current total</span>
-            <span className="font-medium text-stone-900">
+            <span className="font-medium text-stone-100">
               {formatGoalValue(currentValue, goal.goalType)}
             </span>
           </div>
           <div className="flex justify-between mt-1">
             <span className="text-stone-500">Target</span>
-            <span className="font-medium text-stone-900">
+            <span className="font-medium text-stone-100">
               {formatGoalValue(goal.targetValue, goal.goalType)}
             </span>
           </div>
@@ -77,7 +77,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
 
         {/* Value input */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             How many {unit}
             {parsedValue === 1 ? '' : 's'} to add?
           </label>
@@ -89,7 +89,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
             onChange={(e) => setValue(e.target.value)}
             placeholder="1"
             autoFocus
-            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
           <p className="text-xs text-stone-400 mt-1">
             This adds to your running total for this period.
@@ -98,7 +98,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
 
         {/* Optional notes */}
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Notes <span className="text-stone-400 font-normal">(optional)</span>
           </label>
           <textarea
@@ -107,12 +107,12 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
             rows={2}
             maxLength={500}
             placeholder="e.g. Cooked Thai for the first time"
-            className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm text-stone-900 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm text-stone-100 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 rounded-md bg-red-50 border border-red-200 px-3 py-2">
+          <p className="text-sm text-red-600 rounded-md bg-red-950 border border-red-200 px-3 py-2">
             {error}
           </p>
         )}
@@ -120,7 +120,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 rounded-md border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+            className="flex-1 rounded-md border border-stone-600 px-4 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800 transition-colors"
           >
             Cancel
           </button>

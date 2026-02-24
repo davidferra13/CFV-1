@@ -17,73 +17,97 @@ import { logChefFeedback } from '@/lib/reviews/chef-feedback-actions'
 type PlatformMeta = {
   label: string
   urlPlaceholder: string
-  needsName: boolean  // true for all external platforms; false for direct/verbal
+  needsName: boolean // true for all external platforms; false for direct/verbal
 }
 
 const PLATFORM_META: Record<string, PlatformMeta> = {
   // Booking / Hosting
-  airbnb:      { label: 'Airbnb',       urlPlaceholder: 'https://www.airbnb.com/users/show/...', needsName: true },
-  thumbtack:   { label: 'Thumbtack',    urlPlaceholder: 'https://www.thumbtack.com/...',          needsName: true },
-  gigsalad:    { label: 'GigSalad',     urlPlaceholder: 'https://www.gigsalad.com/...',           needsName: true },
-  taskrabbit:  { label: 'TaskRabbit',   urlPlaceholder: 'https://www.taskrabbit.com/...',         needsName: true },
+  airbnb: {
+    label: 'Airbnb',
+    urlPlaceholder: 'https://www.airbnb.com/users/show/...',
+    needsName: true,
+  },
+  thumbtack: {
+    label: 'Thumbtack',
+    urlPlaceholder: 'https://www.thumbtack.com/...',
+    needsName: true,
+  },
+  gigsalad: { label: 'GigSalad', urlPlaceholder: 'https://www.gigsalad.com/...', needsName: true },
+  taskrabbit: {
+    label: 'TaskRabbit',
+    urlPlaceholder: 'https://www.taskrabbit.com/...',
+    needsName: true,
+  },
   // Service Directories
-  angi:        { label: 'Angi',         urlPlaceholder: 'https://www.angi.com/...',               needsName: true },
-  houzz:       { label: 'Houzz',        urlPlaceholder: 'https://www.houzz.com/...',              needsName: true },
-  bark:        { label: 'Bark',         urlPlaceholder: 'https://www.bark.com/...',               needsName: true },
+  angi: { label: 'Angi', urlPlaceholder: 'https://www.angi.com/...', needsName: true },
+  houzz: { label: 'Houzz', urlPlaceholder: 'https://www.houzz.com/...', needsName: true },
+  bark: { label: 'Bark', urlPlaceholder: 'https://www.bark.com/...', needsName: true },
   // Social & General Reviews
-  facebook:    { label: 'Facebook',     urlPlaceholder: 'https://www.facebook.com/...',           needsName: true },
-  tripadvisor: { label: 'TripAdvisor',  urlPlaceholder: 'https://www.tripadvisor.com/...',        needsName: true },
-  yelp:        { label: 'Yelp',         urlPlaceholder: 'https://www.yelp.com/biz/...',           needsName: true },
-  yelp_guest:  { label: 'Yelp (Guest)', urlPlaceholder: 'https://www.yelp.com/biz/...',           needsName: true },
-  nextdoor:    { label: 'Nextdoor',     urlPlaceholder: 'https://nextdoor.com/...',               needsName: true },
-  instagram:   { label: 'Instagram',    urlPlaceholder: 'https://www.instagram.com/...',          needsName: true },
+  facebook: { label: 'Facebook', urlPlaceholder: 'https://www.facebook.com/...', needsName: true },
+  tripadvisor: {
+    label: 'TripAdvisor',
+    urlPlaceholder: 'https://www.tripadvisor.com/...',
+    needsName: true,
+  },
+  yelp: { label: 'Yelp', urlPlaceholder: 'https://www.yelp.com/biz/...', needsName: true },
+  yelp_guest: {
+    label: 'Yelp (Guest)',
+    urlPlaceholder: 'https://www.yelp.com/biz/...',
+    needsName: true,
+  },
+  nextdoor: { label: 'Nextdoor', urlPlaceholder: 'https://nextdoor.com/...', needsName: true },
+  instagram: {
+    label: 'Instagram',
+    urlPlaceholder: 'https://www.instagram.com/...',
+    needsName: true,
+  },
   // Direct / Verbal
-  verbal:      { label: 'Verbal / In-Person', urlPlaceholder: '',               needsName: false },
-  email:       { label: 'Email',              urlPlaceholder: '',               needsName: false },
-  text_message:{ label: 'Text Message',       urlPlaceholder: '',               needsName: false },
-  social_media:{ label: 'Social Media (DM)',  urlPlaceholder: 'https://...',    needsName: false },
-  google:      { label: 'Google',             urlPlaceholder: 'https://g.page/...', needsName: true },
-  other:       { label: 'Other',              urlPlaceholder: '',               needsName: false },
+  verbal: { label: 'Verbal / In-Person', urlPlaceholder: '', needsName: false },
+  email: { label: 'Email', urlPlaceholder: '', needsName: false },
+  text_message: { label: 'Text Message', urlPlaceholder: '', needsName: false },
+  social_media: { label: 'Social Media (DM)', urlPlaceholder: 'https://...', needsName: false },
+  google: { label: 'Google', urlPlaceholder: 'https://g.page/...', needsName: true },
+  other: { label: 'Other', urlPlaceholder: '', needsName: false },
 }
 
 const SOURCE_SELECT_GROUPS: SelectOptionGroup[] = [
   {
     label: 'Booking Platforms',
     options: [
-      { label: 'Airbnb',     value: 'airbnb' },
-      { label: 'Thumbtack',  value: 'thumbtack' },
-      { label: 'GigSalad',   value: 'gigsalad' },
+      { label: 'Airbnb', value: 'airbnb' },
+      { label: 'Thumbtack', value: 'thumbtack' },
+      { label: 'GigSalad', value: 'gigsalad' },
       { label: 'TaskRabbit', value: 'taskrabbit' },
     ],
   },
   {
     label: 'Service Directories',
     options: [
-      { label: 'Angi',  value: 'angi' },
+      { label: 'Angi', value: 'angi' },
       { label: 'Houzz', value: 'houzz' },
-      { label: 'Bark',  value: 'bark' },
+      { label: 'Bark', value: 'bark' },
     ],
   },
   {
     label: 'Social & General Reviews',
     options: [
-      { label: 'Facebook',     value: 'facebook' },
-      { label: 'Google',       value: 'google' },
-      { label: 'TripAdvisor',  value: 'tripadvisor' },
-      { label: 'Yelp',         value: 'yelp' },
+      { label: 'Facebook', value: 'facebook' },
+      { label: 'Google', value: 'google' },
+      { label: 'TripAdvisor', value: 'tripadvisor' },
+      { label: 'Yelp', value: 'yelp' },
       { label: 'Yelp (Guest)', value: 'yelp_guest' },
-      { label: 'Nextdoor',     value: 'nextdoor' },
-      { label: 'Instagram',    value: 'instagram' },
+      { label: 'Nextdoor', value: 'nextdoor' },
+      { label: 'Instagram', value: 'instagram' },
     ],
   },
   {
     label: 'Direct',
     options: [
-      { label: 'Verbal / In-Person',  value: 'verbal' },
-      { label: 'Email',               value: 'email' },
-      { label: 'Text Message',        value: 'text_message' },
-      { label: 'Social Media (DM)',   value: 'social_media' },
-      { label: 'Other',               value: 'other' },
+      { label: 'Verbal / In-Person', value: 'verbal' },
+      { label: 'Email', value: 'email' },
+      { label: 'Text Message', value: 'text_message' },
+      { label: 'Social Media (DM)', value: 'social_media' },
+      { label: 'Other', value: 'other' },
     ],
   },
 ]
@@ -104,9 +128,7 @@ export function ImportPlatformReview() {
   const [feedbackText, setFeedbackText] = useState('')
   const [rating, setRating] = useState<number | null>(null)
   const [sourceUrl, setSourceUrl] = useState('')
-  const [feedbackDate, setFeedbackDate] = useState(
-    new Date().toISOString().split('T')[0]
-  )
+  const [feedbackDate, setFeedbackDate] = useState(new Date().toISOString().split('T')[0])
 
   const platformMeta = source ? PLATFORM_META[source] : null
   const needsName = platformMeta?.needsName ?? false
@@ -169,23 +191,27 @@ export function ImportPlatformReview() {
           <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-stone-900">Import Platform Review</h3>
+              <h3 className="text-lg font-semibold text-stone-100">Import Platform Review</h3>
               <button
                 onClick={handleClose}
-                className="text-stone-400 hover:text-stone-600 text-xl leading-none"
+                className="text-stone-400 hover:text-stone-400 text-xl leading-none"
               >
                 &times;
               </button>
             </div>
 
             <p className="text-sm text-stone-500 mb-4">
-              Manually log a review from Airbnb, Facebook, TripAdvisor, or any platform.
-              Google and personal website reviews that auto-sync are configured separately.
+              Manually log a review from Airbnb, Facebook, TripAdvisor, or any platform. Google and
+              personal website reviews that auto-sync are configured separately.
             </p>
 
-            {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+            {error && (
+              <Alert variant="error" className="mb-4">
+                {error}
+              </Alert>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Platform picker */}
@@ -205,7 +231,7 @@ export function ImportPlatformReview() {
               {/* Reviewer name — shown for all external platforms */}
               {needsName && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
                     Reviewer Name <span className="text-red-500">*</span>
                   </label>
                   <Input
@@ -222,7 +248,7 @@ export function ImportPlatformReview() {
 
               {/* Review text */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Review Text <span className="text-red-500">*</span>
                 </label>
                 <Textarea
@@ -236,7 +262,7 @@ export function ImportPlatformReview() {
 
               {/* Star rating */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Rating (optional)
                 </label>
                 <div className="flex gap-1">
@@ -263,7 +289,7 @@ export function ImportPlatformReview() {
                     <button
                       type="button"
                       onClick={() => setRating(null)}
-                      className="text-xs text-stone-400 hover:text-stone-600 ml-2"
+                      className="text-xs text-stone-400 hover:text-stone-400 ml-2"
                     >
                       Clear
                     </button>
@@ -274,7 +300,7 @@ export function ImportPlatformReview() {
               {/* Source URL — dynamic placeholder per platform */}
               {platformMeta && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
                     Review Link (optional)
                   </label>
                   <Input
@@ -291,9 +317,7 @@ export function ImportPlatformReview() {
 
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
-                  Review Date
-                </label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Review Date</label>
                 <Input
                   type="date"
                   value={feedbackDate}
@@ -311,11 +335,7 @@ export function ImportPlatformReview() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={!isSubmittable || submitting}
-                  loading={submitting}
-                >
+                <Button type="submit" disabled={!isSubmittable || submitting} loading={submitting}>
                   Save Review
                 </Button>
               </div>

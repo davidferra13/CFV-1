@@ -41,7 +41,7 @@ export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Emergency Contacts
           </label>
           <textarea
@@ -49,12 +49,12 @@ export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
             onChange={(e) => setEmergencyContacts(e.target.value)}
             rows={3}
             placeholder="Who should be contacted first? Include names, phone numbers, and relationship."
-            className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+            className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Data &amp; System Access
           </label>
           <textarea
@@ -62,12 +62,12 @@ export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
             onChange={(e) => setDataAccess(e.target.value)}
             rows={3}
             placeholder="How can a backup chef access your recipes, client preferences, and business systems?"
-            className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+            className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Client Communication Plan
           </label>
           <textarea
@@ -75,12 +75,12 @@ export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
             onChange={(e) => setClientComm(e.target.value)}
             rows={3}
             placeholder="How should clients be notified? Who sends the message? What is the tone?"
-            className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+            className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">
+          <label className="block text-sm font-medium text-stone-300 mb-1">
             Financial Instructions
           </label>
           <textarea
@@ -88,18 +88,18 @@ export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
             onChange={(e) => setFinancialInstructions(e.target.value)}
             rows={3}
             placeholder="How should outstanding invoices, deposits, and refunds be handled?"
-            className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+            className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Additional Notes</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Additional Notes</label>
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any other details your backup contacts should know."
-            className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+            className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
           />
         </div>
 

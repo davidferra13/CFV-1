@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -18,10 +25,14 @@ export default async function DepositsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/payments" className="text-sm text-stone-500 hover:text-stone-700">← Payments</Link>
+        <Link href="/finance/payments" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Payments
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Deposits</h1>
-          <span className="bg-green-100 text-green-700 text-sm px-2 py-0.5 rounded-full">{deposits.length}</span>
+          <h1 className="text-3xl font-bold text-stone-100">Deposits</h1>
+          <span className="bg-green-900 text-green-700 text-sm px-2 py-0.5 rounded-full">
+            {deposits.length}
+          </span>
         </div>
         <p className="text-stone-500 mt-1">Deposit payments received from clients</p>
       </div>
@@ -32,15 +43,17 @@ export default async function DepositsPage() {
           <p className="text-sm text-stone-500 mt-1">Total deposits received</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{deposits.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{deposits.length}</p>
           <p className="text-sm text-stone-500 mt-1">Deposit payments</p>
         </Card>
       </div>
 
       {deposits.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No deposit payments recorded</p>
-          <p className="text-stone-400 text-sm mt-1">Deposits appear in the ledger when clients pay</p>
+          <p className="text-stone-400 font-medium">No deposit payments recorded</p>
+          <p className="text-stone-400 text-sm mt-1">
+            Deposits appear in the ledger when clients pay
+          </p>
         </Card>
       ) : (
         <Card>
@@ -54,18 +67,27 @@ export default async function DepositsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {deposits.map(entry => (
+              {deposits.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell className="text-stone-500 text-sm">{format(new Date(entry.created_at), 'MMM d, yyyy')}</TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-500 text-sm">
+                    {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                  </TableCell>
+                  <TableCell className="text-stone-400 text-sm">
                     {entry.event ? (
-                      <Link href={`/events/${entry.event.id}`} className="text-brand-600 hover:underline capitalize">
+                      <Link
+                        href={`/events/${entry.event.id}`}
+                        className="text-brand-600 hover:underline capitalize"
+                      >
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-green-700 font-semibold text-sm">+{formatCurrency(entry.amount_cents)}</TableCell>
+                  <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>
+                  <TableCell className="text-green-700 font-semibold text-sm">
+                    +{formatCurrency(entry.amount_cents)}
+                  </TableCell>
                 </TableRow>
               ))}
             </TableBody>

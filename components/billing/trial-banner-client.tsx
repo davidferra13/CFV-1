@@ -24,8 +24,8 @@ export function TrialBannerClient({ type, daysLeft }: Props) {
 
   const isExpired = type === 'expired'
   const wrapperClass = isExpired
-    ? 'bg-orange-50 border-b border-orange-200 text-orange-900'
-    : 'bg-amber-50 border-b border-amber-200 text-amber-900'
+    ? 'bg-orange-950 border-b border-orange-200 text-orange-900'
+    : 'bg-amber-950 border-b border-amber-200 text-amber-900'
 
   const message = isExpired
     ? 'Your free trial has ended. Upgrade to Pro to unlock all features.'

@@ -20,24 +20,22 @@ export function PricingScenariosTable({ scenarios, currentAvgCents }: PricingSce
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-200">
-              <th className="text-left py-1.5 pr-4 font-medium text-stone-600">Price per event</th>
-              <th className="text-left py-1.5 pr-4 font-medium text-stone-600">Events needed</th>
-              <th className="text-left py-1.5 font-medium text-stone-600">Increase from avg</th>
+            <tr className="border-b border-stone-700">
+              <th className="text-left py-1.5 pr-4 font-medium text-stone-400">Price per event</th>
+              <th className="text-left py-1.5 pr-4 font-medium text-stone-400">Events needed</th>
+              <th className="text-left py-1.5 font-medium text-stone-400">Increase from avg</th>
             </tr>
           </thead>
           <tbody>
             {scenarios.map((s, i) => (
               <tr
                 key={s.priceDeltaCents}
-                className={`border-b border-stone-100 ${i === 0 ? 'font-medium text-stone-900' : 'text-stone-700'}`}
+                className={`border-b border-stone-800 ${i === 0 ? 'font-medium text-stone-100' : 'text-stone-300'}`}
               >
                 <td className="py-1.5 pr-4">{dollars(s.effectivePriceCents)}</td>
                 <td className="py-1.5 pr-4">{s.eventsNeededAtPrice}</td>
                 <td className="py-1.5 text-stone-500">
-                  {s.priceDeltaCents === 0
-                    ? 'Current avg'
-                    : `+${dollars(s.priceDeltaCents)}/event`}
+                  {s.priceDeltaCents === 0 ? 'Current avg' : `+${dollars(s.priceDeltaCents)}/event`}
                 </td>
               </tr>
             ))}

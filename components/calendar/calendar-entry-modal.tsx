@@ -10,11 +10,15 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { createCalendarEntry } from '@/lib/calendar/entry-actions'
 import type { ChefCalendarEntryType } from '@/lib/calendar/entry-actions'
-import { CALENDAR_COLORS, REVENUE_CAPABLE_TYPES, ENTRY_TYPE_BLOCKS_BOOKINGS } from '@/lib/calendar/colors'
+import {
+  CALENDAR_COLORS,
+  REVENUE_CAPABLE_TYPES,
+  ENTRY_TYPE_BLOCKS_BOOKINGS,
+} from '@/lib/calendar/colors'
 
 type Props = {
-  defaultDate?: string        // YYYY-MM-DD
-  defaultStartTime?: string   // HH:MM
+  defaultDate?: string // YYYY-MM-DD
+  defaultStartTime?: string // HH:MM
   onClose: () => void
   onCreated?: () => void
 }
@@ -28,37 +32,37 @@ const ENTRY_TYPE_GROUPS: EntryTypeGroup[] = [
   {
     label: 'Personal',
     types: [
-      { value: 'vacation',      label: 'Vacation',          icon: '🏖' },
-      { value: 'time_off',      label: 'Time Off',          icon: '🛋' },
-      { value: 'personal',      label: 'Personal Appt',     icon: '📋' },
+      { value: 'vacation', label: 'Vacation', icon: '🏖' },
+      { value: 'time_off', label: 'Time Off', icon: '🛋' },
+      { value: 'personal', label: 'Personal Appt', icon: '📋' },
     ],
   },
   {
     label: 'Business',
     types: [
-      { value: 'market',        label: 'Farmers Market',    icon: '🌿' },
-      { value: 'festival',      label: 'Food Festival',     icon: '🎪' },
-      { value: 'class',         label: 'Class / Teaching',  icon: '👨‍🍳' },
-      { value: 'photo_shoot',   label: 'Photo Shoot',       icon: '📸' },
-      { value: 'media',         label: 'Media / Press',     icon: '🎙' },
-      { value: 'meeting',       label: 'Business Meeting',  icon: '🤝' },
-      { value: 'admin_block',   label: 'Admin Block',       icon: '🗂' },
-      { value: 'other',         label: 'Other',             icon: '📌' },
+      { value: 'market', label: 'Farmers Market', icon: '🌿' },
+      { value: 'festival', label: 'Food Festival', icon: '🎪' },
+      { value: 'class', label: 'Class / Teaching', icon: '👨‍🍳' },
+      { value: 'photo_shoot', label: 'Photo Shoot', icon: '📸' },
+      { value: 'media', label: 'Media / Press', icon: '🎙' },
+      { value: 'meeting', label: 'Business Meeting', icon: '🤝' },
+      { value: 'admin_block', label: 'Admin Block', icon: '🗂' },
+      { value: 'other', label: 'Other', icon: '📌' },
     ],
   },
   {
     label: 'Intentions',
     types: [
-      { value: 'target_booking',  label: 'Seeking Booking',   icon: '🎯' },
-      { value: 'soft_preference', label: 'Prefer Day Off',    icon: '☁️' },
+      { value: 'target_booking', label: 'Seeking Booking', icon: '🎯' },
+      { value: 'soft_preference', label: 'Prefer Day Off', icon: '☁️' },
     ],
   },
 ]
 
-const ALL_TYPES = ENTRY_TYPE_GROUPS.flatMap(g => g.types)
+const ALL_TYPES = ENTRY_TYPE_GROUPS.flatMap((g) => g.types)
 
 function getTypeLabel(value: ChefCalendarEntryType) {
-  return ALL_TYPES.find(t => t.value === value)?.label ?? value
+  return ALL_TYPES.find((t) => t.value === value)?.label ?? value
 }
 
 export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onCreated }: Props) {
@@ -72,7 +76,9 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
   const [allDay, setAllDay] = useState(true)
   const [startTime, setStartTime] = useState(defaultStartTime ?? '09:00')
   const [endTime, setEndTime] = useState('17:00')
-  const [blocksBookings, setBlocksBookings] = useState(ENTRY_TYPE_BLOCKS_BOOKINGS[entryType] ?? false)
+  const [blocksBookings, setBlocksBookings] = useState(
+    ENTRY_TYPE_BLOCKS_BOOKINGS[entryType] ?? false
+  )
 
   // Revenue
   const [isRevenueGenerating, setIsRevenueGenerating] = useState(false)
@@ -105,7 +111,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
 
   // Auto-fill title if empty when type changes
   function titlePlaceholder() {
-    const found = ALL_TYPES.find(t => t.value === entryType)
+    const found = ALL_TYPES.find((t) => t.value === entryType)
     return found ? `e.g. ${found.label}...` : 'Add a title...'
   }
 
@@ -135,10 +141,14 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
         is_revenue_generating: isRevenueCApable ? isRevenueGenerating : false,
         revenue_type: isRevenueCApable && isRevenueGenerating ? revenueType : undefined,
         expected_revenue_cents:
-          isRevenueCApable && isRevenueGenerating && revenueType === 'income' && expectedRevenueCents
+          isRevenueCApable &&
+          isRevenueGenerating &&
+          revenueType === 'income' &&
+          expectedRevenueCents
             ? Math.round(parseFloat(expectedRevenueCents) * 100)
             : undefined,
-        revenue_notes: isRevenueCApable && isRevenueGenerating ? revenueNotes || undefined : undefined,
+        revenue_notes:
+          isRevenueCApable && isRevenueGenerating ? revenueNotes || undefined : undefined,
         is_public: isTargetBooking ? isPublic : false,
         public_note: isTargetBooking && isPublic ? publicNote.trim() || undefined : undefined,
       })
@@ -153,23 +163,30 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-stone-100">
-          <h2 className="text-lg font-semibold text-stone-900">New Calendar Entry</h2>
-          <button onClick={onClose} className="text-stone-400 hover:text-stone-600 text-xl leading-none">&times;</button>
+        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-stone-800">
+          <h2 className="text-lg font-semibold text-stone-100">New Calendar Entry</h2>
+          <button
+            onClick={onClose}
+            className="text-stone-400 hover:text-stone-400 text-xl leading-none"
+          >
+            &times;
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
           {/* Entry type selector */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-2">Type</label>
+            <label className="block text-sm font-medium text-stone-300 mb-2">Type</label>
             <div className="space-y-3">
-              {ENTRY_TYPE_GROUPS.map(group => (
+              {ENTRY_TYPE_GROUPS.map((group) => (
                 <div key={group.label}>
-                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">{group.label}</p>
+                  <p className="text-xs font-semibold text-stone-400 uppercase tracking-wider mb-1.5">
+                    {group.label}
+                  </p>
                   <div className="flex flex-wrap gap-2">
-                    {group.types.map(t => {
+                    {group.types.map((t) => {
                       const active = entryType === t.value
                       const color = CALENDAR_COLORS[t.value] ?? '#6B7280'
                       return (
@@ -181,7 +198,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
                             'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-medium transition-all',
                             active
                               ? 'border-transparent text-white shadow-sm'
-                              : 'border-stone-200 text-stone-600 bg-stone-50 hover:bg-stone-100',
+                              : 'border-stone-700 text-stone-400 bg-stone-800 hover:bg-stone-700',
                           ].join(' ')}
                           style={active ? { backgroundColor: color } : {}}
                         >
@@ -198,27 +215,29 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
 
           {/* Title */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Title <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={title}
-              onChange={e => setTitle(e.target.value)}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder={titlePlaceholder()}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               maxLength={200}
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Notes (optional)</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">
+              Notes (optional)
+            </label>
             <textarea
               value={description}
-              onChange={e => setDescription(e.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               rows={2}
-              className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
               placeholder="Any additional notes..."
             />
           </div>
@@ -226,25 +245,25 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
           {/* Dates */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Start Date</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Start Date</label>
               <input
                 type="date"
                 value={startDate}
-                onChange={e => {
+                onChange={(e) => {
                   setStartDate(e.target.value)
                   if (endDate < e.target.value) setEndDate(e.target.value)
                 }}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">End Date</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">End Date</label>
               <input
                 type="date"
                 value={endDate}
                 min={startDate}
-                onChange={e => setEndDate(e.target.value)}
-                className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                onChange={(e) => setEndDate(e.target.value)}
+                className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
@@ -255,47 +274,49 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
               id="all-day"
               type="checkbox"
               checked={allDay}
-              onChange={e => setAllDay(e.target.checked)}
-              className="rounded border-stone-300 text-brand-600"
+              onChange={(e) => setAllDay(e.target.checked)}
+              className="rounded border-stone-600 text-brand-600"
             />
-            <label htmlFor="all-day" className="text-sm text-stone-700">All day</label>
+            <label htmlFor="all-day" className="text-sm text-stone-300">
+              All day
+            </label>
           </div>
 
           {/* Time pickers (when not all-day) */}
           {!allDay && (
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">Start Time</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">Start Time</label>
                 <input
                   type="time"
                   value={startTime}
-                  onChange={e => setStartTime(e.target.value)}
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">End Time</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1">End Time</label>
                 <input
                   type="time"
                   value={endTime}
-                  onChange={e => setEndTime(e.target.value)}
-                  className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
           )}
 
           {/* Blocking toggle */}
-          <div className="bg-stone-50 rounded-lg p-3 flex items-start gap-3">
+          <div className="bg-stone-800 rounded-lg p-3 flex items-start gap-3">
             <input
               id="blocks-bookings"
               type="checkbox"
               checked={blocksBookings}
-              onChange={e => setBlocksBookings(e.target.checked)}
-              className="mt-0.5 rounded border-stone-300 text-brand-600"
+              onChange={(e) => setBlocksBookings(e.target.checked)}
+              className="mt-0.5 rounded border-stone-600 text-brand-600"
             />
             <div>
-              <label htmlFor="blocks-bookings" className="text-sm font-medium text-stone-700">
+              <label htmlFor="blocks-bookings" className="text-sm font-medium text-stone-300">
                 Block bookings for these date(s)
               </label>
               <p className="text-xs text-stone-500 mt-0.5">
@@ -308,7 +329,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
 
           {/* Revenue section (market, festival, class, etc.) */}
           {isRevenueCApable && (
-            <div className="border border-teal-200 rounded-lg p-4 space-y-3 bg-teal-50">
+            <div className="border border-teal-200 rounded-lg p-4 space-y-3 bg-teal-950">
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-teal-800">Revenue</span>
               </div>
@@ -317,10 +338,12 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
                   id="is-revenue"
                   type="checkbox"
                   checked={isRevenueGenerating}
-                  onChange={e => setIsRevenueGenerating(e.target.checked)}
+                  onChange={(e) => setIsRevenueGenerating(e.target.checked)}
                   className="rounded border-teal-300 text-teal-600"
                 />
-                <label htmlFor="is-revenue" className="text-sm text-stone-700">This engagement generates revenue</label>
+                <label htmlFor="is-revenue" className="text-sm text-stone-300">
+                  This engagement generates revenue
+                </label>
               </div>
               {isRevenueGenerating && (
                 <>
@@ -334,7 +357,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
                         onChange={() => setRevenueType('income')}
                         className="text-teal-600"
                       />
-                      <span className="text-sm text-stone-700">Income (paid)</span>
+                      <span className="text-sm text-stone-300">Income (paid)</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -345,34 +368,40 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
                         onChange={() => setRevenueType('promotional')}
                         className="text-teal-600"
                       />
-                      <span className="text-sm text-stone-700">Promotional (no pay)</span>
+                      <span className="text-sm text-stone-300">Promotional (no pay)</span>
                     </label>
                   </div>
                   {revenueType === 'income' && (
                     <div>
-                      <label className="block text-sm font-medium text-stone-700 mb-1">Expected Revenue</label>
+                      <label className="block text-sm font-medium text-stone-300 mb-1">
+                        Expected Revenue
+                      </label>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">$</span>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 text-sm">
+                          $
+                        </span>
                         <input
                           type="number"
                           min="0"
                           step="0.01"
                           value={expectedRevenueCents}
-                          onChange={e => setExpectedRevenueCents(e.target.value)}
+                          onChange={(e) => setExpectedRevenueCents(e.target.value)}
                           placeholder="0.00"
-                          className="w-full border border-stone-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                          className="w-full border border-stone-600 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                         />
                       </div>
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">Revenue Notes (optional)</label>
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
+                      Revenue Notes (optional)
+                    </label>
                     <input
                       type="text"
                       value={revenueNotes}
-                      onChange={e => setRevenueNotes(e.target.value)}
+                      onChange={(e) => setRevenueNotes(e.target.value)}
                       placeholder="e.g. booth fee $400 + tips"
-                      className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+                      className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
                     />
                   </div>
                 </>
@@ -382,36 +411,41 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
 
           {/* Public signal section (target_booking only) */}
           {isTargetBooking && (
-            <div className="border border-green-200 rounded-lg p-4 space-y-3 bg-green-50">
+            <div className="border border-green-200 rounded-lg p-4 space-y-3 bg-green-950">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-green-800">Public Availability Signal</span>
+                <span className="text-sm font-semibold text-green-800">
+                  Public Availability Signal
+                </span>
               </div>
               <div className="flex items-start gap-3">
                 <input
                   id="is-public"
                   type="checkbox"
                   checked={isPublic}
-                  onChange={e => setIsPublic(e.target.checked)}
+                  onChange={(e) => setIsPublic(e.target.checked)}
                   className="mt-0.5 rounded border-green-300 text-emerald-600"
                 />
                 <div>
-                  <label htmlFor="is-public" className="text-sm text-stone-700 font-medium">
+                  <label htmlFor="is-public" className="text-sm text-stone-300 font-medium">
                     Show on my public profile
                   </label>
                   <p className="text-xs text-stone-500 mt-0.5">
-                    Clients visiting your profile will see this date as available, with a button to inquire.
+                    Clients visiting your profile will see this date as available, with a button to
+                    inquire.
                   </p>
                 </div>
               </div>
               {isPublic && (
                 <div>
-                  <label className="block text-sm font-medium text-stone-700 mb-1">Public Message (optional)</label>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Public Message (optional)
+                  </label>
                   <input
                     type="text"
                     value={publicNote}
-                    onChange={e => setPublicNote(e.target.value)}
+                    onChange={(e) => setPublicNote(e.target.value)}
                     placeholder="e.g. Available for a Valentine's Day dinner"
-                    className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
                     maxLength={500}
                   />
                 </div>
@@ -420,9 +454,7 @@ export function CalendarEntryModal({ defaultDate, defaultStartTime, onClose, onC
           )}
 
           {/* Error */}
-          {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 bg-red-950 rounded-lg px-3 py-2">{error}</p>}
 
           {/* Actions */}
           <div className="flex gap-3 pt-2">

@@ -52,11 +52,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
   const isStuck = daysSinceUpdate !== null && daysSinceUpdate >= 7
   const isSlowing = daysSinceUpdate !== null && daysSinceUpdate >= 4 && daysSinceUpdate < 7
 
-  const stuckClass = isStuck
-    ? 'bg-red-50'
-    : isSlowing
-    ? 'bg-amber-50'
-    : 'bg-white'
+  const stuckClass = isStuck ? 'bg-red-950' : isSlowing ? 'bg-amber-950' : 'bg-surface'
 
   const budgetFormatted = inquiry.budget_cents
     ? `$${(inquiry.budget_cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
@@ -66,20 +62,20 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
     <button
       type="button"
       onClick={() => router.push(`/inquiries/${inquiry.id}`)}
-      className={`w-full text-left ${stuckClass} rounded-lg border border-stone-200 border-l-4 ${borderClass} shadow-sm hover:shadow-md hover:border-stone-300 transition-all duration-150 p-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
+      className={`w-full text-left ${stuckClass} rounded-lg border border-stone-700 border-l-4 ${borderClass} shadow-sm hover:shadow-md hover:border-stone-600 transition-all duration-150 p-3 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500`}
     >
       {/* Client name + stuck badge */}
       <div className="flex items-start justify-between gap-1">
-        <p className="font-semibold text-stone-900 text-sm leading-snug truncate flex-1">
+        <p className="font-semibold text-stone-100 text-sm leading-snug truncate flex-1">
           {inquiry.client_name || 'Unknown Lead'}
         </p>
         {isStuck && (
-          <span className="shrink-0 text-[10px] font-medium text-red-600 bg-red-100 px-1.5 py-0.5 rounded">
+          <span className="shrink-0 text-[10px] font-medium text-red-600 bg-red-900 px-1.5 py-0.5 rounded">
             {daysSinceUpdate}d
           </span>
         )}
         {isSlowing && !isStuck && (
-          <span className="shrink-0 text-[10px] font-medium text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded">
+          <span className="shrink-0 text-[10px] font-medium text-amber-700 bg-amber-900 px-1.5 py-0.5 rounded">
             {daysSinceUpdate}d
           </span>
         )}
@@ -108,7 +104,9 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
             <Users className="h-3 w-3 shrink-0" />
             <span>{inquiry.guest_count} guests</span>
           </div>
-        ) : <span />}
+        ) : (
+          <span />
+        )}
         {budgetFormatted && (
           <div className="flex items-center gap-0.5 text-xs font-medium text-emerald-700">
             <DollarSign className="h-3 w-3 shrink-0" />

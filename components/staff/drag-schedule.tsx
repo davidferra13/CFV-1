@@ -8,15 +8,7 @@ import { useState, useTransition } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import {
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  UserPlus,
-  X,
-  Users,
-  Check,
-} from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, UserPlus, X, Users, Check } from 'lucide-react'
 import { assignStaffToEvent } from '@/lib/staff/actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -63,13 +55,30 @@ function generateWeekDates(mondayStr: string): string[] {
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00')
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ]
   return `${months[d.getMonth()]} ${d.getDate()}`
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function DragSchedule({ events: initialEvents, staffMembers, weekStart }: DragScheduleProps) {
+export function DragSchedule({
+  events: initialEvents,
+  staffMembers,
+  weekStart,
+}: DragScheduleProps) {
   const monday = getMonday(weekStart)
   const [currentMonday, setCurrentMonday] = useState(monday)
   const [events, setEvents] = useState<ScheduleEvent[]>(initialEvents)
@@ -80,7 +89,7 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
   const todayStr = new Date().toISOString().split('T')[0]
 
   // Build staff name lookup
-  const staffNameMap = new Map(staffMembers.map(s => [s.id, s.name]))
+  const staffNameMap = new Map(staffMembers.map((s) => [s.id, s.name]))
 
   // Group events by date
   const eventsByDate = new Map<string, ScheduleEvent[]>()
@@ -110,16 +119,14 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
   }
 
   function togglePicker(eventId: string) {
-    setPickerEventId(prev => (prev === eventId ? null : eventId))
+    setPickerEventId((prev) => (prev === eventId ? null : eventId))
   }
 
   function handleAssignStaff(eventId: string, staffId: string) {
     // Optimistic update
-    setEvents(prev =>
-      prev.map(evt =>
-        evt.id === eventId
-          ? { ...evt, staffAssigned: [...evt.staffAssigned, staffId] }
-          : evt
+    setEvents((prev) =>
+      prev.map((evt) =>
+        evt.id === eventId ? { ...evt, staffAssigned: [...evt.staffAssigned, staffId] } : evt
       )
     )
     setPickerEventId(null)
@@ -132,10 +139,10 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
         })
       } catch {
         // Revert on failure
-        setEvents(prev =>
-          prev.map(evt =>
+        setEvents((prev) =>
+          prev.map((evt) =>
             evt.id === eventId
-              ? { ...evt, staffAssigned: evt.staffAssigned.filter(id => id !== staffId) }
+              ? { ...evt, staffAssigned: evt.staffAssigned.filter((id) => id !== staffId) }
               : evt
           )
         )
@@ -147,9 +154,7 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
   const weekLabel = `${formatDate(weekDates[0])} \u2013 ${formatDate(weekDates[6])}`
 
   // Count total events this week
-  const totalEventsThisWeek = events.filter(evt =>
-    weekDates.includes(evt.date)
-  ).length
+  const totalEventsThisWeek = events.filter((evt) => weekDates.includes(evt.date)).length
 
   return (
     <Card>
@@ -171,7 +176,7 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
             <Button variant="ghost" size="sm" onClick={handleToday} disabled={isPending}>
               Today
             </Button>
-            <span className="text-sm text-stone-600 min-w-[150px] text-center font-medium">
+            <span className="text-sm text-stone-400 min-w-[150px] text-center font-medium">
               {weekLabel}
             </span>
             <Button variant="ghost" size="sm" onClick={handleNextWeek} disabled={isPending}>
@@ -190,13 +195,17 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
               <div
                 key={date}
                 className={`text-center pb-2 border-b-2 ${
-                  isToday ? 'border-brand-500' : 'border-stone-200'
+                  isToday ? 'border-brand-500' : 'border-stone-700'
                 }`}
               >
-                <div className={`text-xs font-medium ${isToday ? 'text-brand-600' : 'text-stone-500'}`}>
+                <div
+                  className={`text-xs font-medium ${isToday ? 'text-brand-600' : 'text-stone-500'}`}
+                >
                   {DAY_LABELS[idx]}
                 </div>
-                <div className={`text-lg font-semibold ${isToday ? 'text-brand-600' : 'text-stone-900'}`}>
+                <div
+                  className={`text-lg font-semibold ${isToday ? 'text-brand-600' : 'text-stone-100'}`}
+                >
                   {d.getDate()}
                 </div>
               </div>
@@ -204,35 +213,35 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
           })}
 
           {/* Day Columns */}
-          {weekDates.map(date => {
+          {weekDates.map((date) => {
             const dayEvents = eventsByDate.get(date) || []
             const isToday = date === todayStr
             return (
               <div
                 key={date}
                 className={`min-h-[120px] rounded-lg p-1.5 space-y-2 ${
-                  isToday ? 'bg-brand-50/50' : 'bg-stone-50/50'
+                  isToday ? 'bg-brand-950/50' : 'bg-stone-800/50'
                 }`}
               >
                 {dayEvents.length === 0 && (
                   <p className="text-xs text-stone-400 text-center py-4">\u2014</p>
                 )}
-                {dayEvents.map(evt => {
+                {dayEvents.map((evt) => {
                   const isPickerOpen = pickerEventId === evt.id
                   const assignedStaff = evt.staffAssigned
-                    .map(id => staffNameMap.get(id))
+                    .map((id) => staffNameMap.get(id))
                     .filter(Boolean)
                   const unassignedStaff = staffMembers.filter(
-                    s => !evt.staffAssigned.includes(s.id)
+                    (s) => !evt.staffAssigned.includes(s.id)
                   )
 
                   return (
                     <div
                       key={evt.id}
-                      className="bg-white rounded-lg border border-stone-200 shadow-sm p-2"
+                      className="bg-surface rounded-lg border border-stone-700 shadow-sm p-2"
                     >
                       {/* Event Name */}
-                      <div className="text-xs font-semibold text-stone-900 truncate mb-1.5">
+                      <div className="text-xs font-semibold text-stone-100 truncate mb-1.5">
                         {evt.name}
                       </div>
 
@@ -240,10 +249,7 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
                       {assignedStaff.length > 0 ? (
                         <div className="space-y-0.5 mb-1.5">
                           {assignedStaff.map((name, i) => (
-                            <div
-                              key={i}
-                              className="flex items-center gap-1 text-xs text-stone-600"
-                            >
+                            <div key={i} className="flex items-center gap-1 text-xs text-stone-400">
                               <Check className="h-3 w-3 text-emerald-500 flex-shrink-0" />
                               <span className="truncate">{name}</span>
                             </div>
@@ -260,7 +266,7 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
                       <button
                         onClick={() => togglePicker(evt.id)}
                         disabled={isPending || unassignedStaff.length === 0}
-                        className="w-full flex items-center justify-center gap-1 px-2 py-1 text-xs rounded border border-dashed border-stone-300 text-stone-500 hover:border-brand-400 hover:text-brand-600 hover:bg-brand-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center gap-1 px-2 py-1 text-xs rounded border border-dashed border-stone-600 text-stone-500 hover:border-brand-400 hover:text-brand-600 hover:bg-brand-950 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isPickerOpen ? (
                           <>
@@ -277,13 +283,13 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
 
                       {/* Staff Picker Dropdown */}
                       {isPickerOpen && unassignedStaff.length > 0 && (
-                        <div className="mt-1.5 bg-stone-50 rounded border border-stone-200 p-1 space-y-0.5 max-h-[120px] overflow-y-auto">
-                          {unassignedStaff.map(staff => (
+                        <div className="mt-1.5 bg-stone-800 rounded border border-stone-700 p-1 space-y-0.5 max-h-[120px] overflow-y-auto">
+                          {unassignedStaff.map((staff) => (
                             <button
                               key={staff.id}
                               onClick={() => handleAssignStaff(evt.id, staff.id)}
                               disabled={isPending}
-                              className="w-full text-left px-2 py-1 text-xs rounded hover:bg-white hover:shadow-sm transition-colors text-stone-700 disabled:opacity-50"
+                              className="w-full text-left px-2 py-1 text-xs rounded hover:bg-stone-800 hover:shadow-sm transition-colors text-stone-300 disabled:opacity-50"
                             >
                               {staff.name}
                             </button>
@@ -300,7 +306,7 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
 
         {/* Staff Roster Summary */}
         {staffMembers.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-stone-100">
+          <div className="mt-4 pt-4 border-t border-stone-800">
             <div className="flex items-center gap-2 mb-2">
               <Users className="h-4 w-4 text-stone-400" />
               <span className="text-xs font-medium text-stone-500 uppercase tracking-wider">
@@ -308,17 +314,14 @@ export function DragSchedule({ events: initialEvents, staffMembers, weekStart }:
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {staffMembers.map(staff => {
+              {staffMembers.map((staff) => {
                 // Count how many events this staff member is assigned to this week
                 const assignmentCount = events.filter(
-                  evt => weekDates.includes(evt.date) && evt.staffAssigned.includes(staff.id)
+                  (evt) => weekDates.includes(evt.date) && evt.staffAssigned.includes(staff.id)
                 ).length
 
                 return (
-                  <Badge
-                    key={staff.id}
-                    variant={assignmentCount > 0 ? 'success' : 'default'}
-                  >
+                  <Badge key={staff.id} variant={assignmentCount > 0 ? 'success' : 'default'}>
                     {staff.name}
                     {assignmentCount > 0 && (
                       <span className="ml-1 opacity-75">{assignmentCount}</span>

@@ -4,7 +4,10 @@ import { useMemo, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowDown, ArrowUp } from 'lucide-react'
 import { updateChefPreferences } from '@/lib/chef/actions'
-import { DEFAULT_PRIMARY_SHORTCUT_HREFS, getPrimaryShortcutOptions } from '@/components/navigation/nav-config'
+import {
+  DEFAULT_PRIMARY_SHORTCUT_HREFS,
+  getPrimaryShortcutOptions,
+} from '@/components/navigation/nav-config'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -42,14 +45,12 @@ function getInitialSelection(initialPrimaryNavHrefs: string[]): string[] {
   return normalized
 }
 
-export function PrimaryNavForm({
-  initialPrimaryNavHrefs,
-}: {
-  initialPrimaryNavHrefs: string[]
-}) {
+export function PrimaryNavForm({ initialPrimaryNavHrefs }: { initialPrimaryNavHrefs: string[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
-  const [selectedHrefs, setSelectedHrefs] = useState<string[]>(getInitialSelection(initialPrimaryNavHrefs))
+  const [selectedHrefs, setSelectedHrefs] = useState<string[]>(
+    getInitialSelection(initialPrimaryNavHrefs)
+  )
   const [search, setSearch] = useState('')
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -65,16 +66,16 @@ export function PrimaryNavForm({
 
   const availableOptions = useMemo(() => {
     const term = search.trim().toLowerCase()
-    return ALL_SHORTCUT_OPTIONS
-      .filter((option) => !selectedSet.has(option.href))
-      .filter((option) => {
+    return ALL_SHORTCUT_OPTIONS.filter((option) => !selectedSet.has(option.href)).filter(
+      (option) => {
         if (!term) return true
         return (
           option.label.toLowerCase().includes(term) ||
           option.href.toLowerCase().includes(term) ||
           option.context.toLowerCase().includes(term)
         )
-      })
+      }
+    )
   }, [search, selectedSet])
 
   const moveSelected = (index: number, direction: 'up' | 'down') => {
@@ -136,19 +137,16 @@ export function PrimaryNavForm({
             </p>
 
             {selectedOptions.length === 0 && (
-              <p className="rounded-md border border-dashed border-stone-300 p-3 text-sm text-stone-500">
+              <p className="rounded-md border border-dashed border-stone-600 p-3 text-sm text-stone-500">
                 No primary tabs selected. Add at least one from the available list.
               </p>
             )}
 
             {selectedOptions.map((option, index) => (
-              <div
-                key={option.href}
-                className="rounded-lg border border-stone-200 p-3"
-              >
+              <div key={option.href} className="rounded-lg border border-stone-700 p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{option.label}</p>
+                    <p className="text-sm font-medium text-stone-100">{option.label}</p>
                     <p className="text-xs text-stone-500">{option.context}</p>
                     <p className="text-xs text-stone-400">{option.href}</p>
                   </div>
@@ -201,12 +199,12 @@ export function PrimaryNavForm({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by tab name or route"
-              className="w-full rounded-md border border-stone-300 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+              className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
             />
 
             <div className="max-h-[28rem] space-y-2 overflow-y-auto pr-1">
               {availableOptions.length === 0 && (
-                <p className="rounded-md border border-dashed border-stone-300 p-3 text-sm text-stone-500">
+                <p className="rounded-md border border-dashed border-stone-600 p-3 text-sm text-stone-500">
                   No matching tabs available.
                 </p>
               )}
@@ -214,10 +212,10 @@ export function PrimaryNavForm({
               {availableOptions.map((option) => (
                 <div
                   key={option.href}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-stone-200 p-3"
+                  className="flex items-center justify-between gap-3 rounded-lg border border-stone-700 p-3"
                 >
                   <div>
-                    <p className="text-sm font-medium text-stone-900">{option.label}</p>
+                    <p className="text-sm font-medium text-stone-100">{option.label}</p>
                     <p className="text-xs text-stone-500">{option.context}</p>
                     <p className="text-xs text-stone-400">{option.href}</p>
                   </div>
@@ -237,13 +235,13 @@ export function PrimaryNavForm({
       </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+        <div className="rounded-lg border border-red-200 bg-red-950 p-4">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {success && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+        <div className="rounded-lg border border-green-200 bg-green-950 p-4">
           <p className="text-sm text-green-700">Primary navigation saved.</p>
         </div>
       )}

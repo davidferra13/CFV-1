@@ -148,7 +148,7 @@ export function RSVPForm({
   if (submitted) {
     return (
       <div className="text-center py-8">
-        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
           <svg
             className="w-8 h-8 text-emerald-600"
             fill="none"
@@ -158,25 +158,25 @@ export function RSVPForm({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h3 className="text-xl font-semibold text-stone-900 mb-2">
+        <h3 className="text-xl font-semibold text-stone-100 mb-2">
           {rsvpStatus === 'attending'
             ? 'See you there!'
             : rsvpStatus === 'maybe'
               ? 'Thanks for letting us know!'
               : 'Thanks for responding'}
         </h3>
-        <p className="text-stone-600 mb-6">
+        <p className="text-stone-400 mb-6">
           {isEditing ? 'Your RSVP has been updated.' : 'Your RSVP has been recorded.'}
         </p>
         <button
           onClick={() => setSubmitted(false)}
-          className="text-brand-600 hover:text-brand-700 font-medium text-sm"
+          className="text-brand-600 hover:text-brand-400 font-medium text-sm"
         >
           Update my response
         </button>
 
         {chefProfileUrl && rsvpStatus === 'attending' && (
-          <div className="mt-8 pt-6 border-t border-stone-200">
+          <div className="mt-8 pt-6 border-t border-stone-700">
             <p className="text-sm text-stone-500 mb-3">
               Love private dining? Book your own event with {chefName || 'your chef'}.
             </p>
@@ -200,11 +200,11 @@ export function RSVPForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && <div className="bg-red-50 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
+      {error && <div className="bg-red-950 text-red-700 px-4 py-3 rounded-lg text-sm">{error}</div>}
 
       {/* RSVP Status Selection */}
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-2">
+        <label className="block text-sm font-medium text-stone-300 mb-2">
           Will you be attending?
         </label>
         <div className="grid grid-cols-3 gap-3">
@@ -216,11 +216,11 @@ export function RSVPForm({
               className={`px-4 py-3 rounded-lg border-2 text-sm font-medium transition-all ${
                 rsvpStatus === option.value
                   ? option.color === 'emerald'
-                    ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                    ? 'border-emerald-500 bg-emerald-950 text-emerald-700'
                     : option.color === 'amber'
-                      ? 'border-amber-500 bg-amber-50 text-amber-700'
-                      : 'border-red-500 bg-red-50 text-red-700'
-                  : 'border-stone-200 text-stone-600 hover:border-stone-300'
+                      ? 'border-amber-500 bg-amber-950 text-amber-700'
+                      : 'border-red-500 bg-red-950 text-red-700'
+                  : 'border-stone-700 text-stone-400 hover:border-stone-600'
               }`}
             >
               {option.label}
@@ -231,7 +231,7 @@ export function RSVPForm({
 
       {/* Name */}
       <div>
-        <label htmlFor="fullName" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="fullName" className="block text-sm font-medium text-stone-300 mb-1">
           Your Name <span className="text-red-500">*</span>
         </label>
         <input
@@ -241,13 +241,13 @@ export function RSVPForm({
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Full name"
-          className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
+          className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400"
         />
       </div>
 
       {/* Email */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-stone-700 mb-1">
+        <label htmlFor="email" className="block text-sm font-medium text-stone-300 mb-1">
           Email <span className="text-stone-400 text-xs">(optional)</span>
         </label>
         <input
@@ -256,7 +256,7 @@ export function RSVPForm({
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="your@email.com"
-          className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400"
+          className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400"
         />
         <p className="text-xs text-stone-500 mt-1">So we can reach you if anything changes</p>
       </div>
@@ -268,7 +268,7 @@ export function RSVPForm({
             <button
               type="button"
               onClick={() => setShowDetails(true)}
-              className="w-full py-3 rounded-lg border-2 border-dashed border-stone-300 text-sm font-medium text-stone-500 hover:border-stone-400 hover:text-stone-700 transition-colors flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-lg border-2 border-dashed border-stone-600 text-sm font-medium text-stone-500 hover:border-stone-400 hover:text-stone-300 transition-colors flex items-center justify-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -281,13 +281,13 @@ export function RSVPForm({
               Add allergies, dietary needs, or a plus-one
             </button>
           ) : (
-            <div className="space-y-4 bg-stone-50 rounded-lg p-4 border border-stone-200">
+            <div className="space-y-4 bg-stone-800 rounded-lg p-4 border border-stone-700">
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-medium text-stone-700">Additional Details</h4>
+                <h4 className="text-sm font-medium text-stone-300">Additional Details</h4>
                 <button
                   type="button"
                   onClick={() => setShowDetails(false)}
-                  className="text-xs text-stone-400 hover:text-stone-600"
+                  className="text-xs text-stone-400 hover:text-stone-400"
                 >
                   Hide
                 </button>
@@ -301,19 +301,19 @@ export function RSVPForm({
                     type="checkbox"
                     checked={plusOne}
                     onChange={(e) => setPlusOne(e.target.checked)}
-                    className="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
+                    className="w-4 h-4 text-brand-600 rounded border-stone-600 focus:ring-brand-500"
                   />
-                  <label htmlFor="plusOne" className="text-sm text-stone-700">
+                  <label htmlFor="plusOne" className="text-sm text-stone-300">
                     I am bringing a plus-one
                   </label>
                 </div>
 
                 {plusOne && (
-                  <div className="ml-7 space-y-3 pl-3 border-l-2 border-stone-200">
+                  <div className="ml-7 space-y-3 pl-3 border-l-2 border-stone-700">
                     <div>
                       <label
                         htmlFor="plusOneName"
-                        className="block text-sm font-medium text-stone-700 mb-1"
+                        className="block text-sm font-medium text-stone-300 mb-1"
                       >
                         Plus-one's name
                       </label>
@@ -323,13 +323,13 @@ export function RSVPForm({
                         value={plusOneName}
                         onChange={(e) => setPlusOneName(e.target.value)}
                         placeholder="Their full name"
-                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="plusOneAllergies"
-                        className="block text-sm font-medium text-stone-700 mb-1"
+                        className="block text-sm font-medium text-stone-300 mb-1"
                       >
                         Their allergies
                       </label>
@@ -339,13 +339,13 @@ export function RSVPForm({
                         value={plusOneAllergies}
                         onChange={(e) => setPlusOneAllergies(e.target.value)}
                         placeholder="e.g., peanuts, shellfish"
-                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="plusOneDietary"
-                        className="block text-sm font-medium text-stone-700 mb-1"
+                        className="block text-sm font-medium text-stone-300 mb-1"
                       >
                         Their dietary restrictions
                       </label>
@@ -355,7 +355,7 @@ export function RSVPForm({
                         value={plusOneDietary}
                         onChange={(e) => setPlusOneDietary(e.target.value)}
                         placeholder="e.g., vegetarian, gluten-free"
-                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
                       />
                     </div>
                   </div>
@@ -364,7 +364,7 @@ export function RSVPForm({
 
               {/* Dietary */}
               <div>
-                <label htmlFor="dietary" className="block text-sm font-medium text-stone-700 mb-1">
+                <label htmlFor="dietary" className="block text-sm font-medium text-stone-300 mb-1">
                   Dietary Restrictions
                 </label>
                 <input
@@ -373,7 +373,7 @@ export function RSVPForm({
                   value={dietaryInput}
                   onChange={(e) => setDietaryInput(e.target.value)}
                   placeholder="e.g., vegetarian, kosher, gluten-free"
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
                 />
                 <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
               </div>
@@ -382,7 +382,7 @@ export function RSVPForm({
               <div>
                 <label
                   htmlFor="allergies"
-                  className="block text-sm font-medium text-stone-700 mb-1"
+                  className="block text-sm font-medium text-stone-300 mb-1"
                 >
                   Allergies
                 </label>
@@ -392,14 +392,14 @@ export function RSVPForm({
                   value={allergyInput}
                   onChange={(e) => setAllergyInput(e.target.value)}
                   placeholder="e.g., peanuts, shellfish, dairy"
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 bg-white"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
                 />
                 <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
               </div>
 
               {/* Notes */}
               <div>
-                <label htmlFor="notes" className="block text-sm font-medium text-stone-700 mb-1">
+                <label htmlFor="notes" className="block text-sm font-medium text-stone-300 mb-1">
                   Notes or Questions
                 </label>
                 <textarea
@@ -408,7 +408,7 @@ export function RSVPForm({
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Anything you'd like the host to know..."
                   rows={2}
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none bg-white"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none bg-surface"
                 />
               </div>
             </div>
@@ -419,7 +419,7 @@ export function RSVPForm({
       {/* Declined — still allow a note */}
       {rsvpStatus === 'declined' && (
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="notes" className="block text-sm font-medium text-stone-300 mb-1">
             Send a note <span className="text-stone-400 text-xs">(optional)</span>
           </label>
           <textarea
@@ -428,7 +428,7 @@ export function RSVPForm({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Sorry I can't make it! Have fun..."
             rows={2}
-            className="w-full px-4 py-2.5 rounded-lg border border-stone-300 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-900 placeholder:text-stone-400 resize-none"
+            className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none"
           />
         </div>
       )}
@@ -441,9 +441,9 @@ export function RSVPForm({
             type="checkbox"
             checked={photoConsent}
             onChange={(e) => setPhotoConsent(e.target.checked)}
-            className="w-4 h-4 text-brand-600 rounded border-stone-300 focus:ring-brand-500"
+            className="w-4 h-4 text-brand-600 rounded border-stone-600 focus:ring-brand-500"
           />
-          <label htmlFor="photoConsent" className="text-sm text-stone-600">
+          <label htmlFor="photoConsent" className="text-sm text-stone-400">
             Cool to share food pics from the event
           </label>
         </div>

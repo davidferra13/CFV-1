@@ -7,7 +7,13 @@
 import { useState, useTransition, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { createTravelLeg, updateTravelLeg, searchIngredientsForEvent, upsertLegIngredient, deleteLegIngredient } from '@/lib/travel/actions'
+import {
+  createTravelLeg,
+  updateTravelLeg,
+  searchIngredientsForEvent,
+  upsertLegIngredient,
+  deleteLegIngredient,
+} from '@/lib/travel/actions'
 import type {
   TravelLeg,
   TravelLegWithIngredients,
@@ -27,11 +33,17 @@ import {
 
 type Props = {
   eventId: string
-  eventDate: string                        // for defaulting leg_date
-  leg?: TravelLegWithIngredients | null    // null = create mode
-  prefillVenueAddress?: string             // for service_travel destination
-  prefillHomeAddress?: string              // for origin defaults
-  nearbyEvents?: { id: string; occasion: string | null; event_date: string; client_name: string | null; days_away: number }[]
+  eventDate: string // for defaulting leg_date
+  leg?: TravelLegWithIngredients | null // null = create mode
+  prefillVenueAddress?: string // for service_travel destination
+  prefillHomeAddress?: string // for origin defaults
+  nearbyEvents?: {
+    id: string
+    occasion: string | null
+    event_date: string
+    client_name: string | null
+    days_away: number
+  }[]
   onSave: (leg: TravelLeg) => void
   onCancel: () => void
 }
@@ -74,7 +86,7 @@ function StopRow({
   onMoveDown: () => void
 }) {
   return (
-    <div className="border border-stone-200 rounded-lg p-3 space-y-2 bg-white">
+    <div className="border border-stone-700 rounded-lg p-3 space-y-2 bg-surface">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
           Stop {index + 1}
@@ -84,7 +96,7 @@ function StopRow({
             type="button"
             onClick={onMoveUp}
             disabled={index === 0}
-            className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1 rounded hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move up"
           >
             ↑
@@ -93,7 +105,7 @@ function StopRow({
             type="button"
             onClick={onMoveDown}
             disabled={index === total - 1}
-            className="p-1 rounded hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed"
+            className="p-1 rounded hover:bg-stone-700 disabled:opacity-30 disabled:cursor-not-allowed"
             title="Move down"
           >
             ↓
@@ -101,7 +113,7 @@ function StopRow({
           <button
             type="button"
             onClick={onRemove}
-            className="p-1 rounded hover:bg-red-50 text-red-500 text-sm"
+            className="p-1 rounded hover:bg-red-950 text-red-500 text-sm"
             title="Remove stop"
           >
             ✕
@@ -117,7 +129,7 @@ function StopRow({
             value={stop.name}
             onChange={(e) => onChange({ ...stop, name: e.target.value })}
             placeholder="e.g. Savenor's Market"
-            className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -127,7 +139,7 @@ function StopRow({
             value={stop.purpose}
             onChange={(e) => onChange({ ...stop, purpose: e.target.value })}
             placeholder="e.g. Pick up A5 Wagyu"
-            className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -139,7 +151,7 @@ function StopRow({
           value={stop.address}
           onChange={(e) => onChange({ ...stop, address: e.target.value })}
           placeholder="Street address"
-          className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
 
@@ -154,7 +166,7 @@ function StopRow({
               onChange({ ...stop, estimated_minutes: parseInt(e.target.value) || 0 })
             }
             placeholder="30"
-            className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -164,7 +176,7 @@ function StopRow({
             value={stop.notes ?? ''}
             onChange={(e) => onChange({ ...stop, notes: e.target.value })}
             placeholder="Any notes"
-            className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -184,12 +196,16 @@ function IngredientRow({
   onRemove: () => void
 }) {
   return (
-    <div className="border border-stone-200 rounded-lg p-3 space-y-2 bg-white">
+    <div className="border border-stone-700 rounded-lg p-3 space-y-2 bg-surface">
       <div className="flex items-center justify-between">
-        <span className="text-sm font-medium text-stone-800">
+        <span className="text-sm font-medium text-stone-200">
           {ingredient.ingredient_name || 'Ingredient'}
         </span>
-        <button type="button" onClick={onRemove} className="text-xs text-red-500 hover:text-red-700">
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-xs text-red-500 hover:text-red-700"
+        >
           Remove
         </button>
       </div>
@@ -203,7 +219,7 @@ function IngredientRow({
             value={ingredient.quantity ?? ''}
             onChange={(e) => onUpdate({ quantity: parseFloat(e.target.value) || null })}
             placeholder="1"
-            className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -213,7 +229,7 @@ function IngredientRow({
             value={ingredient.unit ?? ''}
             onChange={(e) => onUpdate({ unit: e.target.value || null })}
             placeholder="lbs"
-            className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -223,7 +239,7 @@ function IngredientRow({
             value={ingredient.store_name ?? ''}
             onChange={(e) => onUpdate({ store_name: e.target.value || null })}
             placeholder="Stop name"
-            className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -234,7 +250,7 @@ function IngredientRow({
           value={ingredient.notes ?? ''}
           onChange={(e) => onUpdate({ notes: e.target.value || null })}
           placeholder="e.g. Must be fresh, not frozen"
-          className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
     </div>
@@ -264,13 +280,16 @@ export function TravelLegForm({
 
   // Origin
   const [originType, setOriginType] = useState<TravelLocationType>(leg?.origin_type ?? 'home')
-  const [originAddress, setOriginAddress] = useState(leg?.origin_address ?? prefillHomeAddress ?? '')
+  const [originAddress, setOriginAddress] = useState(
+    leg?.origin_address ?? prefillHomeAddress ?? ''
+  )
   const [originLabel, setOriginLabel] = useState(leg?.origin_label ?? 'Home')
 
   // Destination
   const [destType, setDestType] = useState<TravelLocationType | null>(leg?.destination_type ?? null)
   const [destAddress, setDestAddress] = useState(
-    leg?.destination_address ?? (legType === 'service_travel' ? prefillVenueAddress ?? '' : prefillHomeAddress ?? '')
+    leg?.destination_address ??
+      (legType === 'service_travel' ? (prefillVenueAddress ?? '') : (prefillHomeAddress ?? ''))
   )
   const [destLabel, setDestLabel] = useState(leg?.destination_label ?? '')
 
@@ -284,12 +303,17 @@ export function TravelLegForm({
   const [linkedEventIds, setLinkedEventIds] = useState<string[]>(leg?.linked_event_ids ?? [])
 
   // Ingredients (specialty only)
-  type DraftIngredient = Partial<TravelLegIngredient> & { _tempId: string; ingredient_name?: string }
+  type DraftIngredient = Partial<TravelLegIngredient> & {
+    _tempId: string
+    ingredient_name?: string
+  }
   const [ingredients, setIngredients] = useState<DraftIngredient[]>(
     (leg?.ingredients ?? []).map((ing) => ({ ...ing, _tempId: ing.id }))
   )
   const [ingredientSearch, setIngredientSearch] = useState('')
-  const [ingredientResults, setIngredientResults] = useState<{ id: string; name: string; category: string }[]>([])
+  const [ingredientResults, setIngredientResults] = useState<
+    { id: string; name: string; category: string }[]
+  >([])
   const [searchingIngredients, setSearchingIngredients] = useState(false)
 
   // Section expand state
@@ -309,33 +333,36 @@ export function TravelLegForm({
 
   // ─── Type change side effects ─────────────────────────────────────────────
 
-  const handleTypeChange = useCallback((type: TravelLegType) => {
-    setLegType(type)
-    if (type === 'specialty_sourcing') {
-      setShowIngredients(true)
-    }
-    if (type === 'consolidated_shopping') {
-      setShowConsolidation(true)
-    }
-    if (type === 'service_travel') {
-      setOriginType('home')
-      setOriginAddress(prefillHomeAddress ?? '')
-      setOriginLabel('Home')
-      setDestType('venue')
-      setDestAddress(prefillVenueAddress ?? '')
-      setDestLabel('Service venue')
-      setLegDate(eventDate)
-    }
-    if (type === 'return_home') {
-      setOriginType('venue')
-      setOriginAddress(prefillVenueAddress ?? '')
-      setOriginLabel('Service venue')
-      setDestType('home')
-      setDestAddress(prefillHomeAddress ?? '')
-      setDestLabel('Home')
-      setLegDate(eventDate)
-    }
-  }, [eventDate, prefillHomeAddress, prefillVenueAddress])
+  const handleTypeChange = useCallback(
+    (type: TravelLegType) => {
+      setLegType(type)
+      if (type === 'specialty_sourcing') {
+        setShowIngredients(true)
+      }
+      if (type === 'consolidated_shopping') {
+        setShowConsolidation(true)
+      }
+      if (type === 'service_travel') {
+        setOriginType('home')
+        setOriginAddress(prefillHomeAddress ?? '')
+        setOriginLabel('Home')
+        setDestType('venue')
+        setDestAddress(prefillVenueAddress ?? '')
+        setDestLabel('Service venue')
+        setLegDate(eventDate)
+      }
+      if (type === 'return_home') {
+        setOriginType('venue')
+        setOriginAddress(prefillVenueAddress ?? '')
+        setOriginLabel('Service venue')
+        setDestType('home')
+        setDestAddress(prefillHomeAddress ?? '')
+        setDestLabel('Home')
+        setLegDate(eventDate)
+      }
+    },
+    [eventDate, prefillHomeAddress, prefillVenueAddress]
+  )
 
   // ─── Stops management ────────────────────────────────────────────────────
 
@@ -403,9 +430,7 @@ export function TravelLegForm({
   }
 
   const updateIngredient = (tempId: string, updates: Partial<TravelLegIngredient>) => {
-    setIngredients((prev) =>
-      prev.map((i) => (i._tempId === tempId ? { ...i, ...updates } : i))
-    )
+    setIngredients((prev) => prev.map((i) => (i._tempId === tempId ? { ...i, ...updates } : i)))
   }
 
   const removeIngredient = (tempId: string) => {
@@ -490,11 +515,11 @@ export function TravelLegForm({
       {/* Leg type + date */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Trip type</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Trip type</label>
           <select
             value={legType}
             onChange={(e) => handleTypeChange(e.target.value as TravelLegType)}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface"
           >
             {LEG_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -506,13 +531,13 @@ export function TravelLegForm({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Date</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Date</label>
           <input
             type="date"
             value={legDate}
             onChange={(e) => setLegDate(e.target.value)}
             required
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -522,24 +547,28 @@ export function TravelLegForm({
         <button
           type="button"
           onClick={() => setShowOriginDest((p) => !p)}
-          className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 mb-2"
+          className="flex items-center gap-2 text-sm font-semibold text-stone-300 hover:text-stone-100 mb-2"
         >
           <span>{showOriginDest ? '▼' : '▶'}</span>
           Origin & Destination
         </button>
         {showOriginDest && (
-          <div className="space-y-3 border border-stone-200 rounded-lg p-4 bg-stone-50">
+          <div className="space-y-3 border border-stone-700 rounded-lg p-4 bg-stone-800">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Origin */}
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Origin</p>
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                  Origin
+                </p>
                 <select
                   value={originType}
                   onChange={(e) => setOriginType(e.target.value as TravelLocationType)}
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface"
                 >
                   {LOCATION_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
                   ))}
                 </select>
                 <input
@@ -547,28 +576,32 @@ export function TravelLegForm({
                   value={originLabel}
                   onChange={(e) => setOriginLabel(e.target.value)}
                   placeholder="Label (e.g. Home)"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
                 <input
                   type="text"
                   value={originAddress}
                   onChange={(e) => setOriginAddress(e.target.value)}
                   placeholder="Address"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
 
               {/* Destination */}
               <div className="space-y-2">
-                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">Destination</p>
+                <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
+                  Destination
+                </p>
                 <select
                   value={destType ?? ''}
-                  onChange={(e) => setDestType(e.target.value as TravelLocationType || null)}
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  onChange={(e) => setDestType((e.target.value as TravelLocationType) || null)}
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface"
                 >
                   <option value="">— select —</option>
                   {LOCATION_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>{t.label}</option>
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
                   ))}
                 </select>
                 <input
@@ -576,14 +609,14 @@ export function TravelLegForm({
                   value={destLabel}
                   onChange={(e) => setDestLabel(e.target.value)}
                   placeholder="Label (e.g. Client's venue)"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
                 <input
                   type="text"
                   value={destAddress}
                   onChange={(e) => setDestAddress(e.target.value)}
                   placeholder="Address"
-                  className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
             </div>
@@ -596,20 +629,20 @@ export function TravelLegForm({
         <button
           type="button"
           onClick={() => setShowTimes((p) => !p)}
-          className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 mb-2"
+          className="flex items-center gap-2 text-sm font-semibold text-stone-300 hover:text-stone-100 mb-2"
         >
           <span>{showTimes ? '▼' : '▶'}</span>
           Timing
         </button>
         {showTimes && (
-          <div className="grid grid-cols-3 gap-3 border border-stone-200 rounded-lg p-4 bg-stone-50">
+          <div className="grid grid-cols-3 gap-3 border border-stone-700 rounded-lg p-4 bg-stone-800">
             <div>
               <label className="block text-xs text-stone-500 mb-1">Depart</label>
               <input
                 type="time"
                 value={departureTime}
                 onChange={(e) => setDepartureTime(e.target.value)}
-                className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
@@ -618,7 +651,7 @@ export function TravelLegForm({
                 type="time"
                 value={estimatedReturn}
                 onChange={(e) => setEstimatedReturn(e.target.value)}
-                className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
             <div>
@@ -629,7 +662,7 @@ export function TravelLegForm({
                 value={driveMinutes}
                 onChange={(e) => setDriveMinutes(parseInt(e.target.value) || '')}
                 placeholder="30"
-                className="w-full border border-stone-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               />
             </div>
           </div>
@@ -641,7 +674,7 @@ export function TravelLegForm({
         <button
           type="button"
           onClick={() => setShowStops((p) => !p)}
-          className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 mb-2"
+          className="flex items-center gap-2 text-sm font-semibold text-stone-300 hover:text-stone-100 mb-2"
         >
           <span>{showStops ? '▼' : '▶'}</span>
           Stops ({stops.length})
@@ -668,7 +701,7 @@ export function TravelLegForm({
             <button
               type="button"
               onClick={addStop}
-              className="w-full border border-dashed border-stone-300 rounded-lg p-3 text-sm text-stone-500 hover:border-brand-400 hover:text-brand-600 transition-colors"
+              className="w-full border border-dashed border-stone-600 rounded-lg p-3 text-sm text-stone-500 hover:border-brand-400 hover:text-brand-600 transition-colors"
             >
               + Add stop
             </button>
@@ -677,55 +710,55 @@ export function TravelLegForm({
       </div>
 
       {/* Consolidated shopping: link other events */}
-      {(legType === 'consolidated_shopping' || legType === 'grocery_shopping') && nearbyEvents.length > 0 && (
-        <div>
-          <button
-            type="button"
-            onClick={() => setShowConsolidation((p) => !p)}
-            className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 mb-2"
-          >
-            <span>{showConsolidation ? '▼' : '▶'}</span>
-            Also shopping for other events
-            {linkedEventIds.length > 0 && (
-              <span className="ml-1 px-1.5 py-0.5 rounded-full bg-brand-100 text-brand-700 text-xs">
-                {linkedEventIds.length}
-              </span>
-            )}
-          </button>
-          {showConsolidation && (
-            <div className="border border-stone-200 rounded-lg p-4 bg-stone-50 space-y-2">
-              <p className="text-xs text-stone-500">
-                Check events this shopping run will cover. Their grocery lists will be merged.
-              </p>
-              {nearbyEvents.map((evt) => (
-                <label key={evt.id} className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={linkedEventIds.includes(evt.id)}
-                    onChange={(e) => {
-                      setLinkedEventIds((prev) =>
-                        e.target.checked
-                          ? [...prev, evt.id]
-                          : prev.filter((id) => id !== evt.id)
-                      )
-                    }}
-                    className="w-4 h-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
-                  />
-                  <span className="text-sm text-stone-700">
-                    {evt.occasion || 'Untitled event'} — {new Date(evt.event_date).toLocaleDateString()}
-                    {evt.client_name && (
-                      <span className="text-stone-500"> ({evt.client_name})</span>
-                    )}
-                    <span className="ml-1 text-xs text-stone-400">
-                      ({evt.days_away > 0 ? `+${evt.days_away}` : evt.days_away}d)
+      {(legType === 'consolidated_shopping' || legType === 'grocery_shopping') &&
+        nearbyEvents.length > 0 && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowConsolidation((p) => !p)}
+              className="flex items-center gap-2 text-sm font-semibold text-stone-300 hover:text-stone-100 mb-2"
+            >
+              <span>{showConsolidation ? '▼' : '▶'}</span>
+              Also shopping for other events
+              {linkedEventIds.length > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 rounded-full bg-brand-900 text-brand-400 text-xs">
+                  {linkedEventIds.length}
+                </span>
+              )}
+            </button>
+            {showConsolidation && (
+              <div className="border border-stone-700 rounded-lg p-4 bg-stone-800 space-y-2">
+                <p className="text-xs text-stone-500">
+                  Check events this shopping run will cover. Their grocery lists will be merged.
+                </p>
+                {nearbyEvents.map((evt) => (
+                  <label key={evt.id} className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={linkedEventIds.includes(evt.id)}
+                      onChange={(e) => {
+                        setLinkedEventIds((prev) =>
+                          e.target.checked ? [...prev, evt.id] : prev.filter((id) => id !== evt.id)
+                        )
+                      }}
+                      className="w-4 h-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
+                    />
+                    <span className="text-sm text-stone-300">
+                      {evt.occasion || 'Untitled event'} —{' '}
+                      {new Date(evt.event_date).toLocaleDateString()}
+                      {evt.client_name && (
+                        <span className="text-stone-500"> ({evt.client_name})</span>
+                      )}
+                      <span className="ml-1 text-xs text-stone-400">
+                        ({evt.days_away > 0 ? `+${evt.days_away}` : evt.days_away}d)
+                      </span>
                     </span>
-                  </span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
       {/* Specialty: ingredient linking */}
       {legType === 'specialty_sourcing' && (
@@ -733,13 +766,13 @@ export function TravelLegForm({
           <button
             type="button"
             onClick={() => setShowIngredients((p) => !p)}
-            className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 mb-2"
+            className="flex items-center gap-2 text-sm font-semibold text-stone-300 hover:text-stone-100 mb-2"
           >
             <span>{showIngredients ? '▼' : '▶'}</span>
             Ingredients to source ({ingredients.length})
           </button>
           {showIngredients && (
-            <div className="space-y-3 border border-stone-200 rounded-lg p-4 bg-stone-50">
+            <div className="space-y-3 border border-stone-700 rounded-lg p-4 bg-stone-800">
               {/* Search */}
               <div className="relative">
                 <input
@@ -747,19 +780,21 @@ export function TravelLegForm({
                   value={ingredientSearch}
                   onChange={(e) => handleIngredientSearch(e.target.value)}
                   placeholder="Search ingredients from this event's menus…"
-                  className="w-full border border-stone-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full border border-stone-600 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
                 {searchingIngredients && (
-                  <span className="absolute right-3 top-2.5 text-xs text-stone-400">Searching…</span>
+                  <span className="absolute right-3 top-2.5 text-xs text-stone-400">
+                    Searching…
+                  </span>
                 )}
                 {ingredientResults.length > 0 && (
-                  <div className="absolute z-10 top-full left-0 right-0 bg-white border border-stone-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                  <div className="absolute z-10 top-full left-0 right-0 bg-surface border border-stone-700 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
                     {ingredientResults.map((r) => (
                       <button
                         key={r.id}
                         type="button"
                         onClick={() => addIngredient(r)}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-stone-50 flex items-center justify-between"
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-stone-800 flex items-center justify-between"
                       >
                         <span>{r.name}</span>
                         <span className="text-xs text-stone-400 capitalize">{r.category}</span>
@@ -793,7 +828,7 @@ export function TravelLegForm({
         <button
           type="button"
           onClick={() => setShowNotes((p) => !p)}
-          className="flex items-center gap-2 text-sm font-semibold text-stone-700 hover:text-stone-900 mb-2"
+          className="flex items-center gap-2 text-sm font-semibold text-stone-300 hover:text-stone-100 mb-2"
         >
           <span>{showNotes ? '▼' : '▶'}</span>
           Notes
@@ -804,24 +839,28 @@ export function TravelLegForm({
             onChange={(e) => setPurposeNotes(e.target.value)}
             placeholder="Any notes about this trip…"
             rows={3}
-            className="w-full border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         )}
       </div>
 
       {/* Total summary */}
       {(totals.drive > 0 || totals.stop > 0) && (
-        <div className="flex gap-4 text-sm text-stone-600 bg-stone-50 rounded-lg px-4 py-3 border border-stone-200">
-          <span>Drive: <strong>{formatMinutes(totals.drive)}</strong></span>
-          <span>Stops: <strong>{formatMinutes(totals.stop)}</strong></span>
-          <span>Total: <strong>{formatMinutes(totals.total)}</strong></span>
+        <div className="flex gap-4 text-sm text-stone-400 bg-stone-800 rounded-lg px-4 py-3 border border-stone-700">
+          <span>
+            Drive: <strong>{formatMinutes(totals.drive)}</strong>
+          </span>
+          <span>
+            Stops: <strong>{formatMinutes(totals.stop)}</strong>
+          </span>
+          <span>
+            Total: <strong>{formatMinutes(totals.total)}</strong>
+          </span>
         </div>
       )}
 
       {/* Error */}
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 rounded px-3 py-2">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 bg-red-950 rounded px-3 py-2">{error}</p>}
 
       {/* Actions */}
       <div className="flex gap-3 pt-2">

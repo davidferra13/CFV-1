@@ -8,12 +8,12 @@ interface ResumeSectionProps {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  amber: 'bg-amber-100 text-amber-700 border-amber-200',
-  blue: 'bg-blue-100 text-blue-700 border-blue-200',
-  green: 'bg-green-100 text-green-700 border-green-200',
-  red: 'bg-red-100 text-red-700 border-red-200',
-  purple: 'bg-purple-100 text-purple-700 border-purple-200',
-  stone: 'bg-stone-100 text-stone-600 border-stone-200',
+  amber: 'bg-amber-900 text-amber-700 border-amber-200',
+  blue: 'bg-blue-900 text-blue-700 border-blue-200',
+  green: 'bg-green-900 text-green-700 border-green-200',
+  red: 'bg-red-900 text-red-700 border-red-200',
+  purple: 'bg-purple-900 text-purple-700 border-purple-200',
+  stone: 'bg-stone-800 text-stone-400 border-stone-700',
 }
 
 const TYPE_ICONS: Record<string, string> = {
@@ -27,21 +27,25 @@ const TYPE_ICONS: Record<string, string> = {
 export function ResumeSection({ items }: ResumeSectionProps) {
   if (items.length === 0) {
     return (
-      <div className="border border-stone-200 rounded-lg p-6 bg-stone-50/50">
-        <h3 className="text-sm font-semibold text-stone-700 mb-1">Pick Up Where You Left Off</h3>
-        <p className="text-xs text-stone-400">Nothing in progress right now. You&apos;re all caught up!</p>
+      <div className="border border-stone-700 rounded-lg p-6 bg-stone-800/50">
+        <h3 className="text-sm font-semibold text-stone-300 mb-1">Pick Up Where You Left Off</h3>
+        <p className="text-xs text-stone-400">
+          Nothing in progress right now. You&apos;re all caught up!
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="border border-stone-200 rounded-lg overflow-hidden">
-      <div className="px-4 py-3 bg-stone-50 border-b border-stone-200">
-        <h3 className="text-sm font-semibold text-stone-700">Pick Up Where You Left Off</h3>
-        <p className="text-xs text-stone-400 mt-0.5">{items.length} item{items.length !== 1 ? 's' : ''} in progress</p>
+    <div className="border border-stone-700 rounded-lg overflow-hidden">
+      <div className="px-4 py-3 bg-stone-800 border-b border-stone-700">
+        <h3 className="text-sm font-semibold text-stone-300">Pick Up Where You Left Off</h3>
+        <p className="text-xs text-stone-400 mt-0.5">
+          {items.length} item{items.length !== 1 ? 's' : ''} in progress
+        </p>
       </div>
-      <div className="divide-y divide-stone-100">
-        {items.map(item => (
+      <div className="divide-y divide-stone-800">
+        {items.map((item) => (
           <ResumeRow key={`${item.type}-${item.id}`} item={item} />
         ))}
       </div>
@@ -56,13 +60,15 @@ function ResumeRow({ item }: { item: ResumeItem }) {
   return (
     <Link
       href={item.href}
-      className="flex items-start gap-3 px-4 py-3 hover:bg-stone-50 transition-colors group"
+      className="flex items-start gap-3 px-4 py-3 hover:bg-stone-800 transition-colors group"
     >
       <span className="text-base mt-0.5 shrink-0">{icon}</span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-stone-800 truncate">{item.title}</span>
-          <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${statusStyle}`}>
+          <span className="text-sm font-medium text-stone-200 truncate">{item.title}</span>
+          <span
+            className={`text-[10px] font-medium px-1.5 py-0.5 rounded border shrink-0 ${statusStyle}`}
+          >
             {item.status}
           </span>
         </div>

@@ -97,7 +97,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
       </CardHeader>
       <CardContent className="space-y-4">
         {saved && (
-          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
             <CheckCircle className="h-4 w-4" />
             Payroll recorded.
           </div>
@@ -105,11 +105,11 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">Employee</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">Employee</label>
             <select
               value={form.employeeId}
               onChange={(e) => handleEmployeeChange(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
             >
               {employees.map((e) => (
                 <option key={e.id} value={e.id}>
@@ -156,7 +156,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
             onChange={(e) => setForm({ ...form, overtimeHours: parseFloat(e.target.value || '0') })}
           />
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">
               Hourly Rate ($)
             </label>
             <Input
@@ -173,7 +173,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">YTD Wages ($)</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">YTD Wages ($)</label>
             <Input
               type="number"
               min="0"
@@ -192,7 +192,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">
               Federal Income Tax Withheld ($)
             </label>
             <Input
@@ -210,7 +210,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
             <p className="text-xs text-stone-400 mt-1">From IRS withholding tables or W-4</p>
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1.5">
+            <label className="block text-sm font-medium text-stone-300 mb-1.5">
               State Income Tax Withheld ($)
             </label>
             <Input
@@ -229,8 +229,8 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
         </div>
 
         {/* Tax Breakdown Preview */}
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 space-y-1.5 text-sm">
-          <p className="font-medium text-stone-700 mb-2">Pay Breakdown</p>
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-4 space-y-1.5 text-sm">
+          <p className="font-medium text-stone-300 mb-2">Pay Breakdown</p>
           <div className="flex justify-between">
             <span className="text-stone-500">Regular Pay ({form.regularHours}h)</span>
             <span>{formatCurrency(regularPay)}</span>
@@ -239,7 +239,7 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
             <span className="text-stone-500">Overtime Pay ({form.overtimeHours}h × 1.5)</span>
             <span>{formatCurrency(overtimePay)}</span>
           </div>
-          <div className="flex justify-between font-medium border-t border-stone-200 pt-1.5">
+          <div className="flex justify-between font-medium border-t border-stone-700 pt-1.5">
             <span>Gross Pay</span>
             <span>{formatCurrency(grossPay)}</span>
           </div>
@@ -259,11 +259,11 @@ export function PayrollEntryForm({ employees, onSaved }: Props) {
             <span>State Income Tax</span>
             <span>- {formatCurrency(form.stateIncomeTaxCents)}</span>
           </div>
-          <div className="flex justify-between font-bold text-green-700 border-t border-stone-200 pt-1.5">
+          <div className="flex justify-between font-bold text-green-700 border-t border-stone-700 pt-1.5">
             <span>Net Pay</span>
             <span>{formatCurrency(netPay)}</span>
           </div>
-          <div className="pt-2 border-t border-stone-100">
+          <div className="pt-2 border-t border-stone-800">
             <p className="text-xs text-stone-400 font-medium">
               Employer Costs (not deducted from employee)
             </p>

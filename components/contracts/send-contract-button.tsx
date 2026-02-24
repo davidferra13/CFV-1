@@ -82,7 +82,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-stone-700">Contract</span>
+        <span className="text-sm font-medium text-stone-300">Contract</span>
         {contract && <ContractStatusBadge status={contract.status} />}
       </div>
 
@@ -93,7 +93,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
             <select
               value={selectedTemplateId}
               onChange={(e) => setSelectedTemplateId(e.target.value)}
-              className="rounded-lg border border-stone-300 px-3 py-2 text-sm"
+              className="rounded-lg border border-stone-600 px-3 py-2 text-sm"
             >
               {templates.map((t) => (
                 <option key={t.id} value={t.id}>
@@ -115,14 +115,19 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
           <Button size="sm" onClick={handleSend} disabled={loading}>
             {loading ? 'Sending…' : 'Send to Client'}
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => setShowVoidConfirm(true)} disabled={loading}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setShowVoidConfirm(true)}
+            disabled={loading}
+          >
             Discard
           </Button>
           <a
             href={`/api/documents/contract/${contract.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-stone-400 underline hover:text-stone-700"
+            className="text-xs text-stone-400 underline hover:text-stone-300"
           >
             Preview PDF ↗
           </a>
@@ -141,14 +146,19 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
             <Button size="sm" variant="secondary" onClick={handleSend} disabled={loading}>
               Resend email
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowVoidConfirm(true)} disabled={loading}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowVoidConfirm(true)}
+              disabled={loading}
+            >
               Void & regenerate
             </Button>
             <a
               href={`/api/documents/contract/${contract.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-stone-400 underline hover:text-stone-700"
+              className="text-xs text-stone-400 underline hover:text-stone-300"
             >
               Preview PDF ↗
             </a>
@@ -166,7 +176,7 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
             href={`/api/documents/contract/${contract.id}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-stone-600 underline hover:text-stone-900"
+            className="text-sm text-stone-400 underline hover:text-stone-100"
           >
             Download PDF
           </a>
@@ -185,8 +195,10 @@ export function SendContractButton({ eventId, templates, contract }: Props) {
 
       {/* Void confirmation */}
       {showVoidConfirm && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 space-y-2">
-          <p className="text-sm text-red-700">Void this contract? The client will not be able to sign it.</p>
+        <div className="rounded-lg border border-red-200 bg-red-950 p-3 space-y-2">
+          <p className="text-sm text-red-700">
+            Void this contract? The client will not be able to sign it.
+          </p>
           <div className="flex gap-2">
             <Button size="sm" variant="danger" onClick={handleVoid} disabled={loading}>
               {loading ? 'Voiding…' : 'Void Contract'}

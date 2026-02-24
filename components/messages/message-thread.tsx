@@ -19,12 +19,12 @@ const CHANNEL_LABELS: Record<string, string> = {
 }
 
 const CHANNEL_COLORS: Record<string, string> = {
-  text: 'bg-green-100 text-green-800',
-  email: 'bg-blue-100 text-blue-800',
-  instagram: 'bg-pink-100 text-pink-800',
-  take_a_chef: 'bg-purple-100 text-purple-800',
-  phone: 'bg-amber-100 text-amber-800',
-  internal_note: 'bg-stone-100 text-stone-600',
+  text: 'bg-green-900 text-green-800',
+  email: 'bg-blue-900 text-blue-800',
+  instagram: 'bg-pink-900 text-pink-800',
+  take_a_chef: 'bg-purple-900 text-purple-800',
+  phone: 'bg-amber-900 text-amber-800',
+  internal_note: 'bg-stone-800 text-stone-400',
 }
 
 export function MessageThread({ messages, showEntityLinks = false }: MessageThreadProps) {
@@ -47,35 +47,33 @@ export function MessageThread({ messages, showEntityLinks = false }: MessageThre
           <div
             className={`max-w-[80%] rounded-lg px-4 py-3 ${
               msg.channel === 'internal_note'
-                ? 'bg-stone-50 border border-dashed border-stone-300 max-w-full w-full'
+                ? 'bg-stone-800 border border-dashed border-stone-600 max-w-full w-full'
                 : msg.direction === 'outbound'
-                  ? 'bg-brand-50 border border-brand-200'
-                  : 'bg-white border border-stone-200'
+                  ? 'bg-brand-950 border border-brand-700'
+                  : 'bg-surface border border-stone-700'
             }`}
           >
             {/* Subject line for emails */}
             {msg.subject && (
-              <p className="text-xs font-semibold text-stone-700 mb-1">
-                {msg.subject}
-              </p>
+              <p className="text-xs font-semibold text-stone-300 mb-1">{msg.subject}</p>
             )}
 
             {/* Message body */}
-            <p className="text-sm text-stone-800 whitespace-pre-wrap">{msg.body}</p>
+            <p className="text-sm text-stone-200 whitespace-pre-wrap">{msg.body}</p>
 
             {/* Meta row */}
             <div className="flex items-center gap-2 mt-2 flex-wrap">
               <span
                 className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                  CHANNEL_COLORS[msg.channel] || 'bg-stone-100 text-stone-600'
+                  CHANNEL_COLORS[msg.channel] || 'bg-stone-800 text-stone-400'
                 }`}
               >
                 {CHANNEL_LABELS[msg.channel] || msg.channel}
               </span>
               <span className="text-xs text-stone-400">
                 {msg.sent_at
-                  ? format(new Date(msg.sent_at), "MMM d, h:mm a")
-                  : format(new Date(msg.created_at), "MMM d, h:mm a")}
+                  ? format(new Date(msg.sent_at), 'MMM d, h:mm a')
+                  : format(new Date(msg.created_at), 'MMM d, h:mm a')}
               </span>
               {msg.direction === 'outbound' && msg.channel !== 'internal_note' && (
                 <span className="text-xs text-stone-400">Sent</span>

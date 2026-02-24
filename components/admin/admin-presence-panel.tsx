@@ -30,7 +30,7 @@ function RoleBadge({ role }: { role: 'authenticated' | 'anonymous' }) {
     )
   }
   return (
-    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-900 text-blue-700">
       Logged In
     </span>
   )
@@ -104,9 +104,7 @@ export function AdminPresencePanel() {
       durationSeconds: Math.floor((now - new Date(s.joinedAt).getTime()) / 1000),
     }))
     .filter((s) => (filter === 'all' ? true : s.role === filter))
-    .filter((s) =>
-      pageFilter ? s.page.toLowerCase().includes(pageFilter.toLowerCase()) : true
-    )
+    .filter((s) => (pageFilter ? s.page.toLowerCase().includes(pageFilter.toLowerCase()) : true))
 
   const total = sessions.length
   const authenticated = sessions.filter((s) => s.role === 'authenticated').length
@@ -116,22 +114,22 @@ export function AdminPresencePanel() {
     <div className="space-y-4">
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg border border-slate-200 px-4 py-3">
+        <div className="bg-surface rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Total Active</p>
           <p className="text-2xl font-bold text-slate-900 mt-1">{total}</p>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200 px-4 py-3">
+        <div className="bg-surface rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Logged In</p>
           <p className="text-2xl font-bold text-blue-600 mt-1">{authenticated}</p>
         </div>
-        <div className="bg-white rounded-lg border border-slate-200 px-4 py-3">
+        <div className="bg-surface rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Anonymous</p>
           <p className="text-2xl font-bold text-slate-500 mt-1">{anonymous}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border border-slate-200 p-4">
+      <div className="bg-surface rounded-lg border border-slate-200 p-4">
         <div className="flex flex-wrap gap-3 items-center">
           <div className="flex gap-1">
             {(['all', 'authenticated', 'anonymous'] as FilterRole[]).map((r) => (
@@ -162,7 +160,7 @@ export function AdminPresencePanel() {
       </div>
 
       {/* Session table */}
-      <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-lg border border-slate-200 overflow-hidden">
         {displaySessions.length === 0 ? (
           <div className="py-12 text-center text-slate-400 text-sm">
             {total === 0
@@ -174,11 +172,21 @@ export function AdminPresencePanel() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Identity</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Status</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Current Page</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Time on Site</th>
-                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">Referrer</th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Identity
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Status
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Current Page
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Time on Site
+                  </th>
+                  <th className="text-left px-4 py-3 text-xs font-medium text-slate-500 uppercase tracking-wide">
+                    Referrer
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -188,12 +196,16 @@ export function AdminPresencePanel() {
                       {session.email ? (
                         <div>
                           <p className="font-medium text-slate-900 text-xs">{session.email}</p>
-                          <p className="text-slate-400 text-xs font-mono">{session.sessionId.slice(0, 8)}…</p>
+                          <p className="text-slate-400 text-xs font-mono">
+                            {session.sessionId.slice(0, 8)}…
+                          </p>
                         </div>
                       ) : (
                         <div>
                           <p className="text-slate-500 text-xs">Visitor</p>
-                          <p className="text-slate-400 text-xs font-mono">{session.sessionId.slice(0, 8)}…</p>
+                          <p className="text-slate-400 text-xs font-mono">
+                            {session.sessionId.slice(0, 8)}…
+                          </p>
                         </div>
                       )}
                     </td>
@@ -220,7 +232,8 @@ export function AdminPresencePanel() {
       </div>
 
       <p className="text-xs text-slate-400 text-center">
-        Updates in real-time via Supabase Realtime presence. Sessions disappear automatically when a tab is closed.
+        Updates in real-time via Supabase Realtime presence. Sessions disappear automatically when a
+        tab is closed.
       </p>
     </div>
   )

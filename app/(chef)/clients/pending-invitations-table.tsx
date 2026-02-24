@@ -77,8 +77,8 @@ export function PendingInvitationsTable({ invitations }: PendingInvitationsTable
             return (
               <TableRow key={invitation.id}>
                 <TableCell className="font-medium">{invitation.email}</TableCell>
-                <TableCell className="text-stone-600">{invitation.full_name || '-'}</TableCell>
-                <TableCell className="text-stone-600">
+                <TableCell className="text-stone-400">{invitation.full_name || '-'}</TableCell>
+                <TableCell className="text-stone-400">
                   {format(new Date(invitation.created_at), 'PP')}
                 </TableCell>
                 <TableCell>

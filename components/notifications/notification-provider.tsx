@@ -1,13 +1,6 @@
 'use client'
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-  useRef,
-} from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { subscribeToNotifications } from '@/lib/notifications/realtime'
@@ -57,11 +50,11 @@ function NotificationToast({
     event: 'bg-brand-600',
     payment: 'bg-emerald-500',
     chat: 'bg-violet-500',
-    client: 'bg-stone-500',
+    client: 'bg-stone-8000',
     system: 'bg-stone-700',
   }
 
-  const dotColor = categoryColors[notification.category] || 'bg-stone-500'
+  const dotColor = categoryColors[notification.category] || 'bg-stone-8000'
 
   return (
     <button
@@ -76,13 +69,9 @@ function NotificationToast({
     >
       <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${dotColor}`} />
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-stone-900 truncate">
-          {notification.title}
-        </p>
+        <p className="text-sm font-medium text-stone-100 truncate">{notification.title}</p>
         {notification.body && (
-          <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">
-            {notification.body}
-          </p>
+          <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">{notification.body}</p>
         )}
       </div>
     </button>
@@ -143,19 +132,13 @@ export function NotificationProvider({
       const config = NOTIFICATION_CONFIG[notification.action as NotificationAction]
       const categoryPref = preferencesRef.current.get(notification.category)
       // If user has set a preference, use it. Otherwise use default from config.
-      const shouldToast = categoryPref !== undefined
-        ? categoryPref
-        : (config?.toastByDefault ?? true)
+      const shouldToast =
+        categoryPref !== undefined ? categoryPref : (config?.toastByDefault ?? true)
 
       if (shouldToast) {
         toast.custom(
-          (t) => (
-            <NotificationToast
-              notification={notification}
-              onClose={() => toast.dismiss(t)}
-            />
-          ),
-          { duration: 5000 },
+          (t) => <NotificationToast notification={notification} onClose={() => toast.dismiss(t)} />,
+          { duration: 5000 }
         )
       }
     })
@@ -184,9 +167,7 @@ export function NotificationProvider({
   }, [])
 
   return (
-    <NotificationContext.Provider
-      value={{ unreadCount, markAsRead, markAllAsRead, refreshCount }}
-    >
+    <NotificationContext.Provider value={{ unreadCount, markAsRead, markAllAsRead, refreshCount }}>
       {children}
     </NotificationContext.Provider>
   )

@@ -58,8 +58,8 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
   if (done) {
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg p-8 max-w-md w-full text-center">
-          <p className="text-lg font-medium text-stone-900 mb-2">Check-in saved!</p>
+        <div className="bg-surface rounded-lg p-8 max-w-md w-full text-center">
+          <p className="text-lg font-medium text-stone-100 mb-2">Check-in saved!</p>
           <p className="text-sm text-stone-500 mb-4">See you in 3 months.</p>
           <Button onClick={onClose}>Close</Button>
         </div>
@@ -71,11 +71,11 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg p-6 max-w-lg w-full">
+      <div className="bg-surface rounded-lg p-6 max-w-lg w-full">
         <p className="text-xs text-stone-400 mb-4">
           Question {step + 1} of {questions.length}
         </p>
-        <p className="text-lg font-medium text-stone-900 mb-4">{q.label}</p>
+        <p className="text-lg font-medium text-stone-100 mb-4">{q.label}</p>
 
         {q.type === 'slider' ? (
           <div className="space-y-3">
@@ -89,7 +89,7 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
             />
             <div className="flex justify-between text-xs text-stone-500">
               <span>1 — Struggling</span>
-              <span className="text-lg font-bold text-stone-900">{satisfaction}</span>
+              <span className="text-lg font-bold text-stone-100">{satisfaction}</span>
               <span>10 — Thriving</span>
             </div>
           </div>
@@ -98,7 +98,7 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
             value={q.value}
             onChange={(e) => q.setter(e.target.value)}
             rows={4}
-            className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+            className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             placeholder="Take your time..."
           />
         )}

@@ -22,11 +22,11 @@ export default async function FavoriteChefsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Settings
         </Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Favorite Chefs</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Favorite Chefs</h1>
+        <p className="text-stone-400 mt-1">
           Celebrate the chefs who inspire you — mentors, idols, and culinary heroes. Share your list
           on social media to show clients what drives your craft.
         </p>

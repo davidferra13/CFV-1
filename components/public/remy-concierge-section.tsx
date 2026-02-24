@@ -140,16 +140,16 @@ export function RemyConciergeSection() {
   // Static FAQ fallback when Ollama is offline
   if (ollamaOffline && !hasConversation) {
     return (
-      <section className="border-y border-stone-200 bg-gradient-to-b from-brand-50/60 to-white">
+      <section className="border-y border-stone-700 bg-gradient-to-b from-brand-50/60 to-white">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="mb-10 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-900 text-brand-400">
               <MessageCircle className="h-7 w-7" />
             </div>
-            <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
+            <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
               What do you need done?
             </h2>
-            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
               Here are the most common things private chefs ask about.
             </p>
           </div>
@@ -157,21 +157,21 @@ export function RemyConciergeSection() {
             {CHEFFLOW_FEATURE_MAP.slice(0, 8).map((feature, i) => (
               <div
                 key={i}
-                className="overflow-hidden rounded-xl border border-stone-200 bg-white transition-shadow hover:shadow-sm"
+                className="overflow-hidden rounded-xl border border-stone-700 bg-surface transition-shadow hover:shadow-sm"
               >
                 <button
                   onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
                   className="flex w-full items-center justify-between px-5 py-4 text-left"
                 >
-                  <span className="text-sm font-medium text-stone-800">{feature.painPoint}</span>
+                  <span className="text-sm font-medium text-stone-200">{feature.painPoint}</span>
                   <ChevronDown
                     className={`h-4 w-4 shrink-0 text-stone-400 transition-transform ${expandedFaq === i ? 'rotate-180' : ''}`}
                   />
                 </button>
                 {expandedFaq === i && (
-                  <div className="border-t border-stone-100 bg-stone-50 px-5 py-4">
-                    <p className="text-sm leading-relaxed text-stone-600">{feature.solution}</p>
-                    <p className="mt-3 text-xs font-medium text-brand-700">
+                  <div className="border-t border-stone-800 bg-stone-800 px-5 py-4">
+                    <p className="text-sm leading-relaxed text-stone-400">{feature.solution}</p>
+                    <p className="mt-3 text-xs font-medium text-brand-400">
                       {feature.featureName} — {feature.tier === 'free' ? 'included free' : 'Pro'}
                     </p>
                   </div>
@@ -193,16 +193,16 @@ export function RemyConciergeSection() {
   }
 
   return (
-    <section className="border-y border-stone-200 bg-gradient-to-b from-brand-50/60 to-white">
+    <section className="border-y border-stone-700 bg-gradient-to-b from-brand-50/60 to-white">
       <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
         <div className="mb-10 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-100 text-brand-700">
+          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-900 text-brand-400">
             <MessageCircle className="h-7 w-7" />
           </div>
-          <h2 className="text-3xl font-display tracking-tight text-stone-900 md:text-4xl">
+          <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
             Tell me what&apos;s eating your time.
           </h2>
-          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-600">
+          <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
             Skeptical? Good. Ask Remy if ChefFlow can handle your specific problem — and he&apos;ll
             show you exactly how.
           </p>
@@ -217,7 +217,7 @@ export function RemyConciergeSection() {
                   key={s.label}
                   onClick={() => sendMessage(s.message)}
                   disabled={isStreaming}
-                  className="rounded-full border border-brand-200 bg-white px-4 py-2 text-sm text-brand-700 transition-all hover:border-brand-400 hover:bg-brand-50 hover:shadow-sm disabled:opacity-50"
+                  className="rounded-full border border-brand-700 bg-surface px-4 py-2 text-sm text-brand-400 transition-all hover:border-brand-400 hover:bg-brand-950 hover:shadow-sm disabled:opacity-50"
                 >
                   {s.label}
                 </button>
@@ -229,7 +229,7 @@ export function RemyConciergeSection() {
           {hasConversation && (
             <div
               ref={chatAreaRef}
-              className="mb-4 max-h-[400px] overflow-y-auto rounded-2xl border border-stone-200 bg-white p-4 shadow-sm"
+              className="mb-4 max-h-[400px] overflow-y-auto rounded-2xl border border-stone-700 bg-surface p-4 shadow-sm"
             >
               {messages.map((msg) => (
                 <div
@@ -245,7 +245,7 @@ export function RemyConciergeSection() {
                     className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
                       msg.role === 'user'
                         ? 'bg-brand-600 text-white'
-                        : 'bg-stone-100 text-stone-800'
+                        : 'bg-stone-800 text-stone-200'
                     }`}
                   >
                     {msg.content ||
@@ -257,7 +257,7 @@ export function RemyConciergeSection() {
               ))}
 
               {error && (
-                <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700">
+                <div className="mb-3 rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-xs text-red-700">
                   {error}
                 </div>
               )}
@@ -275,7 +275,7 @@ export function RemyConciergeSection() {
               onKeyDown={handleKeyDown}
               placeholder="What's your biggest challenge as a private chef?"
               rows={1}
-              className="flex-1 resize-none rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm text-stone-800 placeholder-stone-400 outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20"
+              className="flex-1 resize-none rounded-xl border border-stone-600 bg-surface px-4 py-3 text-sm text-stone-200 placeholder-stone-400 outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20"
               disabled={isStreaming}
               style={{ maxHeight: '100px' }}
             />

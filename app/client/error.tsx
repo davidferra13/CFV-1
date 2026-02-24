@@ -22,9 +22,9 @@ export default function ClientPortalError({
   }, [error])
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
       <div className="w-full max-w-sm text-center space-y-5">
-        <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-100">
+        <div className="mx-auto w-16 h-16 flex items-center justify-center rounded-full bg-red-900">
           <svg
             className="w-8 h-8 text-red-500"
             fill="none"
@@ -40,14 +40,12 @@ export default function ClientPortalError({
           </svg>
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-stone-800">Something went wrong</h1>
+          <h1 className="text-xl font-semibold text-stone-200">Something went wrong</h1>
           <p className="text-sm text-stone-500 mt-1">
             There was a problem loading your portal. Please try again.
           </p>
         </div>
-        {error.digest && (
-          <p className="text-xs text-stone-400">Reference: {error.digest}</p>
-        )}
+        {error.digest && <p className="text-xs text-stone-400">Reference: {error.digest}</p>}
         <button
           onClick={reset}
           className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium bg-stone-800 text-white rounded-lg hover:bg-stone-700 transition-colors"

@@ -7,20 +7,16 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  createStaffMember,
-  updateStaffMember,
-  type CreateStaffInput,
-} from '@/lib/staff/actions'
+import { createStaffMember, updateStaffMember, type CreateStaffInput } from '@/lib/staff/actions'
 
 const ROLES = [
-  { value: 'sous_chef',          label: 'Sous Chef' },
-  { value: 'kitchen_assistant',  label: 'Kitchen Assistant' },
-  { value: 'service_staff',      label: 'Service Staff' },
-  { value: 'server',             label: 'Server' },
-  { value: 'bartender',          label: 'Bartender' },
-  { value: 'dishwasher',         label: 'Dishwasher' },
-  { value: 'other',              label: 'Other' },
+  { value: 'sous_chef', label: 'Sous Chef' },
+  { value: 'kitchen_assistant', label: 'Kitchen Assistant' },
+  { value: 'service_staff', label: 'Service Staff' },
+  { value: 'server', label: 'Server' },
+  { value: 'bartender', label: 'Bartender' },
+  { value: 'dishwasher', label: 'Dishwasher' },
+  { value: 'other', label: 'Other' },
 ] as const
 
 type StaffMember = {
@@ -88,7 +84,7 @@ export function StaffMemberForm({ member, onDone }: Props) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Name</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Name</label>
           <Input
             value={form.name}
             onChange={(e) => update('name', e.target.value)}
@@ -97,14 +93,16 @@ export function StaffMemberForm({ member, onDone }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Role</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Role</label>
           <select
             value={form.role}
             onChange={(e) => update('role', e.target.value)}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+            className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
           >
             {ROLES.map((r) => (
-              <option key={r.value} value={r.value}>{r.label}</option>
+              <option key={r.value} value={r.value}>
+                {r.label}
+              </option>
             ))}
           </select>
         </div>
@@ -112,7 +110,7 @@ export function StaffMemberForm({ member, onDone }: Props) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Phone</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Phone</label>
           <Input
             value={form.phone}
             onChange={(e) => update('phone', e.target.value)}
@@ -121,7 +119,7 @@ export function StaffMemberForm({ member, onDone }: Props) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Email</label>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Email</label>
           <Input
             value={form.email}
             onChange={(e) => update('email', e.target.value)}
@@ -132,7 +130,7 @@ export function StaffMemberForm({ member, onDone }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Hourly rate ($)</label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">Hourly rate ($)</label>
         <Input
           value={form.hourly_rate_dollars}
           onChange={(e) => update('hourly_rate_dollars', e.target.value)}
@@ -144,13 +142,13 @@ export function StaffMemberForm({ member, onDone }: Props) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-stone-700 mb-1">Notes</label>
+        <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
         <textarea
           value={form.notes}
           onChange={(e) => update('notes', e.target.value)}
           rows={2}
           placeholder="Dietary restrictions, certifications, scheduling preferences…"
-          className="w-full rounded-lg border border-stone-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
+          className="w-full rounded-lg border border-stone-600 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 resize-none"
         />
       </div>
 
@@ -161,7 +159,9 @@ export function StaffMemberForm({ member, onDone }: Props) {
           {saving ? 'Saving…' : member ? 'Update' : 'Add to Roster'}
         </Button>
         {onDone && (
-          <Button type="button" variant="ghost" onClick={onDone}>Cancel</Button>
+          <Button type="button" variant="ghost" onClick={onDone}>
+            Cancel
+          </Button>
         )}
       </div>
     </form>

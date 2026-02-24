@@ -29,12 +29,12 @@ export function TosAcceptance({ onAcceptedChange, accepted, className }: TosAcce
         type="checkbox"
         checked={accepted}
         onChange={(e) => onAcceptedChange(e.target.checked)}
-        className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+        className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer rounded border-stone-600 text-brand-600 focus:ring-brand-500"
         aria-required="true"
       />
       <label
         htmlFor="tos-acceptance"
-        className="cursor-pointer text-sm leading-snug text-stone-600"
+        className="cursor-pointer text-sm leading-snug text-stone-400"
       >
         I have read and agree to the{' '}
         <Link

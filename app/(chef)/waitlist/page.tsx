@@ -3,7 +3,11 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
-import { getWaitlistEntries, contactWaitlistEntry, expireWaitlistEntry } from '@/lib/availability/actions'
+import {
+  getWaitlistEntries,
+  contactWaitlistEntry,
+  expireWaitlistEntry,
+} from '@/lib/availability/actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,11 +16,14 @@ import { WaitlistAddForm } from './waitlist-add-form'
 
 export const metadata: Metadata = { title: 'Waitlist — ChefFlow' }
 
-const STATUS_BADGE: Record<string, { label: string; variant: 'default' | 'warning' | 'success' | 'error' }> = {
-  waiting:   { label: 'Waiting',   variant: 'warning' },
+const STATUS_BADGE: Record<
+  string,
+  { label: string; variant: 'default' | 'warning' | 'success' | 'error' }
+> = {
+  waiting: { label: 'Waiting', variant: 'warning' },
   contacted: { label: 'Contacted', variant: 'info' as 'default' },
   converted: { label: 'Converted', variant: 'success' },
-  expired:   { label: 'Expired',   variant: 'default' },
+  expired: { label: 'Expired', variant: 'default' },
 }
 
 export default async function WaitlistPage() {
@@ -32,7 +39,7 @@ export default async function WaitlistPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Waitlist</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Waitlist</h1>
         <p className="mt-1 text-sm text-stone-500">
           Clients waiting for a date to open. Contact them when availability changes.
         </p>
@@ -51,16 +58,20 @@ export default async function WaitlistPage() {
                   <div className="flex items-start justify-between gap-2">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-stone-900">
+                        <span className="font-medium text-stone-100">
                           {client?.full_name ?? 'Unknown client'}
                         </span>
                         <Badge variant={cfg.variant}>{cfg.label}</Badge>
                       </div>
-                      <p className="mt-0.5 text-sm text-stone-600">
+                      <p className="mt-0.5 text-sm text-stone-400">
                         {format(new Date(entry.requested_date + 'T00:00:00'), 'MMM d, yyyy')}
-                        {entry.requested_date_end ? ` – ${format(new Date(entry.requested_date_end + 'T00:00:00'), 'MMM d')}` : ''}
+                        {entry.requested_date_end
+                          ? ` – ${format(new Date(entry.requested_date_end + 'T00:00:00'), 'MMM d')}`
+                          : ''}
                         {entry.occasion ? ` · ${entry.occasion}` : ''}
-                        {entry.guest_count_estimate ? ` · ${entry.guest_count_estimate} guests` : ''}
+                        {entry.guest_count_estimate
+                          ? ` · ${entry.guest_count_estimate} guests`
+                          : ''}
                       </p>
                       {entry.notes && (
                         <p className="mt-0.5 text-xs text-stone-400">{entry.notes}</p>
@@ -68,17 +79,23 @@ export default async function WaitlistPage() {
                     </div>
                     <div className="flex gap-1 flex-shrink-0">
                       {entry.status === 'waiting' && (
-                        <form action={async () => {
-                          'use server'
-                          await contactWaitlistEntry(entry.id)
-                        }}>
-                          <Button type="submit" size="sm" variant="secondary">Mark Contacted</Button>
+                        <form
+                          action={async () => {
+                            'use server'
+                            await contactWaitlistEntry(entry.id)
+                          }}
+                        >
+                          <Button type="submit" size="sm" variant="secondary">
+                            Mark Contacted
+                          </Button>
                         </form>
                       )}
-                      <form action={async () => {
-                        'use server'
-                        await expireWaitlistEntry(entry.id)
-                      }}>
+                      <form
+                        action={async () => {
+                          'use server'
+                          await expireWaitlistEntry(entry.id)
+                        }}
+                      >
                         <Button type="submit" size="sm" variant="ghost" className="text-stone-400">
                           Expire
                         </Button>
@@ -94,7 +111,7 @@ export default async function WaitlistPage() {
 
       <Card>
         <CardContent className="pt-4">
-          <h2 className="text-base font-semibold text-stone-900 mb-3">Add to Waitlist</h2>
+          <h2 className="text-base font-semibold text-stone-100 mb-3">Add to Waitlist</h2>
           <WaitlistAddForm />
         </CardContent>
       </Card>

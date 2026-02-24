@@ -48,7 +48,7 @@ export default async function ActivityPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-stone-800">Activity Log</h1>
+        <h1 className="text-xl font-bold text-stone-200">Activity Log</h1>
         <p className="text-sm text-stone-500 mt-0.5">
           Everything you&apos;ve been working on, all in one place.
         </p>
@@ -57,8 +57,8 @@ export default async function ActivityPage() {
       {resumeItems.length === 0 &&
         chefActivityResult.items.length === 0 &&
         clientActivityResult.items.length === 0 && (
-          <div className="rounded-xl border border-stone-200 bg-white p-8 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-50">
+          <div className="rounded-xl border border-stone-700 bg-surface p-8 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-950">
               <svg
                 className="h-6 w-6 text-brand-600"
                 fill="none"
@@ -73,7 +73,7 @@ export default async function ActivityPage() {
                 />
               </svg>
             </div>
-            <h2 className="text-lg font-semibold text-stone-900">No activity yet</h2>
+            <h2 className="text-lg font-semibold text-stone-100">No activity yet</h2>
             <p className="mt-2 text-sm text-stone-500 max-w-md mx-auto">
               As you create events, manage clients, and work through your pipeline, your actions
               will be logged here.

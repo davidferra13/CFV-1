@@ -13,11 +13,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format, parseISO } from 'date-fns'
 
-export default async function PackPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function PackPage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const [packingData, packingStatus] = await Promise.all([
@@ -39,11 +35,11 @@ export default async function PackPage({
         <div>
           <Link
             href={`/events/${params.id}`}
-            className="text-sm text-stone-500 hover:text-stone-700 mb-1 block"
+            className="text-sm text-stone-500 hover:text-stone-300 mb-1 block"
           >
             ← Back to event
           </Link>
-          <h1 className="text-2xl font-bold text-stone-900">Packing Checklist</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Packing Checklist</h1>
           <p className="text-stone-500 text-sm mt-0.5">
             {clientName} · {dateStr}
           </p>
@@ -61,19 +57,16 @@ export default async function PackPage({
 
       {/* Departure callout — most urgent info, immediately visible */}
       {(event.departure_time_display || event.access_instructions) && (
-        <Card className="p-4 bg-amber-50 border-amber-200">
+        <Card className="p-4 bg-amber-950 border-amber-200">
           {event.departure_time_display && (
             <p className="text-lg font-bold text-amber-900">
               Depart by {event.departure_time_display}
             </p>
           )}
           {event.access_instructions && (
-            <p className="text-sm text-amber-800 mt-1">
-              Access: {event.access_instructions}
-            </p>
+            <p className="text-sm text-amber-800 mt-1">Access: {event.access_instructions}</p>
           )}
-          {[event.location_address, event.location_city, event.location_state]
-            .filter(Boolean)
+          {[event.location_address, event.location_city, event.location_state].filter(Boolean)
             .length > 0 && (
             <p className="text-sm text-amber-700 mt-1">
               {[event.location_address, event.location_city, event.location_state]
@@ -86,9 +79,10 @@ export default async function PackPage({
 
       {/* Already packed confirmation */}
       {packingStatus.carPacked && (
-        <Card className="p-4 bg-green-50 border-green-200">
+        <Card className="p-4 bg-green-950 border-green-200">
           <p className="text-green-800 font-medium">
-            Car packed {packingStatus.carPackedAt
+            Car packed{' '}
+            {packingStatus.carPackedAt
               ? `at ${format(new Date(packingStatus.carPackedAt), 'h:mm a')}`
               : ''}
           </p>

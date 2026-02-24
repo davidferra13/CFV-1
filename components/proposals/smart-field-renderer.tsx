@@ -34,7 +34,8 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
     // Replace context tokens
     if (context?.clientName) result = result.replace(/\{client\.name\}/g, context.clientName)
     if (context?.eventDate) result = result.replace(/\{event\.date\}/g, context.eventDate)
-    if (context?.guestCount) result = result.replace(/\{event\.guest_count\}/g, String(context.guestCount))
+    if (context?.guestCount)
+      result = result.replace(/\{event\.guest_count\}/g, String(context.guestCount))
     // Replace custom fields
     for (const f of fieldList) {
       result = result.replace(new RegExp(`\\{${f.fieldKey}\\}`, 'g'), f.fieldValue)
@@ -82,24 +83,35 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
           <div className="space-y-2">
             {fieldList.map((f) => (
               <div key={f.fieldKey} className="flex items-center gap-2">
-                <code className="text-xs bg-stone-100 px-2 py-1 rounded">{`{${f.fieldKey}}`}</code>
+                <code className="text-xs bg-stone-800 px-2 py-1 rounded">{`{${f.fieldKey}}`}</code>
                 {editingKey === f.fieldKey ? (
                   <div className="flex items-center gap-1 flex-1">
                     <input
                       value={editValue}
                       onChange={(e) => setEditValue(e.target.value)}
-                      className="flex-1 rounded border border-stone-300 px-2 py-1 text-sm"
+                      className="flex-1 rounded border border-stone-600 px-2 py-1 text-sm"
                     />
-                    <Button size="sm" onClick={() => handleSave(f.fieldKey, editValue)} loading={isPending}>Save</Button>
-                    <Button size="sm" variant="ghost" onClick={() => setEditingKey(null)}>Cancel</Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleSave(f.fieldKey, editValue)}
+                      loading={isPending}
+                    >
+                      Save
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => setEditingKey(null)}>
+                      Cancel
+                    </Button>
                   </div>
                 ) : (
                   <div className="flex items-center gap-1 flex-1">
-                    <span className="text-sm text-stone-600 flex-1">{f.fieldValue}</span>
+                    <span className="text-sm text-stone-400 flex-1">{f.fieldValue}</span>
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => { setEditingKey(f.fieldKey); setEditValue(f.fieldValue) }}
+                      onClick={() => {
+                        setEditingKey(f.fieldKey)
+                        setEditValue(f.fieldValue)
+                      }}
                     >
                       Edit
                     </Button>
@@ -110,7 +122,7 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
           </div>
 
           {showAdd ? (
-            <div className="space-y-2 pt-2 border-t border-stone-100">
+            <div className="space-y-2 pt-2 border-t border-stone-800">
               <Input
                 label="Field Key"
                 value={newKey}
@@ -124,10 +136,17 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
                 placeholder="e.g., Chef David"
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={() => handleSave(newKey, newValue)} loading={isPending} disabled={!newKey}>
+                <Button
+                  size="sm"
+                  onClick={() => handleSave(newKey, newValue)}
+                  loading={isPending}
+                  disabled={!newKey}
+                >
                   Save
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>Cancel</Button>
+                <Button size="sm" variant="ghost" onClick={() => setShowAdd(false)}>
+                  Cancel
+                </Button>
               </div>
             </div>
           ) : (
@@ -146,7 +165,7 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
             <CardTitle className="text-base">Preview</CardTitle>
           </CardHeader>
           <CardContent>
-            <pre className="whitespace-pre-wrap text-sm text-stone-700 bg-stone-50 rounded-lg p-4">
+            <pre className="whitespace-pre-wrap text-sm text-stone-300 bg-stone-800 rounded-lg p-4">
               {renderPreview(previewTemplate)}
             </pre>
           </CardContent>

@@ -18,7 +18,7 @@ export async function WeatherPanel({ lat, lng, eventDate }: WeatherPanelProps) {
   const hasPrecip = weather.precipitationMm > 0.1
 
   return (
-    <div className="mt-3 rounded-lg border border-sky-200 bg-sky-50 p-3">
+    <div className="mt-3 rounded-lg border border-sky-200 bg-sky-950 p-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <span className="text-2xl" role="img" aria-label={weather.description}>

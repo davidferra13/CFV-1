@@ -35,13 +35,13 @@ export function RemovalRequestForm({
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-3">
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">
+            <label className="block text-sm font-medium text-stone-300 mb-1">
               Client (optional)
             </label>
             <select
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             >
               <option value="">General request</option>
               {clients.map((c) => (
@@ -52,13 +52,13 @@ export function RemovalRequestForm({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Reason</label>
+            <label className="block text-sm font-medium text-stone-300 mb-1">Reason</label>
             <textarea
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={3}
               placeholder="Why is this content being removed?"
-              className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+              className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
             />
           </div>
           <div className="flex gap-2">

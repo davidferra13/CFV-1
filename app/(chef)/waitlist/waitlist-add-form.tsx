@@ -47,7 +47,7 @@ export function WaitlistAddForm() {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Requested date</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Requested date</label>
           <Input
             type="date"
             value={form.requested_date}
@@ -56,7 +56,7 @@ export function WaitlistAddForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Guest count</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Guest count</label>
           <Input
             type="number"
             min="1"
@@ -67,7 +67,7 @@ export function WaitlistAddForm() {
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Occasion</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Occasion</label>
         <Input
           value={form.occasion}
           onChange={(e) => update('occasion', e.target.value)}
@@ -75,7 +75,7 @@ export function WaitlistAddForm() {
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Notes</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Notes</label>
         <Input
           value={form.notes}
           onChange={(e) => update('notes', e.target.value)}

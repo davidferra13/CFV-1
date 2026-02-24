@@ -20,7 +20,9 @@ export function PdfViewerModal({ src, title, isOpen, onClose }: PdfViewerModalPr
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
-      return () => { document.body.style.overflow = '' }
+      return () => {
+        document.body.style.overflow = ''
+      }
     }
   }, [isOpen])
 
@@ -43,12 +45,14 @@ export function PdfViewerModal({ src, title, isOpen, onClose }: PdfViewerModalPr
   return (
     <div
       className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose()
+      }}
     >
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl flex flex-col h-[calc(100vh-2rem)]">
+      <div className="bg-surface rounded-lg shadow-xl w-full max-w-4xl flex flex-col h-[calc(100vh-2rem)]">
         {/* Header bar */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200 shrink-0">
-          <h2 className="text-base font-semibold text-stone-900 truncate pr-4">{title}</h2>
+        <div className="flex items-center justify-between px-4 py-3 border-b border-stone-700 shrink-0">
+          <h2 className="text-base font-semibold text-stone-100 truncate pr-4">{title}</h2>
           <div className="flex items-center gap-3 shrink-0">
             <Button variant="secondary" size="sm" onClick={handlePrint}>
               Print
@@ -57,7 +61,7 @@ export function PdfViewerModal({ src, title, isOpen, onClose }: PdfViewerModalPr
               href={src}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-stone-500 hover:text-stone-800 text-sm"
+              className="text-stone-500 hover:text-stone-200 text-sm"
               title="Open in new tab"
             >
               ↗ New tab
@@ -65,7 +69,7 @@ export function PdfViewerModal({ src, title, isOpen, onClose }: PdfViewerModalPr
             <button
               type="button"
               onClick={onClose}
-              className="text-stone-400 hover:text-stone-600 text-xl leading-none ml-1"
+              className="text-stone-400 hover:text-stone-400 text-xl leading-none ml-1"
               aria-label="Close"
             >
               ×

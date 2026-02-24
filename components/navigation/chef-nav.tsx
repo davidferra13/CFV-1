@@ -149,15 +149,15 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
         aria-expanded={open}
         className={`flex items-center justify-center w-10 h-10 rounded-lg mx-auto transition-colors ${
           active
-            ? 'bg-brand-50 text-brand-600'
-            : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
+            ? 'bg-brand-950 text-brand-600'
+            : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
         }`}
       >
         <GroupIcon className="w-[18px] h-[18px]" />
       </button>
 
       {open && (
-        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-white rounded-lg shadow-lg border border-stone-200 py-1.5">
+        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface rounded-lg shadow-lg border border-stone-700 py-1.5">
           <p className="px-3 py-1.5 text-xs font-semibold text-stone-400 uppercase tracking-wider">
             {group.label}
           </p>
@@ -175,8 +175,8 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                     onClick={() => toggleItem(item.href)}
                     className={`flex items-center gap-2.5 w-full px-3 py-2 text-sm font-medium transition-colors ${
                       itemActive
-                        ? 'text-brand-700'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                        ? 'text-brand-400'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                     }`}
                   >
                     <Icon
@@ -204,8 +204,8 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                             onClick={() => setOpen(false)}
                             className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                               childActive
-                                ? 'bg-brand-50 text-brand-700'
-                                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                                ? 'bg-brand-950 text-brand-400'
+                                : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                             }`}
                           >
                             {child.label}
@@ -214,7 +214,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-2 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                          <summary className="cursor-pointer px-2 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -227,8 +227,8 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                                   onClick={() => setOpen(false)}
                                   className={`block px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                                     childActive
-                                      ? 'bg-brand-50 text-brand-700'
-                                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                                      ? 'bg-brand-950 text-brand-400'
+                                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                                   }`}
                                 >
                                   {child.label}
@@ -251,8 +251,8 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
                 onClick={() => setOpen(false)}
                 className={`flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors ${
                   itemActive
-                    ? 'bg-brand-50 text-brand-700'
-                    : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                    ? 'bg-brand-950 text-brand-400'
+                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                 }`}
               >
                 <Icon
@@ -295,8 +295,8 @@ function NavGroupSection({
         aria-expanded={isOpen}
         className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-base font-semibold transition-colors ${
           active && !isOpen
-            ? 'text-brand-700'
-            : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
+            ? 'text-brand-400'
+            : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
         }`}
         style={{ letterSpacing: 0.2 }}
       >
@@ -320,7 +320,7 @@ function NavGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l-2 border-stone-100 mt-0.5 space-y-1">
+        <div className="ml-3 pl-3 border-l-2 border-stone-800 mt-0.5 space-y-1">
           {group.items.map((item) => {
             const Icon = item.icon
             const itemActive = isCollapsibleItemActive(pathname, item)
@@ -336,8 +336,8 @@ function NavGroupSection({
                     aria-expanded={itemOpen}
                     className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       itemActive
-                        ? 'text-brand-700'
-                        : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700'
+                        ? 'text-brand-400'
+                        : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400'
                     }`}
                   >
                     <Icon
@@ -355,7 +355,7 @@ function NavGroupSection({
                       itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="ml-6 pl-2 border-l border-stone-100 mt-0.5 space-y-0.5">
+                    <div className="ml-6 pl-2 border-l border-stone-800 mt-0.5 space-y-0.5">
                       {secondary.map((child) => {
                         const childActive = isItemActive(pathname, child.href)
                         return (
@@ -364,8 +364,8 @@ function NavGroupSection({
                             href={child.href}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
                               childActive
-                                ? 'bg-brand-50 text-brand-700'
-                                : 'text-stone-600 hover:bg-stone-50 hover:text-brand-700'
+                                ? 'bg-brand-950 text-brand-400'
+                                : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
                             }`}
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
@@ -375,7 +375,7 @@ function NavGroupSection({
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -387,8 +387,8 @@ function NavGroupSection({
                                   href={child.href}
                                   className={`flex items-center gap-2 px-3 py-1.5 rounded text-sm font-normal transition-colors ${
                                     childActive
-                                      ? 'bg-brand-50 text-brand-700'
-                                      : 'text-stone-600 hover:bg-stone-50 hover:text-brand-700'
+                                      ? 'bg-brand-950 text-brand-400'
+                                      : 'text-stone-400 hover:bg-stone-800 hover:text-brand-400'
                                   }`}
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
@@ -411,8 +411,8 @@ function NavGroupSection({
                 href={item.href}
                 className={`flex items-center gap-3 pl-2 pr-3 py-1.5 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                   itemActive
-                    ? 'bg-brand-50 text-brand-700 border-brand-500'
-                    : 'text-stone-700 hover:bg-stone-50 hover:text-brand-700 border-transparent'
+                    ? 'bg-brand-950 text-brand-400 border-brand-500'
+                    : 'text-stone-300 hover:bg-stone-800 hover:text-brand-400 border-transparent'
                 }`}
               >
                 <Icon
@@ -501,18 +501,18 @@ export function ChefSidebar({
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-stone-200 transition-all duration-200 z-30 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-surface border-r border-stone-700 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
       {/* Logo + notification bell + collapse toggle */}
       <div
-        className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
+        className={`flex items-center h-16 border-b border-stone-800 ${collapsed ? 'px-3 justify-center' : 'px-3 justify-between'}`}
       >
         <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0">
           <AppLogo />
           {!collapsed && (
-            <span className="text-lg font-display text-stone-900 whitespace-nowrap">ChefFlow</span>
+            <span className="text-lg font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
           )}
         </Link>
         {!collapsed ? (
@@ -524,7 +524,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
               aria-label="Open Remy"
               title="Open Remy"
             >
@@ -534,7 +534,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => setCollapsed(true)}
-              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+              className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors"
               aria-label="Collapse sidebar"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -552,7 +552,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => setCollapsed(false)}
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors mb-1"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors mb-1"
               aria-label="Expand sidebar"
             >
               <ChevronRight className="w-4 h-4" />
@@ -564,7 +564,7 @@ export function ChefSidebar({
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
               aria-label="Open Remy"
               title="Open Remy"
             >
@@ -584,8 +584,8 @@ export function ChefSidebar({
                   title={item.label}
                   className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                     active
-                      ? 'bg-brand-50 text-brand-600'
-                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
+                      ? 'bg-brand-950 text-brand-600'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" />
@@ -593,14 +593,14 @@ export function ChefSidebar({
               )
             })}
 
-            <div className="w-6 border-t border-stone-100 my-1.5" />
+            <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* Groups as flyouts */}
             {visibleGroups.map((group) => (
               <RailFlyout key={group.id} group={group} pathname={pathname} />
             ))}
 
-            <div className="w-6 border-t border-stone-100 my-1.5" />
+            <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* Settings */}
             {standaloneBottom.map((item) => {
@@ -613,8 +613,8 @@ export function ChefSidebar({
                   title={item.label}
                   className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                     active
-                      ? 'bg-brand-50 text-brand-600'
-                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
+                      ? 'bg-brand-950 text-brand-600'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" />
@@ -635,8 +635,8 @@ export function ChefSidebar({
                   href={item.href}
                   className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                     active
-                      ? 'bg-brand-50 text-brand-700 border-brand-500'
-                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900 border-transparent'
+                      ? 'bg-brand-950 text-brand-400 border-brand-500'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
                   }`}
                 >
                   <Icon
@@ -647,7 +647,7 @@ export function ChefSidebar({
               )
             })}
 
-            <div className="border-t border-stone-100 my-2" />
+            <div className="border-t border-stone-800 my-2" />
 
             {/* Grouped nav */}
             {visibleGroups.map((group) => (
@@ -662,7 +662,7 @@ export function ChefSidebar({
               />
             ))}
 
-            <div className="border-t border-stone-100 my-2" />
+            <div className="border-t border-stone-800 my-2" />
 
             {/* Cannabis Tier — hidden unless chef has cannabis access */}
             {hasCannabisTier && (
@@ -687,7 +687,7 @@ export function ChefSidebar({
                       key={item.href}
                       href={item.href}
                       className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                        active ? 'text-emerald-700' : 'text-stone-500 hover:text-stone-700'
+                        active ? 'text-emerald-700' : 'text-stone-500 hover:text-stone-300'
                       }`}
                       style={active ? { background: 'rgba(74, 124, 78, 0.08)' } : undefined}
                     >
@@ -699,7 +699,7 @@ export function ChefSidebar({
                     </Link>
                   )
                 })}
-                <div className="border-t border-stone-100 my-2" />
+                <div className="border-t border-stone-800 my-2" />
               </>
             )}
 
@@ -713,8 +713,8 @@ export function ChefSidebar({
                   href={item.href}
                   className={`flex items-center gap-3 pl-2 pr-3 py-2 rounded-lg text-sm font-medium transition-colors border-l-2 ${
                     active
-                      ? 'bg-brand-50 text-brand-700 border-brand-500'
-                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900 border-transparent'
+                      ? 'bg-brand-950 text-brand-400 border-brand-500'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100 border-transparent'
                   }`}
                 >
                   <Icon
@@ -729,7 +729,7 @@ export function ChefSidebar({
       </nav>
 
       {/* Bottom — AI status + Sign Out */}
-      <div className={`border-t border-stone-100 ${collapsed ? 'p-1.5' : 'p-3'}`}>
+      <div className={`border-t border-stone-800 ${collapsed ? 'p-1.5' : 'p-3'}`}>
         <button
           type="button"
           onClick={async () => {
@@ -741,7 +741,7 @@ export function ChefSidebar({
             window.location.href = '/'
           }}
           title={collapsed ? 'Sign Out' : undefined}
-          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors ${
+          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
             collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
           }`}
         >
@@ -784,8 +784,8 @@ function MobileGroupSection({
         aria-expanded={isOpen}
         className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
           active && !isOpen
-            ? 'text-brand-700'
-            : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'
+            ? 'text-brand-400'
+            : 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
         }`}
       >
         <GroupIcon
@@ -804,7 +804,7 @@ function MobileGroupSection({
           isOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="ml-3 pl-3 border-l border-stone-100 mt-0.5 space-y-0.5">
+        <div className="ml-3 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
           {group.items.map((item) => {
             const Icon = item.icon
             const itemActive = isCollapsibleItemActive(pathname, item)
@@ -820,8 +820,8 @@ function MobileGroupSection({
                     aria-expanded={itemOpen}
                     className={`flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       itemActive
-                        ? 'text-brand-700'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                        ? 'text-brand-400'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                     }`}
                   >
                     <Icon
@@ -839,7 +839,7 @@ function MobileGroupSection({
                       itemOpen ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                     }`}
                   >
-                    <div className="ml-5 pl-3 border-l border-stone-100 mt-0.5 space-y-0.5">
+                    <div className="ml-5 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
                       {secondary.map((child) => {
                         const childActive = isItemActive(pathname, child.href)
                         return (
@@ -849,8 +849,8 @@ function MobileGroupSection({
                             onClick={onNavigate}
                             className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                               childActive
-                                ? 'bg-brand-50 text-brand-700'
-                                : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                                ? 'bg-brand-950 text-brand-400'
+                                : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                             }`}
                           >
                             <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
@@ -860,7 +860,7 @@ function MobileGroupSection({
                       })}
                       {advanced.length > 0 && (
                         <details className="pt-1">
-                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-600">
+                          <summary className="cursor-pointer px-3 py-1 text-xs font-semibold uppercase tracking-wider text-stone-400 hover:text-stone-400">
                             Advanced
                           </summary>
                           <div className="space-y-0.5">
@@ -873,8 +873,8 @@ function MobileGroupSection({
                                   onClick={onNavigate}
                                   className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                                     childActive
-                                      ? 'bg-brand-50 text-brand-700'
-                                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                                      ? 'bg-brand-950 text-brand-400'
+                                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                                   }`}
                                 >
                                   <span className="w-1.5 h-1.5 rounded-full bg-stone-300" />
@@ -898,8 +898,8 @@ function MobileGroupSection({
                 onClick={onNavigate}
                 className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   itemActive
-                    ? 'bg-brand-50 text-brand-700'
-                    : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                    ? 'bg-brand-950 text-brand-400'
+                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                 }`}
               >
                 <Icon
@@ -941,7 +941,7 @@ function MobileBottomTabBar({
   }, [onMoreClick])
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 pb-safe">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-stone-700 pb-safe">
       <div className="flex items-center justify-around h-14">
         {mobileTabItems.map((item) => {
           const active = isItemActive(pathname, item.href)
@@ -1055,11 +1055,11 @@ export function ChefMobileNav({
   return (
     <>
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-stone-200 pt-safe">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-surface border-b border-stone-700 pt-safe">
         <div className="flex items-center justify-between h-14 px-3">
           <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <AppLogo size={28} className="rounded-md flex-shrink-0" />
-            <span className="font-display text-stone-900 whitespace-nowrap">ChefFlow</span>
+            <span className="font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
           </Link>
           <div className="flex items-center flex-shrink-0 gap-0.5">
             <OfflineNavIndicator />
@@ -1068,7 +1068,7 @@ export function ChefMobileNav({
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('open-remy'))}
-              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-50 hover:text-brand-600 transition-colors"
+              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-400 hover:bg-brand-950 hover:text-brand-600 transition-colors"
               aria-label="Open Remy"
               title="Open Remy"
             >
@@ -1078,7 +1078,7 @@ export function ChefMobileNav({
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-500 hover:bg-stone-100"
+              className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-lg text-stone-500 hover:bg-stone-700"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -1091,14 +1091,14 @@ export function ChefMobileNav({
       {menuOpen && (
         <>
           <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
-          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-white border-r border-stone-200 shadow-xl">
-            <div className="flex items-center justify-between h-14 px-4 border-b border-stone-100">
-              <span className="font-semibold text-stone-900">Menu</span>
+          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-surface border-r border-stone-700 shadow-xl">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
+              <span className="font-semibold text-stone-100">Menu</span>
               <button
                 type="button"
                 aria-label="Close menu"
                 onClick={closeMenu}
-                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100"
+                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1114,7 +1114,7 @@ export function ChefMobileNav({
                     href={item.href}
                     onClick={closeMenu}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active ? 'bg-brand-50 text-brand-700' : 'text-stone-600 hover:bg-stone-50'
+                      active ? 'bg-brand-950 text-brand-400' : 'text-stone-400 hover:bg-stone-800'
                     }`}
                   >
                     <Icon
@@ -1125,7 +1125,7 @@ export function ChefMobileNav({
                 )
               })}
 
-              <div className="border-t border-stone-100 my-2" />
+              <div className="border-t border-stone-800 my-2" />
 
               {/* Grouped nav */}
               <div className="space-y-0.5">
@@ -1143,7 +1143,7 @@ export function ChefMobileNav({
                 ))}
               </div>
 
-              <div className="border-t border-stone-100 my-2" />
+              <div className="border-t border-stone-800 my-2" />
 
               {/* Cannabis Tier — mobile */}
               {hasCannabisTier && (
@@ -1170,8 +1170,8 @@ export function ChefMobileNav({
                         onClick={closeMenu}
                         className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                           active
-                            ? 'text-green-700 bg-green-50/50'
-                            : 'text-stone-500 hover:bg-stone-50'
+                            ? 'text-green-700 bg-green-950/50'
+                            : 'text-stone-500 hover:bg-stone-800'
                         }`}
                       >
                         <Leaf
@@ -1181,7 +1181,7 @@ export function ChefMobileNav({
                       </Link>
                     )
                   })}
-                  <div className="border-t border-stone-100 my-2" />
+                  <div className="border-t border-stone-800 my-2" />
                 </>
               )}
 
@@ -1195,7 +1195,7 @@ export function ChefMobileNav({
                     href={item.href}
                     onClick={closeMenu}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active ? 'bg-brand-50 text-brand-700' : 'text-stone-600 hover:bg-stone-50'
+                      active ? 'bg-brand-950 text-brand-400' : 'text-stone-400 hover:bg-stone-800'
                     }`}
                   >
                     <Icon
@@ -1207,7 +1207,7 @@ export function ChefMobileNav({
               })}
 
               {/* Sign Out */}
-              <div className="pt-4 mt-4 border-t border-stone-100">
+              <div className="pt-4 mt-4 border-t border-stone-800">
                 <button
                   type="button"
                   onClick={async () => {
@@ -1218,7 +1218,7 @@ export function ChefMobileNav({
                     }
                     window.location.href = '/'
                   }}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50"
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800"
                 >
                   <LogOut className="w-[18px] h-[18px]" />
                   Sign Out

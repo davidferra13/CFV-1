@@ -30,12 +30,12 @@ function OsmMap({ lat, lng, className = '' }: { lat: number; lng: number; classN
         loading="lazy"
         sandbox="allow-scripts allow-same-origin"
       />
-      <div className="text-right px-1 py-0.5 bg-stone-50 border-t border-stone-200">
+      <div className="text-right px-1 py-0.5 bg-stone-800 border-t border-stone-700">
         <a
           href={largerMapUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-xs text-stone-400 hover:text-stone-600"
+          className="text-xs text-stone-400 hover:text-stone-400"
         >
           View on OpenStreetMap ↗
         </a>
@@ -56,7 +56,7 @@ function GoogleMapEmbed({ lat, lng, zoom, className = '' }: LocationMapProps) {
   if (!isLoaded) {
     return (
       <div
-        className={`bg-stone-100 rounded-lg flex items-center justify-center min-h-[200px] ${className}`}
+        className={`bg-stone-800 rounded-lg flex items-center justify-center min-h-[200px] ${className}`}
       >
         <span className="text-sm text-stone-400">Loading map...</span>
       </div>

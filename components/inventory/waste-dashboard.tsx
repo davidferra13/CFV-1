@@ -65,9 +65,7 @@ export function WasteDashboard({
 }) {
   const topReason =
     dashboard.byReason.length > 0
-      ? dashboard.byReason.reduce((a, b) =>
-          a.totalCostCents > b.totalCostCents ? a : b
-        )
+      ? dashboard.byReason.reduce((a, b) => (a.totalCostCents > b.totalCostCents ? a : b))
       : null
 
   // Prepare bar chart data
@@ -92,7 +90,7 @@ export function WasteDashboard({
         <Card>
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-50">
+              <div className="p-2 rounded-lg bg-red-950">
                 <DollarSign className="h-5 w-5 text-red-600" />
               </div>
               <div>
@@ -108,14 +106,12 @@ export function WasteDashboard({
         <Card>
           <CardContent className="py-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-amber-50">
+              <div className="p-2 rounded-lg bg-amber-950">
                 <Hash className="h-5 w-5 text-amber-600" />
               </div>
               <div>
                 <p className="text-xs text-stone-500 uppercase tracking-wide">Total Entries</p>
-                <p className="text-xl font-bold text-stone-900">
-                  {dashboard.totalEntries}
-                </p>
+                <p className="text-xl font-bold text-stone-900">{dashboard.totalEntries}</p>
               </div>
             </div>
           </CardContent>
@@ -134,9 +130,7 @@ export function WasteDashboard({
                     <span className="text-lg font-bold text-stone-900">
                       {REASON_LABELS[topReason.reason] || topReason.reason}
                     </span>
-                    <Badge variant="error">
-                      {formatDollars(topReason.totalCostCents)}
-                    </Badge>
+                    <Badge variant="error">{formatDollars(topReason.totalCostCents)}</Badge>
                   </div>
                 ) : (
                   <p className="text-lg font-bold text-stone-400">None</p>
@@ -175,21 +169,16 @@ export function WasteDashboard({
                   tick={{ fontSize: 11, fill: '#78716c' }}
                 />
                 <Tooltip
-                  formatter={((v: number | undefined) => [`$${(v ?? 0).toFixed(2)}`, 'Cost']) as any}
+                  formatter={
+                    ((v: number | undefined) => [`$${(v ?? 0).toFixed(2)}`, 'Cost']) as any
+                  }
                   labelStyle={{ color: '#44403c' }}
                 />
-                <Bar
-                  dataKey="cost"
-                  name="Waste Cost ($)"
-                  radius={[4, 4, 0, 0]}
-                  fill="#ef4444"
-                />
+                <Bar dataKey="cost" name="Waste Cost ($)" radius={[4, 4, 0, 0]} fill="#ef4444" />
               </ComposedChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-stone-400 py-8 text-sm">
-              No waste data to display.
-            </p>
+            <p className="text-center text-stone-400 py-8 text-sm">No waste data to display.</p>
           )}
         </CardContent>
       </Card>
@@ -210,10 +199,7 @@ export function WasteDashboard({
                 margin={{ top: 10, right: 20, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e7e5e4" />
-                <XAxis
-                  dataKey="month"
-                  tick={{ fontSize: 11, fill: '#78716c' }}
-                />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#78716c' }} />
                 <YAxis
                   yAxisId="cost"
                   tickFormatter={(v: number) => `$${v.toFixed(0)}`}
@@ -225,10 +211,12 @@ export function WasteDashboard({
                   tick={{ fontSize: 11, fill: '#78716c' }}
                 />
                 <Tooltip
-                  formatter={((v: number | undefined, name: string) => [
-                    name === 'Cost ($)' ? `$${(v ?? 0).toFixed(2)}` : (v ?? 0),
-                    name,
-                  ]) as any}
+                  formatter={
+                    ((v: number | undefined, name: string) => [
+                      name === 'Cost ($)' ? `$${(v ?? 0).toFixed(2)}` : (v ?? 0),
+                      name,
+                    ]) as any
+                  }
                   labelStyle={{ color: '#44403c' }}
                 />
                 <Legend />
@@ -251,9 +239,7 @@ export function WasteDashboard({
               </ComposedChart>
             </ResponsiveContainer>
           ) : (
-            <p className="text-center text-stone-400 py-8 text-sm">
-              No trend data to display.
-            </p>
+            <p className="text-center text-stone-400 py-8 text-sm">No trend data to display.</p>
           )}
         </CardContent>
       </Card>

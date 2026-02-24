@@ -36,12 +36,12 @@ function IssueButton({ clients }: { clients: Client[] }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
-              <h2 className="text-lg font-semibold text-stone-900">Issue Gift Card or Voucher</h2>
+          <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-700">
+              <h2 className="text-lg font-semibold text-stone-100">Issue Gift Card or Voucher</h2>
               <button
                 onClick={() => setOpen(false)}
-                className="text-stone-400 hover:text-stone-600 transition-colors"
+                className="text-stone-400 hover:text-stone-400 transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -96,7 +96,7 @@ function RowActions({ incentive }: { incentive: Incentive }) {
         {incentive.is_active && (
           <button
             onClick={() => setSendOpen(true)}
-            className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+            className="text-xs text-brand-600 hover:text-brand-400 font-medium"
           >
             Send
           </button>
@@ -116,12 +116,12 @@ function RowActions({ incentive }: { incentive: Incentive }) {
       {/* Send modal */}
       {sendOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200">
-              <h2 className="text-lg font-semibold text-stone-900">Send Code</h2>
+          <div className="bg-surface rounded-xl shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-stone-700">
+              <h2 className="text-lg font-semibold text-stone-100">Send Code</h2>
               <button
                 onClick={() => setSendOpen(false)}
-                className="text-stone-400 hover:text-stone-600"
+                className="text-stone-400 hover:text-stone-400"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path

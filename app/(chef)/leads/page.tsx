@@ -19,9 +19,10 @@ export default async function LeadsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Website Leads</h1>
-          <p className="text-stone-600 mt-1">
-            Contact form submissions from your website. Claim a lead to add it to your inquiry pipeline.
+          <h1 className="text-3xl font-bold text-stone-100">Website Leads</h1>
+          <p className="text-stone-400 mt-1">
+            Contact form submissions from your website. Claim a lead to add it to your inquiry
+            pipeline.
           </p>
         </div>
         <Link href="/inquiries/new">

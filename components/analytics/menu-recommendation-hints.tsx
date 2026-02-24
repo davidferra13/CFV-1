@@ -19,8 +19,8 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
   return (
     <Card className="p-5">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-semibold text-stone-900">Recipe Suggestions</h3>
-        <Link href="/recipes" className="text-xs text-brand-600 hover:text-brand-700 font-medium">
+        <h3 className="text-sm font-semibold text-stone-100">Recipe Suggestions</h3>
+        <Link href="/recipes" className="text-xs text-brand-600 hover:text-brand-400 font-medium">
           Recipe Book →
         </Link>
       </div>
@@ -54,7 +54,7 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
                   <div key={hint.id} className="flex items-center justify-between">
                     <Link
                       href={`/recipes/${hint.id}`}
-                      className="text-sm text-stone-700 hover:text-brand-600 hover:underline flex-1 min-w-0 truncate"
+                      className="text-sm text-stone-300 hover:text-brand-600 hover:underline flex-1 min-w-0 truncate"
                     >
                       {hint.name}
                     </Link>
@@ -70,7 +70,7 @@ export function MenuRecommendationHints({ result }: MenuRecommendationHintsProps
             </div>
           ))}
 
-          <p className="text-xs text-stone-400 italic pt-1 border-t border-stone-100">
+          <p className="text-xs text-stone-400 italic pt-1 border-t border-stone-800">
             Based on your cooking history. Add any recipe to this menu using the editor above.
           </p>
         </div>

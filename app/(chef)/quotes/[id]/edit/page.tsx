@@ -6,11 +6,7 @@ import { getQuoteById, getClientPricingHistory } from '@/lib/quotes/actions'
 import { getClients } from '@/lib/clients/actions'
 import { QuoteForm } from '@/components/quotes/quote-form'
 
-export default async function EditQuotePage({
-  params
-}: {
-  params: { id: string }
-}) {
+export default async function EditQuotePage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const quote = await getQuoteById(params.id)
@@ -29,17 +25,11 @@ export default async function EditQuotePage({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Edit Quote</h1>
-        <p className="text-stone-600 mt-1">
-          Update pricing before sending to the client.
-        </p>
+        <h1 className="text-3xl font-bold text-stone-100">Edit Quote</h1>
+        <p className="text-stone-400 mt-1">Update pricing before sending to the client.</p>
       </div>
 
-      <QuoteForm
-        clients={clients}
-        pricingHistory={pricingHistory}
-        existingQuote={quote}
-      />
+      <QuoteForm clients={clients} pricingHistory={pricingHistory} existingQuote={quote} />
     </div>
   )
 }

@@ -49,12 +49,12 @@ function SettingsCategory({
   defaultOpen?: boolean
 }) {
   return (
-    <details open={defaultOpen} className="rounded-xl border border-stone-200 bg-white">
+    <details open={defaultOpen} className="rounded-xl border border-stone-700 bg-surface">
       <summary className="cursor-pointer px-4 py-3 sm:px-5 sm:py-4">
-        <h2 className="text-lg font-semibold text-stone-900">{title}</h2>
-        <p className="mt-1 text-sm text-stone-600">{description}</p>
+        <h2 className="text-lg font-semibold text-stone-100">{title}</h2>
+        <p className="mt-1 text-sm text-stone-400">{description}</p>
       </summary>
-      <div className="border-t border-stone-200 p-4 sm:p-5">{children}</div>
+      <div className="border-t border-stone-700 p-4 sm:p-5">{children}</div>
     </details>
   )
 }
@@ -96,8 +96,8 @@ export default async function SettingsPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Settings</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Settings</h1>
+        <p className="text-stone-400 mt-1">
           Configure your defaults and account settings in organized categories.
         </p>
       </div>
@@ -115,27 +115,27 @@ export default async function SettingsPage() {
           />
           <Link
             href="/settings/dashboard"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Customize Dashboard</p>
+            <p className="font-medium text-stone-100">Customize Dashboard</p>
             <p className="text-sm text-stone-500 mt-1">
               Turn widgets on or off. Reorder them from the dashboard corner layout control.
             </p>
           </Link>
           <Link
             href="/settings/navigation"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Primary Navigation</p>
+            <p className="font-medium text-stone-100">Primary Navigation</p>
             <p className="text-sm text-stone-500 mt-1">
               Choose which tabs are always visible in your primary bar and set their order.
             </p>
           </Link>
           <Link
             href="/goals/setup"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Goals</p>
+            <p className="font-medium text-stone-100">Goals</p>
             <p className="text-sm text-stone-500 mt-1">
               Set revenue, booking, and margin targets. Track monthly progress and get client
               outreach recommendations.
@@ -152,10 +152,10 @@ export default async function SettingsPage() {
         <div className="space-y-4">
           <Link
             href="/settings/my-profile"
-            className="block border border-brand-200 rounded-lg p-4 bg-brand-50/40 hover:bg-brand-50 transition-colors"
+            className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
           >
-            <p className="font-semibold text-brand-900">My Profile</p>
-            <p className="text-sm text-brand-700 mt-1">
+            <p className="font-semibold text-brand-200">My Profile</p>
+            <p className="text-sm text-brand-400 mt-1">
               Edit your core chef profile, image, and review link in one place.
             </p>
           </Link>
@@ -170,9 +170,9 @@ export default async function SettingsPage() {
           <div className="space-y-3">
             <Link
               href="/settings/public-profile"
-              className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
-              <p className="font-medium text-stone-900">Profile & Partner Showcase</p>
+              <p className="font-medium text-stone-100">Profile & Partner Showcase</p>
               <p className="text-sm text-stone-500 mt-1">
                 See what clients can view on your profile and control your tagline and partner
                 showcase.
@@ -180,9 +180,9 @@ export default async function SettingsPage() {
             </Link>
             <Link
               href="/settings/favorite-chefs"
-              className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
-              <p className="font-medium text-stone-900">Favorite Chefs</p>
+              <p className="font-medium text-stone-100">Favorite Chefs</p>
               <p className="text-sm text-stone-500 mt-1">
                 Celebrate the culinary heroes who inspire your craft. Share your list on social
                 media.
@@ -190,10 +190,10 @@ export default async function SettingsPage() {
             </Link>
             <Link
               href="/settings/client-preview"
-              className="block border border-brand-200 rounded-lg p-4 bg-brand-50/40 hover:bg-brand-50 transition-colors"
+              className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
             >
-              <p className="font-semibold text-brand-900">Client Preview</p>
-              <p className="text-sm text-brand-700 mt-1">
+              <p className="font-semibold text-brand-200">Client Preview</p>
+              <p className="text-sm text-brand-400 mt-1">
                 See your public profile and client portal exactly as your clients do — with real
                 data.
               </p>
@@ -202,7 +202,7 @@ export default async function SettingsPage() {
               <Link
                 href={`/chef/${profile.slug}`}
                 target="_blank"
-                className="inline-flex items-center rounded-md border border-stone-300 bg-white px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50 transition-colors"
+                className="inline-flex items-center rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800 transition-colors"
               >
                 Open Live Profile
               </Link>
@@ -219,7 +219,7 @@ export default async function SettingsPage() {
         <div className="space-y-3">
           <Link
             href="/settings/ai-privacy"
-            className="block border border-emerald-200 rounded-lg p-4 bg-emerald-50/40 hover:bg-emerald-50 transition-colors"
+            className="block border border-emerald-200 rounded-lg p-4 bg-emerald-950/40 hover:bg-emerald-950 transition-colors"
           >
             <p className="font-semibold text-emerald-900">AI Trust Center</p>
             <p className="text-sm text-emerald-700 mt-1">
@@ -229,9 +229,9 @@ export default async function SettingsPage() {
           </Link>
           <Link
             href="/settings/culinary-profile"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Culinary Profile</p>
+            <p className="font-medium text-stone-100">Culinary Profile</p>
             <p className="text-sm text-stone-500 mt-1">
               Tell Remy about your cooking philosophy, signature dishes, and food identity.
             </p>
@@ -245,7 +245,7 @@ export default async function SettingsPage() {
       >
         <div className="space-y-6">
           <div>
-            <h3 className="text-sm font-semibold text-stone-700 mb-3">Connected Accounts</h3>
+            <h3 className="text-sm font-semibold text-stone-300 mb-3">Connected Accounts</h3>
             <div className="space-y-4">
               <GoogleIntegrations
                 connection={googleConnection}
@@ -255,24 +255,24 @@ export default async function SettingsPage() {
               <WixConnection connection={wixConnection} recentSubmissions={wixSubmissions} />
             </div>
           </div>
-          <div className="border-t border-stone-200 pt-4">
-            <h3 className="text-sm font-semibold text-stone-700 mb-3">Integration Center</h3>
+          <div className="border-t border-stone-700 pt-4">
+            <h3 className="text-sm font-semibold text-stone-300 mb-3">Integration Center</h3>
             <div className="space-y-3">
               <Link
                 href="/settings/embed"
-                className="block border border-brand-200 rounded-lg p-4 bg-brand-50/40 hover:bg-brand-50 transition-colors"
+                className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
               >
-                <p className="font-semibold text-brand-900">Website Widget</p>
-                <p className="text-sm text-brand-700 mt-1">
+                <p className="font-semibold text-brand-200">Website Widget</p>
+                <p className="text-sm text-brand-400 mt-1">
                   Add a booking form to your existing website. Works on Wix, Squarespace, WordPress,
                   and any site.
                 </p>
               </Link>
               <Link
                 href="/settings/integrations"
-                className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+                className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
               >
-                <p className="font-medium text-stone-900">Manage Integrations</p>
+                <p className="font-medium text-stone-100">Manage Integrations</p>
                 <p className="text-sm text-stone-500 mt-1">
                   Manage POS, website, scheduling, and CRM integrations in one place.
                 </p>
@@ -320,18 +320,18 @@ export default async function SettingsPage() {
         <div className="space-y-3">
           <Link
             href="/settings/templates"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Response Templates</p>
+            <p className="font-medium text-stone-100">Response Templates</p>
             <p className="text-sm text-stone-500 mt-1">
               Pre-written messages you can quickly copy and customize when logging communication.
             </p>
           </Link>
           <Link
             href="/settings/automations"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Automations</p>
+            <p className="font-medium text-stone-100">Automations</p>
             <p className="text-sm text-stone-500 mt-1">
               Set up rules to auto-create follow-ups, notifications, and draft messages when events
               happen.
@@ -339,9 +339,9 @@ export default async function SettingsPage() {
           </Link>
           <Link
             href="/settings/repertoire"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Seasonal Palettes</p>
+            <p className="font-medium text-stone-100">Seasonal Palettes</p>
             <p className="text-sm text-stone-500 mt-1">
               Define your creative thesis, micro-windows, context profiles, and proven wins for each
               season.
@@ -349,9 +349,9 @@ export default async function SettingsPage() {
           </Link>
           <Link
             href="/settings/journal"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Chef Journal</p>
+            <p className="font-medium text-stone-100">Chef Journal</p>
             <p className="text-sm text-stone-500 mt-1">
               Track travel inspiration, favorite meals, lessons learned, and ideas to bring back
               into your kitchen.
@@ -368,9 +368,9 @@ export default async function SettingsPage() {
           <GoogleReviewUrlForm currentUrl={googleReviewUrl} />
           <Link
             href="/reviews"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">View All Reviews</p>
+            <p className="font-medium text-stone-100">View All Reviews</p>
             <p className="text-sm text-stone-500 mt-1">
               See unified internal + external reviews with source links and sync controls.
             </p>
@@ -386,9 +386,9 @@ export default async function SettingsPage() {
           <DiscoverabilityToggle currentValue={networkDiscoverable} />
           <Link
             href="/settings/profile"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Network Profile</p>
+            <p className="font-medium text-stone-100">Network Profile</p>
             <p className="text-sm text-stone-500 mt-1">
               Set your display name, bio, and profile photo for the chef directory.
             </p>
@@ -409,10 +409,10 @@ export default async function SettingsPage() {
       >
         <Link
           href="/settings/notifications"
-          className="block border border-brand-200 rounded-lg p-4 bg-brand-50/40 hover:bg-brand-50 transition-colors"
+          className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
         >
-          <p className="font-semibold text-brand-900">Notification Channels</p>
-          <p className="text-sm text-brand-700 mt-1">
+          <p className="font-semibold text-brand-200">Notification Channels</p>
+          <p className="text-sm text-brand-400 mt-1">
             Manage email, browser push, and SMS preferences per category. Set up your SMS number
             here.
           </p>
@@ -440,9 +440,9 @@ export default async function SettingsPage() {
         <div className="space-y-3">
           <Link
             href="/settings/health"
-            className="block border border-emerald-200 rounded-lg p-4 hover:bg-emerald-50/50 transition-colors"
+            className="block border border-emerald-200 rounded-lg p-4 hover:bg-emerald-950/50 transition-colors"
           >
-            <p className="font-medium text-stone-900">System Health</p>
+            <p className="font-medium text-stone-100">System Health</p>
             <p className="text-sm text-stone-500 mt-1">
               Check Stripe, Gmail, and DOP task status at a glance.
             </p>
@@ -450,9 +450,9 @@ export default async function SettingsPage() {
           {isAdmin(user.email) && (
             <Link
               href="/settings/incidents"
-              className="block border border-amber-200 rounded-lg p-4 hover:bg-amber-50/50 transition-colors"
+              className="block border border-amber-200 rounded-lg p-4 hover:bg-amber-950/50 transition-colors"
             >
-              <p className="font-medium text-stone-900">System Incidents</p>
+              <p className="font-medium text-stone-100">System Incidents</p>
               <p className="text-sm text-stone-500 mt-1">
                 View failure reports from Ollama, task queue, and circuit breakers.
               </p>
@@ -460,14 +460,14 @@ export default async function SettingsPage() {
           )}
           <Link
             href="/settings/change-password"
-            className="block border rounded-lg p-4 hover:bg-stone-50 transition-colors"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
           >
-            <p className="font-medium text-stone-900">Change Password</p>
+            <p className="font-medium text-stone-100">Change Password</p>
             <p className="text-sm text-stone-500 mt-1">Update your account password.</p>
           </Link>
           <Link
             href="/settings/delete-account"
-            className="block border border-red-200 rounded-lg p-4 hover:bg-red-50 transition-colors"
+            className="block border border-red-200 rounded-lg p-4 hover:bg-red-950 transition-colors"
           >
             <p className="font-medium text-red-700">Delete Account</p>
             <p className="text-sm text-red-500 mt-1">

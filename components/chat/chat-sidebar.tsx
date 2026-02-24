@@ -10,11 +10,11 @@ import type { ChatInsight } from '@/lib/insights/actions'
 import Link from 'next/link'
 
 const CATEGORY_STYLES: Record<NoteCategory, { bg: string; text: string }> = {
-  general: { bg: 'bg-stone-100', text: 'text-stone-700' },
-  dietary: { bg: 'bg-red-100', text: 'text-red-700' },
-  preference: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  logistics: { bg: 'bg-green-100', text: 'text-green-700' },
-  relationship: { bg: 'bg-purple-100', text: 'text-purple-700' },
+  general: { bg: 'bg-stone-800', text: 'text-stone-300' },
+  dietary: { bg: 'bg-red-900', text: 'text-red-700' },
+  preference: { bg: 'bg-blue-900', text: 'text-blue-700' },
+  logistics: { bg: 'bg-green-900', text: 'text-green-700' },
+  relationship: { bg: 'bg-purple-900', text: 'text-purple-700' },
 }
 
 interface ChatSidebarProps {
@@ -24,7 +24,12 @@ interface ChatSidebarProps {
   initialInsights?: ChatInsight[]
 }
 
-export function ChatSidebar({ clientId, clientName, pinnedNotes: initialNotes, initialInsights = [] }: ChatSidebarProps) {
+export function ChatSidebar({
+  clientId,
+  clientName,
+  pinnedNotes: initialNotes,
+  initialInsights = [],
+}: ChatSidebarProps) {
   const [collapsed, setCollapsed] = useState(false)
   const [notes, setNotes] = useState(initialNotes)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -45,20 +50,18 @@ export function ChatSidebar({ clientId, clientName, pinnedNotes: initialNotes, i
 
   if (collapsed) {
     return (
-      <div className="w-10 border-l border-stone-200 bg-white flex flex-col items-center pt-3">
+      <div className="w-10 border-l border-stone-700 bg-surface flex flex-col items-center pt-3">
         <button
           type="button"
           onClick={() => setCollapsed(false)}
-          className="p-1.5 text-stone-400 hover:text-stone-600 transition-colors"
+          className="p-1.5 text-stone-400 hover:text-stone-400 transition-colors"
           title="Show sidebar"
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
         <div className="mt-3 flex flex-col items-center gap-2">
           <StickyNote className="w-4 h-4 text-stone-400" />
-          {notes.length > 0 && (
-            <span className="text-[10px] text-stone-400">{notes.length}</span>
-          )}
+          {notes.length > 0 && <span className="text-[10px] text-stone-400">{notes.length}</span>}
           {initialInsights.length > 0 && (
             <>
               <Sparkles className="w-4 h-4 text-amber-400 mt-1" />
@@ -71,12 +74,12 @@ export function ChatSidebar({ clientId, clientName, pinnedNotes: initialNotes, i
   }
 
   return (
-    <div className="w-72 border-l border-stone-200 bg-white flex flex-col overflow-hidden">
+    <div className="w-72 border-l border-stone-700 bg-surface flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-stone-100">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-stone-800">
         <Link
           href={`/clients/${clientId}`}
-          className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 truncate"
+          className="flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-400 truncate"
         >
           <User className="w-3.5 h-3.5 flex-shrink-0" />
           {clientName}
@@ -84,7 +87,7 @@ export function ChatSidebar({ clientId, clientName, pinnedNotes: initialNotes, i
         <button
           type="button"
           onClick={() => setCollapsed(true)}
-          className="p-1 text-stone-400 hover:text-stone-600 transition-colors"
+          className="p-1 text-stone-400 hover:text-stone-400 transition-colors"
           title="Collapse sidebar"
         >
           <ChevronRight className="w-4 h-4" />
@@ -119,22 +122,17 @@ export function ChatSidebar({ clientId, clientName, pinnedNotes: initialNotes, i
         )}
 
         {notes.length === 0 && !showAddForm && (
-          <p className="px-3 py-4 text-xs text-stone-400 text-center">
-            No pinned notes
-          </p>
+          <p className="px-3 py-4 text-xs text-stone-400 text-center">No pinned notes</p>
         )}
 
         <div className="space-y-1 px-3 pb-3">
           {notes.map((note) => (
-            <div
-              key={note.id}
-              className="p-2 rounded-lg bg-stone-50 border border-stone-100"
-            >
+            <div key={note.id} className="p-2 rounded-lg bg-stone-800 border border-stone-800">
               <div className="flex items-start gap-1.5">
                 <span
                   className={`flex-shrink-0 mt-0.5 inline-block w-1.5 h-1.5 rounded-full ${CATEGORY_STYLES[note.category].bg}`}
                 />
-                <p className="text-xs text-stone-700 leading-relaxed line-clamp-4">
+                <p className="text-xs text-stone-300 leading-relaxed line-clamp-4">
                   {note.note_text}
                 </p>
               </div>

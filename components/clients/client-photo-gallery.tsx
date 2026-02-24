@@ -91,14 +91,14 @@ export function ClientPhotoGallery({
   }
 
   return (
-    <div className="rounded-lg border border-stone-200 overflow-hidden">
-      <div className="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-        <h3 className="font-medium text-stone-800">Photos</h3>
+    <div className="rounded-lg border border-stone-700 overflow-hidden">
+      <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
+        <h3 className="font-medium text-stone-200">Photos</h3>
         <span className="text-xs text-stone-500">{photos.length} / 30</span>
       </div>
 
       {/* Category filter tabs */}
-      <div className="flex gap-1 px-4 py-2 overflow-x-auto border-b border-stone-100">
+      <div className="flex gap-1 px-4 py-2 overflow-x-auto border-b border-stone-800">
         {CATEGORIES.map((cat) => (
           <button
             key={cat.value}
@@ -106,8 +106,8 @@ export function ClientPhotoGallery({
             onClick={() => setFilter(cat.value)}
             className={`px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${
               filter === cat.value
-                ? 'bg-brand-500 text-white'
-                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                ? 'bg-brand-9500 text-white'
+                : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
             }`}
           >
             {cat.label}
@@ -121,11 +121,11 @@ export function ClientPhotoGallery({
       </div>
 
       {/* Upload area */}
-      <div className="px-4 py-3 border-b border-stone-100 flex items-center gap-3">
+      <div className="px-4 py-3 border-b border-stone-800 flex items-center gap-3">
         <select
           value={uploadCategory}
           onChange={(e) => setUploadCategory(e.target.value)}
-          className="text-sm border border-stone-300 rounded-lg px-2 py-1.5 bg-white"
+          className="text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-surface"
         >
           {UPLOAD_CATEGORIES.map((cat) => (
             <option key={cat.value} value={cat.value}>
@@ -170,7 +170,7 @@ export function ClientPhotoGallery({
           {filtered.map((photo, index) => (
             <div
               key={photo.id}
-              className="group relative rounded-lg overflow-hidden bg-stone-100 aspect-square"
+              className="group relative rounded-lg overflow-hidden bg-stone-800 aspect-square"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -238,7 +238,7 @@ export function ClientPhotoGallery({
                     type="text"
                     value={captionText}
                     onChange={(e) => setCaptionText(e.target.value)}
-                    className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                    className="flex-1 bg-surface/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
                     placeholder="Caption"
                     autoFocus
                   />
@@ -273,7 +273,7 @@ export function ClientPhotoGallery({
               <select
                 value={filtered[lightboxIndex].category}
                 onChange={(e) => handleCategoryChange(filtered[lightboxIndex].id, e.target.value)}
-                className="text-sm bg-white/10 border border-white/20 rounded px-2 py-1 text-white"
+                className="text-sm bg-surface/10 border border-white/20 rounded px-2 py-1 text-white"
               >
                 {UPLOAD_CATEGORIES.map((cat) => (
                   <option key={cat.value} value={cat.value} className="text-black">

@@ -65,8 +65,8 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
     <div className="flex flex-col gap-8 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Simulation Lab</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-2xl font-bold text-stone-100">Simulation Lab</h1>
+        <p className="text-stone-400 mt-1">
           Generates synthetic chef scenarios → runs through the pipeline → grades outputs. Failures
           surface here so you can improve prompts before they hit real users.
         </p>
@@ -87,19 +87,19 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-stone-900">{summary.totalScenariosRun}</div>
+              <div className="text-2xl font-bold text-stone-100">{summary.totalScenariosRun}</div>
               <div className="text-xs text-stone-500 mt-0.5">scenarios run</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-stone-900">{recentRuns.length}</div>
+              <div className="text-2xl font-bold text-stone-100">{recentRuns.length}</div>
               <div className="text-xs text-stone-500 mt-0.5">simulation runs</div>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
-              <div className="text-2xl font-bold text-stone-900">
+              <div className="text-2xl font-bold text-stone-100">
                 {summary.fineTuningExampleCount}
               </div>
               <div className="text-xs text-stone-500 mt-0.5">fine-tuning examples</div>
@@ -121,16 +121,16 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
                 const pct = Math.round(rate * 100)
                 return (
                   <div key={module} className="flex items-center gap-3">
-                    <div className="w-36 text-xs text-stone-600 shrink-0">
+                    <div className="w-36 text-xs text-stone-400 shrink-0">
                       {SIM_MODULE_LABELS[module]}
                     </div>
-                    <div className="flex-1 h-2 rounded-full bg-stone-200 overflow-hidden">
+                    <div className="flex-1 h-2 rounded-full bg-stone-700 overflow-hidden">
                       <div
-                        className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-500'}`}
+                        className={`h-full rounded-full ${pct >= 80 ? 'bg-emerald-9500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-9500'}`}
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <div className="text-xs font-medium text-stone-700 w-10 text-right">{pct}%</div>
+                    <div className="text-xs font-medium text-stone-300 w-10 text-right">{pct}%</div>
                   </div>
                 )
               }
@@ -147,7 +147,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
         <CardContent className="space-y-5">
           {/* Module selection */}
           <div>
-            <div className="text-sm font-medium text-stone-700 mb-2">Select modules to test</div>
+            <div className="text-sm font-medium text-stone-300 mb-2">Select modules to test</div>
             <div className="flex flex-wrap gap-2">
               {ALL_SIM_MODULES.map((module) => {
                 const selected = selectedModules.includes(module)
@@ -158,8 +158,8 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
                     disabled={isPending}
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                       selected
-                        ? 'border-brand-500 bg-brand-50 text-brand-700'
-                        : 'border-stone-300 bg-white text-stone-600 hover:border-stone-400'
+                        ? 'border-brand-500 bg-brand-950 text-brand-400'
+                        : 'border-stone-600 bg-surface text-stone-400 hover:border-stone-400'
                     } ${isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     {SIM_MODULE_LABELS[module]}
@@ -171,8 +171,8 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
 
           {/* Scenarios per module */}
           <div>
-            <div className="text-sm font-medium text-stone-700 mb-2">
-              Scenarios per module: <span className="text-brand-700">{scenariosPerModule}</span>
+            <div className="text-sm font-medium text-stone-300 mb-2">
+              Scenarios per module: <span className="text-brand-400">{scenariosPerModule}</span>
             </div>
             <input
               type="range"
@@ -190,7 +190,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
           </div>
 
           {/* Estimate */}
-          <div className="text-xs text-stone-500 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
+          <div className="text-xs text-stone-500 bg-stone-800 border border-stone-700 rounded-lg px-3 py-2">
             Estimated time: ~{Math.ceil((selectedModules.length * scenariosPerModule * 15) / 60)}{' '}
             min ({selectedModules.length} modules × {scenariosPerModule} scenarios × ~15s each).
             Ollama must be running. Keep this tab open during the run.
@@ -198,12 +198,12 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
 
           {/* Errors / success */}
           {runError && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-800">
               {runError}
             </div>
           )}
           {runSuccess && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+            <div className="rounded-lg border border-emerald-200 bg-emerald-950 px-3 py-2 text-sm text-emerald-800">
               Simulation complete — results updated below.
             </div>
           )}
@@ -254,9 +254,9 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
                 return (
                   <div
                     key={run.id}
-                    className="flex items-center justify-between text-sm py-1.5 border-b border-stone-100 last:border-0"
+                    className="flex items-center justify-between text-sm py-1.5 border-b border-stone-800 last:border-0"
                   >
-                    <div className="text-stone-600 text-xs">
+                    <div className="text-stone-400 text-xs">
                       {new Date(run.startedAt).toLocaleString()}
                     </div>
                     <div className="flex items-center gap-3">
@@ -293,7 +293,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
       {summary.totalScenariosRun === 0 && !isPending && (
         <div className="text-center py-12 text-stone-500">
           <div className="text-4xl mb-3">🧪</div>
-          <p className="font-medium text-stone-700">No simulations run yet</p>
+          <p className="font-medium text-stone-300">No simulations run yet</p>
           <p className="text-sm mt-1">
             Select modules above and click Run Simulation to start the quality loop.
           </p>

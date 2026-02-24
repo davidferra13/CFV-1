@@ -14,11 +14,14 @@ import { TestimonialPanel } from '@/components/ai/testimonial-panel'
 
 export const metadata: Metadata = { title: 'Marketing — ChefFlow' }
 
-const STATUS_BADGE: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'error' }> = {
-  draft:     { label: 'Draft',     variant: 'default' },
+const STATUS_BADGE: Record<
+  string,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' }
+> = {
+  draft: { label: 'Draft', variant: 'default' },
   scheduled: { label: 'Scheduled', variant: 'warning' },
-  sending:   { label: 'Sending…',  variant: 'warning' },
-  sent:      { label: 'Sent',      variant: 'success' },
+  sending: { label: 'Sending…', variant: 'warning' },
+  sent: { label: 'Sent', variant: 'success' },
   cancelled: { label: 'Cancelled', variant: 'default' },
 }
 
@@ -26,28 +29,32 @@ export default async function MarketingPage() {
   await requireChef()
   const campaigns = await listCampaigns()
 
-  const sent      = campaigns.filter((c: any) => c.status === 'sent')
-  const drafts    = campaigns.filter((c: any) => c.status === 'draft')
+  const sent = campaigns.filter((c: any) => c.status === 'sent')
+  const drafts = campaigns.filter((c: any) => c.status === 'draft')
   const scheduled = campaigns.filter((c: any) => c.status === 'scheduled')
 
-  const totalSent      = sent.reduce((s: number, c: any) => s + (c.recipient_count ?? 0), 0)
+  const totalSent = sent.reduce((s: number, c: any) => s + (c.recipient_count ?? 0), 0)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Marketing</h1>
+          <h1 className="text-2xl font-bold text-stone-100">Marketing</h1>
           <p className="mt-1 text-sm text-stone-500">
             Reach clients by email, SMS, or personal note — in bulk or one-by-one.
           </p>
         </div>
         <div className="flex gap-2">
           <Link href="/marketing/sequences">
-            <Button variant="ghost" size="sm">Sequences</Button>
+            <Button variant="ghost" size="sm">
+              Sequences
+            </Button>
           </Link>
           <Link href="/marketing/templates">
-            <Button variant="ghost" size="sm">Templates</Button>
+            <Button variant="ghost" size="sm">
+              Templates
+            </Button>
           </Link>
         </div>
       </div>
@@ -55,16 +62,16 @@ export default async function MarketingPage() {
       {/* Summary stats */}
       {campaigns.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg border border-stone-200 bg-white p-4 text-center">
-            <p className="text-2xl font-bold text-stone-900">{campaigns.length}</p>
+          <div className="rounded-lg border border-stone-700 bg-surface p-4 text-center">
+            <p className="text-2xl font-bold text-stone-100">{campaigns.length}</p>
             <p className="text-xs text-stone-500 mt-0.5">Campaigns</p>
           </div>
-          <div className="rounded-lg border border-stone-200 bg-white p-4 text-center">
-            <p className="text-2xl font-bold text-stone-900">{totalSent.toLocaleString()}</p>
+          <div className="rounded-lg border border-stone-700 bg-surface p-4 text-center">
+            <p className="text-2xl font-bold text-stone-100">{totalSent.toLocaleString()}</p>
             <p className="text-xs text-stone-500 mt-0.5">Emails sent</p>
           </div>
-          <div className="rounded-lg border border-stone-200 bg-white p-4 text-center">
-            <p className="text-2xl font-bold text-stone-900">{scheduled.length}</p>
+          <div className="rounded-lg border border-stone-700 bg-surface p-4 text-center">
+            <p className="text-2xl font-bold text-stone-100">{scheduled.length}</p>
             <p className="text-xs text-stone-500 mt-0.5">Scheduled</p>
           </div>
         </div>
@@ -80,13 +87,15 @@ export default async function MarketingPage() {
             const cfg = STATUS_BADGE[c.status] ?? STATUS_BADGE.draft
             return (
               <Link key={c.id} href={`/marketing/${c.id}`} className="block">
-                <Card className="hover:bg-stone-50 transition-colors cursor-pointer">
+                <Card className="hover:bg-stone-800 transition-colors cursor-pointer">
                   <CardContent className="pt-4 pb-4">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-medium text-stone-900 truncate">{c.name}</span>
-                          <Badge variant="default">{CAMPAIGN_TYPE_LABELS[c.campaign_type] ?? c.campaign_type}</Badge>
+                          <span className="font-medium text-stone-100 truncate">{c.name}</span>
+                          <Badge variant="default">
+                            {CAMPAIGN_TYPE_LABELS[c.campaign_type] ?? c.campaign_type}
+                          </Badge>
                           <Badge variant={cfg.variant}>{cfg.label}</Badge>
                         </div>
                         <p className="text-sm text-stone-500 mt-0.5 truncate">{c.subject}</p>
@@ -98,7 +107,9 @@ export default async function MarketingPage() {
                             <span>{c.recipient_count.toLocaleString()} recipients</span>
                           )}
                           {c.scheduled_at && c.status === 'scheduled' && (
-                            <span>Scheduled for {format(new Date(c.scheduled_at), 'MMM d, h:mm a')}</span>
+                            <span>
+                              Scheduled for {format(new Date(c.scheduled_at), 'MMM d, h:mm a')}
+                            </span>
                           )}
                         </div>
                       </div>

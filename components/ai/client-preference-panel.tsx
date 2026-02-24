@@ -28,11 +28,11 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Client Preference Profile</span>
+            <span className="text-sm font-medium text-stone-300">Client Preference Profile</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -58,11 +58,11 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Brain className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Client Preference Profile</span>
+          <span className="text-sm font-medium text-stone-300">Client Preference Profile</span>
           <Badge variant="info">Confidence: {result.confidence}</Badge>
         </div>
         <Button variant="ghost" onClick={run} disabled={loading}>
@@ -70,9 +70,9 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
         </Button>
       </div>
 
-      <div className="bg-brand-50 border border-brand-200 rounded p-3">
+      <div className="bg-brand-950 border border-brand-700 rounded p-3">
         <div className="text-[11px] text-brand-600 font-medium mb-0.5">Top Tip</div>
-        <div className="text-sm text-stone-800">{result.topTip}</div>
+        <div className="text-sm text-stone-200">{result.topTip}</div>
       </div>
 
       <div className="grid grid-cols-2 gap-3 text-xs">
@@ -80,25 +80,25 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
           <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
             Communication
           </div>
-          <div className="text-stone-700">{result.communicationStyle}</div>
+          <div className="text-stone-300">{result.communicationStyle}</div>
         </div>
         <div>
           <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
             Budget Pattern
           </div>
-          <div className="text-stone-700">{result.budgetPattern}</div>
+          <div className="text-stone-300">{result.budgetPattern}</div>
         </div>
         <div>
           <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
             Booking Pattern
           </div>
-          <div className="text-stone-700">{result.bookingPattern}</div>
+          <div className="text-stone-300">{result.bookingPattern}</div>
         </div>
         <div>
           <div className="text-[11px] font-medium text-stone-500 uppercase tracking-wide mb-1">
             Relationship
           </div>
-          <div className="text-stone-700">{result.relationshipNotes}</div>
+          <div className="text-stone-300">{result.relationshipNotes}</div>
         </div>
       </div>
 
@@ -109,7 +109,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
           </div>
           <div className="flex flex-wrap gap-1">
             {result.cuisinePreferences.map((p, i) => (
-              <span key={i} className="bg-stone-100 rounded px-1.5 py-0.5 text-stone-700">
+              <span key={i} className="bg-stone-800 rounded px-1.5 py-0.5 text-stone-300">
                 {p}
               </span>
             ))}
@@ -124,7 +124,7 @@ export function ClientPreferencePanel({ clientId }: { clientId: string }) {
           </div>
           <div className="flex flex-wrap gap-1">
             {result.avoidances.map((p, i) => (
-              <span key={i} className="bg-red-50 text-red-700 rounded px-1.5 py-0.5">
+              <span key={i} className="bg-red-950 text-red-700 rounded px-1.5 py-0.5">
                 {p}
               </span>
             ))}

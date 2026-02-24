@@ -28,10 +28,10 @@ function ConfidenceBadge({ score }: { score: number | null }) {
         : 'Low confidence — review carefully'
   const cls =
     score >= 0.8
-      ? 'bg-green-100 text-green-700'
+      ? 'bg-green-900 text-green-700'
       : score >= 0.5
-        ? 'bg-amber-100 text-amber-700'
-        : 'bg-red-100 text-red-700'
+        ? 'bg-amber-900 text-amber-700'
+        : 'bg-red-900 text-red-700'
   return <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${cls}`}>{label}</span>
 }
 
@@ -54,9 +54,9 @@ function LineItemRow({
 
   return (
     <tr
-      className={`border-b border-stone-100 last:border-0 ${item.expenseTag === 'personal' ? 'opacity-50' : ''}`}
+      className={`border-b border-stone-800 last:border-0 ${item.expenseTag === 'personal' ? 'opacity-50' : ''}`}
     >
-      <td className="py-1.5 pr-3 text-sm text-stone-800">
+      <td className="py-1.5 pr-3 text-sm text-stone-200">
         {editingDesc ? (
           <input
             autoFocus
@@ -69,20 +69,20 @@ function LineItemRow({
         ) : (
           <button
             onClick={() => setEditingDesc(true)}
-            className="text-left w-full hover:text-brand-700"
+            className="text-left w-full hover:text-brand-400"
           >
             {item.description}
           </button>
         )}
       </td>
-      <td className="py-1.5 pr-3 text-sm text-stone-700 text-right whitespace-nowrap">
+      <td className="py-1.5 pr-3 text-sm text-stone-300 text-right whitespace-nowrap">
         {formatCents(item.priceCents)}
       </td>
       <td className="py-1.5 pr-3">
         <select
           value={item.ingredientCategory ?? ''}
           onChange={(e) => onUpdate(item.id, 'ingredientCategory', e.target.value || null)}
-          className="text-xs border border-stone-200 rounded px-1 py-0.5 text-stone-600 bg-white"
+          className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-surface"
         >
           <option value="">—</option>
           <option value="protein">Protein</option>
@@ -99,9 +99,9 @@ function LineItemRow({
         <select
           value={item.expenseTag}
           onChange={(e) => onUpdate(item.id, 'expenseTag', e.target.value)}
-          className={`text-xs border rounded px-1 py-0.5 bg-white ${
+          className={`text-xs border rounded px-1 py-0.5 bg-surface ${
             item.expenseTag === 'personal'
-              ? 'border-stone-200 text-stone-400'
+              ? 'border-stone-700 text-stone-400'
               : item.expenseTag === 'business'
                 ? 'border-green-200 text-green-700'
                 : 'border-amber-200 text-amber-700'
@@ -185,11 +185,11 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
   const { extraction } = receipt
 
   return (
-    <Card className={`p-4 ${approved ? 'border-green-200 bg-green-50' : ''}`}>
+    <Card className={`p-4 ${approved ? 'border-green-200 bg-green-950' : ''}`}>
       <div className="flex gap-4">
         {/* Thumbnail */}
         <a href={receipt.photoUrl} target="_blank" rel="noopener noreferrer" className="shrink-0">
-          <div className="w-16 h-20 bg-stone-100 rounded border border-stone-200 overflow-hidden">
+          <div className="w-16 h-20 bg-stone-800 rounded border border-stone-700 overflow-hidden">
             <Image
               src={receipt.photoUrl}
               alt="Receipt"
@@ -207,11 +207,11 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
           <div className="flex justify-between items-start mb-2">
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-stone-900 text-sm">
+                <h3 className="font-semibold text-stone-100 text-sm">
                   {extraction?.storeName ?? 'Unknown Store'}
                 </h3>
                 {approved && (
-                  <span className="text-xs bg-green-100 text-green-700 font-medium px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-green-900 text-green-700 font-medium px-2 py-0.5 rounded-full">
                     Approved
                   </span>
                 )}
@@ -227,7 +227,7 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
               </p>
             </div>
             <div className="text-right shrink-0 ml-4">
-              <div className="text-sm font-bold text-stone-900">
+              <div className="text-sm font-bold text-stone-100">
                 {formatCents(extraction?.totalCents ?? null)}
               </div>
               {extraction?.subtotalCents !== null && extraction?.subtotalCents !== undefined && (
@@ -253,7 +253,7 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
             <div className="mb-3 overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="border-b border-stone-200">
+                  <tr className="border-b border-stone-700">
                     <th className="text-xs font-medium text-stone-400 pb-1 pr-3">Item</th>
                     <th className="text-xs font-medium text-stone-400 pb-1 pr-3 text-right">
                       Price
@@ -276,7 +276,7 @@ function ReceiptBlock({ receipt: initialReceipt }: { receipt: ReceiptPhoto }) {
             <div className="flex gap-4 text-xs text-stone-500 mb-3">
               <span>
                 Business:{' '}
-                <span className="font-semibold text-stone-700">{formatCents(businessTotal)}</span>
+                <span className="font-semibold text-stone-300">{formatCents(businessTotal)}</span>
               </span>
               {personalTotal > 0 && (
                 <span>
@@ -357,7 +357,7 @@ export function ReceiptSummaryClient({ receipts, eventId }: Props) {
     <div className="space-y-4">
       {/* Summary bar */}
       {receipts.length > 1 && (
-        <div className="flex gap-6 text-sm text-stone-600 bg-stone-50 rounded-lg px-4 py-3">
+        <div className="flex gap-6 text-sm text-stone-400 bg-stone-800 rounded-lg px-4 py-3">
           <span>
             <strong>{receipts.length}</strong> receipts total
           </span>

@@ -88,13 +88,13 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-stone-500">NDA Status</p>
-                  <p className="font-medium text-stone-900">
+                  <p className="font-medium text-stone-100">
                     {initial.nda_active ? 'Active' : 'Not on file'}
                   </p>
                 </div>
                 <div>
                   <p className="text-stone-500">Photo Permission</p>
-                  <p className="font-medium text-stone-900">
+                  <p className="font-medium text-stone-100">
                     {PHOTO_OPTIONS.find((o) => o.value === initial.photo_permission)?.label ??
                       'None'}
                   </p>
@@ -102,19 +102,19 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                 {initial.nda_coverage && (
                   <div className="col-span-2">
                     <p className="text-stone-500">Coverage</p>
-                    <p className="font-medium text-stone-900">{initial.nda_coverage}</p>
+                    <p className="font-medium text-stone-100">{initial.nda_coverage}</p>
                   </div>
                 )}
                 {initial.nda_effective_date && (
                   <div>
                     <p className="text-stone-500">Effective</p>
-                    <p className="font-medium text-stone-900">{initial.nda_effective_date}</p>
+                    <p className="font-medium text-stone-100">{initial.nda_effective_date}</p>
                   </div>
                 )}
                 {initial.nda_expiry_date && (
                   <div>
                     <p className="text-stone-500">Expires</p>
-                    <p className="font-medium text-stone-900">{initial.nda_expiry_date}</p>
+                    <p className="font-medium text-stone-100">{initial.nda_expiry_date}</p>
                   </div>
                 )}
               </div>
@@ -130,16 +130,16 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                     type="checkbox"
                     checked={ndaActive}
                     onChange={(e) => setNdaActive(e.target.checked)}
-                    className="w-4 h-4 rounded border-stone-300"
+                    className="w-4 h-4 rounded border-stone-600"
                   />
-                  <span className="text-sm font-medium text-stone-700">NDA Active</span>
+                  <span className="text-sm font-medium text-stone-300">NDA Active</span>
                 </label>
               </div>
 
               {ndaActive && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
                       Coverage
                     </label>
                     <input
@@ -147,14 +147,14 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                       value={coverage}
                       onChange={(e) => setCoverage(e.target.value)}
                       placeholder="What the NDA covers"
-                      className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                      className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label
                         htmlFor="nda-effective-date"
-                        className="block text-sm font-medium text-stone-700 mb-1"
+                        className="block text-sm font-medium text-stone-300 mb-1"
                       >
                         Effective Date
                       </label>
@@ -164,13 +164,13 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                         value={effectiveDate}
                         onChange={(e) => setEffectiveDate(e.target.value)}
                         title="NDA effective date"
-                        className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                        className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                       />
                     </div>
                     <div>
                       <label
                         htmlFor="nda-expiry-date"
-                        className="block text-sm font-medium text-stone-700 mb-1"
+                        className="block text-sm font-medium text-stone-300 mb-1"
                       >
                         Expiry Date
                       </label>
@@ -180,12 +180,12 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                         value={expiryDate}
                         onChange={(e) => setExpiryDate(e.target.value)}
                         title="NDA expiry date"
-                        className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                        className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">
+                    <label className="block text-sm font-medium text-stone-300 mb-1">
                       Document URL
                     </label>
                     <input
@@ -193,7 +193,7 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                       value={documentUrl}
                       onChange={(e) => setDocumentUrl(e.target.value)}
                       placeholder="Link to NDA document"
-                      className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                      className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                     />
                   </div>
                 </>
@@ -202,7 +202,7 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
               <div>
                 <label
                   htmlFor="nda-photo-permission"
-                  className="block text-sm font-medium text-stone-700 mb-1"
+                  className="block text-sm font-medium text-stone-300 mb-1"
                 >
                   Photo Permission
                 </label>
@@ -211,7 +211,7 @@ export function NDAPanel({ clientId, initial }: { clientId: string; initial: NDA
                   value={photoPermission}
                   onChange={(e) => setPhotoPermission(e.target.value)}
                   title="Photo permission level"
-                  className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                  className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                 >
                   {PHOTO_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>

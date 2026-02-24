@@ -63,7 +63,7 @@ export async function TacDashboardWidget() {
         <CardContent className="py-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-stone-700">TakeAChef Leads</p>
+              <p className="text-sm font-medium text-stone-300">TakeAChef Leads</p>
               <p className="text-xs text-stone-400 mt-1">
                 Connect your Gmail to automatically pull in TakeAChef leads. We detect TakeAChef
                 emails and create inquiries for you.
@@ -71,7 +71,7 @@ export async function TacDashboardWidget() {
             </div>
             <Link
               href="/settings/integrations"
-              className="text-xs font-medium text-brand-600 hover:text-brand-700 whitespace-nowrap"
+              className="text-xs font-medium text-brand-600 hover:text-brand-400 whitespace-nowrap"
             >
               Connect Gmail
             </Link>
@@ -85,7 +85,7 @@ export async function TacDashboardWidget() {
     <Card>
       <CardHeader className="py-3 px-4">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-semibold text-stone-800">
+          <CardTitle className="text-sm font-semibold text-stone-200">
             TakeAChef Command Center
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -117,11 +117,11 @@ export async function TacDashboardWidget() {
                   <div
                     key={lead.id}
                     className={`flex items-center justify-between text-sm rounded px-2 py-1.5 ${
-                      isStale ? 'bg-red-50' : 'bg-amber-50/50'
+                      isStale ? 'bg-red-950' : 'bg-amber-950/50'
                     }`}
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-medium text-stone-800 truncate">{lead.clientName}</span>
+                      <span className="font-medium text-stone-200 truncate">{lead.clientName}</span>
                       <span
                         className={`text-xs ${isStale ? 'text-red-600 font-medium' : 'text-stone-500'}`}
                       >
@@ -134,7 +134,7 @@ export async function TacDashboardWidget() {
                           href={lead.externalLink}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs text-brand-600 hover:text-brand-700"
+                          className="text-xs text-brand-600 hover:text-brand-400"
                         >
                           TakeAChef
                         </a>
@@ -165,10 +165,10 @@ export async function TacDashboardWidget() {
               {actionable.awaitingChef.slice(0, 5).map((lead) => (
                 <div
                   key={lead.id}
-                  className="flex items-center justify-between text-sm rounded px-2 py-1.5 bg-yellow-50/50"
+                  className="flex items-center justify-between text-sm rounded px-2 py-1.5 bg-yellow-950/50"
                 >
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="font-medium text-stone-800 truncate">{lead.clientName}</span>
+                    <span className="font-medium text-stone-200 truncate">{lead.clientName}</span>
                     <span className="text-xs text-stone-500">{formatAge(lead.ageHours)}</span>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
@@ -177,7 +177,7 @@ export async function TacDashboardWidget() {
                         href={lead.externalLink}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-xs text-brand-600 hover:text-brand-700"
+                        className="text-xs text-brand-600 hover:text-brand-400"
                       >
                         TakeAChef
                       </a>
@@ -198,41 +198,41 @@ export async function TacDashboardWidget() {
         <div className="flex items-center justify-between text-sm px-2 py-1 -mx-2">
           <Link
             href="/inquiries?channel=take_a_chef&status=new"
-            className="text-stone-600 hover:text-stone-900"
+            className="text-stone-400 hover:text-stone-100"
           >
             New Leads
           </Link>
-          <span className="font-semibold text-stone-900">{stats.newLeads}</span>
+          <span className="font-semibold text-stone-100">{stats.newLeads}</span>
         </div>
         <div className="flex items-center justify-between text-sm px-2 py-1 -mx-2">
-          <span className="text-stone-600">Confirmed</span>
+          <span className="text-stone-400">Confirmed</span>
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-stone-900">{stats.confirmed}</span>
+            <span className="font-semibold text-stone-100">{stats.confirmed}</span>
             {stats.confirmed > 0 && <Badge variant="success">Booked</Badge>}
           </div>
         </div>
 
         {/* Daily Inquiry Volume */}
         {dailyStats && (
-          <div className="mt-2 pt-2 border-t border-stone-100">
+          <div className="mt-2 pt-2 border-t border-stone-800">
             <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">
               Inquiry Volume
             </p>
             <div className="grid grid-cols-4 gap-1.5">
-              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
-                <p className="text-base font-bold text-stone-900">{dailyStats.today}</p>
+              <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-100">{dailyStats.today}</p>
                 <p className="text-[10px] text-stone-500">Today</p>
               </div>
-              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
-                <p className="text-base font-bold text-stone-900">{dailyStats.yesterday}</p>
+              <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-100">{dailyStats.yesterday}</p>
                 <p className="text-[10px] text-stone-500">Yesterday</p>
               </div>
-              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
-                <p className="text-base font-bold text-stone-900">{dailyStats.thisWeek}</p>
+              <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-100">{dailyStats.thisWeek}</p>
                 <p className="text-[10px] text-stone-500">Week</p>
               </div>
-              <div className="rounded-md bg-stone-50 px-2 py-1.5 text-center">
-                <p className="text-base font-bold text-stone-900">{dailyStats.thisMonth}</p>
+              <div className="rounded-md bg-stone-800 px-2 py-1.5 text-center">
+                <p className="text-base font-bold text-stone-100">{dailyStats.thisMonth}</p>
                 <p className="text-[10px] text-stone-500">Month</p>
               </div>
             </div>
@@ -243,7 +243,7 @@ export async function TacDashboardWidget() {
       <CardFooter className="py-2 px-4 flex items-center justify-between">
         <Link
           href="/inquiries?channel=take_a_chef"
-          className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+          className="text-xs text-brand-600 hover:text-brand-400 font-medium"
         >
           View all TakeAChef leads
         </Link>

@@ -25,7 +25,7 @@ import type { ReadinessResult, GateResult, ReadinessGate } from '@/lib/events/re
 interface ReadinessGatePanelProps {
   eventId: string
   readiness: ReadinessResult
-  targetLabel: string       // e.g. "Confirm Event" or "Start Service"
+  targetLabel: string // e.g. "Confirm Event" or "Start Service"
 }
 
 // ─── Gate row ─────────────────────────────────────────────────────────────────
@@ -74,24 +74,25 @@ function GateRow({
     })
   }
 
-  const statusIcon = gate.status === 'passed' ? (
-    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-  ) : gate.status === 'overridden' ? (
-    <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
-  ) : gate.isHardBlock ? (
-    <ShieldAlert className="h-4 w-4 text-red-600 shrink-0" />
-  ) : (
-    <XCircle className="h-4 w-4 text-stone-400 shrink-0" />
-  )
+  const statusIcon =
+    gate.status === 'passed' ? (
+      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+    ) : gate.status === 'overridden' ? (
+      <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+    ) : gate.isHardBlock ? (
+      <ShieldAlert className="h-4 w-4 text-red-600 shrink-0" />
+    ) : (
+      <XCircle className="h-4 w-4 text-stone-400 shrink-0" />
+    )
 
   const rowBg =
     gate.status === 'passed'
-      ? 'bg-green-50 border-green-200'
+      ? 'bg-green-950 border-green-200'
       : gate.status === 'overridden'
-      ? 'bg-amber-50 border-amber-200'
-      : gate.isHardBlock
-      ? 'bg-red-50 border-red-200'
-      : 'bg-stone-50 border-stone-200'
+        ? 'bg-amber-950 border-amber-200'
+        : gate.isHardBlock
+          ? 'bg-red-950 border-red-200'
+          : 'bg-stone-800 border-stone-700'
 
   return (
     <div className={`rounded-lg border p-3 space-y-2 ${rowBg}`}>
@@ -99,17 +100,19 @@ function GateRow({
         {statusIcon}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-stone-900">{gate.label}</span>
+            <span className="text-sm font-medium text-stone-100">{gate.label}</span>
             {gate.isHardBlock && (
-              <Badge variant="error" className="text-xs">Hard Block</Badge>
+              <Badge variant="error" className="text-xs">
+                Hard Block
+              </Badge>
             )}
             {gate.status === 'overridden' && (
-              <Badge variant="warning" className="text-xs">Bypassed</Badge>
+              <Badge variant="warning" className="text-xs">
+                Bypassed
+              </Badge>
             )}
           </div>
-          {gate.details && (
-            <p className="text-xs text-stone-600 mt-0.5">{gate.details}</p>
-          )}
+          {gate.details && <p className="text-xs text-stone-400 mt-0.5">{gate.details}</p>}
           {gate.overrideReason && (
             <p className="text-xs text-amber-700 mt-0.5 italic">
               Bypassed: &ldquo;{gate.overrideReason}&rdquo;
@@ -134,9 +137,14 @@ function GateRow({
             {!gate.isHardBlock && (
               <button
                 onClick={() => setShowOverride(!showOverride)}
-                className="text-xs text-stone-500 hover:text-stone-700 flex items-center gap-0.5"
+                className="text-xs text-stone-500 hover:text-stone-300 flex items-center gap-0.5"
               >
-                Skip {showOverride ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                Skip{' '}
+                {showOverride ? (
+                  <ChevronUp className="h-3 w-3" />
+                ) : (
+                  <ChevronDown className="h-3 w-3" />
+                )}
               </button>
             )}
           </div>
@@ -155,7 +163,7 @@ function GateRow({
               value={overrideReason}
               onChange={(e) => setOverrideReason(e.target.value)}
               placeholder="Reason for bypassing..."
-              className="flex-1 text-xs border border-stone-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="flex-1 text-xs border border-stone-600 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-brand-500"
             />
             <Button
               variant="secondary"
@@ -170,20 +178,14 @@ function GateRow({
         </div>
       )}
 
-      {error && (
-        <p className="ml-6 text-xs text-red-600">{error}</p>
-      )}
+      {error && <p className="ml-6 text-xs text-red-600">{error}</p>}
     </div>
   )
 }
 
 // ─── Main Panel ───────────────────────────────────────────────────────────────
 
-export function ReadinessGatePanel({
-  eventId,
-  readiness,
-  targetLabel,
-}: ReadinessGatePanelProps) {
+export function ReadinessGatePanel({ eventId, readiness, targetLabel }: ReadinessGatePanelProps) {
   const [localReadiness, setLocalReadiness] = useState(readiness)
 
   const handleUpdate = async () => {
@@ -200,12 +202,12 @@ export function ReadinessGatePanel({
   const overriddenCount = localReadiness.gates.filter((g) => g.status === 'overridden').length
 
   const headerColor = hardBlocked
-    ? 'border-red-200 bg-red-50'
+    ? 'border-red-200 bg-red-950'
     : allReady
-    ? 'border-green-200 bg-green-50'
-    : pendingCount > 0
-    ? 'border-amber-200 bg-amber-50'
-    : 'border-stone-200'
+      ? 'border-green-200 bg-green-950'
+      : pendingCount > 0
+        ? 'border-amber-200 bg-amber-950'
+        : 'border-stone-700'
 
   return (
     <Card className={`border ${headerColor}`}>
@@ -236,24 +238,20 @@ export function ReadinessGatePanel({
         )}
         {!hardBlocked && pendingCount > 0 && (
           <p className="text-xs text-stone-500 mt-1">
-            These items are recommended before {targetLabel.toLowerCase()}.
-            You can mark each done or skip with a reason.
+            These items are recommended before {targetLabel.toLowerCase()}. You can mark each done
+            or skip with a reason.
           </p>
         )}
         {overriddenCount > 0 && !hardBlocked && (
           <p className="text-xs text-amber-700 mt-1">
-            {overriddenCount} item{overriddenCount > 1 ? 's' : ''} bypassed — recorded in the event audit trail.
+            {overriddenCount} item{overriddenCount > 1 ? 's' : ''} bypassed — recorded in the event
+            audit trail.
           </p>
         )}
       </CardHeader>
       <CardContent className="space-y-2">
         {localReadiness.gates.map((gate) => (
-          <GateRow
-            key={gate.gate}
-            gate={gate}
-            eventId={eventId}
-            onUpdate={handleUpdate}
-          />
+          <GateRow key={gate.gate} gate={gate} eventId={eventId} onUpdate={handleUpdate} />
         ))}
       </CardContent>
     </Card>

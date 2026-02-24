@@ -62,7 +62,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
         onClick={handleClick}
         aria-label="Recent activity"
         title="Recent activity"
-        className={`flex items-center justify-center rounded-lg text-stone-400 hover:bg-stone-50 hover:text-stone-600 transition-colors ${
+        className={`flex items-center justify-center rounded-lg text-stone-400 hover:bg-stone-800 hover:text-stone-400 transition-colors ${
           collapsed ? 'w-10 h-10' : 'w-8 h-8 p-1.5'
         }`}
       >
@@ -74,16 +74,16 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
 
       {open && (
         <div
-          className={`absolute z-50 bg-white rounded-lg shadow-lg border border-stone-200 w-72 ${
+          className={`absolute z-50 bg-surface rounded-lg shadow-lg border border-stone-700 w-72 ${
             collapsed ? 'left-full ml-2 top-0' : 'left-0 top-full mt-1'
           }`}
         >
-          <div className="flex items-center justify-between px-3 py-2 border-b border-stone-100">
-            <span className="text-xs font-medium text-stone-600">Recent Activity</span>
+          <div className="flex items-center justify-between px-3 py-2 border-b border-stone-800">
+            <span className="text-xs font-medium text-stone-400">Recent Activity</span>
             <Link
               href="/activity"
               onClick={() => setOpen(false)}
-              className="text-[10px] font-medium text-brand-600 hover:text-brand-700"
+              className="text-[10px] font-medium text-brand-600 hover:text-brand-400"
             >
               View all
             </Link>
@@ -100,7 +100,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
               const row = (
                 <div
                   key={entry.id}
-                  className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-stone-50 transition-colors"
+                  className="flex items-start gap-2 py-1.5 px-2 rounded-md hover:bg-stone-800 transition-colors"
                 >
                   <span
                     className={`text-[9px] font-medium px-1 py-0.5 rounded shrink-0 mt-0.5 ${config.bgColor} ${config.color}`}
@@ -108,7 +108,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
                     {config.label}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs text-stone-700 leading-snug line-clamp-2">
+                    <p className="text-xs text-stone-300 leading-snug line-clamp-2">
                       {entry.summary}
                     </p>
                     <p className="text-[10px] text-stone-400 mt-0.5">
@@ -128,11 +128,11 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
             })}
           </div>
 
-          <div className="border-t border-stone-100 px-3 py-2">
+          <div className="border-t border-stone-800 px-3 py-2">
             <Link
               href="/activity"
               onClick={() => setOpen(false)}
-              className="block text-center text-xs font-medium text-stone-500 hover:text-stone-700"
+              className="block text-center text-xs font-medium text-stone-500 hover:text-stone-300"
             >
               Open full timeline
             </Link>

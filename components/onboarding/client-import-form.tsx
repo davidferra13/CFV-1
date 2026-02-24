@@ -38,7 +38,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
   const [tagInput, setTagInput] = useState({ dietary: '', allergy: '' })
 
   function set(field: keyof typeof EMPTY_FORM, value: string) {
-    setForm(prev => ({ ...prev, [field]: value }))
+    setForm((prev) => ({ ...prev, [field]: value }))
   }
 
   function addTag(type: 'dietary' | 'allergy') {
@@ -46,16 +46,16 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
     const value = raw.trim()
     if (!value) return
     const field = type === 'dietary' ? 'dietary_restrictions' : 'allergies'
-    setForm(prev => ({
+    setForm((prev) => ({
       ...prev,
       [field]: prev[field].includes(value) ? prev[field] : [...prev[field], value],
     }))
-    setTagInput(prev => ({ ...prev, [type]: '' }))
+    setTagInput((prev) => ({ ...prev, [type]: '' }))
   }
 
   function removeTag(type: 'dietary' | 'allergy', tag: string) {
     const field = type === 'dietary' ? 'dietary_restrictions' : 'allergies'
-    setForm(prev => ({ ...prev, [field]: prev[field].filter(t => t !== tag) }))
+    setForm((prev) => ({ ...prev, [field]: prev[field].filter((t) => t !== tag) }))
   }
 
   function handleTagKeyDown(e: React.KeyboardEvent, type: 'dietary' | 'allergy') {
@@ -88,7 +88,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
           lifetime_events_count: parseInt(form.lifetime_events_count || '0', 10) || 0,
           lifetime_value_cents: valueCents,
         })
-        setClients(prev => [...prev, result.client])
+        setClients((prev) => [...prev, result.client])
         setForm(EMPTY_FORM)
         setTagInput({ dietary: '', allergy: '' })
         router.refresh()
@@ -100,7 +100,6 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-
       {/* Form — left panel (3/5) */}
       <div className="lg:col-span-3 space-y-5">
         <Card>
@@ -108,20 +107,21 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
             <CardTitle className="text-base">Add a Client</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-
             {error && (
-              <div className="rounded-md bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-md bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
                 {error}
               </div>
             )}
 
             {/* Name */}
             <div className="space-y-1.5">
-              <Label htmlFor="full_name">Full Name <span className="text-red-500">*</span></Label>
+              <Label htmlFor="full_name">
+                Full Name <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="full_name"
                 value={form.full_name}
-                onChange={e => set('full_name', e.target.value)}
+                onChange={(e) => set('full_name', e.target.value)}
                 placeholder="Jane Smith"
               />
             </div>
@@ -134,7 +134,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                   id="email"
                   type="email"
                   value={form.email}
-                  onChange={e => set('email', e.target.value)}
+                  onChange={(e) => set('email', e.target.value)}
                   placeholder="jane@example.com"
                 />
               </div>
@@ -144,7 +144,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                   id="phone"
                   type="tel"
                   value={form.phone}
-                  onChange={e => set('phone', e.target.value)}
+                  onChange={(e) => set('phone', e.target.value)}
                   placeholder="(555) 000-0000"
                 />
               </div>
@@ -156,8 +156,8 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
               <select
                 id="contact_method"
                 value={form.preferred_contact_method}
-                onChange={e => set('preferred_contact_method', e.target.value)}
-                className="flex h-10 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                onChange={(e) => set('preferred_contact_method', e.target.value)}
+                className="flex h-10 w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
               >
                 <option value="text">Text</option>
                 <option value="email">Email</option>
@@ -172,7 +172,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
               <Input
                 id="referral_source"
                 value={form.referral_source}
-                onChange={e => set('referral_source', e.target.value)}
+                onChange={(e) => set('referral_source', e.target.value)}
                 placeholder="Referral from Sarah, Instagram, word of mouth…"
               />
             </div>
@@ -183,8 +183,8 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
               <div className="flex gap-2">
                 <Input
                   value={tagInput.dietary}
-                  onChange={e => setTagInput(prev => ({ ...prev, dietary: e.target.value }))}
-                  onKeyDown={e => handleTagKeyDown(e, 'dietary')}
+                  onChange={(e) => setTagInput((prev) => ({ ...prev, dietary: e.target.value }))}
+                  onKeyDown={(e) => handleTagKeyDown(e, 'dietary')}
                   placeholder="Gluten-free, vegan… press Enter to add"
                 />
                 <Button type="button" variant="secondary" onClick={() => addTag('dietary')}>
@@ -193,10 +193,10 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
               </div>
               {form.dietary_restrictions.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {form.dietary_restrictions.map(tag => (
+                  {form.dietary_restrictions.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs text-amber-800"
+                      className="inline-flex items-center gap-1 rounded-full bg-amber-900 px-2.5 py-0.5 text-xs text-amber-800"
                     >
                       {tag}
                       <button
@@ -214,12 +214,15 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
 
             {/* Allergies */}
             <div className="space-y-1.5">
-              <Label>Allergies <span className="text-stone-400 font-normal text-xs">(safety-critical)</span></Label>
+              <Label>
+                Allergies{' '}
+                <span className="text-stone-400 font-normal text-xs">(safety-critical)</span>
+              </Label>
               <div className="flex gap-2">
                 <Input
                   value={tagInput.allergy}
-                  onChange={e => setTagInput(prev => ({ ...prev, allergy: e.target.value }))}
-                  onKeyDown={e => handleTagKeyDown(e, 'allergy')}
+                  onChange={(e) => setTagInput((prev) => ({ ...prev, allergy: e.target.value }))}
+                  onKeyDown={(e) => handleTagKeyDown(e, 'allergy')}
                   placeholder="Peanuts, shellfish… press Enter to add"
                 />
                 <Button type="button" variant="secondary" onClick={() => addTag('allergy')}>
@@ -228,10 +231,10 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
               </div>
               {form.allergies.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {form.allergies.map(tag => (
+                  {form.allergies.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 rounded-full bg-red-100 px-2.5 py-0.5 text-xs text-red-800"
+                      className="inline-flex items-center gap-1 rounded-full bg-red-900 px-2.5 py-0.5 text-xs text-red-800"
                     >
                       {tag}
                       <button
@@ -248,7 +251,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
             </div>
 
             {/* Historical financial data */}
-            <div className="pt-2 border-t border-stone-100">
+            <div className="pt-2 border-t border-stone-800">
               <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-3">
                 Service History (for loyalty tiers)
               </p>
@@ -260,7 +263,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                     type="number"
                     min="0"
                     value={form.lifetime_events_count}
-                    onChange={e => set('lifetime_events_count', e.target.value)}
+                    onChange={(e) => set('lifetime_events_count', e.target.value)}
                     placeholder="0"
                   />
                 </div>
@@ -272,7 +275,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                     min="0"
                     step="0.01"
                     value={form.lifetime_value_dollars}
-                    onChange={e => set('lifetime_value_dollars', e.target.value)}
+                    onChange={(e) => set('lifetime_value_dollars', e.target.value)}
                     placeholder="0.00"
                   />
                 </div>
@@ -290,7 +293,6 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                 {isPending ? 'Saving…' : 'Save & Add Another'}
               </Button>
             </div>
-
           </CardContent>
         </Card>
       </div>
@@ -310,10 +312,10 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                 No clients yet — add your first one.
               </p>
             ) : (
-              <ul className="divide-y divide-stone-100">
-                {clients.map(c => (
+              <ul className="divide-y divide-stone-800">
+                {clients.map((c) => (
                   <li key={c.id} className="py-2.5 flex items-center justify-between">
-                    <span className="text-sm font-medium text-stone-800">{c.full_name}</span>
+                    <span className="text-sm font-medium text-stone-200">{c.full_name}</span>
                     {(c.total_events_count ?? 0) > 0 && (
                       <span className="text-xs text-stone-400">
                         {c.total_events_count} event{c.total_events_count === 1 ? '' : 's'}
@@ -341,7 +343,6 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
           </Button>
         </Link>
       </div>
-
     </div>
   )
 }

@@ -42,7 +42,7 @@ export function HistoricalFindingsList({
   return (
     <div>
       {/* Tabs */}
-      <div className="flex border-b border-stone-200 mb-4">
+      <div className="flex border-b border-stone-700 mb-4">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -51,8 +51,8 @@ export function HistoricalFindingsList({
               px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors
               ${
                 activeTab === tab.key
-                  ? 'border-brand-600 text-brand-700'
-                  : 'border-transparent text-stone-500 hover:text-stone-700'
+                  ? 'border-brand-600 text-brand-400'
+                  : 'border-transparent text-stone-500 hover:text-stone-300'
               }
             `}
           >
@@ -61,8 +61,8 @@ export function HistoricalFindingsList({
               <span
                 className={`ml-2 rounded-full px-2 py-0.5 text-xs ${
                   activeTab === tab.key
-                    ? 'bg-brand-100 text-brand-700'
-                    : 'bg-stone-100 text-stone-500'
+                    ? 'bg-brand-900 text-brand-400'
+                    : 'bg-stone-800 text-stone-500'
                 }`}
               >
                 {tab.count}
@@ -162,7 +162,7 @@ function FindingCard({
 
   if (result) {
     return (
-      <div className="rounded-lg border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-500">
+      <div className="rounded-lg border border-stone-700 bg-stone-800 px-4 py-3 text-sm text-stone-500">
         {result.type === 'imported' ? (
           <>
             Imported as inquiry.{' '}
@@ -183,16 +183,16 @@ function FindingCard({
   }
 
   return (
-    <div className="rounded-lg border border-stone-200 bg-white p-4">
+    <div className="rounded-lg border border-stone-700 bg-surface p-4">
       {/* Header row */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-sm font-medium text-stone-900 truncate">{senderDisplay}</span>
+            <span className="text-sm font-medium text-stone-100 truncate">{senderDisplay}</span>
             {dateDisplay && <span className="text-xs text-stone-400 shrink-0">{dateDisplay}</span>}
           </div>
           {finding.subject && (
-            <p className="text-sm text-stone-600 mt-0.5 truncate">{finding.subject}</p>
+            <p className="text-sm text-stone-400 mt-0.5 truncate">{finding.subject}</p>
           )}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
@@ -228,7 +228,7 @@ function FindingCard({
           <button
             onClick={handleDismiss}
             disabled={isPending}
-            className="px-3 py-1.5 text-xs font-medium rounded-md bg-stone-100 text-stone-700 hover:bg-stone-200 disabled:opacity-50 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium rounded-md bg-stone-800 text-stone-300 hover:bg-stone-700 disabled:opacity-50 transition-colors"
           >
             Dismiss
           </button>
@@ -237,7 +237,7 @@ function FindingCard({
             href={`https://mail.google.com/mail/u/0/#inbox/${finding.gmailMessageId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="px-3 py-1.5 text-xs font-medium text-stone-400 hover:text-stone-600 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium text-stone-400 hover:text-stone-400 transition-colors"
           >
             Open in Gmail &uarr;
           </a>
@@ -299,7 +299,7 @@ function BatchDismissButton({ onDone }: { onDone: () => void }) {
     <button
       onClick={handleDismissAll}
       disabled={isPending}
-      className="text-xs text-stone-400 hover:text-stone-600 disabled:opacity-50 transition-colors"
+      className="text-xs text-stone-400 hover:text-stone-400 disabled:opacity-50 transition-colors"
     >
       {isPending ? 'Dismissing…' : 'Dismiss all'}
     </button>
@@ -310,8 +310,8 @@ function BatchDismissButton({ onDone }: { onDone: () => void }) {
 
 function ClassificationBadge({ classification }: { classification: string }) {
   const styles: Record<string, string> = {
-    inquiry: 'bg-emerald-100 text-emerald-700',
-    existing_thread: 'bg-blue-100 text-blue-700',
+    inquiry: 'bg-emerald-900 text-emerald-700',
+    existing_thread: 'bg-blue-900 text-blue-700',
   }
   const labels: Record<string, string> = {
     inquiry: 'inquiry',
@@ -319,7 +319,7 @@ function ClassificationBadge({ classification }: { classification: string }) {
   }
   return (
     <span
-      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${styles[classification] ?? 'bg-stone-100 text-stone-600'}`}
+      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${styles[classification] ?? 'bg-stone-800 text-stone-400'}`}
     >
       {labels[classification] ?? classification}
     </span>
@@ -328,13 +328,13 @@ function ClassificationBadge({ classification }: { classification: string }) {
 
 function ConfidenceBadge({ confidence }: { confidence: string }) {
   const styles: Record<string, string> = {
-    high: 'bg-emerald-50 text-emerald-600',
-    medium: 'bg-amber-50 text-amber-600',
-    low: 'bg-stone-100 text-stone-500',
+    high: 'bg-emerald-950 text-emerald-600',
+    medium: 'bg-amber-950 text-amber-600',
+    low: 'bg-stone-800 text-stone-500',
   }
   return (
     <span
-      className={`inline-block px-1.5 py-0.5 rounded text-[10px] ${styles[confidence] ?? 'bg-stone-100 text-stone-500'}`}
+      className={`inline-block px-1.5 py-0.5 rounded text-[10px] ${styles[confidence] ?? 'bg-stone-800 text-stone-500'}`}
     >
       {confidence}
     </span>

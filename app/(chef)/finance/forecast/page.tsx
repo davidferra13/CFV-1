@@ -20,15 +20,15 @@ export default async function ForecastPage() {
       ? 'text-green-600'
       : forecast.trend === 'down'
         ? 'text-red-600'
-        : 'text-stone-600'
+        : 'text-stone-400'
   const trendLabel =
     forecast.trend === 'up' ? 'Growing' : forecast.trend === 'down' ? 'Declining' : 'Stable'
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Revenue Forecast</h1>
-        <p className="text-stone-600 mt-1">
+        <h1 className="text-3xl font-bold text-stone-100">Revenue Forecast</h1>
+        <p className="text-stone-400 mt-1">
           Projected revenue based on your historical performance
         </p>
       </div>
@@ -37,7 +37,7 @@ export default async function ForecastPage() {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-stone-500">Avg Monthly Revenue</p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {formatCurrency(forecast.avgMonthlyRevenueCents)}
             </p>
           </CardContent>
@@ -45,7 +45,7 @@ export default async function ForecastPage() {
         <Card>
           <CardContent className="pt-6">
             <p className="text-sm text-stone-500">Projected Annual</p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">
+            <p className="text-2xl font-bold text-stone-100 mt-1">
               {formatCurrency(forecast.projectedAnnualCents)}
             </p>
           </CardContent>
@@ -76,10 +76,10 @@ export default async function ForecastPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-3 gap-4">
-            {forecast.forecast.map(m => (
-              <div key={m.month} className="bg-stone-50 rounded-lg p-4">
-                <p className="text-sm text-stone-600">{m.month}</p>
-                <p className="text-xl font-bold text-stone-800 mt-1">
+            {forecast.forecast.map((m) => (
+              <div key={m.month} className="bg-stone-800 rounded-lg p-4">
+                <p className="text-sm text-stone-400">{m.month}</p>
+                <p className="text-xl font-bold text-stone-200 mt-1">
                   {formatCurrency(m.projected || 0)}
                 </p>
                 <Badge variant="info">Projected</Badge>

@@ -100,8 +100,8 @@ export default function ContactPage() {
       {/* Page Header */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-stone-900 mb-4">Talk to us</h1>
-          <p className="text-lg md:text-xl text-stone-600">We respond within 1 business day.</p>
+          <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">Talk to us</h1>
+          <p className="text-lg md:text-xl text-stone-400">We respond within 1 business day.</p>
         </div>
       </section>
 
@@ -117,7 +117,7 @@ export default function ContactPage() {
                 </CardHeader>
                 <CardContent>
                   {showSuccess && (
-                    <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-md">
+                    <div className="mb-6 p-4 bg-green-950 border border-green-200 rounded-md">
                       <div className="flex items-start">
                         <svg
                           className="w-5 h-5 text-green-500 mt-0.5 mr-3 flex-shrink-0"
@@ -141,7 +141,7 @@ export default function ContactPage() {
                   )}
 
                   {submitError && (
-                    <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+                    <div className="mb-6 p-4 bg-red-950 border border-red-200 rounded-md">
                       <p className="text-red-700 text-sm">{submitError}</p>
                     </div>
                   )}
@@ -194,7 +194,7 @@ export default function ContactPage() {
                       variant="primary"
                       size="lg"
                       loading={isSubmitting}
-                      className="w-full bg-brand-500 hover:bg-brand-600 focus-visible:ring-brand-600"
+                      className="w-full bg-brand-9500 hover:bg-brand-600 focus-visible:ring-brand-600"
                     >
                       {isSubmitting ? 'Sending...' : 'Send Message'}
                     </Button>
@@ -212,7 +212,7 @@ export default function ContactPage() {
                 <CardContent className="space-y-6">
                   <div>
                     <div className="flex items-start mb-4">
-                      <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                      <div className="w-10 h-10 bg-brand-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                         <svg
                           className="w-5 h-5 text-brand-600"
                           fill="none"
@@ -228,10 +228,10 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-900 mb-1">Email</h4>
+                        <h4 className="font-semibold text-stone-100 mb-1">Email</h4>
                         <a
                           href="mailto:support@cheflowhq.com"
-                          className="text-brand-600 hover:text-brand-700"
+                          className="text-brand-600 hover:text-brand-400"
                         >
                           support@cheflowhq.com
                         </a>
@@ -239,9 +239,9 @@ export default function ContactPage() {
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-stone-200">
+                  <div className="pt-6 border-t border-stone-700">
                     <div className="flex items-start">
-                      <div className="w-10 h-10 bg-brand-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                      <div className="w-10 h-10 bg-brand-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                         <svg
                           className="w-5 h-5 text-brand-600"
                           fill="none"
@@ -257,17 +257,17 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-900 mb-1">Response Time</h4>
-                        <p className="text-stone-600 text-sm">
+                        <h4 className="font-semibold text-stone-100 mb-1">Response Time</h4>
+                        <p className="text-stone-400 text-sm">
                           We typically respond within 24 hours during business days
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-6 border-t border-stone-200">
+                  <div className="pt-6 border-t border-stone-700">
                     <div className="flex items-start">
-                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
+                      <div className="w-10 h-10 bg-green-900 rounded-lg flex items-center justify-center mr-3 flex-shrink-0">
                         <svg
                           className="w-5 h-5 text-emerald-600"
                           fill="none"
@@ -283,8 +283,8 @@ export default function ContactPage() {
                         </svg>
                       </div>
                       <div>
-                        <h4 className="font-semibold text-stone-900 mb-1">Support Hours</h4>
-                        <p className="text-stone-600 text-sm">
+                        <h4 className="font-semibold text-stone-100 mb-1">Support Hours</h4>
+                        <p className="text-stone-400 text-sm">
                           Monday - Friday
                           <br />
                           9:00 AM - 5:00 PM PST

@@ -30,7 +30,7 @@ export default async function RetainersPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-900">Retainers</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Retainers</h1>
           <p className="text-stone-500 mt-1">Recurring service agreements with clients</p>
         </div>
         <Link href="/finance/retainers/new">
@@ -41,7 +41,7 @@ export default async function RetainersPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{activeRetainers.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{activeRetainers.length}</p>
           <p className="text-sm text-stone-500 mt-1">Active retainers</p>
         </Card>
         <Card className="p-4">
@@ -49,7 +49,7 @@ export default async function RetainersPage() {
           <p className="text-sm text-stone-500 mt-1">Monthly recurring revenue</p>
         </Card>
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{retainers.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{retainers.length}</p>
           <p className="text-sm text-stone-500 mt-1">Total retainers</p>
         </Card>
       </div>
@@ -70,43 +70,43 @@ export default async function RetainersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-100 bg-stone-50/60">
-                  <th className="text-left py-3 px-4 font-medium text-stone-600">Name</th>
-                  <th className="text-left py-3 px-4 font-medium text-stone-600">Client</th>
-                  <th className="text-left py-3 px-4 font-medium text-stone-600">Status</th>
-                  <th className="text-right py-3 px-4 font-medium text-stone-600">Amount</th>
-                  <th className="text-left py-3 px-4 font-medium text-stone-600">Cycle</th>
-                  <th className="text-left py-3 px-4 font-medium text-stone-600">Next Billing</th>
-                  <th className="text-right py-3 px-4 font-medium text-stone-600">Actions</th>
+                <tr className="border-b border-stone-800 bg-stone-800/60">
+                  <th className="text-left py-3 px-4 font-medium text-stone-400">Name</th>
+                  <th className="text-left py-3 px-4 font-medium text-stone-400">Client</th>
+                  <th className="text-left py-3 px-4 font-medium text-stone-400">Status</th>
+                  <th className="text-right py-3 px-4 font-medium text-stone-400">Amount</th>
+                  <th className="text-left py-3 px-4 font-medium text-stone-400">Cycle</th>
+                  <th className="text-left py-3 px-4 font-medium text-stone-400">Next Billing</th>
+                  <th className="text-right py-3 px-4 font-medium text-stone-400">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {retainers.map((retainer: any) => (
                   <tr
                     key={retainer.id}
-                    className="border-b border-stone-50 hover:bg-stone-50/40 transition-colors"
+                    className="border-b border-stone-50 hover:bg-stone-800/40 transition-colors"
                   >
                     <td className="py-3 px-4">
                       <Link
                         href={`/finance/retainers/${retainer.id}`}
-                        className="font-medium text-stone-900 hover:text-brand-600"
+                        className="font-medium text-stone-100 hover:text-brand-600"
                       >
                         {retainer.name}
                       </Link>
                     </td>
-                    <td className="py-3 px-4 text-stone-600">
+                    <td className="py-3 px-4 text-stone-400">
                       {retainer.clients?.full_name || 'Unknown'}
                     </td>
                     <td className="py-3 px-4">
                       <RetainerStatusBadge status={retainer.status} />
                     </td>
-                    <td className="py-3 px-4 text-right font-medium text-stone-900">
+                    <td className="py-3 px-4 text-right font-medium text-stone-100">
                       {formatCurrency(retainer.amount_cents)}
                     </td>
-                    <td className="py-3 px-4 text-stone-600">
+                    <td className="py-3 px-4 text-stone-400">
                       {BILLING_CYCLE_LABELS[retainer.billing_cycle] || retainer.billing_cycle}
                     </td>
-                    <td className="py-3 px-4 text-stone-600">
+                    <td className="py-3 px-4 text-stone-400">
                       {retainer.next_billing_date
                         ? new Date(retainer.next_billing_date + 'T00:00:00').toLocaleDateString(
                             'en-US',

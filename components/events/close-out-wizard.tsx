@@ -31,19 +31,23 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-stone-600">
+        <span className="text-sm font-medium text-stone-400">
           Step {current + 1} of {total} — {STEPS[current]}
         </span>
         <span className="text-sm text-stone-400">{Math.round(((current + 1) / total) * 100)}%</span>
       </div>
-      <div className="w-full bg-stone-100 rounded-full h-2">
+      <div className="w-full bg-stone-800 rounded-full h-2">
         <div
           className={`bg-stone-800 h-2 rounded-full transition-all duration-300 ${
-            current === 0 ? 'w-1/5' :
-            current === 1 ? 'w-2/5' :
-            current === 2 ? 'w-3/5' :
-            current === 3 ? 'w-4/5' :
-            'w-full'
+            current === 0
+              ? 'w-1/5'
+              : current === 1
+                ? 'w-2/5'
+                : current === 2
+                  ? 'w-3/5'
+                  : current === 3
+                    ? 'w-4/5'
+                    : 'w-full'
           }`}
         />
       </div>
@@ -65,7 +69,7 @@ function StarRating({
   const labels = ['', 'Rough', 'Okay', 'Good', 'Great', 'Perfect']
   return (
     <div className="mb-6">
-      <p className="text-sm font-medium text-stone-700 mb-3">{label}</p>
+      <p className="text-sm font-medium text-stone-300 mb-3">{label}</p>
       <div className="flex gap-2">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -75,16 +79,14 @@ function StarRating({
             className={`w-11 h-11 rounded-full text-sm font-semibold border-2 transition-colors ${
               value >= n
                 ? 'bg-stone-800 border-stone-800 text-white'
-                : 'bg-white border-stone-200 text-stone-500 hover:border-stone-400'
+                : 'bg-surface border-stone-700 text-stone-500 hover:border-stone-400'
             }`}
           >
             {n}
           </button>
         ))}
       </div>
-      {value > 0 && (
-        <p className="text-xs text-stone-500 mt-2">{labels[value]}</p>
-      )}
+      {value > 0 && <p className="text-xs text-stone-500 mt-2">{labels[value]}</p>}
     </div>
   )
 }
@@ -100,13 +102,7 @@ const TIP_METHODS = [
 
 type TipMethod = 'cash' | 'venmo' | 'zelle' | 'other'
 
-function MethodPicker({
-  value,
-  onChange,
-}: {
-  value: TipMethod
-  onChange: (v: TipMethod) => void
-}) {
+function MethodPicker({ value, onChange }: { value: TipMethod; onChange: (v: TipMethod) => void }) {
   return (
     <div className="flex gap-2 flex-wrap">
       {TIP_METHODS.map((m) => (
@@ -117,7 +113,7 @@ function MethodPicker({
           className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
             value === m.value
               ? 'bg-stone-800 border-stone-800 text-white'
-              : 'bg-white border-stone-200 text-stone-700 hover:border-stone-400'
+              : 'bg-surface border-stone-700 text-stone-300 hover:border-stone-400'
           }`}
         >
           {m.label}
@@ -129,13 +125,7 @@ function MethodPicker({
 
 // ─── Step 0: Tip ──────────────────────────────────────────────────────────────
 
-function TipStep({
-  data,
-  onNext,
-}: {
-  data: CloseOutData
-  onNext: () => void
-}) {
+function TipStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
   const [hasTip, setHasTip] = useState<boolean | null>(null)
   const [dollars, setDollars] = useState('')
   const [method, setMethod] = useState<TipMethod>('cash')
@@ -148,10 +138,20 @@ function TipStep({
   if (existingTip) {
     return (
       <div>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 mb-6">
+        <div className="rounded-xl border border-emerald-200 bg-emerald-950 p-6 mb-6">
           <div className="flex items-center gap-3 mb-1">
-            <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-5 h-5 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <span className="font-semibold text-emerald-800">Tip already recorded</span>
           </div>
@@ -187,11 +187,13 @@ function TipStep({
       <div>
         <Alert variant="warning" title="Balance still outstanding" className="mb-6">
           {event.clientFirstName} has an unpaid balance of{' '}
-          <strong>{formatCurrency(financial.outstandingBalanceCents)}</strong>. You can
-          record a tip after payment is settled, or continue for now.
+          <strong>{formatCurrency(financial.outstandingBalanceCents)}</strong>. You can record a tip
+          after payment is settled, or continue for now.
         </Alert>
         <div className="flex gap-3">
-          <Button variant="secondary" onClick={onNext}>Continue without tip</Button>
+          <Button variant="secondary" onClick={onNext}>
+            Continue without tip
+          </Button>
         </div>
       </div>
     )
@@ -199,19 +201,25 @@ function TipStep({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-stone-900 mb-2">
+      <h2 className="text-xl font-semibold text-stone-100 mb-2">
         Did {event.clientFirstName} leave a tip?
       </h2>
       <p className="text-stone-500 text-sm mb-6">
         Paid {formatCurrency(financial.quotedPriceCents)} for the evening.
       </p>
 
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       {hasTip === null && (
         <div className="flex gap-3">
           <Button onClick={() => setHasTip(true)}>Yes — enter amount</Button>
-          <Button variant="secondary" onClick={onNext}>No tip tonight</Button>
+          <Button variant="secondary" onClick={onNext}>
+            No tip tonight
+          </Button>
         </div>
       )}
 
@@ -230,7 +238,7 @@ function TipStep({
           />
 
           <div>
-            <p className="text-sm font-medium text-stone-700 mb-3">Payment method</p>
+            <p className="text-sm font-medium text-stone-300 mb-3">Payment method</p>
             <MethodPicker value={method} onChange={setMethod} />
           </div>
 
@@ -250,13 +258,7 @@ function TipStep({
 
 // ─── Step 1: Receipts ─────────────────────────────────────────────────────────
 
-function ReceiptsStep({
-  data,
-  onNext,
-}: {
-  data: CloseOutData
-  onNext: () => void
-}) {
+function ReceiptsStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
   const { expensesNeedingReceipts, hasAnyExpenses, event } = data
   const [actualGroceryCost, setActualGroceryCost] = useState('')
   const [logPending, setLogPending] = useState(false)
@@ -278,12 +280,13 @@ function ReceiptsStep({
 
   // Grocery cost input — always shown regardless of receipts state
   const groceryCostSection = (
-    <div className="mt-6 border-t border-stone-100 pt-6">
-      <label className="block text-sm font-medium text-stone-700 mb-1">
+    <div className="mt-6 border-t border-stone-800 pt-6">
+      <label className="block text-sm font-medium text-stone-300 mb-1">
         What did you actually spend at the grocery store?
       </label>
       <p className="text-xs text-stone-400 mb-3">
-        Helps calibrate future grocery estimate accuracy. Optional — skip if you did not run a grocery quote.
+        Helps calibrate future grocery estimate accuracy. Optional — skip if you did not run a
+        grocery quote.
       </p>
       <div className="relative w-48">
         <span className="absolute left-3 top-2.5 text-stone-400 text-sm">$</span>
@@ -294,7 +297,7 @@ function ReceiptsStep({
           placeholder="0.00"
           value={actualGroceryCost}
           onChange={(e) => setActualGroceryCost(e.target.value)}
-          className="pl-7 pr-3 py-2 w-full border border-stone-200 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-stone-500/20 focus:border-stone-500"
+          className="pl-7 pr-3 py-2 w-full border border-stone-700 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-stone-500/20 focus:border-stone-500"
         />
       </div>
     </div>
@@ -303,14 +306,16 @@ function ReceiptsStep({
   if (!hasAnyExpenses) {
     return (
       <div>
-        <h2 className="text-xl font-semibold text-stone-900 mb-2">Receipt check</h2>
+        <h2 className="text-xl font-semibold text-stone-100 mb-2">Receipt check</h2>
         <Alert variant="info" className="mb-6">
-          No expenses have been logged for this event yet. You can add them from
-          the event page at any time.
+          No expenses have been logged for this event yet. You can add them from the event page at
+          any time.
         </Alert>
         {groceryCostSection}
         <div className="flex gap-3 mt-6">
-          <Button onClick={handleProceed} loading={logPending} disabled={logPending}>Continue</Button>
+          <Button onClick={handleProceed} loading={logPending} disabled={logPending}>
+            Continue
+          </Button>
           <Link href={`/events/${event.id}`}>
             <Button variant="secondary">Go add expenses</Button>
           </Link>
@@ -322,18 +327,30 @@ function ReceiptsStep({
   if (expensesNeedingReceipts.length === 0) {
     return (
       <div>
-        <h2 className="text-xl font-semibold text-stone-900 mb-2">Receipts</h2>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 mb-6">
+        <h2 className="text-xl font-semibold text-stone-100 mb-2">Receipts</h2>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-950 p-6 mb-6">
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-5 h-5 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             <span className="font-semibold text-emerald-800">All receipts uploaded</span>
           </div>
         </div>
         {groceryCostSection}
         <div className="mt-6">
-          <Button onClick={handleProceed} loading={logPending} disabled={logPending}>Continue</Button>
+          <Button onClick={handleProceed} loading={logPending} disabled={logPending}>
+            Continue
+          </Button>
         </div>
       </div>
     )
@@ -341,17 +358,17 @@ function ReceiptsStep({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-stone-900 mb-2">Missing receipts</h2>
+      <h2 className="text-xl font-semibold text-stone-100 mb-2">Missing receipts</h2>
       <p className="text-stone-500 text-sm mb-5">
-        {expensesNeedingReceipts.length} expense{expensesNeedingReceipts.length > 1 ? 's' : ''} still
-        need a receipt photo. Upload from the event page, or continue now and come back later.
+        {expensesNeedingReceipts.length} expense{expensesNeedingReceipts.length > 1 ? 's' : ''}{' '}
+        still need a receipt photo. Upload from the event page, or continue now and come back later.
       </p>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 divide-y divide-amber-100 mb-6">
+      <div className="rounded-lg border border-amber-200 bg-amber-950 divide-y divide-amber-100 mb-6">
         {expensesNeedingReceipts.map((exp) => (
           <div key={exp.id} className="flex items-center justify-between px-4 py-3">
-            <span className="text-sm text-stone-800 font-medium">{exp.description}</span>
-            <span className="text-sm text-stone-600">{formatCurrency(exp.amountCents)}</span>
+            <span className="text-sm text-stone-200 font-medium">{exp.description}</span>
+            <span className="text-sm text-stone-400">{formatCurrency(exp.amountCents)}</span>
           </div>
         ))}
       </div>
@@ -362,7 +379,12 @@ function ReceiptsStep({
         <Link href={`/events/${event.id}`}>
           <Button variant="primary">Upload receipts</Button>
         </Link>
-        <Button variant="secondary" onClick={handleProceed} loading={logPending} disabled={logPending}>
+        <Button
+          variant="secondary"
+          onClick={handleProceed}
+          loading={logPending}
+          disabled={logPending}
+        >
           Continue anyway
         </Button>
       </div>
@@ -372,19 +394,11 @@ function ReceiptsStep({
 
 // ─── Step 2: Mileage ──────────────────────────────────────────────────────────
 
-const IRS_RATE = 0.70  // $0.70/mile — keep in sync with financial-summary-actions.ts
+const IRS_RATE = 0.7 // $0.70/mile — keep in sync with financial-summary-actions.ts
 
-function MileageStep({
-  data,
-  onNext,
-}: {
-  data: CloseOutData
-  onNext: () => void
-}) {
+function MileageStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
   const { event, financial } = data
-  const [miles, setMiles] = useState(
-    event.mileageMiles !== null ? String(event.mileageMiles) : ''
-  )
+  const [miles, setMiles] = useState(event.mileageMiles !== null ? String(event.mileageMiles) : '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -410,14 +424,16 @@ function MileageStep({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-stone-900 mb-2">
-        Miles driven tonight
-      </h2>
+      <h2 className="text-xl font-semibold text-stone-100 mb-2">Miles driven tonight</h2>
       <p className="text-stone-500 text-sm mb-6">
         Round trip — home to store(s) to client and back. Used for your IRS deduction.
       </p>
 
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       <div className="mb-4">
         <Input
@@ -433,10 +449,10 @@ function MileageStep({
       </div>
 
       {milesNum > 0 && (
-        <div className="rounded-lg bg-stone-50 border border-stone-200 p-4 mb-6">
+        <div className="rounded-lg bg-stone-800 border border-stone-700 p-4 mb-6">
           <div className="flex justify-between text-sm">
-            <span className="text-stone-600">IRS deduction ({milesNum.toFixed(1)} mi × $0.70)</span>
-            <span className="font-semibold text-stone-900">${deductionDollars}</span>
+            <span className="text-stone-400">IRS deduction ({milesNum.toFixed(1)} mi × $0.70)</span>
+            <span className="font-semibold text-stone-100">${deductionDollars}</span>
           </div>
         </div>
       )}
@@ -455,13 +471,7 @@ function MileageStep({
 
 // ─── Step 3: Quick AAR ────────────────────────────────────────────────────────
 
-function AARStep({
-  data,
-  onNext,
-}: {
-  data: CloseOutData
-  onNext: () => void
-}) {
+function AARStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
   const { event, aarExists } = data
   const [calmRating, setCalmRating] = useState(0)
   const [prepRating, setPrepRating] = useState(0)
@@ -472,13 +482,25 @@ function AARStep({
   if (aarExists || event.aarFiled) {
     return (
       <div>
-        <h2 className="text-xl font-semibold text-stone-900 mb-2">Reflection</h2>
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 mb-6">
+        <h2 className="text-xl font-semibold text-stone-100 mb-2">Reflection</h2>
+        <div className="rounded-xl border border-emerald-200 bg-emerald-950 p-6 mb-6">
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <svg
+              className="w-5 h-5 text-emerald-600"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
-            <span className="font-semibold text-emerald-800">After-action review already filed</span>
+            <span className="font-semibold text-emerald-800">
+              After-action review already filed
+            </span>
           </div>
           <p className="text-emerald-700 text-sm ml-8 mt-1">
             You can view or edit it from the event page.
@@ -514,33 +536,28 @@ function AARStep({
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-stone-900 mb-2">
-        Quick reflection
-      </h2>
+      <h2 className="text-xl font-semibold text-stone-100 mb-2">Quick reflection</h2>
       <p className="text-stone-500 text-sm mb-6">
         10 seconds while the memory is fresh. You can add more detail from the event page later.
       </p>
 
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
-      <StarRating
-        label="How calm were you tonight?"
-        value={calmRating}
-        onChange={setCalmRating}
-      />
+      <StarRating label="How calm were you tonight?" value={calmRating} onChange={setCalmRating} />
 
-      <StarRating
-        label="How prepared were you?"
-        value={prepRating}
-        onChange={setPrepRating}
-      />
+      <StarRating label="How prepared were you?" value={prepRating} onChange={setPrepRating} />
 
       <div className="mb-6">
-        <label className="block text-sm font-medium text-stone-700 mb-1.5">
-          Anything to grab differently next time? <span className="text-stone-400 font-normal">(optional)</span>
+        <label className="block text-sm font-medium text-stone-300 mb-1.5">
+          Anything to grab differently next time?{' '}
+          <span className="text-stone-400 font-normal">(optional)</span>
         </label>
         <textarea
-          className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-500/20 resize-none"
+          className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-500/20 resize-none"
           rows={3}
           placeholder="Forgot salt, wish I prepped the dessert earlier..."
           value={notes}
@@ -589,9 +606,11 @@ function CelebrationAndFollowUp({
   }, [])
 
   const marginColor =
-    financial.grossMarginPercent >= 60 ? 'text-emerald-700' :
-    financial.grossMarginPercent >= 40 ? 'text-amber-700' :
-    'text-red-700'
+    financial.grossMarginPercent >= 60
+      ? 'text-emerald-700'
+      : financial.grossMarginPercent >= 40
+        ? 'text-amber-700'
+        : 'text-red-700'
 
   return (
     <div className="py-4">
@@ -609,12 +628,17 @@ function CelebrationAndFollowUp({
             <span className="absolute top-1 right-1/3 w-1.5 h-1.5 bg-teal-400 rounded-full animate-ping" />
           </>
         )}
-        <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-          <svg className="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-16 h-16 rounded-full bg-emerald-900 flex items-center justify-center mx-auto mb-4">
+          <svg
+            className="w-8 h-8 text-emerald-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h2 className="text-2xl font-bold text-stone-900 mb-2">
+        <h2 className="text-2xl font-bold text-stone-100 mb-2">
           {event.occasion || 'Tonight'} is done! 🎉
         </h2>
         <p className={`text-3xl font-bold ${marginColor} mb-1`}>
@@ -629,8 +653,8 @@ function CelebrationAndFollowUp({
       </div>
 
       {/* Follow-up prompt */}
-      <div className="rounded-xl border border-stone-200 bg-stone-50 p-5 mb-6">
-        <p className="text-sm font-semibold text-stone-800 mb-1">
+      <div className="rounded-xl border border-stone-700 bg-stone-800 p-5 mb-6">
+        <p className="text-sm font-semibold text-stone-200 mb-1">
           One last thing — send {event.clientFirstName} a thank you
         </p>
         <p className="text-sm text-stone-500 mb-4">
@@ -639,7 +663,12 @@ function CelebrationAndFollowUp({
         {followUpSent ? (
           <div className="flex items-center gap-2 text-emerald-700 text-sm font-medium">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
             </svg>
             Follow-up marked as sent
           </div>
@@ -655,16 +684,16 @@ function CelebrationAndFollowUp({
               Mark Follow-Up Sent
             </Button>
             <Link href={`/events/${event.id}`}>
-              <Button variant="ghost" size="sm">Write a message first</Button>
+              <Button variant="ghost" size="sm">
+                Write a message first
+              </Button>
             </Link>
           </div>
         )}
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
-        <Button onClick={() => router.push('/dashboard')}>
-          Go to Dashboard
-        </Button>
+        <Button onClick={() => router.push('/dashboard')}>Go to Dashboard</Button>
         <Link href={`/events/${event.id}`}>
           <Button variant="secondary">View Event</Button>
         </Link>
@@ -675,11 +704,7 @@ function CelebrationAndFollowUp({
 
 // ─── Step 4: Financial Close ──────────────────────────────────────────────────
 
-function CloseStep({
-  data,
-}: {
-  data: CloseOutData
-}) {
+function CloseStep({ data }: { data: CloseOutData }) {
   const [loading, setLoading] = useState(false)
   const [followUpLoading, setFollowUpLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -715,41 +740,56 @@ function CloseStep({
   }
 
   if (closed) {
-    return <CelebrationAndFollowUp event={event} financial={financial} followUpSent={followUpSent} followUpLoading={followUpLoading} onFollowUp={handleFollowUp} router={router} />
+    return (
+      <CelebrationAndFollowUp
+        event={event}
+        financial={financial}
+        followUpSent={followUpSent}
+        followUpLoading={followUpLoading}
+        onFollowUp={handleFollowUp}
+        router={router}
+      />
+    )
   }
 
   const marginColor =
     financial.grossMarginPercent >= 60
       ? 'text-emerald-700'
       : financial.grossMarginPercent >= 40
-      ? 'text-amber-700'
-      : 'text-red-700'
+        ? 'text-amber-700'
+        : 'text-red-700'
 
   const foodCostOk = financial.foodCostPercent <= 30
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-stone-900 mb-6">
-        How tonight landed
-      </h2>
+      <h2 className="text-xl font-semibold text-stone-100 mb-6">How tonight landed</h2>
 
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       {/* Summary grid */}
-      <div className="rounded-xl border border-stone-200 bg-stone-50 divide-y divide-stone-100 mb-6">
+      <div className="rounded-xl border border-stone-700 bg-stone-800 divide-y divide-stone-800 mb-6">
         <div className="flex justify-between items-center px-5 py-3">
-          <span className="text-sm text-stone-600">Service revenue</span>
-          <span className="font-semibold text-stone-900">{formatCurrency(financial.quotedPriceCents)}</span>
+          <span className="text-sm text-stone-400">Service revenue</span>
+          <span className="font-semibold text-stone-100">
+            {formatCurrency(financial.quotedPriceCents)}
+          </span>
         </div>
         {financial.tipCents > 0 && (
           <div className="flex justify-between items-center px-5 py-3">
-            <span className="text-sm text-stone-600">Tip received</span>
-            <span className="font-semibold text-emerald-700">+{formatCurrency(financial.tipCents)}</span>
+            <span className="text-sm text-stone-400">Tip received</span>
+            <span className="font-semibold text-emerald-700">
+              +{formatCurrency(financial.tipCents)}
+            </span>
           </div>
         )}
         {financial.actualGrocerySpendCents > 0 && (
           <div className="flex justify-between items-center px-5 py-3">
-            <span className="text-sm text-stone-600">
+            <span className="text-sm text-stone-400">
               Food &amp; expenses
               {!foodCostOk && (
                 <span className="ml-2 text-xs text-amber-600">
@@ -762,19 +802,22 @@ function CloseStep({
                 </span>
               )}
             </span>
-            <span className="font-semibold text-stone-900">−{formatCurrency(financial.actualGrocerySpendCents)}</span>
+            <span className="font-semibold text-stone-100">
+              −{formatCurrency(financial.actualGrocerySpendCents)}
+            </span>
           </div>
         )}
         {financial.deductionValueCents && (
           <div className="flex justify-between items-center px-5 py-3">
-            <span className="text-sm text-stone-600">Mileage deduction</span>
-            <span className="font-semibold text-stone-600">
-              {event.mileageMiles?.toFixed(1)} mi → ${(financial.deductionValueCents / 100).toFixed(2)}
+            <span className="text-sm text-stone-400">Mileage deduction</span>
+            <span className="font-semibold text-stone-400">
+              {event.mileageMiles?.toFixed(1)} mi → $
+              {(financial.deductionValueCents / 100).toFixed(2)}
             </span>
           </div>
         )}
-        <div className="flex justify-between items-center px-5 py-4 bg-white rounded-b-xl">
-          <span className="text-base font-semibold text-stone-800">Net profit</span>
+        <div className="flex justify-between items-center px-5 py-4 bg-surface rounded-b-xl">
+          <span className="text-base font-semibold text-stone-200">Net profit</span>
           <div className="text-right">
             <span className={`text-xl font-bold ${marginColor}`}>
               {formatCurrency(financial.netProfitWithTipCents)}
@@ -788,23 +831,21 @@ function CloseStep({
 
       {financial.effectiveHourlyRateCents && (
         <p className="text-sm text-stone-500 text-center mb-6">
-          Effective rate: <strong className="text-stone-700">{formatCurrency(financial.effectiveHourlyRateCents)}/hr</strong>
+          Effective rate:{' '}
+          <strong className="text-stone-300">
+            {formatCurrency(financial.effectiveHourlyRateCents)}/hr
+          </strong>
         </p>
       )}
 
       {financial.outstandingBalanceCents > 0 && (
         <Alert variant="warning" className="mb-6">
-          Outstanding balance of {formatCurrency(financial.outstandingBalanceCents)} is still unpaid.
-          You can still close the event — mark the balance separately when received.
+          Outstanding balance of {formatCurrency(financial.outstandingBalanceCents)} is still
+          unpaid. You can still close the event — mark the balance separately when received.
         </Alert>
       )}
 
-      <Button
-        onClick={handleClose}
-        loading={loading}
-        disabled={loading}
-        className="w-full"
-      >
+      <Button onClick={handleClose} loading={loading} disabled={loading} className="w-full">
         Mark Tonight Financially Closed
       </Button>
     </div>
@@ -829,14 +870,19 @@ export function CloseOutWizard({ data }: { data: CloseOutData }) {
       <div className="mb-6">
         <Link
           href={`/events/${data.event.id}`}
-          className="text-sm text-stone-500 hover:text-stone-700 flex items-center gap-1 mb-4"
+          className="text-sm text-stone-500 hover:text-stone-300 flex items-center gap-1 mb-4"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
           </svg>
           Back to event
         </Link>
-        <h1 className="text-2xl font-bold text-stone-900">Close Out</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Close Out</h1>
         <p className="text-stone-500 text-sm mt-1">{eventLabel}</p>
       </div>
 
@@ -853,10 +899,10 @@ export function CloseOutWizard({ data }: { data: CloseOutData }) {
 
       {/* Do this later link — visible on all steps except the final */}
       {step < TOTAL_STEPS - 1 && (
-        <div className="mt-8 pt-6 border-t border-stone-100 text-center">
+        <div className="mt-8 pt-6 border-t border-stone-800 text-center">
           <Link
             href={`/events/${data.event.id}`}
-            className="text-sm text-stone-400 hover:text-stone-600"
+            className="text-sm text-stone-400 hover:text-stone-400"
           >
             Finish later — go back to event
           </Link>

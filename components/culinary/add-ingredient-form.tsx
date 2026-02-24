@@ -100,9 +100,9 @@ export function AddIngredientForm() {
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
-          <label className="text-sm font-medium text-stone-700">Name *</label>
+          <label className="text-sm font-medium text-stone-300">Name *</label>
           <input
-            className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
             value={form.name}
             onChange={(e) => setForm({ ...form, name: e.target.value })}
             placeholder="e.g. Olive Oil, Chicken Thigh, Basil"
@@ -110,9 +110,9 @@ export function AddIngredientForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-stone-700">Category</label>
+            <label className="text-sm font-medium text-stone-300">Category</label>
             <select
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.category}
               onChange={(e) => setForm({ ...form, category: e.target.value })}
             >
@@ -124,9 +124,9 @@ export function AddIngredientForm() {
             </select>
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Default Unit</label>
+            <label className="text-sm font-medium text-stone-300">Default Unit</label>
             <select
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.default_unit}
               onChange={(e) => setForm({ ...form, default_unit: e.target.value })}
             >
@@ -140,24 +140,24 @@ export function AddIngredientForm() {
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-sm font-medium text-stone-700">Avg Price ($)</label>
+            <label className="text-sm font-medium text-stone-300">Avg Price ($)</label>
             <input
               type="number"
               step="0.01"
               min="0"
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.average_price_cents}
               onChange={(e) => setForm({ ...form, average_price_cents: e.target.value })}
               placeholder="0.00"
             />
           </div>
           <div className="flex items-end pb-1">
-            <label className="flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.is_staple}
                 onChange={(e) => setForm({ ...form, is_staple: e.target.checked })}
-                className="rounded border-stone-300"
+                className="rounded border-stone-600"
               />
               Staple item
             </label>

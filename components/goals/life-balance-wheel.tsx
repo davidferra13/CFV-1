@@ -29,9 +29,9 @@ function WheelTooltip({
   if (!active || !payload || payload.length === 0) return null
   const { subject, value } = payload[0].payload
   return (
-    <div className="rounded-lg border border-stone-200 bg-white px-3 py-2 shadow-md text-xs">
-      <p className="font-semibold text-stone-900">{subject}</p>
-      <p className="text-stone-600">{value}% toward targets</p>
+    <div className="rounded-lg border border-stone-700 bg-surface px-3 py-2 shadow-md text-xs">
+      <p className="font-semibold text-stone-100">{subject}</p>
+      <p className="text-stone-400">{value}% toward targets</p>
     </div>
   )
 }
@@ -67,7 +67,7 @@ export function LifeBalanceWheel({
   return (
     <div className="w-full">
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-semibold text-stone-700">Life Balance</h3>
+        <h3 className="text-sm font-semibold text-stone-300">Life Balance</h3>
         <span className="text-xs text-stone-400">
           {Math.round(avgProgress)}% average across {data.length} categor
           {data.length === 1 ? 'y' : 'ies'}

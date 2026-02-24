@@ -80,7 +80,10 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
       try {
         const updated = await updateSocialAsset(editingAsset.id, {
           asset_name: editName.trim(),
-          asset_tags: editTags.split(',').map((t) => t.trim()).filter(Boolean),
+          asset_tags: editTags
+            .split(',')
+            .map((t) => t.trim())
+            .filter(Boolean),
         })
         setAssets((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
         setEditingAsset(null)
@@ -111,7 +114,9 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
       <div
         className={[
           'border-2 border-dashed rounded-xl p-8 text-center transition-colors',
-          uploading ? 'border-brand-300 bg-brand-50' : 'border-stone-200 hover:border-stone-300 bg-stone-50',
+          uploading
+            ? 'border-brand-600 bg-brand-950'
+            : 'border-stone-700 hover:border-stone-600 bg-stone-800',
         ].join(' ')}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
@@ -146,7 +151,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
       </div>
 
       {uploadError && (
-        <div className="flex items-center gap-2 rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
+        <div className="flex items-center gap-2 rounded-lg bg-red-950 border border-red-200 px-3 py-2 text-sm text-red-700">
           <X className="w-4 h-4 flex-shrink-0" />
           {uploadError}
           <button
@@ -169,11 +174,17 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name or tag…"
-            className="w-full pl-9 pr-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+            className="w-full pl-9 pr-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
           />
         </div>
         <div className="flex gap-1">
-          {([ ['all', `All (${assets.length})`], ['image', `Images (${imageCount})`], ['video', `Videos (${videoCount})`]] as [Filter, string][]).map(([val, label]) => (
+          {(
+            [
+              ['all', `All (${assets.length})`],
+              ['image', `Images (${imageCount})`],
+              ['video', `Videos (${videoCount})`],
+            ] as [Filter, string][]
+          ).map(([val, label]) => (
             <button
               key={val}
               type="button"
@@ -182,7 +193,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
                 'px-3 py-1.5 text-sm rounded-lg border transition-colors',
                 filter === val
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'border-stone-200 text-stone-600 hover:border-stone-300',
+                  : 'border-stone-700 text-stone-400 hover:border-stone-600',
               ].join(' ')}
             >
               {label}
@@ -193,10 +204,12 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
 
       {/* Asset grid */}
       {filtered.length === 0 ? (
-        <div className="text-center py-16 bg-stone-50 rounded-xl border border-dashed border-stone-200">
+        <div className="text-center py-16 bg-stone-800 rounded-xl border border-dashed border-stone-700">
           <div className="text-3xl mb-2">🖼</div>
           <p className="text-stone-500 text-sm">
-            {search ? 'No assets match your search.' : 'Your vault is empty — upload some media to get started.'}
+            {search
+              ? 'No assets match your search.'
+              : 'Your vault is empty — upload some media to get started.'}
           </p>
         </div>
       ) : (
@@ -204,10 +217,10 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
           {filtered.map((asset) => (
             <div
               key={asset.id}
-              className="group bg-white rounded-xl border border-stone-200 overflow-hidden hover:border-stone-300 hover:shadow-sm transition-all"
+              className="group bg-surface rounded-xl border border-stone-700 overflow-hidden hover:border-stone-600 hover:shadow-sm transition-all"
             >
               {/* Thumbnail */}
-              <div className="aspect-square bg-stone-100 relative overflow-hidden">
+              <div className="aspect-square bg-stone-800 relative overflow-hidden">
                 {asset.asset_kind === 'image' ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
@@ -241,20 +254,24 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
 
               {/* Info */}
               <div className="px-3 py-2">
-                <p className="text-xs font-medium text-stone-800 truncate">{asset.asset_name}</p>
-                <p className="text-[10px] text-stone-400 mt-0.5">{formatBytes(asset.file_size_bytes)}</p>
+                <p className="text-xs font-medium text-stone-200 truncate">{asset.asset_name}</p>
+                <p className="text-[10px] text-stone-400 mt-0.5">
+                  {formatBytes(asset.file_size_bytes)}
+                </p>
                 {asset.asset_tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-1.5">
                     {asset.asset_tags.slice(0, 3).map((tag) => (
                       <span
                         key={tag}
-                        className="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500"
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-stone-800 text-stone-500"
                       >
                         {tag}
                       </span>
                     ))}
                     {asset.asset_tags.length > 3 && (
-                      <span className="text-[10px] text-stone-400">+{asset.asset_tags.length - 3}</span>
+                      <span className="text-[10px] text-stone-400">
+                        +{asset.asset_tags.length - 3}
+                      </span>
                     )}
                   </div>
                 )}
@@ -265,7 +282,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
                 <button
                   type="button"
                   onClick={() => openEdit(asset)}
-                  className="flex items-center gap-1 text-[11px] text-stone-500 hover:text-stone-700 transition-colors"
+                  className="flex items-center gap-1 text-[11px] text-stone-500 hover:text-stone-300 transition-colors"
                 >
                   <Tag className="w-3 h-3" />
                   Edit
@@ -289,14 +306,14 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
       {editingAsset && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setEditingAsset(null)} />
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-stone-900">Edit Asset</h3>
+              <h3 className="font-semibold text-stone-100">Edit Asset</h3>
               <button
                 type="button"
                 aria-label="Close"
                 onClick={() => setEditingAsset(null)}
-                className="text-stone-400 hover:text-stone-600"
+                className="text-stone-400 hover:text-stone-400"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -304,17 +321,22 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
 
             <div className="space-y-3">
               <div>
-                <label htmlFor="edit-asset-name" className="block text-sm font-medium text-stone-700 mb-1">Name</label>
+                <label
+                  htmlFor="edit-asset-name"
+                  className="block text-sm font-medium text-stone-300 mb-1"
+                >
+                  Name
+                </label>
                 <input
                   id="edit-asset-name"
                   type="text"
                   value={editName}
                   onChange={(e) => setEditName(e.target.value)}
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                  className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1">
+                <label className="block text-sm font-medium text-stone-300 mb-1">
                   Tags <span className="text-stone-400 font-normal">(comma separated)</span>
                 </label>
                 <input
@@ -322,7 +344,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
                   value={editTags}
                   onChange={(e) => setEditTags(e.target.value)}
                   placeholder="dinner, summer, 4th of july"
-                  className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                  className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
                 />
               </div>
             </div>
@@ -331,7 +353,12 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
               <Button variant="ghost" onClick={() => setEditingAsset(null)} className="flex-1">
                 Cancel
               </Button>
-              <Button variant="primary" onClick={handleSaveEdit} loading={isPending} className="flex-1">
+              <Button
+                variant="primary"
+                onClick={handleSaveEdit}
+                loading={isPending}
+                className="flex-1"
+              >
                 Save
               </Button>
             </div>

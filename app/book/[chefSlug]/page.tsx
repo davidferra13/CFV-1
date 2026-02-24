@@ -63,22 +63,22 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
   }
 
   return (
-    <div className="min-h-screen bg-stone-50">
+    <div className="min-h-screen bg-stone-800">
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-8">
         {/* Chef Header */}
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-stone-900">
+          <h1 className="text-3xl font-bold text-stone-100">
             {chef.business_name || 'Private Chef'}
           </h1>
           {chef.booking_headline && (
-            <p className="text-lg text-stone-600">{chef.booking_headline}</p>
+            <p className="text-lg text-stone-400">{chef.booking_headline}</p>
           )}
           {chef.booking_bio_short && (
             <p className="text-sm text-stone-500 max-w-md mx-auto">{chef.booking_bio_short}</p>
           )}
         </div>
 
-        <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm">
+        <div className="bg-surface rounded-xl border border-stone-700 p-6 shadow-sm">
           <BookingPageClient chefSlug={params.chefSlug} bookingConfig={bookingConfig} />
         </div>
       </div>

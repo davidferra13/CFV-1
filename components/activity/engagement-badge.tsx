@@ -4,13 +4,10 @@
 
 import type { EngagementLevel } from '@/lib/activity/engagement'
 
-const CONFIG: Record<
-  Exclude<EngagementLevel, 'none'>,
-  { label: string; className: string }
-> = {
-  hot:  { label: 'HOT',  className: 'bg-red-100 text-red-700 border-red-200' },
-  warm: { label: 'WARM', className: 'bg-amber-100 text-amber-700 border-amber-200' },
-  cold: { label: 'COLD', className: 'bg-stone-100 text-stone-500 border-stone-200' },
+const CONFIG: Record<Exclude<EngagementLevel, 'none'>, { label: string; className: string }> = {
+  hot: { label: 'HOT', className: 'bg-red-900 text-red-700 border-red-200' },
+  warm: { label: 'WARM', className: 'bg-amber-900 text-amber-700 border-amber-200' },
+  cold: { label: 'COLD', className: 'bg-stone-800 text-stone-500 border-stone-700' },
 }
 
 interface EngagementBadgeProps {

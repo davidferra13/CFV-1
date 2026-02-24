@@ -35,7 +35,7 @@ export function EmptyState({
       ) : icon ? (
         <div className="mb-4 text-stone-300 [&>svg]:h-12 [&>svg]:w-12">{icon}</div>
       ) : null}
-      <h3 className="text-lg font-semibold text-stone-900 mb-2">{title}</h3>
+      <h3 className="text-lg font-semibold text-stone-100 mb-2">{title}</h3>
       <p className="text-sm text-stone-500 max-w-sm mb-6">{description}</p>
       {(action || secondaryAction) && (
         <div className="flex flex-col sm:flex-row items-center gap-3">

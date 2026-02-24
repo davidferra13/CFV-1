@@ -19,26 +19,27 @@ export default async function GiftCardSuccessPage({
   const purchase = sessionId ? await getGiftCardPurchaseBySession(sessionId) : null
 
   return (
-    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4 py-16">
       <div className="max-w-md w-full text-center">
         {/* Success icon */}
-        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-          <svg className="w-10 h-10 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="w-20 h-20 bg-green-900 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg
+            className="w-10 h-10 text-emerald-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
 
-        <h1 className="text-3xl font-bold text-stone-900 mb-3">Your gift is on its way!</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mb-3">Your gift is on its way!</h1>
 
         {purchase ? (
           <div className="space-y-2">
-            <p className="text-stone-600">
-              A{' '}
-              <strong>
-                ${((purchase.amount_cents as number) / 100).toFixed(2)} gift card
-              </strong>{' '}
-              has been sent to{' '}
-              <strong>{purchase.recipient_email as string}</strong>.
+            <p className="text-stone-400">
+              A <strong>${((purchase.amount_cents as number) / 100).toFixed(2)} gift card</strong>{' '}
+              has been sent to <strong>{purchase.recipient_email as string}</strong>.
             </p>
             {purchase.recipient_name && (
               <p className="text-stone-500 text-sm">
@@ -46,23 +47,27 @@ export default async function GiftCardSuccessPage({
               </p>
             )}
             {purchase.incentive && (
-              <div className="mt-4 bg-white border border-stone-200 rounded-xl p-4 text-left">
-                <p className="text-xs text-stone-500 mb-1 uppercase tracking-wide font-medium">Gift card code</p>
-                <p className="font-mono font-bold text-stone-900 text-xl tracking-widest">
+              <div className="mt-4 bg-surface border border-stone-700 rounded-xl p-4 text-left">
+                <p className="text-xs text-stone-500 mb-1 uppercase tracking-wide font-medium">
+                  Gift card code
+                </p>
+                <p className="font-mono font-bold text-stone-100 text-xl tracking-widest">
                   {(purchase.incentive as any).code}
                 </p>
               </div>
             )}
           </div>
         ) : (
-          <p className="text-stone-600">
-            Your gift card has been sent. The recipient will receive an email with their code shortly.
+          <p className="text-stone-400">
+            Your gift card has been sent. The recipient will receive an email with their code
+            shortly.
           </p>
         )}
 
         <div className="mt-8 space-y-3">
           <p className="text-sm text-stone-500">
-            Check your email for a purchase confirmation. The recipient will receive their gift card code immediately.
+            Check your email for a purchase confirmation. The recipient will receive their gift card
+            code immediately.
           </p>
 
           <Link
@@ -75,7 +80,7 @@ export default async function GiftCardSuccessPage({
           <div>
             <Link
               href={`/chef/${params.slug}/gift-cards`}
-              className="text-sm text-brand-600 hover:text-brand-700"
+              className="text-sm text-brand-600 hover:text-brand-400"
             >
               Buy another gift card
             </Link>

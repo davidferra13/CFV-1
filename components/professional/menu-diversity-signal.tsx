@@ -17,7 +17,7 @@ export function MenuDiversitySignalCard({ signal }: { signal: MenuDiversitySigna
     <Card>
       <CardContent className="py-4">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-medium text-stone-700">Menu Diversity</p>
+          <p className="text-sm font-medium text-stone-300">Menu Diversity</p>
           <Badge variant={LEVEL_VARIANTS[signal.diversityLevel] ?? 'default'}>
             {signal.diversityLevel}
           </Badge>
@@ -29,7 +29,7 @@ export function MenuDiversitySignalCard({ signal }: { signal: MenuDiversitySigna
           <div className="mt-2">
             <p className="text-xs text-stone-400 mb-1">Most repeated:</p>
             {signal.topRepeatedDishes.slice(0, 3).map((d) => (
-              <p key={d.name} className="text-xs text-stone-600">
+              <p key={d.name} className="text-xs text-stone-400">
                 {d.name} ({d.count}x)
               </p>
             ))}

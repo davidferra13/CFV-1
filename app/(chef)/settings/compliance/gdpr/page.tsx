@@ -9,8 +9,8 @@ export default async function GdprPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">GDPR & Privacy</h1>
-        <p className="text-stone-600 mt-1">Manage data privacy, exports, and compliance</p>
+        <h1 className="text-3xl font-bold text-stone-100">GDPR & Privacy</h1>
+        <p className="text-stone-400 mt-1">Manage data privacy, exports, and compliance</p>
       </div>
       <GdprTools />
     </div>

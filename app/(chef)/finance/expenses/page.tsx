@@ -82,11 +82,11 @@ export default async function ExpensesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
           ← Finance
         </Link>
         <div className="flex items-center justify-between mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Expenses</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Expenses</h1>
           <Link href="/expenses/new">
             <Button size="sm">+ Add Expense</Button>
           </Link>
@@ -98,7 +98,7 @@ export default async function ExpensesPage() {
 
       <div className="grid grid-cols-3 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">{expenses.length}</p>
+          <p className="text-2xl font-bold text-stone-100">{expenses.length}</p>
           <p className="text-sm text-stone-500 mt-1">Total expenses</p>
         </Card>
         <Card className="p-4">
@@ -118,9 +118,9 @@ export default async function ExpensesPage() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-xl">{section.icon}</span>
-                  <h2 className="font-semibold text-stone-900">{section.label}</h2>
+                  <h2 className="font-semibold text-stone-100">{section.label}</h2>
                 </div>
-                <span className="text-xs bg-stone-100 text-stone-600 px-2 py-0.5 rounded-full">
+                <span className="text-xs bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full">
                   {section.count}
                 </span>
               </div>

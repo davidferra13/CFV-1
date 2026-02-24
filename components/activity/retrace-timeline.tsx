@@ -47,7 +47,7 @@ export function RetraceTimeline({
             type="button"
             onClick={onLoadMore}
             disabled={loadingMore}
-            className="text-xs font-medium border border-stone-200 rounded-md px-3 py-1.5 text-stone-600 bg-white hover:bg-stone-50 disabled:opacity-50"
+            className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-surface hover:bg-stone-800 disabled:opacity-50"
           >
             {loadingMore ? 'Loading...' : 'Load older sessions'}
           </button>
@@ -87,23 +87,23 @@ function SessionCard({ session }: { session: BreadcrumbSession }) {
   const interactions = session.breadcrumbs.filter((b) => b.breadcrumb_type !== 'page_view')
 
   return (
-    <div className="border border-stone-200 rounded-lg bg-white overflow-hidden">
+    <div className="border border-stone-700 rounded-lg bg-surface overflow-hidden">
       {/* Session header */}
       <button
         type="button"
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-50 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-stone-800 transition-colors"
       >
-        <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-brand-50 text-brand-600">
+        <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-brand-950 text-brand-600">
           <span className="text-xs font-bold">{pageViews.length}</span>
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-stone-700">{dateLabel}</span>
+            <span className="text-xs font-semibold text-stone-300">{dateLabel}</span>
             <span className="text-xs text-stone-400">{timeLabel}</span>
             <span className="text-[10px] text-stone-400">· {durationLabel}</span>
             {interactions.length > 0 && (
-              <span className="text-[10px] bg-stone-100 text-stone-500 px-1.5 py-0.5 rounded-full">
+              <span className="text-[10px] bg-stone-800 text-stone-500 px-1.5 py-0.5 rounded-full">
                 +{interactions.length} action{interactions.length === 1 ? '' : 's'}
               </span>
             )}
@@ -122,10 +122,10 @@ function SessionCard({ session }: { session: BreadcrumbSession }) {
 
       {/* Expanded: step-by-step breadcrumb trail */}
       {expanded && (
-        <div className="border-t border-stone-100 px-4 py-3">
+        <div className="border-t border-stone-800 px-4 py-3">
           <div className="relative">
             {/* Vertical timeline line */}
-            <div className="absolute left-[9px] top-2 bottom-2 w-px bg-stone-200" />
+            <div className="absolute left-[9px] top-2 bottom-2 w-px bg-stone-700" />
 
             <div className="space-y-0">
               {session.breadcrumbs.map((crumb, idx) => (
@@ -165,11 +165,11 @@ function BreadcrumbRow({
   const isPageView = crumb.breadcrumb_type === 'page_view'
 
   const dotColor = isFirst
-    ? 'bg-brand-500'
+    ? 'bg-brand-9500'
     : isLast
       ? 'bg-stone-400'
       : isPageView
-        ? 'bg-brand-300'
+        ? 'bg-brand-800'
         : 'bg-stone-300'
 
   const content = (
@@ -187,7 +187,7 @@ function BreadcrumbRow({
         <span
           className={`text-xs truncate ${
             isPageView
-              ? 'font-medium text-stone-700 group-hover:text-brand-600'
+              ? 'font-medium text-stone-300 group-hover:text-brand-600'
               : 'text-stone-500 italic'
           }`}
         >
@@ -204,7 +204,7 @@ function BreadcrumbRow({
     return (
       <Link
         href={crumb.path}
-        className="block hover:bg-stone-50 rounded-md -mx-1 px-1 transition-colors"
+        className="block hover:bg-stone-800 rounded-md -mx-1 px-1 transition-colors"
       >
         {content}
       </Link>

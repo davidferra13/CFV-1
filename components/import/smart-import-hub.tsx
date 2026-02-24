@@ -28,7 +28,16 @@ import { CsvImport } from './csv-import'
 import { PastEventsImport } from './past-events-import'
 import { TakeAChefImport } from './take-a-chef-import'
 
-export type ImportMode = 'brain-dump' | 'clients' | 'recipe' | 'receipt' | 'document' | 'file-upload' | 'csv' | 'past-events' | 'take-a-chef'
+export type ImportMode =
+  | 'brain-dump'
+  | 'clients'
+  | 'recipe'
+  | 'receipt'
+  | 'document'
+  | 'file-upload'
+  | 'csv'
+  | 'past-events'
+  | 'take-a-chef'
 type ImportPhase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
 
 type EventOption = {
@@ -38,13 +47,19 @@ type EventOption = {
   client: { full_name: string } | null
 }
 
-type TabConfig = { mode: ImportMode; label: string; placeholder: string; isFileUpload?: boolean; isCustomComponent?: boolean }
+type TabConfig = {
+  mode: ImportMode
+  label: string
+  placeholder: string
+  isFileUpload?: boolean
+  isCustomComponent?: boolean
+}
 
 const TABS: TabConfig[] = [
   {
     mode: 'brain-dump',
     label: 'Brain Dump',
-    placeholder: `Paste anything - client info, recipes, notes, whatever is on your mind.\n\nExample:\nJohn - married to Sarah, usually brings 2 other couples. Nut allergy. 15 min away. $100/person, 4 guests.\n\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream...`
+    placeholder: `Paste anything - client info, recipes, notes, whatever is on your mind.\n\nExample:\nJohn - married to Sarah, usually brings 2 other couples. Nut allergy. 15 min away. $100/person, 4 guests.\n\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream...`,
   },
   {
     mode: 'csv',
@@ -61,12 +76,12 @@ const TABS: TabConfig[] = [
   {
     mode: 'clients',
     label: 'Import Clients',
-    placeholder: `Paste info about one or more clients. Separate multiple clients with blank lines or dashes.\n\nExample:\nJohn - married to Sarah, usually brings 2 other couples. Nut allergy. 15 min away, enter through garage. $100/person, 4 guests, cash.\n\nJane - husband Tom. Just had a baby. Prefers weekends. $150/person. No mushrooms.`
+    placeholder: `Paste info about one or more clients. Separate multiple clients with blank lines or dashes.\n\nExample:\nJohn - married to Sarah, usually brings 2 other couples. Nut allergy. 15 min away, enter through garage. $100/person, 4 guests, cash.\n\nJane - husband Tom. Just had a baby. Prefers weekends. $150/person. No mushrooms.`,
   },
   {
     mode: 'recipe',
     label: 'Import Recipe',
-    placeholder: `Type or paste a recipe description.\n\nExample:\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream. Splash of worcestershire, spoon of dijon. Let it reduce. Finish with butter, squeeze of lemon, and fresh parsley. Serves 4, makes about 2 cups.`
+    placeholder: `Type or paste a recipe description.\n\nExample:\nPan sauce - sear the steak first, set it aside. Saute shallots and mushrooms in the same pan. Deglaze with wine. Add stock and heavy cream. Splash of worcestershire, spoon of dijon. Let it reduce. Finish with butter, squeeze of lemon, and fresh parsley. Serves 4, makes about 2 cups.`,
   },
   {
     mode: 'receipt',
@@ -77,7 +92,7 @@ const TABS: TabConfig[] = [
   {
     mode: 'document',
     label: 'Import Document',
-    placeholder: `Paste a contract, policy, template, or any other document.\n\nExample:\nCancellation Policy - Events cancelled more than 7 days before the event date receive a full refund minus the deposit. Cancellations within 7 days forfeit the deposit. Same-day cancellations are charged 50% of the quoted price. Weather-related cancellations are handled on a case-by-case basis.`
+    placeholder: `Paste a contract, policy, template, or any other document.\n\nExample:\nCancellation Policy - Events cancelled more than 7 days before the event date receive a full refund minus the deposit. Cancellations within 7 days forfeit the deposit. Same-day cancellations are charged 50% of the quoted price. Weather-related cancellations are handled on a case-by-case basis.`,
   },
   {
     mode: 'file-upload',
@@ -150,9 +165,9 @@ export function SmartImportHub({
   const [expenseImportCount, setExpenseImportCount] = useState(0)
   const [documentImportCount, setDocumentImportCount] = useState(0)
 
-  const currentTab = TABS.find(t => t.mode === mode)!
+  const currentTab = TABS.find((t) => t.mode === mode)!
 
-  const eventOptions = events.map(e => ({
+  const eventOptions = events.map((e) => ({
     value: e.id,
     label: `${e.occasion || 'Untitled'} - ${e.event_date}${e.client ? ` (${e.client.full_name})` : ''}`,
   }))
@@ -190,9 +205,7 @@ export function SmartImportHub({
   // Convert file to base64
   const fileToBase64 = async (file: File): Promise<string> => {
     const buffer = await file.arrayBuffer()
-    return btoa(
-      new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-    )
+    return btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ''))
   }
 
   const handleFileChange = (file: File) => {
@@ -228,7 +241,14 @@ export function SmartImportHub({
         // Auto-detect payment method
         if (result.paymentMethod) {
           const pm = result.paymentMethod.toLowerCase()
-          if (pm.includes('visa') || pm.includes('mastercard') || pm.includes('amex') || pm.includes('card') || pm.includes('debit') || pm.includes('credit')) {
+          if (
+            pm.includes('visa') ||
+            pm.includes('mastercard') ||
+            pm.includes('amex') ||
+            pm.includes('card') ||
+            pm.includes('debit') ||
+            pm.includes('credit')
+          ) {
             setReceiptPaymentMethod('card')
           } else if (pm.includes('cash')) {
             setReceiptPaymentMethod('cash')
@@ -321,8 +341,8 @@ export function SmartImportHub({
       } else if (mode === 'brain-dump' && brainDumpResult) {
         const result = await importBrainDump(brainDumpResult)
         setImportResult(result)
-        setClientImportCount(result.clients.filter(c => c.success).length)
-        setRecipeImportCount(result.recipes.filter(r => r.success).length)
+        setClientImportCount(result.clients.filter((c) => c.success).length)
+        setRecipeImportCount(result.recipes.filter((r) => r.success).length)
       } else if ((mode === 'clients' || mode === 'file-upload') && parsedClients.length > 0) {
         if (parsedClients.length === 1) {
           await importClient(parsedClients[0])
@@ -346,41 +366,42 @@ export function SmartImportHub({
   const handleSaveSingleClient = async (index: number) => {
     try {
       await importClient(parsedClients[index])
-      setParsedClients(prev => prev.filter((_, i) => i !== index))
-      setClientImportCount(prev => prev + 1)
+      setParsedClients((prev) => prev.filter((_, i) => i !== index))
+      setClientImportCount((prev) => prev + 1)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save client')
     }
   }
 
   const handleDiscardClient = (index: number) => {
-    setParsedClients(prev => prev.filter((_, i) => i !== index))
+    setParsedClients((prev) => prev.filter((_, i) => i !== index))
   }
 
   const handleDiscardRecipe = (index: number) => {
-    setParsedRecipes(prev => prev.filter((_, i) => i !== index))
+    setParsedRecipes((prev) => prev.filter((_, i) => i !== index))
   }
 
   const isTextMode = !currentTab.isFileUpload && !currentTab.isCustomComponent
   const isFileMode = !!currentTab.isFileUpload
   const isCustomMode = !!currentTab.isCustomComponent
-  const canParse = aiConfigured && phase !== 'parsing' && (
-    isTextMode ? rawText.trim().length > 0 : uploadedFile !== null
-  )
+  const canParse =
+    aiConfigured &&
+    phase !== 'parsing' &&
+    (isTextMode ? rawText.trim().length > 0 : uploadedFile !== null)
 
   return (
     <div className="space-y-6">
       {/* Mode Tabs */}
-      <div className="border-b border-stone-200">
+      <div className="border-b border-stone-700">
         <nav className="-mb-px flex flex-wrap gap-x-6">
-          {TABS.map(tab => (
+          {TABS.map((tab) => (
             <button
               key={tab.mode}
               onClick={() => handleModeChange(tab.mode)}
               className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
                 mode === tab.mode
                   ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-stone-500 hover:text-stone-700 hover:border-stone-300'
+                  : 'border-transparent text-stone-500 hover:text-stone-300 hover:border-stone-600'
               }`}
             >
               {tab.label}
@@ -397,7 +418,9 @@ export function SmartImportHub({
 
       {/* CUSTOM COMPONENT MODES — CSV and Past Events handle their own full flow */}
       {isCustomMode && mode === 'csv' && <CsvImport />}
-      {isCustomMode && mode === 'past-events' && <PastEventsImport existingClients={existingClients} />}
+      {isCustomMode && mode === 'past-events' && (
+        <PastEventsImport existingClients={existingClients} />
+      )}
       {isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}
 
       {/* INPUT PHASE — AI-driven modes only */}
@@ -422,30 +445,31 @@ export function SmartImportHub({
               preview={filePreview}
               onFileChange={handleFileChange}
               disabled={phase === 'parsing'}
-              accept={mode === 'receipt'
-                ? 'image/jpeg,image/png,image/webp'
-                : 'image/jpeg,image/png,image/webp,application/pdf'
+              accept={
+                mode === 'receipt'
+                  ? 'image/jpeg,image/png,image/webp'
+                  : 'image/jpeg,image/png,image/webp,application/pdf'
               }
-              hint={mode === 'receipt'
-                ? 'Upload a photo of your receipt (JPEG, PNG, WebP)'
-                : 'Upload an image or PDF (JPEG, PNG, WebP, PDF)'
+              hint={
+                mode === 'receipt'
+                  ? 'Upload a photo of your receipt (JPEG, PNG, WebP)'
+                  : 'Upload an image or PDF (JPEG, PNG, WebP, PDF)'
               }
             />
           )}
 
           <div className="flex gap-3">
-            <Button
-              onClick={handleParse}
-              disabled={!canParse}
-              loading={phase === 'parsing'}
-            >
+            <Button onClick={handleParse} disabled={!canParse} loading={phase === 'parsing'}>
               {phase === 'parsing' ? 'Parsing...' : 'Parse'}
             </Button>
             {(rawText || uploadedFile) && (
               <Button
                 type="button"
                 variant="secondary"
-                onClick={() => { setRawText(''); resetState() }}
+                onClick={() => {
+                  setRawText('')
+                  resetState()
+                }}
                 disabled={phase === 'parsing'}
               >
                 Clear
@@ -467,15 +491,20 @@ export function SmartImportHub({
           <div className="flex items-center gap-3">
             <Badge variant="info">Parsed</Badge>
             <ConfidenceBadge confidence={parseConfidence} />
-            <span className="text-sm text-stone-600">
+            <span className="text-sm text-stone-400">
               {mode === 'file-upload' && visionResult && (
-                <>Detected: <Badge>{visionResult.detectedType.replace('_', ' ')}</Badge></>
+                <>
+                  Detected: <Badge>{visionResult.detectedType.replace('_', ' ')}</Badge>
+                </>
               )}
               {parsedClients.length > 0 && ` ${parsedClients.length} client(s)`}
               {parsedRecipes.length > 0 && ` ${parsedRecipes.length} recipe(s)`}
-              {parsedReceipt && ` Receipt: ${parsedReceipt.itemCount || parsedReceipt.lineItems?.length || 0} items`}
+              {parsedReceipt &&
+                ` Receipt: ${parsedReceipt.itemCount || parsedReceipt.lineItems?.length || 0} items`}
               {parsedDocument && ` Document: ${parsedDocument.document_type}`}
-              {brainDumpResult?.notes && brainDumpResult.notes.length > 0 && `, ${brainDumpResult.notes.length} note(s)`}
+              {brainDumpResult?.notes &&
+                brainDumpResult.notes.length > 0 &&
+                `, ${brainDumpResult.notes.length} note(s)`}
             </span>
           </div>
 
@@ -483,7 +512,9 @@ export function SmartImportHub({
           {parseWarnings.length > 0 && (
             <Alert variant="warning" title="Heads up">
               <ul className="list-disc list-inside space-y-1">
-                {parseWarnings.map((w, i) => <li key={i}>{w}</li>)}
+                {parseWarnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
               </ul>
             </Alert>
           )}
@@ -503,14 +534,12 @@ export function SmartImportHub({
           )}
 
           {/* Document Review */}
-          {parsedDocument && !parsedReceipt && (
-            <DocumentReviewCard document={parsedDocument} />
-          )}
+          {parsedDocument && !parsedReceipt && <DocumentReviewCard document={parsedDocument} />}
 
           {/* Client Cards */}
           {parsedClients.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-stone-900">Clients</h2>
+              <h2 className="text-lg font-semibold text-stone-100">Clients</h2>
               {parsedClients.map((client, index) => (
                 <ClientReviewCard
                   key={index}
@@ -525,7 +554,7 @@ export function SmartImportHub({
           {/* Recipe Cards */}
           {parsedRecipes.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-stone-900">Recipes</h2>
+              <h2 className="text-lg font-semibold text-stone-100">Recipes</h2>
               {parsedRecipes.map((recipe, index) => (
                 <RecipeReviewCard
                   key={index}
@@ -539,13 +568,13 @@ export function SmartImportHub({
           {/* Brain Dump Notes */}
           {brainDumpResult?.notes && brainDumpResult.notes.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-stone-900">Notes</h2>
+              <h2 className="text-lg font-semibold text-stone-100">Notes</h2>
               {brainDumpResult.notes.map((note, i) => (
                 <Card key={i} className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge>{note.type}</Badge>
                   </div>
-                  <p className="text-sm text-stone-700">{note.content}</p>
+                  <p className="text-sm text-stone-300">{note.content}</p>
                   <p className="text-xs text-stone-500 mt-2">Suggested: {note.suggestedAction}</p>
                 </Card>
               ))}
@@ -555,25 +584,28 @@ export function SmartImportHub({
           {/* Unstructured text */}
           {brainDumpResult?.unstructured && brainDumpResult.unstructured.length > 0 && (
             <div className="space-y-2">
-              <h2 className="text-lg font-semibold text-stone-900">Uncategorized</h2>
+              <h2 className="text-lg font-semibold text-stone-100">Uncategorized</h2>
               {brainDumpResult.unstructured.map((text, i) => (
                 <Card key={i} className="p-4">
-                  <p className="text-sm text-stone-600 italic">{text}</p>
+                  <p className="text-sm text-stone-400 italic">{text}</p>
                 </Card>
               ))}
             </div>
           )}
 
           {/* AI Review Confirmation */}
-          {(parsedClients.length > 0 || parsedRecipes.length > 0 || parsedReceipt || parsedDocument) && (
+          {(parsedClients.length > 0 ||
+            parsedRecipes.length > 0 ||
+            parsedReceipt ||
+            parsedDocument) && (
             <label className="flex items-center gap-3 pt-4 border-t cursor-pointer">
               <input
                 type="checkbox"
                 checked={aiReviewConfirmed}
                 onChange={(e) => setAiReviewConfirmed(e.target.checked)}
-                className="h-4 w-4 rounded border-stone-300 text-brand-600 focus:ring-brand-500"
+                className="h-4 w-4 rounded border-stone-600 text-brand-600 focus:ring-brand-500"
               />
-              <span className="text-sm text-stone-700">
+              <span className="text-sm text-stone-300">
                 Everything looks right — save this data
               </span>
             </label>
@@ -581,14 +613,25 @@ export function SmartImportHub({
 
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
-            {(parsedClients.length > 0 || parsedRecipes.length > 0 || parsedReceipt || parsedDocument) && (
+            {(parsedClients.length > 0 ||
+              parsedRecipes.length > 0 ||
+              parsedReceipt ||
+              parsedDocument) && (
               <Button onClick={handleSaveAll} disabled={!aiReviewConfirmed}>
-                {parsedReceipt ? 'Save as Expense' :
-                 parsedDocument ? 'Save Document' :
-                 `Save All (${parsedClients.length + parsedRecipes.length} item${parsedClients.length + parsedRecipes.length !== 1 ? 's' : ''})`}
+                {parsedReceipt
+                  ? 'Save as Expense'
+                  : parsedDocument
+                    ? 'Save Document'
+                    : `Save All (${parsedClients.length + parsedRecipes.length} item${parsedClients.length + parsedRecipes.length !== 1 ? 's' : ''})`}
               </Button>
             )}
-            <Button variant="secondary" onClick={() => { resetState(); setRawText('') }}>
+            <Button
+              variant="secondary"
+              onClick={() => {
+                resetState()
+                setRawText('')
+              }}
+            >
               Start Over
             </Button>
           </div>
@@ -599,7 +642,7 @@ export function SmartImportHub({
       {!isCustomMode && phase === 'saving' && (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mb-4" />
-          <p className="text-stone-600">Saving...</p>
+          <p className="text-stone-400">Saving...</p>
         </div>
       )}
 
@@ -607,44 +650,69 @@ export function SmartImportHub({
       {!isCustomMode && phase === 'done' && (
         <div className="space-y-4">
           <Alert variant="success" title="All saved">
-            {clientImportCount > 0 && <p>Added {clientImportCount} client{clientImportCount !== 1 ? 's' : ''}.</p>}
-            {recipeImportCount > 0 && <p>Added {recipeImportCount} recipe{recipeImportCount !== 1 ? 's' : ''}.</p>}
-            {expenseImportCount > 0 && <p>Added {expenseImportCount} expense{expenseImportCount !== 1 ? 's' : ''}.</p>}
-            {documentImportCount > 0 && <p>Saved {documentImportCount} document{documentImportCount !== 1 ? 's' : ''}.</p>}
+            {clientImportCount > 0 && (
+              <p>
+                Added {clientImportCount} client{clientImportCount !== 1 ? 's' : ''}.
+              </p>
+            )}
+            {recipeImportCount > 0 && (
+              <p>
+                Added {recipeImportCount} recipe{recipeImportCount !== 1 ? 's' : ''}.
+              </p>
+            )}
+            {expenseImportCount > 0 && (
+              <p>
+                Added {expenseImportCount} expense{expenseImportCount !== 1 ? 's' : ''}.
+              </p>
+            )}
+            {documentImportCount > 0 && (
+              <p>
+                Saved {documentImportCount} document{documentImportCount !== 1 ? 's' : ''}.
+              </p>
+            )}
           </Alert>
 
           {/* Import result errors */}
           {importResult && (
             <>
-              {importResult.clients.filter(c => !c.success).map((c, i) => (
-                <Alert key={`ce-${i}`} variant="error" title={`Failed: ${c.name}`}>
-                  {c.error}
-                </Alert>
-              ))}
-              {importResult.recipes.filter(r => !r.success).map((r, i) => (
-                <Alert key={`re-${i}`} variant="error" title={`Failed: ${r.name}`}>
-                  {r.error}
-                </Alert>
-              ))}
+              {importResult.clients
+                .filter((c) => !c.success)
+                .map((c, i) => (
+                  <Alert key={`ce-${i}`} variant="error" title={`Failed: ${c.name}`}>
+                    {c.error}
+                  </Alert>
+                ))}
+              {importResult.recipes
+                .filter((r) => !r.success)
+                .map((r, i) => (
+                  <Alert key={`re-${i}`} variant="error" title={`Failed: ${r.name}`}>
+                    {r.error}
+                  </Alert>
+                ))}
             </>
           )}
 
           <div className="flex gap-3">
-            <Button onClick={() => { resetState(); setRawText('') }}>
+            <Button
+              onClick={() => {
+                resetState()
+                setRawText('')
+              }}
+            >
               Import More
             </Button>
             {clientImportCount > 0 && (
-              <Button variant="secondary" onClick={() => window.location.href = '/clients'}>
+              <Button variant="secondary" onClick={() => (window.location.href = '/clients')}>
                 View Clients
               </Button>
             )}
             {recipeImportCount > 0 && (
-              <Button variant="secondary" onClick={() => window.location.href = '/menus'}>
+              <Button variant="secondary" onClick={() => (window.location.href = '/menus')}>
                 View Menus
               </Button>
             )}
             {expenseImportCount > 0 && (
-              <Button variant="secondary" onClick={() => window.location.href = '/expenses'}>
+              <Button variant="secondary" onClick={() => (window.location.href = '/expenses')}>
                 View Expenses
               </Button>
             )}
@@ -659,7 +727,14 @@ export function SmartImportHub({
 // FILE UPLOAD ZONE
 // ============================================
 
-function FileUploadZone({ file, preview, onFileChange, disabled, accept, hint }: {
+function FileUploadZone({
+  file,
+  preview,
+  onFileChange,
+  disabled,
+  accept,
+  hint,
+}: {
   file: File | null
   preview: string | null
   onFileChange: (file: File) => void
@@ -670,12 +745,15 @@ function FileUploadZone({ file, preview, onFileChange, disabled, accept, hint }:
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const droppedFile = e.dataTransfer.files[0]
-    if (droppedFile) onFileChange(droppedFile)
-  }, [onFileChange])
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault()
+      setIsDragging(false)
+      const droppedFile = e.dataTransfer.files[0]
+      if (droppedFile) onFileChange(droppedFile)
+    },
+    [onFileChange]
+  )
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault()
@@ -695,7 +773,7 @@ function FileUploadZone({ file, preview, onFileChange, disabled, accept, hint }:
         onDragLeave={handleDragLeave}
         className={`
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-          ${isDragging ? 'border-brand-500 bg-brand-50' : 'border-stone-300 hover:border-stone-400'}
+          ${isDragging ? 'border-brand-500 bg-brand-950' : 'border-stone-600 hover:border-stone-400'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
@@ -704,14 +782,26 @@ function FileUploadZone({ file, preview, onFileChange, disabled, accept, hint }:
           type="file"
           accept={accept}
           aria-label="Upload file"
-          onChange={(e) => { if (e.target.files?.[0]) onFileChange(e.target.files[0]) }}
+          onChange={(e) => {
+            if (e.target.files?.[0]) onFileChange(e.target.files[0])
+          }}
           className="hidden"
           disabled={disabled}
         />
-        <svg className="mx-auto h-12 w-12 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        <svg
+          className="mx-auto h-12 w-12 text-stone-400"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={1.5}
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+          />
         </svg>
-        <p className="mt-2 text-sm text-stone-600">
+        <p className="mt-2 text-sm text-stone-400">
           {file ? file.name : 'Drop a file here or click to upload'}
         </p>
         <p className="mt-1 text-xs text-stone-500">{hint}</p>
@@ -721,17 +811,27 @@ function FileUploadZone({ file, preview, onFileChange, disabled, accept, hint }:
       {preview && (
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="Upload preview" className="max-h-64 rounded-lg border border-stone-200 mx-auto" />
+          <img
+            src={preview}
+            alt="Upload preview"
+            className="max-h-64 rounded-lg border border-stone-700 mx-auto"
+          />
         </div>
       )}
 
       {/* PDF indicator */}
       {file && file.type === 'application/pdf' && (
-        <div className="flex items-center gap-2 text-sm text-stone-600">
+        <div className="flex items-center gap-2 text-sm text-stone-400">
           <svg className="h-5 w-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clipRule="evenodd" />
+            <path
+              fillRule="evenodd"
+              d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"
+              clipRule="evenodd"
+            />
           </svg>
-          <span>{file.name} ({(file.size / 1024).toFixed(0)} KB)</span>
+          <span>
+            {file.name} ({(file.size / 1024).toFixed(0)} KB)
+          </span>
         </div>
       )}
     </div>
@@ -742,7 +842,16 @@ function FileUploadZone({ file, preview, onFileChange, disabled, accept, hint }:
 // RECEIPT REVIEW CARD
 // ============================================
 
-function ReceiptReviewCard({ receipt, eventOptions, selectedEventId, onEventChange, category, onCategoryChange, paymentMethod, onPaymentMethodChange }: {
+function ReceiptReviewCard({
+  receipt,
+  eventOptions,
+  selectedEventId,
+  onEventChange,
+  category,
+  onCategoryChange,
+  paymentMethod,
+  onPaymentMethodChange,
+}: {
   receipt: ReceiptExtraction
   eventOptions: { value: string; label: string }[]
   selectedEventId: string
@@ -756,27 +865,23 @@ function ReceiptReviewCard({ receipt, eventOptions, selectedEventId, onEventChan
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-stone-900">
-            {receipt.storeName || 'Receipt'}
-          </h3>
+          <h3 className="text-lg font-semibold text-stone-100">{receipt.storeName || 'Receipt'}</h3>
           <Badge variant="info">Parsed</Badge>
         </div>
-        <div className="text-sm text-stone-600">
+        <div className="text-sm text-stone-400">
           {receipt.purchaseDate && <span>{receipt.purchaseDate}</span>}
           {receipt.purchaseTime && <span> at {receipt.purchaseTime}</span>}
         </div>
       </div>
 
-      {receipt.storeLocation && (
-        <p className="text-sm text-stone-500">{receipt.storeLocation}</p>
-      )}
+      {receipt.storeLocation && <p className="text-sm text-stone-500">{receipt.storeLocation}</p>}
 
       {/* Line items table */}
       {receipt.lineItems && receipt.lineItems.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-stone-500">
+              <tr className="border-b border-stone-700 text-stone-500">
                 <th className="text-left py-2 font-medium">Item</th>
                 <th className="text-right py-2 font-medium w-16">Qty</th>
                 <th className="text-right py-2 font-medium w-24">Price</th>
@@ -786,11 +891,15 @@ function ReceiptReviewCard({ receipt, eventOptions, selectedEventId, onEventChan
             </thead>
             <tbody>
               {receipt.lineItems.map((item, i) => (
-                <tr key={i} className="border-b border-stone-100">
-                  <td className="py-2 text-stone-900">{item.description}</td>
-                  <td className="py-2 text-right text-stone-600">{item.quantity}</td>
-                  <td className="py-2 text-right text-stone-600">${(item.unitPriceCents / 100).toFixed(2)}</td>
-                  <td className="py-2 text-right text-stone-900">${(item.totalPriceCents / 100).toFixed(2)}</td>
+                <tr key={i} className="border-b border-stone-800">
+                  <td className="py-2 text-stone-100">{item.description}</td>
+                  <td className="py-2 text-right text-stone-400">{item.quantity}</td>
+                  <td className="py-2 text-right text-stone-400">
+                    ${(item.unitPriceCents / 100).toFixed(2)}
+                  </td>
+                  <td className="py-2 text-right text-stone-100">
+                    ${(item.totalPriceCents / 100).toFixed(2)}
+                  </td>
                   <td className="py-2 pl-4">
                     <Badge variant={item.category === 'personal' ? 'warning' : 'default'}>
                       {item.category}
@@ -809,18 +918,18 @@ function ReceiptReviewCard({ receipt, eventOptions, selectedEventId, onEventChan
           {receipt.subtotalCents != null && (
             <div className="flex justify-between gap-8">
               <span className="text-stone-500">Subtotal</span>
-              <span className="text-stone-700">${(receipt.subtotalCents / 100).toFixed(2)}</span>
+              <span className="text-stone-300">${(receipt.subtotalCents / 100).toFixed(2)}</span>
             </div>
           )}
           {receipt.taxCents != null && (
             <div className="flex justify-between gap-8">
               <span className="text-stone-500">Tax</span>
-              <span className="text-stone-700">${(receipt.taxCents / 100).toFixed(2)}</span>
+              <span className="text-stone-300">${(receipt.taxCents / 100).toFixed(2)}</span>
             </div>
           )}
-          <div className="flex justify-between gap-8 font-semibold border-t border-stone-200 pt-1">
-            <span className="text-stone-900">Total</span>
-            <span className="text-stone-900">${(receipt.totalCents / 100).toFixed(2)}</span>
+          <div className="flex justify-between gap-8 font-semibold border-t border-stone-700 pt-1">
+            <span className="text-stone-100">Total</span>
+            <span className="text-stone-100">${(receipt.totalCents / 100).toFixed(2)}</span>
           </div>
         </div>
       </div>
@@ -830,7 +939,7 @@ function ReceiptReviewCard({ receipt, eventOptions, selectedEventId, onEventChan
       )}
 
       {/* Save options */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-stone-200">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-stone-700">
         <Select
           label="Expense Category"
           options={CATEGORY_OPTIONS}
@@ -865,23 +974,23 @@ function DocumentReviewCard({ document }: { document: ParsedDocument }) {
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-stone-900">{document.title}</h3>
+          <h3 className="text-lg font-semibold text-stone-100">{document.title}</h3>
           <Badge variant="info">Parsed</Badge>
         </div>
         <Badge>{document.document_type}</Badge>
       </div>
 
-      <p className="text-sm text-stone-600">{document.summary}</p>
+      <p className="text-sm text-stone-400">{document.summary}</p>
 
       {/* Key terms */}
       {document.key_terms && document.key_terms.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">Key Terms</h4>
+          <h4 className="text-sm font-medium text-stone-300">Key Terms</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {document.key_terms.map((kt, i) => (
               <div key={i} className="text-sm">
                 <span className="text-stone-500">{kt.term}: </span>
-                <span className="text-stone-900">{kt.value}</span>
+                <span className="text-stone-100">{kt.value}</span>
               </div>
             ))}
           </div>
@@ -891,14 +1000,20 @@ function DocumentReviewCard({ document }: { document: ParsedDocument }) {
       {/* Tags */}
       {document.tags && document.tags.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {document.tags.map((tag, i) => <Badge key={i} variant="info">{tag}</Badge>)}
+          {document.tags.map((tag, i) => (
+            <Badge key={i} variant="info">
+              {tag}
+            </Badge>
+          ))}
         </div>
       )}
 
       {/* Linked entities */}
       {(document.related_client_name || document.related_event_date) && (
-        <div className="text-sm text-stone-600">
-          {document.related_client_name && <span>Related client: {document.related_client_name}</span>}
+        <div className="text-sm text-stone-400">
+          {document.related_client_name && (
+            <span>Related client: {document.related_client_name}</span>
+          )}
           {document.related_client_name && document.related_event_date && <span> | </span>}
           {document.related_event_date && <span>Event date: {document.related_event_date}</span>}
         </div>
@@ -907,8 +1022,10 @@ function DocumentReviewCard({ document }: { document: ParsedDocument }) {
       {/* Content preview */}
       {document.content_text && (
         <details className="text-sm">
-          <summary className="text-stone-500 cursor-pointer hover:text-stone-700">View full content</summary>
-          <pre className="mt-2 p-3 bg-stone-50 rounded-lg text-stone-700 whitespace-pre-wrap text-xs max-h-64 overflow-y-auto">
+          <summary className="text-stone-500 cursor-pointer hover:text-stone-300">
+            View full content
+          </summary>
+          <pre className="mt-2 p-3 bg-stone-800 rounded-lg text-stone-300 whitespace-pre-wrap text-xs max-h-64 overflow-y-auto">
             {document.content_text}
           </pre>
         </details>
@@ -923,41 +1040,55 @@ function DocumentReviewCard({ document }: { document: ParsedDocument }) {
 
 function ConfidenceBadge({ confidence }: { confidence: string }) {
   const variant = confidence === 'high' ? 'success' : confidence === 'medium' ? 'warning' : 'error'
-  return (
-    <Badge variant={variant}>
-      {confidence} confidence
-    </Badge>
-  )
+  return <Badge variant={variant}>{confidence} confidence</Badge>
 }
 
 // ============================================
 // CLIENT REVIEW CARD
 // ============================================
 
-function FieldRow({ label, value, confidence }: {
+function FieldRow({
+  label,
+  value,
+  confidence,
+}: {
   label: string
   value: string | string[] | number | null | undefined
   confidence?: 'confirmed' | 'inferred' | 'unknown'
 }) {
-  if (value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) return null
+  if (
+    value === null ||
+    value === undefined ||
+    value === '' ||
+    (Array.isArray(value) && value.length === 0)
+  )
+    return null
 
   const displayValue = Array.isArray(value) ? value.join(', ') : String(value)
 
   return (
     <div className="flex items-start gap-2 text-sm">
       <span className="text-stone-500 min-w-[140px] shrink-0">{label}</span>
-      <span className="text-stone-900">{displayValue}</span>
+      <span className="text-stone-100">{displayValue}</span>
       {confidence === 'confirmed' && (
-        <span className="text-emerald-600 shrink-0" title="Explicitly stated">&#10003;</span>
+        <span className="text-emerald-600 shrink-0" title="Explicitly stated">
+          &#10003;
+        </span>
       )}
       {confidence === 'inferred' && (
-        <span className="text-yellow-600 shrink-0" title="Inferred - please verify">?</span>
+        <span className="text-yellow-600 shrink-0" title="Inferred - please verify">
+          ?
+        </span>
       )}
     </div>
   )
 }
 
-function ClientReviewCard({ client, onSave, onDiscard }: {
+function ClientReviewCard({
+  client,
+  onSave,
+  onDiscard,
+}: {
   client: ParsedClient
   onSave: () => void
   onDiscard: () => void
@@ -971,12 +1102,16 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <h3 className="text-lg font-semibold text-stone-900">{client.full_name}</h3>
+          <h3 className="text-lg font-semibold text-stone-100">{client.full_name}</h3>
           <Badge variant="info">Parsed</Badge>
         </div>
         <div className="flex gap-2">
-          <Button size="sm" onClick={onSave}>Save</Button>
-          <Button size="sm" variant="secondary" onClick={onDiscard}>Discard</Button>
+          <Button size="sm" onClick={onSave}>
+            Save
+          </Button>
+          <Button size="sm" variant="secondary" onClick={onDiscard}>
+            Discard
+          </Button>
         </div>
       </div>
 
@@ -990,7 +1125,11 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
         <FieldRow label="Email" value={client.email} confidence={fc.email} />
         <FieldRow label="Phone" value={client.phone} confidence={fc.phone} />
         <FieldRow label="Partner" value={client.partner_name} confidence={fc.partner_name} />
-        <FieldRow label="Contact Method" value={client.preferred_contact_method} confidence={fc.preferred_contact_method} />
+        <FieldRow
+          label="Contact Method"
+          value={client.preferred_contact_method}
+          confidence={fc.preferred_contact_method}
+        />
         <FieldRow label="Referral" value={client.referral_source} confidence={fc.referral_source} />
         <FieldRow label="Status" value={client.status} confidence={fc.status} />
       </div>
@@ -998,7 +1137,7 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
       {/* Location & Access */}
       {(client.address || client.addresses.length > 0) && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">Location</h4>
+          <h4 className="text-sm font-medium text-stone-300">Location</h4>
           <FieldRow label="Address" value={client.address} confidence={fc.address} />
           {client.addresses.map((addr, i) => (
             <FieldRow
@@ -1007,32 +1146,58 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
               value={[addr.address, addr.city, addr.state, addr.zip].filter(Boolean).join(', ')}
             />
           ))}
-          <FieldRow label="Parking" value={client.parking_instructions} confidence={fc.parking_instructions} />
-          <FieldRow label="Access" value={client.access_instructions} confidence={fc.access_instructions} />
+          <FieldRow
+            label="Parking"
+            value={client.parking_instructions}
+            confidence={fc.parking_instructions}
+          />
+          <FieldRow
+            label="Access"
+            value={client.access_instructions}
+            confidence={fc.access_instructions}
+          />
         </div>
       )}
 
       {/* Dietary */}
-      {(client.dietary_restrictions.length > 0 || client.allergies.length > 0 || client.dislikes.length > 0) && (
+      {(client.dietary_restrictions.length > 0 ||
+        client.allergies.length > 0 ||
+        client.dislikes.length > 0) && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">Dietary</h4>
-          <FieldRow label="Restrictions" value={client.dietary_restrictions} confidence={fc.dietary_restrictions} />
+          <h4 className="text-sm font-medium text-stone-300">Dietary</h4>
+          <FieldRow
+            label="Restrictions"
+            value={client.dietary_restrictions}
+            confidence={fc.dietary_restrictions}
+          />
           <FieldRow label="Allergies" value={client.allergies} confidence={fc.allergies} />
           <FieldRow label="Dislikes" value={client.dislikes} confidence={fc.dislikes} />
           <FieldRow label="Spice" value={client.spice_tolerance} confidence={fc.spice_tolerance} />
-          <FieldRow label="Favorites" value={client.favorite_cuisines} confidence={fc.favorite_cuisines} />
+          <FieldRow
+            label="Favorites"
+            value={client.favorite_cuisines}
+            confidence={fc.favorite_cuisines}
+          />
         </div>
       )}
 
       {/* People */}
       {(client.regular_guests.length > 0 || client.household_members.length > 0) && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">People</h4>
+          <h4 className="text-sm font-medium text-stone-300">People</h4>
           {client.household_members.map((m, i) => (
-            <FieldRow key={`hm-${i}`} label={m.relationship || 'Household'} value={`${m.name}${m.notes ? ` - ${m.notes}` : ''}`} />
+            <FieldRow
+              key={`hm-${i}`}
+              label={m.relationship || 'Household'}
+              value={`${m.name}${m.notes ? ` - ${m.notes}` : ''}`}
+            />
           ))}
           {client.regular_guests.map((g, i) => (
-            <FieldRow key={`rg-${i}`} label="Regular Guest" value={`${g.name}${g.notes ? ` - ${g.notes}` : ''}`} />
+            <FieldRow
+              key={`rg-${i}`}
+              label="Regular Guest"
+              value={`${g.name}${g.notes ? ` - ${g.notes}` : ''}`}
+            />
           ))}
         </div>
       )}
@@ -1040,25 +1205,45 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
       {/* Financial */}
       {(client.average_spend_cents || client.payment_behavior || client.tipping_pattern) && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">Financial</h4>
+          <h4 className="text-sm font-medium text-stone-300">Financial</h4>
           <FieldRow
             label="Avg Spend"
-            value={client.average_spend_cents ? `$${(client.average_spend_cents / 100).toFixed(2)}` : null}
+            value={
+              client.average_spend_cents
+                ? `$${(client.average_spend_cents / 100).toFixed(2)}`
+                : null
+            }
             confidence={fc.average_spend_cents}
           />
-          <FieldRow label="Payment" value={client.payment_behavior} confidence={fc.payment_behavior} />
-          <FieldRow label="Tipping" value={client.tipping_pattern} confidence={fc.tipping_pattern} />
+          <FieldRow
+            label="Payment"
+            value={client.payment_behavior}
+            confidence={fc.payment_behavior}
+          />
+          <FieldRow
+            label="Tipping"
+            value={client.tipping_pattern}
+            confidence={fc.tipping_pattern}
+          />
         </div>
       )}
 
       {/* Kitchen & Vibe */}
       {(client.kitchen_size || client.vibe_notes || client.what_they_care_about) && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">Kitchen & Vibe</h4>
+          <h4 className="text-sm font-medium text-stone-300">Kitchen & Vibe</h4>
           <FieldRow label="Kitchen" value={client.kitchen_size} confidence={fc.kitchen_size} />
-          <FieldRow label="Constraints" value={client.kitchen_constraints} confidence={fc.kitchen_constraints} />
+          <FieldRow
+            label="Constraints"
+            value={client.kitchen_constraints}
+            confidence={fc.kitchen_constraints}
+          />
           <FieldRow label="Vibe" value={client.vibe_notes} confidence={fc.vibe_notes} />
-          <FieldRow label="Cares About" value={client.what_they_care_about} confidence={fc.what_they_care_about} />
+          <FieldRow
+            label="Cares About"
+            value={client.what_they_care_about}
+            confidence={fc.what_they_care_about}
+          />
         </div>
       )}
     </Card>
@@ -1069,10 +1254,7 @@ function ClientReviewCard({ client, onSave, onDiscard }: {
 // RECIPE REVIEW CARD
 // ============================================
 
-function RecipeReviewCard({ recipe, onDiscard }: {
-  recipe: ParsedRecipe
-  onDiscard: () => void
-}) {
+function RecipeReviewCard({ recipe, onDiscard }: { recipe: ParsedRecipe; onDiscard: () => void }) {
   const fc = recipe.field_confidence || {}
   const hasAllergens = recipe.allergen_flags.length > 0
 
@@ -1080,11 +1262,13 @@ function RecipeReviewCard({ recipe, onDiscard }: {
     <Card className="p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="text-lg font-semibold text-stone-900">{recipe.name}</h3>
+          <h3 className="text-lg font-semibold text-stone-100">{recipe.name}</h3>
           <Badge>{recipe.category}</Badge>
           <Badge variant="info">Parsed</Badge>
         </div>
-        <Button size="sm" variant="secondary" onClick={onDiscard}>Discard</Button>
+        <Button size="sm" variant="secondary" onClick={onDiscard}>
+          Discard
+        </Button>
       </div>
 
       {hasAllergens && (
@@ -1093,22 +1277,28 @@ function RecipeReviewCard({ recipe, onDiscard }: {
         </Alert>
       )}
 
-      {recipe.description && (
-        <p className="text-sm text-stone-600">{recipe.description}</p>
-      )}
+      {recipe.description && <p className="text-sm text-stone-400">{recipe.description}</p>}
 
       {/* Ingredients */}
       {recipe.ingredients.length > 0 && (
         <div className="space-y-2">
-          <h4 className="text-sm font-medium text-stone-700">Ingredients ({recipe.ingredients.length})</h4>
+          <h4 className="text-sm font-medium text-stone-300">
+            Ingredients ({recipe.ingredients.length})
+          </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             {recipe.ingredients.map((ing, i) => (
               <div key={i} className="text-sm flex items-center gap-1">
-                <span className="text-stone-700">
+                <span className="text-stone-300">
                   {ing.quantity} {ing.unit} {ing.name}
-                  {ing.preparation_notes && <span className="text-stone-500">, {ing.preparation_notes}</span>}
+                  {ing.preparation_notes && (
+                    <span className="text-stone-500">, {ing.preparation_notes}</span>
+                  )}
                 </span>
-                {ing.estimated && <span className="text-yellow-600 text-xs" title="Estimated quantity">~</span>}
+                {ing.estimated && (
+                  <span className="text-yellow-600 text-xs" title="Estimated quantity">
+                    ~
+                  </span>
+                )}
                 {ing.is_optional && <span className="text-stone-400 text-xs">(opt)</span>}
               </div>
             ))}
@@ -1118,12 +1308,12 @@ function RecipeReviewCard({ recipe, onDiscard }: {
 
       {/* Method */}
       <div className="space-y-2">
-        <h4 className="text-sm font-medium text-stone-700">Method</h4>
-        <p className="text-sm text-stone-700 whitespace-pre-wrap">{recipe.method}</p>
+        <h4 className="text-sm font-medium text-stone-300">Method</h4>
+        <p className="text-sm text-stone-300 whitespace-pre-wrap">{recipe.method}</p>
       </div>
 
       {/* Yield & Time */}
-      <div className="flex gap-6 text-sm text-stone-600">
+      <div className="flex gap-6 text-sm text-stone-400">
         {recipe.yield_description && <span>Yield: {recipe.yield_description}</span>}
         {recipe.prep_time_minutes && <span>Prep: {recipe.prep_time_minutes}min</span>}
         {recipe.cook_time_minutes && <span>Cook: {recipe.cook_time_minutes}min</span>}
@@ -1132,13 +1322,15 @@ function RecipeReviewCard({ recipe, onDiscard }: {
 
       {recipe.dietary_tags.length > 0 && (
         <div className="flex gap-2">
-          {recipe.dietary_tags.map((tag, i) => <Badge key={i} variant="info">{tag}</Badge>)}
+          {recipe.dietary_tags.map((tag, i) => (
+            <Badge key={i} variant="info">
+              {tag}
+            </Badge>
+          ))}
         </div>
       )}
 
-      {recipe.notes && (
-        <FieldRow label="Notes" value={recipe.notes} confidence={fc.notes} />
-      )}
+      {recipe.notes && <FieldRow label="Notes" value={recipe.notes} confidence={fc.notes} />}
     </Card>
   )
 }

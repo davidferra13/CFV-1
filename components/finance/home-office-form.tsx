@@ -84,7 +84,7 @@ export function HomeOfficeForm({
   return (
     <div className="space-y-6">
       {/* Info Banner */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-blue-200 bg-blue-950">
         <CardContent className="py-3">
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
@@ -100,18 +100,18 @@ export function HomeOfficeForm({
       {/* Side-by-side method comparison */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card
-          className={`cursor-pointer border-2 transition-colors ${form.homeDeductionMethod === 'simplified' ? 'border-stone-900' : 'border-stone-200 hover:border-stone-400'}`}
+          className={`cursor-pointer border-2 transition-colors ${form.homeDeductionMethod === 'simplified' ? 'border-stone-900' : 'border-stone-700 hover:border-stone-400'}`}
           onClick={() => setForm({ ...form, homeDeductionMethod: 'simplified' })}
         >
           <CardContent className="py-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="font-semibold text-stone-900">Simplified Method</p>
+              <p className="font-semibold text-stone-100">Simplified Method</p>
               {recommendedMethod === 'simplified' && <Badge variant="success">Recommended</Badge>}
             </div>
             <p className="text-xs text-stone-500 mb-3">
               $5/sq ft, max {SIMPLIFIED_MAX_SQFT} sq ft = max $1,500/yr
             </p>
-            <p className="text-3xl font-bold text-stone-900">{formatCents(simplifiedLive)}</p>
+            <p className="text-3xl font-bold text-stone-100">{formatCents(simplifiedLive)}</p>
             {officeSqft > 0 && (
               <p className="text-xs text-stone-400 mt-1">
                 {Math.min(officeSqft, SIMPLIFIED_MAX_SQFT)} sq ft × $5.00
@@ -121,16 +121,16 @@ export function HomeOfficeForm({
         </Card>
 
         <Card
-          className={`cursor-pointer border-2 transition-colors ${form.homeDeductionMethod === 'actual' ? 'border-stone-900' : 'border-stone-200 hover:border-stone-400'}`}
+          className={`cursor-pointer border-2 transition-colors ${form.homeDeductionMethod === 'actual' ? 'border-stone-900' : 'border-stone-700 hover:border-stone-400'}`}
           onClick={() => setForm({ ...form, homeDeductionMethod: 'actual' })}
         >
           <CardContent className="py-4">
             <div className="flex items-center justify-between mb-2">
-              <p className="font-semibold text-stone-900">Actual Expenses Method</p>
+              <p className="font-semibold text-stone-100">Actual Expenses Method</p>
               {recommendedMethod === 'actual' && <Badge variant="success">Recommended</Badge>}
             </div>
             <p className="text-xs text-stone-500 mb-3">Office % × total home expenses</p>
-            <p className="text-3xl font-bold text-stone-900">{formatCents(actualLive)}</p>
+            <p className="text-3xl font-bold text-stone-100">{formatCents(actualLive)}</p>
             {sqftPct > 0 && (
               <p className="text-xs text-stone-400 mt-1">
                 {(sqftPct * 100).toFixed(1)}% × {formatCents(totalHomeExpenses)}
@@ -141,7 +141,7 @@ export function HomeOfficeForm({
       </div>
 
       {saved && (
-        <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-50 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-sm text-emerald-700 bg-emerald-950 rounded-lg px-3 py-2">
           <CheckCircle className="h-4 w-4" />
           Settings saved. Deduction: {formatCents(selectedDeduction)} using{' '}
           {form.homeDeductionMethod} method.
@@ -180,7 +180,7 @@ export function HomeOfficeForm({
             />
           </div>
           {sqftPct > 0 && (
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-stone-400">
               Office percentage: <strong>{(sqftPct * 100).toFixed(1)}%</strong>
             </p>
           )}
@@ -266,8 +266,8 @@ export function HomeOfficeForm({
               />
             </div>
             {totalHomeExpenses > 0 && (
-              <div className="bg-stone-50 rounded-lg px-3 py-2 text-sm">
-                <span className="text-stone-600">Total home expenses: </span>
+              <div className="bg-stone-800 rounded-lg px-3 py-2 text-sm">
+                <span className="text-stone-400">Total home expenses: </span>
                 <strong>{formatCents(totalHomeExpenses)}</strong>
                 <span className="text-stone-500"> × {(sqftPct * 100).toFixed(1)}% = </span>
                 <strong className="text-emerald-700">{formatCents(actualLive)} deductible</strong>

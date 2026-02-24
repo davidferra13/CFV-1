@@ -12,10 +12,10 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, helperText, className = '', ...props }, ref) => {
     const textareaClasses = `
-      block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900
+      block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100
       placeholder:text-stone-400
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
-      disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500
+      disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500
       ${error ? 'border-red-300 focus:border-red-400 focus:ring-red-500/20' : ''}
       ${className}
     `.trim()
@@ -23,23 +23,14 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
     return (
       <div className="w-full">
         {label && (
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="block text-sm font-medium text-stone-300 mb-1.5">
             {label}
             {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
-        <textarea
-          ref={ref}
-          className={textareaClasses}
-          rows={4}
-          {...props}
-        />
-        {error && (
-          <p className="mt-1 text-sm text-red-600">{error}</p>
-        )}
-        {helperText && !error && (
-          <p className="mt-1 text-sm text-stone-500">{helperText}</p>
-        )}
+        <textarea ref={ref} className={textareaClasses} rows={4} {...props} />
+        {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+        {helperText && !error && <p className="mt-1 text-sm text-stone-500">{helperText}</p>}
       </div>
     )
   }

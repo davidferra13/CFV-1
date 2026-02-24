@@ -44,8 +44,9 @@ export function GoalSetter({ currentTargetCents }: GoalSetterProps) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-stone-600">
-        Set your annual revenue target. ChefFlow will track your progress and suggest ways to reach it.
+      <p className="text-sm text-stone-400">
+        Set your annual revenue target. ChefFlow will track your progress and suggest ways to reach
+        it.
       </p>
       <div className="flex items-start gap-3">
         <div className="relative flex-1 max-w-xs">
@@ -66,21 +67,15 @@ export function GoalSetter({ currentTargetCents }: GoalSetterProps) {
             aria-label="Annual revenue target in dollars"
           />
         </div>
-        <Button
-          onClick={handleSave}
-          disabled={saving}
-        >
+        <Button onClick={handleSave} disabled={saving}>
           {saving ? 'Saving...' : 'Set Goal'}
         </Button>
       </div>
-      {error && (
-        <p className="text-sm text-red-600">{error}</p>
-      )}
-      {saved && (
-        <p className="text-sm text-green-600">Goal saved successfully.</p>
-      )}
+      {error && <p className="text-sm text-red-600">{error}</p>}
+      {saved && <p className="text-sm text-green-600">Goal saved successfully.</p>}
       <p className="text-xs text-stone-400">
-        Current target: ${(currentTargetCents / 100).toLocaleString('en-US', { minimumFractionDigits: 0 })} / year
+        Current target: $
+        {(currentTargetCents / 100).toLocaleString('en-US', { minimumFractionDigits: 0 })} / year
       </p>
     </div>
   )

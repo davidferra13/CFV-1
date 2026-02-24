@@ -9,11 +9,7 @@ import { KDSView } from '@/components/operations/kds-view'
 
 export const metadata: Metadata = { title: 'Kitchen Display - ChefFlow' }
 
-export default async function KDSPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function KDSPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
 
   let rawCourses: Awaited<ReturnType<typeof getServiceCourses>> = []
@@ -29,12 +25,12 @@ export default async function KDSPage({
         <div>
           <Link
             href={`/events/${params.id}`}
-            className="text-sm text-stone-500 hover:text-stone-700"
+            className="text-sm text-stone-500 hover:text-stone-300"
           >
             &larr; Back to Event
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Kitchen Display</h1>
-          <p className="text-stone-600 mt-1">
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Kitchen Display</h1>
+          <p className="text-stone-400 mt-1">
             Track course readiness and plating status during live service.
           </p>
         </div>

@@ -45,7 +45,7 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
           <button
             onClick={handleRevise}
             disabled={isPending}
-            className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 disabled:opacity-50"
+            className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 disabled:opacity-50"
           >
             <Plus className="h-3 w-3" />
             {isPending ? 'Creating revision…' : 'Create revision'}
@@ -60,7 +60,7 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <History className="h-4 w-4 text-stone-400" />
-        <span className="text-xs font-medium text-stone-600">Version History</span>
+        <span className="text-xs font-medium text-stone-400">Version History</span>
       </div>
       <div className="space-y-1">
         {versions.map((v, i) => {
@@ -70,21 +70,23 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
               key={v.id}
               className={`flex items-center justify-between rounded-md px-3 py-2 text-xs ${
                 isCurrent
-                  ? 'bg-brand-50 border border-brand-200'
-                  : 'bg-stone-50 border border-stone-100 opacity-70'
+                  ? 'bg-brand-950 border border-brand-700'
+                  : 'bg-stone-800 border border-stone-800 opacity-70'
               }`}
             >
               <div className="flex items-center gap-2">
-                <span className={`font-medium ${isCurrent ? 'text-brand-800' : 'text-stone-500'}`}>
+                <span className={`font-medium ${isCurrent ? 'text-brand-300' : 'text-stone-500'}`}>
                   v{i + 1}
                 </span>
-                <span className="text-stone-600">{formatCurrency(v.total_quoted_cents)}</span>
+                <span className="text-stone-400">{formatCurrency(v.total_quoted_cents)}</span>
                 <QuoteStatusBadge status={v.status as any} />
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-stone-400">{format(new Date(v.created_at), 'MMM d')}</span>
                 {!isCurrent && (
-                  <a href={`/quotes/${v.id}`} className="text-brand-600 hover:underline">View</a>
+                  <a href={`/quotes/${v.id}`} className="text-brand-600 hover:underline">
+                    View
+                  </a>
                 )}
               </div>
             </div>
@@ -95,7 +97,7 @@ export function QuoteVersionHistory({ currentQuoteId, versions, isSuperseded }: 
         <button
           onClick={handleRevise}
           disabled={isPending}
-          className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 disabled:opacity-50 mt-1"
+          className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 disabled:opacity-50 mt-1"
         >
           <Plus className="h-3 w-3" />
           {isPending ? 'Creating revision…' : 'Create new revision'}

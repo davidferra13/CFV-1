@@ -76,11 +76,7 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
 
     startTransition(async () => {
       try {
-        const result = await cloneEvent(
-          sourceEventId,
-          newDate,
-          selectedClientId || undefined
-        )
+        const result = await cloneEvent(sourceEventId, newDate, selectedClientId || undefined)
         if (result.success && result.newEventId) {
           setOpen(false)
           router.push(`/events/${result.newEventId}`)
@@ -105,7 +101,7 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
   }
 
   return (
-    <Card className="border-brand-200">
+    <Card className="border-brand-700">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
@@ -115,14 +111,14 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
           <button
             type="button"
             onClick={handleClose}
-            className="text-stone-400 hover:text-stone-600 transition-colors"
+            className="text-stone-400 hover:text-stone-400 transition-colors"
             aria-label="Close clone dialog"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
         <p className="text-xs text-stone-500 mt-1">
-          Creating a copy of <span className="font-medium text-stone-700">{sourceEventName}</span>
+          Creating a copy of <span className="font-medium text-stone-300">{sourceEventName}</span>
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -138,7 +134,7 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
 
         {/* Optional client reassignment */}
         <div className="w-full">
-          <label className="block text-sm font-medium text-stone-700 mb-1.5">
+          <label className="block text-sm font-medium text-stone-300 mb-1.5">
             Assign to Client
             <span className="text-stone-400 font-normal ml-1">(optional)</span>
           </label>
@@ -146,7 +142,7 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
             value={selectedClientId}
             onChange={(e) => setSelectedClientId(e.target.value)}
             disabled={loadingClients}
-            className="block w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-stone-50 disabled:text-stone-500"
+            className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500"
           >
             <option value="">Same as original</option>
             {clients.map((client) => (
@@ -155,14 +151,10 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
               </option>
             ))}
           </select>
-          {loadingClients && (
-            <p className="text-xs text-stone-400 mt-1">Loading clients...</p>
-          )}
+          {loadingClients && <p className="text-xs text-stone-400 mt-1">Loading clients...</p>}
         </div>
 
-        {error && (
-          <p className="text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="text-sm text-red-600">{error}</p>}
 
         {/* Actions */}
         <div className="flex gap-2 pt-1">
@@ -175,12 +167,7 @@ export function EventCloneButton({ sourceEventId, sourceEventName }: Props) {
           >
             {cloning ? 'Cloning...' : 'Clone Event'}
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleClose}
-            disabled={cloning}
-          >
+          <Button variant="ghost" size="sm" onClick={handleClose} disabled={cloning}>
             Cancel
           </Button>
         </div>

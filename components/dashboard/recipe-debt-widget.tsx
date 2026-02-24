@@ -14,7 +14,7 @@ export function RecipeDebtWidget({ debt }: Props) {
   if (debt.total === 0) {
     // Show a celebration state when all caught up
     return (
-      <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-lg px-4 py-3">
+      <div className="flex items-center gap-3 bg-green-950 border border-green-200 rounded-lg px-4 py-3">
         <BookOpen className="h-5 w-5 text-emerald-600 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-green-900">
@@ -33,7 +33,7 @@ export function RecipeDebtWidget({ debt }: Props) {
   }
 
   const urgencyColor =
-    debt.last7Days > 0 ? 'border-red-300 bg-red-50' : 'border-amber-300 bg-amber-50'
+    debt.last7Days > 0 ? 'border-red-300 bg-red-950' : 'border-amber-300 bg-amber-950'
 
   const urgencyTextColor = debt.last7Days > 0 ? 'text-red-900' : 'text-amber-900'
   const urgencySubColor = debt.last7Days > 0 ? 'text-red-700' : 'text-amber-700'

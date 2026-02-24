@@ -35,7 +35,7 @@ export function ViewAnalytics({ data, quoteName }: Props) {
               <Eye className="h-4 w-4 text-stone-400" />
               <p className="text-xs text-stone-500">Total Views</p>
             </div>
-            <p className="text-2xl font-semibold text-stone-900">{data.totalViews}</p>
+            <p className="text-2xl font-semibold text-stone-100">{data.totalViews}</p>
             <p className="text-xs text-stone-400">{data.uniqueViews} unique</p>
           </CardContent>
         </Card>
@@ -45,7 +45,9 @@ export function ViewAnalytics({ data, quoteName }: Props) {
               <Clock className="h-4 w-4 text-stone-400" />
               <p className="text-xs text-stone-500">Avg. Time on Page</p>
             </div>
-            <p className="text-2xl font-semibold text-stone-900">{formatTime(data.avgTimeSeconds)}</p>
+            <p className="text-2xl font-semibold text-stone-100">
+              {formatTime(data.avgTimeSeconds)}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -54,7 +56,9 @@ export function ViewAnalytics({ data, quoteName }: Props) {
               <MousePointer className="h-4 w-4 text-stone-400" />
               <p className="text-xs text-stone-500">Sections Viewed</p>
             </div>
-            <p className="text-2xl font-semibold text-stone-900">{data.mostViewedSections.length}</p>
+            <p className="text-2xl font-semibold text-stone-100">
+              {data.mostViewedSections.length}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -72,12 +76,12 @@ export function ViewAnalytics({ data, quoteName }: Props) {
               return (
                 <div key={s.section}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-stone-700">{s.section}</span>
+                    <span className="text-sm text-stone-300">{s.section}</span>
                     <span className="text-xs text-stone-500">{s.views} views</span>
                   </div>
-                  <div className="w-full bg-stone-100 rounded-full h-2">
+                  <div className="w-full bg-stone-800 rounded-full h-2">
                     <div
-                      className="bg-brand-500 h-2 rounded-full transition-all"
+                      className="bg-brand-9500 h-2 rounded-full transition-all"
                       style={{ width: `${pct}%` }}
                     />
                   </div>
@@ -95,10 +99,10 @@ export function ViewAnalytics({ data, quoteName }: Props) {
             <CardTitle className="text-base">Recent Views</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {data.recentViews.map((v, i) => (
                 <div key={i} className="px-6 py-3 flex items-center justify-between">
-                  <span className="text-sm text-stone-700">
+                  <span className="text-sm text-stone-300">
                     {new Date(v.viewedAt).toLocaleString()}
                   </span>
                   <Badge variant="default">{formatTime(v.timeOnPageSeconds)}</Badge>

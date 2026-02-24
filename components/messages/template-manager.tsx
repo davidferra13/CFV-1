@@ -157,48 +157,54 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
 
       {/* Create/Edit Form */}
       {(creating || editing) && (
-        <Card className="p-6 border-brand-200">
+        <Card className="p-6 border-brand-700">
           <h3 className="text-lg font-semibold mb-4">
             {editing ? 'Edit Template' : 'New Template'}
           </h3>
           <div className="space-y-3">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="text-sm font-medium text-stone-700 block mb-1">Name</label>
+                <label className="text-sm font-medium text-stone-300 block mb-1">Name</label>
                 <input
                   type="text"
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="e.g. First response - new inquiry"
-                  className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-stone-700 block mb-1">Category</label>
+                <label className="text-sm font-medium text-stone-300 block mb-1">Category</label>
                 <select
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value)}
-                  className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 >
                   <option value="">General</option>
                   {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
+                    <option key={value} value={value}>
+                      {label}
+                    </option>
                   ))}
                 </select>
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-stone-700 block mb-1">Template Content</label>
+              <label className="text-sm font-medium text-stone-300 block mb-1">
+                Template Content
+              </label>
               <textarea
                 value={formContent}
                 onChange={(e) => setFormContent(e.target.value)}
                 placeholder="Write your template message here. Use [name], [date], [time], [link] as placeholders."
                 rows={4}
-                className="w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+                className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
               />
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="ghost" onClick={cancelForm}>Cancel</Button>
+              <Button variant="ghost" onClick={cancelForm}>
+                Cancel
+              </Button>
               <Button
                 onClick={handleSave}
                 disabled={loading || !formName.trim() || !formContent.trim()}
@@ -229,24 +235,20 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
                   <Card key={t.id} className="p-4">
                     <div className="flex justify-between items-start gap-4">
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-stone-900 text-sm">{t.name}</p>
-                        <p className="text-sm text-stone-600 mt-1 whitespace-pre-wrap">
+                        <p className="font-medium text-stone-100 text-sm">{t.name}</p>
+                        <p className="text-sm text-stone-400 mt-1 whitespace-pre-wrap">
                           {t.template_text}
                         </p>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => startEdit(t)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => startEdit(t)}>
                           Edit
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDelete(t.id)}
-                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-950"
                         >
                           Delete
                         </Button>

@@ -25,7 +25,7 @@ export default async function KitchenRentalsPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-stone-900">Kitchen Rentals</h1>
+        <h1 className="text-2xl font-bold text-stone-100">Kitchen Rentals</h1>
         <p className="mt-1 text-sm text-stone-500">
           Track commercial kitchen bookings — hours, costs, and event linkages.
         </p>
@@ -37,19 +37,19 @@ export default async function KitchenRentalsPage() {
           <Card>
             <CardContent className="pt-4">
               <p className="text-xs text-stone-500">Total bookings</p>
-              <p className="text-2xl font-bold text-stone-900">{rentals.length}</p>
+              <p className="text-2xl font-bold text-stone-100">{rentals.length}</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
               <p className="text-xs text-stone-500">Total hours</p>
-              <p className="text-2xl font-bold text-stone-900">{totalHours.toFixed(1)}h</p>
+              <p className="text-2xl font-bold text-stone-100">{totalHours.toFixed(1)}h</p>
             </CardContent>
           </Card>
           <Card>
             <CardContent className="pt-4">
               <p className="text-xs text-stone-500">Total cost</p>
-              <p className="text-2xl font-bold text-stone-900">{formatCents(totalCents)}</p>
+              <p className="text-2xl font-bold text-stone-100">{formatCents(totalCents)}</p>
             </CardContent>
           </Card>
         </div>
@@ -66,17 +66,19 @@ export default async function KitchenRentalsPage() {
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-medium text-stone-900">{rental.facility_name}</span>
+                      <span className="font-medium text-stone-100">{rental.facility_name}</span>
                       <span className="text-sm text-stone-500">
                         {format(new Date(rental.rental_date + 'T00:00:00'), 'MMM d, yyyy')}
                       </span>
                       {rental.hours_booked && (
                         <span className="text-sm text-stone-500">{rental.hours_booked}h</span>
                       )}
-                      <span className="font-medium text-stone-700">{formatCents(rental.cost_cents)}</span>
+                      <span className="font-medium text-stone-300">
+                        {formatCents(rental.cost_cents)}
+                      </span>
                     </div>
                     {rental.purpose && (
-                      <p className="mt-0.5 text-sm text-stone-600">{rental.purpose}</p>
+                      <p className="mt-0.5 text-sm text-stone-400">{rental.purpose}</p>
                     )}
                     {rental.address && (
                       <p className="mt-0.5 text-xs text-stone-400">{rental.address}</p>

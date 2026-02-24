@@ -114,7 +114,7 @@ export function ConnectedAccounts({
 
         {!connection.gmail.connected ? (
           <>
-            <p className="text-sm text-stone-600">
+            <p className="text-sm text-stone-400">
               Connect your Gmail to automatically capture dinner inquiries from your inbox. The
               agent classifies each email and creates inquiry records for potential bookings.
             </p>
@@ -129,7 +129,7 @@ export function ConnectedAccounts({
               <div>
                 <div className="flex items-center gap-2">
                   <Badge variant="success">Connected</Badge>
-                  <span className="text-sm font-medium text-stone-900">
+                  <span className="text-sm font-medium text-stone-100">
                     {connection.gmail.email}
                   </span>
                 </div>
@@ -181,16 +181,16 @@ export function ConnectedAccounts({
             {/* Recent sync history */}
             {recentSyncs.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium text-stone-700 mb-2">Recent Activity</h4>
+                <h4 className="text-sm font-medium text-stone-300 mb-2">Recent Activity</h4>
                 <div className="space-y-1 max-h-48 overflow-y-auto">
                   {recentSyncs.map((entry) => (
                     <div
                       key={entry.id}
-                      className="flex items-center justify-between text-xs border-b border-stone-100 py-1.5 last:border-0"
+                      className="flex items-center justify-between text-xs border-b border-stone-800 py-1.5 last:border-0"
                     >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         <ClassificationBadge classification={entry.classification} />
-                        <span className="text-stone-600 truncate">
+                        <span className="text-stone-400 truncate">
                           {entry.from_address || 'unknown'}{' '}
                           {entry.subject && (
                             <span className="text-stone-400">- {entry.subject}</span>
@@ -222,15 +222,15 @@ export function ConnectedAccounts({
 
 function ClassificationBadge({ classification }: { classification: string }) {
   const colors: Record<string, string> = {
-    inquiry: 'bg-emerald-100 text-emerald-700',
-    existing_thread: 'bg-blue-100 text-blue-700',
-    personal: 'bg-stone-100 text-stone-600',
-    spam: 'bg-red-100 text-red-600',
-    marketing: 'bg-amber-100 text-amber-700',
+    inquiry: 'bg-emerald-900 text-emerald-700',
+    existing_thread: 'bg-blue-900 text-blue-700',
+    personal: 'bg-stone-800 text-stone-400',
+    spam: 'bg-red-900 text-red-600',
+    marketing: 'bg-amber-900 text-amber-700',
   }
   return (
     <span
-      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${colors[classification] || 'bg-stone-100 text-stone-600'}`}
+      className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${colors[classification] || 'bg-stone-800 text-stone-400'}`}
     >
       {classification}
     </span>

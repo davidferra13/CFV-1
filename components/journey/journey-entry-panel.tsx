@@ -156,8 +156,10 @@ export function JourneyEntryPanel({
             source_links: parseLines(form.source_links_text),
             is_highlight: form.is_highlight,
           })
-          setEntries(prev => {
-            const next = sortEntries(prev.map(entry => entry.id === result.entry.id ? result.entry : entry))
+          setEntries((prev) => {
+            const next = sortEntries(
+              prev.map((entry) => (entry.id === result.entry.id ? result.entry : entry))
+            )
             onEntriesChange?.(next)
             return next
           })
@@ -183,7 +185,7 @@ export function JourneyEntryPanel({
             source_links: parseLines(form.source_links_text),
             is_highlight: form.is_highlight,
           })
-          setEntries(prev => {
+          setEntries((prev) => {
             const next = sortEntries([result.entry, ...prev])
             onEntriesChange?.(next)
             return next
@@ -212,13 +214,15 @@ export function JourneyEntryPanel({
     startTransition(async () => {
       try {
         await deleteChefJourneyEntry(entry.id)
-        setEntries(prev => {
-          const next = prev.filter(item => item.id !== entry.id)
+        setEntries((prev) => {
+          const next = prev.filter((item) => item.id !== entry.id)
           onEntriesChange?.(next)
           return next
         })
       } catch (deleteError) {
-        setError(deleteError instanceof Error ? deleteError.message : 'Failed to delete journal entry')
+        setError(
+          deleteError instanceof Error ? deleteError.message : 'Failed to delete journal entry'
+        )
       }
     })
   }
@@ -233,7 +237,7 @@ export function JourneyEntryPanel({
           onClick={() => {
             setEditingId(null)
             setForm(EMPTY_FORM)
-            setShowForm(prev => !prev)
+            setShowForm((prev) => !prev)
           }}
         >
           <Plus className="w-4 h-4" />
@@ -242,17 +246,27 @@ export function JourneyEntryPanel({
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="border border-stone-200 rounded-lg p-4 space-y-4 bg-stone-50/50">
+        <form
+          onSubmit={handleSubmit}
+          className="border border-stone-700 rounded-lg p-4 space-y-4 bg-stone-800/50"
+        >
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1.5">Entry Type</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1.5">Entry Type</label>
               <select
                 value={form.entry_type}
-                onChange={event => setForm(prev => ({ ...prev, entry_type: event.target.value as ChefJourneyEntryType }))}
-                className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    entry_type: event.target.value as ChefJourneyEntryType,
+                  }))
+                }
+                className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
               >
                 {Object.entries(ENTRY_TYPE_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
             </div>
@@ -260,12 +274,14 @@ export function JourneyEntryPanel({
               label="Date"
               type="date"
               value={form.entry_date}
-              onChange={event => setForm(prev => ({ ...prev, entry_date: event.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, entry_date: event.target.value }))}
             />
             <Input
               label="Location"
               value={form.location_label}
-              onChange={event => setForm(prev => ({ ...prev, location_label: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, location_label: event.target.value }))
+              }
               placeholder="Naples"
             />
           </div>
@@ -273,7 +289,9 @@ export function JourneyEntryPanel({
           <Input
             label="Address (optional)"
             value={form.formatted_address}
-            onChange={event => setForm(prev => ({ ...prev, formatted_address: event.target.value }))}
+            onChange={(event) =>
+              setForm((prev) => ({ ...prev, formatted_address: event.target.value }))
+            }
             placeholder="Piazza Navona, Rome, Italy"
           />
 
@@ -281,13 +299,13 @@ export function JourneyEntryPanel({
             <Input
               label="Latitude (optional)"
               value={form.latitude}
-              onChange={event => setForm(prev => ({ ...prev, latitude: event.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, latitude: event.target.value }))}
               placeholder="41.8986"
             />
             <Input
               label="Longitude (optional)"
               value={form.longitude}
-              onChange={event => setForm(prev => ({ ...prev, longitude: event.target.value }))}
+              onChange={(event) => setForm((prev) => ({ ...prev, longitude: event.target.value }))}
               placeholder="12.4769"
             />
           </div>
@@ -295,14 +313,14 @@ export function JourneyEntryPanel({
           <Input
             label="Title"
             value={form.title}
-            onChange={event => setForm(prev => ({ ...prev, title: event.target.value }))}
+            onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
             required
           />
 
           <Textarea
             label="Narrative"
             value={form.narrative}
-            onChange={event => setForm(prev => ({ ...prev, narrative: event.target.value }))}
+            onChange={(event) => setForm((prev) => ({ ...prev, narrative: event.target.value }))}
             rows={4}
           />
 
@@ -310,78 +328,100 @@ export function JourneyEntryPanel({
             <Textarea
               label="Favorite Meal"
               value={form.favorite_meal}
-              onChange={event => setForm(prev => ({ ...prev, favorite_meal: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, favorite_meal: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="Favorite Experience"
               value={form.favorite_experience}
-              onChange={event => setForm(prev => ({ ...prev, favorite_experience: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, favorite_experience: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="Dishes to Explore"
               value={form.dishes_to_explore_text}
-              onChange={event => setForm(prev => ({ ...prev, dishes_to_explore_text: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, dishes_to_explore_text: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="What I Learned"
               value={form.what_i_learned_text}
-              onChange={event => setForm(prev => ({ ...prev, what_i_learned_text: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, what_i_learned_text: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="Inspiration Taken"
               value={form.inspiration_taken_text}
-              onChange={event => setForm(prev => ({ ...prev, inspiration_taken_text: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, inspiration_taken_text: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="Mistakes / Missteps"
               value={form.mistakes_made_text}
-              onChange={event => setForm(prev => ({ ...prev, mistakes_made_text: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, mistakes_made_text: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="Proud Moments"
               value={form.proud_moments_text}
-              onChange={event => setForm(prev => ({ ...prev, proud_moments_text: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, proud_moments_text: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="What To Change Next Time"
               value={form.what_to_change_next_time_text}
-              onChange={event => setForm(prev => ({ ...prev, what_to_change_next_time_text: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, what_to_change_next_time_text: event.target.value }))
+              }
               rows={3}
             />
             <Textarea
               label="Source Links"
               value={form.source_links_text}
-              onChange={event => setForm(prev => ({ ...prev, source_links_text: event.target.value }))}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, source_links_text: event.target.value }))
+              }
               rows={3}
               placeholder="https://... one per line"
             />
           </div>
 
-          <label className="inline-flex items-center gap-2 text-sm text-stone-700">
+          <label className="inline-flex items-center gap-2 text-sm text-stone-300">
             <input
               type="checkbox"
               checked={form.is_highlight}
-              onChange={event => setForm(prev => ({ ...prev, is_highlight: event.target.checked }))}
-              className="rounded border-stone-300"
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, is_highlight: event.target.checked }))
+              }
+              className="rounded border-stone-600"
             />
             Highlight this entry
           </label>
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+            <div className="rounded-lg border border-red-200 bg-red-950 px-3 py-2 text-sm text-red-700">
               {error}
             </div>
           )}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" onClick={resetForm}>Cancel</Button>
+            <Button type="button" variant="ghost" onClick={resetForm}>
+              Cancel
+            </Button>
             <Button type="submit" disabled={isPending}>
               {isPending ? 'Saving...' : editingId ? 'Update Entry' : 'Add Entry'}
             </Button>
@@ -391,20 +431,22 @@ export function JourneyEntryPanel({
 
       <div className="space-y-3">
         {entries.length === 0 ? (
-          <div className="border border-dashed border-stone-300 rounded-lg p-8 text-center text-sm text-stone-600">
+          <div className="border border-dashed border-stone-600 rounded-lg p-8 text-center text-sm text-stone-400">
             No entries yet. Add your first log entry.
           </div>
         ) : (
-          entries.map(entry => (
-            <div key={entry.id} className="border border-stone-200 rounded-lg p-4 space-y-3">
+          entries.map((entry) => (
+            <div key={entry.id} className="border border-stone-700 rounded-lg p-4 space-y-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="default">{ENTRY_TYPE_LABELS[entry.entry_type]}</Badge>
                     {entry.is_highlight && <Badge variant="success">Highlight</Badge>}
-                    <span className="text-xs text-stone-500">{formatDisplayDate(entry.entry_date)}</span>
+                    <span className="text-xs text-stone-500">
+                      {formatDisplayDate(entry.entry_date)}
+                    </span>
                   </div>
-                  <p className="font-semibold text-stone-900">{entry.title}</p>
+                  <p className="font-semibold text-stone-100">{entry.title}</p>
                 </div>
 
                 <div className="flex items-center gap-1">
@@ -415,7 +457,7 @@ export function JourneyEntryPanel({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-950"
                     onClick={() => handleDelete(entry)}
                   >
                     <Trash2 className="w-4 h-4" />
@@ -423,18 +465,20 @@ export function JourneyEntryPanel({
                 </div>
               </div>
 
-              {entry.narrative && <p className="text-sm text-stone-700 whitespace-pre-wrap">{entry.narrative}</p>}
+              {entry.narrative && (
+                <p className="text-sm text-stone-300 whitespace-pre-wrap">{entry.narrative}</p>
+              )}
 
               {(entry.location_label || entry.formatted_address) && (
-                <div className="flex flex-wrap gap-2 text-xs text-stone-600">
+                <div className="flex flex-wrap gap-2 text-xs text-stone-400">
                   {entry.location_label && (
-                    <span className="inline-flex items-center gap-1 rounded-md border border-stone-200 bg-stone-50 px-2 py-1">
+                    <span className="inline-flex items-center gap-1 rounded-md border border-stone-700 bg-stone-800 px-2 py-1">
                       <MapPin className="w-3.5 h-3.5 text-stone-500" />
                       {entry.location_label}
                     </span>
                   )}
                   {entry.formatted_address && (
-                    <span className="rounded-md border border-stone-200 bg-stone-50 px-2 py-1">
+                    <span className="rounded-md border border-stone-700 bg-stone-800 px-2 py-1">
                       {entry.formatted_address}
                     </span>
                   )}
@@ -444,15 +488,23 @@ export function JourneyEntryPanel({
               {(entry.favorite_meal || entry.favorite_experience) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {entry.favorite_meal && (
-                    <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-amber-700">Favorite Meal</p>
-                      <p className="text-sm text-amber-900 mt-1 whitespace-pre-wrap">{entry.favorite_meal}</p>
+                    <div className="rounded-md border border-amber-200 bg-amber-950 px-3 py-2">
+                      <p className="text-[11px] uppercase tracking-wide text-amber-700">
+                        Favorite Meal
+                      </p>
+                      <p className="text-sm text-amber-900 mt-1 whitespace-pre-wrap">
+                        {entry.favorite_meal}
+                      </p>
                     </div>
                   )}
                   {entry.favorite_experience && (
-                    <div className="rounded-md border border-sky-200 bg-sky-50 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-sky-700">Favorite Experience</p>
-                      <p className="text-sm text-sky-900 mt-1 whitespace-pre-wrap">{entry.favorite_experience}</p>
+                    <div className="rounded-md border border-sky-200 bg-sky-950 px-3 py-2">
+                      <p className="text-[11px] uppercase tracking-wide text-sky-700">
+                        Favorite Experience
+                      </p>
+                      <p className="text-sm text-sky-900 mt-1 whitespace-pre-wrap">
+                        {entry.favorite_experience}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -462,7 +514,7 @@ export function JourneyEntryPanel({
                 {entry.what_i_learned.map((learning, index) => (
                   <span
                     key={`${entry.id}-learned-${index}`}
-                    className="inline-flex items-center gap-1 rounded-full bg-amber-50 text-amber-700 px-2 py-0.5 text-[11px]"
+                    className="inline-flex items-center gap-1 rounded-full bg-amber-950 text-amber-700 px-2 py-0.5 text-[11px]"
                   >
                     <BookOpen className="w-3 h-3" />
                     {learning}
@@ -471,7 +523,7 @@ export function JourneyEntryPanel({
                 {entry.inspiration_taken.map((idea, index) => (
                   <span
                     key={`${entry.id}-idea-${index}`}
-                    className="inline-flex items-center gap-1 rounded-full bg-sky-50 text-sky-700 px-2 py-0.5 text-[11px]"
+                    className="inline-flex items-center gap-1 rounded-full bg-sky-950 text-sky-700 px-2 py-0.5 text-[11px]"
                   >
                     <Sparkles className="w-3 h-3" />
                     {idea}
@@ -480,30 +532,48 @@ export function JourneyEntryPanel({
               </div>
 
               {entry.dishes_to_explore.length > 0 && (
-                <div className="rounded-md border border-stone-200 bg-stone-50 px-3 py-2">
-                  <p className="text-[11px] uppercase tracking-wide text-stone-500">Dishes to Explore</p>
-                  <p className="text-sm text-stone-800 mt-1">{entry.dishes_to_explore.join(' | ')}</p>
+                <div className="rounded-md border border-stone-700 bg-stone-800 px-3 py-2">
+                  <p className="text-[11px] uppercase tracking-wide text-stone-500">
+                    Dishes to Explore
+                  </p>
+                  <p className="text-sm text-stone-200 mt-1">
+                    {entry.dishes_to_explore.join(' | ')}
+                  </p>
                 </div>
               )}
 
-              {(entry.mistakes_made.length > 0 || entry.proud_moments.length > 0 || entry.what_to_change_next_time.length > 0) && (
+              {(entry.mistakes_made.length > 0 ||
+                entry.proud_moments.length > 0 ||
+                entry.what_to_change_next_time.length > 0) && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {entry.mistakes_made.length > 0 && (
-                    <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-red-700">Mistakes / Missteps</p>
-                      <p className="text-sm text-red-900 mt-1 whitespace-pre-wrap">{entry.mistakes_made.join('\n')}</p>
+                    <div className="rounded-md border border-red-200 bg-red-950 px-3 py-2">
+                      <p className="text-[11px] uppercase tracking-wide text-red-700">
+                        Mistakes / Missteps
+                      </p>
+                      <p className="text-sm text-red-900 mt-1 whitespace-pre-wrap">
+                        {entry.mistakes_made.join('\n')}
+                      </p>
                     </div>
                   )}
                   {entry.proud_moments.length > 0 && (
-                    <div className="rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-emerald-700">Proud Moments</p>
-                      <p className="text-sm text-emerald-900 mt-1 whitespace-pre-wrap">{entry.proud_moments.join('\n')}</p>
+                    <div className="rounded-md border border-emerald-200 bg-emerald-950 px-3 py-2">
+                      <p className="text-[11px] uppercase tracking-wide text-emerald-700">
+                        Proud Moments
+                      </p>
+                      <p className="text-sm text-emerald-900 mt-1 whitespace-pre-wrap">
+                        {entry.proud_moments.join('\n')}
+                      </p>
                     </div>
                   )}
                   {entry.what_to_change_next_time.length > 0 && (
-                    <div className="rounded-md border border-violet-200 bg-violet-50 px-3 py-2">
-                      <p className="text-[11px] uppercase tracking-wide text-violet-700">Change Next Time</p>
-                      <p className="text-sm text-violet-900 mt-1 whitespace-pre-wrap">{entry.what_to_change_next_time.join('\n')}</p>
+                    <div className="rounded-md border border-violet-200 bg-violet-950 px-3 py-2">
+                      <p className="text-[11px] uppercase tracking-wide text-violet-700">
+                        Change Next Time
+                      </p>
+                      <p className="text-sm text-violet-900 mt-1 whitespace-pre-wrap">
+                        {entry.what_to_change_next_time.join('\n')}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -523,7 +593,7 @@ export function JourneyEntryPanel({
                         href={link}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-full border border-stone-200 bg-white px-2 py-0.5 text-xs text-brand-600 hover:text-brand-700"
+                        className="inline-flex items-center gap-1 rounded-full border border-stone-700 bg-surface px-2 py-0.5 text-xs text-brand-600 hover:text-brand-400"
                       >
                         <Link2 className="w-3 h-3" />
                         Source {index + 1}
@@ -538,13 +608,13 @@ export function JourneyEntryPanel({
       </div>
 
       {entries.length > 0 && (
-        <div className="rounded-lg border border-stone-200 p-3 text-xs flex flex-wrap gap-2">
+        <div className="rounded-lg border border-stone-700 p-3 text-xs flex flex-wrap gap-2">
           {(Object.keys(ENTRY_TYPE_LABELS) as ChefJourneyEntryType[])
-            .filter(type => (counts.get(type) || 0) > 0)
-            .map(type => (
+            .filter((type) => (counts.get(type) || 0) > 0)
+            .map((type) => (
               <span
                 key={type}
-                className="rounded-full border border-stone-200 bg-stone-50 px-2 py-0.5 text-stone-700"
+                className="rounded-full border border-stone-700 bg-stone-800 px-2 py-0.5 text-stone-300"
               >
                 {ENTRY_TYPE_LABELS[type]}: {counts.get(type)}
               </span>

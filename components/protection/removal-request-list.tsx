@@ -49,7 +49,7 @@ export function RemovalRequestList({ requests }: { requests: Request[] }) {
             <CardContent className="py-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-stone-900">
+                  <p className="text-sm font-medium text-stone-100">
                     {(req.clients as any)?.display_name || 'General Request'}
                   </p>
                   <p className="text-xs text-stone-500">
@@ -86,7 +86,7 @@ export function RemovalRequestList({ requests }: { requests: Request[] }) {
               <Card key={req.id} className="opacity-60">
                 <CardContent className="py-3">
                   <div className="flex items-center justify-between">
-                    <p className="text-sm text-stone-600">
+                    <p className="text-sm text-stone-400">
                       {(req.clients as any)?.display_name || 'General Request'}
                     </p>
                     <Badge variant="success">completed</Badge>

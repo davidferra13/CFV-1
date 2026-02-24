@@ -110,7 +110,7 @@ export function RetirementHealthPanel({
   return (
     <div className="space-y-6">
       {/* Info Banner */}
-      <Card className="border-blue-200 bg-blue-50">
+      <Card className="border-blue-200 bg-blue-950">
         <CardContent className="py-3">
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
@@ -129,14 +129,14 @@ export function RetirementHealthPanel({
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Retirement Contributions</p>
-            <p className="text-2xl font-semibold text-stone-900">{formatCents(retirementTotal)}</p>
+            <p className="text-2xl font-semibold text-stone-100">{formatCents(retirementTotal)}</p>
             <p className="text-xs text-stone-400 mt-0.5">Schedule 1, Line 16</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="py-3">
             <p className="text-xs text-stone-500">Health Insurance Premiums</p>
-            <p className="text-2xl font-semibold text-stone-900">{formatCents(healthTotal)}</p>
+            <p className="text-2xl font-semibold text-stone-100">{formatCents(healthTotal)}</p>
             <p className="text-xs text-stone-400 mt-0.5">Schedule 1, Line 17</p>
           </CardContent>
         </Card>
@@ -165,28 +165,28 @@ export function RetirementHealthPanel({
         </CardHeader>
         <CardContent className="space-y-4">
           {sepIraMaxCents > 0 && (
-            <div className="flex items-center justify-between text-sm bg-stone-50 rounded-lg px-3 py-2">
-              <span className="text-stone-600">SEP-IRA limit (25% of net SE income)</span>
-              <span className="font-medium text-stone-900">{formatCents(sepIraMaxCents)}</span>
+            <div className="flex items-center justify-between text-sm bg-stone-800 rounded-lg px-3 py-2">
+              <span className="text-stone-400">SEP-IRA limit (25% of net SE income)</span>
+              <span className="font-medium text-stone-100">{formatCents(sepIraMaxCents)}</span>
             </div>
           )}
           {remaining > 0 && retirementTotal > 0 && (
-            <div className="flex items-center justify-between text-sm bg-emerald-50 rounded-lg px-3 py-2">
+            <div className="flex items-center justify-between text-sm bg-emerald-950 rounded-lg px-3 py-2">
               <span className="text-emerald-700">Remaining SEP-IRA capacity</span>
               <span className="font-medium text-emerald-800">{formatCents(remaining)}</span>
             </div>
           )}
 
           {showAddContrib && (
-            <div className="border border-stone-200 rounded-lg p-4 space-y-3">
+            <div className="border border-stone-700 rounded-lg p-4 space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">
                   Account Type
                 </label>
                 <select
                   value={contribForm.accountType}
                   onChange={(e) => setContribForm({ ...contribForm, accountType: e.target.value })}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                 >
                   {Object.entries(ACCOUNT_TYPE_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>
@@ -235,11 +235,11 @@ export function RetirementHealthPanel({
               No contributions recorded for {taxYear}.
             </p>
           ) : (
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {contributions.map((c) => (
                 <div key={c.id} className="flex items-center justify-between py-2">
                   <div>
-                    <p className="text-sm font-medium text-stone-900">
+                    <p className="text-sm font-medium text-stone-100">
                       {ACCOUNT_TYPE_LABELS[c.accountType] || c.accountType}
                     </p>
                     <p className="text-xs text-stone-500">
@@ -248,7 +248,7 @@ export function RetirementHealthPanel({
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <p className="text-sm font-medium text-stone-900">
+                    <p className="text-sm font-medium text-stone-100">
                       {formatCents(c.contributionCents)}
                     </p>
                     <button
@@ -281,13 +281,13 @@ export function RetirementHealthPanel({
         </CardHeader>
         <CardContent className="space-y-4">
           {showAddPremium && (
-            <div className="border border-stone-200 rounded-lg p-4 space-y-3">
+            <div className="border border-stone-700 rounded-lg p-4 space-y-3">
               <div>
-                <label className="block text-sm font-medium text-stone-700 mb-1.5">Coverage</label>
+                <label className="block text-sm font-medium text-stone-300 mb-1.5">Coverage</label>
                 <select
                   value={premiumForm.premiumType}
                   onChange={(e) => setPremiumForm({ ...premiumForm, premiumType: e.target.value })}
-                  className="w-full rounded-lg border border-stone-300 px-3 py-2 text-sm"
+                  className="w-full rounded-lg border border-stone-600 px-3 py-2 text-sm"
                 >
                   {Object.entries(PREMIUM_TYPE_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>
@@ -330,17 +330,17 @@ export function RetirementHealthPanel({
               No premiums recorded for {taxYear}.
             </p>
           ) : (
-            <div className="divide-y divide-stone-100">
+            <div className="divide-y divide-stone-800">
               {premiums.map((p) => (
                 <div key={p.id} className="flex items-center justify-between py-2">
                   <div>
-                    <p className="text-sm font-medium text-stone-900">
+                    <p className="text-sm font-medium text-stone-100">
                       {PREMIUM_TYPE_LABELS[p.premiumType] || p.premiumType}
                     </p>
                     {p.notes && <p className="text-xs text-stone-500">{p.notes}</p>}
                   </div>
                   <div className="flex items-center gap-3">
-                    <p className="text-sm font-medium text-stone-900">
+                    <p className="text-sm font-medium text-stone-100">
                       {formatCents(p.annualPremiumCents)}
                     </p>
                     <button

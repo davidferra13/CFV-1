@@ -98,28 +98,40 @@ export function ShoppingSubstitutions({
       </CardHeader>
       <CardContent>
         {items.length === 0 && !isAdding && (
-          <p className="text-sm text-stone-500">No substitutions. Log any items you swapped while shopping.</p>
+          <p className="text-sm text-stone-500">
+            No substitutions. Log any items you swapped while shopping.
+          </p>
         )}
 
         {items.length > 0 && (
           <div className="space-y-3 mb-4">
             {items.map((item) => (
-              <div key={item.id} className="flex items-start justify-between py-2 border-b border-stone-100 last:border-0">
+              <div
+                key={item.id}
+                className="flex items-start justify-between py-2 border-b border-stone-800 last:border-0"
+              >
                 <div>
-                  <p className="text-sm text-stone-900">
-                    <span className="line-through text-stone-500">{item.planned_ingredient}</span>
-                    {' '}&rarr;{' '}
-                    <span className="font-medium">{item.actual_ingredient}</span>
+                  <p className="text-sm text-stone-100">
+                    <span className="line-through text-stone-500">{item.planned_ingredient}</span>{' '}
+                    &rarr; <span className="font-medium">{item.actual_ingredient}</span>
                   </p>
                   <div className="flex items-center gap-2 mt-0.5">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-100 text-stone-700">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-stone-800 text-stone-300">
                       {reasonLabel(item.reason)}
                     </span>
-                    {item.store_name && <span className="text-xs text-stone-500">at {item.store_name}</span>}
+                    {item.store_name && (
+                      <span className="text-xs text-stone-500">at {item.store_name}</span>
+                    )}
                   </div>
                   {item.notes && <p className="text-xs text-stone-500 mt-0.5">{item.notes}</p>}
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => handleRemove(item.id)} disabled={saving} className="text-red-600 hover:text-red-700">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleRemove(item.id)}
+                  disabled={saving}
+                  className="text-red-600 hover:text-red-700"
+                >
                   Remove
                 </Button>
               </div>
@@ -128,20 +140,28 @@ export function ShoppingSubstitutions({
         )}
 
         {isAdding && (
-          <div className="space-y-3 border rounded-lg p-4 bg-stone-50">
+          <div className="space-y-3 border rounded-lg p-4 bg-stone-800">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-stone-600">Planned Item</label>
-                <Input placeholder="e.g., Fresh mint" value={planned} onChange={(e) => setPlanned(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">Planned Item</label>
+                <Input
+                  placeholder="e.g., Fresh mint"
+                  value={planned}
+                  onChange={(e) => setPlanned(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">What You Got Instead</label>
-                <Input placeholder="e.g., Fresh basil" value={actual} onChange={(e) => setActual(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">What You Got Instead</label>
+                <Input
+                  placeholder="e.g., Fresh basil"
+                  value={actual}
+                  onChange={(e) => setActual(e.target.value)}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-medium text-stone-600">Reason</label>
+                <label className="text-xs font-medium text-stone-400">Reason</label>
                 <Select
                   options={[...SUBSTITUTION_REASONS]}
                   value={reason}
@@ -149,19 +169,32 @@ export function ShoppingSubstitutions({
                 />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">Store (optional)</label>
-                <Input placeholder="e.g., Grocery store" value={store} onChange={(e) => setStore(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">Store (optional)</label>
+                <Input
+                  placeholder="e.g., Grocery store"
+                  value={store}
+                  onChange={(e) => setStore(e.target.value)}
+                />
               </div>
             </div>
             <div>
-              <label className="text-xs font-medium text-stone-600">Notes (optional)</label>
-              <Input placeholder="Additional context" value={notes} onChange={(e) => setNotes(e.target.value)} />
+              <label className="text-xs font-medium text-stone-400">Notes (optional)</label>
+              <Input
+                placeholder="Additional context"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
             </div>
             <div className="flex gap-2">
               <Button size="sm" onClick={handleAdd} disabled={saving || !planned || !actual}>
                 {saving ? 'Saving...' : 'Log Substitution'}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => setIsAdding(false)} disabled={saving}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAdding(false)}
+                disabled={saving}
+              >
                 Cancel
               </Button>
             </div>

@@ -63,7 +63,7 @@ export function ChatInbox({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-stone-200 overflow-hidden">
+    <div className="bg-surface rounded-xl border border-stone-700 overflow-hidden">
       {conversations.map((conv) => (
         <ChatInboxItem
           key={conv.id}

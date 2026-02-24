@@ -9,19 +9,19 @@ import { createKitchenRental } from '@/lib/kitchen-rentals/actions'
 export function KitchenRentalForm() {
   const router = useRouter()
   const [form, setForm] = useState({
-    facility_name:        '',
-    address:              '',
-    rental_date:          '',
-    start_time:           '',
-    end_time:             '',
-    hours_booked:         '',
-    cost_dollars:         '',
-    purpose:              '',
+    facility_name: '',
+    address: '',
+    rental_date: '',
+    start_time: '',
+    end_time: '',
+    hours_booked: '',
+    cost_dollars: '',
+    purpose: '',
     booking_confirmation: '',
-    notes:                '',
+    notes: '',
   })
   const [saving, setSaving] = useState(false)
-  const [error, setError]   = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   function update(field: string, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -37,21 +37,28 @@ export function KitchenRentalForm() {
     setError(null)
     try {
       await createKitchenRental({
-        facility_name:        form.facility_name,
-        address:              form.address        || undefined,
-        rental_date:          form.rental_date,
-        start_time:           form.start_time     || undefined,
-        end_time:             form.end_time       || undefined,
-        hours_booked:         form.hours_booked   ? parseFloat(form.hours_booked)   : undefined,
-        cost_cents:           Math.round(parseFloat(form.cost_dollars) * 100),
-        purpose:              form.purpose        || undefined,
+        facility_name: form.facility_name,
+        address: form.address || undefined,
+        rental_date: form.rental_date,
+        start_time: form.start_time || undefined,
+        end_time: form.end_time || undefined,
+        hours_booked: form.hours_booked ? parseFloat(form.hours_booked) : undefined,
+        cost_cents: Math.round(parseFloat(form.cost_dollars) * 100),
+        purpose: form.purpose || undefined,
         booking_confirmation: form.booking_confirmation || undefined,
-        notes:                form.notes          || undefined,
+        notes: form.notes || undefined,
       })
       setForm({
-        facility_name: '', address: '', rental_date: '', start_time: '',
-        end_time: '', hours_booked: '', cost_dollars: '', purpose: '',
-        booking_confirmation: '', notes: '',
+        facility_name: '',
+        address: '',
+        rental_date: '',
+        start_time: '',
+        end_time: '',
+        hours_booked: '',
+        cost_dollars: '',
+        purpose: '',
+        booking_confirmation: '',
+        notes: '',
       })
       router.refresh()
     } catch (err) {
@@ -65,7 +72,7 @@ export function KitchenRentalForm() {
     <form onSubmit={handleSubmit} className="space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div className="col-span-2">
-          <label className="block text-xs font-medium text-stone-600 mb-1">Facility name *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Facility name *</label>
           <Input
             value={form.facility_name}
             onChange={(e) => update('facility_name', e.target.value)}
@@ -74,7 +81,7 @@ export function KitchenRentalForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Date *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Date *</label>
           <Input
             type="date"
             value={form.rental_date}
@@ -83,7 +90,7 @@ export function KitchenRentalForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Cost *</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Cost *</label>
           <Input
             type="number"
             min="0"
@@ -95,7 +102,7 @@ export function KitchenRentalForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Start time</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Start time</label>
           <Input
             type="time"
             value={form.start_time}
@@ -103,7 +110,7 @@ export function KitchenRentalForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">End time</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">End time</label>
           <Input
             type="time"
             value={form.end_time}
@@ -111,7 +118,7 @@ export function KitchenRentalForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Hours booked</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">Hours booked</label>
           <Input
             type="number"
             min="0.25"
@@ -122,7 +129,9 @@ export function KitchenRentalForm() {
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-stone-600 mb-1">Booking confirmation #</label>
+          <label className="block text-xs font-medium text-stone-400 mb-1">
+            Booking confirmation #
+          </label>
           <Input
             value={form.booking_confirmation}
             onChange={(e) => update('booking_confirmation', e.target.value)}
@@ -131,7 +140,7 @@ export function KitchenRentalForm() {
         </div>
       </div>
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Address</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Address</label>
         <Input
           value={form.address}
           onChange={(e) => update('address', e.target.value)}
@@ -139,7 +148,7 @@ export function KitchenRentalForm() {
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Purpose</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Purpose</label>
         <Input
           value={form.purpose}
           onChange={(e) => update('purpose', e.target.value)}
@@ -147,7 +156,7 @@ export function KitchenRentalForm() {
         />
       </div>
       <div>
-        <label className="block text-xs font-medium text-stone-600 mb-1">Notes</label>
+        <label className="block text-xs font-medium text-stone-400 mb-1">Notes</label>
         <Input
           value={form.notes}
           onChange={(e) => update('notes', e.target.value)}

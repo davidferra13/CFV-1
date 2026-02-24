@@ -3,7 +3,14 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getLedgerEntries } from '@/lib/ledger/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -25,12 +32,18 @@ export default async function LedgerAdjustmentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/ledger" className="text-sm text-stone-500 hover:text-stone-700">← Ledger</Link>
+        <Link href="/finance/ledger" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Ledger
+        </Link>
         <div className="flex items-center gap-3 mt-1">
-          <h1 className="text-3xl font-bold text-stone-900">Adjustments</h1>
-          <span className="bg-stone-100 text-stone-600 text-sm px-2 py-0.5 rounded-full">{allAdjustments.length}</span>
+          <h1 className="text-3xl font-bold text-stone-100">Adjustments</h1>
+          <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
+            {allAdjustments.length}
+          </span>
         </div>
-        <p className="text-stone-500 mt-1">Credits, add-ons, and manual adjustments to event totals</p>
+        <p className="text-stone-500 mt-1">
+          Credits, add-ons, and manual adjustments to event totals
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -46,8 +59,10 @@ export default async function LedgerAdjustmentsPage() {
 
       {allAdjustments.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No adjustments recorded</p>
-          <p className="text-stone-400 text-sm mt-1">Credits and add-ons applied to events will appear here</p>
+          <p className="text-stone-400 font-medium">No adjustments recorded</p>
+          <p className="text-stone-400 text-sm mt-1">
+            Credits and add-ons applied to events will appear here
+          </p>
         </Card>
       ) : (
         <Card>
@@ -62,23 +77,32 @@ export default async function LedgerAdjustmentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {allAdjustments.map(entry => (
+              {allAdjustments.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell className="text-stone-500 text-sm">{format(new Date(entry.created_at), 'MMM d, yyyy')}</TableCell>
+                  <TableCell className="text-stone-500 text-sm">
+                    {format(new Date(entry.created_at), 'MMM d, yyyy')}
+                  </TableCell>
                   <TableCell>
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'credit' ? 'bg-sky-100 text-sky-700' : 'bg-blue-100 text-blue-700'}`}>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${entry.entry_type === 'credit' ? 'bg-sky-900 text-sky-700' : 'bg-blue-900 text-blue-700'}`}
+                    >
                       {entry.entry_type.replace(/_/g, ' ')}
                     </span>
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">
+                  <TableCell className="text-stone-400 text-sm">
                     {entry.event ? (
-                      <Link href={`/events/${entry.event.id}`} className="text-brand-600 hover:underline capitalize">
+                      <Link
+                        href={`/events/${entry.event.id}`}
+                        className="text-brand-600 hover:underline capitalize"
+                      >
                         {entry.event.occasion?.replace(/_/g, ' ') ?? 'Event'}
                       </Link>
-                    ) : '—'}
+                    ) : (
+                      '—'
+                    )}
                   </TableCell>
-                  <TableCell className="text-stone-600 text-sm">{entry.description}</TableCell>
-                  <TableCell className="text-sm font-semibold text-stone-900">
+                  <TableCell className="text-stone-400 text-sm">{entry.description}</TableCell>
+                  <TableCell className="text-sm font-semibold text-stone-100">
                     {formatCurrency(entry.amount_cents)}
                   </TableCell>
                 </TableRow>

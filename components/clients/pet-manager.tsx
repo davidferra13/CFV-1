@@ -57,9 +57,9 @@ export function PetManager({ clientId, initialPets }: { clientId: string; initia
   }
 
   return (
-    <div className="rounded-lg border border-stone-200 overflow-hidden">
-      <div className="px-4 py-3 bg-stone-50 border-b border-stone-200 flex items-center justify-between">
-        <h3 className="font-medium text-stone-800">Pets</h3>
+    <div className="rounded-lg border border-stone-700 overflow-hidden">
+      <div className="px-4 py-3 bg-stone-800 border-b border-stone-700 flex items-center justify-between">
+        <h3 className="font-medium text-stone-200">Pets</h3>
         {!editing && (
           <button
             type="button"
@@ -77,7 +77,7 @@ export function PetManager({ clientId, initialPets }: { clientId: string; initia
             {pets.map((pet, i) => (
               <div key={i} className="flex items-center gap-2 text-sm">
                 <span className="text-lg">{PET_ICONS[pet.type] || '🐾'}</span>
-                <span className="font-medium text-stone-800">{pet.name}</span>
+                <span className="font-medium text-stone-200">{pet.name}</span>
                 <span className="text-stone-400 capitalize">({pet.type})</span>
                 {pet.notes && <span className="text-stone-500 ml-1">— {pet.notes}</span>}
               </div>

@@ -5,7 +5,7 @@ import { HTMLAttributes, ImgHTMLAttributes, useState } from 'react'
 export function Avatar({ className = '', children, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`relative flex items-center justify-center overflow-hidden rounded-full bg-stone-100 ${className}`}
+      className={`relative flex items-center justify-center overflow-hidden rounded-full bg-stone-800 ${className}`}
       {...props}
     >
       {children}
@@ -33,7 +33,11 @@ export function AvatarImage({
   )
 }
 
-export function AvatarFallback({ className = '', children, ...props }: HTMLAttributes<HTMLDivElement>) {
+export function AvatarFallback({
+  className = '',
+  children,
+  ...props
+}: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={`flex h-full w-full items-center justify-center text-sm font-medium ${className}`}

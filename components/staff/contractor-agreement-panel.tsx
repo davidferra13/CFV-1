@@ -66,12 +66,12 @@ export function ContractorAgreementPanel({
         {agreements.map((a) => (
           <div
             key={a.id}
-            className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0"
+            className="flex items-center justify-between py-2 border-b border-stone-800 last:border-0"
           >
             <div>
               <div className="flex items-center gap-2">
                 <Badge variant={STATUS_VARIANTS[a.status] ?? 'default'}>{a.status}</Badge>
-                <span className="text-sm text-stone-700">Effective: {a.effective_date}</span>
+                <span className="text-sm text-stone-300">Effective: {a.effective_date}</span>
               </div>
               <div className="flex gap-3 text-xs text-stone-500 mt-1">
                 {a.has_ip_clause && <span>IP clause</span>}
@@ -85,9 +85,9 @@ export function ContractorAgreementPanel({
         )}
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="space-y-3 pt-3 border-t border-stone-200">
+          <form onSubmit={handleSubmit} className="space-y-3 pt-3 border-t border-stone-700">
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">
+              <label className="block text-sm font-medium text-stone-300 mb-1">
                 Effective Date *
               </label>
               <input
@@ -95,27 +95,27 @@ export function ContractorAgreementPanel({
                 value={effectiveDate}
                 onChange={(e) => setEffectiveDate(e.target.value)}
                 required
-                className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
                 title="Effective date"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Scope of Work</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Scope of Work</label>
               <textarea
                 value={scope}
                 onChange={(e) => setScope(e.target.value)}
                 rows={2}
-                className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-stone-700 mb-1">Rate ($/hr)</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">Rate ($/hr)</label>
               <input
                 type="number"
                 step="0.01"
                 value={rate}
                 onChange={(e) => setRate(e.target.value)}
-                className="w-full border border-stone-300 rounded px-3 py-2 text-sm"
+                className="w-full border border-stone-600 rounded px-3 py-2 text-sm"
               />
             </div>
             <div className="flex gap-4">

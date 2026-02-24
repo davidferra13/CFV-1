@@ -31,11 +31,11 @@ export function ChefBioPanel() {
 
   if (!result) {
     return (
-      <div className="bg-white border border-stone-200 rounded-lg p-4">
+      <div className="bg-surface border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <UserCircle className="w-4 h-4 text-brand-600" />
-            <span className="text-sm font-medium text-stone-700">Chef Bio & Tagline</span>
+            <span className="text-sm font-medium text-stone-300">Chef Bio & Tagline</span>
             <Badge variant="info">Auto</Badge>
           </div>
           <Button variant="secondary" onClick={run} disabled={loading}>
@@ -60,11 +60,11 @@ export function ChefBioPanel() {
   }
 
   return (
-    <div className="bg-white border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <UserCircle className="w-4 h-4 text-brand-600" />
-          <span className="text-sm font-medium text-stone-700">Chef Bio & Tagline</span>
+          <span className="text-sm font-medium text-stone-300">Chef Bio & Tagline</span>
           <Badge variant="warning">Draft</Badge>
         </div>
         <div className="flex items-center gap-1">
@@ -72,7 +72,7 @@ export function ChefBioPanel() {
             <button
               key={v}
               onClick={() => setView(v)}
-              className={`text-xs px-2 py-1 rounded capitalize ${view === v ? 'bg-stone-100 font-medium' : 'text-stone-500'}`}
+              className={`text-xs px-2 py-1 rounded capitalize ${view === v ? 'bg-stone-800 font-medium' : 'text-stone-500'}`}
             >
               {v}
             </button>
@@ -85,21 +85,21 @@ export function ChefBioPanel() {
 
       {view === 'tagline' && (
         <div className="space-y-2">
-          <div className="bg-brand-50 border border-brand-200 rounded p-3">
+          <div className="bg-brand-950 border border-brand-700 rounded p-3">
             <div className="text-[11px] text-brand-600 mb-0.5">Primary Tagline</div>
-            <div className="text-lg font-medium text-stone-800">{result.tagline}</div>
+            <div className="text-lg font-medium text-stone-200">{result.tagline}</div>
           </div>
           <div className="space-y-1">
             {result.alternativeTaglines.map((t, i) => (
-              <div key={i} className="flex items-center justify-between bg-stone-50 rounded p-2">
-                <span className="text-sm text-stone-700">{t}</span>
+              <div key={i} className="flex items-center justify-between bg-stone-800 rounded p-2">
+                <span className="text-sm text-stone-300">{t}</span>
                 <Button variant="ghost" onClick={() => copy(t)}>
                   <Copy className="w-3 h-3" />
                 </Button>
               </div>
             ))}
           </div>
-          <div className="text-xs text-stone-600 border-t border-stone-100 pt-2">
+          <div className="text-xs text-stone-400 border-t border-stone-800 pt-2">
             <span className="font-medium">LinkedIn headline:</span> {result.linkedInHeadline}
           </div>
           <Button variant="secondary" onClick={() => copy(result.tagline)}>
@@ -111,7 +111,7 @@ export function ChefBioPanel() {
 
       {view === 'short' && (
         <div className="space-y-2">
-          <div className="text-sm text-stone-700 leading-relaxed">{result.shortBio}</div>
+          <div className="text-sm text-stone-300 leading-relaxed">{result.shortBio}</div>
           <Button variant="secondary" onClick={() => copy(result.shortBio)}>
             <Copy className="w-3 h-3 mr-1" />
             Copy Short Bio
@@ -121,7 +121,7 @@ export function ChefBioPanel() {
 
       {view === 'long' && (
         <div className="space-y-2">
-          <div className="text-sm text-stone-700 leading-relaxed">{result.longBio}</div>
+          <div className="text-sm text-stone-300 leading-relaxed">{result.longBio}</div>
           <Button variant="secondary" onClick={() => copy(result.longBio)}>
             <Copy className="w-3 h-3 mr-1" />
             Copy Long Bio

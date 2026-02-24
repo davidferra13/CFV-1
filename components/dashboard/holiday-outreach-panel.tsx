@@ -33,10 +33,10 @@ export function HolidayOutreachPanel({ suggestions }: HolidayOutreachPanelProps)
   if (suggestions.length === 0) return null
 
   return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50">
+    <div className="rounded-xl border border-amber-200 bg-amber-950">
       {/* Header */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-amber-200">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-100">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-900">
           <Gift className="h-4 w-4 text-amber-600" />
         </div>
         <div className="flex-1">
@@ -121,12 +121,12 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
       {/* Row header — always visible */}
       <button
         onClick={onToggle}
-        className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-amber-100/60 transition-colors"
+        className="w-full flex items-start gap-3 px-5 py-4 text-left hover:bg-amber-900/60 transition-colors"
       >
         {/* Urgency dot */}
         <div className="mt-1 flex-shrink-0">
           {isUrgent ? (
-            <span className="flex h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-red-200" />
+            <span className="flex h-2.5 w-2.5 rounded-full bg-red-9500 ring-2 ring-red-800" />
           ) : (
             <span className="flex h-2.5 w-2.5 rounded-full bg-amber-400" />
           )}
@@ -136,13 +136,13 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold text-amber-900">{holiday.name}</span>
             {premiumPricing && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 border border-yellow-300 px-2 py-0.5 text-xs font-medium text-yellow-800">
+              <span className="inline-flex items-center gap-1 rounded-full bg-yellow-900 border border-yellow-300 px-2 py-0.5 text-xs font-medium text-yellow-800">
                 <Star className="h-3 w-3" />
                 Premium date
               </span>
             )}
             {isUrgent && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-red-100 border border-red-300 px-2 py-0.5 text-xs font-medium text-red-700">
+              <span className="inline-flex items-center gap-1 rounded-full bg-red-900 border border-red-300 px-2 py-0.5 text-xs font-medium text-red-700">
                 <AlertCircle className="h-3 w-3" />
                 Urgent
               </span>
@@ -173,15 +173,15 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           <OutreachHookBlock hook={outreachHook} holidayName={holiday.name} />
 
           {/* Menu idea */}
-          <div className="rounded-lg bg-white border border-amber-200 px-4 py-3">
+          <div className="rounded-lg bg-surface border border-amber-200 px-4 py-3">
             <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
               Menu Direction
             </p>
-            <p className="text-sm text-stone-700">{menuNotes}</p>
+            <p className="text-sm text-stone-300">{menuNotes}</p>
           </div>
 
           {/* Promo code section */}
-          <div className="rounded-lg bg-white border border-amber-200 px-4 py-3">
+          <div className="rounded-lg bg-surface border border-amber-200 px-4 py-3">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
                 Promo Code
@@ -201,7 +201,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
                   type="button"
                   title="Close promo code form"
                   onClick={() => setShowPromoForm(false)}
-                  className="text-stone-400 hover:text-stone-600"
+                  className="text-stone-400 hover:text-stone-400"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -210,7 +210,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
 
             {promoResult && !promoResult.startsWith('Error:') && (
               <div className="flex items-center gap-2">
-                <span className="text-sm font-mono font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2 py-1 rounded">
+                <span className="text-sm font-mono font-bold text-amber-900 bg-amber-950 border border-amber-200 px-2 py-1 rounded">
                   {promoResult}
                 </span>
                 <span className="text-xs text-green-700">Created! Share with clients.</span>
@@ -234,7 +234,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
                       id={`promo-code-${holiday.key}`}
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-                      className="w-full rounded border border-stone-200 px-2 py-1.5 text-sm font-mono"
+                      className="w-full rounded border border-stone-700 px-2 py-1.5 text-sm font-mono"
                       placeholder="HOLIDAY25"
                     />
                   </div>
@@ -252,7 +252,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
                       max={50}
                       value={promoDiscount}
                       onChange={(e) => setPromoDiscount(e.target.value)}
-                      className="w-full rounded border border-stone-200 px-2 py-1.5 text-sm"
+                      className="w-full rounded border border-stone-700 px-2 py-1.5 text-sm"
                       placeholder="10"
                     />
                   </div>
@@ -268,7 +268,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
                       type="date"
                       value={promoExpiry}
                       onChange={(e) => setPromoExpiry(e.target.value)}
-                      className="w-full rounded border border-stone-200 px-2 py-1.5 text-sm"
+                      className="w-full rounded border border-stone-700 px-2 py-1.5 text-sm"
                       title="Promo code expiry date"
                     />
                   </div>
@@ -313,7 +313,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
               </ul>
             </div>
           ) : (
-            <div className="rounded-lg bg-white border border-amber-100 px-4 py-3">
+            <div className="rounded-lg bg-surface border border-amber-100 px-4 py-3">
               <p className="text-sm text-stone-500">
                 No past clients found near this holiday — this is a fresh opportunity to build the
                 tradition with new clients.
@@ -356,10 +356,10 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
   }
 
   return (
-    <li className="rounded-lg bg-white border border-amber-100 px-3 py-2">
+    <li className="rounded-lg bg-surface border border-amber-100 px-3 py-2">
       <div className="flex items-center justify-between">
         <div>
-          <span className="text-sm font-medium text-stone-800">{client.clientName}</span>
+          <span className="text-sm font-medium text-stone-200">{client.clientName}</span>
           <span className="ml-2 text-xs text-stone-400">
             booked{' '}
             {new Date(client.lastEventDate).toLocaleDateString('en-US', {
@@ -395,14 +395,14 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
             <button
               type="button"
               onClick={() => setChannel('email')}
-              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'email' ? 'bg-amber-100 border-amber-300 text-amber-800 font-semibold' : 'border-stone-200 text-stone-500 hover:border-stone-300'}`}
+              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'email' ? 'bg-amber-900 border-amber-300 text-amber-800 font-semibold' : 'border-stone-700 text-stone-500 hover:border-stone-600'}`}
             >
               Email
             </button>
             <button
               type="button"
               onClick={() => setChannel('sms')}
-              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'sms' ? 'bg-amber-100 border-amber-300 text-amber-800 font-semibold' : 'border-stone-200 text-stone-500 hover:border-stone-300'}`}
+              className={`px-2 py-1 text-xs rounded border transition-colors ${channel === 'sms' ? 'bg-amber-900 border-amber-300 text-amber-800 font-semibold' : 'border-stone-700 text-stone-500 hover:border-stone-600'}`}
             >
               SMS
             </button>
@@ -413,7 +413,7 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
             rows={3}
             aria-label="Outreach message"
             placeholder="Your outreach message…"
-            className="w-full rounded border border-stone-200 px-2 py-1.5 text-sm resize-none"
+            className="w-full rounded border border-stone-700 px-2 py-1.5 text-sm resize-none"
           />
           {status === 'error' && (
             <p className="text-xs text-red-600">Send failed — check client contact info.</p>
@@ -431,7 +431,7 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
             <button
               type="button"
               onClick={() => setShowSendForm(false)}
-              className="px-3 py-1.5 text-xs text-stone-500 hover:text-stone-700 transition-colors"
+              className="px-3 py-1.5 text-xs text-stone-500 hover:text-stone-300 transition-colors"
             >
               Cancel
             </button>
@@ -460,7 +460,7 @@ function OutreachHookBlock({ hook, holidayName }: OutreachHookBlockProps) {
   }
 
   return (
-    <div className="rounded-lg bg-white border border-amber-200 px-4 py-3">
+    <div className="rounded-lg bg-surface border border-amber-200 px-4 py-3">
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1.5">
           Outreach Message — {holidayName}
@@ -483,7 +483,7 @@ function OutreachHookBlock({ hook, holidayName }: OutreachHookBlockProps) {
           )}
         </button>
       </div>
-      <p className="text-sm text-stone-700 italic leading-relaxed">"{hook}"</p>
+      <p className="text-sm text-stone-300 italic leading-relaxed">"{hook}"</p>
     </div>
   )
 }

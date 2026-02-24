@@ -116,15 +116,15 @@ export default async function FinancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-900">Finance</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Finance</h1>
         <p className="text-stone-500 mt-1">
           Complete financial management — invoices, expenses, ledger, and reporting
         </p>
       </div>
 
       {summary.totalRevenueCents === 0 && summary.totalRefundsCents === 0 && (
-        <div className="rounded-xl border border-dashed border-stone-300 bg-stone-50 p-6 text-center">
-          <p className="text-sm text-stone-600">
+        <div className="rounded-xl border border-dashed border-stone-600 bg-stone-800 p-6 text-center">
+          <p className="text-sm text-stone-400">
             No financial activity yet. Once you record your first payment or expense, your numbers
             will appear here.
           </p>
@@ -133,7 +133,7 @@ export default async function FinancePage() {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card className="p-4">
-          <p className="text-2xl font-bold text-stone-900">
+          <p className="text-2xl font-bold text-stone-100">
             {formatCurrency(summary.totalRevenueCents)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Total revenue collected</p>
@@ -151,7 +151,7 @@ export default async function FinancePage() {
           <p className="text-sm text-stone-500 mt-1">Total refunds issued</p>
         </Card>
         {carryForwardSavings > 0 && (
-          <Card className="p-4 border-emerald-200 bg-emerald-50">
+          <Card className="p-4 border-emerald-200 bg-emerald-950">
             <p className="text-2xl font-bold text-emerald-700">
               {formatCurrency(carryForwardSavings)}
             </p>
@@ -167,7 +167,7 @@ export default async function FinancePage() {
               <div className="flex items-start gap-3">
                 <span className="text-2xl">{section.icon}</span>
                 <div>
-                  <h2 className="font-semibold text-stone-900">{section.label}</h2>
+                  <h2 className="font-semibold text-stone-100">{section.label}</h2>
                   <p className="text-sm text-stone-500 mt-0.5">{section.description}</p>
                 </div>
               </div>

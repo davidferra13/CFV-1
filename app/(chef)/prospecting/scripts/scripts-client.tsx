@@ -47,7 +47,7 @@ export function ScriptsPageClient({ scripts }: ScriptsPageClientProps) {
           <ScriptEditor script={selected} onSaved={handleSaved} key={selected.id} />
         )}
         {!showNew && !selected && (
-          <div className="rounded-lg border border-dashed border-stone-300 p-12 text-center text-stone-400">
+          <div className="rounded-lg border border-dashed border-stone-600 p-12 text-center text-stone-400">
             <p className="text-sm">Select a script to edit or create a new one.</p>
           </div>
         )}

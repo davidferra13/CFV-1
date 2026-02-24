@@ -56,7 +56,7 @@ const categoryColors: Record<string, string> = {
   payment: 'text-emerald-500',
   chat: 'text-violet-500',
   client: 'text-stone-500',
-  system: 'text-stone-700',
+  system: 'text-stone-300',
 }
 
 function getRelativeTime(dateStr: string): string {
@@ -92,8 +92,8 @@ function NotificationItem({
     <button
       type="button"
       onClick={() => onNavigate(notification)}
-      className={`flex items-start gap-3 w-full text-left px-4 py-3 transition-colors hover:bg-stone-50 ${
-        isUnread ? 'bg-brand-50/30' : ''
+      className={`flex items-start gap-3 w-full text-left px-4 py-3 transition-colors hover:bg-stone-800 ${
+        isUnread ? 'bg-brand-950/30' : ''
       }`}
     >
       <div className={`mt-0.5 flex-shrink-0 ${colorClass}`}>
@@ -101,7 +101,9 @@ function NotificationItem({
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-start gap-2">
-          <p className={`text-sm truncate ${isUnread ? 'font-medium text-stone-900' : 'text-stone-700'}`}>
+          <p
+            className={`text-sm truncate ${isUnread ? 'font-medium text-stone-100' : 'text-stone-300'}`}
+          >
             {notification.title}
           </p>
           {isUnread && (
@@ -109,9 +111,7 @@ function NotificationItem({
           )}
         </div>
         {notification.body && (
-          <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">
-            {notification.body}
-          </p>
+          <p className="text-xs text-stone-500 mt-0.5 line-clamp-1">{notification.body}</p>
         )}
         <p className="text-[10px] text-stone-400 mt-1">
           {getRelativeTime(notification.created_at)}
@@ -147,8 +147,8 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
       await markAsRead(notification.id)
       setNotifications((prev) =>
         prev.map((n) =>
-          n.id === notification.id ? { ...n, read_at: new Date().toISOString() } : n,
-        ),
+          n.id === notification.id ? { ...n, read_at: new Date().toISOString() } : n
+        )
       )
     }
     onClose()
@@ -160,20 +160,20 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
   const handleMarkAllRead = async () => {
     await markAllAsRead()
     setNotifications((prev) =>
-      prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() })),
+      prev.map((n) => ({ ...n, read_at: n.read_at || new Date().toISOString() }))
     )
   }
 
   return (
-    <div className="absolute right-0 top-full mt-2 z-50 w-80 sm:w-96 bg-white rounded-xl shadow-lg border border-stone-200 overflow-hidden">
+    <div className="absolute right-0 top-full mt-2 z-50 w-80 sm:w-96 bg-surface rounded-xl shadow-lg border border-stone-700 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-100">
-        <h3 className="text-sm font-semibold text-stone-900">Notifications</h3>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800">
+        <h3 className="text-sm font-semibold text-stone-100">Notifications</h3>
         {unreadCount > 0 && (
           <button
             type="button"
             onClick={handleMarkAllRead}
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700 font-medium"
+            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-400 font-medium"
           >
             <Check className="w-3 h-3" />
             Mark all read
@@ -185,7 +185,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
       <div className="max-h-[420px] overflow-y-auto custom-scrollbar divide-y divide-stone-50">
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="w-5 h-5 border-2 border-stone-200 border-t-brand-600 rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-stone-700 border-t-brand-600 rounded-full animate-spin" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 px-4">

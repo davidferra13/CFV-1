@@ -4,7 +4,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
 import { getExpenses } from '@/lib/expenses/actions'
 import { Card } from '@/components/ui/card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
@@ -13,22 +20,22 @@ export const metadata: Metadata = { title: 'Profit by Event - ChefFlow' }
 export default async function ProfitByEventPage() {
   await requireChef()
 
-  const [events, expenses] = await Promise.all([
-    getEvents(),
-    getExpenses(),
-  ])
+  const [events, expenses] = await Promise.all([getEvents(), getExpenses()])
 
   // Build expense total per event
   const expensesByEvent = new Map<string, number>()
   for (const expense of expenses) {
     if (expense.event_id) {
-      expensesByEvent.set(expense.event_id, (expensesByEvent.get(expense.event_id) ?? 0) + expense.amount_cents)
+      expensesByEvent.set(
+        expense.event_id,
+        (expensesByEvent.get(expense.event_id) ?? 0) + expense.amount_cents
+      )
     }
   }
 
   const rows = events
-    .filter(e => (e.quoted_price_cents ?? 0) > 0 || expensesByEvent.has(e.id))
-    .map(e => ({
+    .filter((e) => (e.quoted_price_cents ?? 0) > 0 || expensesByEvent.has(e.id))
+    .map((e) => ({
       ...e,
       revenue: e.quoted_price_cents ?? 0,
       directExpenses: expensesByEvent.get(e.id) ?? 0,
@@ -43,9 +50,13 @@ export default async function ProfitByEventPage() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-700">← Reporting</Link>
-        <h1 className="text-3xl font-bold text-stone-900 mt-1">Profit by Event</h1>
-        <p className="text-stone-500 mt-1">Invoice revenue minus directly linked expense entries per event</p>
+        <Link href="/finance/reporting" className="text-sm text-stone-500 hover:text-stone-300">
+          ← Reporting
+        </Link>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Profit by Event</h1>
+        <p className="text-stone-500 mt-1">
+          Invoice revenue minus directly linked expense entries per event
+        </p>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
@@ -58,7 +69,9 @@ export default async function ProfitByEventPage() {
           <p className="text-sm text-stone-500 mt-1">Direct event expenses</p>
         </Card>
         <Card className="p-4">
-          <p className={`text-2xl font-bold ${totalProfit >= 0 ? 'text-stone-900' : 'text-red-600'}`}>
+          <p
+            className={`text-2xl font-bold ${totalProfit >= 0 ? 'text-stone-100' : 'text-red-600'}`}
+          >
             {formatCurrency(totalProfit)}
           </p>
           <p className="text-sm text-stone-500 mt-1">Net profit</p>
@@ -66,13 +79,13 @@ export default async function ProfitByEventPage() {
       </div>
 
       <p className="text-xs text-stone-400">
-        Note: Only expenses directly linked to an event are included in this calculation.
-        Overhead expenses (software, insurance, etc.) appear in the expense reports.
+        Note: Only expenses directly linked to an event are included in this calculation. Overhead
+        expenses (software, insurance, etc.) appear in the expense reports.
       </p>
 
       {rows.length === 0 ? (
         <Card className="p-12 text-center">
-          <p className="text-stone-600 font-medium">No events with revenue data</p>
+          <p className="text-stone-400 font-medium">No events with revenue data</p>
         </Card>
       ) : (
         <Card>
@@ -89,22 +102,39 @@ export default async function ProfitByEventPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map(row => {
+              {rows.map((row) => {
                 const margin = row.revenue > 0 ? Math.round((row.profit / row.revenue) * 100) : null
                 return (
                   <TableRow key={row.id}>
-                    <TableCell className="text-stone-600 text-sm">{format(new Date(row.event_date), 'MMM d, yyyy')}</TableCell>
+                    <TableCell className="text-stone-400 text-sm">
+                      {format(new Date(row.event_date), 'MMM d, yyyy')}
+                    </TableCell>
                     <TableCell className="font-medium">
                       {row.client ? (
-                        <Link href={`/clients/${row.client.id}`} className="text-brand-600 hover:underline">{row.client.full_name}</Link>
-                      ) : '—'}
+                        <Link
+                          href={`/clients/${row.client.id}`}
+                          className="text-brand-600 hover:underline"
+                        >
+                          {row.client.full_name}
+                        </Link>
+                      ) : (
+                        '—'
+                      )}
                     </TableCell>
-                    <TableCell className="text-stone-600 text-sm capitalize">{row.occasion?.replace(/_/g, ' ') ?? '—'}</TableCell>
+                    <TableCell className="text-stone-400 text-sm capitalize">
+                      {row.occasion?.replace(/_/g, ' ') ?? '—'}
+                    </TableCell>
                     <TableCell className="text-green-700 font-semibold text-sm">
-                      <Link href={`/events/${row.id}`} className="hover:underline">{formatCurrency(row.revenue)}</Link>
+                      <Link href={`/events/${row.id}`} className="hover:underline">
+                        {formatCurrency(row.revenue)}
+                      </Link>
                     </TableCell>
-                    <TableCell className="text-red-600 text-sm">{row.directExpenses > 0 ? formatCurrency(row.directExpenses) : '—'}</TableCell>
-                    <TableCell className={`font-semibold text-sm ${row.profit >= 0 ? 'text-stone-900' : 'text-red-600'}`}>
+                    <TableCell className="text-red-600 text-sm">
+                      {row.directExpenses > 0 ? formatCurrency(row.directExpenses) : '—'}
+                    </TableCell>
+                    <TableCell
+                      className={`font-semibold text-sm ${row.profit >= 0 ? 'text-stone-100' : 'text-red-600'}`}
+                    >
                       {formatCurrency(row.profit)}
                     </TableCell>
                     <TableCell className="text-stone-500 text-sm">

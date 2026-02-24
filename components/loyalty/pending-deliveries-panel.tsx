@@ -20,7 +20,10 @@ const REWARD_TYPE_LABELS: Record<string, string> = {
   upgrade: 'Upgrade',
 }
 
-function DeliveryRow({ delivery, onUpdate }: {
+function DeliveryRow({
+  delivery,
+  onUpdate,
+}: {
   delivery: PendingDeliveryWithClient
   onUpdate: () => void
 }) {
@@ -57,13 +60,13 @@ function DeliveryRow({ delivery, onUpdate }: {
   }
 
   return (
-    <div className="border border-stone-200 rounded-lg p-4 space-y-3">
+    <div className="border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={`/clients/${delivery.client_id}`}
-              className="font-semibold text-stone-900 hover:text-brand-600 truncate"
+              className="font-semibold text-stone-100 hover:text-brand-600 truncate"
             >
               {delivery.clients?.full_name || 'Unknown client'}
             </Link>
@@ -71,19 +74,17 @@ function DeliveryRow({ delivery, onUpdate }: {
               {delivery.redeemed_by === 'client' ? 'Client redeemed' : 'Chef redeemed'}
             </Badge>
           </div>
-          <p className="text-sm font-medium text-stone-800 mt-1">{delivery.reward_name}</p>
+          <p className="text-sm font-medium text-stone-200 mt-1">{delivery.reward_name}</p>
           <p className="text-xs text-stone-500">
-            {REWARD_TYPE_LABELS[delivery.reward_type] || delivery.reward_type}
-            · {delivery.points_spent} pts spent
-            · Redeemed {format(new Date(delivery.created_at), 'MMM d, yyyy')}
+            {REWARD_TYPE_LABELS[delivery.reward_type] || delivery.reward_type}·{' '}
+            {delivery.points_spent} pts spent · Redeemed{' '}
+            {format(new Date(delivery.created_at), 'MMM d, yyyy')}
           </p>
         </div>
         <Badge variant="warning">Pending Delivery</Badge>
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 bg-red-950 px-3 py-2 rounded-lg">{error}</p>}
 
       {!showDeliverForm && !showCancelForm && (
         <div className="flex gap-2">
@@ -108,15 +109,16 @@ function DeliveryRow({ delivery, onUpdate }: {
 
       {showDeliverForm && (
         <div className="space-y-2">
-          <p className="text-sm text-stone-600">
-            Mark this reward as delivered. Add an optional note (e.g., &ldquo;Delivered at Spring Dinner 3/15&rdquo;).
+          <p className="text-sm text-stone-400">
+            Mark this reward as delivered. Add an optional note (e.g., &ldquo;Delivered at Spring
+            Dinner 3/15&rdquo;).
           </p>
           <input
             type="text"
             placeholder="Optional delivery note..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <div className="flex gap-2">
             <Button variant="primary" size="sm" onClick={handleDeliver} disabled={isPending}>
@@ -125,7 +127,10 @@ function DeliveryRow({ delivery, onUpdate }: {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setShowDeliverForm(false); setNote('') }}
+              onClick={() => {
+                setShowDeliverForm(false)
+                setNote('')
+              }}
               disabled={isPending}
             >
               Back
@@ -136,16 +141,16 @@ function DeliveryRow({ delivery, onUpdate }: {
 
       {showCancelForm && (
         <div className="space-y-2">
-          <p className="text-sm text-stone-600">
-            Cancel this pending delivery. Points already deducted will not be restored.
-            If a refund is needed, use &ldquo;Award Bonus Points&rdquo; on the client profile.
+          <p className="text-sm text-stone-400">
+            Cancel this pending delivery. Points already deducted will not be restored. If a refund
+            is needed, use &ldquo;Award Bonus Points&rdquo; on the client profile.
           </p>
           <input
             type="text"
             placeholder="Reason for cancellation (optional)..."
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            className="w-full px-3 py-2 border border-stone-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
           <div className="flex gap-2">
             <Button variant="danger" size="sm" onClick={handleCancel} disabled={isPending}>
@@ -154,7 +159,10 @@ function DeliveryRow({ delivery, onUpdate }: {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setShowCancelForm(false); setNote('') }}
+              onClick={() => {
+                setShowCancelForm(false)
+                setNote('')
+              }}
               disabled={isPending}
             >
               Back
@@ -188,7 +196,8 @@ export function PendingDeliveriesPanel({
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-500">
-            No pending deliveries. When clients redeem rewards, they will appear here so you know what to deliver at their next event.
+            No pending deliveries. When clients redeem rewards, they will appear here so you know
+            what to deliver at their next event.
           </p>
         </CardContent>
       </Card>
@@ -196,25 +205,20 @@ export function PendingDeliveriesPanel({
   }
 
   return (
-    <Card className="border-amber-200 bg-amber-50/30">
+    <Card className="border-amber-200 bg-amber-950/30">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-amber-900">
-            Pending Reward Deliveries
-          </CardTitle>
+          <CardTitle className="text-amber-900">Pending Reward Deliveries</CardTitle>
           <Badge variant="warning">{deliveries.length}</Badge>
         </div>
         <p className="text-sm text-amber-700 mt-1">
-          These rewards have been redeemed and are waiting to be honoured at a client&apos;s next event.
+          These rewards have been redeemed and are waiting to be honoured at a client&apos;s next
+          event.
         </p>
       </CardHeader>
       <CardContent className="space-y-3">
         {deliveries.map((delivery) => (
-          <DeliveryRow
-            key={delivery.id}
-            delivery={delivery}
-            onUpdate={handleUpdate}
-          />
+          <DeliveryRow key={delivery.id} delivery={delivery} onUpdate={handleUpdate} />
         ))}
       </CardContent>
     </Card>

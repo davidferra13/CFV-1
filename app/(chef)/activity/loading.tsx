@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
 }
 
 export default function ActivityLoading() {
@@ -17,7 +17,7 @@ export default function ActivityLoading() {
         </CardHeader>
         <CardContent className="flex gap-3 overflow-hidden">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="border border-stone-100 rounded-lg p-3 space-y-2 min-w-[180px]">
+            <div key={i} className="border border-stone-800 rounded-lg p-3 space-y-2 min-w-[180px]">
               <Bone className="h-3 w-16 rounded-full" />
               <Bone className="h-4 w-36" />
               <Bone className="h-3 w-24" />

@@ -34,7 +34,11 @@ export function ExpenseActions({ expenseId }: Props) {
 
   return (
     <Card className="p-6">
-      {error && <Alert variant="error" className="mb-4">{error}</Alert>}
+      {error && (
+        <Alert variant="error" className="mb-4">
+          {error}
+        </Alert>
+      )}
 
       {!confirming ? (
         <div className="flex gap-2">
@@ -44,7 +48,7 @@ export function ExpenseActions({ expenseId }: Props) {
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="text-sm text-stone-700">
+          <p className="text-sm text-stone-300">
             Are you sure you want to delete this expense? This action cannot be undone.
           </p>
           <div className="flex gap-2">

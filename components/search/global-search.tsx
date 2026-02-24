@@ -112,7 +112,7 @@ export function GlobalSearch() {
       <div className="relative z-50 flex items-center">
         <button
           onClick={openAndFocus}
-          className="flex items-center justify-center w-8 h-8 hover:bg-stone-100 rounded-lg transition-colors"
+          className="flex items-center justify-center w-8 h-8 hover:bg-stone-700 rounded-lg transition-colors"
           aria-label="Open search"
         >
           <svg
@@ -136,7 +136,7 @@ export function GlobalSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Search everything... (Ctrl/Cmd+K)"
-            className="absolute right-0 top-full mt-1 w-[280px] px-3 py-2 rounded-lg border border-stone-200 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 bg-white shadow-lg"
+            className="absolute right-0 top-full mt-1 w-[280px] px-3 py-2 rounded-lg border border-stone-700 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 bg-surface shadow-lg"
             role="combobox"
             aria-controls={listboxId}
             aria-expanded={open}
@@ -148,17 +148,17 @@ export function GlobalSearch() {
       {open && query.length >= 2 && (
         <div
           id={listboxId}
-          className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-white shadow-xl border border-stone-200 rounded-xl z-50 p-2"
+          className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-surface shadow-xl border border-stone-700 rounded-xl z-50 p-2"
           role="listbox"
         >
           {loading && (
             <div className="p-2 space-y-2">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex gap-3 p-2 items-center">
-                  <div className="w-10 h-10 bg-stone-100 rounded-md animate-pulse" />
+                  <div className="w-10 h-10 bg-stone-800 rounded-md animate-pulse" />
                   <div className="flex-1 space-y-1">
-                    <div className="h-3 bg-stone-100 rounded w-1/2 animate-pulse" />
-                    <div className="h-2 bg-stone-100 rounded w-1/3 animate-pulse" />
+                    <div className="h-3 bg-stone-800 rounded w-1/2 animate-pulse" />
+                    <div className="h-2 bg-stone-800 rounded w-1/3 animate-pulse" />
                   </div>
                 </div>
               ))}
@@ -189,11 +189,11 @@ export function GlobalSearch() {
                         onMouseEnter={() => setHighlightedIndex(flatIndex)}
                         onClick={() => selectResult(item)}
                         className={`w-full flex items-center px-3 py-2 rounded-lg text-left transition-colors ${
-                          highlightedIndex === flatIndex ? 'bg-amber-50' : 'hover:bg-stone-50'
+                          highlightedIndex === flatIndex ? 'bg-amber-950' : 'hover:bg-stone-800'
                         }`}
                       >
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold text-stone-800 truncate">
+                          <div className="text-sm font-semibold text-stone-200 truncate">
                             {highlightText(item.title, query)}
                           </div>
                           {item.snippet && (

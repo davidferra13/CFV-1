@@ -36,7 +36,7 @@ export function GroceryRoute({ route }: Props) {
 
   if (route.stores.length === 0) {
     return (
-      <Card className="border-dashed border-stone-300">
+      <Card className="border-dashed border-stone-600">
         <CardContent className="py-8">
           <div className="text-center">
             <ShoppingCart className="h-8 w-8 text-stone-300 mx-auto mb-2" />
@@ -67,7 +67,7 @@ export function GroceryRoute({ route }: Props) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4 text-stone-600" />
+            <ShoppingCart className="h-4 w-4 text-stone-400" />
             Grocery Route
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -79,9 +79,7 @@ export function GroceryRoute({ route }: Props) {
             </Badge>
           </div>
         </div>
-        <p className="text-xs text-stone-500 -mt-1">
-          Suggested order for efficient shopping
-        </p>
+        <p className="text-xs text-stone-500 -mt-1">Suggested order for efficient shopping</p>
       </CardHeader>
 
       <CardContent>
@@ -93,13 +91,13 @@ export function GroceryRoute({ route }: Props) {
             return (
               <div
                 key={`${store.name}-${index}`}
-                className="rounded-lg border border-stone-200 overflow-hidden"
+                className="rounded-lg border border-stone-700 overflow-hidden"
               >
                 {/* Store header */}
                 <button
                   type="button"
                   onClick={() => toggleStore(index)}
-                  className="w-full flex items-center gap-3 px-4 py-3 bg-stone-50 hover:bg-stone-100 transition-colors text-left"
+                  className="w-full flex items-center gap-3 px-4 py-3 bg-stone-800 hover:bg-stone-700 transition-colors text-left"
                 >
                   {/* Step number */}
                   <span className="flex-shrink-0 w-7 h-7 rounded-full bg-brand-600 text-white text-sm font-bold flex items-center justify-center">
@@ -107,14 +105,10 @@ export function GroceryRoute({ route }: Props) {
                   </span>
 
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-stone-900 truncate">
-                      {store.name}
-                    </p>
+                    <p className="text-sm font-semibold text-stone-100 truncate">{store.name}</p>
                     <div className="flex items-center gap-1 mt-0.5">
                       <MapPin className="h-3 w-3 text-stone-400 shrink-0" />
-                      <p className="text-xs text-stone-500 truncate">
-                        {store.address}
-                      </p>
+                      <p className="text-xs text-stone-500 truncate">{store.address}</p>
                     </div>
                   </div>
 
@@ -132,7 +126,7 @@ export function GroceryRoute({ route }: Props) {
 
                 {/* Items checklist */}
                 {isExpanded && store.items.length > 0 && (
-                  <div className="px-4 py-2 border-t border-stone-100">
+                  <div className="px-4 py-2 border-t border-stone-800">
                     <div className="space-y-1">
                       {store.items.map((item, itemIndex) => (
                         <div
@@ -140,7 +134,7 @@ export function GroceryRoute({ route }: Props) {
                           className="flex items-center gap-2.5 py-1.5"
                         >
                           <Package className="h-3.5 w-3.5 text-stone-300 shrink-0" />
-                          <span className="text-sm text-stone-700 flex-1 truncate">
+                          <span className="text-sm text-stone-300 flex-1 truncate">
                             {item.name}
                           </span>
                           <span className="text-xs font-medium text-stone-500 shrink-0 tabular-nums">
@@ -154,7 +148,7 @@ export function GroceryRoute({ route }: Props) {
 
                 {/* Empty items state */}
                 {isExpanded && store.items.length === 0 && (
-                  <div className="px-4 py-3 border-t border-stone-100">
+                  <div className="px-4 py-3 border-t border-stone-800">
                     <p className="text-xs text-stone-400 text-center">No items for this store</p>
                   </div>
                 )}
@@ -165,13 +159,11 @@ export function GroceryRoute({ route }: Props) {
 
         {/* Route summary */}
         {totalStores > 1 && (
-          <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
+          <div className="mt-4 pt-3 border-t border-stone-800 flex items-center justify-between">
             <p className="text-xs text-stone-400">
               {totalStores} stops &middot; {totalItems} total items
             </p>
-            <p className="text-xs text-stone-400">
-              Suggested order: 1 &rarr; {totalStores}
-            </p>
+            <p className="text-xs text-stone-400">Suggested order: 1 &rarr; {totalStores}</p>
           </div>
         )}
       </CardContent>

@@ -95,22 +95,22 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-white border-r border-stone-200 transition-all duration-200 z-30 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-surface border-r border-stone-700 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
       <div
-        className={`flex items-center h-16 border-b border-stone-100 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}
+        className={`flex items-center h-16 border-b border-stone-800 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}
       >
         <Link href="/my-events" className="flex items-center gap-2">
           <AppLogo />
-          {!collapsed && <span className="text-lg font-display text-stone-900">ChefFlow</span>}
+          {!collapsed && <span className="text-lg font-display text-stone-100">ChefFlow</span>}
         </Link>
         {!collapsed ? (
           <button
             type="button"
             onClick={() => setCollapsed(true)}
-            className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors"
+            className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors"
             aria-label="Collapse sidebar"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -124,7 +124,7 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
             <button
               type="button"
               onClick={() => setCollapsed(false)}
-              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-stone-100 hover:text-stone-600 transition-colors mb-1"
+              className="flex items-center justify-center w-10 h-10 rounded-lg text-stone-400 hover:bg-stone-700 hover:text-stone-400 transition-colors mb-1"
               aria-label="Expand sidebar"
             >
               <ChevronRight className="w-4 h-4" />
@@ -135,12 +135,12 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
               className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                 isItemActive(pathname, BOOK_NOW_HREF)
                   ? 'bg-brand-600 text-white'
-                  : 'bg-brand-50 text-brand-700 hover:bg-brand-100'
+                  : 'bg-brand-950 text-brand-400 hover:bg-brand-900'
               }`}
             >
               <CalendarPlus className="w-[18px] h-[18px]" />
             </Link>
-            <div className="w-6 border-t border-stone-100 my-1.5" />
+            <div className="w-6 border-t border-stone-800 my-1.5" />
             {navItems.map((item) => {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href)
@@ -151,8 +151,8 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
                   title={item.label}
                   className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
                     active
-                      ? 'bg-brand-50 text-brand-600'
-                      : 'text-stone-400 hover:bg-stone-50 hover:text-stone-600'
+                      ? 'bg-brand-950 text-brand-600'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
                   }`}
                 >
                   <Icon className="w-[18px] h-[18px]" />
@@ -182,8 +182,8 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     active
-                      ? 'bg-brand-50 text-brand-700'
-                      : 'text-stone-600 hover:bg-stone-50 hover:text-stone-900'
+                      ? 'bg-brand-950 text-brand-400'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
                   }`}
                 >
                   <Icon
@@ -208,8 +208,8 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
                   href="/my-cannabis"
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     isItemActive(pathname, '/my-cannabis')
-                      ? 'text-green-700 bg-green-50/60'
-                      : 'text-stone-500 hover:bg-stone-50 hover:text-stone-700'
+                      ? 'text-green-700 bg-green-950/60'
+                      : 'text-stone-500 hover:bg-stone-800 hover:text-stone-300'
                   }`}
                 >
                   <Leaf
@@ -223,7 +223,7 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
         )}
       </nav>
 
-      <div className={`border-t border-stone-100 ${collapsed ? 'p-1.5' : 'p-3'}`}>
+      <div className={`border-t border-stone-800 ${collapsed ? 'p-1.5' : 'p-3'}`}>
         {/* Notification bell */}
         <div className={`mb-1 ${collapsed ? 'flex justify-center' : 'px-2 py-1'}`}>
           <NotificationBell collapsed={collapsed} />
@@ -242,7 +242,7 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
             window.location.href = '/'
           }}
           title={collapsed ? 'Sign Out' : undefined}
-          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-700 transition-colors ${
+          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
             collapsed ? 'justify-center w-10 h-10 mx-auto' : 'gap-3 w-full px-3 py-2'
           }`}
         >
@@ -262,11 +262,11 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
 
   return (
     <>
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-stone-200 pt-safe">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-surface border-b border-stone-700 pt-safe">
         <div className="flex items-center justify-between h-14 px-4">
           <Link href="/my-events" className="flex items-center gap-2">
             <AppLogo size={28} className="rounded-md" />
-            <span className="font-display text-stone-900">ChefFlow</span>
+            <span className="font-display text-stone-100">ChefFlow</span>
           </Link>
           <div className="flex items-center gap-2">
             <Link
@@ -279,7 +279,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
             <button
               type="button"
               onClick={() => setMenuOpen(!menuOpen)}
-              className="p-2 rounded-lg text-stone-500 hover:bg-stone-100"
+              className="p-2 rounded-lg text-stone-500 hover:bg-stone-700"
               aria-label="Toggle menu"
             >
               {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -291,14 +291,14 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
       {menuOpen && (
         <>
           <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
-          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-white border-r border-stone-200 shadow-xl">
-            <div className="flex items-center justify-between h-14 px-4 border-b border-stone-100">
-              <span className="font-semibold text-stone-900">Menu</span>
+          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-surface border-r border-stone-700 shadow-xl">
+            <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
+              <span className="font-semibold text-stone-100">Menu</span>
               <button
                 type="button"
                 aria-label="Close menu"
                 onClick={closeMenu}
-                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-100"
+                className="p-1.5 rounded-lg text-stone-400 hover:bg-stone-700"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -325,7 +325,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
                     href={item.href}
                     onClick={closeMenu}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                      active ? 'bg-brand-50 text-brand-700' : 'text-stone-600 hover:bg-stone-50'
+                      active ? 'bg-brand-950 text-brand-400' : 'text-stone-400 hover:bg-stone-800'
                     }`}
                   >
                     <Icon
@@ -349,8 +349,8 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
                     onClick={closeMenu}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       isItemActive(pathname, '/my-cannabis')
-                        ? 'text-green-700 bg-green-50/60'
-                        : 'text-stone-500 hover:bg-stone-50'
+                        ? 'text-green-700 bg-green-950/60'
+                        : 'text-stone-500 hover:bg-stone-800'
                     }`}
                   >
                     <Leaf className="w-[18px] h-[18px] text-green-700/50" />
@@ -359,7 +359,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
                 </>
               )}
 
-              <div className="pt-4 mt-4 border-t border-stone-100">
+              <div className="pt-4 mt-4 border-t border-stone-800">
                 <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>
                 <button
                   type="button"
@@ -371,7 +371,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
                     }
                     window.location.href = '/'
                   }}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-50"
+                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800"
                 >
                   <LogOut className="w-[18px] h-[18px]" />
                   Sign Out
@@ -382,7 +382,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
         </>
       )}
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 pb-safe">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-stone-700 pb-safe">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const active = isItemActive(pathname, item.href)

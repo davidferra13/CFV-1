@@ -96,30 +96,30 @@ export function UploadVendorInvoiceForm() {
       <CardContent className="space-y-3">
         <div className="grid grid-cols-3 gap-3">
           <div>
-            <label className="text-sm font-medium text-stone-700">Invoice # *</label>
+            <label className="text-sm font-medium text-stone-300">Invoice # *</label>
             <input
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.invoiceNumber}
               onChange={(e) => setForm({ ...form, invoiceNumber: e.target.value })}
               placeholder="INV-001"
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Date *</label>
+            <label className="text-sm font-medium text-stone-300">Date *</label>
             <input
               type="date"
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.invoiceDate}
               onChange={(e) => setForm({ ...form, invoiceDate: e.target.value })}
             />
           </div>
           <div>
-            <label className="text-sm font-medium text-stone-700">Total ($)</label>
+            <label className="text-sm font-medium text-stone-300">Total ($)</label>
             <input
               type="number"
               step="0.01"
               min="0"
-              className="mt-1 w-full rounded-md border border-stone-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="mt-1 w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               value={form.totalCents}
               onChange={(e) => setForm({ ...form, totalCents: e.target.value })}
               placeholder="Auto-calculated"
@@ -129,11 +129,11 @@ export function UploadVendorInvoiceForm() {
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-medium text-stone-700">Line Items *</label>
+            <label className="text-sm font-medium text-stone-300">Line Items *</label>
             <button
               type="button"
               onClick={addItem}
-              className="text-xs text-brand-600 hover:text-brand-700 font-medium"
+              className="text-xs text-brand-600 hover:text-brand-400 font-medium"
             >
               + Add Line
             </button>
@@ -144,7 +144,7 @@ export function UploadVendorInvoiceForm() {
                 <div>
                   {idx === 0 && <span className="text-xs text-stone-500">Item</span>}
                   <input
-                    className="w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm"
+                    className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm"
                     value={item.itemName}
                     onChange={(e) => updateItem(idx, 'itemName', e.target.value)}
                     placeholder="Item name"
@@ -156,7 +156,7 @@ export function UploadVendorInvoiceForm() {
                     type="number"
                     min="0"
                     step="0.01"
-                    className="w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm"
+                    className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm"
                     value={item.quantity}
                     onChange={(e) => updateItem(idx, 'quantity', parseFloat(e.target.value) || 0)}
                   />
@@ -166,7 +166,7 @@ export function UploadVendorInvoiceForm() {
                   <input
                     type="number"
                     min="0"
-                    className="w-full rounded-md border border-stone-300 px-2 py-1.5 text-sm"
+                    className="w-full rounded-md border border-stone-600 px-2 py-1.5 text-sm"
                     value={item.unitPriceCents}
                     onChange={(e) =>
                       updateItem(idx, 'unitPriceCents', parseInt(e.target.value) || 0)

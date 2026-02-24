@@ -9,11 +9,7 @@ import { getEventFinancialSummaryFull } from '@/lib/events/financial-summary-act
 import { FinancialSummaryView } from '@/components/events/financial-summary-view'
 import { Button } from '@/components/ui/button'
 
-export default async function EventFinancialPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export default async function EventFinancialPage({ params }: { params: { id: string } }) {
   await requireChef()
 
   const data = await getEventFinancialSummaryFull(params.id)
@@ -27,13 +23,15 @@ export default async function EventFinancialPage({
       {/* Back link + PDF download */}
       <div className="flex justify-between items-center">
         <Link href={`/events/${params.id}`}>
-          <Button variant="ghost" size="sm">← Back to Event</Button>
+          <Button variant="ghost" size="sm">
+            ← Back to Event
+          </Button>
         </Link>
         <a
           href={`/api/documents/financial-summary/${params.id}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-50"
+          className="inline-flex items-center rounded-lg border border-stone-600 px-3 py-1.5 text-sm font-medium text-stone-300 hover:bg-stone-800"
         >
           Download PDF
         </a>

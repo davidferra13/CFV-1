@@ -50,7 +50,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
 
   if (initialPhotos.length === 0) {
     return (
-      <Card className="border-dashed border-stone-300">
+      <Card className="border-dashed border-stone-600">
         <CardContent className="py-8">
           <div className="text-center">
             <Image className="h-8 w-8 text-stone-300 mx-auto mb-2" />
@@ -77,10 +77,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
         const state = photoStates[photo.id]
 
         // Filter out tags already confirmed or rejected
-        const existing = new Set([
-          ...state.confirmedTags,
-          ...state.rejectedTags,
-        ])
+        const existing = new Set([...state.confirmedTags, ...state.rejectedTags])
         const newSuggestions = result.suggestedTags.filter((t) => !existing.has(t))
 
         updatePhotoState(photo.id, {
@@ -160,7 +157,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Tag className="h-4 w-4 text-stone-600" />
+          <Tag className="h-4 w-4 text-stone-400" />
           Photo Tags
         </CardTitle>
         <p className="text-xs text-stone-500 -mt-1">
@@ -180,14 +177,14 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
             return (
               <div
                 key={photo.id}
-                className="rounded-lg border border-stone-200 bg-white overflow-hidden"
+                className="rounded-lg border border-stone-700 bg-surface overflow-hidden"
               >
                 {/* Photo */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={photo.url}
                   alt="Event photo"
-                  className="w-full h-40 object-cover bg-stone-100"
+                  className="w-full h-40 object-cover bg-stone-800"
                 />
 
                 <div className="p-3 space-y-2">
@@ -197,7 +194,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                       {state.confirmedTags.map((tag) => (
                         <span
                           key={tag}
-                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 ring-1 ring-inset ring-emerald-200"
+                          className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-950 text-emerald-700 ring-1 ring-inset ring-emerald-800"
                         >
                           {tag}
                           <button
@@ -221,7 +218,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                         {state.suggestedTags.map((tag) => (
                           <span
                             key={tag}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 ring-1 ring-inset ring-amber-200"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-950 text-amber-700 ring-1 ring-inset ring-amber-800"
                           >
                             {tag}
                             <button
@@ -246,9 +243,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
                     </div>
                   )}
 
-                  {state.error && (
-                    <p className="text-xs text-red-600">{state.error}</p>
-                  )}
+                  {state.error && <p className="text-xs text-red-600">{state.error}</p>}
 
                   {/* Action buttons */}
                   <div className="flex gap-2 pt-1">

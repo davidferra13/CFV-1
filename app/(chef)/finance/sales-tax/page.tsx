@@ -35,17 +35,17 @@ export default async function SalesTaxPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-start flex-wrap gap-4">
         <div>
-          <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-700">
+          <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Finance
           </Link>
-          <h1 className="text-3xl font-bold text-stone-900 mt-1">Sales Tax</h1>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Sales Tax</h1>
           <p className="text-stone-500 mt-1">
             Track sales tax collected, outstanding, and remitted to state authorities.
           </p>
         </div>
         <Link
           href="/finance/sales-tax/settings"
-          className="inline-flex items-center gap-2 text-sm font-medium text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg px-3 py-2 transition-colors"
+          className="inline-flex items-center gap-2 text-sm font-medium text-stone-300 bg-stone-800 hover:bg-stone-700 rounded-lg px-3 py-2 transition-colors"
         >
           <Settings className="h-4 w-4" />
           Sales Tax Settings
@@ -53,7 +53,7 @@ export default async function SalesTaxPage() {
       </div>
 
       {!settings?.enabled && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+        <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3">
           <p className="text-sm text-amber-800">
             Sales tax collection is <strong>disabled</strong>.{' '}
             <Link href="/finance/sales-tax/settings" className="underline hover:text-amber-900">
@@ -65,18 +65,18 @@ export default async function SalesTaxPage() {
 
       {settings?.enabled && (
         <div className="flex flex-wrap gap-3 text-sm">
-          <span className="bg-stone-100 rounded-full px-3 py-1 text-stone-600">
+          <span className="bg-stone-800 rounded-full px-3 py-1 text-stone-400">
             State: <strong>{settings.state ?? '—'}</strong>
           </span>
-          <span className="bg-stone-100 rounded-full px-3 py-1 text-stone-600">
+          <span className="bg-stone-800 rounded-full px-3 py-1 text-stone-400">
             Combined Rate:{' '}
             <strong>{((settings.stateRateBps + settings.localRateBps) / 100).toFixed(2)}%</strong>
           </span>
-          <span className="bg-stone-100 rounded-full px-3 py-1 text-stone-600">
+          <span className="bg-stone-800 rounded-full px-3 py-1 text-stone-400">
             Filing: <strong className="capitalize">{settings.filingFrequency}</strong>
           </span>
           {settings.registrationNumber && (
-            <span className="bg-stone-100 rounded-full px-3 py-1 text-stone-600">
+            <span className="bg-stone-800 rounded-full px-3 py-1 text-stone-400">
               Reg #: <strong className="font-mono">{settings.registrationNumber}</strong>
             </span>
           )}

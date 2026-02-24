@@ -37,7 +37,7 @@ export function DirectoryToggleRow({ chef }: { chef: DirectoryCandidate }) {
           className="h-10 w-10 rounded-full object-cover flex-shrink-0"
         />
       ) : (
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 flex-shrink-0">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-800 flex-shrink-0">
           <span className="text-sm font-bold text-stone-500">
             {(chef.display_name || chef.business_name || '?').charAt(0).toUpperCase()}
           </span>
@@ -46,7 +46,7 @@ export function DirectoryToggleRow({ chef }: { chef: DirectoryCandidate }) {
 
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-stone-900 truncate">
+        <p className="text-sm font-medium text-stone-100 truncate">
           {chef.display_name || chef.business_name}
         </p>
         <p className="text-xs text-stone-400 truncate">{chef.email}</p>
@@ -68,7 +68,7 @@ export function DirectoryToggleRow({ chef }: { chef: DirectoryCandidate }) {
         aria-label={approved ? 'Revoke listing' : 'Approve listing'}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+          className={`inline-block h-4 w-4 transform rounded-full bg-surface shadow transition-transform ${
             approved ? 'translate-x-6' : 'translate-x-1'
           }`}
         />

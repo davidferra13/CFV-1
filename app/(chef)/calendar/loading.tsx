@@ -2,7 +2,7 @@
 import { Card, CardContent } from '@/components/ui/card'
 
 function Bone({ className }: { className: string }) {
-  return <div className={`bg-stone-200 rounded animate-pulse ${className}`} />
+  return <div className={`bg-stone-700 rounded animate-pulse ${className}`} />
 }
 
 export default function CalendarLoading() {
@@ -31,18 +31,11 @@ export default function CalendarLoading() {
         <CardContent className="p-2">
           <div className="grid grid-cols-7 gap-1">
             {Array.from({ length: 35 }).map((_, i) => (
-              <div
-                key={i}
-                className="min-h-[72px] rounded border border-stone-100 p-1.5 space-y-1"
-              >
+              <div key={i} className="min-h-[72px] rounded border border-stone-800 p-1.5 space-y-1">
                 <Bone className="h-5 w-5 rounded-full" />
                 {/* Occasional event chips */}
-                {[3, 7, 12, 16, 22, 28].includes(i) && (
-                  <Bone className="h-4 w-full rounded" />
-                )}
-                {[7, 22].includes(i) && (
-                  <Bone className="h-4 w-3/4 rounded" />
-                )}
+                {[3, 7, 12, 16, 22, 28].includes(i) && <Bone className="h-4 w-full rounded" />}
+                {[7, 22].includes(i) && <Bone className="h-4 w-3/4 rounded" />}
               </div>
             ))}
           </div>

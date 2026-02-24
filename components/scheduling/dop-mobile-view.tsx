@@ -21,7 +21,7 @@ interface FlatTask {
   description: string
   category: string
   isMandatory: boolean
-  isAutoComplete: boolean   // completed via event flags (cannot be toggled)
+  isAutoComplete: boolean // completed via event flags (cannot be toggled)
   isManuallyComplete: boolean // completed via dop_task_completions record
 }
 
@@ -76,7 +76,7 @@ export function DopMobileView({
   const [currentStep, setCurrentStep] = useState(0)
 
   const tasks = flattenDOPSchedule(schedule, manualKeys)
-  const completedCount = tasks.filter(t => t.isAutoComplete || manualKeys.has(t.taskKey)).length
+  const completedCount = tasks.filter((t) => t.isAutoComplete || manualKeys.has(t.taskKey)).length
   const totalCount = tasks.length
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
 
@@ -95,7 +95,7 @@ export function DopMobileView({
     const wasComplete = manualKeys.has(task.taskKey)
 
     // Optimistic update
-    setManualKeys(prev => {
+    setManualKeys((prev) => {
       const next = new Set(prev)
       if (wasComplete) {
         next.delete(task.taskKey)
@@ -110,7 +110,7 @@ export function DopMobileView({
         await toggleDOPTaskCompletion(eventId, task.taskKey)
       } catch {
         // Revert on error
-        setManualKeys(prev => {
+        setManualKeys((prev) => {
           const next = new Set(prev)
           if (wasComplete) {
             next.add(task.taskKey)
@@ -125,16 +125,16 @@ export function DopMobileView({
   }
 
   const CATEGORY_COLORS: Record<string, string> = {
-    documents: 'bg-purple-50 text-purple-700',
-    shopping: 'bg-green-50 text-green-700',
-    prep: 'bg-brand-50 text-brand-700',
-    packing: 'bg-yellow-50 text-yellow-700',
-    reset: 'bg-orange-50 text-orange-700',
-    admin: 'bg-stone-50 text-stone-700',
+    documents: 'bg-purple-950 text-purple-700',
+    shopping: 'bg-green-950 text-green-700',
+    prep: 'bg-brand-950 text-brand-400',
+    packing: 'bg-yellow-950 text-yellow-700',
+    reset: 'bg-orange-950 text-orange-700',
+    admin: 'bg-stone-800 text-stone-300',
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 flex flex-col">
+    <div className="min-h-screen bg-stone-800 flex flex-col">
       {/* Header */}
       <div className="bg-stone-900 text-white px-4 pt-6 pb-4">
         <h1 className="text-lg font-bold truncate">{eventTitle}</h1>
@@ -143,12 +143,14 @@ export function DopMobileView({
         {/* Progress bar */}
         <div className="mt-3">
           <div className="flex justify-between text-xs text-stone-400 mb-1">
-            <span>{completedCount} of {totalCount} complete</span>
+            <span>
+              {completedCount} of {totalCount} complete
+            </span>
             <span>{progressPercent}%</span>
           </div>
           <div className="w-full bg-stone-700 rounded-full h-2">
             <div
-              className="bg-white rounded-full h-2 transition-all duration-300"
+              className="bg-surface rounded-full h-2 transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -158,22 +160,22 @@ export function DopMobileView({
       {/* Current task — large, touch-friendly */}
       {currentTask ? (
         <div className="p-4 flex-1">
-          <div className="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+          <div className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[currentTask.category] ?? 'bg-stone-50 text-stone-700'}`}>
+              <span
+                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[currentTask.category] ?? 'bg-stone-800 text-stone-300'}`}
+              >
                 {currentTask.category}
               </span>
-              {currentTask.isAutoComplete && (
-                <Badge variant="info">Auto-detected</Badge>
-              )}
+              {currentTask.isAutoComplete && <Badge variant="info">Auto-detected</Badge>}
             </div>
 
-            <h2 className="text-xl font-semibold text-stone-900 mt-3">{currentTask.label}</h2>
+            <h2 className="text-xl font-semibold text-stone-100 mt-3">{currentTask.label}</h2>
             <p className="text-sm text-stone-500 mt-1 mb-6">{currentTask.description}</p>
 
             {/* Big complete button */}
             {currentTask.isAutoComplete ? (
-              <div className="w-full py-5 rounded-xl text-lg font-semibold bg-green-100 border-2 border-green-500 text-green-700 flex items-center justify-center gap-2">
+              <div className="w-full py-5 rounded-xl text-lg font-semibold bg-green-900 border-2 border-green-500 text-green-700 flex items-center justify-center gap-2">
                 <CheckCircle2 className="h-5 w-5" />
                 Auto-Completed
               </div>
@@ -183,7 +185,7 @@ export function DopMobileView({
                 disabled={isPending}
                 className={`w-full py-5 rounded-xl text-lg font-semibold transition-all active:scale-95 disabled:opacity-60 ${
                   isTaskComplete(currentTask)
-                    ? 'bg-green-100 border-2 border-green-500 text-green-700'
+                    ? 'bg-green-900 border-2 border-green-500 text-green-700'
                     : 'bg-stone-900 text-white hover:bg-stone-800'
                 }`}
               >
@@ -199,21 +201,25 @@ export function DopMobileView({
               onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
               disabled={currentStep === 0}
             >
-              <ChevronLeft className="h-4 w-4 mr-1" />Previous
+              <ChevronLeft className="h-4 w-4 mr-1" />
+              Previous
             </Button>
-            <span className="text-sm text-stone-500">{currentStep + 1} / {totalCount}</span>
+            <span className="text-sm text-stone-500">
+              {currentStep + 1} / {totalCount}
+            </span>
             <Button
               variant="secondary"
               onClick={() => setCurrentStep(Math.min(totalCount - 1, currentStep + 1))}
               disabled={currentStep === totalCount - 1}
             >
-              Next<ChevronRight className="h-4 w-4 ml-1" />
+              Next
+              <ChevronRight className="h-4 w-4 ml-1" />
             </Button>
           </div>
 
           {/* Compressed warning */}
           {schedule.isCompressed && (
-            <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
+            <div className="mt-4 bg-amber-950 border border-amber-200 rounded-xl p-3 flex items-start gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
               <p className="text-xs text-amber-800 font-medium">
                 Compressed timeline — less than 48 hours notice. Day-before steps may be skipped.
@@ -228,7 +234,7 @@ export function DopMobileView({
       )}
 
       {/* All tasks scrollable list */}
-      <div className="border-t border-stone-200 bg-white p-4 max-h-72 overflow-y-auto">
+      <div className="border-t border-stone-700 bg-surface p-4 max-h-72 overflow-y-auto">
         <p className="text-xs font-medium text-stone-500 mb-2 uppercase tracking-wide">All Tasks</p>
         {tasks.map((task, i) => {
           const complete = isTaskComplete(task)
@@ -237,14 +243,17 @@ export function DopMobileView({
               key={task.taskKey}
               onClick={() => setCurrentStep(i)}
               className={`w-full flex items-center gap-3 py-2.5 px-2 rounded-lg text-left transition-colors ${
-                i === currentStep ? 'bg-stone-100' : 'hover:bg-stone-50'
+                i === currentStep ? 'bg-stone-800' : 'hover:bg-stone-800'
               }`}
             >
-              {complete
-                ? <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
-                : <Circle className="h-5 w-5 flex-shrink-0 text-stone-300" />
-              }
-              <span className={`text-sm truncate flex-1 ${complete ? 'line-through text-stone-400' : 'text-stone-700'}`}>
+              {complete ? (
+                <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
+              ) : (
+                <Circle className="h-5 w-5 flex-shrink-0 text-stone-300" />
+              )}
+              <span
+                className={`text-sm truncate flex-1 ${complete ? 'line-through text-stone-400' : 'text-stone-300'}`}
+              >
                 {task.label}
               </span>
               {i === currentStep && (

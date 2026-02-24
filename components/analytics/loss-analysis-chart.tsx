@@ -24,14 +24,14 @@ export function LossAnalysisChart({ data }: { data: Array<{ reason: string; coun
         return (
           <div key={d.reason}>
             <div className="flex justify-between text-sm mb-1">
-              <span className="text-stone-700">{REASON_LABELS[d.reason] ?? d.reason}</span>
+              <span className="text-stone-300">{REASON_LABELS[d.reason] ?? d.reason}</span>
               <span className="text-stone-500">
                 {d.count} ({pct}%)
               </span>
             </div>
-            <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+            <div className="h-2 bg-stone-800 rounded-full overflow-hidden">
               <div
-                className="h-full bg-brand-500 rounded-full transition-all"
+                className="h-full bg-brand-9500 rounded-full transition-all"
                 style={{ width: `${barWidth}%` }}
               />
             </div>

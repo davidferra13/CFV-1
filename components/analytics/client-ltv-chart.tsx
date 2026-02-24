@@ -28,9 +28,7 @@ interface ClientLTVChartProps {
 
 export function ClientLTVChart({ clients }: ClientLTVChartProps) {
   // Sort by LTV descending and take top 15
-  const sortedClients = [...clients]
-    .sort((a, b) => b.ltvCents - a.ltvCents)
-    .slice(0, 15)
+  const sortedClients = [...clients].sort((a, b) => b.ltvCents - a.ltvCents).slice(0, 15)
 
   // Summary calculations
   const totalLtvCents = clients.reduce((sum, c) => sum + c.ltvCents, 0)
@@ -38,7 +36,7 @@ export function ClientLTVChart({ clients }: ClientLTVChartProps) {
   const topClient = sortedClients[0] || null
 
   // Chart data
-  const chartData = sortedClients.map(c => ({
+  const chartData = sortedClients.map((c) => ({
     name: c.name.length > 15 ? c.name.slice(0, 13) + '...' : c.name,
     LTV: c.ltvCents / 100,
     Events: c.eventCount,
@@ -50,12 +48,13 @@ export function ClientLTVChart({ clients }: ClientLTVChartProps) {
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-emerald-950 flex items-center justify-center flex-shrink-0">
               <DollarSign className="h-5 w-5 text-emerald-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-stone-900">
-                {'$'}{(avgLtvCents / 100).toFixed(2)}
+              <p className="text-2xl font-bold text-stone-100">
+                {'$'}
+                {(avgLtvCents / 100).toFixed(2)}
               </p>
               <p className="text-xs text-stone-500">Average LTV</p>
             </div>
@@ -64,17 +63,16 @@ export function ClientLTVChart({ clients }: ClientLTVChartProps) {
 
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
-            <div className="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-amber-950 flex items-center justify-center flex-shrink-0">
               <Crown className="h-5 w-5 text-amber-500" />
             </div>
             <div>
               {topClient ? (
                 <>
-                  <p className="text-lg font-bold text-stone-900 truncate">
-                    {topClient.name}
-                  </p>
+                  <p className="text-lg font-bold text-stone-100 truncate">{topClient.name}</p>
                   <p className="text-xs text-stone-500">
-                    Top Client: {'$'}{(topClient.ltvCents / 100).toFixed(2)}
+                    Top Client: {'$'}
+                    {(topClient.ltvCents / 100).toFixed(2)}
                   </p>
                 </>
               ) : (
@@ -86,12 +84,13 @@ export function ClientLTVChart({ clients }: ClientLTVChartProps) {
 
         <Card>
           <CardContent className="flex items-center gap-3 py-4">
-            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-blue-950 flex items-center justify-center flex-shrink-0">
               <Users className="h-5 w-5 text-blue-500" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-stone-900">
-                {'$'}{(totalLtvCents / 100).toFixed(2)}
+              <p className="text-2xl font-bold text-stone-100">
+                {'$'}
+                {(totalLtvCents / 100).toFixed(2)}
               </p>
               <p className="text-xs text-stone-500">Total Lifetime Value</p>
             </div>
@@ -121,19 +120,16 @@ export function ClientLTVChart({ clients }: ClientLTVChartProps) {
                   tick={{ fontSize: 11, fill: '#78716c' }}
                 />
                 <Tooltip
-                  formatter={((value: number | undefined, name: string | undefined) => {
-                    const v = value ?? 0
-                    const n = name ?? ''
-                    if (n === 'LTV') return [`${v.toLocaleString()}`, 'Lifetime Value']
-                    return [v, n]
-                  }) as any}
+                  formatter={
+                    ((value: number | undefined, name: string | undefined) => {
+                      const v = value ?? 0
+                      const n = name ?? ''
+                      if (n === 'LTV') return [`${v.toLocaleString()}`, 'Lifetime Value']
+                      return [v, n]
+                    }) as any
+                  }
                 />
-                <Bar
-                  dataKey="LTV"
-                  fill="#d47530"
-                  radius={[4, 4, 0, 0]}
-                  name="LTV"
-                />
+                <Bar dataKey="LTV" fill="#d47530" radius={[4, 4, 0, 0]} name="LTV" />
               </ComposedChart>
             </ResponsiveContainer>
           </CardContent>

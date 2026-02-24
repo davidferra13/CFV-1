@@ -50,7 +50,7 @@ export function DisclosurePreflightPanel({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
       <Card className="w-full max-w-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-stone-900">
+          <CardTitle className="flex items-center gap-2 text-stone-100">
             <span className="text-xl">&#9888;</span>
             Pre-Post Review Required
           </CardTitle>
@@ -67,7 +67,7 @@ export function DisclosurePreflightPanel({
               {hardBlocks.map((warning, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-3"
+                  className="flex items-start gap-2 rounded-lg bg-red-950 border border-red-200 p-3"
                 >
                   <span className="text-red-600 mt-0.5 flex-shrink-0">&#10060;</span>
                   <p className="text-sm text-red-700">{warning.message}</p>
@@ -86,7 +86,7 @@ export function DisclosurePreflightPanel({
                 return (
                   <label
                     key={i}
-                    className="flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 p-3 cursor-pointer"
+                    className="flex items-start gap-3 rounded-lg bg-amber-950 border border-amber-200 p-3 cursor-pointer"
                   >
                     <input
                       type="checkbox"
@@ -105,21 +105,21 @@ export function DisclosurePreflightPanel({
           {/* Soft warnings */}
           {softWarnings.length > 0 && (
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-stone-600">Heads up:</p>
+              <p className="text-sm font-semibold text-stone-400">Heads up:</p>
               {softWarnings.map((warning, i) => (
                 <div
                   key={i}
-                  className="flex items-start gap-2 rounded-lg bg-stone-50 border border-stone-200 p-3"
+                  className="flex items-start gap-2 rounded-lg bg-stone-800 border border-stone-700 p-3"
                 >
                   <span className="text-stone-400 mt-0.5 flex-shrink-0">&#8505;</span>
-                  <p className="text-sm text-stone-600">{warning.message}</p>
+                  <p className="text-sm text-stone-400">{warning.message}</p>
                 </div>
               ))}
             </div>
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2 border-t border-stone-100">
+          <div className="flex justify-end gap-3 pt-2 border-t border-stone-800">
             <Button variant="secondary" onClick={onCancel}>
               Cancel
             </Button>

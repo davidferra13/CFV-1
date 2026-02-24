@@ -5,10 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { MessageSquare, CheckCircle2, Circle, Send } from 'lucide-react'
-import {
-  addComment,
-  resolveComment,
-} from '@/lib/operations/document-comment-actions'
+import { addComment, resolveComment } from '@/lib/operations/document-comment-actions'
 import type { AddCommentInput } from '@/lib/operations/document-comment-actions'
 import { toast } from 'sonner'
 
@@ -70,7 +67,7 @@ export function CommentThread({
           commentText: newComment.trim(),
         })
         if (result.comment) {
-          setComments(prev => [...prev, result.comment])
+          setComments((prev) => [...prev, result.comment])
         }
         setNewComment('')
         toast.success('Comment added')
@@ -89,11 +86,7 @@ export function CommentThread({
     startTransition(async () => {
       try {
         await resolveComment(commentId)
-        setComments(prev =>
-          prev.map(c =>
-            c.id === commentId ? { ...c, resolved: true } : c
-          )
-        )
+        setComments((prev) => prev.map((c) => (c.id === commentId ? { ...c, resolved: true } : c)))
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Failed to resolve comment'
         toast.error(message)
@@ -107,8 +100,8 @@ export function CommentThread({
     }
   }
 
-  const unresolvedComments = comments.filter(c => !c.resolved)
-  const resolvedComments = comments.filter(c => c.resolved)
+  const unresolvedComments = comments.filter((c) => !c.resolved)
+  const resolvedComments = comments.filter((c) => c.resolved)
   const visibleComments = showResolved ? comments : unresolvedComments
 
   return (
@@ -121,11 +114,7 @@ export function CommentThread({
           )}
         </div>
         {resolvedComments.length > 0 && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowResolved(!showResolved)}
-          >
+          <Button size="sm" variant="ghost" onClick={() => setShowResolved(!showResolved)}>
             {showResolved ? 'Hide' : 'Show'} resolved ({resolvedComments.length})
           </Button>
         )}
@@ -134,13 +123,13 @@ export function CommentThread({
         {/* Comment list */}
         {visibleComments.length > 0 ? (
           <div className="space-y-3">
-            {visibleComments.map(comment => (
+            {visibleComments.map((comment) => (
               <div
                 key={comment.id}
                 className={`flex gap-3 rounded-lg p-3 transition-colors ${
                   comment.resolved
-                    ? 'bg-stone-50 opacity-60'
-                    : 'bg-white border border-stone-200'
+                    ? 'bg-stone-800 opacity-60'
+                    : 'bg-surface border border-stone-700'
                 }`}
               >
                 {/* Resolve checkbox */}
@@ -164,19 +153,17 @@ export function CommentThread({
                 {/* Comment content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-medium text-stone-900">
-                      {comment.authorName}
-                    </span>
+                    <span className="text-sm font-medium text-stone-100">{comment.authorName}</span>
                     <span className="text-xs text-stone-400">
                       {formatTimestamp(comment.createdAt)}
                     </span>
-                    {comment.resolved && (
-                      <Badge variant="success">Resolved</Badge>
-                    )}
+                    {comment.resolved && <Badge variant="success">Resolved</Badge>}
                   </div>
-                  <p className={`text-sm ${
-                    comment.resolved ? 'text-stone-500 line-through' : 'text-stone-700'
-                  }`}>
+                  <p
+                    className={`text-sm ${
+                      comment.resolved ? 'text-stone-500 line-through' : 'text-stone-300'
+                    }`}
+                  >
                     {comment.commentText}
                   </p>
                 </div>
@@ -193,15 +180,15 @@ export function CommentThread({
         )}
 
         {/* Add comment form */}
-        <div className="border-t border-stone-100 pt-4">
+        <div className="border-t border-stone-800 pt-4">
           <div className="flex gap-2">
             <textarea
               value={newComment}
-              onChange={e => setNewComment(e.target.value)}
+              onChange={(e) => setNewComment(e.target.value)}
               onKeyDown={handleKeyDown}
               rows={2}
               placeholder="Add a comment..."
-              className="flex-1 border border-stone-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+              className="flex-1 border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
             />
             <Button
               size="sm"
@@ -213,9 +200,7 @@ export function CommentThread({
               <Send className="h-4 w-4" />
             </Button>
           </div>
-          <p className="text-xs text-stone-400 mt-1">
-            Press Ctrl+Enter to submit
-          </p>
+          <p className="text-xs text-stone-400 mt-1">Press Ctrl+Enter to submit</p>
         </div>
       </CardContent>
     </Card>

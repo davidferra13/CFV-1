@@ -63,11 +63,11 @@ export function CampaignBookingForm({ token, dinner }: Props) {
   if (formState === 'success') {
     return (
       <div className="text-center space-y-4 py-8">
-        <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center mx-auto">
+        <div className="w-14 h-14 rounded-full bg-green-900 flex items-center justify-center mx-auto">
           <Check className="w-7 h-7 text-green-600" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-stone-800">You're in!</h3>
+          <h3 className="text-lg font-semibold text-stone-200">You're in!</h3>
           <p className="text-sm text-stone-500 mt-1">
             {dinner.chef_name} will reach out shortly to confirm your reservation.
           </p>
@@ -91,18 +91,18 @@ export function CampaignBookingForm({ token, dinner }: Props) {
             type="button"
             onClick={() => adjustGuests(-1)}
             disabled={guests <= min}
-            className="w-10 h-10 rounded-full border border-stone-200 flex items-center justify-center text-stone-600 hover:border-stone-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-10 h-10 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:border-stone-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <Minus className="w-4 h-4" />
           </button>
-          <span className="text-4xl font-bold text-stone-800 w-12 text-center tabular-nums">
+          <span className="text-4xl font-bold text-stone-200 w-12 text-center tabular-nums">
             {guests}
           </span>
           <button
             type="button"
             onClick={() => adjustGuests(1)}
             disabled={guests >= max}
-            className="w-10 h-10 rounded-full border border-stone-200 flex items-center justify-center text-stone-600 hover:border-stone-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="w-10 h-10 rounded-full border border-stone-700 flex items-center justify-center text-stone-400 hover:border-stone-400 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
             <Plus className="w-4 h-4" />
           </button>
@@ -123,7 +123,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="Jane Smith"
-          className="w-full border border-stone-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
+          className="w-full border border-stone-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
         />
       </div>
 
@@ -138,7 +138,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           placeholder="jane@example.com"
-          className="w-full border border-stone-200 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
+          className="w-full border border-stone-700 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
         />
       </div>
 
@@ -147,12 +147,12 @@ export function CampaignBookingForm({ token, dinner }: Props) {
         <button
           type="button"
           onClick={() => setShowMore(true)}
-          className="text-xs text-stone-400 hover:text-stone-600 underline underline-offset-2 transition-colors"
+          className="text-xs text-stone-400 hover:text-stone-400 underline underline-offset-2 transition-colors"
         >
           + Add dietary restrictions, phone number, or a note
         </button>
       ) : (
-        <div className="space-y-3 border-t border-stone-100 pt-3">
+        <div className="space-y-3 border-t border-stone-800 pt-3">
           <div>
             <label className="text-xs text-stone-500 font-medium uppercase tracking-wide block mb-1">
               Phone (optional)
@@ -162,7 +162,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder="+1 555 000 0000"
-              className="w-full border border-stone-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
+              className="w-full border border-stone-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
             />
           </div>
           <div>
@@ -174,7 +174,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
               value={dietary}
               onChange={(e) => setDietary(e.target.value)}
               placeholder="e.g. vegetarian, nut allergy..."
-              className="w-full border border-stone-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
+              className="w-full border border-stone-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent"
             />
           </div>
           <div>
@@ -186,7 +186,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Questions, special requests, occasion notes..."
-              className="w-full border border-stone-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent resize-none"
+              className="w-full border border-stone-700 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent resize-none"
             />
           </div>
         </div>
@@ -194,7 +194,7 @@ export function CampaignBookingForm({ token, dinner }: Props) {
 
       {/* Error */}
       {formState === 'error' && errorMsg && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-lg px-4 py-3">
+        <p className="text-sm text-red-600 bg-red-950 border border-red-100 rounded-lg px-4 py-3">
           {errorMsg}
         </p>
       )}

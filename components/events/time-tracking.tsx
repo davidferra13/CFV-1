@@ -34,7 +34,11 @@ type TimeData = {
 
 type TimeTotals = Pick<
   TimeData,
-  'time_shopping_minutes' | 'time_prep_minutes' | 'time_travel_minutes' | 'time_service_minutes' | 'time_reset_minutes'
+  | 'time_shopping_minutes'
+  | 'time_prep_minutes'
+  | 'time_travel_minutes'
+  | 'time_service_minutes'
+  | 'time_reset_minutes'
 >
 
 type ActivityRow = {
@@ -136,7 +140,8 @@ export function TimeTracking({
 
   const activeActivity = activityRows.find((row) => row.isActive)?.id ?? null
   const hasAnyData =
-    activityRows.some((row) => row.minutes > 0) || activityRows.some((row) => row.startedAt !== null)
+    activityRows.some((row) => row.minutes > 0) ||
+    activityRows.some((row) => row.startedAt !== null)
 
   const editorTotalMinutes =
     (Number.parseInt(shopping, 10) || 0) +
@@ -207,17 +212,20 @@ export function TimeTracking({
           </Alert>
         )}
 
-        <div className="rounded-lg border border-stone-200 divide-y">
+        <div className="rounded-lg border border-stone-700 divide-y">
           {activityRows.map((row) => {
             const isBusy = busyActivity === row.id
-            const startDisabled = Boolean(activeActivity && activeActivity !== row.id) || Boolean(busyActivity) || saving
+            const startDisabled =
+              Boolean(activeActivity && activeActivity !== row.id) ||
+              Boolean(busyActivity) ||
+              saving
             const stopDisabled = Boolean(busyActivity) || saving
 
             return (
               <div key={row.id} className="flex items-center justify-between gap-3 p-3">
                 <div>
-                  <p className="text-sm font-medium text-stone-900">{row.label}</p>
-                  <p className="text-xs text-stone-600">
+                  <p className="text-sm font-medium text-stone-100">{row.label}</p>
+                  <p className="text-xs text-stone-400">
                     Logged: {formatMinutesAsDuration(row.minutes)}
                     {row.isActive && row.startedAt
                       ? ` • Running: ${formatMinutesAsDuration(safeDurationMinutes(row.startedAt, new Date(liveNow).toISOString()))}`
@@ -250,41 +258,77 @@ export function TimeTracking({
 
         {activeActivity && (
           <p className="text-xs text-stone-500">
-            One active timer at a time to keep logging simple. Gentle reminders are capped to avoid spam.
+            One active timer at a time to keep logging simple. Gentle reminders are capped to avoid
+            spam.
           </p>
         )}
 
-        <p className="text-sm font-medium text-stone-700">
-          Total Logged: {formatMinutesAsDuration(activityRows.reduce((sum, row) => sum + row.minutes, 0))}
+        <p className="text-sm font-medium text-stone-300">
+          Total Logged:{' '}
+          {formatMinutesAsDuration(activityRows.reduce((sum, row) => sum + row.minutes, 0))}
         </p>
 
         {editing && (
-          <div className="space-y-3 rounded-lg border border-stone-200 p-3">
-            <p className="text-sm font-medium text-stone-800">Manual correction (if you forgot to start/stop)</p>
+          <div className="space-y-3 rounded-lg border border-stone-700 p-3">
+            <p className="text-sm font-medium text-stone-200">
+              Manual correction (if you forgot to start/stop)
+            </p>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div>
-                <label className="text-xs font-medium text-stone-600">Shopping (min)</label>
-                <Input type="number" min={0} placeholder="0" value={shopping} onChange={(e) => setShopping(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">Shopping (min)</label>
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={shopping}
+                  onChange={(e) => setShopping(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">Prep (min)</label>
-                <Input type="number" min={0} placeholder="0" value={prep} onChange={(e) => setPrep(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">Prep (min)</label>
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={prep}
+                  onChange={(e) => setPrep(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">Packing (min)</label>
-                <Input type="number" min={0} placeholder="0" value={packing} onChange={(e) => setPacking(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">Packing (min)</label>
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={packing}
+                  onChange={(e) => setPacking(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">Driving (min)</label>
-                <Input type="number" min={0} placeholder="0" value={driving} onChange={(e) => setDriving(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">Driving (min)</label>
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={driving}
+                  onChange={(e) => setDriving(e.target.value)}
+                />
               </div>
               <div>
-                <label className="text-xs font-medium text-stone-600">Execution (min)</label>
-                <Input type="number" min={0} placeholder="0" value={execution} onChange={(e) => setExecution(e.target.value)} />
+                <label className="text-xs font-medium text-stone-400">Execution (min)</label>
+                <Input
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={execution}
+                  onChange={(e) => setExecution(e.target.value)}
+                />
               </div>
             </div>
             {editorTotalMinutes > 0 && (
-              <p className="text-sm text-stone-600">Manual total: {formatMinutesAsDuration(editorTotalMinutes)}</p>
+              <p className="text-sm text-stone-400">
+                Manual total: {formatMinutesAsDuration(editorTotalMinutes)}
+              </p>
             )}
             <div className="flex gap-2">
               <Button size="sm" onClick={handleSave} disabled={saving || Boolean(busyActivity)}>

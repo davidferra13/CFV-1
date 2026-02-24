@@ -24,7 +24,9 @@ export function DemoDataManager({ hasDemoData: initialHas }: Props) {
         setMessage('Sample data is already loaded.')
         setHasDemo(true)
       } else if (result.created) {
-        setMessage(`Loaded ${result.clientsCreated} sample clients, ${result.eventsCreated} events, ${result.inquiriesCreated} inquiry.`)
+        setMessage(
+          `Loaded ${result.clientsCreated} sample clients, ${result.eventsCreated} events, ${result.inquiriesCreated} inquiry.`
+        )
         setHasDemo(true)
       } else {
         setMessage(result.error ?? 'Something went wrong.')
@@ -47,9 +49,9 @@ export function DemoDataManager({ hasDemoData: initialHas }: Props) {
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-stone-600">
-        Load realistic sample clients, events, and an inquiry so you can explore ChefFlow before adding your own data.
-        All sample records are clearly marked and can be removed at any time.
+      <p className="text-sm text-stone-400">
+        Load realistic sample clients, events, and an inquiry so you can explore ChefFlow before
+        adding your own data. All sample records are clearly marked and can be removed at any time.
       </p>
       <div className="flex items-center gap-3">
         {!hasDemo ? (
@@ -61,9 +63,7 @@ export function DemoDataManager({ hasDemoData: initialHas }: Props) {
             Clear Sample Data
           </Button>
         )}
-        {message && (
-          <p className="text-sm text-stone-500">{message}</p>
-        )}
+        {message && <p className="text-sm text-stone-500">{message}</p>}
       </div>
     </div>
   )

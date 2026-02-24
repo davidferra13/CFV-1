@@ -44,7 +44,7 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
     return (
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-brand-9500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
       >
         <span className="text-lg leading-none">+</span>
         Add Word
@@ -53,13 +53,13 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
   }
 
   return (
-    <div className="border border-stone-200 rounded-lg p-4 bg-white shadow-sm max-w-md">
-      <h3 className="font-semibold text-stone-900 mb-3">Add a Word</h3>
+    <div className="border border-stone-700 rounded-lg p-4 bg-surface shadow-sm max-w-md">
+      <h3 className="font-semibold text-stone-100 mb-3">Add a Word</h3>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         {/* Word input */}
         <div>
-          <label htmlFor="cw-word" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="cw-word" className="block text-sm font-medium text-stone-300 mb-1">
             Word or Phrase
           </label>
           <input
@@ -69,21 +69,21 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
             onChange={(e) => setWord(e.target.value)}
             placeholder="e.g. Velvety, Brûléed, Umami Bomb"
             maxLength={60}
-            className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-stone-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             autoFocus
           />
         </div>
 
         {/* Category select */}
         <div>
-          <label htmlFor="cw-category" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="cw-category" className="block text-sm font-medium text-stone-300 mb-1">
             Category
           </label>
           <select
             id="cw-category"
             value={category}
             onChange={(e) => setCategory(e.target.value as WordCategory)}
-            className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-stone-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             {CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -95,14 +95,14 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
 
         {/* Tier select */}
         <div>
-          <label htmlFor="cw-tier" className="block text-sm font-medium text-stone-700 mb-1">
+          <label htmlFor="cw-tier" className="block text-sm font-medium text-stone-300 mb-1">
             Importance Tier
           </label>
           <select
             id="cw-tier"
             value={tier}
             onChange={(e) => setTier(Number(e.target.value) as WordTier)}
-            className="w-full px-3 py-2 border border-stone-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-stone-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             <option value={1}>Tier 1 — Foundational (huge on board)</option>
             <option value={2}>Tier 2 — Essential (large)</option>
@@ -117,7 +117,7 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
           <button
             type="submit"
             disabled={isPending}
-            className="px-4 py-2 rounded-md bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors disabled:opacity-50"
+            className="px-4 py-2 rounded-md bg-brand-9500 text-white text-sm font-medium hover:bg-brand-600 transition-colors disabled:opacity-50"
           >
             {isPending ? 'Adding...' : 'Add to My Board'}
           </button>
@@ -127,7 +127,7 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
               setOpen(false)
               setError(null)
             }}
-            className="px-4 py-2 rounded-md border border-stone-300 text-stone-700 text-sm hover:bg-stone-50 transition-colors"
+            className="px-4 py-2 rounded-md border border-stone-600 text-stone-300 text-sm hover:bg-stone-800 transition-colors"
           >
             Cancel
           </button>
