@@ -78,16 +78,22 @@ export default async function SettingsPage() {
     demoDataExists,
   ] = await Promise.all([
     getChefPreferences(),
-    getGoogleConnection(),
-    getGmailSyncHistory(10),
-    getHistoricalScanStatus(),
-    getWixConnection(),
-    getWixSubmissions({ limit: 10 }),
-    getNetworkDiscoverable(),
-    getGoogleReviewUrl(),
+    getGoogleConnection().catch((err) => {
+      console.error('[Settings] getGoogleConnection failed:', err)
+      return {
+        gmail: { connected: false, email: null, lastSync: null, errorCount: 0 },
+        calendar: { connected: false, email: null, lastSync: null },
+      } as Awaited<ReturnType<typeof getGoogleConnection>>
+    }),
+    getGmailSyncHistory(10).catch(() => []),
+    getHistoricalScanStatus().catch(() => null),
+    getWixConnection().catch(() => null),
+    getWixSubmissions({ limit: 10 }).catch(() => []),
+    getNetworkDiscoverable().catch(() => false),
+    getGoogleReviewUrl().catch(() => null),
     getChefSlug(),
     getBusinessMode(),
-    getAvailabilitySignalSetting(),
+    getAvailabilitySignalSetting().catch(() => false),
     getSchedulingRules().catch(() => null),
     getBookingSettings().catch(() => null),
     hasDemoData().catch(() => false),

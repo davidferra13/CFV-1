@@ -11,6 +11,52 @@ function ageLabel(hours: number): string {
   return `${Math.floor(hours / 24)}d ago`
 }
 
+/** Build a short summary from whatever confirmed facts exist on the inquiry */
+function inquirySummary(inq: {
+  confirmed_occasion: string | null
+  confirmed_date: string | null
+  confirmed_location: string | null
+  confirmed_guest_count: number | null
+}): string | null {
+  const parts: string[] = []
+  if (inq.confirmed_occasion) parts.push(inq.confirmed_occasion)
+  if (inq.confirmed_date) {
+    try {
+      parts.push(
+        new Date(inq.confirmed_date + 'T00:00:00').toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+        })
+      )
+    } catch {
+      parts.push(inq.confirmed_date)
+    }
+  }
+  if (inq.confirmed_location) parts.push(inq.confirmed_location)
+  if (inq.confirmed_guest_count) parts.push(`${inq.confirmed_guest_count} guests`)
+  return parts.length > 0 ? parts.join(' · ') : null
+}
+
+/** Friendly channel label for display */
+function channelLabel(channel: string): string {
+  switch (channel) {
+    case 'take_a_chef':
+      return 'TakeAChef'
+    case 'yhangry':
+      return 'Yhangry'
+    case 'email':
+      return 'email'
+    case 'phone':
+      return 'phone'
+    case 'website':
+      return 'website'
+    case 'referral':
+      return 'referral'
+    default:
+      return channel
+  }
+}
+
 export async function getInquiryQueueItems(
   supabase: SupabaseClient,
   tenantId: string
@@ -23,7 +69,8 @@ export async function getInquiryQueueItems(
     .select(
       `
       id, status, channel, created_at, follow_up_due_at,
-      unknown_fields, confirmed_occasion,
+      unknown_fields, confirmed_occasion, confirmed_date,
+      confirmed_location, confirmed_guest_count,
       client:clients(id, full_name)
     `
     )
@@ -35,41 +82,59 @@ export async function getInquiryQueueItems(
   for (const inq of inquiries) {
     const clientName = (inq.client as any)?.full_name ?? 'Unknown contact'
     const hoursSinceCreated = (now.getTime() - new Date(inq.created_at).getTime()) / 3600000
+    const summary = inquirySummary(inq as any)
+    const chLabel = channelLabel(inq.channel)
 
     // New inquiries — chef has not responded yet
     if (inq.status === 'new') {
       const isTac = inq.channel === 'take_a_chef'
-      // TakeAChef leads get a priority boost — platform expectations for response time
-      const tacBoost = isTac ? 0.15 : 0
+      const isYhangry = inq.channel === 'yhangry'
+      const isPlatform = isTac || isYhangry
+      // Platform leads get a priority boost — platform expectations for response time
+      const platformBoost = isPlatform ? 0.15 : 0
       const inputs: ScoreInputs = {
-        hoursUntilDue: Math.max(0, (isTac ? 12 : 24) - hoursSinceCreated),
-        impactWeight: 0.8 + tacBoost,
+        hoursUntilDue: Math.max(0, (isPlatform ? 12 : 24) - hoursSinceCreated),
+        impactWeight: 0.8 + platformBoost,
         isBlocking: true,
         hoursSinceCreated,
         revenueCents: 0,
         isExpiring: false,
       }
       const score = computeScore(inputs)
-      const tacStale = isTac && hoursSinceCreated > 24
-      const tacUrgent = isTac && hoursSinceCreated > 12
+      const platformStale = isPlatform && hoursSinceCreated > 24
+      const platformUrgent = isPlatform && hoursSinceCreated > 12
+
+      // Build a descriptive title using whatever facts are available
+      let title: string
+      let description: string
+      if (isTac) {
+        title = `New TakeAChef lead from ${clientName}${platformStale ? ' — STALE' : ''}`
+        description = `${clientName} requested via TakeAChef — untouched ${ageLabel(hoursSinceCreated)}.`
+      } else if (isYhangry) {
+        title = summary ? `Yhangry: ${summary}` : `New Yhangry inquiry`
+        description = `Yhangry lead — untouched ${ageLabel(hoursSinceCreated)}. First response sets the tone.`
+      } else if (summary) {
+        title = `${clientName}: ${summary}`
+        description = `Reached out via ${chLabel} — untouched ${ageLabel(hoursSinceCreated)}.`
+      } else {
+        title = `New inquiry from ${clientName}`
+        description = `${clientName} reached out via ${chLabel}. First response sets the tone.`
+      }
+
       items.push({
         id: `inquiry:inquiry:${inq.id}:respond_new`,
         domain: 'inquiry',
-        urgency: tacStale ? 'critical' : tacUrgent ? 'high' : urgencyFromScore(score),
-        score: score + (isTac ? 20 : 0),
-        title: isTac
-          ? `New TakeAChef lead from ${clientName}${tacStale ? ' — STALE' : ''}`
-          : 'Respond to new inquiry',
-        description: isTac
-          ? `${clientName} requested via TakeAChef — untouched ${ageLabel(hoursSinceCreated)}.`
-          : `${clientName} reached out via ${inq.channel}. First response sets the tone.`,
+        urgency: platformStale ? 'critical' : platformUrgent ? 'high' : urgencyFromScore(score),
+        score: score + (isPlatform ? 20 : 0),
+        title,
+        description,
         href: `/inquiries/${inq.id}`,
         icon: 'MessageSquare',
         context: {
           primaryLabel: clientName,
-          secondaryLabel: isTac
-            ? `TakeAChef — ${ageLabel(hoursSinceCreated)}`
-            : `via ${inq.channel}`,
+          secondaryLabel: isPlatform
+            ? `${chLabel} — ${ageLabel(hoursSinceCreated)}`
+            : `via ${chLabel}`,
         },
         createdAt: inq.created_at,
         dueAt: null,
@@ -95,7 +160,7 @@ export async function getInquiryQueueItems(
         domain: 'inquiry',
         urgency: urgencyFromScore(score),
         score,
-        title: 'Reply to client',
+        title: summary ? `Reply to ${clientName}: ${summary}` : `Reply to ${clientName}`,
         description: `${clientName} is waiting for your response.`,
         href: `/inquiries/${inq.id}`,
         icon: 'MessageSquareDashed',
@@ -127,7 +192,7 @@ export async function getInquiryQueueItems(
           domain: 'inquiry',
           urgency: urgencyFromScore(score),
           score,
-          title: 'Follow up on inquiry',
+          title: summary ? `Follow up: ${summary}` : `Follow up with ${clientName}`,
           description: `Scheduled follow-up with ${clientName} is ${hoursUntilDue < 0 ? 'overdue' : 'due soon'}.`,
           href: `/inquiries/${inq.id}`,
           icon: 'Clock',

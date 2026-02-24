@@ -819,6 +819,7 @@ async function handleTacClientMessage(
 
   // Find the existing inquiry
   const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    channel: 'take_a_chef',
     clientName,
     eventDate,
     orderId: null,
@@ -901,6 +902,7 @@ async function handleTacBookingConfirmed(
 
   // Find existing inquiry by client name + date
   const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    channel: 'take_a_chef',
     clientName: booking.clientName,
     eventDate: null, // Booking may have different date format
     orderId: null,
@@ -1049,6 +1051,7 @@ async function handleTacCustomerInfo(
 
   // Find existing inquiry to get the client
   const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    channel: 'take_a_chef',
     clientName: info.guestName,
     eventDate: null,
     orderId: null,
