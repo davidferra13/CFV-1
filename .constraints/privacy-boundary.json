@@ -1,0 +1,11 @@
+{
+  "name": "AI Privacy Boundary",
+  "rules": [
+    "Private data must never leave the local machine",
+    "Use parseWithOllama for any client PII, financials, allergies, messages",
+    "Never use parseWithAI as a fallback — if Ollama is offline, hard-fail",
+    "OllamaOfflineError must always be re-thrown, never swallowed",
+    "Heuristic/regex fallbacks (no LLM call) are acceptable",
+    "Private data includes: names, contact info, dietary restrictions, budgets, quotes, payments, analytics, temp logs, staff data"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Tier Gating (Freemium)",
+  "rules": [
+    "Free tier: inquiries, events, clients, quotes, payments, basic calendar, basic finance, recipes, documents",
+    "Everything else is Pro",
+    "Server actions: add await requirePro('module-slug') at the top for Pro features",
+    "Pages: wrap in <UpgradeGate chefId={user.entityId} featureSlug='slug'>",
+    "Nav items: set module: 'module-slug' on the nav config entry",
+    "Admins (isAdmin()) always bypass Pro gates automatically",
+    "Every new feature must be assigned a tier and module"
+  ]
+}

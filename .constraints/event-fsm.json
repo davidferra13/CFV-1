@@ -1,0 +1,10 @@
+{
+  "name": "Event State Machine",
+  "rules": [
+    "8 states: draft → proposed → accepted → paid → confirmed → in_progress → completed | cancelled",
+    "Only change status via transitionEvent() from lib/events/transitions.ts",
+    "Never do a direct .update() on event status",
+    "event_transitions table is immutable — append-only audit trail",
+    "Cancelled is a terminal state reachable from any non-completed state"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "Financial Integrity",
+  "rules": [
+    "All monetary amounts in cents (integers, never floats)",
+    "Ledger is append-only — never UPDATE or DELETE ledger_entries",
+    "Balances are computed from ledger entries via event_financial_summary view",
+    "Never write directly to a balance column",
+    "Use getTenantFinancialSummary() for overall totals",
+    "If a number looks wrong, fix the ledger entry — never patch a balance",
+    "Never circumvent immutability triggers on ledger_entries, event_transitions, or quote_state_transitions"
+  ]
+}

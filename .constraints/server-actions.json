@@ -1,0 +1,11 @@
+{
+  "name": "Server Actions",
+  "rules": [
+    "Every server action file starts with 'use server'",
+    "Only async functions may be exported — never export const",
+    "First line of every action: requireChef() or requireClient() or requireAuth()",
+    "tenant_id comes from session (user.tenantId!), never from request body",
+    "Wrap non-blocking side effects (notifications, emails, logs) in try/catch — never throw",
+    "Move constants to a separate file (e.g., lib/x/constants.ts), not in 'use server' files"
+  ]
+}
