@@ -16,11 +16,24 @@ import { StaffTaskCheckbox } from '@/components/staff/staff-task-checkbox'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
-export default async function StaffDashboardPage() {
+export default async function StaffDashboardPage({
+  searchParams,
+}: {
+  searchParams: { view?: string }
+}) {
   const user = await requireStaff()
   const profile = await getMyProfile()
-  const today = new Date().toISOString().split('T')[0]
-  const todayFormatted = new Date().toLocaleDateString('en-US', {
+
+  const showTomorrow = searchParams.view === 'tomorrow'
+  const now = new Date()
+  const tomorrow = new Date(now)
+  tomorrow.setDate(tomorrow.getDate() + 1)
+
+  const today = now.toISOString().split('T')[0]
+  const tomorrowDate = tomorrow.toISOString().split('T')[0]
+  const activeDate = showTomorrow ? tomorrowDate : today
+
+  const todayFormatted = (showTomorrow ? tomorrow : now).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -28,7 +41,7 @@ export default async function StaffDashboardPage() {
   })
 
   const [todayTasks, assignments, stations] = await Promise.all([
-    getMyTasks(today),
+    getMyTasks(activeDate),
     getMyUpcomingAssignments(),
     getMyStations(),
   ])
@@ -44,6 +57,29 @@ export default async function StaffDashboardPage() {
           Welcome, {profile?.name ?? 'Team Member'}
         </h1>
         <p className="text-stone-400 mt-1">{todayFormatted}</p>
+        {/* Today / Tomorrow toggle */}
+        <div className="flex gap-2 mt-3">
+          <Link
+            href="/staff-dashboard"
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              !showTomorrow
+                ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30'
+                : 'bg-stone-800 text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            Today
+          </Link>
+          <Link
+            href="/staff-dashboard?view=tomorrow"
+            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              showTomorrow
+                ? 'bg-brand-500/20 text-brand-400 border border-brand-500/30'
+                : 'bg-stone-800 text-stone-400 hover:text-stone-200'
+            }`}
+          >
+            Tomorrow
+          </Link>
+        </div>
       </div>
 
       {/* Quick stats row */}
@@ -79,7 +115,9 @@ export default async function StaffDashboardPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base">Today&apos;s Tasks</CardTitle>
+              <CardTitle className="text-base">
+                {showTomorrow ? "Tomorrow's" : "Today's"} Tasks
+              </CardTitle>
               <Link href="/staff-tasks" className="text-sm text-brand-500 hover:text-brand-400">
                 View all
               </Link>

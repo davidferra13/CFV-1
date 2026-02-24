@@ -20,7 +20,7 @@ import {
 type ClipboardEntry = {
   id: string
   component_id: string
-  clipboard_date: string
+  entry_date: string
   on_hand: number
   made: number
   need_to_make: number
@@ -386,7 +386,7 @@ export function ClipboardGrid({ stationId, stationName, date, entries }: Props) 
                       <td className="px-3 py-2 text-center">
                         {shelfLifeDays !== null ? (
                           <ShelfLifeIndicator
-                            madeAt={entry.clipboard_date}
+                            madeAt={entry.entry_date}
                             shelfLifeDays={shelfLifeDays}
                           />
                         ) : (

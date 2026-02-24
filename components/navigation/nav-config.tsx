@@ -303,6 +303,7 @@ export const navGroups: NavGroup[] = [
     icon: ClipboardCheck,
     module: 'station-ops',
     items: [
+      { href: '/stations/daily-ops', label: 'Daily Ops', icon: Activity },
       {
         href: '/stations',
         label: 'Station Clipboards',

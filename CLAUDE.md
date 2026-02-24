@@ -211,6 +211,28 @@ Full details: `docs/agent-registry.md` | Kilo's rules: `KILO.md` | Workflow: `do
 
 ---
 
+## "SHIP IT" — THE ONE COMMAND (READ THIS)
+
+When the developer says **"ship it"** (or any variation: "ship", "send it", "push everything", "make it live"), do ALL of the following — no confirmation needed, no questions asked:
+
+1. **`git add`** all modified and created files
+2. **`git commit`** with a clear, descriptive message
+3. **`git push origin <current-branch>`** — push the feature branch to GitHub ($0, Vercel ignores it)
+4. **`bash scripts/deploy-beta.sh`** — deploy to beta (Pi) so `beta.cheflowhq.com` is updated
+5. **Report** what was committed, pushed, and deployed
+
+**This updates localhost (already has the code), GitHub (backup), AND beta (live preview). It does NOT touch Vercel/production. It costs $0.**
+
+The developer should never have to ask for these steps separately. "Ship it" = the full chain, every time.
+
+**What "ship it" does NOT mean:**
+
+- Merge to `main` — NEVER (requires explicit "merge to main" or "deploy to production")
+- Deploy to Vercel — NEVER (requires explicit "deploy" or "push to main")
+- Run on production — NEVER
+
+---
+
 ## STANDARD SESSION CLOSE-OUT (run at the end of every session)
 
 These steps run automatically at the end of every session, whether or not the developer asks. No exceptions.
@@ -218,10 +240,11 @@ These steps run automatically at the end of every session, whether or not the de
 1. **Stage all changes** — `git add` every file that was modified or created
 2. **Commit** — clear, descriptive commit message
 3. **Push the current branch** — `git push origin <current-branch>` → GitHub backup, costs $0, Vercel ignores it
-4. **Update this file** — if any new patterns, rules, or decisions were made this session, add them now
-5. **Report** — tell the developer what was committed and pushed
+4. **Deploy to beta** — `bash scripts/deploy-beta.sh` — so beta.cheflowhq.com always has the latest code
+5. **Update this file** — if any new patterns, rules, or decisions were made this session, add them now
+6. **Report** — tell the developer what was committed, pushed, and deployed
 
-**What this prevents:** Work existing only on the local machine. If the machine is wiped, stolen, or corrupted, everything on GitHub is safe. The database is already off-machine (Supabase). Code must be too.
+**What this prevents:** Work existing only on the local machine. If the machine is wiped, stolen, or corrupted, everything on GitHub is safe. The database is already off-machine (Supabase). Code must be too. Beta must always reflect the latest work.
 
 ---
 

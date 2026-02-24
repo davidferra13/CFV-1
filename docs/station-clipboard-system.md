@@ -51,7 +51,7 @@ These tables must exist before the feature works. A migration is needed:
 - `stations` — id, chef_id, name, description, display_order, created_at
 - `station_menu_items` — id, chef_id, station_id, name, description, menu_item_id (FK nullable)
 - `station_components` — id, chef_id, station_menu_item_id, name, unit, par_level, par_unit, shelf_life_days, notes
-- `clipboard_entries` — id, chef_id, station_id, component_id, clipboard_date, on_hand, made, need_to_make, need_to_order, waste_qty, waste_reason_code, is_86d, eighty_sixed_at, location, notes
+- `clipboard_entries` — id, chef_id, station_id, component_id, entry_date, on_hand, made, need_to_make, need_to_order, waste_qty, waste_reason_code, is_86d, eighty_sixed_at, location, notes
 - `shift_logs` — id, chef_id, station_id, staff_member_id, shift_type, check_in_at, check_out_at, notes, snapshot (JSONB)
 - `order_requests` — id, chef_id, component_id, station_id, quantity, unit, requested_by, status, ordered_at, fulfilled_at
 - `waste_log` — id, chef_id, station_id, component_id, staff_member_id, quantity, unit, reason, estimated_value_cents, notes
