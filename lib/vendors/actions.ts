@@ -6,195 +6,165 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
 // ============================================
-// VENDORS
+// SCHEMAS
 // ============================================
 
-const VENDOR_TYPES = [
-  'grocery',
-  'specialty',
-  'butcher',
-  'fishmonger',
-  'farm',
-  'liquor',
-  'equipment',
-  'bakery',
-  'produce',
-  'dairy',
-  'other',
+const DAYS_OF_WEEK = [
+  'monday',
+  'tuesday',
+  'wednesday',
+  'thursday',
+  'friday',
+  'saturday',
+  'sunday',
 ] as const
 
-const VendorSchema = z.object({
+const CreateVendorSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  vendor_type: z.enum(VENDOR_TYPES).default('grocery'),
+  contact_name: z.string().optional(),
   phone: z.string().optional(),
   email: z.string().email().optional().or(z.literal('')),
-  address: z.string().optional(),
-  website: z.string().url().optional().or(z.literal('')),
+  account_number: z.string().optional(),
+  delivery_days: z.array(z.enum(DAYS_OF_WEEK)).default([]),
+  payment_terms: z.string().optional(),
   notes: z.string().optional(),
-  is_preferred: z.boolean().default(false),
-  status: z.enum(['active', 'inactive']).default('active'),
 })
 
-export type VendorInput = z.infer<typeof VendorSchema>
+export type CreateVendorInput = z.infer<typeof CreateVendorSchema>
 
-export async function createVendor(input: VendorInput) {
-  const chef = await requireChef()
+const UpdateVendorSchema = CreateVendorSchema.partial()
+export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
+
+// ============================================
+// VENDOR CRUD
+// ============================================
+
+export async function createVendor(input: CreateVendorInput) {
+  const user = await requireChef()
   const supabase = createServerClient()
-  const data = VendorSchema.parse(input)
+  const data = CreateVendorSchema.parse(input)
 
-  const { error } = await supabase.from('vendors').insert({
-    ...data,
-    chef_id: chef.id,
-    email: data.email || null,
-    website: data.website || null,
-  })
+  const { data: vendor, error } = await supabase
+    .from('vendors')
+    .insert({
+      name: data.name,
+      contact_name: data.contact_name || null,
+      phone: data.phone || null,
+      email: data.email || null,
+      account_number: data.account_number || null,
+      delivery_days: data.delivery_days,
+      payment_terms: data.payment_terms || null,
+      notes: data.notes || null,
+      status: 'active',
+      chef_id: user.tenantId!,
+    })
+    .select()
+    .single()
 
-  if (error) throw new Error(error.message)
-  revalidatePath('/culinary/vendors')
+  if (error) {
+    console.error('[vendors] createVendor error:', error)
+    throw new Error('Failed to create vendor')
+  }
+
+  revalidatePath('/vendors')
+  return vendor
 }
 
-export async function updateVendor(id: string, input: VendorInput) {
-  const chef = await requireChef()
+export async function updateVendor(id: string, input: UpdateVendorInput) {
+  const user = await requireChef()
   const supabase = createServerClient()
-  const data = VendorSchema.parse(input)
+  const data = UpdateVendorSchema.parse(input)
+
+  const updateData: Record<string, unknown> = {}
+  if (data.name !== undefined) updateData.name = data.name
+  if (data.contact_name !== undefined) updateData.contact_name = data.contact_name || null
+  if (data.phone !== undefined) updateData.phone = data.phone || null
+  if (data.email !== undefined) updateData.email = data.email || null
+  if (data.account_number !== undefined) updateData.account_number = data.account_number || null
+  if (data.delivery_days !== undefined) updateData.delivery_days = data.delivery_days
+  if (data.payment_terms !== undefined) updateData.payment_terms = data.payment_terms || null
+  if (data.notes !== undefined) updateData.notes = data.notes || null
 
   const { error } = await supabase
     .from('vendors')
-    .update({
-      ...data,
-      email: data.email || null,
-      website: data.website || null,
-    })
+    .update(updateData)
     .eq('id', id)
-    .eq('chef_id', chef.id)
+    .eq('chef_id', user.tenantId!)
 
-  if (error) throw new Error(error.message)
-  revalidatePath('/culinary/vendors')
+  if (error) {
+    console.error('[vendors] updateVendor error:', error)
+    throw new Error('Failed to update vendor')
+  }
+
+  revalidatePath('/vendors')
+  revalidatePath(`/vendors/${id}`)
 }
 
-export async function deleteVendor(id: string) {
-  const chef = await requireChef()
+export async function deactivateVendor(id: string) {
+  const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await supabase.from('vendors').delete().eq('id', id).eq('chef_id', chef.id)
+  const { error } = await supabase
+    .from('vendors')
+    .update({ status: 'inactive' })
+    .eq('id', id)
+    .eq('chef_id', user.tenantId!)
 
-  if (error) throw new Error(error.message)
-  revalidatePath('/culinary/vendors')
+  if (error) {
+    console.error('[vendors] deactivateVendor error:', error)
+    throw new Error('Failed to deactivate vendor')
+  }
+
+  revalidatePath('/vendors')
 }
 
-export async function listVendors(vendorType?: string) {
-  const chef = await requireChef()
+export async function listVendors(activeOnly = true) {
+  const user = await requireChef()
   const supabase = createServerClient()
 
   let q = supabase
     .from('vendors')
     .select('*')
-    .eq('chef_id', chef.id)
-    .eq('status', 'active')
-    .order('is_preferred', { ascending: false })
+    .eq('chef_id', user.tenantId!)
     .order('name', { ascending: true })
 
-  if (vendorType) {
-    q = q.eq('vendor_type', vendorType)
+  if (activeOnly) {
+    q = q.eq('status', 'active')
   }
 
   const { data, error } = await q
-  if (error) throw new Error(error.message)
+
+  if (error) {
+    console.error('[vendors] listVendors error:', error)
+    throw new Error('Failed to list vendors')
+  }
+
   return data ?? []
 }
 
-export async function setVendorPreferred(id: string, isPreferred: boolean) {
-  const chef = await requireChef()
+export async function getVendor(id: string) {
+  const user = await requireChef()
   const supabase = createServerClient()
 
-  const { error } = await supabase
+  const { data: vendor, error } = await supabase
     .from('vendors')
-    .update({ is_preferred: isPreferred })
-    .eq('id', id)
-    .eq('chef_id', chef.id)
-
-  if (error) throw new Error(error.message)
-  revalidatePath('/culinary/vendors')
-}
-
-// ============================================
-// PRICE POINTS
-// ============================================
-
-const PricePointSchema = z.object({
-  vendor_id: z.string().uuid(),
-  ingredient_id: z.string().uuid().optional(),
-  item_name: z.string().min(1, 'Item name is required'),
-  price_cents: z.number().int().min(0),
-  unit: z.string().min(1, 'Unit is required'),
-  recorded_at: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
-  notes: z.string().optional(),
-})
-
-export type PricePointInput = z.infer<typeof PricePointSchema>
-
-export async function recordPricePoint(input: PricePointInput) {
-  const chef = await requireChef()
-  const supabase = createServerClient()
-  const data = PricePointSchema.parse(input)
-
-  const { error } = await supabase.from('vendor_price_points').insert({
-    ...data,
-    chef_id: chef.id,
-    ingredient_id: data.ingredient_id ?? null,
-    recorded_at: data.recorded_at ?? new Date().toISOString().slice(0, 10),
-  })
-
-  if (error) throw new Error(error.message)
-  revalidatePath('/culinary/vendors')
-}
-
-export async function deletePricePoint(id: string) {
-  const chef = await requireChef()
-  const supabase = createServerClient()
-
-  const { error } = await supabase
-    .from('vendor_price_points')
-    .delete()
-    .eq('id', id)
-    .eq('chef_id', chef.id)
-
-  if (error) throw new Error(error.message)
-}
-
-export async function getPriceHistory(vendorId?: string, ingredientId?: string) {
-  const chef = await requireChef()
-  const supabase = createServerClient()
-
-  let q = supabase
-    .from('vendor_price_points')
-    .select('*, vendors(name)')
-    .eq('chef_id', chef.id)
-    .order('recorded_at', { ascending: false })
-    .limit(100)
-
-  if (vendorId) q = q.eq('vendor_id', vendorId)
-  if (ingredientId) q = q.eq('ingredient_id', ingredientId)
-
-  const { data, error } = await q
-  if (error) throw new Error(error.message)
-  return data ?? []
-}
-
-export async function getPricePointsForVendor(vendorId: string) {
-  const chef = await requireChef()
-  const supabase = createServerClient()
-
-  const { data, error } = await supabase
-    .from('vendor_price_points')
     .select('*')
-    .eq('chef_id', chef.id)
-    .eq('vendor_id', vendorId)
-    .order('recorded_at', { ascending: false })
+    .eq('id', id)
+    .eq('chef_id', user.tenantId!)
+    .single()
 
-  if (error) throw new Error(error.message)
-  return data ?? []
+  if (error) {
+    console.error('[vendors] getVendor error:', error)
+    throw new Error('Vendor not found')
+  }
+
+  // Also fetch vendor items
+  const { data: items } = await supabase
+    .from('vendor_items')
+    .select('*')
+    .eq('vendor_id', id)
+    .eq('chef_id', user.tenantId!)
+    .order('vendor_item_name', { ascending: true })
+
+  return { ...vendor, items: items ?? [] }
 }
