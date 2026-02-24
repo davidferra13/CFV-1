@@ -154,6 +154,42 @@ export default async function SettingsPage() {
       </SettingsCategory>
 
       <SettingsCategory
+        title="Payments & Billing"
+        description="Stripe payouts, your ChefFlow subscription, and feature module toggles."
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/stripe-connect"
+            className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+          >
+            <p className="font-semibold text-brand-200">Stripe Payouts</p>
+            <p className="text-sm text-brand-400 mt-1">
+              Connect your Stripe account to receive client payments directly to your bank account.
+            </p>
+          </Link>
+          <Link
+            href="/settings/billing"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Subscription & Billing</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Manage your ChefFlow Professional plan, view invoices, and upgrade or downgrade.
+            </p>
+          </Link>
+          <Link
+            href="/settings/modules"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Modules</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Choose which features appear in your sidebar. Toggle modules on or off to keep your
+              workspace focused.
+            </p>
+          </Link>
+        </div>
+      </SettingsCategory>
+
+      <SettingsCategory
         title="Profile & Branding"
         description="Manage your core chef profile, public profile presentation, and portal background."
       >
@@ -319,6 +355,33 @@ export default async function SettingsPage() {
             } as BookingSettings)
           }
         />
+      </SettingsCategory>
+
+      <SettingsCategory
+        title="Event Configuration"
+        description="Customize event types, labels, and add extra fields to capture your business-specific data."
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/event-types"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Event Types & Labels</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Rename occasion types and status labels to match your preferred terminology.
+            </p>
+          </Link>
+          <Link
+            href="/settings/custom-fields"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Custom Fields</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Add extra fields to events, clients, and recipes to capture information specific to
+              your business.
+            </p>
+          </Link>
+        </div>
       </SettingsCategory>
 
       <SettingsCategory
