@@ -32,7 +32,7 @@ export function LiveIndicator() {
       className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-red-950 border border-red-200 flex-shrink-0"
       title="No internet connection — changes will sync when reconnected"
     >
-      <span className="h-2 w-2 rounded-full bg-red-9500 animate-pulse" aria-hidden="true" />
+      <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" aria-hidden="true" />
       <span className="text-xs font-medium text-red-700">Offline</span>
     </div>
   )
