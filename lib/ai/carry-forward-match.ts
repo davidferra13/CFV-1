@@ -10,7 +10,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from './parse-ollama'
-import { OllamaOfflineError } from './ollama-errors'
+import { withAiFallback } from './with-ai-fallback'
+import { matchCarryForwardFormula } from '@/lib/formulas/carry-forward'
 import { getAvailableCarryForwardItems } from '@/lib/events/carry-forward'
 import { z } from 'zod'
 
@@ -118,16 +119,12 @@ Return JSON: {
   "confidence": "high|medium|low"
 }`
 
-  try {
-    return await parseWithOllama(systemPrompt, userContent, CarryForwardMatchResultSchema)
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) throw err
-    console.error('[carry-forward-match] Failed:', err)
-    return {
-      matches: [],
-      totalEstimatedSavingsCents: 0,
-      summary: 'AI matching unavailable — review leftover inventory manually.',
-      confidence: 'low',
-    }
-  }
+  const { result } = await withAiFallback(
+    // Formula: Levenshtein fuzzy match + culinary substitution groups — deterministic
+    () => matchCarryForwardFormula(leftovers, neededIngredients),
+    // AI: enhanced matching with culinary context (when Ollama is online)
+    () => parseWithOllama(systemPrompt, userContent, CarryForwardMatchResultSchema)
+  )
+
+  return result
 }

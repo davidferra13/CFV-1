@@ -9,7 +9,8 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
-import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { withAiFallback } from '@/lib/ai/with-ai-fallback'
+import { calculateGratuityFormula } from '@/lib/formulas/gratuity-calc'
 
 export interface GratuityFramingDraft {
   approach: 'mention_in_invoice' | 'verbal_mention' | 'note_in_message' | 'no_ask_needed'
@@ -100,12 +101,24 @@ Return JSON: {
   "timing": "when to present"
 }`
 
-  try {
-    const result = await parseWithOllama(systemPrompt, userContent, GratuityFramingSchema)
-    return { ...result, generatedAt: new Date().toISOString() }
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) throw err
-    console.error('[gratuity-framing] Failed:', err)
-    throw new Error('Could not generate gratuity framing. Please try again.')
-  }
+  const { result } = await withAiFallback(
+    // Formula: industry-standard rules — deterministic
+    () =>
+      calculateGratuityFormula({
+        clientFirstName: firstName,
+        isReturningClient,
+        eventCount: eventCount ?? 0,
+        occasion: event.occasion,
+        guestCount: event.guest_count,
+        serviceStyle: event.service_style,
+        totalSpendCents: totalSpend,
+      }),
+    // AI: enhanced framing with personalized messaging (when Ollama is online)
+    async () => {
+      const aiResult = await parseWithOllama(systemPrompt, userContent, GratuityFramingSchema)
+      return { ...aiResult, generatedAt: new Date().toISOString() }
+    }
+  )
+
+  return result
 }

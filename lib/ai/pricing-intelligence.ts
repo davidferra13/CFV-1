@@ -10,6 +10,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from './parse-ollama'
+import { withAiFallback } from './with-ai-fallback'
+import { calculatePricingFormula } from '@/lib/formulas/pricing-intelligence'
 import { z } from 'zod'
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
@@ -100,10 +102,23 @@ ${comparables.length > 0 ? 'Avg comparable price: $' + Math.round(comparables.re
 
 Return JSON: { "suggestedMinCents": number, "suggestedMaxCents": number, "suggestedPerHeadCents": number, "rationale": "...", "underbiddingRisk": bool, "underbiddingWarning": "...or null", "marketPosition": "below_average|at_average|above_average", "comparableEvents": number, "confidence": "high|medium|low" }`
 
-  try {
-    return await parseWithOllama(systemPrompt, userContent, PricingIntelligenceSchema)
-  } catch (err) {
-    console.error('[pricing-intelligence] Failed:', err)
-    throw new Error('Could not analyze pricing. Please try again.')
-  }
+  const { result } = await withAiFallback(
+    // Formula: percentile math on historical data — deterministic
+    () =>
+      calculatePricingFormula(
+        {
+          occasion: event.occasion,
+          guest_count: event.guest_count,
+          event_date: event.event_date,
+          service_style: event.service_style,
+          dietary_restrictions: event.dietary_restrictions as string[] | null,
+          quoted_price_cents: event.quoted_price_cents,
+        },
+        historicalEvents
+      ),
+    // AI: enhanced pricing analysis with narrative (when Ollama is online)
+    () => parseWithOllama(systemPrompt, userContent, PricingIntelligenceSchema)
+  )
+
+  return result
 }

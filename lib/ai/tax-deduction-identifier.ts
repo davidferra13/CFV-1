@@ -9,6 +9,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from './parse-ollama'
+import { withAiFallback } from './with-ai-fallback'
+import { identifyDeductionsFormula } from '@/lib/formulas/tax-categories'
 import { z } from 'zod'
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
@@ -109,10 +111,12 @@ Return JSON: {
   "confidence": "high|medium|low"
 }`
 
-  try {
-    return await parseWithOllama(systemPrompt, userContent, TaxDeductionResultSchema)
-  } catch (err) {
-    console.error('[tax-deduction-identifier] Failed:', err)
-    throw new Error('Could not analyze deductions. Please try again.')
-  }
+  const { result } = await withAiFallback(
+    // Formula: IRS rule-based analysis — deterministic
+    () => identifyDeductionsFormula(expenseList, mileageLogs ?? []),
+    // AI: enhanced analysis with contextual suggestions (when Ollama is online)
+    () => parseWithOllama(systemPrompt, userContent, TaxDeductionResultSchema)
+  )
+
+  return result
 }

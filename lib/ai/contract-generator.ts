@@ -10,7 +10,8 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
-import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { withAiFallback } from '@/lib/ai/with-ai-fallback'
+import { generateContractTemplate } from '@/lib/templates/contract'
 
 export interface GeneratedContract {
   title: string
@@ -114,19 +115,41 @@ Return JSON: {
   "fullMarkdown": "# Private Chef Services Agreement\\n\\n[complete markdown contract]"
 }`
 
-  try {
-    const result = await parseWithOllama(systemPrompt, userContent, ContractSchema)
-    return {
-      title: result.title ?? 'Private Chef Services Agreement',
-      sections: result.sections ?? [],
-      fullMarkdown: result.fullMarkdown ?? '',
-      disclaimer:
-        'This is an AI-generated draft for reference only. Consult a licensed attorney before using as a binding legal document.',
-      generatedAt: new Date().toISOString(),
+  const { result } = await withAiFallback(
+    // Template: standard contract sections with variable substitution — deterministic
+    () =>
+      generateContractTemplate({
+        chefName: chef?.full_name ?? 'Chef',
+        businessName: chef?.business_name ?? undefined,
+        chefEmail: chef?.email ?? undefined,
+        chefPhone: chef?.phone ?? undefined,
+        clientName: client?.full_name ?? 'Client Name TBD',
+        clientEmail: client?.email ?? undefined,
+        occasion: event.occasion ?? 'Private Dinner',
+        eventDate: event.event_date ?? 'TBD',
+        serveTime: event.serve_time ?? undefined,
+        arrivalTime: event.arrival_time ?? undefined,
+        guestCount: event.guest_count ?? 0,
+        locationAddress: event.location_address ?? undefined,
+        serviceStyle: event.service_style ?? undefined,
+        dietaryRestrictions: (event.dietary_restrictions as string[] | null) ?? undefined,
+        allergies: (event.allergies as string[] | null) ?? undefined,
+        specialRequests: event.special_requests ?? undefined,
+        quotedPriceCents: event.quoted_price_cents ?? 0,
+      }),
+    // AI: enhanced contract with personalized language (when Ollama is online)
+    async () => {
+      const aiResult = await parseWithOllama(systemPrompt, userContent, ContractSchema)
+      return {
+        title: aiResult.title ?? 'Private Chef Services Agreement',
+        sections: aiResult.sections ?? [],
+        fullMarkdown: aiResult.fullMarkdown ?? '',
+        disclaimer:
+          'This is an AI-generated draft for reference only. Consult a licensed attorney before using as a binding legal document.',
+        generatedAt: new Date().toISOString(),
+      }
     }
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) throw err
-    console.error('[contract-generator] Failed:', err)
-    throw new Error('Could not generate contract. Please try again.')
-  }
+  )
+
+  return result
 }

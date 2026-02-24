@@ -9,7 +9,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from './parse-ollama'
-import { OllamaOfflineError } from './ollama-errors'
+import { withAiFallback } from './with-ai-fallback'
+import { analyzeTempLogFormula } from '@/lib/formulas/temp-anomaly'
 import { z } from 'zod'
 
 // ── Zod schema ──────────────────────────────────────────────────────────────
@@ -80,18 +81,15 @@ Return JSON: {
   "confidence": "high|medium|low"
 }`
 
-  try {
-    return await parseWithOllama(systemPrompt, userContent, TempLogAnomalyResultSchema, {
-      modelTier: 'fast',
-    })
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) throw err
-    console.error('[temp-log-anomaly] Failed:', err)
-    return {
-      violations: [],
-      overallStatus: 'clear',
-      summary: 'AI analysis unavailable — review temperature log manually.',
-      confidence: 'low',
-    }
-  }
+  const { result } = await withAiFallback(
+    // Formula: deterministic FDA rules — always correct, always available
+    () => analyzeTempLogFormula(tempLog),
+    // AI: enhanced analysis with contextual nuance (when Ollama is online)
+    () =>
+      parseWithOllama(systemPrompt, userContent, TempLogAnomalyResultSchema, {
+        modelTier: 'fast',
+      })
+  )
+
+  return result
 }

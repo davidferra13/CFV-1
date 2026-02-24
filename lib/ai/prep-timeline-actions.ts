@@ -7,7 +7,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
-import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { withAiFallback } from '@/lib/ai/with-ai-fallback'
+import { buildPrepTimelineFormula } from '@/lib/templates/prep-timeline'
 import { z } from 'zod'
 import type { PrepTimeline } from './prep-timeline-types'
 
@@ -107,33 +108,36 @@ Categories: shopping, prep, cooking, plating, service, cleanup, transport`
 - Menu items: ${menuItemNames.length > 0 ? menuItemNames.join(', ') : 'No menu specified — generate a general timeline'}
 - Notes: ${(event as any).notes ?? 'None'}`
 
-  try {
-    const result = await parseWithOllama(systemPrompt, userPrompt, PrepTimelineSchema, {
-      modelTier: 'standard',
-    })
+  const { result } = await withAiFallback(
+    // Formula: backward-from-service-time scheduling with guest scaling — deterministic
+    () =>
+      buildPrepTimelineFormula({
+        eventName,
+        eventDate,
+        guestCount,
+        serviceTime,
+        menuItems: menuItemNames,
+        isOffsite: true, // default conservative — offsite adds transport buffer
+        notes: (event as any).notes ?? undefined,
+      }),
+    // AI: enhanced timeline with contextual tips (when Ollama is online)
+    async () => {
+      const aiResult = await parseWithOllama(systemPrompt, userPrompt, PrepTimelineSchema, {
+        modelTier: 'standard',
+      })
+      return {
+        eventName,
+        eventDate,
+        guestCount,
+        serviceTime,
+        steps: aiResult.steps,
+        totalPrepHours: aiResult.totalPrepHours,
+        summary: aiResult.summary,
+      }
+    }
+  )
 
-    return {
-      eventName,
-      eventDate,
-      guestCount,
-      serviceTime,
-      steps: result.steps,
-      totalPrepHours: result.totalPrepHours,
-      summary: result.summary,
-    }
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) throw err
-    console.error('[prep-timeline] Generation error:', err)
-    return {
-      eventName,
-      eventDate,
-      guestCount,
-      serviceTime,
-      steps: [],
-      totalPrepHours: 0,
-      summary: 'Failed to generate prep timeline. Ollama may be busy — try again in a moment.',
-    }
-  }
+  return result
 }
 
 /**

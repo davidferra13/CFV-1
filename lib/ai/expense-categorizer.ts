@@ -7,7 +7,8 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { parseWithOllama } from './parse-ollama'
-import { OllamaOfflineError } from './ollama-errors'
+import { withAiFallback } from './with-ai-fallback'
+import { categorizeExpenseFormula } from '@/lib/formulas/expense-categorizer'
 import { EXPENSE_CATEGORIES, EXPENSE_CATEGORY_LABELS } from './expense-categorizer-constants'
 import { z } from 'zod'
 
@@ -57,19 +58,16 @@ Amount: $${(amountCents / 100).toFixed(2)}
 
 Return JSON: { "category": "...", "confidence": "high|medium|low", "reasoning": "one sentence", "alternativeCategory": "...or null" }`
 
-  try {
-    return await parseWithOllama(systemPrompt, userContent, CategorizationResultSchema, {
-      modelTier: 'fast',
-      cache: true,
-    })
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) throw err
-    console.error('[expense-categorizer] Failed:', err)
-    return {
-      category: 'other',
-      confidence: 'low',
-      reasoning: 'AI categorization unavailable',
-      alternativeCategory: null,
-    }
-  }
+  const { result } = await withAiFallback(
+    // Formula: keyword lookup — instant, deterministic, 150+ keywords
+    () => categorizeExpenseFormula(description, amountCents),
+    // AI: enhanced categorization with contextual reasoning (when Ollama is online)
+    () =>
+      parseWithOllama(systemPrompt, userContent, CategorizationResultSchema, {
+        modelTier: 'fast',
+        cache: true,
+      })
+  )
+
+  return result
 }

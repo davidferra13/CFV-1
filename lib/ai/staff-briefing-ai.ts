@@ -9,7 +9,8 @@ import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
-import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
+import { withAiFallback } from '@/lib/ai/with-ai-fallback'
+import { generateStaffBriefingTemplate } from '@/lib/templates/staff-briefing'
 
 export interface AIStaffBriefing {
   subject: string // document title
@@ -134,12 +135,45 @@ Return JSON: {
   "fullDocument": "complete assembled single-page briefing as plain text"
 }`
 
-  try {
-    const result = await parseWithOllama(systemPrompt, userContent, StaffBriefingSchema)
-    return { ...result, generatedAt: new Date().toISOString() }
-  } catch (err) {
-    if (err instanceof OllamaOfflineError) throw err
-    console.error('[staff-briefing-ai] Failed:', err)
-    throw new Error('Could not generate staff briefing. Please try again.')
-  }
+  const { result } = await withAiFallback(
+    // Template: structured briefing with variable substitution — deterministic
+    () =>
+      generateStaffBriefingTemplate({
+        chefName: chef?.full_name ?? 'Chef',
+        businessName: chef?.business_name ?? undefined,
+        occasion: event.occasion ?? 'Private Event',
+        eventDate: event.event_date ?? 'TBD',
+        serveTime: event.serve_time ?? undefined,
+        arrivalTime: event.arrival_time ?? undefined,
+        guestCount: event.guest_count ?? 0,
+        locationAddress: event.location_address ?? undefined,
+        serviceStyle: event.service_style ?? undefined,
+        dietaryRestrictions: (event.dietary_restrictions as string[]) ?? undefined,
+        allergies: (event.allergies as string[]) ?? undefined,
+        specialRequests: event.special_requests ?? undefined,
+        notes: event.notes ?? undefined,
+        menuItems: menu.map((m) => ({
+          name: m.name,
+          courseType: m.course_type ?? undefined,
+          description: m.description ?? undefined,
+          allergenTags: m.allergen_tags ? (m.allergen_tags as string[]) : undefined,
+        })),
+        guests: guests.map((g) => ({
+          name: g.name ?? 'Guest',
+          dietaryRestrictions: (g.dietary_restrictions as string[]) ?? undefined,
+          allergies: (g.allergies as string[]) ?? undefined,
+        })),
+        staff: staff.map((s: any) => ({
+          name: s.staff_members?.full_name ?? 'Staff',
+          role: s.role ?? s.staff_members?.role ?? 'general',
+        })),
+      }),
+    // AI: enhanced briefing with personalized tone (when Ollama is online)
+    async () => {
+      const aiResult = await parseWithOllama(systemPrompt, userContent, StaffBriefingSchema)
+      return { ...aiResult, generatedAt: new Date().toISOString() }
+    }
+  )
+
+  return result
 }

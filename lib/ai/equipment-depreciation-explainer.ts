@@ -9,6 +9,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { GoogleGenAI } from '@google/genai'
+import { calculateDepreciationFormula } from '@/lib/formulas/depreciation'
 
 export interface EquipmentExplanation {
   itemName: string
@@ -106,6 +107,10 @@ Return JSON: {
 
 Return ONLY valid JSON.`
 
+  // Formula: straight-line depreciation — always runs first (pure math, always correct)
+  const formulaResult = calculateDepreciationFormula(equipment, currentYear)
+
+  // Try AI enhancement (Gemini) for richer plain-English explanations
   try {
     const ai = getClient()
     const response = await ai.models.generateContent({
@@ -122,7 +127,8 @@ Return ONLY valid JSON.`
       generatedAt: new Date().toISOString(),
     }
   } catch (err) {
-    console.error('[equipment-depreciation-explainer] Failed:', err)
-    throw new Error('Could not generate depreciation explanation. Please try again.')
+    // AI failed — formula result is the reliable floor
+    console.warn('[equipment-depreciation-explainer] AI unavailable, using formula result:', err)
+    return formulaResult
   }
 }
