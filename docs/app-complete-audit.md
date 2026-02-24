@@ -809,30 +809,54 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 > **Full element-by-element detail → [`docs/ui-audit-settings.md`](ui-audit-settings.md)** (1730 lines, 50 pages)
 
-**Route:** `/settings` — 50 sub-pages organized in collapsible categories:
+**Route:** `/settings` — 50 sub-pages organized in 5 visual groups with 20 collapsible categories.
 
-| #   | Category                          | Sub-pages                                                                                          |
-| --- | --------------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1   | Business Defaults                 | Home base, stores, timing, revenue goals, dashboard layout, primary nav customization              |
-| 2   | Profile & Branding                | My Profile, portal background, availability signal, public profile, favorite chefs, client preview |
-| 3   | Availability Rules                | Hard blocks, event limits, buffer time                                                             |
-| 4   | Booking Page                      | Shareable link with slug, headline, bio, min notice, pricing model, deposit                        |
-| 5   | Event Configuration               | Event types & labels, custom fields                                                                |
-| 6   | Payments & Billing                | Stripe payouts, subscription & billing, module toggles                                             |
-| 7   | Communication & Workflow          | Response templates, automations, seasonal palettes, chef journal                                   |
-| 8   | Notifications & Alerts            | Email, push, SMS per category                                                                      |
-| 9   | Connected Accounts & Integrations | Google (Gmail + Calendar), Wix, embed widget, integrations center                                  |
-| 10  | AI & Privacy                      | AI Trust Center (full privacy walkthrough), culinary profile for Remy                              |
-| 11  | Client Reviews                    | Google review URL, view all                                                                        |
-| 12  | Appearance                        | Light/dark theme toggle                                                                            |
-| 13  | Professional Growth               | Professional development, capability inventory, momentum, profile highlights, portfolio            |
-| 14  | Chef Network                      | Discoverability toggle, network profile                                                            |
-| 15  | Legal & Protection                | Protection hub, contract templates, food safety & compliance, GDPR, emergency contacts             |
-| 16  | Sample Data                       | Demo data manager (load/remove)                                                                    |
-| 17  | API & Developer                   | API keys, webhooks                                                                                 |
-| 18  | Desktop App                       | System tray, auto-start, native notifications                                                      |
-| 19  | Share Feedback                    | In-app feedback form                                                                               |
-| 20  | Account & Security                | System health, system incidents (admin), change password, delete account                           |
+Each category has a unique lucide-react icon and animated chevron expand/collapse. Categories 1–8 ("Your Business" + "Communication") are **primary** — brand-orange left border accent and orange icon. Categories 9–20 are **secondary** — muted stone icon, no accent.
+
+**Group: Your Business** — Core settings for how you run your practice
+
+| #   | Category            | Icon          | Sub-pages                                                                                          |
+| --- | ------------------- | ------------- | -------------------------------------------------------------------------------------------------- |
+| 1   | Business Defaults   | Building2     | Home base, stores, timing, revenue goals, dashboard layout, primary nav customization              |
+| 2   | Profile & Branding  | Palette       | My Profile, portal background, availability signal, public profile, favorite chefs, client preview |
+| 3   | Availability Rules  | CalendarClock | Hard blocks, event limits, buffer time                                                             |
+| 4   | Booking Page        | CalendarCheck | Shareable link with slug, headline, bio, min notice, pricing model, deposit                        |
+| 5   | Event Configuration | Settings2     | Event types & labels, custom fields                                                                |
+| 6   | Payments & Billing  | CreditCard    | Stripe payouts, subscription & billing, module toggles                                             |
+
+**Group: Communication** — Messaging, automations, and alerts
+
+| #   | Category                 | Icon          | Sub-pages                                                        |
+| --- | ------------------------ | ------------- | ---------------------------------------------------------------- |
+| 7   | Communication & Workflow | MessageSquare | Response templates, automations, seasonal palettes, chef journal |
+| 8   | Notifications & Alerts   | Bell          | Email, push, SMS per category                                    |
+
+**Group: Connections & AI** — External services, reviews, and intelligence
+
+| #   | Category                          | Icon  | Sub-pages                                                             |
+| --- | --------------------------------- | ----- | --------------------------------------------------------------------- |
+| 9   | Connected Accounts & Integrations | Plug  | Google (Gmail + Calendar), Wix, embed widget, integrations center     |
+| 10  | AI & Privacy                      | Brain | AI Trust Center (full privacy walkthrough), culinary profile for Remy |
+| 11  | Client Reviews                    | Star  | Google review URL, view all                                           |
+
+**Group: You & Your Career** — Branding, growth, network, and appearance
+
+| #   | Category            | Icon       | Sub-pages                                                                               |
+| --- | ------------------- | ---------- | --------------------------------------------------------------------------------------- |
+| 12  | Appearance          | Sun        | Light/dark theme toggle                                                                 |
+| 13  | Professional Growth | TrendingUp | Professional development, capability inventory, momentum, profile highlights, portfolio |
+| 14  | Chef Network        | Users      | Discoverability toggle, network profile                                                 |
+
+**Group: System & Account** — Developer tools, legal, and account management
+
+| #   | Category           | Icon          | Sub-pages                                                                              |
+| --- | ------------------ | ------------- | -------------------------------------------------------------------------------------- |
+| 15  | Legal & Protection | ShieldCheck   | Protection hub, contract templates, food safety & compliance, GDPR, emergency contacts |
+| 16  | Sample Data        | Database      | Demo data manager (load/remove)                                                        |
+| 17  | API & Developer    | Code          | API keys, webhooks                                                                     |
+| 18  | Desktop App        | Monitor       | System tray, auto-start, native notifications                                          |
+| 19  | Share Feedback     | MessageCircle | In-app feedback form                                                                   |
+| 20  | Account & Security | Lock          | System health, system incidents (admin), change password, delete account               |
 
 ---
 
