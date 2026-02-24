@@ -1,5 +1,6 @@
 // Centralized navigation configuration (single source of truth)
-// IA principle: show only core workflows first; keep advanced pages one click deeper.
+// Organized by what a chef actually does: Sell → Plan → Cook → Stock → Money → Grow
+// Rule: nothing hidden. If it's built, it's findable within 1-2 clicks.
 import type { LucideIcon } from 'lucide-react'
 import {
   Activity,
@@ -66,7 +67,7 @@ type NavGroup = {
 }
 type PrimaryShortcutOption = NavItem & { context: string }
 
-// Primary always-visible shortcuts
+// Primary always-visible shortcuts (top of sidebar)
 export const standaloneTop: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/commands', label: 'Remy', icon: Bot },
@@ -86,8 +87,10 @@ export const standaloneTop: NavItem[] = [
   { href: '/prospecting', label: 'Prospecting', icon: Crosshair },
 ]
 
-// Main domains
+// ─── NAV GROUPS ─────────────────────────────────────────────────
+// Organized by chef workflow: AI → Sell → Plan → Cook → Stock → Money → Grow → Protect
 export const navGroups: NavGroup[] = [
+  // ─── REMY (AI Assistant) ───
   {
     id: 'remy',
     label: 'Remy',
@@ -101,28 +104,30 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/settings/ai-privacy',
-        label: 'Settings & Privacy',
+        label: 'AI Privacy & Settings',
         icon: ShieldCheck,
-        children: [{ href: '/settings/ai-privacy', label: 'Trust Center & Onboarding' }],
       },
     ],
   },
+
+  // ─── SALES & PIPELINE (getting new business) ───
   {
-    id: 'pipeline',
-    label: 'Pipeline',
+    id: 'sales',
+    label: 'Sales',
     icon: Inbox,
     module: 'pipeline',
     items: [
       {
-        href: '/inquiries/awaiting-response',
-        label: 'Inquiry Stages',
+        href: '/inquiries',
+        label: 'Inquiries',
         icon: Inbox,
         children: [
-          { href: '/inquiries/awaiting-client-reply', label: 'Awaiting Client Reply' },
+          { href: '/inquiries/awaiting-response', label: 'Awaiting Response' },
+          { href: '/inquiries/awaiting-client-reply', label: 'Awaiting Client' },
           { href: '/inquiries/menu-drafting', label: 'Menu Drafting' },
           { href: '/inquiries/sent-to-client', label: 'Sent to Client' },
-          { href: '/inquiries/new', label: 'Log New Inquiry', visibility: 'advanced' },
-          { href: '/inquiries/declined', label: 'Declined', visibility: 'advanced' },
+          { href: '/inquiries/new', label: 'Log New Inquiry' },
+          { href: '/inquiries/declined', label: 'Declined' },
         ],
       },
       {
@@ -130,13 +135,22 @@ export const navGroups: NavGroup[] = [
         label: 'Quotes',
         icon: FileText,
         children: [
+          { href: '/quotes/new', label: 'New Quote' },
+          { href: '/quotes/draft', label: 'Draft' },
           { href: '/quotes/sent', label: 'Sent' },
           { href: '/quotes/viewed', label: 'Viewed' },
           { href: '/quotes/accepted', label: 'Accepted' },
-          { href: '/quotes/new', label: 'New Quote', visibility: 'advanced' },
-          { href: '/quotes/draft', label: 'Draft', visibility: 'advanced' },
-          { href: '/quotes/expired', label: 'Expired', visibility: 'advanced' },
-          { href: '/quotes/rejected', label: 'Rejected', visibility: 'advanced' },
+          { href: '/quotes/expired', label: 'Expired' },
+          { href: '/quotes/rejected', label: 'Rejected' },
+        ],
+      },
+      {
+        href: '/proposals',
+        label: 'Proposals',
+        icon: Presentation,
+        children: [
+          { href: '/proposals/templates', label: 'Templates' },
+          { href: '/proposals/addons', label: 'Add-Ons' },
         ],
       },
       {
@@ -144,68 +158,142 @@ export const navGroups: NavGroup[] = [
         label: 'Leads',
         icon: Target,
         children: [
-          { href: '/leads/new', label: 'New', visibility: 'advanced' },
-          { href: '/leads/contacted', label: 'Contacted', visibility: 'advanced' },
-          { href: '/leads/qualified', label: 'Qualified', visibility: 'advanced' },
-          { href: '/leads/converted', label: 'Converted', visibility: 'advanced' },
-          { href: '/leads/archived', label: 'Archived', visibility: 'advanced' },
+          { href: '/leads/new', label: 'New' },
+          { href: '/leads/contacted', label: 'Contacted' },
+          { href: '/leads/qualified', label: 'Qualified' },
+          { href: '/leads/converted', label: 'Converted' },
+          { href: '/leads/archived', label: 'Archived' },
         ],
       },
       {
         href: '/prospecting',
         label: 'Prospecting',
-        icon: Target,
+        icon: Crosshair,
         children: [
           { href: '/prospecting/scrub', label: 'AI Scrub' },
           { href: '/prospecting/queue', label: 'Call Queue' },
           { href: '/prospecting/scripts', label: 'Call Scripts' },
         ],
-        visibility: 'advanced' as const,
-      },
-      {
-        href: '/guest-leads',
-        label: 'Guest Pipeline',
-        icon: Users,
-      },
-      {
-        href: '/guest-analytics',
-        label: 'Guest Insights',
-        icon: BarChart3,
-        visibility: 'advanced' as const,
-      },
-      {
-        href: '/testimonials',
-        label: 'Testimonials',
-        icon: Star,
       },
       {
         href: '/calls',
         label: 'Calls & Meetings',
         icon: Phone,
         children: [
+          { href: '/calls/new', label: 'Schedule Call' },
           { href: '/calls?status=scheduled', label: 'Upcoming' },
           { href: '/calls?status=completed', label: 'Completed' },
-          { href: '/calls/new', label: 'Schedule Call', visibility: 'advanced' },
+        ],
+      },
+      {
+        href: '/testimonials',
+        label: 'Testimonials',
+        icon: Star,
+      },
+    ],
+  },
+
+  // ─── CLIENTS & GUESTS (people) ───
+  {
+    id: 'clients',
+    label: 'Clients',
+    icon: Users,
+    module: 'clients',
+    items: [
+      {
+        href: '/clients',
+        label: 'Client Directory',
+        icon: Users,
+        children: [
+          { href: '/clients/active', label: 'Active' },
+          { href: '/clients/inactive', label: 'Inactive' },
+          { href: '/clients/vip', label: 'VIP' },
+          { href: '/clients/new', label: 'Add Client' },
+          { href: '/clients/segments', label: 'Segments' },
+          { href: '/clients/duplicates', label: 'Duplicates' },
+          { href: '/clients/gift-cards', label: 'Gift Cards' },
+        ],
+      },
+      {
+        href: '/clients/communication',
+        label: 'Communication',
+        icon: MessageCircle,
+        children: [
+          { href: '/clients/communication/notes', label: 'Client Notes' },
+          { href: '/clients/communication/follow-ups', label: 'Follow-Ups' },
+          { href: '/clients/communication/upcoming-touchpoints', label: 'Upcoming Touchpoints' },
+        ],
+      },
+      {
+        href: '/clients/history',
+        label: 'Client History',
+        icon: Clock,
+        children: [
+          { href: '/clients/history/event-history', label: 'Event History' },
+          { href: '/clients/history/past-menus', label: 'Past Menus' },
+          { href: '/clients/history/spending-history', label: 'Spending History' },
+        ],
+      },
+      {
+        href: '/clients/preferences',
+        label: 'Preferences & Dietary',
+        icon: ClipboardCheck,
+        children: [
+          { href: '/clients/preferences/dietary-restrictions', label: 'Dietary Restrictions' },
+          { href: '/clients/preferences/allergies', label: 'Allergies' },
+          { href: '/clients/preferences/favorite-dishes', label: 'Favorite Dishes' },
+          { href: '/clients/preferences/dislikes', label: 'Dislikes' },
+        ],
+      },
+      {
+        href: '/clients/insights',
+        label: 'Client Insights',
+        icon: BarChart3,
+        children: [
+          { href: '/clients/insights/top-clients', label: 'Top Clients' },
+          { href: '/clients/insights/most-frequent', label: 'Most Frequent' },
+          { href: '/clients/insights/at-risk', label: 'At Risk' },
+        ],
+      },
+      {
+        href: '/loyalty',
+        label: 'Loyalty & Rewards',
+        icon: Gift,
+        children: [
+          { href: '/loyalty/settings', label: 'Program Settings' },
+          { href: '/loyalty/rewards/new', label: 'Create Reward' },
+          { href: '/clients/loyalty', label: 'Loyalty Overview' },
+          { href: '/clients/loyalty/points', label: 'Points' },
+          { href: '/clients/loyalty/rewards', label: 'Rewards' },
+          { href: '/clients/loyalty/referrals', label: 'Referrals' },
+        ],
+      },
+      {
+        href: '/guests',
+        label: 'Guest Directory',
+        icon: Contact,
+        children: [
+          { href: '/guests/reservations', label: 'Reservations' },
+          { href: '/guest-leads', label: 'Guest Pipeline' },
+          { href: '/guest-analytics', label: 'Guest Insights' },
         ],
       },
       {
         href: '/partners',
-        label: 'Partners',
+        label: 'Partners & Referrals',
         icon: Handshake,
         children: [
           { href: '/partners/active', label: 'Active' },
           { href: '/partners/inactive', label: 'Inactive' },
           { href: '/partners/new', label: 'Add Partner' },
-          {
-            href: '/partners/referral-performance',
-            label: 'Referral Performance',
-            visibility: 'advanced',
-          },
-          { href: '/partners/events-generated', label: 'Events Generated', visibility: 'advanced' },
+          { href: '/partners/referral-performance', label: 'Referral Performance' },
+          { href: '/partners/events-generated', label: 'Events Generated' },
         ],
       },
     ],
   },
+
+  // ─── EVENTS (planning and executing) ───
   {
     id: 'events',
     label: 'Events',
@@ -227,100 +315,141 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/calendar',
-        label: 'Availability',
+        label: 'Calendar',
         icon: CalendarDays,
         children: [
           { href: '/calendar/day', label: 'Day View' },
           { href: '/calendar/week', label: 'Week Planner' },
           { href: '/calendar/year', label: 'Year View' },
-          { href: '/waitlist', label: 'Waitlist', visibility: 'advanced' },
+          { href: '/waitlist', label: 'Waitlist' },
         ],
       },
       {
         href: '/aar',
-        label: 'Operations Tools',
+        label: 'Event Reviews',
         icon: ClipboardCheck,
         children: [
-          { href: '/aar', label: 'Event Reviews' },
           { href: '/reviews', label: 'Reviews' },
           { href: '/import', label: 'Smart Import' },
         ],
       },
     ],
   },
+
+  // ─── CULINARY (food creation) ───
   {
-    id: 'staff',
-    label: 'Staff',
-    icon: Users,
-    module: 'staff-management',
+    id: 'culinary',
+    label: 'Culinary',
+    icon: ChefHat,
+    module: 'culinary',
     items: [
       {
-        href: '/staff',
-        label: 'Staff Roster',
-        icon: Users,
+        href: '/menus',
+        label: 'Menus',
+        icon: UtensilsCrossed,
         children: [
-          { href: '/staff/schedule', label: 'Schedule', icon: CalendarDays },
-          {
-            href: '/staff/availability',
-            label: 'Availability',
-            icon: CalendarDays,
-            visibility: 'secondary',
-          },
-          { href: '/staff/clock', label: 'Clock In/Out', icon: Clock },
-          {
-            href: '/staff/performance',
-            label: 'Performance',
-            icon: BarChart3,
-            visibility: 'secondary',
-          },
-          {
-            href: '/staff/labor',
-            label: 'Labor Dashboard',
-            icon: DollarSign,
-            visibility: 'secondary',
-          },
+          { href: '/menus/new', label: 'New Menu' },
+          { href: '/culinary/menus', label: 'Menu Library' },
         ],
+      },
+      {
+        href: '/recipes',
+        label: 'Recipes',
+        icon: UtensilsCrossed,
+        children: [
+          { href: '/recipes/new', label: 'New Recipe' },
+          { href: '/culinary/recipes', label: 'Recipe Library' },
+          { href: '/culinary/components', label: 'Components' },
+        ],
+      },
+      {
+        href: '/recipes/ingredients',
+        label: 'Ingredients',
+        icon: Package,
+        children: [{ href: '/culinary/ingredients', label: 'Ingredients Database' }],
+      },
+      {
+        href: '/culinary/prep',
+        label: 'Prep Workspace',
+        icon: ClipboardCheck,
+      },
+      {
+        href: '/culinary/costing',
+        label: 'Costing',
+        icon: DollarSign,
+      },
+      {
+        href: '/culinary-board',
+        label: 'Culinary Board',
+        icon: Palette,
+      },
+      {
+        href: '/settings/repertoire',
+        label: 'Seasonal Palettes',
+        icon: Palette,
       },
     ],
   },
+
+  // ─── OPERATIONS (running the kitchen day-to-day) ───
   {
-    id: 'tasks',
-    label: 'Tasks',
-    icon: ListChecks,
-    module: 'task-management',
+    id: 'operations',
+    label: 'Operations',
+    icon: Activity,
+    module: 'station-ops',
     items: [
       {
+        href: '/stations/daily-ops',
+        label: 'Daily Ops',
+        icon: Activity,
+      },
+      {
         href: '/tasks',
-        label: 'Daily Tasks',
+        label: 'Tasks',
         icon: ListChecks,
         children: [{ href: '/tasks/templates', label: 'Task Templates' }],
       },
-    ],
-  },
-  {
-    id: 'stations',
-    label: 'Stations',
-    icon: ClipboardCheck,
-    module: 'station-ops',
-    items: [
-      { href: '/stations/daily-ops', label: 'Daily Ops', icon: Activity },
       {
         href: '/stations',
         label: 'Station Clipboards',
         icon: ClipboardCheck,
         children: [
-          { href: '/stations/orders', label: 'Order Sheet', icon: Package },
-          {
-            href: '/stations/waste',
-            label: 'Waste Log',
-            icon: AlertTriangle,
-            visibility: 'secondary',
-          },
-          { href: '/stations/ops-log', label: 'Ops Log', icon: Activity, visibility: 'advanced' },
+          { href: '/stations/orders', label: 'Order Sheet' },
+          { href: '/stations/waste', label: 'Waste Log' },
+          { href: '/stations/ops-log', label: 'Ops Log' },
         ],
+      },
+      {
+        href: '/staff',
+        label: 'Staff',
+        icon: Users,
+        children: [
+          { href: '/staff/schedule', label: 'Schedule' },
+          { href: '/staff/availability', label: 'Availability' },
+          { href: '/staff/clock', label: 'Clock In/Out' },
+          { href: '/staff/performance', label: 'Performance' },
+          { href: '/staff/labor', label: 'Labor Dashboard' },
+        ],
+      },
+      {
+        href: '/queue',
+        label: 'Priority Queue',
+        icon: Activity,
+      },
+      {
+        href: '/operations/kitchen-rentals',
+        label: 'Kitchen Rentals',
+        icon: Warehouse,
+      },
+      {
+        href: '/operations/equipment',
+        label: 'Equipment',
+        icon: Package,
       },
     ],
   },
+
+  // ─── VENDORS (buying) ───
   {
     id: 'vendors',
     label: 'Vendors',
@@ -333,7 +462,7 @@ export const navGroups: NavGroup[] = [
         icon: Truck,
         children: [
           { href: '/vendors/invoices', label: 'Invoices' },
-          { href: '/vendors/price-comparison', label: 'Price Comparison', visibility: 'secondary' },
+          { href: '/vendors/price-comparison', label: 'Price Comparison' },
         ],
       },
       {
@@ -344,6 +473,8 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+
+  // ─── INVENTORY (tracking stock) ───
   {
     id: 'inventory',
     label: 'Inventory',
@@ -401,181 +532,21 @@ export const navGroups: NavGroup[] = [
         href: '/inventory/staff-meals',
         label: 'Staff Meals',
         icon: UtensilsCrossed,
-        visibility: 'secondary' as const,
       },
       {
         href: '/inventory/expiry',
         label: 'Expiry Alerts',
         icon: Clock,
-        visibility: 'secondary' as const,
       },
       {
         href: '/inventory/demand',
         label: 'Demand Forecast',
         icon: TrendingUp,
-        visibility: 'secondary' as const,
       },
     ],
   },
-  {
-    id: 'guests',
-    label: 'Guests',
-    icon: Contact,
-    module: 'guest-crm',
-    items: [
-      {
-        href: '/guests',
-        label: 'Guest Directory',
-        icon: Contact,
-        children: [{ href: '/guests/reservations', label: 'Reservations', icon: CalendarDays }],
-      },
-    ],
-  },
-  {
-    id: 'culinary',
-    label: 'Culinary',
-    icon: ChefHat,
-    module: 'culinary',
-    items: [
-      {
-        href: '/menus',
-        label: 'Menus',
-        icon: UtensilsCrossed,
-        children: [
-          { href: '/menus/new', label: 'New Menu' },
-          { href: '/culinary/menus', label: 'Menu Library', visibility: 'secondary' },
-        ],
-      },
-      {
-        href: '/recipes',
-        label: 'Recipes',
-        icon: UtensilsCrossed,
-        children: [
-          { href: '/recipes/new', label: 'New Recipe' },
-          { href: '/culinary/recipes', label: 'Recipe Library', visibility: 'secondary' },
-          { href: '/culinary/components', label: 'Components', visibility: 'advanced' },
-        ],
-      },
-      {
-        href: '/recipes/ingredients',
-        label: 'Ingredients',
-        icon: Package,
-        children: [
-          { href: '/culinary/ingredients', label: 'Ingredients Database', visibility: 'secondary' },
-        ],
-      },
-      {
-        href: '/culinary/prep',
-        label: 'Prep Workspace',
-        icon: ClipboardCheck,
-      },
-      {
-        href: '/culinary/costing',
-        label: 'Costing',
-        icon: DollarSign,
-      },
-      {
-        href: '/culinary/my-kitchen',
-        label: 'My Kitchen',
-        icon: Warehouse,
-        children: [
-          { href: '/operations/kitchen-rentals', label: 'Kitchen Rentals', visibility: 'advanced' },
-          { href: '/operations/equipment', label: 'Equipment Inventory', visibility: 'advanced' },
-        ],
-      },
-      {
-        href: '/culinary-board',
-        label: 'Culinary Board',
-        icon: Palette,
-      },
-      {
-        href: '/settings/repertoire',
-        label: 'Seasonal Palettes',
-        icon: Palette,
-        visibility: 'advanced' as const,
-      },
-    ],
-  },
-  {
-    id: 'clients',
-    label: 'Clients',
-    icon: Users,
-    module: 'clients',
-    items: [
-      {
-        href: '/clients',
-        label: 'Client Directory',
-        icon: Users,
-        children: [
-          { href: '/clients/active', label: 'Active' },
-          { href: '/clients/inactive', label: 'Inactive' },
-          { href: '/clients/vip', label: 'VIP' },
-          { href: '/clients/gift-cards', label: 'Gift Cards' },
-          { href: '/clients/new', label: 'Add Client', visibility: 'advanced' },
-          { href: '/clients/segments', label: 'Segments', visibility: 'advanced' },
-          { href: '/clients/duplicates', label: 'Duplicates', visibility: 'advanced' },
-        ],
-      },
-      {
-        href: '/loyalty',
-        label: 'Loyalty & Retention',
-        icon: Gift,
-        children: [
-          { href: '/loyalty/settings', label: 'Program Settings' },
-          { href: '/loyalty/rewards/new', label: 'Create Reward' },
-          { href: '/clients/communication', label: 'Communication', visibility: 'advanced' },
-          { href: '/clients/communication/notes', label: 'Client Notes', visibility: 'advanced' },
-          {
-            href: '/clients/communication/follow-ups',
-            label: 'Follow-Ups',
-            visibility: 'advanced',
-          },
-          {
-            href: '/clients/communication/upcoming-touchpoints',
-            label: 'Upcoming Touchpoints',
-            visibility: 'advanced',
-          },
-          { href: '/clients/history', label: 'History', visibility: 'advanced' },
-          {
-            href: '/clients/history/event-history',
-            label: 'Event History',
-            visibility: 'advanced',
-          },
-          { href: '/clients/history/past-menus', label: 'Past Menus', visibility: 'advanced' },
-          {
-            href: '/clients/history/spending-history',
-            label: 'Spending History',
-            visibility: 'advanced',
-          },
-          { href: '/clients/preferences', label: 'Preferences', visibility: 'advanced' },
-          {
-            href: '/clients/preferences/dietary-restrictions',
-            label: 'Dietary Restrictions',
-            visibility: 'advanced',
-          },
-          { href: '/clients/preferences/allergies', label: 'Allergies', visibility: 'advanced' },
-          {
-            href: '/clients/preferences/favorite-dishes',
-            label: 'Favorite Dishes',
-            visibility: 'advanced',
-          },
-          { href: '/clients/preferences/dislikes', label: 'Dislikes', visibility: 'advanced' },
-          { href: '/clients/insights', label: 'Insights', visibility: 'advanced' },
-          { href: '/clients/insights/top-clients', label: 'Top Clients', visibility: 'advanced' },
-          {
-            href: '/clients/insights/most-frequent',
-            label: 'Most Frequent',
-            visibility: 'advanced',
-          },
-          { href: '/clients/insights/at-risk', label: 'At Risk', visibility: 'advanced' },
-          { href: '/clients/loyalty', label: 'Loyalty Overview', visibility: 'advanced' },
-          { href: '/clients/loyalty/points', label: 'Points', visibility: 'advanced' },
-          { href: '/clients/loyalty/rewards', label: 'Rewards', visibility: 'advanced' },
-          { href: '/clients/loyalty/referrals', label: 'Referrals', visibility: 'advanced' },
-        ],
-      },
-    ],
-  },
+
+  // ─── FINANCE (money) ───
   {
     id: 'finance',
     label: 'Finance',
@@ -587,113 +558,185 @@ export const navGroups: NavGroup[] = [
         label: 'Financial Hub',
         icon: DollarSign,
         children: [
-          { href: '/finance', label: 'Finance (Legacy)', visibility: 'advanced' },
-          { href: '/expenses', label: 'Expenses' },
+          { href: '/finance/overview', label: 'Overview' },
+          { href: '/finance', label: 'Finance Home' },
+        ],
+      },
+      {
+        href: '/expenses',
+        label: 'Expenses',
+        icon: DollarSign,
+        children: [
           { href: '/expenses/new', label: 'Add Expense' },
           { href: '/receipts', label: 'Receipt Library' },
-          { href: '/finance/expenses', label: 'Expenses by Category', visibility: 'advanced' },
-          { href: '/finance/invoices', label: 'Invoices', visibility: 'advanced' },
-          { href: '/finance/payments', label: 'Payments', visibility: 'advanced' },
-          { href: '/finance/payouts', label: 'Payouts', visibility: 'advanced' },
-          { href: '/finance/ledger', label: 'Ledger', visibility: 'advanced' },
-          { href: '/finance/reporting', label: 'Reporting', visibility: 'advanced' },
-          { href: '/finance/overview', label: 'Overview', visibility: 'advanced' },
-          {
-            href: '/finance/reporting/revenue-by-month',
-            label: 'Revenue by Month',
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/reporting/revenue-by-client',
-            label: 'Revenue by Client',
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/reporting/revenue-by-event',
-            label: 'Revenue by Event',
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/reporting/expense-by-category',
-            label: 'Expense by Category',
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/reporting/profit-by-event',
-            label: 'Profit by Event',
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/reporting/year-to-date-summary',
-            label: 'Year-to-Date Summary',
-            visibility: 'advanced',
-          },
-          { href: '/finance/reporting/tax-summary', label: 'Tax Summary', visibility: 'advanced' },
-          { href: '/finance/invoices/sent', label: 'Sent Invoices', visibility: 'advanced' },
-          { href: '/finance/invoices/paid', label: 'Paid Invoices', visibility: 'advanced' },
-          { href: '/finance/invoices/overdue', label: 'Overdue Invoices', visibility: 'advanced' },
-          { href: '/finance/payments/deposits', label: 'Deposits', visibility: 'advanced' },
-          { href: '/finance/payments/installments', label: 'Installments', visibility: 'advanced' },
-          { href: '/finance/payments/refunds', label: 'Refunds', visibility: 'advanced' },
-          {
-            href: '/finance/payouts/stripe-payouts',
-            label: 'Stripe Payouts',
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/ledger/transaction-log',
-            label: 'Transaction Log',
-            visibility: 'advanced',
-          },
-          { href: '/finance/tax', label: 'Tax Center', visibility: 'advanced' },
-          { href: '/finance/forecast', label: 'Revenue Forecast', visibility: 'advanced' },
-          { href: '/finance/tax/year-end', label: 'Year-End Tax Package', visibility: 'advanced' },
-          {
-            href: '/finance/bank-feed',
-            label: 'Bank Feed',
-            icon: Landmark,
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/cash-flow',
-            label: 'Cash Flow Forecast',
-            icon: TrendingUp,
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/recurring',
-            label: 'Recurring Invoices',
-            icon: RefreshCw,
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/disputes',
-            label: 'Payment Disputes',
-            icon: ShieldAlert,
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/contractors',
-            label: '1099 Contractors',
-            icon: Users,
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/tax/quarterly',
-            label: 'Quarterly Estimates',
-            icon: PieChart,
-            visibility: 'advanced',
-          },
-          {
-            href: '/finance/retainers',
-            label: 'Retainers',
-            icon: RefreshCw,
-            visibility: 'advanced',
-          },
+          { href: '/finance/expenses', label: 'By Category' },
         ],
+      },
+      {
+        href: '/finance/invoices',
+        label: 'Invoices',
+        icon: FileText,
+        children: [
+          { href: '/finance/invoices/sent', label: 'Sent' },
+          { href: '/finance/invoices/paid', label: 'Paid' },
+          { href: '/finance/invoices/overdue', label: 'Overdue' },
+          { href: '/finance/recurring', label: 'Recurring Invoices' },
+        ],
+      },
+      {
+        href: '/finance/payments',
+        label: 'Payments',
+        icon: DollarSign,
+        children: [
+          { href: '/finance/payments/deposits', label: 'Deposits' },
+          { href: '/finance/payments/installments', label: 'Installments' },
+          { href: '/finance/payments/refunds', label: 'Refunds' },
+          { href: '/finance/disputes', label: 'Disputes' },
+          { href: '/finance/retainers', label: 'Retainers' },
+        ],
+      },
+      {
+        href: '/finance/payouts',
+        label: 'Payouts',
+        icon: Landmark,
+        children: [
+          { href: '/finance/payouts/stripe-payouts', label: 'Stripe Payouts' },
+          { href: '/finance/bank-feed', label: 'Bank Feed' },
+        ],
+      },
+      {
+        href: '/finance/ledger',
+        label: 'Ledger',
+        icon: FileText,
+        children: [{ href: '/finance/ledger/transaction-log', label: 'Transaction Log' }],
+      },
+      {
+        href: '/finance/reporting',
+        label: 'Reports',
+        icon: BarChart3,
+        children: [
+          { href: '/finance/reporting/revenue-by-month', label: 'Revenue by Month' },
+          { href: '/finance/reporting/revenue-by-client', label: 'Revenue by Client' },
+          { href: '/finance/reporting/revenue-by-event', label: 'Revenue by Event' },
+          { href: '/finance/reporting/expense-by-category', label: 'Expense by Category' },
+          { href: '/finance/reporting/profit-by-event', label: 'Profit by Event' },
+          { href: '/finance/reporting/year-to-date-summary', label: 'Year-to-Date Summary' },
+        ],
+      },
+      {
+        href: '/finance/tax',
+        label: 'Tax Center',
+        icon: PieChart,
+        children: [
+          { href: '/finance/reporting/tax-summary', label: 'Tax Summary' },
+          { href: '/finance/tax/quarterly', label: 'Quarterly Estimates' },
+          { href: '/finance/tax/year-end', label: 'Year-End Package' },
+        ],
+      },
+      {
+        href: '/finance/forecast',
+        label: 'Forecasting',
+        icon: TrendingUp,
+        children: [{ href: '/finance/cash-flow', label: 'Cash Flow Forecast' }],
+      },
+      {
+        href: '/finance/contractors',
+        label: '1099 Contractors',
+        icon: Users,
       },
     ],
   },
+
+  // ─── MARKETING & GROWTH (getting the word out) ───
+  {
+    id: 'marketing',
+    label: 'Marketing',
+    icon: Mail,
+    module: 'more',
+    items: [
+      {
+        href: '/marketing',
+        label: 'Email Campaigns',
+        icon: Mail,
+        children: [
+          { href: '/marketing/push-dinners', label: 'Push Dinners' },
+          { href: '/marketing/sequences', label: 'Sequences' },
+          { href: '/marketing/templates', label: 'Templates' },
+        ],
+      },
+      {
+        href: '/social/planner',
+        label: 'Content Planner',
+        icon: Mail,
+        children: [
+          { href: '/social/vault', label: 'Media Vault' },
+          { href: '/social/connections', label: 'Platform Connections' },
+          { href: '/social/settings', label: 'Queue Settings' },
+        ],
+      },
+      {
+        href: '/network',
+        label: 'Community',
+        icon: Rss,
+        children: [
+          { href: '/network?tab=feed', label: 'Feed' },
+          { href: '/network?tab=channels', label: 'Channels' },
+          { href: '/network?tab=discover', label: 'Discover Chefs' },
+          { href: '/network?tab=connections', label: 'Connections' },
+          { href: '/network/saved', label: 'Saved Posts' },
+          { href: '/network/notifications', label: 'Notifications' },
+        ],
+      },
+      {
+        href: '/community/templates',
+        label: 'Community Templates',
+        icon: FileText,
+      },
+      {
+        href: '/reputation/mentions',
+        label: 'Brand Mentions',
+        icon: ShieldAlert,
+      },
+    ],
+  },
+
+  // ─── ANALYTICS (understanding the business) ───
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: BarChart3,
+    module: 'more',
+    items: [
+      {
+        href: '/insights',
+        label: 'Insights',
+        icon: BarChart3,
+        children: [
+          { href: '/analytics', label: 'Source Analytics' },
+          { href: '/analytics/reports', label: 'Custom Reports' },
+          { href: '/insights/time-analysis', label: 'Time Analysis' },
+        ],
+      },
+      {
+        href: '/analytics/benchmarks',
+        label: 'Business Analytics',
+        icon: TrendingUp,
+        children: [
+          { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
+          { href: '/analytics/demand', label: 'Demand Heatmap' },
+          { href: '/analytics/client-ltv', label: 'Client Value' },
+          { href: '/analytics/referral-sources', label: 'Referral Sources' },
+        ],
+      },
+      {
+        href: '/goals/setup',
+        label: 'Goals',
+        icon: Target,
+      },
+    ],
+  },
+
+  // ─── PROTECTION (safety & compliance) ───
   {
     id: 'protection',
     label: 'Protection',
@@ -716,122 +759,28 @@ export const navGroups: NavGroup[] = [
         href: '/safety/incidents',
         label: 'Incidents',
         icon: AlertTriangle,
-        children: [
-          { href: '/safety/incidents/new', label: 'Report Incident', visibility: 'advanced' },
-        ],
+        children: [{ href: '/safety/incidents/new', label: 'Report Incident' }],
       },
       {
         href: '/safety/backup-chef',
         label: 'Backup Chef',
         icon: Users,
       },
-      {
-        href: '/reputation/mentions',
-        label: 'Brand Mentions',
-        icon: ShieldAlert,
-      },
     ],
   },
+
+  // ─── TOOLS (utilities) ───
   {
-    id: 'more',
-    label: 'More',
+    id: 'tools',
+    label: 'Tools',
     icon: ListChecks,
     module: 'more',
     items: [
       {
-        href: '/goals/setup',
-        label: 'Goal Setup',
-        icon: Target,
-      },
-      {
-        href: '/insights',
-        label: 'Insights',
-        icon: BarChart3,
-        children: [
-          { href: '/analytics', label: 'Source Analytics' },
-          { href: '/analytics/reports', label: 'Custom Reports', visibility: 'advanced' },
-          { href: '/insights/time-analysis', label: 'Time Analysis', visibility: 'advanced' },
-        ],
-      },
-      {
-        href: '/queue',
-        label: 'Priority Queue',
-        icon: Activity,
-      },
-      {
-        href: '/network',
-        label: 'Community',
-        icon: Rss,
-        children: [
-          { href: '/network?tab=feed', label: 'Feed', icon: Rss },
-          { href: '/network?tab=channels', label: 'Channels', icon: Hash },
-          { href: '/network?tab=discover', label: 'Discover Chefs', icon: Compass },
-          { href: '/network?tab=connections', label: 'Connections', icon: Handshake },
-          { href: '/network/saved', label: 'Saved Posts', visibility: 'advanced' },
-          { href: '/network/notifications', label: 'Notifications', visibility: 'advanced' },
-          { href: '/network/channels/pastry', label: '#pastry', visibility: 'advanced' },
-          { href: '/network/channels/savory', label: '#savory', visibility: 'advanced' },
-          { href: '/network/channels/business', label: '#business', visibility: 'advanced' },
-          { href: '/network/channels/technique', label: '#technique', visibility: 'advanced' },
-          { href: '/network/channels/wins', label: '#wins', visibility: 'advanced' },
-        ],
-      },
-      {
-        href: '/social/planner',
-        label: 'Content Planner',
-        icon: Mail,
-        children: [
-          { href: '/social/planner', label: 'Content Planner' },
-          { href: '/social/vault', label: 'Media Vault' },
-          { href: '/social/connections', label: 'Platform Connections' },
-          { href: '/social/settings', label: 'Queue Settings', visibility: 'advanced' },
-        ],
-      },
-      {
-        href: '/marketing',
-        label: 'Email Campaigns',
-        icon: Mail,
-        children: [
-          { href: '/marketing/push-dinners', label: 'Push Dinners' },
-          { href: '/marketing/sequences', label: 'Sequences', visibility: 'advanced' },
-          { href: '/marketing/templates', label: 'Templates', visibility: 'advanced' },
-        ],
-      },
-      {
         href: '/inbox/history-scan',
         label: 'Inbox Tools',
         icon: MessageCircle,
-        children: [{ href: '/inbox/triage', label: 'Sort Messages', visibility: 'advanced' }],
-      },
-      {
-        href: '/proposals',
-        label: 'Proposals',
-        icon: Presentation,
-        children: [
-          { href: '/proposals/templates', label: 'Templates' },
-          { href: '/proposals/addons', label: 'Add-Ons' },
-        ],
-      },
-      {
-        href: '/analytics/benchmarks',
-        label: 'Business Analytics',
-        icon: TrendingUp,
-        children: [
-          { href: '/analytics/benchmarks', label: 'Benchmarks' },
-          { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
-          { href: '/analytics/demand', label: 'Demand Heatmap' },
-          { href: '/analytics/client-ltv', label: 'Client Value' },
-          {
-            href: '/analytics/referral-sources',
-            label: 'Referral Sources',
-            visibility: 'advanced' as const,
-          },
-        ],
-      },
-      {
-        href: '/community/templates',
-        label: 'Community Templates',
-        icon: FileText,
+        children: [{ href: '/inbox/triage', label: 'Sort Messages' }],
       },
       {
         href: '/help',
@@ -873,9 +822,19 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     context: 'Settings',
   },
   { href: '/settings/integrations', label: 'Integrations', icon: Settings, context: 'Settings' },
-  { href: '/settings/templates', label: 'Response Templates', icon: Settings, context: 'Settings' },
+  {
+    href: '/settings/templates',
+    label: 'Response Templates',
+    icon: Settings,
+    context: 'Settings',
+  },
   { href: '/settings/automations', label: 'Automations', icon: Settings, context: 'Settings' },
-  { href: '/settings/contracts', label: 'Contract Templates', icon: Settings, context: 'Settings' },
+  {
+    href: '/settings/contracts',
+    label: 'Contract Templates',
+    icon: Settings,
+    context: 'Settings',
+  },
   { href: '/settings/repertoire', label: 'Seasonal Palettes', icon: Settings, context: 'Settings' },
   { href: '/settings/journal', label: 'Chef Journal', icon: Settings, context: 'Settings' },
   { href: '/settings/favorite-chefs', label: 'Favorite Chefs', icon: Star, context: 'Settings' },
@@ -886,7 +845,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     icon: Settings,
     context: 'Settings',
   },
-  { href: '/settings/emergency', label: 'Emergency Contacts', icon: Settings, context: 'Settings' },
+  {
+    href: '/settings/emergency',
+    label: 'Emergency Contacts',
+    icon: Settings,
+    context: 'Settings',
+  },
   {
     href: '/settings/professional',
     label: 'Professional Development',
@@ -965,6 +929,7 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     icon: ShieldCheck,
     context: 'Settings',
   },
+  { href: '/settings/embed', label: 'Embed Widget', icon: Settings, context: 'Settings' },
 ]
 
 function pushPrimaryShortcut(
