@@ -374,6 +374,61 @@ export async function getRecipeById(recipeId: string) {
     (a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
   )
 
+  // Get sub-recipes (children of this recipe)
+  const { data: subRecipeRows } = await supabase
+    .from('recipe_sub_recipes' as any)
+    .select('id, quantity, unit, sort_order, notes, child_recipe_id')
+    .eq('parent_recipe_id', recipeId)
+    .order('sort_order', { ascending: true })
+
+  const subRecipes: Array<{
+    id: string
+    quantity: number
+    unit: string
+    sort_order: number
+    notes: string | null
+    childRecipe: {
+      id: string
+      name: string
+      category: string
+      yield_quantity: number | null
+      yield_unit: string | null
+    } | null
+  }> = []
+
+  for (const sr of (subRecipeRows as any[]) || []) {
+    const { data: childRecipe } = await supabase
+      .from('recipes')
+      .select('id, name, category, yield_quantity, yield_unit')
+      .eq('id', sr.child_recipe_id)
+      .single()
+
+    subRecipes.push({
+      id: sr.id,
+      quantity: sr.quantity,
+      unit: sr.unit,
+      sort_order: sr.sort_order,
+      notes: sr.notes,
+      childRecipe: childRecipe ?? null,
+    })
+  }
+
+  // Get "used in" (parent recipes that reference this one as a sub-recipe)
+  const { data: usedInRows } = await supabase
+    .from('recipe_sub_recipes' as any)
+    .select('id, parent_recipe_id')
+    .eq('child_recipe_id', recipeId)
+
+  const usedInRecipes: Array<{ id: string; name: string; category: string }> = []
+  for (const ui of (usedInRows as any[]) || []) {
+    const { data: parentRecipe } = await supabase
+      .from('recipes')
+      .select('id, name, category')
+      .eq('id', ui.parent_recipe_id)
+      .single()
+    if (parentRecipe) usedInRecipes.push(parentRecipe)
+  }
+
   return {
     ...recipe,
     ingredients: (recipeIngredients || []).map((ri) => ({
@@ -392,6 +447,8 @@ export async function getRecipeById(recipeId: string) {
         average_price_cents: number | null
       },
     })),
+    subRecipes,
+    usedInRecipes,
     costSummary: costSummary
       ? {
           ingredientCount: costSummary.ingredient_count,
@@ -469,6 +526,16 @@ export async function deleteRecipe(recipeId: string) {
 
   // Delete recipe_ingredients
   await supabase.from('recipe_ingredients').delete().eq('recipe_id', recipeId)
+
+  // Delete sub-recipe links (both as parent and as child)
+  await supabase
+    .from('recipe_sub_recipes' as any)
+    .delete()
+    .eq('parent_recipe_id', recipeId)
+  await supabase
+    .from('recipe_sub_recipes' as any)
+    .delete()
+    .eq('child_recipe_id', recipeId)
 
   // Delete the recipe
   const { error } = await supabase
@@ -1138,4 +1205,166 @@ export async function bulkUpdateIngredientPrices(
         .eq('tenant_id', user.tenantId!)
     )
   )
+}
+
+// ============================================
+// SUB-RECIPE CRUD
+// ============================================
+
+const AddSubRecipeSchema = z.object({
+  child_recipe_id: z.string().uuid(),
+  quantity: z.number().positive().default(1),
+  unit: z.string().default('batch'),
+  sort_order: z.number().int().optional(),
+  notes: z.string().optional(),
+})
+
+export type AddSubRecipeInput = z.infer<typeof AddSubRecipeSchema>
+
+const UpdateSubRecipeSchema = z.object({
+  quantity: z.number().positive().optional(),
+  unit: z.string().optional(),
+  sort_order: z.number().int().optional(),
+  notes: z.string().nullable().optional(),
+})
+
+export type UpdateSubRecipeInput = z.infer<typeof UpdateSubRecipeSchema>
+
+/**
+ * Add a sub-recipe to a parent recipe.
+ * The DB trigger prevents circular references.
+ */
+export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeInput) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+  const validated = AddSubRecipeSchema.parse(input)
+
+  // Verify both recipes belong to tenant
+  const { data: parentRecipe } = await supabase
+    .from('recipes')
+    .select('id')
+    .eq('id', parentRecipeId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!parentRecipe) throw new Error('Parent recipe not found')
+
+  const { data: childRecipe } = await supabase
+    .from('recipes')
+    .select('id')
+    .eq('id', validated.child_recipe_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!childRecipe) throw new Error('Sub-recipe not found')
+
+  const { data, error } = await supabase
+    .from('recipe_sub_recipes' as any)
+    .insert({
+      parent_recipe_id: parentRecipeId,
+      child_recipe_id: validated.child_recipe_id,
+      quantity: validated.quantity,
+      unit: validated.unit,
+      sort_order: validated.sort_order ?? 0,
+      notes: validated.notes || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    // Catch circular reference error from DB trigger
+    if (error.message?.includes('Circular sub-recipe reference')) {
+      throw new Error('Cannot add this sub-recipe — it would create a circular reference.')
+    }
+    console.error('[addSubRecipe] Error:', error)
+    throw new Error('Failed to add sub-recipe')
+  }
+
+  revalidatePath(`/recipes/${parentRecipeId}`)
+  return { success: true, subRecipe: data }
+}
+
+/**
+ * Update a sub-recipe link (quantity, unit, sort_order, notes)
+ */
+export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecipeInput) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+  const validated = UpdateSubRecipeSchema.parse(input)
+
+  // Verify tenant access: get parent recipe and check tenant
+  const { data: link } = await supabase
+    .from('recipe_sub_recipes' as any)
+    .select('parent_recipe_id')
+    .eq('id', subRecipeId)
+    .single()
+
+  if (!link) throw new Error('Sub-recipe link not found')
+
+  const { data: recipe } = await supabase
+    .from('recipes')
+    .select('id')
+    .eq('id', (link as any).parent_recipe_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!recipe) throw new Error('Access denied')
+
+  const updateData: Record<string, unknown> = {}
+  if (validated.quantity !== undefined) updateData.quantity = validated.quantity
+  if (validated.unit !== undefined) updateData.unit = validated.unit
+  if (validated.sort_order !== undefined) updateData.sort_order = validated.sort_order
+  if (validated.notes !== undefined) updateData.notes = validated.notes
+
+  const { error } = await supabase
+    .from('recipe_sub_recipes' as any)
+    .update(updateData)
+    .eq('id', subRecipeId)
+
+  if (error) {
+    console.error('[updateSubRecipe] Error:', error)
+    throw new Error('Failed to update sub-recipe')
+  }
+
+  revalidatePath(`/recipes/${(link as any).parent_recipe_id}`)
+  return { success: true }
+}
+
+/**
+ * Remove a sub-recipe from a parent recipe
+ */
+export async function removeSubRecipe(subRecipeId: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Verify tenant access
+  const { data: link } = await supabase
+    .from('recipe_sub_recipes' as any)
+    .select('parent_recipe_id')
+    .eq('id', subRecipeId)
+    .single()
+
+  if (!link) throw new Error('Sub-recipe link not found')
+
+  const { data: recipe } = await supabase
+    .from('recipes')
+    .select('id')
+    .eq('id', (link as any).parent_recipe_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!recipe) throw new Error('Access denied')
+
+  const { error } = await supabase
+    .from('recipe_sub_recipes' as any)
+    .delete()
+    .eq('id', subRecipeId)
+
+  if (error) {
+    console.error('[removeSubRecipe] Error:', error)
+    throw new Error('Failed to remove sub-recipe')
+  }
+
+  revalidatePath(`/recipes/${(link as any).parent_recipe_id}`)
+  return { success: true }
 }

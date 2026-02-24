@@ -63,6 +63,9 @@ const CreateDishSchema = z.object({
   chef_notes: z.string().optional(),
   client_notes: z.string().optional(),
   sort_order: z.number().int().optional(),
+  plating_instructions: z.string().optional(),
+  beverage_pairing: z.string().optional(),
+  beverage_pairing_notes: z.string().optional(),
 })
 
 const UpdateDishSchema = z.object({
@@ -75,6 +78,9 @@ const UpdateDishSchema = z.object({
   chef_notes: z.string().optional(),
   client_notes: z.string().optional(),
   sort_order: z.number().int().optional(),
+  plating_instructions: z.string().nullable().optional(),
+  beverage_pairing: z.string().nullable().optional(),
+  beverage_pairing_notes: z.string().nullable().optional(),
 })
 
 export type CreateDishInput = z.infer<typeof CreateDishSchema>
@@ -85,7 +91,7 @@ export type UpdateDishInput = z.infer<typeof UpdateDishSchema>
 // ============================================
 
 // COMPONENT_CATEGORIES and TRANSPORT_CATEGORIES exported from lib/menus/constants.ts
-import { COMPONENT_CATEGORIES, TRANSPORT_CATEGORIES } from './constants'
+import { COMPONENT_CATEGORIES, TRANSPORT_CATEGORIES, PREP_TIMES_OF_DAY } from './constants'
 
 const CreateComponentSchema = z.object({
   dish_id: z.string().uuid(),
@@ -100,6 +106,13 @@ const CreateComponentSchema = z.object({
   execution_notes: z.string().optional(),
   storage_notes: z.string().optional(),
   sort_order: z.number().int().optional(),
+  // Portion sizing
+  portion_quantity: z.number().positive().optional(),
+  portion_unit: z.string().optional(),
+  // Prep timeline
+  prep_day_offset: z.number().int().max(0).optional(),
+  prep_time_of_day: z.enum(PREP_TIMES_OF_DAY).optional(),
+  prep_station: z.string().optional(),
 })
 
 const UpdateComponentSchema = z.object({
@@ -114,6 +127,13 @@ const UpdateComponentSchema = z.object({
   execution_notes: z.string().optional(),
   storage_notes: z.string().optional(),
   sort_order: z.number().int().optional(),
+  // Portion sizing
+  portion_quantity: z.number().positive().nullable().optional(),
+  portion_unit: z.string().nullable().optional(),
+  // Prep timeline
+  prep_day_offset: z.number().int().max(0).nullable().optional(),
+  prep_time_of_day: z.enum(PREP_TIMES_OF_DAY).nullable().optional(),
+  prep_station: z.string().nullable().optional(),
 })
 
 export type CreateComponentInput = z.infer<typeof CreateComponentSchema>
@@ -663,9 +683,12 @@ export async function addDishToMenu(input: CreateDishInput) {
       chef_notes: validated.chef_notes,
       client_notes: validated.client_notes,
       sort_order: validated.sort_order ?? 0,
+      plating_instructions: validated.plating_instructions,
+      beverage_pairing: validated.beverage_pairing,
+      beverage_pairing_notes: validated.beverage_pairing_notes,
       created_by: user.id,
       updated_by: user.id,
-    })
+    } as any)
     .select()
     .single()
 
@@ -796,9 +819,14 @@ export async function addComponentToDish(input: CreateComponentInput) {
       execution_notes: validated.execution_notes,
       storage_notes: validated.storage_notes,
       sort_order: validated.sort_order ?? 0,
+      portion_quantity: validated.portion_quantity,
+      portion_unit: validated.portion_unit,
+      prep_day_offset: validated.prep_day_offset,
+      prep_time_of_day: validated.prep_time_of_day,
+      prep_station: validated.prep_station,
       created_by: user.id,
       updated_by: user.id,
-    })
+    } as any)
     .select()
     .single()
 
@@ -1021,6 +1049,7 @@ export async function duplicateMenu(menuId: string) {
 
   // Copy dishes and their components
   for (const dish of original.dishes) {
+    const dishRaw = dish as any
     const { data: newDish, error: dishError } = await supabase
       .from('dishes')
       .insert({
@@ -1034,9 +1063,12 @@ export async function duplicateMenu(menuId: string) {
         chef_notes: dish.chef_notes,
         client_notes: dish.client_notes,
         sort_order: dish.sort_order,
+        plating_instructions: dishRaw.plating_instructions ?? null,
+        beverage_pairing: dishRaw.beverage_pairing ?? null,
+        beverage_pairing_notes: dishRaw.beverage_pairing_notes ?? null,
         created_by: user.id,
         updated_by: user.id,
-      })
+      } as any)
       .select()
       .single()
 
@@ -1047,6 +1079,7 @@ export async function duplicateMenu(menuId: string) {
 
     // Copy components for this dish
     for (const comp of dish.components) {
+      const compRaw = comp as any
       const { error } = await supabase.from('components').insert({
         tenant_id: user.tenantId!,
         dish_id: newDish.id,
@@ -1060,9 +1093,14 @@ export async function duplicateMenu(menuId: string) {
         execution_notes: comp.execution_notes,
         storage_notes: comp.storage_notes,
         sort_order: comp.sort_order,
+        portion_quantity: compRaw.portion_quantity ?? null,
+        portion_unit: compRaw.portion_unit ?? null,
+        prep_day_offset: compRaw.prep_day_offset ?? 0,
+        prep_time_of_day: compRaw.prep_time_of_day ?? null,
+        prep_station: compRaw.prep_station ?? null,
         created_by: user.id,
         updated_by: user.id,
-      })
+      } as any)
       if (error) {
         console.error('[duplicateMenu] Component insert failed:', error)
         throw new Error('Failed to duplicate menu component')
@@ -1163,4 +1201,88 @@ export async function listMenuTemplates() {
     console.error('[listMenuTemplates] Unexpected error:', err)
     return []
   }
+}
+
+// ============================================
+// PREP TIMELINE
+// ============================================
+
+export type PrepTimelineSlot = {
+  dayOffset: number
+  dayLabel: string
+  components: {
+    id: string
+    name: string
+    category: string
+    timeOfDay: string | null
+    timeLabel: string
+    station: string | null
+    dishName: string | null
+    courseName: string | null
+  }[]
+}
+
+/**
+ * Get prep timeline for a menu — components grouped by prep_day_offset
+ */
+export async function getMenuPrepTimeline(menuId: string): Promise<PrepTimelineSlot[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Get all components for this menu with dish info
+  const { data: dishes } = await supabase
+    .from('dishes')
+    .select('id, course_name')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', user.tenantId!)
+
+  if (!dishes || dishes.length === 0) return []
+
+  const dishIds = dishes.map((d) => d.id)
+  const dishMap = new Map(dishes.map((d) => [d.id, d.course_name]))
+
+  const { data: components } = await supabase
+    .from('components')
+    .select('id, name, category, dish_id, prep_day_offset, prep_time_of_day, prep_station')
+    .in('dish_id', dishIds)
+    .eq('tenant_id', user.tenantId!)
+    .order('prep_day_offset', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  if (!components || components.length === 0) return []
+
+  const { PREP_TIME_LABELS } = await import('./constants')
+
+  // Group by day offset
+  const grouped = new Map<number, PrepTimelineSlot['components']>()
+  for (const c of components) {
+    const raw = c as any
+    const offset = raw.prep_day_offset ?? 0
+    const arr = grouped.get(offset) || []
+    arr.push({
+      id: c.id,
+      name: c.name,
+      category: c.category,
+      timeOfDay: raw.prep_time_of_day ?? null,
+      timeLabel: raw.prep_time_of_day
+        ? ((PREP_TIME_LABELS as Record<string, string>)[raw.prep_time_of_day] ??
+          raw.prep_time_of_day)
+        : 'Unscheduled',
+      station: raw.prep_station ?? null,
+      dishName: (raw as any).name ?? null,
+      courseName: dishMap.get(c.dish_id) ?? null,
+    })
+    grouped.set(offset, arr)
+  }
+
+  // Sort by offset (most days before first: -3, -2, -1, 0)
+  const offsets = Array.from(grouped.keys()).sort((a, b) => a - b)
+  return offsets.map((offset) => ({
+    dayOffset: offset,
+    dayLabel:
+      offset === 0
+        ? 'Day of Service'
+        : `${Math.abs(offset)} day${Math.abs(offset) > 1 ? 's' : ''} before`,
+    components: grouped.get(offset) || [],
+  }))
 }

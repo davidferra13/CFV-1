@@ -17,6 +17,7 @@ import {
 } from '@/lib/recipes/actions'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
 
 type RecipeInfo = {
   id: string
@@ -328,6 +329,18 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                           ))}
                         </div>
                       )}
+                      {(dish as any).beverage_pairing && (
+                        <p className="text-sm text-purple-400 mt-2">
+                          <span className="font-medium text-purple-300">Pairing:</span>{' '}
+                          {(dish as any).beverage_pairing}
+                        </p>
+                      )}
+                      {(dish as any).plating_instructions && (
+                        <p className="text-sm text-stone-400 mt-1">
+                          <span className="font-medium text-stone-300">Plating:</span>{' '}
+                          {(dish as any).plating_instructions}
+                        </p>
+                      )}
                       {dish.components.length > 0 && (
                         <div className="mt-3 pl-4 border-l-2 border-stone-800">
                           <p className="text-xs font-medium text-stone-500 mb-1">Components:</p>
@@ -342,6 +355,21 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                                       <span className="text-stone-400 ml-1">({comp.category})</span>
                                     )}
                                   </span>
+                                  {(comp as any).portion_quantity && (comp as any).portion_unit && (
+                                    <span className="text-xs text-stone-500">
+                                      {(comp as any).portion_quantity}
+                                      {(comp as any).portion_unit}/plate
+                                    </span>
+                                  )}
+                                  {(comp as any).prep_day_offset != null &&
+                                    (comp as any).prep_day_offset !== 0 && (
+                                      <span className="text-xs text-amber-500">
+                                        D
+                                        {(comp as any).prep_day_offset < 0
+                                          ? (comp as any).prep_day_offset
+                                          : `+${(comp as any).prep_day_offset}`}
+                                      </span>
+                                    )}
                                   {linkedRecipe ? (
                                     <Link
                                       href={`/recipes/${linkedRecipe.id}`}
@@ -472,6 +500,9 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
               </CardContent>
             </Card>
           )}
+
+          {/* Prep Timeline */}
+          {menu.id && <PrepTimelineView menuId={menu.id} />}
         </>
       ) : (
         <>

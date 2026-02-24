@@ -7,9 +7,16 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
-import { deleteRecipe, createRecipe, addIngredientToRecipe } from '@/lib/recipes/actions'
+import {
+  deleteRecipe,
+  createRecipe,
+  addIngredientToRecipe,
+  addSubRecipe,
+  removeSubRecipe,
+} from '@/lib/recipes/actions'
 import { shareRecipe, getConnectedChefsForCollaboration } from '@/lib/collaboration/actions'
 import { RecipeScalingCalculator } from '@/components/recipes/recipe-scaling-calculator'
+import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-modal'
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { format } from 'date-fns'
 
@@ -38,6 +45,38 @@ export function RecipeDetailClient({ recipe }: Props) {
   const [error, setError] = useState('')
   const [showShareModal, setShowShareModal] = useState(false)
   const [shareSuccess, setShareSuccess] = useState<string | null>(null)
+  const [showSubRecipeModal, setShowSubRecipeModal] = useState(false)
+
+  const handleAddSubRecipe = async (input: {
+    child_recipe_id: string
+    quantity: number
+    unit: string
+  }) => {
+    setLoading(true)
+    setError('')
+    try {
+      await addSubRecipe(recipe.id, input)
+      setShowSubRecipeModal(false)
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || 'Failed to add sub-recipe')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRemoveSubRecipe = async (subRecipeId: string) => {
+    setLoading(true)
+    setError('')
+    try {
+      await removeSubRecipe(subRecipeId)
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || 'Failed to remove sub-recipe')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleDelete = async () => {
     if (!confirm('Delete this recipe? It will be unlinked from any menu components.')) return
@@ -204,6 +243,89 @@ export function RecipeDetailClient({ recipe }: Props) {
           )}
         </CardContent>
       </Card>
+
+      {/* Sub-Recipes */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Sub-Recipes</CardTitle>
+            <Button size="sm" variant="secondary" onClick={() => setShowSubRecipeModal(true)}>
+              Add Sub-Recipe
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {(recipe as any).subRecipes && (recipe as any).subRecipes.length > 0 ? (
+            <div className="space-y-2">
+              {(recipe as any).subRecipes.map((sub: any) => (
+                <div
+                  key={sub.id}
+                  className="flex justify-between items-center py-1 border-b border-stone-50 last:border-0"
+                >
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href={`/recipes/${sub.child_recipe_id}`}
+                      className="text-stone-100 hover:text-brand-500 hover:underline"
+                    >
+                      {sub.child_recipe?.name || sub.child_recipe_id}
+                    </Link>
+                    {sub.quantity != null && sub.unit && (
+                      <span className="text-sm text-stone-500">
+                        {sub.quantity} {sub.unit}
+                      </span>
+                    )}
+                    {sub.child_recipe?.category && (
+                      <Badge variant={CATEGORY_COLORS[sub.child_recipe.category] || 'default'}>
+                        {sub.child_recipe.category}
+                      </Badge>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveSubRecipe(sub.id)}
+                    className="text-xs text-stone-400 hover:text-red-500"
+                    disabled={loading}
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-stone-500 text-center py-4">No sub-recipes added yet.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {showSubRecipeModal && (
+        <SubRecipeSearchModal
+          onAdd={handleAddSubRecipe}
+          onClose={() => setShowSubRecipeModal(false)}
+        />
+      )}
+
+      {/* Used In */}
+      {(recipe as any).usedInRecipes && (recipe as any).usedInRecipes.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Used In</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {(recipe as any).usedInRecipes.map((parent: any) => (
+                <div key={parent.id} className="py-1 border-b border-stone-50 last:border-0">
+                  <Link
+                    href={`/recipes/${parent.parent_recipe_id}`}
+                    className="text-stone-100 hover:text-brand-500 hover:underline text-sm"
+                  >
+                    {parent.parent_recipe?.name || parent.parent_recipe_id}
+                  </Link>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />

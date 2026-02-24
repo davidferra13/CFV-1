@@ -21,8 +21,13 @@ import {
 import {
   COMPONENT_CATEGORIES,
   TRANSPORT_CATEGORIES,
+  PREP_DAY_OPTIONS,
+  PREP_TIMES_OF_DAY,
+  PREP_TIME_LABELS,
+  PREP_STATION_SUGGESTIONS,
   type ComponentCategory,
   type TransportCategory,
+  type PrepTimeOfDay,
 } from '@/lib/menus/constants'
 import type { getMenuById } from '@/lib/menus/actions'
 
@@ -79,6 +84,11 @@ function emptyComponentForm() {
     make_ahead_window_hours: '',
     execution_notes: '',
     storage_notes: '',
+    portion_quantity: '',
+    portion_unit: '',
+    prep_day_offset: '' as string,
+    prep_time_of_day: '' as string,
+    prep_station: '',
   }
 }
 
@@ -152,6 +162,30 @@ function ComponentForm({
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Portion per plate */}
+      <div>
+        <label className="block text-xs text-stone-500 mb-1">Portion per plate</label>
+        <div className="flex gap-2">
+          <Input
+            type="number"
+            value={form.portion_quantity}
+            onChange={(e) => set('portion_quantity', e.target.value)}
+            placeholder="120"
+            min="0"
+            step="any"
+            className="w-24 text-sm"
+            disabled={disabled || pending}
+          />
+          <Input
+            value={form.portion_unit}
+            onChange={(e) => set('portion_unit', e.target.value)}
+            placeholder="g, oz, ml..."
+            className="w-32 text-sm"
+            disabled={disabled || pending}
+          />
+        </div>
       </div>
 
       {/* Make Ahead */}
@@ -231,6 +265,70 @@ function ComponentForm({
         </div>
       )}
 
+      {/* Prep Timeline */}
+      <div className="space-y-2">
+        <label className="block text-xs text-stone-500">Prep timeline</label>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <label className="block text-xs text-stone-500 mb-1">Prep day</label>
+            <select
+              value={form.prep_day_offset}
+              onChange={(e) => {
+                const val = e.target.value
+                set('prep_day_offset', val)
+                // Auto-set make-ahead when prep is before day of service
+                if (val !== '' && parseInt(val, 10) < 0) {
+                  set('is_make_ahead', true)
+                }
+              }}
+              title="Prep day offset"
+              className="w-full text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-stone-900 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              disabled={disabled || pending}
+            >
+              <option value="">-- select --</option>
+              {PREP_DAY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-1">
+            <label className="block text-xs text-stone-500 mb-1">Time of day</label>
+            <select
+              value={form.prep_time_of_day}
+              onChange={(e) => set('prep_time_of_day', e.target.value)}
+              title="Prep time of day"
+              className="w-full text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-stone-900 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              disabled={disabled || pending}
+            >
+              <option value="">-- select --</option>
+              {PREP_TIMES_OF_DAY.map((t) => (
+                <option key={t} value={t}>
+                  {PREP_TIME_LABELS[t]}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs text-stone-500 mb-1">Prep station</label>
+          <Input
+            value={form.prep_station}
+            onChange={(e) => set('prep_station', e.target.value)}
+            placeholder="e.g. sauté, grill, pastry, cold"
+            className="text-sm"
+            disabled={disabled || pending}
+            list="prep-station-suggestions"
+          />
+          <datalist id="prep-station-suggestions">
+            {PREP_STATION_SUGGESTIONS.map((s) => (
+              <option key={s} value={s} />
+            ))}
+          </datalist>
+        </div>
+      </div>
+
       {/* Actions */}
       <div className="flex gap-2 justify-end pt-1">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={pending}>
@@ -281,6 +379,11 @@ function ComponentRow({
       execution_notes: form.execution_notes.trim() || undefined,
       storage_notes:
         form.is_make_ahead && form.storage_notes.trim() ? form.storage_notes.trim() : undefined,
+      portion_quantity: form.portion_quantity ? parseFloat(form.portion_quantity) : null,
+      portion_unit: form.portion_unit.trim() || null,
+      prep_day_offset: form.prep_day_offset !== '' ? parseInt(form.prep_day_offset, 10) : null,
+      prep_time_of_day: (form.prep_time_of_day as PrepTimeOfDay) || null,
+      prep_station: form.prep_station.trim() || null,
     })
     setEditing(false)
   }
@@ -298,6 +401,14 @@ function ComponentRow({
             make_ahead_window_hours: component.make_ahead_window_hours?.toString() ?? '',
             execution_notes: component.execution_notes ?? '',
             storage_notes: component.storage_notes ?? '',
+            portion_quantity: (component as any).portion_quantity?.toString() ?? '',
+            portion_unit: (component as any).portion_unit ?? '',
+            prep_day_offset:
+              (component as any).prep_day_offset != null
+                ? (component as any).prep_day_offset.toString()
+                : '',
+            prep_time_of_day: (component as any).prep_time_of_day ?? '',
+            prep_station: (component as any).prep_station ?? '',
           }}
           onSubmit={handleEditSubmit}
           onCancel={() => setEditing(false)}
@@ -334,7 +445,31 @@ function ComponentRow({
               {component.make_ahead_window_hours}h lead
             </span>
           )}
+          {(component as any).portion_quantity && (
+            <span className="text-xs text-stone-400">
+              {(component as any).portion_quantity}
+              {(component as any).portion_unit ?? ''}/plate
+            </span>
+          )}
         </div>
+        {((component as any).prep_day_offset != null ||
+          (component as any).prep_time_of_day ||
+          (component as any).prep_station) && (
+          <p className="text-xs text-stone-400 leading-relaxed">
+            {[
+              (component as any).prep_day_offset != null
+                ? (PREP_DAY_OPTIONS.find((o) => o.value === (component as any).prep_day_offset)
+                    ?.label ?? `${Math.abs((component as any).prep_day_offset)} days before`)
+                : null,
+              (component as any).prep_time_of_day
+                ? PREP_TIME_LABELS[(component as any).prep_time_of_day as PrepTimeOfDay]
+                : null,
+              (component as any).prep_station ? `${(component as any).prep_station} station` : null,
+            ]
+              .filter(Boolean)
+              .join(' \u00B7 ')}
+          </p>
+        )}
         {component.execution_notes && (
           <p className="text-xs text-stone-500 leading-relaxed">{component.execution_notes}</p>
         )}
@@ -418,6 +553,11 @@ function DishCard({
       execution_notes: form.execution_notes.trim() || undefined,
       storage_notes:
         form.is_make_ahead && form.storage_notes.trim() ? form.storage_notes.trim() : undefined,
+      portion_quantity: form.portion_quantity ? parseFloat(form.portion_quantity) : undefined,
+      portion_unit: form.portion_unit.trim() || undefined,
+      prep_day_offset: form.prep_day_offset !== '' ? parseInt(form.prep_day_offset, 10) : undefined,
+      prep_time_of_day: (form.prep_time_of_day as PrepTimeOfDay) || undefined,
+      prep_station: form.prep_station.trim() || undefined,
     })
     setAddingComponent(false)
     forceRefresh((n) => n + 1)

@@ -21,6 +21,9 @@ export type EditorDish = {
   chef_notes: string | null
   sort_order: number
   photo_url: string | null
+  plating_instructions: string | null
+  beverage_pairing: string | null
+  beverage_pairing_notes: string | null
 }
 
 export type EditorMenu = {
@@ -91,7 +94,7 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
   const { data: dishes } = await supabase
     .from('dishes')
     .select(
-      'id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url'
+      'id, course_number, course_name, description, dietary_tags, allergen_flags, chef_notes, sort_order, photo_url, plating_instructions, beverage_pairing, beverage_pairing_notes'
     )
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
@@ -121,6 +124,9 @@ export async function getEditorContext(menuId: string): Promise<EditorContext | 
       chef_notes: d.chef_notes ?? null,
       sort_order: d.sort_order ?? d.course_number,
       photo_url: (d as any).photo_url ?? null,
+      plating_instructions: d.plating_instructions ?? null,
+      beverage_pairing: d.beverage_pairing ?? null,
+      beverage_pairing_notes: d.beverage_pairing_notes ?? null,
     })),
   }
 
@@ -260,6 +266,9 @@ export async function updateDishEditorContent(
     dietary_tags?: string[]
     allergen_flags?: string[]
     chef_notes?: string | null
+    plating_instructions?: string | null
+    beverage_pairing?: string | null
+    beverage_pairing_notes?: string | null
   }
 ) {
   const user = await requireChef()
@@ -328,6 +337,10 @@ export async function addEditorCourse(
     allergen_flags: (dish.allergen_flags as string[]) ?? [],
     chef_notes: dish.chef_notes ?? null,
     sort_order: dish.sort_order ?? dish.course_number,
+    photo_url: null,
+    plating_instructions: null,
+    beverage_pairing: null,
+    beverage_pairing_notes: null,
   } as EditorDish
 }
 
