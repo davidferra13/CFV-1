@@ -30,6 +30,7 @@ yarn-error.log*
 # any other env backup or dev variants that should never be committed
 .env.local.backup*
 .env.local.dev
+.env.local.beta
 
 # vercel
 .vercel

@@ -519,6 +519,48 @@ Private data categories that must stay local:
 | Agent registry       | `docs/agent-registry.md`                                                  |
 | Kilo agent rules     | `KILO.md`                                                                 |
 | Kilo workflow        | `docs/kilo-workflow.md`                                                   |
+| Beta server docs     | `docs/beta-server-setup.md`                                               |
+| Beta env config      | `.env.local.beta`                                                         |
+| Deploy to beta       | `scripts/deploy-beta.sh`                                                  |
+| Rollback beta        | `scripts/rollback-beta.sh`                                                |
+
+---
+
+## 3-ENVIRONMENT ARCHITECTURE
+
+ChefFlow runs across three environments. **Never confuse them.**
+
+```text
+PC (localhost:3100)        → Development — only you see this
+Pi (beta.cheflowhq.com)    → Beta/staging — testers see a frozen snapshot
+Vercel (app.cheflowhq.com) → Production — public, deployed when ready
+```
+
+### Beta Server (Raspberry Pi 5)
+
+- **SSH:** `ssh pi` (key-based, user `davidferra`)
+- **App location:** `~/apps/chefflow-beta/`
+- **Process manager:** PM2 (`pm2 restart chefflow-beta`)
+- **Tunnel:** Cloudflare Tunnel → `beta.cheflowhq.com`
+- **Env config:** `.env.local.beta` on PC → copied to Pi as `.env.local` during deploy
+- **Ollama:** runs on Pi too (`qwen3:8b`) but must be stopped during builds (RAM constraint)
+
+### Deploy to Beta
+
+```bash
+bash scripts/deploy-beta.sh    # Build + push to Pi
+bash scripts/rollback-beta.sh  # Emergency rollback
+```
+
+The deploy script: pushes to GitHub → pulls on Pi → stops Ollama → installs deps → builds → restarts PM2 → restarts Ollama → health check.
+
+### Rules
+
+- **Never deploy to beta during active development** — test locally first
+- **The deploy script handles Ollama stop/start** — don't manually stop it
+- **Beta shares the dev Supabase database** (for now) — be careful with destructive data operations
+- **Pi builds take ~8-10 minutes** — the 4 GB heap limit is required (`NODE_OPTIONS="--max-old-space-size=4096"`)
+- **Pi swap is 2 GB** at `/var/swap` — needed for builds
 
 ---
 
