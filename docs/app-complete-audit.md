@@ -881,6 +881,15 @@ Protected time reminder (purple callout). Completion celebration when all done.
 | `/settings/culinary-profile` | Tell Remy about cooking philosophy and signature dishes                               |
 | Floating widget              | `remy-concierge-widget.tsx` — draggable/resizable on all pages, all edges + 4 corners |
 
+### Universal Intake (via Remy chat)
+
+| Feature            | Description                                                                                                   |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- |
+| Transcript parsing | Paste a call transcript or attach a .txt — Remy extracts clients, events, inquiries, notes. Tier 2 approval.  |
+| Bulk client import | Paste a client list or CSV into Remy — parses and creates all clients after approval. Batch "Approve All" UX. |
+| Brain dump intake  | Paste freeform text mixing clients, recipes, notes — Remy sorts everything into the right category.           |
+| Input limits       | Text: 2000 chars, file attachment: 10000 chars. Duplicate client detection with warnings.                     |
+
 ---
 
 ## 21. ONBOARDING & IMPORT

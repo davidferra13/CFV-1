@@ -21,6 +21,8 @@ import { calendarAgentActions } from './calendar-actions'
 import { financialCallAgentActions } from './financial-call-actions'
 import { groceryAgentActions } from './grocery-actions'
 import { proactiveAgentActions } from './proactive-actions'
+// ─── Intake actions (2026-02-23) ──────────────────────────────────────────
+import { intakeAgentActions } from './intake-actions'
 
 let registered = false
 
@@ -48,4 +50,7 @@ export function ensureAgentActionsRegistered(): void {
   registerAgentActions(financialCallAgentActions)
   registerAgentActions(groceryAgentActions)
   registerAgentActions(proactiveAgentActions)
+
+  // ─── Intake actions (2026-02-23) ──────────────────────────────────────────
+  registerAgentActions(intakeAgentActions)
 }

@@ -747,7 +747,7 @@ export function RemyDrawer() {
       reader.onload = (ev) => {
         const content = ev.target?.result as string
         const truncated =
-          content.length > 1500 ? content.slice(0, 1500) + '\n...(truncated)' : content
+          content.length > 10000 ? content.slice(0, 10000) + '\n...(truncated)' : content
         setInput((prev) => `${prev ? prev + '\n\n' : ''}[Attached: ${file.name}]\n${truncated}`)
         toast.success(`Attached ${file.name}`)
       }
@@ -1814,9 +1814,9 @@ export function RemyDrawer() {
                       ref={textareaRef}
                       value={input}
                       onChange={(e) => {
-                        if (e.target.value.length <= 500) setInput(e.target.value)
+                        if (e.target.value.length <= 2000) setInput(e.target.value)
                       }}
-                      maxLength={500}
+                      maxLength={2000}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' && !e.shiftKey) {
                           e.preventDefault()
@@ -1864,9 +1864,9 @@ export function RemyDrawer() {
                     Conversations stay in your browser. Ctrl+K to toggle.
                   </p>
                   <span
-                    className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
+                    className={`text-[10px] tabular-nums ${input.length >= 1800 ? (input.length >= 2000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
                   >
-                    {input.length}/500
+                    {input.length}/2000
                   </span>
                 </div>
               </div>

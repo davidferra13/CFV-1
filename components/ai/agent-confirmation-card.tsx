@@ -46,7 +46,12 @@ export function AgentConfirmationCard({
   }
 
   const isRestricted = preview.safety === 'restricted'
-  const displayFields = showAllFields ? preview.fields : preview.fields.slice(0, 4)
+  const isBatch = preview.fields.length > 10
+  const displayFields = showAllFields
+    ? preview.fields
+    : isBatch
+      ? preview.fields.slice(0, 6)
+      : preview.fields.slice(0, 4)
 
   function handleApprove() {
     if (!onApprove) return
@@ -78,7 +83,9 @@ export function AgentConfirmationCard({
       </div>
 
       {/* Fields */}
-      <div className="space-y-1.5 mb-3">
+      <div
+        className={`space-y-1.5 mb-3 ${isBatch && showAllFields ? 'max-h-64 overflow-y-auto pr-1' : ''}`}
+      >
         {displayFields.map((field, i) => (
           <div key={i} className="flex items-start gap-2 text-xs">
             <span className="font-medium text-stone-600 dark:text-stone-400 min-w-[90px] shrink-0">
@@ -104,13 +111,13 @@ export function AgentConfirmationCard({
           </div>
         ))}
 
-        {!showAllFields && preview.fields.length > 4 && (
+        {!showAllFields && preview.fields.length > (isBatch ? 6 : 4) && (
           <button
             onClick={() => setShowAllFields(true)}
             className="flex items-center gap-1 text-xs text-stone-500 hover:text-stone-700 dark:hover:text-stone-300"
           >
             <ChevronDown className="h-3 w-3" />
-            Show {preview.fields.length - 4} more fields
+            Show {preview.fields.length - (isBatch ? 6 : 4)} more fields
           </button>
         )}
         {showAllFields && preview.fields.length > 5 && (
@@ -144,7 +151,7 @@ export function AgentConfirmationCard({
         <div className="flex items-center gap-2">
           <Button variant="primary" size="sm" onClick={handleApprove} className="text-xs">
             <Check className="h-3 w-3 mr-1" />
-            {editing ? 'Save & Approve' : 'Approve'}
+            {editing ? 'Save & Approve' : isBatch ? 'Approve All' : 'Approve'}
           </Button>
 
           {!editing && preview.fields.some((f) => f.editable) && (

@@ -62,6 +62,15 @@ Examples:
 - "Optimize costs for my lobster bisque recipe"
 - "Recap the Thompson anniversary dinner"
 - "Explain the tasting menu"
+- "Here's a transcript from a client call, put everything where it belongs"
+- "Parse this conversation with a potential client"
+- "I just got off the phone with someone about a dinner party, here are my notes"
+- "Import these clients: Sarah Johnson, Mike Davis, Lisa Chen..."
+- "Bulk import my client list"
+- "Here's a brain dump of everything I know about my clients"
+- "[Attached: transcript.txt]"
+- "I talked to Sarah about her wedding, here's what she said..."
+- "Process these notes from today's calls"
 
 MIXED: Contains BOTH a question and an actionable request in the same message.
 Example: "What's my revenue this month, and draft a follow-up for my last client"
