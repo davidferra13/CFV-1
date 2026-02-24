@@ -101,6 +101,8 @@
 | **Daily Ops Banner**       | `dailyPlanStats.totalItems > 0`         | Shows task counts by lane (admin/prep/creative/relationship) + estimated time. Entire banner links to `/daily`. If all cleared: green "Go cook" banner                                                           |
 | **Priority Action Banner** | Always shown                            | If queue has next action: full-width colored link to `queue.nextAction.href` (red=critical, amber=high, brand=normal) showing action title + context. If empty: green "All caught up"                            |
 | **Scheduling Gap Banner**  | `schedulingGaps.length > 0`             | Amber/red warning showing gap count. Contains "Plan Week →" link → `/calendar/week`                                                                                                                              |
+| **Response Time SLA**      | Any open inquiry awaiting response      | Card showing count of overdue (24h+) / urgent (4h+) / fresh inquiries + avg response time. Red/amber/green styling. Links to `/inquiries?status=new`                                                             |
+| **Pending Follow-Ups**     | Stale inquiries (3+ days quiet)         | Card listing inquiries where client hasn't responded in 3+ days. Shows client name, occasion, "Xd quiet" badge. Links to inquiry detail. Max 5 shown.                                                            |
 | **Holiday Outreach Panel** | `holidayOutreachSuggestions.length > 0` | Per holiday: expandable row with AI outreach text + "Copy" button, promo code creation form (code/discount%/expiry inputs + "Create code" button), client rows with "Send" button opening email/SMS compose form |
 
 ### Widgets (configurable show/hide/reorder via Layout settings)
@@ -475,8 +477,14 @@
 **Route:** `/inquiries`
 
 - List + Kanban views with toggle buttons
+- **Smart Priority Grouping (All view):** Inquiries auto-sorted into 4 sections:
+  - "Needs Your Response" (red) — new/awaiting_chef with no outbound message
+  - "Follow-Up Due" (amber) — awaiting_client/quoted, client quiet 3+ days
+  - "Active Pipeline" (green) — open inquiries on track
+  - "Closed" (collapsed) — declined/expired/confirmed behind `<details>` toggle
 - 8 status filter tabs (All, New, Awaiting Client, Awaiting Chef, Quoted, Confirmed, Declined/Expired, TakeAChef)
-- Per inquiry row: client name, status/channel/booking score/lead score/likelihood badges, occasion, next action, relative time
+- Per inquiry row: client name, status/channel/booking score/lead score/likelihood/urgency badges, completeness ring (SVG progress), occasion, next action, relative time
+- "Funnel Analytics" button → `/analytics/funnel`
 - "+ Log New Inquiry" → `/inquiries/new`
 
 **`/inquiries/new` — Form:** Smart Fill (paste text → AI parse via Ollama), channel select, client link, contact info, event details (date/guests/occasion/location/budget/dietary/service/cannabis), original message textarea, internal notes. Submit creates inquiry.
@@ -729,7 +737,7 @@
 | Culinary   | Recipe reuse rate, top recipes, dietary restrictions, menu modification/approval rates                                                           |
 | Benchmarks | → `/analytics/benchmarks`                                                                                                                        |
 
-**Sub-pages:** `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder).
+**Sub-pages:** `/analytics/benchmarks` (benchmark dashboard), `/analytics/pipeline` (forecast), `/analytics/demand` (heatmap + holiday YoY), `/analytics/client-ltv` (LTV chart), `/analytics/referral-sources` (referral analytics), `/analytics/reports` (custom report builder), `/analytics/funnel` (conversion funnel: Inquiry→Quote→Booking→Completed visualization, KPI cards for response time/conversion rate/ghost rate/lead time, channel performance comparison, decline reason breakdown, lead time distribution).
 
 ---
 
@@ -896,14 +904,14 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 > **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Onboarding & Import Pages
 
-| Route                 | Content                                                                              |
-| --------------------- | ------------------------------------------------------------------------------------ |
-| `/onboarding`         | Guided setup wizard with progress steps (profile, clients, recipes, staff, loyalty)  |
-| `/onboarding/clients` | Client import step (CSV upload, manual entry, skip)                                  |
-| `/onboarding/loyalty` | Loyalty setup step (program name, earn rates, tier config)                           |
-| `/onboarding/recipes` | Recipe import step (CSV, URL paste, manual)                                          |
-| `/onboarding/staff`   | Staff setup step (add team members, roles)                                           |
-| `/import`             | Smart import hub — 3 modes: CSV upload, past events paste, brain dump (free text AI) |
+| Route                 | Content                                                                                                                                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/onboarding`         | Guided setup wizard with progress steps (profile, clients, recipes, staff, loyalty)                                                                                                                       |
+| `/onboarding/clients` | Client import step (CSV upload, manual entry, skip)                                                                                                                                                       |
+| `/onboarding/loyalty` | Loyalty setup step (program name, earn rates, tier config)                                                                                                                                                |
+| `/onboarding/recipes` | Recipe import step (CSV, URL paste, manual)                                                                                                                                                               |
+| `/onboarding/staff`   | Staff setup step (add team members, roles)                                                                                                                                                                |
+| `/import`             | Smart import hub — 10 modes: Brain Dump, CSV/Spreadsheet, Past Events, Take a Chef, **Import Inquiries** (CSV + freeform AI), Import Clients, Import Recipe, Import Receipt, Import Document, Upload File |
 
 ---
 

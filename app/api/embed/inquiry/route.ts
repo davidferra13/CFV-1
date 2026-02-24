@@ -65,6 +65,10 @@ const EmbedInquirySchema = z.object({
   additional_notes: z.string().max(5000).optional().or(z.literal('')),
   // Honeypot — must be empty (bots fill this in)
   website_url: z.string().max(0, 'Bot detected').optional().or(z.literal('')),
+  // UTM source attribution
+  utm_source: z.string().max(200).optional().or(z.literal('')),
+  utm_medium: z.string().max(200).optional().or(z.literal('')),
+  utm_campaign: z.string().max(200).optional().or(z.literal('')),
 })
 
 const BUDGET_RANGE_MIDPOINTS: Record<string, number> = {
@@ -229,6 +233,9 @@ export async function POST(request: NextRequest) {
           referrer_ip: ip,
         },
         status: 'new',
+        utm_source: data.utm_source?.trim() || null,
+        utm_medium: data.utm_medium?.trim() || null,
+        utm_campaign: data.utm_campaign?.trim() || null,
       })
       .select('id')
       .single()

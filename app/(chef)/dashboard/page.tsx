@@ -106,6 +106,13 @@ import {
 } from '@/lib/holidays/outreach-actions'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
+import {
+  getResponseTimeSummary,
+  type ResponseTimeSummary,
+} from '@/lib/analytics/response-time-actions'
+import { ResponseTimeWidget } from '@/components/dashboard/response-time-widget'
+import { getStaleInquiries, type PendingFollowUp } from '@/lib/inquiries/follow-up-actions'
+import { PendingFollowUpsWidget } from '@/components/inquiries/pending-follow-ups-widget'
 
 // ============================================
 // Safe wrapper — logs failures, returns fallback
@@ -248,6 +255,14 @@ const emptyUpcomingMilestones: UpcomingMilestone[] = []
 const emptyStuckEvents: StuckEvent[] = []
 const emptyMultiEventDays: MultiEventDay[] = []
 const emptyNextBestActions: NextBestAction[] = []
+const emptyResponseTimeSummary: ResponseTimeSummary = {
+  overdue: 0,
+  urgent: 0,
+  ok: 0,
+  responded: 0,
+  avgResponseTimeHours: null,
+}
+const emptyPendingFollowUps: PendingFollowUp[] = []
 
 const emptyOnboardingProgress: OnboardingProgress = {
   profile: false,
@@ -466,13 +481,21 @@ export default async function ChefDashboard() {
 
   // Fetched separately — TypeScript's Promise.all tuple inference caps at 44 elements.
   // Still parallelized via their own Promise.all to avoid sequential round-trips.
-  const [onboardingProgress, nextBestActions, holidayOutreachSuggestions, dailyPlanStats] =
-    await Promise.all([
-      safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
-      safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions),
-      safe('holidayOutreach', getHolidayOutreachSuggestions, [] as HolidayOutreachSuggestion[]),
-      safe('dailyPlanStats', getDailyPlanStats, null),
-    ])
+  const [
+    onboardingProgress,
+    nextBestActions,
+    holidayOutreachSuggestions,
+    dailyPlanStats,
+    responseTimeSummary,
+    pendingFollowUps,
+  ] = await Promise.all([
+    safe('onboardingProgress', getOnboardingProgress, emptyOnboardingProgress),
+    safe('nextBestActions', () => getNextBestActions(5), emptyNextBestActions),
+    safe('holidayOutreach', getHolidayOutreachSuggestions, [] as HolidayOutreachSuggestion[]),
+    safe('dailyPlanStats', getDailyPlanStats, null),
+    safe('responseTimeSummary', getResponseTimeSummary, emptyResponseTimeSummary),
+    safe('pendingFollowUps', () => getStaleInquiries(3), emptyPendingFollowUps),
+  ])
 
   const activeInquiryCount =
     inquiryStats.new +
@@ -619,6 +642,26 @@ export default async function ChefDashboard() {
               <span className="text-xs font-medium underline">Plan Week →</span>
             </Link>
           </div>
+        </section>
+      )}
+
+      {/* ============================================ */}
+      {/* RESPONSE TIME SLA                              */}
+      {/* ============================================ */}
+      {(responseTimeSummary.overdue > 0 ||
+        responseTimeSummary.urgent > 0 ||
+        responseTimeSummary.ok > 0) && (
+        <section>
+          <ResponseTimeWidget summary={responseTimeSummary} />
+        </section>
+      )}
+
+      {/* ============================================ */}
+      {/* PENDING FOLLOW-UPS                             */}
+      {/* ============================================ */}
+      {pendingFollowUps.length > 0 && (
+        <section>
+          <PendingFollowUpsWidget followUps={pendingFollowUps} />
         </section>
       )}
 

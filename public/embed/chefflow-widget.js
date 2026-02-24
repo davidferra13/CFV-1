@@ -19,6 +19,9 @@
  *   data-theme    (optional) — "light" or "dark", default "light"
  *   data-mode     (optional) — "inline" (embeds in page) or "popup" (floating button), default "inline"
  *   data-button-text (optional) — Text for the popup button, default "Book a Private Chef"
+ *   data-source   (optional) — UTM source attribution (e.g., "homepage", "blog-post")
+ *   data-medium   (optional) — UTM medium (e.g., "embed-widget")
+ *   data-campaign  (optional) — UTM campaign name
  *
  * EVENTS (postMessage):
  *   chefflow-inquiry-submitted — Fired when a form is successfully submitted
@@ -43,6 +46,9 @@
   var theme = currentScript.getAttribute('data-theme') || 'light'
   var mode = currentScript.getAttribute('data-mode') || 'inline'
   var buttonText = currentScript.getAttribute('data-button-text') || 'Book a Private Chef'
+  var utmSource = currentScript.getAttribute('data-source') || ''
+  var utmMedium = currentScript.getAttribute('data-medium') || 'embed-widget'
+  var utmCampaign = currentScript.getAttribute('data-campaign') || ''
 
   if (!chefId) {
     console.error('[ChefFlow Widget] data-chef-id is required.')
@@ -66,7 +72,10 @@
     '?accent=' +
     encodeURIComponent(accent) +
     '&theme=' +
-    encodeURIComponent(theme)
+    encodeURIComponent(theme) +
+    (utmSource ? '&utm_source=' + encodeURIComponent(utmSource) : '') +
+    (utmMedium ? '&utm_medium=' + encodeURIComponent(utmMedium) : '') +
+    (utmCampaign ? '&utm_campaign=' + encodeURIComponent(utmCampaign) : '')
 
   // ── Inline mode: embed form directly in the page ──
   if (mode === 'inline') {
