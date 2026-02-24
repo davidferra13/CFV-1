@@ -52,7 +52,7 @@ ssh "$REMOTE" << 'BUILD'
   echo "  Dependencies installed"
 
   # Build with increased heap
-  NODE_OPTIONS="--max-old-space-size=4096" npx next build --no-lint 2>&1 | tail -5
+  NODE_OPTIONS="--max-old-space-size=4096" npx next build 2>&1 | tail -5
   BUILD_EXIT=$?
 
   # Restart Ollama
