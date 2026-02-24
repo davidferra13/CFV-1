@@ -4,11 +4,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getStaffMember } from '@/lib/staff/actions'
+import { getStaffMember, checkStaffHasLogin } from '@/lib/staff/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { StaffMemberForm } from '@/components/staff/staff-member-form'
+import { CreateStaffLoginForm } from '@/components/staff/create-staff-login-form'
 
 export const metadata: Metadata = { title: 'Staff Profile — ChefFlow' }
 
@@ -31,7 +32,10 @@ const STATUS_BADGE: Record<string, 'success' | 'warning' | 'error' | 'default'> 
 
 export default async function StaffDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
-  const member = await getStaffMember(params.id)
+  const [member, hasLogin] = await Promise.all([
+    getStaffMember(params.id),
+    checkStaffHasLogin(params.id),
+  ])
 
   const onboardingComplete = member.onboarding.filter((i: any) => i.status === 'complete').length
   const onboardingTotal = member.onboarding.length
@@ -88,6 +92,20 @@ export default async function StaffDetailPage({ params }: { params: { id: string
           {!member.phone && !member.email && !member.notes && (
             <p className="text-stone-500">No contact information on file.</p>
           )}
+        </CardContent>
+      </Card>
+
+      {/* Portal Access */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Portal Access</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CreateStaffLoginForm
+            staffMemberId={member.id}
+            currentEmail={member.email}
+            hasLogin={hasLogin}
+          />
         </CardContent>
       </Card>
 

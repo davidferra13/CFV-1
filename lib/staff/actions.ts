@@ -395,3 +395,116 @@ export async function computeEventLaborCost(eventId: string): Promise<number> {
   if (error) return 0
   return (data ?? []).reduce((sum: number, row: any) => sum + (row.pay_amount_cents ?? 0), 0)
 }
+
+// ============================================
+// STAFF PORTAL ACCESS ACTIONS
+// ============================================
+
+const CreateStaffLoginSchema = z.object({
+  staffMemberId: z.string().uuid('Invalid staff member ID'),
+  email: z.string().email('Valid email required'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+})
+
+/**
+ * Check whether a staff member already has a portal login (user_roles row with role='staff').
+ * Chef-only. Uses admin client to query user_roles without RLS restrictions.
+ */
+export async function checkStaffHasLogin(staffMemberId: string): Promise<boolean> {
+  await requireChef()
+  const adminClient = createServerClient({ admin: true })
+
+  const { data } = await adminClient
+    .from('user_roles')
+    .select('id')
+    .eq('entity_id', staffMemberId)
+    .eq('role', 'staff' as any)
+    .maybeSingle()
+
+  return !!data
+}
+
+/**
+ * Create a login account for a staff member so they can access the staff portal.
+ *
+ * Steps:
+ *  1. Validate inputs (Zod)
+ *  2. Verify the staff member belongs to the current chef's tenant
+ *  3. Check for existing login (prevent duplicates)
+ *  4. Create a Supabase auth user via admin API
+ *  5. Insert a user_roles row linking auth_user_id → staff_member entity_id
+ *  6. Store the email on the staff_members row if not already set
+ */
+export async function createStaffLogin(input: {
+  staffMemberId: string
+  email: string
+  password: string
+}): Promise<{ success: true }> {
+  const user = await requireChef()
+  const validated = CreateStaffLoginSchema.parse(input)
+  const adminClient = createServerClient({ admin: true })
+
+  // 1. Verify staff member belongs to this chef
+  const { data: member, error: memberError } = await adminClient
+    .from('staff_members')
+    .select('id, email, chef_id')
+    .eq('id', validated.staffMemberId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (memberError || !member) {
+    throw new Error('Staff member not found or does not belong to your team')
+  }
+
+  // 2. Check for existing login
+  const hasLogin = await checkStaffHasLogin(validated.staffMemberId)
+  if (hasLogin) {
+    throw new Error('This staff member already has a portal login')
+  }
+
+  // 3. Create auth user via Supabase admin API
+  const { data: authData, error: authError } = await adminClient.auth.admin.createUser({
+    email: validated.email,
+    password: validated.password,
+    email_confirm: true,
+  })
+
+  if (authError || !authData.user) {
+    console.error('[createStaffLogin] Auth error:', authError)
+    // Surface common errors clearly
+    if (authError?.message?.includes('already been registered')) {
+      throw new Error('This email is already registered. Use a different email or contact support.')
+    }
+    throw new Error(authError?.message ?? 'Failed to create auth account')
+  }
+
+  // 4. Insert user_roles row
+  const { error: roleError } = await adminClient.from('user_roles').insert({
+    auth_user_id: authData.user.id,
+    entity_id: validated.staffMemberId,
+    role: 'staff' as any,
+  })
+
+  if (roleError) {
+    console.error('[createStaffLogin] Role insert error:', roleError)
+    // Clean up: delete the auth user we just created so we don't leave orphans
+    try {
+      await adminClient.auth.admin.deleteUser(authData.user.id)
+    } catch (cleanupErr) {
+      console.error('[createStaffLogin] Cleanup failed:', cleanupErr)
+    }
+    throw new Error('Failed to assign staff role. Please try again.')
+  }
+
+  // 5. Update staff member email if not already set
+  if (!member.email) {
+    await adminClient
+      .from('staff_members')
+      .update({ email: validated.email })
+      .eq('id', validated.staffMemberId)
+      .eq('chef_id', user.tenantId!)
+  }
+
+  revalidatePath(`/staff/${validated.staffMemberId}`)
+  return { success: true }
+}
