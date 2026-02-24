@@ -1,24 +1,71 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { ChevronDown, type LucideIcon } from 'lucide-react'
+import {
+  Building2,
+  Palette,
+  CalendarClock,
+  CalendarCheck,
+  Settings2,
+  CreditCard,
+  MessageSquare,
+  Bell,
+  Plug,
+  Brain,
+  Star,
+  Sun,
+  TrendingUp,
+  Users,
+  ShieldCheck,
+  Database,
+  Code,
+  Monitor,
+  MessageCircle,
+  Lock,
+  ChevronDown,
+  type LucideIcon,
+} from 'lucide-react'
+
+const iconMap: Record<string, LucideIcon> = {
+  Building2,
+  Palette,
+  CalendarClock,
+  CalendarCheck,
+  Settings2,
+  CreditCard,
+  MessageSquare,
+  Bell,
+  Plug,
+  Brain,
+  Star,
+  Sun,
+  TrendingUp,
+  Users,
+  ShieldCheck,
+  Database,
+  Code,
+  Monitor,
+  MessageCircle,
+  Lock,
+}
 
 export function SettingsCategory({
   title,
   description,
-  icon: Icon,
+  icon,
   children,
   defaultOpen = false,
   primary = false,
 }: {
   title: string
   description: string
-  icon: LucideIcon
+  icon: string
   children: ReactNode
   defaultOpen?: boolean
   primary?: boolean
 }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
+  const Icon = iconMap[icon]
 
   return (
     <div
@@ -32,11 +79,13 @@ export function SettingsCategory({
         aria-expanded={isOpen}
         className="flex w-full items-start gap-3 px-4 py-3 sm:px-5 sm:py-4 text-left cursor-pointer"
       >
-        <Icon
-          className={`mt-0.5 h-5 w-5 flex-shrink-0 ${
-            primary ? 'text-brand-500' : 'text-stone-500'
-          }`}
-        />
+        {Icon && (
+          <Icon
+            className={`mt-0.5 h-5 w-5 flex-shrink-0 ${
+              primary ? 'text-brand-500' : 'text-stone-500'
+            }`}
+          />
+        )}
         <div className="min-w-0 flex-1">
           <h2 className="text-lg font-semibold text-stone-100">{title}</h2>
           <p className="mt-1 text-sm text-stone-400">{description}</p>

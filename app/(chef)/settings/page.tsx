@@ -36,28 +36,6 @@ import { DesktopAppSettings } from '@/components/settings/desktop-app-settings'
 import Link from 'next/link'
 import { isAdmin } from '@/lib/auth/admin'
 import { SettingsCategory } from '@/components/settings/settings-category'
-import {
-  Building2,
-  Palette,
-  CalendarClock,
-  CalendarCheck,
-  Settings2,
-  CreditCard,
-  MessageSquare,
-  Bell,
-  Plug,
-  Brain,
-  Star,
-  Sun,
-  TrendingUp,
-  Users,
-  ShieldCheck,
-  Database,
-  Code,
-  Monitor,
-  MessageCircle,
-  Lock,
-} from 'lucide-react'
 
 function SettingsGroupHeader({
   label,
@@ -145,7 +123,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Business Defaults"
           description="Home base, stores, timing, operating procedures, revenue goals, and dashboard layout."
-          icon={Building2}
+          icon="Building2"
           primary
           defaultOpen
         >
@@ -191,7 +169,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Profile & Branding"
           description="Manage your core chef profile, public profile presentation, and portal background."
-          icon={Palette}
+          icon="Palette"
           primary
         >
           <div className="space-y-4">
@@ -260,7 +238,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Availability Rules"
           description="Set hard blocks, event limits, and buffer time so ChefFlow warns you before double-booking."
-          icon={CalendarClock}
+          icon="CalendarClock"
           primary
         >
           <SchedulingRulesForm initialRules={schedulingRules} />
@@ -270,7 +248,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Booking Page"
           description="Share a link clients can use to check your availability and submit a booking request."
-          icon={CalendarCheck}
+          icon="CalendarCheck"
           primary
         >
           <BookingPageSettings
@@ -297,7 +275,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Event Configuration"
           description="Customize event types, labels, and add extra fields to capture your business-specific data."
-          icon={Settings2}
+          icon="Settings2"
           primary
         >
           <div className="space-y-3">
@@ -327,7 +305,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Payments & Billing"
           description="Stripe payouts, your ChefFlow subscription, and feature module toggles."
-          icon={CreditCard}
+          icon="CreditCard"
           primary
         >
           <div className="space-y-3">
@@ -373,7 +351,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Communication & Workflow"
           description="Manage messaging templates, automations, and your creative planning systems."
-          icon={MessageSquare}
+          icon="MessageSquare"
           primary
         >
           <div className="space-y-3">
@@ -423,7 +401,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Notifications & Alerts"
           description="Control email, browser push, and SMS alerts by category."
-          icon={Bell}
+          icon="Bell"
           primary
         >
           <Link
@@ -451,7 +429,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Connected Accounts & Integrations"
           description="Connect inbox and website channels, then manage system integrations."
-          icon={Plug}
+          icon="Plug"
         >
           <div className="space-y-6">
             <div>
@@ -496,7 +474,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="AI & Privacy"
           description="Control Remy, understand how your data is handled, and manage AI features."
-          icon={Brain}
+          icon="Brain"
         >
           <div className="space-y-3">
             <Link
@@ -525,7 +503,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Client Reviews"
           description="Configure your review link and review collection flow."
-          icon={Star}
+          icon="Star"
         >
           <div className="space-y-3">
             <GoogleReviewUrlForm currentUrl={googleReviewUrl} />
@@ -554,7 +532,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Appearance"
           description="Customize how ChefFlow looks — theme and color mode."
-          icon={Sun}
+          icon="Sun"
         >
           <Link
             href="/settings/appearance"
@@ -569,7 +547,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Professional Growth"
           description="Track achievements, skills, career momentum, portfolio, and profile highlights."
-          icon={TrendingUp}
+          icon="TrendingUp"
         >
           <div className="space-y-3">
             <Link
@@ -625,7 +603,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Chef Network"
           description="Control network visibility and your chef directory profile."
-          icon={Users}
+          icon="Users"
         >
           <div className="space-y-3">
             <DiscoverabilityToggle currentValue={networkDiscoverable} />
@@ -654,7 +632,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Legal & Protection"
           description="Insurance, certifications, contracts, compliance, emergency contacts, and crisis planning."
-          icon={ShieldCheck}
+          icon="ShieldCheck"
         >
           <div className="space-y-3">
             <Link
@@ -711,7 +689,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Sample Data"
           description="Load or remove sample clients, events, and inquiries to explore ChefFlow."
-          icon={Database}
+          icon="Database"
         >
           <DemoDataManager hasDemoData={demoDataExists} />
         </SettingsCategory>
@@ -720,7 +698,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="API & Developer"
           description="API keys and webhooks for integrating ChefFlow with external tools."
-          icon={Code}
+          icon="Code"
         >
           <div className="space-y-3">
             <Link
@@ -748,7 +726,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Desktop App"
           description="System tray, auto-start, and native desktop notifications for the ChefFlow desktop app."
-          icon={Monitor}
+          icon="Monitor"
         >
           <DesktopAppSettings />
         </SettingsCategory>
@@ -757,7 +735,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Share Feedback"
           description="Tell us what you love, what frustrates you, or anything in between. We read every submission."
-          icon={MessageCircle}
+          icon="MessageCircle"
         >
           <FeedbackForm />
         </SettingsCategory>
@@ -766,7 +744,7 @@ export default async function SettingsPage() {
         <SettingsCategory
           title="Account & Security"
           description="Password, account-level management, and system status."
-          icon={Lock}
+          icon="Lock"
         >
           <div className="space-y-3">
             <Link
