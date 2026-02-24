@@ -33,7 +33,7 @@ const PILLARS = [
 
 export function HowItWorksSection() {
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+    <section className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
       <div className="mb-12 text-center">
         <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
           How it actually works.

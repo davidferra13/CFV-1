@@ -47,8 +47,9 @@ const FEATURES = [
 export default function Home() {
   return (
     <main>
-      <section className="relative overflow-hidden border-b border-stone-700 bg-gradient-to-b from-brand-950 via-stone-900 to-stone-950">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-[460px] w-[760px] -translate-x-1/2 rounded-full bg-brand-900/40 blur-3xl" />
+      <section className="relative overflow-hidden border-b border-stone-700/50">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[60px]" />
+        <div className="pointer-events-none absolute -right-10 top-10 h-[250px] w-[250px] rounded-full bg-brand-800/25 blur-[50px]" />
         <div className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 pb-16 pt-20 text-center sm:px-6 md:pb-20 md:pt-24 lg:px-8">
           <h1 className="max-w-4xl text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
             The business OS built by a chef, for chefs.
@@ -77,7 +78,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
+      <section className="relative mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
         <div className="grid gap-6 md:grid-cols-3">
           {FEATURES.map((feature) => {
             const Icon = feature.icon
@@ -97,7 +98,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-stone-700 bg-surface-muted">
+      <section className="relative border-y border-stone-700/50 bg-stone-900/40 backdrop-blur-sm">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="mb-10 text-center">
             <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
@@ -112,7 +113,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-stone-700 bg-gradient-to-b from-brand-950/60 to-stone-950">
+      <section className="relative border-y border-stone-700/50 overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-900/30 via-transparent to-brand-800/15" />
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-950 text-brand-400">
@@ -132,16 +134,17 @@ export default function Home() {
 
       <HowItWorksSection />
 
-      <section className="mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
-        <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
+      <section className="relative mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[200px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-800/20 blur-[50px]" />
+        <h2 className="relative text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
           Your calmer workflow starts here.
         </h2>
-        <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
+        <p className="relative mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
           Start with the essentials, then scale your operations with confidence.
         </p>
         <Link
           href="/auth/signup"
-          className="mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
+          className="relative mt-8 inline-flex items-center justify-center rounded-lg bg-brand-600 px-7 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-700"
         >
           Get started free
         </Link>
