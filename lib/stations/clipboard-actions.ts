@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { notifyLowStock } from '@/lib/notifications/triggers'
 
 // ============================================
 // SCHEMAS
@@ -80,7 +81,7 @@ export async function getClipboardForDate(stationId: string, date: string) {
     )
     .eq('station_id', stationId)
     .eq('chef_id', user.tenantId!)
-    .eq('clipboard_date', date)
+    .eq('entry_date', date)
     .order('created_at')
 
   if (error) {
@@ -126,7 +127,7 @@ export async function getClipboardForDate(stationId: string, date: string) {
         chef_id: user.tenantId!,
         station_id: stationId,
         component_id: comp.id,
-        clipboard_date: date,
+        entry_date: date,
         on_hand: 0,
         made: 0,
         need_to_make: 0,
@@ -210,6 +211,33 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
   if (error) {
     console.error('[updateClipboardEntry] Error:', error)
     throw new Error('Failed to update clipboard entry')
+  }
+
+  // Non-blocking notification — check for low stock when on_hand was explicitly updated
+  if (validated.on_hand !== undefined && data) {
+    try {
+      // Look up the component's par_level, name, and station name
+      const { data: comp } = await supabase
+        .from('station_components')
+        .select('name, par_level, stations(name)')
+        .eq('id', data.component_id)
+        .single()
+
+      if (comp && comp.par_level && comp.par_level > 0) {
+        const onHand = validated.on_hand
+        const parLevel = comp.par_level
+        // Trigger if on_hand is below 50% of par_level
+        if (onHand < parLevel * 0.5) {
+          const stationName = (comp.stations as any)?.name ?? 'Unknown station'
+          const componentName = comp.name ?? 'Unknown component'
+          try {
+            await notifyLowStock(user.tenantId!, stationName, componentName, onHand, parLevel)
+          } catch {}
+        }
+      }
+    } catch (err) {
+      console.error('[updateClipboardEntry] Low stock notification failed (non-fatal):', err)
+    }
   }
 
   return data
@@ -369,7 +397,7 @@ export async function shiftCheckOut(input: ShiftCheckOutInput) {
     .select('*')
     .eq('station_id', validated.station_id)
     .eq('chef_id', user.tenantId!)
-    .eq('clipboard_date', today)
+    .eq('entry_date', today)
 
   const snapshot = {
     captured_at: new Date().toISOString(),
@@ -465,7 +493,7 @@ export async function getAll86dItems() {
     `
     )
     .eq('chef_id', user.tenantId!)
-    .eq('clipboard_date', today)
+    .eq('entry_date', today)
     .eq('is_86d', true)
     .order('eighty_sixed_at', { ascending: false })
 

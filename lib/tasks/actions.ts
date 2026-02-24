@@ -7,6 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import { notifyTaskAssigned } from '@/lib/notifications/triggers'
 
 // ============================================
 // SCHEMAS
@@ -158,6 +159,24 @@ export async function createTask(input: CreateTaskInput) {
   if (error) {
     console.error('[createTask] Error:', error)
     throw new Error('Failed to create task')
+  }
+
+  // Non-blocking notification — notify chef when a task is assigned to a staff member
+  if (data.assigned_to) {
+    try {
+      // Look up the staff member name for the notification
+      const { data: staffRow } = await supabase
+        .from('staff_members')
+        .select('name')
+        .eq('id', data.assigned_to)
+        .single()
+      const staffName = staffRow?.name ?? 'Unknown'
+      try {
+        await notifyTaskAssigned(user.tenantId!, staffName, validated.title, validated.due_date)
+      } catch {}
+    } catch (err) {
+      console.error('[createTask] Task notification failed (non-fatal):', err)
+    }
   }
 
   revalidatePath('/tasks')
