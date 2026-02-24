@@ -229,6 +229,93 @@ async function runAction(action, endpoint) {
       return result
     }
 
+    if (action === 'reboot') {
+      if (endpoint !== 'pi') {
+        result.message = 'Reboot is only available for the Pi'
+        return result
+      }
+      try {
+        await sshPi('sudo reboot', 10000)
+      } catch {
+        // Expected: SSH drops during reboot
+      }
+      result.success = true
+      result.message = 'Pi reboot command sent. It will be offline for ~30-60 seconds.'
+      return result
+    }
+
+    if (action === 'diagnose') {
+      if (endpoint === 'pc') {
+        const start = Date.now()
+        try {
+          const controller = new AbortController()
+          const timeout = setTimeout(() => controller.abort(), 5000)
+          const res = await fetch(`${PC_URL}/api/tags`, { signal: controller.signal, cache: 'no-store' })
+          clearTimeout(timeout)
+          result.latencyMs = Date.now() - start
+          result.success = res.ok
+          result.message = res.ok
+            ? `PC Ollama is running and responding (${result.latencyMs}ms).`
+            : `PC Ollama responded with HTTP ${res.status}.`
+        } catch (err) {
+          result.latencyMs = Date.now() - start
+          const msg = err?.message || 'Unknown error'
+          result.success = false
+          result.message = msg.includes('ECONNREFUSED')
+            ? 'Ollama is NOT running on this PC. Start it with: ollama serve'
+            : `PC Ollama unreachable: ${msg}`
+        }
+        return result
+      }
+
+      // Pi diagnosis — test 3 layers
+      const piHost = PI_URL.replace(/^https?:\/\//, '').replace(/:\d+.*$/, '')
+      const diag = { network: false, ssh: false, ollama: false }
+
+      // Layer 1: TCP ping
+      try {
+        await execAsync(
+          isWindows
+            ? `powershell -Command "Test-NetConnection -ComputerName ${piHost} -Port 22 -InformationLevel Quiet -WarningAction SilentlyContinue | Out-Null; if ($?) { exit 0 } else { exit 1 }"`
+            : `nc -z -w 3 ${piHost} 22`,
+          { timeout: 8000 }
+        )
+        diag.network = true
+      } catch {
+        result.message = `Pi is UNREACHABLE (${piHost}:22 timed out). Powered off, disconnected, or IP changed. Walk to the Pi and power-cycle it.`
+        return result
+      }
+
+      // Layer 2: SSH
+      try {
+        await sshPi('echo ok', 8000)
+        diag.ssh = true
+      } catch (err) {
+        const msg = err?.message || ''
+        if (msg.includes('Permission denied') || msg.includes('publickey')) {
+          result.message = `Pi is on the network but SSH auth failed (key issue). Error: ${msg}`
+        } else if (msg.includes('Connection refused')) {
+          result.message = 'Pi is on the network but SSH service is down (port 22 refused). OS is up but sshd is not running.'
+        } else {
+          result.message = `Pi is on the network but SSH failed: ${msg}`
+        }
+        return result
+      }
+
+      // Layer 3: Ollama on Pi
+      try {
+        const ollamaOut = await sshPi("curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://localhost:11434/api/tags", 10000)
+        diag.ollama = ollamaOut.trim() === '200'
+        result.success = diag.ollama
+        result.message = diag.ollama
+          ? 'Pi is fully reachable. Network OK, SSH OK, Ollama responding.'
+          : 'Pi is on the network and SSH works, but Ollama is not responding. Try: Restart Ollama or Reboot Pi.'
+      } catch {
+        result.message = 'Pi is on the network and SSH works, but Ollama is not responding. Try: Restart Ollama or Reboot Pi.'
+      }
+      return result
+    }
+
     result.message = `Unknown action: ${action}`
     return result
   } catch (err) {
@@ -409,6 +496,7 @@ function getHTML() {
     }
     .toast.success { background: #052e16; border: 1px solid #166534; color: #4ade80; }
     .toast.error { background: #450a0a; border: 1px solid #991b1b; color: #f87171; }
+    .toast.info { background: #0c1c3a; border: 1px solid #1e40af; color: #60a5fa; }
     .toast.hidden { opacity: 0; pointer-events: none; }
     .footer {
       margin-top: 2rem;
@@ -579,6 +667,12 @@ function getHTML() {
         btns += actionBtn('Kill', 'red', 'kill', name,
           '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>');
       }
+      btns += actionBtn('Diagnose', 'blue', 'diagnose', name,
+        '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>');
+      if (name === 'pi' && !ep.online) {
+        btns += actionBtn('Reboot Pi', 'red', 'reboot', name,
+          '<path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/>');
+      }
       actions.innerHTML = btns;
     }
 
@@ -639,7 +733,8 @@ function getHTML() {
           body: JSON.stringify({ action, endpoint }),
         });
         const data = await res.json();
-        showToast(data.message, data.success ? 'success' : 'error');
+        const toastType = data.action === 'diagnose' ? 'info' : (data.success ? 'success' : 'error');
+        showToast(data.message, toastType);
         // Refresh after action
         setTimeout(refreshAll, 500);
       } catch (err) {

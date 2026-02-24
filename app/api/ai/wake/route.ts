@@ -15,9 +15,13 @@ import {
   loadModelsOnAllEndpoints,
   restartPcOllama,
   restartPiOllama,
+  rebootPi,
+  networkDiagnosePi,
+  networkDiagnosePc,
   type PingResult,
   type WakeResult,
   type LoadModelResult,
+  type NetworkDiagResult,
 } from '@/lib/ai/ollama-wake'
 import { getOllamaConfig, getOllamaPiUrl } from '@/lib/ai/providers'
 
@@ -26,7 +30,7 @@ import { getOllamaConfig, getOllamaPiUrl } from '@/lib/ai/providers'
 // ============================================
 
 interface WakeRequest {
-  action: 'ping' | 'wake' | 'load-model' | 'restart'
+  action: 'ping' | 'wake' | 'load-model' | 'restart' | 'reboot' | 'diagnose'
   endpoint?: 'pc' | 'pi' | 'all'
 }
 
@@ -74,6 +78,12 @@ export async function POST(request: Request) {
 
       case 'restart':
         return handleRestart(endpoint, timestamp)
+
+      case 'reboot':
+        return handleReboot(timestamp)
+
+      case 'diagnose':
+        return handleDiagnose(endpoint, timestamp)
 
       default:
         return NextResponse.json(
@@ -234,6 +244,37 @@ async function handleRestart(endpoint: 'pc' | 'pi' | 'all', timestamp: string): 
     results,
     timestamp,
   } as WakeResponse)
+}
+
+async function handleReboot(timestamp: string): Promise<Response> {
+  const result = await rebootPi()
+
+  return NextResponse.json({
+    success: result.success,
+    message: result.message,
+    results: [result],
+    timestamp,
+  } as WakeResponse)
+}
+
+async function handleDiagnose(endpoint: 'pc' | 'pi' | 'all', timestamp: string): Promise<Response> {
+  const results: NetworkDiagResult[] = []
+
+  if (endpoint === 'pc' || endpoint === 'all') {
+    results.push(await networkDiagnosePc())
+  }
+  if (endpoint === 'pi' || endpoint === 'all') {
+    results.push(await networkDiagnosePi())
+  }
+
+  const allReachable = results.every((r) => r.ollamaPortOpen)
+
+  return NextResponse.json({
+    success: allReachable,
+    message: results.map((r) => r.diagnosis).join(' | '),
+    results,
+    timestamp,
+  })
 }
 
 // GET endpoint for quick status check

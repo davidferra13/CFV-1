@@ -8,7 +8,7 @@
 // Uses existing API: GET /api/ai/health for polling status
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Power, RefreshCw, Loader2, Wifi, Cpu, Server } from 'lucide-react'
+import { Power, RefreshCw, Loader2, Wifi, Cpu, Server, RotateCcw, Stethoscope } from 'lucide-react'
 
 // ── Types ────────────────────────────────────────────────────
 
@@ -295,11 +295,15 @@ export function OllamaStatusBadge() {
               const restartKey = `restart-${ep.name}`
               const pingKey = `ping-${ep.name}`
               const loadKey = `load-model-${ep.name}`
+              const rebootKey = `reboot-${ep.name}`
+              const diagnoseKey = `diagnose-${ep.name}`
               const resultKey =
                 actionResults[wakeKey] ||
                 actionResults[restartKey] ||
                 actionResults[pingKey] ||
-                actionResults[loadKey]
+                actionResults[loadKey] ||
+                actionResults[rebootKey] ||
+                actionResults[diagnoseKey]
 
               return (
                 <div key={ep.name} className="px-4 py-3">
@@ -328,7 +332,7 @@ export function OllamaStatusBadge() {
                     {!ep.online && ep.error && ` — ${ep.error}`}
                   </div>
 
-                  <div className="flex gap-1.5">
+                  <div className="flex flex-wrap gap-1.5">
                     {!ep.online ? (
                       <ActionButton
                         label="Wake"
@@ -360,6 +364,22 @@ export function OllamaStatusBadge() {
                         loading={!!actionLoading[loadKey]}
                         onClick={() => runAction('load-model', ep.name)}
                         color="purple"
+                      />
+                    )}
+                    <ActionButton
+                      label="Diagnose"
+                      icon={<Stethoscope className="h-3 w-3" />}
+                      loading={!!actionLoading[diagnoseKey]}
+                      onClick={() => runAction('diagnose', ep.name)}
+                      color="blue"
+                    />
+                    {ep.name === 'pi' && !ep.online && (
+                      <ActionButton
+                        label="Reboot Pi"
+                        icon={<RotateCcw className="h-3 w-3" />}
+                        loading={!!actionLoading[rebootKey]}
+                        onClick={() => runAction('reboot', ep.name)}
+                        color="red"
                       />
                     )}
                   </div>
@@ -398,13 +418,14 @@ function ActionButton({
   icon: React.ReactNode
   loading: boolean
   onClick: () => void
-  color: 'emerald' | 'amber' | 'blue' | 'purple'
+  color: 'emerald' | 'amber' | 'blue' | 'purple' | 'red'
 }) {
   const colors = {
     emerald: 'bg-emerald-950 border-emerald-800 text-emerald-400 hover:bg-emerald-900',
     amber: 'bg-amber-950 border-amber-800 text-amber-400 hover:bg-amber-900',
     blue: 'bg-blue-950 border-blue-800 text-blue-400 hover:bg-blue-900',
     purple: 'bg-purple-950 border-purple-800 text-purple-400 hover:bg-purple-900',
+    red: 'bg-red-950 border-red-800 text-red-400 hover:bg-red-900',
   }
 
   return (

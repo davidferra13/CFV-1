@@ -369,6 +369,177 @@ export async function loadModelsOnAllEndpoints(): Promise<LoadModelResult[]> {
 }
 
 // ============================================
+// NETWORK DIAGNOSTICS
+// ============================================
+
+export interface NetworkDiagResult {
+  endpoint: 'pc' | 'pi'
+  networkReachable: boolean
+  sshReachable: boolean
+  ollamaPortOpen: boolean
+  latencyMs: number | null
+  diagnosis: string
+  error: string | null
+}
+
+/**
+ * Deep network diagnostic for an endpoint.
+ * Tests three layers: network (TCP:22), SSH auth, Ollama port (TCP:11434).
+ * Tells you exactly WHERE the connection is failing.
+ */
+export async function networkDiagnosePi(): Promise<NetworkDiagResult> {
+  const piUrl = getOllamaPiUrl()
+  const result: NetworkDiagResult = {
+    endpoint: 'pi',
+    networkReachable: false,
+    sshReachable: false,
+    ollamaPortOpen: false,
+    latencyMs: null,
+    diagnosis: '',
+    error: null,
+  }
+
+  if (!piUrl) {
+    result.diagnosis = 'Pi endpoint not configured (OLLAMA_PI_URL not set)'
+    result.error = 'Not configured'
+    return result
+  }
+
+  // Extract host from URL
+  const piHost = new URL(piUrl).hostname
+
+  // Layer 1: Can we reach the Pi at all? (TCP ping to port 22)
+  const startTime = Date.now()
+  try {
+    await execAsync(
+      process.platform === 'win32'
+        ? `powershell -Command "Test-NetConnection -ComputerName ${piHost} -Port 22 -InformationLevel Quiet -WarningAction SilentlyContinue | Out-Null; if ($?) { exit 0 } else { exit 1 }"`
+        : `nc -z -w 3 ${piHost} 22`,
+      { timeout: 8000 }
+    )
+    result.networkReachable = true
+    result.latencyMs = Date.now() - startTime
+  } catch {
+    result.diagnosis = `Pi is UNREACHABLE on the network (${piHost}:22 timed out). Either powered off, disconnected, or IP changed. Walk to the Pi and power-cycle it.`
+    result.error = 'Network unreachable'
+    return result
+  }
+
+  // Layer 2: Can SSH connect and authenticate?
+  try {
+    await sshPi('echo ok', 8000)
+    result.sshReachable = true
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('Permission denied') || msg.includes('publickey')) {
+      result.diagnosis = `Pi is on the network but SSH auth failed. Key issue. Error: ${msg}`
+      result.error = 'SSH auth failed'
+    } else if (msg.includes('Connection refused')) {
+      result.diagnosis = `Pi is on the network but SSH service is not running (port 22 refused). The Pi OS is up but sshd is down.`
+      result.error = 'SSH refused'
+    } else {
+      result.diagnosis = `Pi is on the network but SSH failed: ${msg}`
+      result.error = 'SSH failed'
+    }
+    return result
+  }
+
+  // Layer 3: Is Ollama's port open?
+  try {
+    const ollamaPort = new URL(piUrl).port || '11434'
+    await sshPi(
+      `curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 http://localhost:${ollamaPort}/api/tags`,
+      10000
+    )
+    result.ollamaPortOpen = true
+    result.diagnosis = 'Pi is fully reachable. Network OK, SSH OK, Ollama responding.'
+  } catch {
+    result.diagnosis =
+      'Pi is on the network and SSH works, but Ollama is not responding on the Pi itself. Try: Reboot Pi or restart Ollama service.'
+    result.error = 'Ollama not responding on Pi'
+  }
+
+  return result
+}
+
+/**
+ * Deep network diagnostic for PC Ollama.
+ * Simpler than Pi — just checks if Ollama port is open locally.
+ */
+export async function networkDiagnosePc(): Promise<NetworkDiagResult> {
+  const config = getOllamaConfig()
+  const result: NetworkDiagResult = {
+    endpoint: 'pc',
+    networkReachable: true, // PC is always "reachable" — it's localhost
+    sshReachable: true, // N/A for PC
+    ollamaPortOpen: false,
+    latencyMs: null,
+    diagnosis: '',
+    error: null,
+  }
+
+  const startTime = Date.now()
+  try {
+    const res = await fetch(`${config.baseUrl}/api/tags`, {
+      signal: AbortSignal.timeout(5000),
+      cache: 'no-store',
+    })
+    result.latencyMs = Date.now() - startTime
+    result.ollamaPortOpen = res.ok
+    result.diagnosis = res.ok
+      ? 'PC Ollama is running and responding.'
+      : `PC Ollama responded with HTTP ${res.status}.`
+  } catch (err) {
+    result.latencyMs = Date.now() - startTime
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('ECONNREFUSED')) {
+      result.diagnosis = 'Ollama is not running on this PC. Start it with: ollama serve'
+    } else {
+      result.diagnosis = `PC Ollama unreachable: ${msg}`
+    }
+    result.error = msg
+  }
+
+  return result
+}
+
+// ============================================
+// REBOOT FUNCTIONS
+// ============================================
+
+/**
+ * Reboot the Raspberry Pi via SSH.
+ * This is the nuclear option — use when Pi is frozen but SSH still connects.
+ * The Pi will go offline for ~30-60 seconds during reboot.
+ */
+export async function rebootPi(): Promise<WakeResult> {
+  const startTime = Date.now()
+
+  try {
+    // Fire and forget — the SSH connection will drop as the Pi reboots
+    try {
+      await sshPi('sudo reboot', 10000)
+    } catch {
+      // Expected: SSH connection drops during reboot, which throws
+    }
+
+    return {
+      endpoint: 'pi',
+      success: true,
+      message: 'Pi reboot command sent. It will be offline for ~30-60 seconds.',
+      latencyMs: Date.now() - startTime,
+    }
+  } catch (err) {
+    return {
+      endpoint: 'pi',
+      success: false,
+      message: 'Failed to send reboot command to Pi',
+      error: err instanceof Error ? err.message : 'SSH connection failed',
+    }
+  }
+}
+
+// ============================================
 // RESTART FUNCTIONS
 // ============================================
 
