@@ -1,143 +1,99 @@
-# Copilot Workflow — GitHub Copilot + Claude Code
+# Copilot Workflow — Research & Prompt Queue
 
-## The Model
-
-```
-Copilot (free, included)    Claude Code (paid, senior)
-────────────────────────    ──────────────────────────
-Writes new files            Reviews every Copilot commit
-Simple component scaffolds  Wires components into the app
-Utility functions           Multi-file changes
-Data transformers           Database/auth/financial logic
-Boilerplate                 Architecture decisions
-                            Bug fixes
-                            Integration + testing
-```
-
-## The Workflow (every time)
-
-### Step 1: Branch (you do this)
-
-```bash
-git checkout feature/your-branch
-git checkout -b copilot/<task-name>
-```
-
-Always branch off your current feature branch. Copilot never works on `main` or your feature branch directly.
-
-### Step 2: Task Copilot (give it a prompt)
-
-**IMPORTANT:** Have `COPILOT.md` open in an editor tab before prompting. Copilot reads context from open files.
-
-Start every Copilot prompt with:
-
-```
-Read COPILOT.md first. Then do the following task:
-```
-
-Then give it a clear, specific task. Good prompts:
-
-- "Create `lib/utils/date-helpers.ts` with functions for: ..."
-- "Create `components/events/guest-count-badge.tsx` that renders: ..."
-- "Edit `lib/utils/currency.ts` — add a `formatCurrencyRange(minCents, maxCents)` function"
-
-Bad prompts (too vague, will get bad results):
-
-- "Improve the event page"
-- "Fix the styling"
-- "Build me a whole system with 5 files and a migration"
-
-### Step 3: Review (Claude Code does this)
-
-Tell Claude Code: "Review Copilot's work on the `copilot/<task-name>` branch"
-
-Claude Code will:
-
-1. `git diff` to see exactly what changed
-2. Check that only the intended files were touched
-3. Read the code for quality, types, edge cases
-4. Run `npx tsc --noEmit --skipLibCheck` to verify it compiles
-5. Grade it and either approve or fix issues
-
-### Step 4: Merge or discard
-
-If approved:
-
-```bash
-git checkout feature/your-branch
-git merge copilot/<task-name>
-git branch -d copilot/<task-name>
-```
-
-If rejected:
-
-```bash
-git checkout feature/your-branch
-git branch -D copilot/<task-name>
-```
-
-Zero risk either way — your real branch is never touched until you explicitly merge.
+> Copilot's role: research the codebase, help the developer think, and write structured prompts for Claude Code.
 
 ---
 
-## Task Categories
+## The Pipeline
 
-### Green (Copilot-safe)
+```
+Developer (voice-to-text, casual)
+    → Copilot (research + thinking + prompt writing) [$0]
+        → prompts/queue/ (the filing cabinet)
+            → Developer reviews & prioritizes
+                → Claude Code executes [paid]
+                    → prompts/completed/ (done)
+```
 
-- New utility files in `lib/utils/`
-- New pure component files (no data fetching)
-- Type definitions and interfaces
-- Static content (copy, labels, config objects)
-- CSS/Tailwind styling for isolated components
-- Data transformation/formatting helpers
+## How to Use Copilot
 
-### Yellow (Copilot with detailed spec)
+### 1. Open COPILOT.md in your editor
 
-- Editing a single existing file (must specify exact function/section)
-- New components that import from existing project files
-- New server action files (must specify exact pattern to follow)
+Copilot reads context from **open files**. Always have `COPILOT.md` in an editor tab when working with Copilot. This gives it the project rules and architecture context.
 
-### Red (Claude Code only)
+### 2. Talk casually about what you want
 
-- Anything touching `supabase/migrations/`
-- Auth logic (`middleware.ts`, `lib/auth/`)
-- Financial logic (`lib/ledger/`, payment routes)
-- Multi-file refactors
-- Bug fixes (require understanding root cause across files)
-- Wiring features into existing pages
-- Config changes (`next.config.js`, `package.json`, etc.)
-- Anything that needs to understand the full event FSM
+Just describe the feature, bug, or idea. Copilot will:
 
----
+- Read relevant files in the codebase
+- Identify which patterns apply
+- Ask clarifying questions
+- Help you think through edge cases
 
-## Copilot Test Results (Feb 2026)
+### 3. Say "add it to the Claude queue"
 
-**Test 1 — Red-tier multi-file feature (Front-of-House Menu Generator):** Grade D-
+When you're happy with the prompt, any of these trigger Copilot to save it:
 
-- Did not follow COPILOT.md (wasn't open in editor during first test)
-- Committed to feature branch instead of isolated `copilot/` branch
-- No `copilot:` commit prefix
-- Created 26 unrequested inventory files (7,676 lines of scope creep)
-- Created 6 DB migrations (forbidden)
-- Code was stubs with TODO comments and `any` types
-- Hallucinated compliance when confronted about violations
+- "add it to the queue"
+- "add it to the Claude queue"
+- "save that prompt"
+- "write that up"
+- "file that"
+- "queue it"
+- "put that in the folder"
 
-**Test 2 — Red-tier multi-file feature (Back-of-House Menu Management):** Grade D
+Copilot saves a structured `.md` file to `prompts/queue/`.
 
-- Same rule violations as Test 1
-- **Deleted working code** in menu-detail-client.tsx, replaced with broken `...existing code...` literal strings
-- Hallucinated DB fields that don't exist on the menu object
-- Modal buttons with no click handlers
+### 4. Feed to Claude Code when ready
 
-**Conclusion:** Copilot is only safe for Green-tier single-file tasks with tight prompts and inline constraints. Do not trust it with multi-file features, existing code modification, or any Red-tier work.
+Tell Claude Code: "Pick up the next prompt from the queue" or "Run `prompts/queue/2026-02-24-add-prep-timer.md`"
+
+Claude Code reads the prompt, executes it, and you move the file to `prompts/completed/`.
 
 ---
 
-## Cost Savings Estimate
+## Folder Structure
 
-Copilot is included with GitHub subscription — $0 marginal cost per task. If Copilot handles routine single-file utility work:
+```
+prompts/
+  template.md       ← The format all prompts must follow
+  queue/            ← Copilot writes here (pending prompts)
+  completed/        ← Move here after Claude Code executes
+```
 
-- Claude Code usage drops proportionally
-- Copilot cost: $0 (included in GitHub plan)
-- Risk: $0 (branch isolation means bad work is just deleted)
-- Net: modest savings on routine single-file tasks only
+## File Naming
+
+`YYYY-MM-DD-short-description.md`
+
+Examples:
+
+- `2026-02-24-add-prep-timer.md`
+- `2026-02-24-fix-calendar-overlap.md`
+- `2026-02-25-client-allergy-warnings.md`
+
+---
+
+## Historical Test Results (Feb 2026 — Code Writer Role)
+
+Before the role change, Copilot was tested as a junior code writer:
+
+**Test 1 — Multi-file feature:** Grade D-. Did not follow rules, committed to wrong branch, created 26 unrequested files, created forbidden migrations, hallucinated compliance.
+
+**Test 2 — Multi-file feature:** Grade D. Same violations. Deleted working code, hallucinated DB fields, broken modal handlers.
+
+**Conclusion:** Copilot failed at following implementation rules but was good at _understanding_ code. The role change to research + prompt writing plays to this strength.
+
+---
+
+## What Changed (2026-02-24)
+
+**Before:** Copilot was a junior code writer. It created branches, wrote code, and committed. It scored D- and D on compliance tests — wrong branches, no commit prefixes, created forbidden files, hallucinated compliance.
+
+**After:** Copilot is a research bot and prompt writer. It never touches source code. It writes markdown prompt files in one folder. This plays to its strength (understanding code + writing about it) and eliminates its weakness (following implementation rules).
+
+**Why this is better:**
+
+- Copilot **can't break anything** — it only writes markdown in `prompts/queue/`
+- No branch isolation needed — no code changes to isolate
+- Developer gets pre-researched prompts with real codebase context — saves Claude Code tokens
+- The whole research phase costs **$0**

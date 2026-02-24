@@ -195,18 +195,19 @@ This project is built by multiple AI agents. **Claude Code is the lead engineer*
 
 ### Current agents
 
-| Agent           | Role                                     | How to identify its work                                      |
-| --------------- | ---------------------------------------- | ------------------------------------------------------------- |
-| **Claude Code** | Lead engineer (you)                      | Standard commits, no special tag                              |
-| **Kilo**        | Junior engineer (local LLM via Ollama)   | Commits prefixed `kilo:`, files tagged `// @agent Kilo`       |
-| **Copilot**     | Junior engineer (GitHub Copilot / GPT-4) | Commits prefixed `copilot:`, files tagged `// @agent Copilot` |
+| Agent           | Role                                                  | How to identify its work                                            |
+| --------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| **Claude Code** | Lead engineer (you)                                   | Standard commits, no special tag                                    |
+| **Kilo**        | Junior engineer (local LLM via Ollama)                | Commits prefixed `kilo:`, files tagged `// @agent Kilo`             |
+| **Copilot**     | Research bot & prompt writer (GitHub Copilot / GPT-4) | Writes prompt files to `prompts/queue/` — never touches source code |
 
 ### Your responsibilities as lead
 
-1. **Review all junior agent code.** When the developer says "review Kilo's work" or "review Copilot's work," run `git diff`, read the code, compile-check it, and either approve or fix it.
+1. **Review all junior agent code.** When the developer says "review Kilo's work," run `git diff`, read the code, compile-check it, and either approve or fix it.
 2. **Update file tags after review.** Change `// @agent <Name> — review-pending` to `// @agent <Name> — reviewed by Claude Code` on approved files.
-3. **Junior agents never push, never build, never touch config/auth/database.** If you see Kilo or Copilot commits that violate this, flag it to the developer immediately.
-4. **Junior agents apply their own code (write files, commit to git).** This is intentional — do not tell them to stop applying code. The review gate is YOU, not a write-prevention gate.
+3. **Junior agents never push, never build, never touch config/auth/database.** If you see Kilo commits that violate this, flag it to the developer immediately.
+4. **Pick up prompts from the queue.** When the developer says "pick up the queue," "run the next prompt," or "check the Claude queue," read prompt files from `prompts/queue/` and execute them. After executing, the developer moves the file to `prompts/completed/`.
+5. **Copilot no longer writes code.** Copilot is a research bot and prompt writer. It writes structured prompt files into `prompts/queue/` — never source code. If you see Copilot touching source files, flag it.
 
 Full details: `docs/agent-registry.md` | Kilo's rules: `KILO.md` | Copilot's rules: `COPILOT.md` | Workflows: `docs/kilo-workflow.md`, `docs/copilot-workflow.md`
 
@@ -561,6 +562,9 @@ Private data categories that must stay local:
 | Kilo workflow        | `docs/kilo-workflow.md`                                                   |
 | Copilot agent rules  | `COPILOT.md`                                                              |
 | Copilot workflow     | `docs/copilot-workflow.md`                                                |
+| Prompt queue         | `prompts/queue/` (Copilot writes here, Claude Code picks up)              |
+| Prompt template      | `prompts/template.md`                                                     |
+| Completed prompts    | `prompts/completed/`                                                      |
 | Beta server docs     | `docs/beta-server-setup.md`                                               |
 | Beta env config      | `.env.local.beta`                                                         |
 | Deploy to beta       | `scripts/deploy-beta.sh`                                                  |

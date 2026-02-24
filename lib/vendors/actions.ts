@@ -31,6 +31,7 @@ const CreateVendorSchema = z.object({
 })
 
 export type CreateVendorInput = z.infer<typeof CreateVendorSchema>
+export type VendorInput = CreateVendorInput
 
 const UpdateVendorSchema = CreateVendorSchema.partial()
 export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
@@ -167,4 +168,40 @@ export async function getVendor(id: string) {
     .order('vendor_item_name', { ascending: true })
 
   return { ...vendor, items: items ?? [] }
+}
+
+export async function deleteVendor(id: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('vendors')
+    .delete()
+    .eq('id', id)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) {
+    console.error('[vendors] deleteVendor error:', error)
+    throw new Error('Failed to delete vendor')
+  }
+
+  revalidatePath('/culinary/vendors')
+}
+
+export async function setVendorPreferred(id: string, preferred: boolean) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { error } = await supabase
+    .from('vendors')
+    .update({ is_preferred: preferred })
+    .eq('id', id)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) {
+    console.error('[vendors] setVendorPreferred error:', error)
+    throw new Error('Failed to update vendor preference')
+  }
+
+  revalidatePath('/culinary/vendors')
 }

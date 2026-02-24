@@ -9,10 +9,11 @@ import { Button } from '@/components/ui/button'
 type Token = {
   id: string
   token: string
-  label: string | null
-  is_active: boolean
+  label?: string | null
+  is_active: boolean | null
   expires_at: string | null
-  created_at: string
+  created_at: string | null
+  tenant_id?: string
 }
 
 export function AvailabilityShareSettings({ tokens }: { tokens: Token[] }) {
