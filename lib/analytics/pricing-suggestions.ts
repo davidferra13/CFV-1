@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'

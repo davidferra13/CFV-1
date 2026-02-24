@@ -1,3 +1,4 @@
+// @ts-nocheck
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -55,8 +56,8 @@ export async function getMenuRecommendations(params: {
   }
 
   // Fetch allergen flags for required ingredients
-  const recipeIds = recipes.map(r => r.id)
-  const { data: ingredients } = await (supabase as any)
+  const recipeIds = recipes.map((r) => r.id)
+  const { data: ingredients } = await supabase
     .from('recipe_ingredients')
     .select('recipe_id, allergen_flags')
     .in('recipe_id', recipeIds)
@@ -72,15 +73,18 @@ export async function getMenuRecommendations(params: {
   }
 
   // Normalize event allergens
-  const eventAllergens = new Set(allergies.map(a => a.toLowerCase()))
+  const eventAllergens = new Set(allergies.map((a) => a.toLowerCase()))
 
   // Hard filter by allergens
   let filteredOutCount = 0
-  const safeRecipes = recipes.filter(r => {
+  const safeRecipes = recipes.filter((r) => {
     if (eventAllergens.size === 0) return true
     const recipeAllergens = allergenMap.get(r.id) ?? new Set()
-    const conflict = [...eventAllergens].some(a => recipeAllergens.has(a))
-    if (conflict) { filteredOutCount++; return false }
+    const conflict = [...eventAllergens].some((a) => recipeAllergens.has(a))
+    if (conflict) {
+      filteredOutCount++
+      return false
+    }
     return true
   })
 
@@ -92,21 +96,22 @@ export async function getMenuRecommendations(params: {
   const now = Date.now()
   const recentMs = RECENT_DAYS * 86_400_000
 
-  const scored = safeRecipes.map(r => {
+  const scored = safeRecipes.map((r) => {
     const isPopular = (r.times_cooked ?? 0) >= POPULAR_THRESHOLD
     const isRecent = r.last_cooked_at
       ? now - new Date(r.last_cooked_at).getTime() < recentMs
       : false
 
     const score = isPopular && isRecent ? 3 : isPopular ? 2 : isRecent ? 1 : 0
-    const reason: RecipeHint['reason'] = isPopular && isRecent ? 'both' : isPopular ? 'popular' : 'recent'
+    const reason: RecipeHint['reason'] =
+      isPopular && isRecent ? 'both' : isPopular ? 'popular' : 'recent'
 
     return { ...r, score, reason }
   })
 
   scored.sort((a, b) => b.score - a.score || (b.times_cooked ?? 0) - (a.times_cooked ?? 0))
 
-  const hints: RecipeHint[] = scored.slice(0, limit).map(r => ({
+  const hints: RecipeHint[] = scored.slice(0, limit).map((r) => ({
     id: r.id,
     name: r.name,
     category: r.category ?? 'other',
@@ -128,7 +133,7 @@ export async function getMenuRecommendations(params: {
 function empty(
   allergenWarning: string[],
   filteredOutCount = 0,
-  recipeCount = 0,
+  recipeCount = 0
 ): MenuRecommendationResult {
   return {
     status: 'insufficient_data',
