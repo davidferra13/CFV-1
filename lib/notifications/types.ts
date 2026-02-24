@@ -14,6 +14,7 @@ export type NotificationCategory =
   | 'protection'
   | 'wellbeing'
   | 'review'
+  | 'ops'
   | 'system'
 
 export type NotificationAction =
@@ -85,6 +86,13 @@ export type NotificationAction =
   // Professional momentum
   | 'no_education_logged_90d'
   | 'quarterly_checkin_due'
+  // Restaurant Ops — Phase 7
+  | 'staff_assignment'
+  | 'task_assigned'
+  | 'schedule_change'
+  | 'order_status'
+  | 'low_stock'
+  | 'guest_comp'
 
 export type Notification = {
   id: string
@@ -195,6 +203,14 @@ export const NOTIFICATION_CONFIG: Record<
   // Professional momentum
   no_education_logged_90d: { category: 'wellbeing', icon: 'BookOpen', toastByDefault: false },
   quarterly_checkin_due: { category: 'wellbeing', icon: 'ClipboardCheck', toastByDefault: false },
+
+  // Restaurant Ops — Phase 7
+  staff_assignment: { category: 'ops', icon: 'UserCheck', toastByDefault: true },
+  task_assigned: { category: 'ops', icon: 'ClipboardList', toastByDefault: true },
+  schedule_change: { category: 'ops', icon: 'CalendarClock', toastByDefault: true },
+  order_status: { category: 'ops', icon: 'Package', toastByDefault: true },
+  low_stock: { category: 'ops', icon: 'AlertTriangle', toastByDefault: true },
+  guest_comp: { category: 'ops', icon: 'Gift', toastByDefault: true },
 }
 
 // Category display names for preferences UI
@@ -211,5 +227,6 @@ export const CATEGORY_LABELS: Record<NotificationCategory, string> = {
   protection: 'Business Protection',
   wellbeing: 'Wellbeing & Momentum',
   review: 'Reviews & Testimonials',
+  ops: 'Restaurant Ops',
   system: 'System',
 }

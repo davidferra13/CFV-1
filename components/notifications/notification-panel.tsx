@@ -18,9 +18,14 @@ import {
   ShieldAlert,
   MessageCircle,
   UserPlus,
+  UserCheck,
   Star,
   Bell,
   Check,
+  ClipboardList,
+  CalendarClock,
+  Package,
+  Gift,
 } from 'lucide-react'
 import { getNotifications } from '@/lib/notifications/actions'
 import { useNotifications } from './notification-provider'
@@ -43,8 +48,13 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   ShieldAlert,
   MessageCircle,
   UserPlus,
+  UserCheck,
   Star,
   Bell,
+  ClipboardList,
+  CalendarClock,
+  Package,
+  Gift,
 }
 
 import { NOTIFICATION_CONFIG } from '@/lib/notifications/types'
@@ -56,6 +66,7 @@ const categoryColors: Record<string, string> = {
   payment: 'text-emerald-500',
   chat: 'text-violet-500',
   client: 'text-stone-500',
+  ops: 'text-orange-500',
   system: 'text-stone-300',
 }
 
@@ -201,6 +212,20 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
             />
           ))
         )}
+      </div>
+
+      {/* Footer — View all link */}
+      <div className="border-t border-stone-800 px-4 py-2">
+        <button
+          type="button"
+          onClick={() => {
+            onClose()
+            router.push('/notifications')
+          }}
+          className="w-full text-center text-xs text-brand-600 hover:text-brand-400 font-medium py-1"
+        >
+          View all notifications
+        </button>
       </div>
     </div>
   )
