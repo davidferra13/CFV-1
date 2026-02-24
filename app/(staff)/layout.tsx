@@ -1,0 +1,34 @@
+// Staff Portal Layout — Layer 2 of Defense in Depth
+// Simple layout with top navigation for staff members.
+// Staff see: Dashboard, Tasks, Station, Recipes, Schedule.
+
+import { requireStaff } from '@/lib/auth/get-user'
+import { getMyProfile } from '@/lib/staff/staff-portal-actions'
+import { redirect } from 'next/navigation'
+import { StaffNav } from '@/components/staff/staff-nav'
+
+export const metadata = {
+  title: {
+    template: '%s - Staff Portal - ChefFlow',
+    default: 'Staff Portal - ChefFlow',
+  },
+}
+
+export default async function StaffLayout({ children }: { children: React.ReactNode }) {
+  let user
+  try {
+    user = await requireStaff()
+  } catch {
+    redirect('/staff-login')
+  }
+
+  const profile = await getMyProfile()
+  const staffName = profile?.name ?? 'Staff Member'
+
+  return (
+    <div className="min-h-screen bg-stone-800">
+      <StaffNav staffName={staffName} staffEmail={user.email} />
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+    </div>
+  )
+}

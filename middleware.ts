@@ -42,6 +42,14 @@ const clientPaths = [
   '/my-rewards',
   '/book-now',
 ]
+// Routes that require staff role
+const staffPaths = [
+  '/staff-dashboard',
+  '/staff-station',
+  '/staff-recipes',
+  '/staff-schedule',
+  '/staff-tasks',
+]
 // Paths that skip all auth processing
 const skipAuthPaths = [
   '/pricing',
@@ -57,6 +65,7 @@ const skipAuthPaths = [
   '/book',
   '/embed',
   '/demo',
+  '/staff-login',
 ]
 // Admin paths — require authentication but not a specific role (email check is in layout)
 const adminPaths = ['/admin']
@@ -157,7 +166,7 @@ export async function middleware(request: NextRequest) {
   // The layout's requireChef() / requireClient() remain the authoritative security check.
   const roleCookieName = 'chefflow-role-cache'
   const cachedRole = request.cookies.get(roleCookieName)?.value
-  const roleIsKnown = cachedRole === 'chef' || cachedRole === 'client'
+  const roleIsKnown = cachedRole === 'chef' || cachedRole === 'client' || cachedRole === 'staff'
 
   // Helper: write the role cookie onto a response, mirroring the sessionOnly flag.
   function setRoleCookie(res: NextResponse, role: string) {
@@ -188,6 +197,9 @@ export async function middleware(request: NextRequest) {
     }
     if (landingRole === 'client') {
       return redirectWithCookies(new URL('/my-events', request.url), response)
+    }
+    if (landingRole === 'staff') {
+      return redirectWithCookies(new URL('/staff-dashboard', request.url), response)
     }
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
@@ -241,6 +253,19 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isClientRoute && roleData.role !== 'client') {
+    return redirectWithCookies(new URL('/dashboard', request.url), response)
+  }
+
+  // Enforce staff-only routes
+  const isStaffRoute = staffPaths.some(
+    (path) => pathname === path || pathname.startsWith(path + '/')
+  )
+
+  if (isStaffRoute && roleData.role !== 'staff') {
+    // Non-staff users trying to access staff pages get redirected to their home
+    if (roleData.role === 'client') {
+      return redirectWithCookies(new URL('/my-events', request.url), response)
+    }
     return redirectWithCookies(new URL('/dashboard', request.url), response)
   }
 

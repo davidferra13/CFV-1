@@ -13,6 +13,14 @@ export type AuthUser = {
   tenantId: string | null // chef.id if chef, client's tenant_id if client
 }
 
+export type StaffAuthUser = {
+  id: string // auth.users.id
+  email: string
+  role: 'staff'
+  staffMemberId: string // staff_members.id
+  tenantId: string // the chef's ID (staff_members.chef_id)
+}
+
 export type PartnerAuthUser = {
   id: string // auth.users.id
   email: string
@@ -187,6 +195,57 @@ export async function requirePartner(): Promise<PartnerAuthUser> {
     role: 'partner',
     partnerId: roleData.entity_id,
     tenantId: partner.tenant_id,
+  }
+}
+
+/**
+ * Require staff role — used in staff portal pages and server actions.
+ * Staff are kitchen/service team members who have their own limited login.
+ * They see tasks, recipes, schedules, and station clipboards scoped to their chef (tenant).
+ */
+export async function requireStaff(): Promise<StaffAuthUser> {
+  const supabase = createServerClient()
+
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser()
+
+  if (error || !user) {
+    throw new Error('Unauthorized: Authentication required')
+  }
+
+  // Check user_roles for the staff role
+  const { data: roleData } = await supabase
+    .from('user_roles')
+    .select('role, entity_id')
+    .eq('auth_user_id', user.id)
+    .single()
+
+  if (!roleData || (roleData.role as string) !== 'staff') {
+    throw new Error('Unauthorized: Staff access required')
+  }
+
+  // Look up chef_id (tenant) from the staff member record.
+  // Uses admin client because existing chef-only RLS blocks the staff session
+  // from reading staff_members directly (until migration applies the staff policy).
+  const adminClient = createServerClient({ admin: true })
+  const { data: staffMember } = await adminClient
+    .from('staff_members')
+    .select('chef_id')
+    .eq('id', roleData.entity_id)
+    .single()
+
+  if (!staffMember) {
+    throw new Error('Staff member record not found')
+  }
+
+  return {
+    id: user.id,
+    email: user.email!,
+    role: 'staff',
+    staffMemberId: roleData.entity_id,
+    tenantId: staffMember.chef_id,
   }
 }
 
