@@ -55,7 +55,11 @@
     "test:interactions:admin": "npx playwright test --project=interactions-admin",
     "test:isolation": "npx playwright test --project=isolation-tests",
     "test:everything": "npx playwright test",
-    "test:report": "npx playwright show-report"
+    "test:report": "npx playwright show-report",
+    "beta": "bash scripts/beta-serve.sh quick",
+    "beta:quick": "cloudflared tunnel --url http://localhost:3100",
+    "beta:named": "bash scripts/beta-serve.sh named",
+    "beta:build": "next build --no-lint && next start -p 3100"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

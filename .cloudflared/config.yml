@@ -1,0 +1,25 @@
+# =============================================================================
+# ChefFlow Beta — Cloudflare Tunnel Configuration
+# =============================================================================
+# This config is used by the named tunnel (beta.cheflowhq.com).
+# Quick tunnels (random URL) don't use this file.
+#
+# Setup (one-time):
+#   1. cloudflared tunnel login        → authorize with Cloudflare
+#   2. cloudflared tunnel create chefflow-beta  → creates the tunnel
+#   3. cloudflared tunnel route dns chefflow-beta beta.cheflowhq.com
+#
+# Run:
+#   npm run beta:named
+# =============================================================================
+
+tunnel: f48ab139-b448-4fd9-a431-bcf6b09902f0
+credentials-file: C:\Users\david\.cloudflared\f48ab139-b448-4fd9-a431-bcf6b09902f0.json
+
+ingress:
+  - hostname: beta.cheflowhq.com
+    service: http://localhost:3100
+    originRequest:
+      noTLSVerify: true
+  # Catch-all rule (required by cloudflared)
+  - service: http_status:404
