@@ -14,6 +14,8 @@
 - Edit **specific files** you are explicitly told to edit
 - Run `git add` and `git commit` (local only)
 - Read files to understand context
+- **Write and run tests** (unit tests, integration tests, fixing test failures)
+- Run `npx jest`, `npx vitest`, or `npx playwright test` for testing purposes
 
 ### What you MUST NEVER do
 
@@ -149,6 +151,18 @@ Commit message examples:
 - `kilo: refactor(types): extract event summary interface`
 
 **Do NOT run anything after the commit. No build. No push. No tests. Stop.**
+
+Then **update the work log** — append your task to `docs/kilo-work-log.md`:
+
+```markdown
+## [Date] — [Task Name]
+
+- **Branch:** `kilo/<task-name>`
+- **Files created/modified:** list each file
+- **What I built:** 1-2 sentence summary
+- **Decisions I made:** any choices or assumptions
+- **Unsure about:** anything you weren't confident in (Claude Code will check these)
+```
 
 Then tell the developer: "Done. My work is on branch `kilo/<task-name>`. Ready for review."
 

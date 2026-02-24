@@ -88,6 +88,8 @@ Zero risk either way — your real branch is never touched until you explicitly 
 - Static content (copy, labels, config objects)
 - CSS/Tailwind styling for isolated components
 - Data transformation/formatting helpers
+- **Writing and running tests** (unit, integration, Playwright)
+- **Fixing test failures** (unless the root cause is in auth/DB/billing — escalate to Claude Code)
 
 ### Yellow (Kilo with detailed spec)
 
@@ -125,6 +127,30 @@ git checkout feature/your-branch && git merge kilo/task-name && git branch -d ki
 # Reject
 git checkout feature/your-branch && git branch -D kilo/task-name
 ```
+
+---
+
+## Work Log (MANDATORY)
+
+After every task, Kilo **must** append an entry to `docs/kilo-work-log.md`. This is the "show your work" system — Claude Code reads this file to know what to review.
+
+Format:
+
+```markdown
+## [Date] — [Task Name]
+
+- **Branch:** `kilo/<task-name>`
+- **Files created/modified:** list each file
+- **What I built:** 1-2 sentence summary
+- **Decisions I made:** any choices or assumptions
+- **Unsure about:** anything you weren't confident in
+```
+
+Claude Code uses this log to:
+
+1. See everything Kilo has done at a glance
+2. Prioritize what to review
+3. Catch potential issues before looking at code
 
 ---
 
