@@ -212,6 +212,9 @@ export function OllamaStatusBadge() {
 
   const allOnline = endpoints.every((e) => e.online && e.modelReady)
   const anyOnline = endpoints.some((e) => e.online)
+  // PC is the primary endpoint — if it's healthy, AI is functional
+  const pcEndpoint = endpoints.find((e) => e.name === 'pc')
+  const pcHealthy = pcEndpoint?.online && pcEndpoint?.modelReady
 
   let badgeClass: string
   let badgeDot: string
@@ -226,7 +229,16 @@ export function OllamaStatusBadge() {
       const ep = endpoints[0]
       badgeLabel = `${ep.name === 'pi' ? 'Pi' : 'Local'} · ${ep.latencyMs ?? '?'}ms`
     }
+  } else if (pcHealthy) {
+    // PC is fine, Pi is down — still green, Pi is a bonus not a requirement
+    badgeClass = 'border-emerald-200 bg-emerald-950 text-emerald-700'
+    badgeDot = 'bg-emerald-500 animate-pulse'
+    badgeLabel =
+      endpoints.length === 2
+        ? `PC · ${pcEndpoint.latencyMs ?? '?'}ms | Pi Off`
+        : `Local · ${pcEndpoint.latencyMs ?? '?'}ms`
   } else if (anyOnline) {
+    // PC is down but Pi is up — amber, degraded
     badgeClass = 'border-amber-200 bg-amber-950 text-amber-700'
     badgeDot = 'bg-amber-500 animate-pulse'
     badgeLabel =
@@ -251,7 +263,9 @@ export function OllamaStatusBadge() {
       >
         <span className={`h-1.5 w-1.5 rounded-full ${badgeDot}`} />
         <span className="hidden sm:inline">{badgeLabel}</span>
-        <span className="sm:hidden">{allOnline ? 'AI' : anyOnline ? 'AI ⚠' : 'AI Off'}</span>
+        <span className="sm:hidden">
+          {allOnline || pcHealthy ? 'AI' : anyOnline ? 'AI ⚠' : 'AI Off'}
+        </span>
       </button>
 
       {popoverOpen && (
