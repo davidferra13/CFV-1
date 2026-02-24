@@ -432,6 +432,114 @@ export default async function SettingsPage() {
       </SettingsCategory>
 
       <SettingsCategory
+        title="Professional Growth"
+        description="Track achievements, skills, career momentum, portfolio, and profile highlights."
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/professional"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Professional Development</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Log competitions, stages, press features, awards, courses, and learning goals.
+            </p>
+          </Link>
+          <Link
+            href="/settings/professional/skills"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Capability Inventory</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Rate your confidence across cuisines, dietary needs, and techniques.
+            </p>
+          </Link>
+          <Link
+            href="/settings/professional/momentum"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Professional Momentum</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Track growth across new dishes, cuisines, education, and creative projects.
+            </p>
+          </Link>
+          <Link
+            href="/settings/highlights"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Profile Highlights</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Feature key achievements, certifications, press mentions, and awards on your profile.
+            </p>
+          </Link>
+          <Link
+            href="/settings/portfolio"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Portfolio</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Curate the photos and descriptions that appear on your public profile.
+            </p>
+          </Link>
+        </div>
+      </SettingsCategory>
+
+      <SettingsCategory
+        title="Legal & Protection"
+        description="Insurance, certifications, contracts, compliance, emergency contacts, and crisis planning."
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/protection"
+            className="block border border-amber-700 rounded-lg p-4 bg-amber-950/40 hover:bg-amber-950 transition-colors"
+          >
+            <p className="font-semibold text-amber-200">Protection Hub</p>
+            <p className="text-sm text-amber-400 mt-1">
+              Insurance, certifications, NDA, business continuity, and crisis response — all in one
+              dashboard.
+            </p>
+          </Link>
+          <Link
+            href="/settings/contracts"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Contract Templates</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Create reusable contract templates with merge fields for event-specific values.
+            </p>
+          </Link>
+          <Link
+            href="/settings/compliance"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Food Safety & Compliance</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Track certifications, licenses, and insurance with expiry reminders.
+            </p>
+          </Link>
+          <Link
+            href="/settings/compliance/gdpr"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">GDPR & Privacy</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Manage data privacy, exports, and compliance tools.
+            </p>
+          </Link>
+          <Link
+            href="/settings/emergency"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Emergency Contacts</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Backup contacts for event incapacitation — a sous chef, business partner, or peer who
+              can step in.
+            </p>
+          </Link>
+        </div>
+      </SettingsCategory>
+
+      <SettingsCategory
         title="Client Reviews"
         description="Configure your review link and review collection flow."
       >
@@ -475,6 +583,19 @@ export default async function SettingsPage() {
       </SettingsCategory>
 
       <SettingsCategory
+        title="Appearance"
+        description="Customize how ChefFlow looks — theme and color mode."
+      >
+        <Link
+          href="/settings/appearance"
+          className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+        >
+          <p className="font-medium text-stone-100">Theme</p>
+          <p className="text-sm text-stone-500 mt-1">Switch between light and dark mode.</p>
+        </Link>
+      </SettingsCategory>
+
+      <SettingsCategory
         title="Notifications & Alerts"
         description="Control email, browser push, and SMS alerts by category."
       >
@@ -502,6 +623,32 @@ export default async function SettingsPage() {
         description="Tell us what you love, what frustrates you, or anything in between. We read every submission."
       >
         <FeedbackForm />
+      </SettingsCategory>
+
+      <SettingsCategory
+        title="API & Developer"
+        description="API keys and webhooks for integrating ChefFlow with external tools."
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/api-keys"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">API Keys</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Create API keys to integrate ChefFlow with other tools and services.
+            </p>
+          </Link>
+          <Link
+            href="/settings/webhooks"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Webhooks</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Send real-time data to external services when events occur in ChefFlow.
+            </p>
+          </Link>
+        </div>
       </SettingsCategory>
 
       <SettingsCategory
