@@ -16,6 +16,7 @@ const IMPORT_MODES: ImportMode[] = [
   'csv',
   'past-events',
   'take-a-chef',
+  'inquiries',
   'clients',
   'recipe',
   'receipt',

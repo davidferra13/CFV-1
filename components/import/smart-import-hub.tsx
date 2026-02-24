@@ -27,6 +27,7 @@ import type { VisionDetectionResult } from '@/lib/ai/parse-document-vision'
 import { CsvImport } from './csv-import'
 import { PastEventsImport } from './past-events-import'
 import { TakeAChefImport } from './take-a-chef-import'
+import { InquiryImport } from './inquiry-import'
 
 export type ImportMode =
   | 'brain-dump'
@@ -38,6 +39,7 @@ export type ImportMode =
   | 'csv'
   | 'past-events'
   | 'take-a-chef'
+  | 'inquiries'
 type ImportPhase = 'input' | 'parsing' | 'review' | 'saving' | 'done'
 
 type EventOption = {
@@ -103,6 +105,12 @@ const TABS: TabConfig[] = [
   {
     mode: 'take-a-chef',
     label: 'Take a Chef',
+    placeholder: '',
+    isCustomComponent: true,
+  },
+  {
+    mode: 'inquiries',
+    label: 'Import Inquiries',
     placeholder: '',
     isCustomComponent: true,
   },
@@ -422,6 +430,7 @@ export function SmartImportHub({
         <PastEventsImport existingClients={existingClients} />
       )}
       {isCustomMode && mode === 'take-a-chef' && <TakeAChefImport aiConfigured={aiConfigured} />}
+      {isCustomMode && mode === 'inquiries' && <InquiryImport aiConfigured={aiConfigured} />}
 
       {/* INPUT PHASE — AI-driven modes only */}
       {!isCustomMode && (phase === 'input' || phase === 'parsing') && (
