@@ -110,6 +110,7 @@ export default async function SettingsPage() {
         </p>
       </div>
 
+      {/* ── 1. Business Defaults ─────────────────────────────── */}
       <SettingsCategory
         title="Business Defaults"
         description="Home base, stores, timing, operating procedures, revenue goals, and dashboard layout."
@@ -153,42 +154,7 @@ export default async function SettingsPage() {
         </div>
       </SettingsCategory>
 
-      <SettingsCategory
-        title="Payments & Billing"
-        description="Stripe payouts, your ChefFlow subscription, and feature module toggles."
-      >
-        <div className="space-y-3">
-          <Link
-            href="/settings/stripe-connect"
-            className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
-          >
-            <p className="font-semibold text-brand-200">Stripe Payouts</p>
-            <p className="text-sm text-brand-400 mt-1">
-              Connect your Stripe account to receive client payments directly to your bank account.
-            </p>
-          </Link>
-          <Link
-            href="/settings/billing"
-            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-          >
-            <p className="font-medium text-stone-100">Subscription & Billing</p>
-            <p className="text-sm text-stone-500 mt-1">
-              Manage your ChefFlow Professional plan, view invoices, and upgrade or downgrade.
-            </p>
-          </Link>
-          <Link
-            href="/settings/modules"
-            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-          >
-            <p className="font-medium text-stone-100">Modules</p>
-            <p className="text-sm text-stone-500 mt-1">
-              Choose which features appear in your sidebar. Toggle modules on or off to keep your
-              workspace focused.
-            </p>
-          </Link>
-        </div>
-      </SettingsCategory>
-
+      {/* ── 2. Profile & Branding ────────────────────────────── */}
       <SettingsCategory
         title="Profile & Branding"
         description="Manage your core chef profile, public profile presentation, and portal background."
@@ -255,77 +221,7 @@ export default async function SettingsPage() {
         </div>
       </SettingsCategory>
 
-      <SettingsCategory
-        title="AI & Privacy"
-        description="Control Remy, understand how your data is handled, and manage AI features."
-        defaultOpen
-      >
-        <div className="space-y-3">
-          <Link
-            href="/settings/ai-privacy"
-            className="block border border-emerald-200 rounded-lg p-4 bg-emerald-950/40 hover:bg-emerald-950 transition-colors"
-          >
-            <p className="font-semibold text-emerald-900">AI Trust Center</p>
-            <p className="text-sm text-emerald-700 mt-1">
-              See exactly how Remy works, where your data goes, and manage all AI controls. Walk
-              through privacy practices and delete data anytime.
-            </p>
-          </Link>
-          <Link
-            href="/settings/culinary-profile"
-            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-          >
-            <p className="font-medium text-stone-100">Culinary Profile</p>
-            <p className="text-sm text-stone-500 mt-1">
-              Tell Remy about your cooking philosophy, signature dishes, and food identity.
-            </p>
-          </Link>
-        </div>
-      </SettingsCategory>
-
-      <SettingsCategory
-        title="Connected Accounts & Integrations"
-        description="Connect inbox and website channels, then manage system integrations."
-      >
-        <div className="space-y-6">
-          <div>
-            <h3 className="text-sm font-semibold text-stone-300 mb-3">Connected Accounts</h3>
-            <div className="space-y-4">
-              <GoogleIntegrations
-                connection={googleConnection}
-                recentSyncs={recentSyncs}
-                historicalScanStatus={historicalScanStatus}
-              />
-              <WixConnection connection={wixConnection} recentSubmissions={wixSubmissions} />
-            </div>
-          </div>
-          <div className="border-t border-stone-700 pt-4">
-            <h3 className="text-sm font-semibold text-stone-300 mb-3">Integration Center</h3>
-            <div className="space-y-3">
-              <Link
-                href="/settings/embed"
-                className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
-              >
-                <p className="font-semibold text-brand-200">Website Widget</p>
-                <p className="text-sm text-brand-400 mt-1">
-                  Add a booking form to your existing website. Works on Wix, Squarespace, WordPress,
-                  and any site.
-                </p>
-              </Link>
-              <Link
-                href="/settings/integrations"
-                className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-              >
-                <p className="font-medium text-stone-100">Manage Integrations</p>
-                <p className="text-sm text-stone-500 mt-1">
-                  Manage POS, website, scheduling, and CRM integrations in one place.
-                </p>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </SettingsCategory>
-
+      {/* ── 3. Availability Rules ────────────────────────────── */}
       <SettingsCategory
         title="Availability Rules"
         description="Set hard blocks, event limits, and buffer time so ChefFlow warns you before double-booking."
@@ -333,6 +229,7 @@ export default async function SettingsPage() {
         <SchedulingRulesForm initialRules={schedulingRules} />
       </SettingsCategory>
 
+      {/* ── 4. Booking Page ──────────────────────────────────── */}
       <SettingsCategory
         title="Booking Page"
         description="Share a link clients can use to check your availability and submit a booking request."
@@ -357,6 +254,7 @@ export default async function SettingsPage() {
         />
       </SettingsCategory>
 
+      {/* ── 5. Event Configuration ───────────────────────────── */}
       <SettingsCategory
         title="Event Configuration"
         description="Customize event types, labels, and add extra fields to capture your business-specific data."
@@ -384,6 +282,44 @@ export default async function SettingsPage() {
         </div>
       </SettingsCategory>
 
+      {/* ── 6. Payments & Billing ────────────────────────────── */}
+      <SettingsCategory
+        title="Payments & Billing"
+        description="Stripe payouts, your ChefFlow subscription, and feature module toggles."
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/stripe-connect"
+            className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+          >
+            <p className="font-semibold text-brand-200">Stripe Payouts</p>
+            <p className="text-sm text-brand-400 mt-1">
+              Connect your Stripe account to receive client payments directly to your bank account.
+            </p>
+          </Link>
+          <Link
+            href="/settings/billing"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Subscription & Billing</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Manage your ChefFlow Professional plan, view invoices, and upgrade or downgrade.
+            </p>
+          </Link>
+          <Link
+            href="/settings/modules"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Modules</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Choose which features appear in your sidebar. Toggle modules on or off to keep your
+              workspace focused.
+            </p>
+          </Link>
+        </div>
+      </SettingsCategory>
+
+      {/* ── 7. Communication & Workflow ──────────────────────── */}
       <SettingsCategory
         title="Communication & Workflow"
         description="Manage messaging templates, automations, and your creative planning systems."
@@ -431,6 +367,129 @@ export default async function SettingsPage() {
         </div>
       </SettingsCategory>
 
+      {/* ── 8. Notifications & Alerts ────────────────────────── */}
+      <SettingsCategory
+        title="Notifications & Alerts"
+        description="Control email, browser push, and SMS alerts by category."
+      >
+        <Link
+          href="/settings/notifications"
+          className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+        >
+          <p className="font-semibold text-brand-200">Notification Channels</p>
+          <p className="text-sm text-brand-400 mt-1">
+            Manage email, browser push, and SMS preferences per category. Set up your SMS number
+            here.
+          </p>
+        </Link>
+      </SettingsCategory>
+
+      {/* ── 9. Connected Accounts & Integrations ─────────────── */}
+      <SettingsCategory
+        title="Connected Accounts & Integrations"
+        description="Connect inbox and website channels, then manage system integrations."
+      >
+        <div className="space-y-6">
+          <div>
+            <h3 className="text-sm font-semibold text-stone-300 mb-3">Connected Accounts</h3>
+            <div className="space-y-4">
+              <GoogleIntegrations
+                connection={googleConnection}
+                recentSyncs={recentSyncs}
+                historicalScanStatus={historicalScanStatus}
+              />
+              <WixConnection connection={wixConnection} recentSubmissions={wixSubmissions} />
+            </div>
+          </div>
+          <div className="border-t border-stone-700 pt-4">
+            <h3 className="text-sm font-semibold text-stone-300 mb-3">Integration Center</h3>
+            <div className="space-y-3">
+              <Link
+                href="/settings/embed"
+                className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+              >
+                <p className="font-semibold text-brand-200">Website Widget</p>
+                <p className="text-sm text-brand-400 mt-1">
+                  Add a booking form to your existing website. Works on Wix, Squarespace, WordPress,
+                  and any site.
+                </p>
+              </Link>
+              <Link
+                href="/settings/integrations"
+                className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+              >
+                <p className="font-medium text-stone-100">Manage Integrations</p>
+                <p className="text-sm text-stone-500 mt-1">
+                  Manage POS, website, scheduling, and CRM integrations in one place.
+                </p>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </SettingsCategory>
+
+      {/* ── 10. AI & Privacy ─────────────────────────────────── */}
+      <SettingsCategory
+        title="AI & Privacy"
+        description="Control Remy, understand how your data is handled, and manage AI features."
+      >
+        <div className="space-y-3">
+          <Link
+            href="/settings/ai-privacy"
+            className="block border border-emerald-200 rounded-lg p-4 bg-emerald-950/40 hover:bg-emerald-950 transition-colors"
+          >
+            <p className="font-semibold text-emerald-900">AI Trust Center</p>
+            <p className="text-sm text-emerald-700 mt-1">
+              See exactly how Remy works, where your data goes, and manage all AI controls. Walk
+              through privacy practices and delete data anytime.
+            </p>
+          </Link>
+          <Link
+            href="/settings/culinary-profile"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Culinary Profile</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Tell Remy about your cooking philosophy, signature dishes, and food identity.
+            </p>
+          </Link>
+        </div>
+      </SettingsCategory>
+
+      {/* ── 11. Client Reviews ───────────────────────────────── */}
+      <SettingsCategory
+        title="Client Reviews"
+        description="Configure your review link and review collection flow."
+      >
+        <div className="space-y-3">
+          <GoogleReviewUrlForm currentUrl={googleReviewUrl} />
+          <Link
+            href="/reviews"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">View All Reviews</p>
+            <p className="text-sm text-stone-500 mt-1">
+              See unified internal + external reviews with source links and sync controls.
+            </p>
+          </Link>
+        </div>
+      </SettingsCategory>
+
+      {/* ── 12. Appearance ───────────────────────────────────── */}
+      <SettingsCategory
+        title="Appearance"
+        description="Customize how ChefFlow looks — theme and color mode."
+      >
+        <Link
+          href="/settings/appearance"
+          className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+        >
+          <p className="font-medium text-stone-100">Theme</p>
+          <p className="text-sm text-stone-500 mt-1">Switch between light and dark mode.</p>
+        </Link>
+      </SettingsCategory>
+
+      {/* ── 13. Professional Growth ──────────────────────────── */}
       <SettingsCategory
         title="Professional Growth"
         description="Track achievements, skills, career momentum, portfolio, and profile highlights."
@@ -484,6 +543,26 @@ export default async function SettingsPage() {
         </div>
       </SettingsCategory>
 
+      {/* ── 14. Chef Network ─────────────────────────────────── */}
+      <SettingsCategory
+        title="Chef Network"
+        description="Control network visibility and your chef directory profile."
+      >
+        <div className="space-y-3">
+          <DiscoverabilityToggle currentValue={networkDiscoverable} />
+          <Link
+            href="/settings/profile"
+            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+          >
+            <p className="font-medium text-stone-100">Network Profile</p>
+            <p className="text-sm text-stone-500 mt-1">
+              Set your display name, bio, and profile photo for the chef directory.
+            </p>
+          </Link>
+        </div>
+      </SettingsCategory>
+
+      {/* ── 15. Legal & Protection ───────────────────────────── */}
       <SettingsCategory
         title="Legal & Protection"
         description="Insurance, certifications, contracts, compliance, emergency contacts, and crisis planning."
@@ -539,78 +618,7 @@ export default async function SettingsPage() {
         </div>
       </SettingsCategory>
 
-      <SettingsCategory
-        title="Client Reviews"
-        description="Configure your review link and review collection flow."
-      >
-        <div className="space-y-3">
-          <GoogleReviewUrlForm currentUrl={googleReviewUrl} />
-          <Link
-            href="/reviews"
-            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-          >
-            <p className="font-medium text-stone-100">View All Reviews</p>
-            <p className="text-sm text-stone-500 mt-1">
-              See unified internal + external reviews with source links and sync controls.
-            </p>
-          </Link>
-        </div>
-      </SettingsCategory>
-
-      <SettingsCategory
-        title="Chef Network"
-        description="Control network visibility and your chef directory profile."
-      >
-        <div className="space-y-3">
-          <DiscoverabilityToggle currentValue={networkDiscoverable} />
-          <Link
-            href="/settings/profile"
-            className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-          >
-            <p className="font-medium text-stone-100">Network Profile</p>
-            <p className="text-sm text-stone-500 mt-1">
-              Set your display name, bio, and profile photo for the chef directory.
-            </p>
-          </Link>
-        </div>
-      </SettingsCategory>
-
-      <SettingsCategory
-        title="Desktop App"
-        description="System tray, auto-start, and native desktop notifications for the ChefFlow desktop app."
-      >
-        <DesktopAppSettings />
-      </SettingsCategory>
-
-      <SettingsCategory
-        title="Appearance"
-        description="Customize how ChefFlow looks — theme and color mode."
-      >
-        <Link
-          href="/settings/appearance"
-          className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-        >
-          <p className="font-medium text-stone-100">Theme</p>
-          <p className="text-sm text-stone-500 mt-1">Switch between light and dark mode.</p>
-        </Link>
-      </SettingsCategory>
-
-      <SettingsCategory
-        title="Notifications & Alerts"
-        description="Control email, browser push, and SMS alerts by category."
-      >
-        <Link
-          href="/settings/notifications"
-          className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
-        >
-          <p className="font-semibold text-brand-200">Notification Channels</p>
-          <p className="text-sm text-brand-400 mt-1">
-            Manage email, browser push, and SMS preferences per category. Set up your SMS number
-            here.
-          </p>
-        </Link>
-      </SettingsCategory>
-
+      {/* ── 16. Sample Data ──────────────────────────────────── */}
       <SettingsCategory
         title="Sample Data"
         description="Load or remove sample clients, events, and inquiries to explore ChefFlow."
@@ -618,13 +626,7 @@ export default async function SettingsPage() {
         <DemoDataManager hasDemoData={demoDataExists} />
       </SettingsCategory>
 
-      <SettingsCategory
-        title="Share Feedback"
-        description="Tell us what you love, what frustrates you, or anything in between. We read every submission."
-      >
-        <FeedbackForm />
-      </SettingsCategory>
-
+      {/* ── 17. API & Developer ──────────────────────────────── */}
       <SettingsCategory
         title="API & Developer"
         description="API keys and webhooks for integrating ChefFlow with external tools."
@@ -651,6 +653,23 @@ export default async function SettingsPage() {
         </div>
       </SettingsCategory>
 
+      {/* ── 18. Desktop App ──────────────────────────────────── */}
+      <SettingsCategory
+        title="Desktop App"
+        description="System tray, auto-start, and native desktop notifications for the ChefFlow desktop app."
+      >
+        <DesktopAppSettings />
+      </SettingsCategory>
+
+      {/* ── 19. Share Feedback ───────────────────────────────── */}
+      <SettingsCategory
+        title="Share Feedback"
+        description="Tell us what you love, what frustrates you, or anything in between. We read every submission."
+      >
+        <FeedbackForm />
+      </SettingsCategory>
+
+      {/* ── 20. Account & Security ───────────────────────────── */}
       <SettingsCategory
         title="Account & Security"
         description="Password, account-level management, and system status."

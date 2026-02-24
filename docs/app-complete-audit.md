@@ -811,26 +811,28 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 **Route:** `/settings` — 50 sub-pages organized in collapsible categories:
 
-| Category           | Sub-pages                                                                                             |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| Business Defaults  | Home base, stores, timing, revenue goals, dashboard layout, primary nav customization                 |
-| Profile & Branding | My Profile, portal background, availability signal, public profile, favorite chefs, client preview    |
-| AI & Privacy       | AI Trust Center (full privacy walkthrough), culinary profile for Remy                                 |
-| Integrations       | Google (Gmail + Calendar), Wix, embed widget, Stripe Connect, API keys, webhooks, integrations center |
-| Availability       | Hard blocks, event limits, buffer time                                                                |
-| Booking Page       | Shareable link with slug, headline, bio, min notice, pricing model, deposit                           |
-| Communication      | Response templates, automations, contracts, seasonal palettes, chef journal + journey                 |
-| Reviews            | Google review URL, view all                                                                           |
-| Chef Network       | Discoverability toggle, network profile                                                               |
-| Desktop App        | System tray, auto-start, native notifications                                                         |
-| Notifications      | Email, push, SMS per category                                                                         |
-| Sample Data        | Demo data manager (load/remove)                                                                       |
-| Feedback           | In-app feedback form                                                                                  |
-| Account            | System health, change password, delete account                                                        |
-| Professional       | Skills inventory, momentum tracking, journal, journey                                                 |
-| Compliance         | Food safety, certifications, GDPR                                                                     |
-| Protection         | Insurance, certifications, NDA, continuity, crisis, business health, portfolio removal                |
-| Modules & Billing  | Pro module toggles, billing (Free vs Pro comparison)                                                  |
+| #   | Category                          | Sub-pages                                                                                          |
+| --- | --------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1   | Business Defaults                 | Home base, stores, timing, revenue goals, dashboard layout, primary nav customization              |
+| 2   | Profile & Branding                | My Profile, portal background, availability signal, public profile, favorite chefs, client preview |
+| 3   | Availability Rules                | Hard blocks, event limits, buffer time                                                             |
+| 4   | Booking Page                      | Shareable link with slug, headline, bio, min notice, pricing model, deposit                        |
+| 5   | Event Configuration               | Event types & labels, custom fields                                                                |
+| 6   | Payments & Billing                | Stripe payouts, subscription & billing, module toggles                                             |
+| 7   | Communication & Workflow          | Response templates, automations, seasonal palettes, chef journal                                   |
+| 8   | Notifications & Alerts            | Email, push, SMS per category                                                                      |
+| 9   | Connected Accounts & Integrations | Google (Gmail + Calendar), Wix, embed widget, integrations center                                  |
+| 10  | AI & Privacy                      | AI Trust Center (full privacy walkthrough), culinary profile for Remy                              |
+| 11  | Client Reviews                    | Google review URL, view all                                                                        |
+| 12  | Appearance                        | Light/dark theme toggle                                                                            |
+| 13  | Professional Growth               | Professional development, capability inventory, momentum, profile highlights, portfolio            |
+| 14  | Chef Network                      | Discoverability toggle, network profile                                                            |
+| 15  | Legal & Protection                | Protection hub, contract templates, food safety & compliance, GDPR, emergency contacts             |
+| 16  | Sample Data                       | Demo data manager (load/remove)                                                                    |
+| 17  | API & Developer                   | API keys, webhooks                                                                                 |
+| 18  | Desktop App                       | System tray, auto-start, native notifications                                                      |
+| 19  | Share Feedback                    | In-app feedback form                                                                               |
+| 20  | Account & Security                | System health, system incidents (admin), change password, delete account                           |
 
 ---
 
