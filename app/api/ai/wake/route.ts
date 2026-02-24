@@ -4,7 +4,7 @@
 // Admin-only endpoint for controlling AI infrastructure.
 
 import { NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/auth/require-admin'
+import { requireAdmin } from '@/lib/auth/admin'
 import {
   pingAllEndpoints,
   pingEndpoint,
