@@ -112,6 +112,18 @@ export function ConnectedAccounts({
       <CardContent className="space-y-4">
         {error && <Alert variant="error">{error}</Alert>}
 
+        {connection.gmail.connected && connection.gmail.errorCount >= 99 && (
+          <Alert variant="error">
+            <div className="text-sm">
+              <p className="font-medium">Gmail permissions need to be updated</p>
+              <p className="mt-1">
+                Your Gmail token doesn&apos;t have the required scopes. Click &quot;Disconnect&quot;
+                below, then reconnect your Gmail to fix this.
+              </p>
+            </div>
+          </Alert>
+        )}
+
         {!connection.gmail.connected ? (
           <>
             <p className="text-sm text-stone-400">
@@ -138,11 +150,15 @@ export function ConnectedAccounts({
                     Last synced: {new Date(connection.gmail.lastSync).toLocaleString()}
                   </p>
                 )}
-                {connection.gmail.errorCount > 0 && (
+                {connection.gmail.errorCount >= 99 ? (
+                  <p className="text-xs text-red-500 mt-1">
+                    Gmail permissions are insufficient. Please disconnect and reconnect below.
+                  </p>
+                ) : connection.gmail.errorCount > 0 ? (
                   <p className="text-xs text-amber-600 mt-1">
                     {connection.gmail.errorCount} error(s) in last sync
                   </p>
-                )}
+                ) : null}
               </div>
               <div className="flex gap-2">
                 <Button variant="primary" size="sm" onClick={handleSync} loading={syncing}>

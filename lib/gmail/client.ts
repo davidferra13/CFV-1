@@ -6,6 +6,25 @@ import type { ParsedEmail } from './types'
 
 const GMAIL_API = 'https://gmail.googleapis.com/gmail/v1/users/me'
 
+// ─── Scope Error Detection ─────────────────────────────────────────────────
+
+export class GmailScopeError extends Error {
+  constructor(method: string) {
+    super(
+      `Gmail permissions are insufficient for ${method}. ` +
+        `Please disconnect and reconnect your Gmail in Settings to grant the required permissions.`
+    )
+    this.name = 'GmailScopeError'
+  }
+}
+
+function checkScopeError(status: number, body: string): boolean {
+  if (status !== 403) return false
+  return (
+    body.includes('ACCESS_TOKEN_SCOPE_INSUFFICIENT') || body.includes('insufficientPermissions')
+  )
+}
+
 // ─── List Messages ──────────────────────────────────────────────────────────
 
 interface ListMessagesOptions {
@@ -35,6 +54,7 @@ export async function listRecentMessages(
 
   if (!response.ok) {
     const err = await response.text()
+    if (checkScopeError(response.status, err)) throw new GmailScopeError('list messages')
     throw new Error(`Gmail API list messages failed: ${err}`)
   }
 
@@ -73,6 +93,7 @@ export async function listMessagesPage(
 
   if (!response.ok) {
     const err = await response.text()
+    if (checkScopeError(response.status, err)) throw new GmailScopeError('list messages page')
     throw new Error(`Gmail API list messages page failed: ${err}`)
   }
 
@@ -106,6 +127,7 @@ export async function listMessagesSinceHistory(
       return { messageIds: [], latestHistoryId: '' }
     }
     const err = await response.text()
+    if (checkScopeError(response.status, err)) throw new GmailScopeError('history list')
     throw new Error(`Gmail API history list failed: ${err}`)
   }
 
@@ -130,16 +152,14 @@ export async function listMessagesSinceHistory(
 
 // ─── Get Full Message ───────────────────────────────────────────────────────
 
-export async function getFullMessage(
-  accessToken: string,
-  messageId: string
-): Promise<ParsedEmail> {
+export async function getFullMessage(accessToken: string, messageId: string): Promise<ParsedEmail> {
   const response = await fetch(`${GMAIL_API}/messages/${messageId}?format=full`, {
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
   if (!response.ok) {
     const err = await response.text()
+    if (checkScopeError(response.status, err)) throw new GmailScopeError('get message')
     throw new Error(`Gmail API get message failed: ${err}`)
   }
 
@@ -147,8 +167,8 @@ export async function getFullMessage(
   const headers = message.payload?.headers || []
 
   const getHeader = (name: string): string =>
-    headers.find((h: { name: string; value: string }) =>
-      h.name.toLowerCase() === name.toLowerCase()
+    headers.find(
+      (h: { name: string; value: string }) => h.name.toLowerCase() === name.toLowerCase()
     )?.value || ''
 
   const from = extractSenderInfo(getHeader('From'))
@@ -177,6 +197,7 @@ export async function getGmailProfile(
 
   if (!response.ok) {
     const err = await response.text()
+    if (checkScopeError(response.status, err)) throw new GmailScopeError('get profile')
     throw new Error(`Gmail API get profile failed: ${err}`)
   }
 
@@ -249,9 +270,9 @@ export interface SendEmailOptions {
   to: string
   subject: string
   body: string
-  inReplyTo?: string  // Message-ID header for threading
+  inReplyTo?: string // Message-ID header for threading
   references?: string // References header for threading
-  threadId?: string   // Gmail thread ID to keep message in same thread
+  threadId?: string // Gmail thread ID to keep message in same thread
 }
 
 export async function sendEmail(
@@ -300,6 +321,7 @@ export async function sendEmail(
 
   if (!response.ok) {
     const err = await response.text()
+    if (checkScopeError(response.status, err)) throw new GmailScopeError('send email')
     throw new Error(`Gmail API send failed: ${err}`)
   }
 
@@ -323,14 +345,15 @@ export async function getMessageHeaders(
 
   if (!response.ok) {
     const err = await response.text()
+    if (checkScopeError(response.status, err)) throw new GmailScopeError('get headers')
     throw new Error(`Gmail API get headers failed: ${err}`)
   }
 
   const data = await response.json()
   const headers = data.payload?.headers || []
   const getHeader = (name: string): string =>
-    headers.find((h: { name: string; value: string }) =>
-      h.name.toLowerCase() === name.toLowerCase()
+    headers.find(
+      (h: { name: string; value: string }) => h.name.toLowerCase() === name.toLowerCase()
     )?.value || ''
 
   return {

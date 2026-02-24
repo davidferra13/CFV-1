@@ -11,6 +11,7 @@ import {
   listMessagesSinceHistory,
   getFullMessage,
   getGmailProfile,
+  GmailScopeError,
 } from './client'
 import { classifyEmail } from './classify'
 import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
@@ -65,43 +66,58 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
   // 3. Fetch message IDs to process
   let messageIds: string[]
 
-  if (!historyId) {
-    // First sync — get last 50 inbox messages (exclude Sent/Drafts/Spam)
-    const messages = await listRecentMessages(accessToken, {
-      maxResults: 50,
-      query: 'in:inbox -in:sent',
-    })
-    messageIds = messages.map((m) => m.id)
-
-    // Bootstrap the history ID for future incremental syncs
-    const profile = await getGmailProfile(accessToken)
-    await supabase
-      .from('google_connections')
-      .update({ gmail_history_id: profile.historyId })
-      .eq('chef_id', chefId)
-  } else {
-    // Incremental sync — only new messages since last history ID
-    const historyResult = await listMessagesSinceHistory(accessToken, historyId)
-    messageIds = historyResult.messageIds
-
-    if (historyResult.latestHistoryId === '') {
-      // History ID too old — fall back to recent inbox messages
+  try {
+    if (!historyId) {
+      // First sync — get last 50 inbox messages (exclude Sent/Drafts/Spam)
       const messages = await listRecentMessages(accessToken, {
         maxResults: 50,
         query: 'in:inbox -in:sent',
       })
       messageIds = messages.map((m) => m.id)
+
+      // Bootstrap the history ID for future incremental syncs
       const profile = await getGmailProfile(accessToken)
       await supabase
         .from('google_connections')
         .update({ gmail_history_id: profile.historyId })
         .eq('chef_id', chefId)
-    } else if (historyResult.latestHistoryId) {
+    } else {
+      // Incremental sync — only new messages since last history ID
+      const historyResult = await listMessagesSinceHistory(accessToken, historyId)
+      messageIds = historyResult.messageIds
+
+      if (historyResult.latestHistoryId === '') {
+        // History ID too old — fall back to recent inbox messages
+        const messages = await listRecentMessages(accessToken, {
+          maxResults: 50,
+          query: 'in:inbox -in:sent',
+        })
+        messageIds = messages.map((m) => m.id)
+        const profile = await getGmailProfile(accessToken)
+        await supabase
+          .from('google_connections')
+          .update({ gmail_history_id: profile.historyId })
+          .eq('chef_id', chefId)
+      } else if (historyResult.latestHistoryId) {
+        await supabase
+          .from('google_connections')
+          .update({ gmail_history_id: historyResult.latestHistoryId })
+          .eq('chef_id', chefId)
+      }
+    }
+  } catch (err) {
+    if (err instanceof GmailScopeError) {
+      // Mark connection as needing reauth so the UI shows a reconnect prompt
       await supabase
         .from('google_connections')
-        .update({ gmail_history_id: historyResult.latestHistoryId })
+        .update({ gmail_sync_errors: 99 })
         .eq('chef_id', chefId)
+      result.errors.push(
+        'Gmail permissions are insufficient. Please disconnect and reconnect your Gmail in Settings.'
+      )
+      return result
     }
+    throw err
   }
 
   // 3b. Also fetch platform emails that may have been auto-archived by Gmail filters
