@@ -1,8 +1,16 @@
 # ChefFlow — Complete Application Audit
 
-> **Generated:** 2026-02-23
+> **Generated:** 2026-02-23 ~6:00 PM EST (snapshot — source code may have changed since)
 > **Scope:** Every page, every button, every tab, every link, every form, every modal, every overlay, every data display, every conditional element, every navigation path in the entire ChefFlow application.
 > **Source:** Direct source code analysis of all ~265 page.tsx files and their imported components.
+>
+> **Companion Documents (full element-by-element detail):**
+>
+> - [`docs/ui-audit-calendar.md`](ui-audit-calendar.md) — Calendar system (7 pages, 1368 lines)
+> - [`docs/ui-audit-settings.md`](ui-audit-settings.md) — Settings (50 pages, 1730 lines)
+> - [`docs/ui-audit-network-community.md`](ui-audit-network-community.md) — Network & Community (6 pages, 14 components, 1093 lines)
+> - [`docs/ui-audit-marketing-social.md`](ui-audit-marketing-social.md) — Marketing & Social (14 routes, 1173 lines)
+> - [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md) — Onboarding, Import, Cannabis, Help, Loyalty, Safety, Remy, Games, Dev Tools (31 pages, 1431 lines)
 
 ---
 
@@ -665,6 +673,8 @@
 
 ## 7. CALENDAR
 
+> **Full element-by-element detail → [`docs/ui-audit-calendar.md`](ui-audit-calendar.md)** (1368 lines, 7 pages)
+
 | Route             | Key Elements                                                                                                                                                                                                                                                                                                                                                                                                               |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `/calendar`       | Monthly grid with filter toggles (events, drafts, prep blocks, calls, personal, business, intentions, leads). Day click → detail panel with items + "Quick Block"/"Remove Block" + "+ Add Entry" modal. 2-column layout with Seasonal Palette sidebar. Entry modal: 3 entry type groups (Personal/Business/Intentions) with fields (title, dates, times, all-day, blocks bookings, revenue section, public signal section) |
@@ -672,7 +682,7 @@
 | `/calendar/week`  | 7-column Mon–Sun grid with prep blocks (complete/delete buttons), event cards (links), "+ add" per day → inline block form (type/title/date/time/duration). Gap alerts with "Auto-schedule" → suggestion modal with bulk create. Calendar entry banners spanning date ranges                                                                                                                                               |
 | `/calendar/year`  | 52-week grid grouped by month. Week cells colored by event/gap status, clickable → week view. Stats strip + year navigation                                                                                                                                                                                                                                                                                                |
 | `/calendar/share` | Generate share tokens with labels, copy URL, revoke tokens                                                                                                                                                                                                                                                                                                                                                                 |
-| `/schedule`       | Calendar alias with seasonal sidebar                                                                                                                                                                                                                                                                                                                                                                                       |
+| `/schedule`       | FullCalendar-based with 4 views (Month/Week/Day/Agenda), keyboard shortcuts (T/M/W/D/A/N/arrows), mini calendar sidebar, drag-and-drop rescheduling, event detail popovers, seasonal sidebar                                                                                                                                                                                                                               |
 | `/waitlist`       | Waiting + contacted entries with "Mark Contacted"/"Expire" buttons. Add form: date, guests, occasion, notes                                                                                                                                                                                                                                                                                                                |
 
 ---
@@ -765,7 +775,9 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 ## 15. SETTINGS
 
-**Route:** `/settings` — 40+ sub-pages organized in collapsible categories:
+> **Full element-by-element detail → [`docs/ui-audit-settings.md`](ui-audit-settings.md)** (1730 lines, 50 pages)
+
+**Route:** `/settings` — 50 sub-pages organized in collapsible categories:
 
 | Category           | Sub-pages                                                                                             |
 | ------------------ | ----------------------------------------------------------------------------------------------------- |
@@ -783,22 +795,27 @@ Protected time reminder (purple callout). Completion celebration when all done.
 | Sample Data        | Demo data manager (load/remove)                                                                       |
 | Feedback           | In-app feedback form                                                                                  |
 | Account            | System health, change password, delete account                                                        |
-| Professional       | Skills inventory, momentum tracking                                                                   |
+| Professional       | Skills inventory, momentum tracking, journal, journey                                                 |
 | Compliance         | Food safety, certifications, GDPR                                                                     |
 | Protection         | Insurance, certifications, NDA, continuity, crisis, business health, portfolio removal                |
+| Modules & Billing  | Pro module toggles, billing (Free vs Pro comparison)                                                  |
 
 ---
 
 ## 16. MARKETING & SOCIAL
 
+> **Full element-by-element detail → [`docs/ui-audit-marketing-social.md`](ui-audit-marketing-social.md)** (1173 lines, 14 routes)
+
 | Route                     | Content                                           |
 | ------------------------- | ------------------------------------------------- |
 | `/marketing`              | Hub with push dinners, sequences, templates links |
+| `/marketing/[id]`         | Campaign detail with stats, recipients, send      |
 | `/marketing/push-dinners` | Push dinner campaigns (list, new, detail)         |
 | `/marketing/sequences`    | Email drip campaign builder                       |
 | `/marketing/templates`    | Email template library                            |
 | `/social/planner`         | Content scheduling calendar                       |
 | `/social/planner/[month]` | Month-specific planner                            |
+| `/social/post/new`        | Post editor with AI assist                        |
 | `/social/vault`           | Media vault (photos/videos)                       |
 | `/social/connections`     | Connected social platforms                        |
 | `/social/settings`        | Queue/posting settings                            |
@@ -807,15 +824,27 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 ## 17. NETWORK & COMMUNITY
 
-**Route:** `/network` — Tabs: Feed (community posts), Channels (topic channels like #pastry, #savory, #business, #technique, #wins), Discover (find chefs), Connections (your connections). Sub-pages: saved posts, notifications, channel views, chef profiles.
+> **Full element-by-element detail → [`docs/ui-audit-network-community.md`](ui-audit-network-community.md)** (1093 lines, 6 pages, 14 components)
 
-**Route:** `/community/templates` — Community-shared templates.
+**Route:** `/network` — Tabs: Feed (community posts with 6 reaction types, threaded comments, stories), Channels (topic channels grouped by category with join/leave), Discover (trending hashtags + chefs to follow), Connections (search, pending requests, friends list with 2-step remove, direct contact shares with full form).
+
+**Route:** `/network/[chefId]` — Chef profile with stats, follow/connect actions, post grid.
+
+**Route:** `/network/notifications` — 12 notification types, mark-all-read, unread indicators.
+
+**Route:** `/network/saved` — Bookmarked posts with empty state guidance.
+
+**Route:** `/network/channels/[slug]` — Channel header with join/leave, member/post counts, channel-scoped feed.
+
+**Route:** `/community/templates` — Community-shared templates with type badges, download counts, import button (currently stub).
 
 ---
 
 ## 18. LOYALTY PROGRAM
 
-**Route:** `/loyalty` — Program dashboard with tier management.
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Loyalty Pages
+
+**Route:** `/loyalty` — Program dashboard with tier management (points balance, tier progress bar, recent activity feed, reward catalog grid).
 
 **`/loyalty/settings`** — Full config form: program active toggle, earn rates (points per guest, welcome bonus, referral bonus), large party bonus (toggle + threshold/points), milestone bonuses (add/remove), tier thresholds (Silver/Gold/Platinum with dynamic range summary). Save button.
 
@@ -825,24 +854,30 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 ## 19. SAFETY & PROTECTION
 
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Safety Pages
+> **Protection sub-pages → [`docs/ui-audit-settings.md`](ui-audit-settings.md)** § Protection Hub
+
 | Route                    | Content                                                                                         |
 | ------------------------ | ----------------------------------------------------------------------------------------------- |
 | `/safety/incidents`      | Incident list + "Report Incident" → `/safety/incidents/new`                                     |
-| `/safety/incidents/new`  | Incident report form                                                                            |
-| `/safety/incidents/[id]` | Incident detail: severity/status badges, details card, resolution tracker                       |
-| `/safety/backup-chef`    | Backup chef contacts list (priority ordered)                                                    |
-| `/reputation/mentions`   | Brand mention monitoring feed                                                                   |
+| `/safety/incidents/new`  | Incident report form (12 fields: type, severity, date, location, description, witnesses, etc.)  |
+| `/safety/incidents/[id]` | Incident detail: severity/status badges, details card, resolution tracker with timeline         |
+| `/safety/backup-chef`    | Backup chef contacts list (priority ordered, add/remove/reorder)                                |
+| `/reputation/mentions`   | Brand mention monitoring feed (source, sentiment, reach metrics)                                |
 | `/settings/protection/*` | Insurance, certifications, NDA, continuity, crisis response, business health, portfolio removal |
 
 ---
 
 ## 20. REMY (AI CONCIERGE)
 
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Remy & Commands Pages
+> **AI settings → [`docs/ui-audit-settings.md`](ui-audit-settings.md)** § AI & Privacy
+
 | Route                        | Content                                                                               |
 | ---------------------------- | ------------------------------------------------------------------------------------- |
-| `/commands`                  | Remy Hub Dashboard — unified AI command interface                                     |
+| `/commands`                  | Remy Hub — 4 tabs (Quick Actions, History, Favorites, Settings) with command cards    |
 | `/remy`                      | Conversation history (stored in browser IndexedDB, never on server)                   |
-| `/settings/ai-privacy`       | AI Trust Center — full privacy walkthrough, data controls                             |
+| `/settings/ai-privacy`       | AI Trust Center — onboarding wizard, 6 privacy sections, data controls                |
 | `/settings/culinary-profile` | Tell Remy about cooking philosophy and signature dishes                               |
 | Floating widget              | `remy-concierge-widget.tsx` — draggable/resizable on all pages, all edges + 4 corners |
 
@@ -850,45 +885,53 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 ## 21. ONBOARDING & IMPORT
 
-| Route                 | Content                                           |
-| --------------------- | ------------------------------------------------- |
-| `/onboarding`         | Guided setup flow                                 |
-| `/onboarding/clients` | Client import step                                |
-| `/onboarding/loyalty` | Loyalty setup step                                |
-| `/onboarding/recipes` | Recipe import step                                |
-| `/onboarding/staff`   | Staff setup step                                  |
-| `/import`             | Smart import (CSV, past events, brain dump modes) |
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Onboarding & Import Pages
+
+| Route                 | Content                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `/onboarding`         | Guided setup wizard with progress steps (profile, clients, recipes, staff, loyalty)  |
+| `/onboarding/clients` | Client import step (CSV upload, manual entry, skip)                                  |
+| `/onboarding/loyalty` | Loyalty setup step (program name, earn rates, tier config)                           |
+| `/onboarding/recipes` | Recipe import step (CSV, URL paste, manual)                                          |
+| `/onboarding/staff`   | Staff setup step (add team members, roles)                                           |
+| `/import`             | Smart import hub — 3 modes: CSV upload, past events paste, brain dump (free text AI) |
 
 ---
 
 ## 22. CANNABIS VERTICAL
 
-| Route                  | Content                  |
-| ---------------------- | ------------------------ |
-| `/cannabis`            | Cannabis chef hub        |
-| `/cannabis/compliance` | Compliance tracker       |
-| `/cannabis/events`     | Cannabis events          |
-| `/cannabis/invite`     | Guest invitations        |
-| `/cannabis/ledger`     | Cannabis-specific ledger |
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Cannabis Pages
+
+| Route                  | Content                                                                     |
+| ---------------------- | --------------------------------------------------------------------------- |
+| `/cannabis`            | Cannabis chef hub (compliance score, upcoming events, quick actions)        |
+| `/cannabis/compliance` | Compliance tracker (license status, testing requirements, regulatory items) |
+| `/cannabis/events`     | Cannabis events list (strain pairings, dosage info, compliance badges)      |
+| `/cannabis/invite`     | Guest invitations with age verification and consent forms                   |
+| `/cannabis/ledger`     | Cannabis-specific ledger (separate from main financials for compliance)     |
 
 ---
 
 ## 23. HELP CENTER
 
-**Route:** `/help` — Help article index.
-**Route:** `/help/[slug]` — Individual help article pages.
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Help Pages
+
+**Route:** `/help` — Help article index with category cards, search input, and featured articles.
+**Route:** `/help/[slug]` — Individual help article pages with breadcrumb, rich content, and related articles sidebar.
 
 ---
 
 ## 24. GAMES
 
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Games Pages
+
 | Game        | Route                | Description                                                                                                                                                                                                                                                                 |
 | ----------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Arcade Hub  | `/games`             | Game selection menu                                                                                                                                                                                                                                                         |
-| Galaga      | `/games/galaga`      | Space shooter                                                                                                                                                                                                                                                               |
+| Arcade Hub  | `/games`             | Game selection menu with cards per game (thumbnail, description, play button)                                                                                                                                                                                               |
+| Galaga      | `/games/galaga`      | Space shooter (canvas-based, keyboard controls, high score in localStorage)                                                                                                                                                                                                 |
 | Chef Snake  | `/games/snake`       | Snake with culinary twist: collect ingredient emojis to complete recipes (+50 bonus). 14 food types, 10 recipes. Canvas 480x480, keyboard + touch. High score in localStorage                                                                                               |
 | The Line    | `/games/the-line`    | Kitchen service game: ORDER RAIL → 4 STATIONS (Grill/Sauté/Prep/Oven) → PLATING. Click ticket items to assign, click stations to pull. Timing: raw/perfect/overcooked/burnt. 3 strikes = game over. 5 rush levels. Prep Mode uses chef's actual menu dishes. Canvas 480x640 |
-| Menu Muse   | `/games/menu-muse`   | Culinary-themed word game                                                                                                                                                                                                                                                   |
+| Menu Muse   | `/games/menu-muse`   | Culinary-themed word game (5-letter words, 6 guesses, keyboard input, color-coded feedback)                                                                                                                                                                                 |
 | Tic-Tac-Toe | `/games/tic-tac-toe` | vs Remy AI. 3x3 (minimax, unbeatable), 4x4/5x5 (heuristic, beatable). Win/loss/draw tracking. Remy taunts                                                                                                                                                                   |
 | Trivia      | `/games/trivia`      | Remy's Kitchen Trivia. Culinary Knowledge or My Business modes. 15 topic chips + custom. Difficulty levels. Timed mode. 4-answer questions with fun facts + source citations + confidence badges. High score + seen-question dedup in localStorage                          |
 
@@ -896,7 +939,9 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 ## 25. DEV TOOLS
 
-**Route:** `/dev/simulate` (admin only) — Simulation Lab for Ollama quality testing. Module selection chips, scenarios-per-module slider (1-10), estimated time display, "Run Simulation" button. Results panel with pass rates. Run history table.
+> **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Dev Tools
+
+**Route:** `/dev/simulate` (admin only) — Simulation Lab for Ollama quality testing. Module selection chips, scenarios-per-module slider (1-10), estimated time display, "Run Simulation" button. Results panel with pass rates. Run history table with timestamp, module, pass/fail counts, and "View Details" expand.
 
 ---
 
@@ -917,18 +962,20 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 ## STATISTICS
 
-| Metric                    | Count                             |
-| ------------------------- | --------------------------------- |
-| Total page.tsx files      | ~265                              |
-| Distinct route namespaces | 40+                               |
-| Nav groups                | 8                                 |
-| AI panels on event detail | 13                                |
-| Dashboard data streams    | ~48                               |
-| Analytics data streams    | ~38                               |
-| Client detail panels      | ~30                               |
-| Event detail tabs         | 4                                 |
-| Financial sub-pages       | ~78                               |
-| Settings sub-pages        | 40+                               |
-| Games                     | 6                                 |
-| Calendar views            | 5 (month, day, week, year, share) |
-| Event FSM states          | 8                                 |
+| Metric                    | Count                                                 |
+| ------------------------- | ----------------------------------------------------- |
+| Total page.tsx files      | ~265                                                  |
+| Distinct route namespaces | 40+                                                   |
+| Nav groups                | 8                                                     |
+| AI panels on event detail | 13                                                    |
+| Dashboard data streams    | ~48                                                   |
+| Analytics data streams    | ~38                                                   |
+| Client detail panels      | ~30                                                   |
+| Event detail tabs         | 4                                                     |
+| Financial sub-pages       | ~78                                                   |
+| Settings sub-pages        | 50                                                    |
+| Games                     | 6                                                     |
+| Calendar views            | 7 (month, day, week, year, share, schedule, waitlist) |
+| Event FSM states          | 8                                                     |
+| Total audit lines         | ~7,800 (master + 5 companion docs)                    |
+| Companion documents       | 5                                                     |
