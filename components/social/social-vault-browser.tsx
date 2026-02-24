@@ -217,7 +217,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
           {filtered.map((asset) => (
             <div
               key={asset.id}
-              className="group bg-surface rounded-xl border border-stone-700 overflow-hidden hover:border-stone-600 hover:shadow-sm transition-all"
+              className="group bg-stone-900 rounded-xl border border-stone-700 overflow-hidden hover:border-stone-600 hover:shadow-sm transition-all"
             >
               {/* Thumbnail */}
               <div className="aspect-square bg-stone-800 relative overflow-hidden">
@@ -306,7 +306,7 @@ export function SocialVaultBrowser({ assets: initialAssets, usageCounts }: Props
       {editingAsset && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setEditingAsset(null)} />
-          <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="relative bg-stone-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-stone-100">Edit Asset</h3>
               <button

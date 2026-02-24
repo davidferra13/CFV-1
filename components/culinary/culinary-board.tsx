@@ -46,7 +46,7 @@ export function CulinaryBoard({ userWords, isAdmin }: CulinaryBoardProps) {
 
         <div className="flex items-center gap-3">
           {/* View toggle */}
-          <div className="inline-flex rounded-lg border border-stone-700 bg-surface p-0.5">
+          <div className="inline-flex rounded-lg border border-stone-700 bg-stone-900 p-0.5">
             <button
               onClick={() => setView('board')}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${

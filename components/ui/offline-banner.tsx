@@ -42,8 +42,8 @@ export function OfflineBanner() {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed top-0 left-0 right-0 z-50 py-2 px-4 text-center text-sm font-medium transition-all ${
-        isOnline ? 'bg-green-600 text-white' : 'bg-red-600 text-white'
+      className={`fixed top-0 left-0 right-0 z-50 py-2 px-4 text-center text-sm font-medium transition-all backdrop-blur-sm ${
+        isOnline ? 'bg-green-600/80 text-white' : 'bg-red-600/80 text-white'
       }`}
     >
       {isOnline ? (

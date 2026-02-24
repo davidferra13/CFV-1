@@ -55,7 +55,7 @@ export function RewardCard({
       )}
 
       <div
-        className={`rounded-xl border p-4 ${canRedeem ? 'border-emerald-200 bg-emerald-950/40' : 'border-stone-700 bg-surface'}`}
+        className={`rounded-xl border p-4 ${canRedeem ? 'border-emerald-200 bg-emerald-950/40' : 'border-stone-700 bg-stone-900'}`}
       >
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -81,7 +81,7 @@ export function RewardCard({
 
       {showConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-stone-900 rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-stone-100 mb-2">Redeem Reward?</h3>
             <p className="text-stone-400 mb-1">
               You are redeeming <span className="font-medium text-stone-100">{reward.name}</span>.

@@ -98,7 +98,7 @@ export function AgentConfirmationCard({
                 onChange={(e) =>
                   setEditValues((prev) => ({ ...prev, [field.label]: e.target.value }))
                 }
-                className="flex-1 bg-surface dark:bg-stone-800 border border-stone-600 dark:border-stone-600 rounded px-1.5 py-0.5 text-xs text-stone-100 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                className="flex-1 bg-stone-900 dark:bg-stone-800 border border-stone-600 dark:border-stone-600 rounded px-1.5 py-0.5 text-xs text-stone-100 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-brand-500"
               />
             ) : (
               <span className="text-stone-100 dark:text-stone-100 flex-1">

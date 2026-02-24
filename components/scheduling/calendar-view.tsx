@@ -480,7 +480,7 @@ export function CalendarView({
       <div className="flex gap-5">
         {/* Mini Calendar Sidebar (hidden on mobile) */}
         <div className="hidden xl:block w-52 flex-shrink-0 space-y-5">
-          <div className="bg-surface rounded-xl border border-stone-700 shadow-sm p-3">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 shadow-sm p-3">
             <MiniCalendar
               events={events}
               selectedDate={selectedDate}
@@ -489,7 +489,7 @@ export function CalendarView({
           </div>
 
           {/* Keyboard shortcuts help */}
-          <div className="bg-surface rounded-xl border border-stone-700 shadow-sm p-3">
+          <div className="bg-stone-900 rounded-xl border border-stone-700 shadow-sm p-3">
             <h4 className="text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">
               Shortcuts
             </h4>
@@ -517,7 +517,7 @@ export function CalendarView({
         {/* Calendar / Agenda */}
         <div className="flex-1 min-w-0">
           {isCalendarView ? (
-            <div className="bg-surface rounded-xl border border-stone-700 shadow-sm overflow-hidden">
+            <div className="bg-stone-900 rounded-xl border border-stone-700 shadow-sm overflow-hidden">
               {viewSeason && (
                 <div className="p-3 border-b bg-stone-800">
                   <div className="flex items-start justify-between gap-4">

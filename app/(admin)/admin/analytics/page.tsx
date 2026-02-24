@@ -50,14 +50,14 @@ export default async function AdminAnalyticsPage() {
       {/* Summary KPIs */}
       {overviewData && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               Total Chefs
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1">{overviewData.totalChefs}</p>
             <p className="text-xs text-slate-400 mt-1">+{overviewData.chefsThisMonth} this month</p>
           </div>
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               Active Rate
             </p>
@@ -69,7 +69,7 @@ export default async function AdminAnalyticsPage() {
             </p>
             <p className="text-xs text-slate-400 mt-1">chefs w/ events this month</p>
           </div>
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               Platform GMV
             </p>
@@ -80,7 +80,7 @@ export default async function AdminAnalyticsPage() {
               {formatCents(overviewData.gmvThisMonth)} this month
             </p>
           </div>
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               Avg GMV / Chef
             </p>
@@ -93,7 +93,7 @@ export default async function AdminAnalyticsPage() {
       )}
 
       {/* Revenue by Month */}
-      <div className="bg-surface rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
         <h2 className="text-sm font-semibold text-slate-700 mb-4">
           Platform GMV by Month (last 12 months)
         </h2>
@@ -120,7 +120,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       {/* Chef + Client Growth */}
-      <div className="bg-surface rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
         <h2 className="text-sm font-semibold text-slate-700 mb-4">
           New Signups by Month (last 12 months)
         </h2>

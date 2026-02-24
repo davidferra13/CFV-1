@@ -77,7 +77,7 @@ export function ChatInputBar({
   }
 
   return (
-    <div className="border-t border-stone-700 bg-surface px-4 py-3">
+    <div className="border-t border-stone-700 bg-stone-900 px-4 py-3">
       <div className="flex items-end gap-2">
         {/* Attachment button */}
         <button

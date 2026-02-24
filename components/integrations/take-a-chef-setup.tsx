@@ -157,7 +157,7 @@ export function TakeAChefSetup({ gmailConnected, lastSyncAt, tacLeadCount }: Tak
                   onChange={(e) =>
                     setCommissionRate(Math.min(100, Math.max(0, Number(e.target.value))))
                   }
-                  className="w-20 h-9 px-3 text-sm text-stone-100 bg-surface border border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                  className="w-20 h-9 px-3 text-sm text-stone-100 bg-stone-900 border border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 />
                 <span className="text-sm text-stone-500">%</span>
               </div>

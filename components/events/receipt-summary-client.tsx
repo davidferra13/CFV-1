@@ -82,7 +82,7 @@ function LineItemRow({
         <select
           value={item.ingredientCategory ?? ''}
           onChange={(e) => onUpdate(item.id, 'ingredientCategory', e.target.value || null)}
-          className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-surface"
+          className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-stone-900"
         >
           <option value="">—</option>
           <option value="protein">Protein</option>
@@ -99,7 +99,7 @@ function LineItemRow({
         <select
           value={item.expenseTag}
           onChange={(e) => onUpdate(item.id, 'expenseTag', e.target.value)}
-          className={`text-xs border rounded px-1 py-0.5 bg-surface ${
+          className={`text-xs border rounded px-1 py-0.5 bg-stone-900 ${
             item.expenseTag === 'personal'
               ? 'border-stone-700 text-stone-400'
               : item.expenseTag === 'business'

@@ -87,7 +87,7 @@ export default async function FinanceGoalsPage() {
         </div>
         <Link
           href="/goals"
-          className="inline-flex items-center gap-2 rounded-md border border-stone-600 bg-surface px-4 py-2 text-sm font-medium text-stone-300 shadow-sm hover:bg-stone-800 transition-colors whitespace-nowrap"
+          className="inline-flex items-center gap-2 rounded-md border border-stone-600 bg-stone-900 px-4 py-2 text-sm font-medium text-stone-300 shadow-sm hover:bg-stone-800 transition-colors whitespace-nowrap"
         >
           Manage Goals
         </Link>

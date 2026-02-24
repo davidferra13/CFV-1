@@ -100,7 +100,7 @@ export function QuickCapture() {
           />
           <div className="fixed bottom-44 right-4 z-40 flex flex-col gap-3 sm:hidden">
             <div className="flex items-center gap-2 justify-end">
-              <span className="bg-surface text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
+              <span className="bg-stone-900 text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
                 Capture Receipt
               </span>
               <button
@@ -112,7 +112,7 @@ export function QuickCapture() {
               </button>
             </div>
             <div className="flex items-center gap-2 justify-end">
-              <span className="bg-surface text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
+              <span className="bg-stone-900 text-stone-300 text-sm font-medium px-3 py-1 rounded-full shadow-md">
                 Quick Expense
               </span>
               <button
@@ -135,7 +135,7 @@ export function QuickCapture() {
             if (e.target === e.currentTarget) setShowExpenseForm(false)
           }}
         >
-          <div className="bg-surface w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 space-y-4 shadow-xl">
+          <div className="bg-stone-900 w-full max-w-sm rounded-t-2xl sm:rounded-2xl p-6 space-y-4 shadow-xl">
             <h3 className="text-lg font-bold text-stone-100">Quick Expense</h3>
             <p className="text-xs text-stone-500 -mt-2">
               Logged as today, category: Other, payment: Card. Edit from Expenses to adjust.

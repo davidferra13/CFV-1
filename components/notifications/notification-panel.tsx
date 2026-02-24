@@ -165,7 +165,7 @@ export function NotificationPanel({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div className="absolute right-0 top-full mt-2 z-50 w-80 sm:w-96 bg-surface rounded-xl shadow-lg border border-stone-700 overflow-hidden">
+    <div className="absolute right-0 top-full mt-2 z-50 w-80 sm:w-96 bg-stone-900 rounded-xl shadow-lg border border-stone-700 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-stone-800">
         <h3 className="text-sm font-semibold text-stone-100">Notifications</h3>

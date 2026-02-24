@@ -107,7 +107,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
       {showForm && (
         <form
           onSubmit={handlePost}
-          className="bg-surface rounded-xl border border-stone-700 p-4 space-y-3"
+          className="bg-stone-900 rounded-xl border border-stone-700 p-4 space-y-3"
         >
           {!guestName && (
             <input
@@ -194,7 +194,7 @@ export function ExcitementWall({ shareToken, guestName, guestToken }: Props) {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`bg-surface rounded-xl border p-4 ${
+              className={`bg-stone-900 rounded-xl border p-4 ${
                 msg.is_pinned ? 'border-brand-700 bg-brand-950/30' : 'border-stone-700'
               }`}
             >

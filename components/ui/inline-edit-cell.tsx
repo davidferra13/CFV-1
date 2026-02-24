@@ -106,7 +106,7 @@ export function InlineEditCell({
           onBlur={commit}
           disabled={saving}
           placeholder={placeholder}
-          className="w-full px-2 py-1 text-sm border border-brand-400 rounded focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface disabled:opacity-60"
+          className="w-full px-2 py-1 text-sm border border-brand-400 rounded focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-900 disabled:opacity-60"
         />
         {saving && (
           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-stone-400">

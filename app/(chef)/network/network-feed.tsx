@@ -98,7 +98,7 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-stone-700 p-4 bg-surface space-y-3">
+      <div className="rounded-lg border border-stone-700 p-4 bg-stone-900 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold text-stone-100">Feed Features</p>
@@ -136,7 +136,7 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
               >
                 <span
                   className={`
-                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0
+                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow ring-0
                     transition duration-200 ease-in-out
                     ${feature.enabled ? 'translate-x-5' : 'translate-x-0'}
                   `}
@@ -149,13 +149,13 @@ export function NetworkFeed({ posts, connectionCount, featurePreferences }: Netw
         {preferenceError && <p className="text-sm text-red-700">{preferenceError}</p>}
       </div>
 
-      <div className="rounded-lg border border-stone-700 p-4 bg-surface">
+      <div className="rounded-lg border border-stone-700 p-4 bg-stone-900">
         <label className="block text-sm font-medium text-stone-300 mb-1.5">Post Type</label>
         <select
           value={selectedFeature ?? ''}
           onChange={(event) => setSelectedFeature(event.target.value as NetworkFeatureKey)}
           disabled={enabledFeatures.length === 0 || isPostPending}
-          className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500"
+          className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500"
         >
           {enabledFeatures.map((feature) => (
             <option key={feature.feature_key} value={feature.feature_key}>
@@ -235,7 +235,7 @@ function FeedPostItem({ post }: { post: NetworkFeedPost }) {
   const featureLabel = NETWORK_FEATURE_DEFINITIONS[post.feature_key].label
 
   return (
-    <article className="rounded-lg border border-stone-700 p-4 bg-surface">
+    <article className="rounded-lg border border-stone-700 p-4 bg-stone-900">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3 min-w-0">
           {post.author.profile_image_url ? (

@@ -35,7 +35,7 @@ export function ChatImageUpload({ onUpload, onCancel }: ChatImageUploadProps) {
   }
 
   return (
-    <div className="border-t border-stone-700 bg-surface p-4">
+    <div className="border-t border-stone-700 bg-stone-900 p-4">
       {!file ? (
         <label className="flex flex-col items-center justify-center border-2 border-dashed border-stone-600 rounded-lg p-6 cursor-pointer hover:border-brand-400 transition-colors">
           <Upload className="w-8 h-8 text-stone-400 mb-2" />

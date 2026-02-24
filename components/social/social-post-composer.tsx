@@ -106,7 +106,7 @@ export function SocialPostComposer({
     .slice(0, 2)
 
   return (
-    <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4 space-y-3">
+    <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-4 space-y-3">
       {/* Top row */}
       <div className="flex gap-3">
         <Avatar className="w-10 h-10 flex-shrink-0">
@@ -169,7 +169,7 @@ export function SocialPostComposer({
           <select
             value={channelId ?? ''}
             onChange={(e) => setChannelId(e.target.value || null)}
-            className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-surface"
+            className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 bg-stone-900"
           >
             <option value="">No channel</option>
             {channels.map((ch) => (
@@ -224,7 +224,7 @@ export function SocialPostComposer({
               <ChevronDown className="h-3 w-3" />
             </button>
             {showVisMenu && (
-              <div className="absolute left-0 bottom-full mb-1 bg-surface border border-stone-700 rounded-xl shadow-lg z-20 min-w-[140px]">
+              <div className="absolute left-0 bottom-full mb-1 bg-stone-900 border border-stone-700 rounded-xl shadow-lg z-20 min-w-[140px]">
                 {VISIBILITY_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}

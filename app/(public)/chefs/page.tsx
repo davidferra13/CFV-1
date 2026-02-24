@@ -88,7 +88,7 @@ function ChefTile({ chef }: { chef: DirectoryChef }) {
   const extraCount = chef.partners.length - visiblePartners.length
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-surface shadow-[0_2px_20px_rgb(0,0,0,0.06)] ring-1 ring-stone-100 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.10)] hover:ring-brand-700 hover:-translate-y-1">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 shadow-[0_2px_20px_rgb(0,0,0,0.06)] ring-1 ring-stone-100 transition-all duration-300 hover:shadow-[0_8px_40px_rgb(0,0,0,0.10)] hover:ring-brand-700 hover:-translate-y-1">
       {/* Chef photo — large, prominent */}
       <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-brand-100 to-brand-50">
         {chef.profile_image_url ? (
@@ -219,7 +219,7 @@ export default async function ChefDirectoryPage() {
 
         {/* Trust footer */}
         <div className="mt-16 text-center">
-          <div className="mx-auto max-w-lg rounded-2xl border border-stone-700 bg-surface p-6 shadow-sm">
+          <div className="mx-auto max-w-lg rounded-2xl border border-stone-700 bg-stone-900 p-6 shadow-sm">
             <p className="text-sm font-semibold text-stone-200">
               Every chef on ChefFlow is personally vetted
             </p>

@@ -241,7 +241,7 @@ export function AvailabilityCalendarClient({
           const isToday = ds === today
 
           // Background color for cell
-          let cellBg = 'bg-surface border-stone-700 hover:bg-stone-800'
+          let cellBg = 'bg-stone-900 border-stone-700 hover:bg-stone-800'
           if (hasEventOnDay) cellBg = 'bg-amber-950 border-amber-200'
           else if (hasBlock) cellBg = 'bg-red-950 border-red-200'
 
@@ -296,7 +296,7 @@ export function AvailabilityCalendarClient({
 
       {/* Selected date detail panel */}
       {selectedDate && (
-        <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-stone-100">
               {format(new Date(selectedDate + 'T00:00:00'), 'EEEE, MMMM d, yyyy')}

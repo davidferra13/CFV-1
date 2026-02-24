@@ -50,7 +50,7 @@ export function HowItWorksSection() {
           return (
             <div
               key={pillar.title}
-              className="rounded-xl border border-stone-700 bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
+              className="rounded-xl border border-stone-700 bg-stone-900 p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
             >
               <div className="mb-4 inline-flex rounded-lg bg-brand-950 p-2.5 text-brand-400">
                 <Icon className="h-5 w-5" />
@@ -69,7 +69,7 @@ export function HowItWorksSection() {
         </h3>
         <div className="flex flex-col items-center gap-4 md:flex-row md:justify-center md:gap-0">
           {/* Browser */}
-          <div className="flex flex-col items-center rounded-xl border border-stone-700 bg-surface px-6 py-4 shadow-sm">
+          <div className="flex flex-col items-center rounded-xl border border-stone-700 bg-stone-900 px-6 py-4 shadow-sm">
             <span className="text-2xl">🖥️</span>
             <span className="mt-1 text-xs font-semibold text-stone-300">Your Browser</span>
             <span className="text-[10px] text-stone-400">Forms, dashboard, calendar</span>
@@ -91,7 +91,7 @@ export function HowItWorksSection() {
           <div className="h-6 w-0.5 bg-stone-300 md:hidden" />
 
           {/* Database */}
-          <div className="flex flex-col items-center rounded-xl border border-stone-700 bg-surface px-6 py-4 shadow-sm">
+          <div className="flex flex-col items-center rounded-xl border border-stone-700 bg-stone-900 px-6 py-4 shadow-sm">
             <span className="text-2xl">🗄️</span>
             <span className="mt-1 text-xs font-semibold text-stone-300">Your Database</span>
             <span className="text-[10px] text-stone-400">Encrypted, backed up, yours</span>

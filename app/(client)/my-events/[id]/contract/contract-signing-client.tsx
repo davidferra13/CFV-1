@@ -87,7 +87,7 @@ export function ContractSigningClient({
             href={`/api/documents/contract/${contractId}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center rounded-lg border border-stone-600 bg-surface px-4 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800"
+            className="inline-flex items-center rounded-lg border border-stone-600 bg-stone-900 px-4 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800"
           >
             Download PDF
           </a>
@@ -102,14 +102,14 @@ export function ContractSigningClient({
   return (
     <div className="space-y-6">
       {/* Contract body — rendered as plain markdown text, readable without a parser */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-6">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
         <pre className="whitespace-pre-wrap font-sans text-sm text-stone-200 leading-relaxed">
           {bodyMarkdown}
         </pre>
       </div>
 
       {/* Signature section */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 space-y-4">
         <h2 className="text-base font-semibold text-stone-100">Your Signature</h2>
         <SignaturePad onChange={setSignatureDataUrl} />
 

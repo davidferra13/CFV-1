@@ -134,7 +134,7 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
               <div>
                 <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
                 <select
-                  className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                   value={svcForm.service_type}
                   onChange={(e) => setSvcForm((p) => ({ ...p, service_type: e.target.value }))}
                 >
@@ -148,7 +148,7 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
               <div>
                 <label className="block text-xs font-medium text-stone-400 mb-1">Frequency</label>
                 <select
-                  className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                   value={svcForm.frequency}
                   onChange={(e) => setSvcForm((p) => ({ ...p, frequency: e.target.value }))}
                 >
@@ -248,7 +248,7 @@ export function RecurringServiceForm({ clientId }: { clientId: string }) {
                   Client reaction
                 </label>
                 <select
-                  className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                   value={dishForm.client_reaction}
                   onChange={(e) => setDishForm((p) => ({ ...p, client_reaction: e.target.value }))}
                 >

@@ -37,7 +37,7 @@ export function ChatHeader({
         : null
 
   return (
-    <div className="border-b border-stone-700 bg-surface px-4 py-3 flex items-center gap-3">
+    <div className="border-b border-stone-700 bg-stone-900 px-4 py-3 flex items-center gap-3">
       {/* Back button */}
       <Link
         href={backHref}

@@ -154,7 +154,9 @@ function StepGoalType({
                       key={meta.type}
                       onClick={() => onSelect(meta.type)}
                       className={`text-left rounded-lg border-2 p-3 transition-all hover:border-brand-400 ${
-                        isSelected ? 'border-brand-500 bg-brand-950' : 'border-stone-700 bg-surface'
+                        isSelected
+                          ? 'border-brand-500 bg-brand-950'
+                          : 'border-stone-700 bg-stone-900'
                       }`}
                     >
                       <div className="flex items-start gap-2.5">
@@ -449,7 +451,7 @@ function StepReminders({
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${nudgeEnabled ? 'bg-brand-600' : 'bg-stone-300'}`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-surface transition-transform ${nudgeEnabled ? 'translate-x-6' : 'translate-x-1'}`}
+            className={`inline-block h-4 w-4 transform rounded-full bg-stone-900 transition-transform ${nudgeEnabled ? 'translate-x-6' : 'translate-x-1'}`}
           />
         </button>
         <span className="text-sm text-stone-300">Enable notifications for this goal</span>

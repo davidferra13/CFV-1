@@ -131,7 +131,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
                             <span className="text-xs text-stone-400">{r.durationMs}ms</span>
                           </div>
                           <div className="text-xs text-stone-400 font-medium">Scenario:</div>
-                          <pre className="text-xs text-stone-300 bg-surface rounded border border-stone-700 p-2 overflow-x-auto whitespace-pre-wrap max-h-24">
+                          <pre className="text-xs text-stone-300 bg-stone-900 rounded border border-stone-700 p-2 overflow-x-auto whitespace-pre-wrap max-h-24">
                             {r.scenarioId ?? 'No scenario text'}
                           </pre>
                           {r.failures.length > 0 && (
@@ -164,7 +164,7 @@ export function SimulationResultsPanel({ run, results }: Props) {
                         <div className="text-xs font-medium text-emerald-700 mb-1">
                           Score: {moduleResults.find((r) => r.passed)?.score}/100
                         </div>
-                        <pre className="text-xs text-stone-300 bg-surface rounded border border-stone-700 p-2 overflow-x-auto whitespace-pre-wrap max-h-32">
+                        <pre className="text-xs text-stone-300 bg-stone-900 rounded border border-stone-700 p-2 overflow-x-auto whitespace-pre-wrap max-h-32">
                           {JSON.stringify(moduleResults.find((r) => r.passed)?.rawOutput, null, 2)}
                         </pre>
                       </div>

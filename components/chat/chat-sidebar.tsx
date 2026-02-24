@@ -50,7 +50,7 @@ export function ChatSidebar({
 
   if (collapsed) {
     return (
-      <div className="w-10 border-l border-stone-700 bg-surface flex flex-col items-center pt-3">
+      <div className="w-10 border-l border-stone-700 bg-stone-900 flex flex-col items-center pt-3">
         <button
           type="button"
           onClick={() => setCollapsed(false)}
@@ -74,7 +74,7 @@ export function ChatSidebar({
   }
 
   return (
-    <div className="w-72 border-l border-stone-700 bg-surface flex flex-col overflow-hidden">
+    <div className="w-72 border-l border-stone-700 bg-stone-900 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-stone-800">
         <Link

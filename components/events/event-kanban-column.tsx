@@ -28,7 +28,7 @@ export function EventKanbanColumn({
       {/* Column header */}
       <div
         className={[
-          'bg-surface rounded-t-xl border border-stone-700 border-t-4 px-3 py-2.5 flex items-center justify-between',
+          'bg-stone-900 rounded-t-xl border border-stone-700 border-t-4 px-3 py-2.5 flex items-center justify-between',
           colorClass,
         ].join(' ')}
       >

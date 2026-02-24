@@ -25,7 +25,7 @@ export default function AuthError({
   }, [error])
 
   return (
-    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <div className="mx-auto mb-3 w-16 h-16 flex items-center justify-center rounded-full bg-amber-900">

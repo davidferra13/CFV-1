@@ -154,7 +154,7 @@ export function DirectOutreachPanel({
                       ? 'bg-stone-900 text-white border-stone-900'
                       : unavailable
                         ? 'bg-stone-800 text-stone-300 border-stone-800 cursor-not-allowed'
-                        : 'bg-surface text-stone-300 border-stone-700 hover:border-stone-600'
+                        : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-600'
                   }`}
                 >
                   {opt.icon} {opt.label}
@@ -192,7 +192,7 @@ export function DirectOutreachPanel({
                   : 'Message'}
             </label>
             <textarea
-              className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[100px] resize-y"
+              className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm min-h-[100px] resize-y"
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder={bodyPlaceholder}
@@ -236,7 +236,7 @@ export function DirectOutreachPanel({
           {history.map((record) => (
             <div
               key={record.id}
-              className="flex items-start gap-2 text-xs text-stone-400 rounded-md border border-stone-800 bg-surface px-3 py-2"
+              className="flex items-start gap-2 text-xs text-stone-400 rounded-md border border-stone-800 bg-stone-900 px-3 py-2"
             >
               <span className="shrink-0">{CHANNEL_ICON[record.channel] ?? '•'}</span>
               <div className="min-w-0 flex-1">

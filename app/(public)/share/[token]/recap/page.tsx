@@ -105,7 +105,7 @@ export default async function RecapPage({ params }: { params: { token: string } 
               {allDisplayMessages.map((msg: any) => (
                 <div
                   key={msg.id}
-                  className="bg-surface rounded-xl border border-stone-700 p-4 text-center"
+                  className="bg-stone-900 rounded-xl border border-stone-700 p-4 text-center"
                 >
                   <p className="text-stone-300 italic">
                     {msg.emoji && <span className="mr-1 not-italic">{msg.emoji}</span>}

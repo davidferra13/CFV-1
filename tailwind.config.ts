@@ -23,12 +23,6 @@ const config: Config = {
           900: '#744021',
           950: '#3e200f',
         },
-        surface: {
-          DEFAULT: '#1c1917',
-          muted: '#292524',
-          accent: '#292524',
-          page: '#0c0a09',
-        },
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', '-apple-system', 'sans-serif'],

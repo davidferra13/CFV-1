@@ -251,7 +251,7 @@ export function SeasonalPaletteForm({
                   <select
                     value={dish.recipe_id || ''}
                     onChange={(e) => updateDish(i, 'recipe_id', e.target.value || null)}
-                    className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm bg-surface"
+                    className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm bg-stone-900"
                   >
                     <option value="">No recipe linked</option>
                     {recipes.map((r) => (

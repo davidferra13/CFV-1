@@ -57,7 +57,7 @@ export default async function ActivityPage() {
       {resumeItems.length === 0 &&
         chefActivityResult.items.length === 0 &&
         clientActivityResult.items.length === 0 && (
-          <div className="rounded-xl border border-stone-700 bg-surface p-8 text-center">
+          <div className="rounded-xl border border-stone-700 bg-stone-900 p-8 text-center">
             <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-950">
               <svg
                 className="h-6 w-6 text-brand-600"

@@ -111,7 +111,7 @@ export function AutomationsList({ rules, executions, settings }: AutomationsList
               key={rule.id}
               className={`border rounded-lg p-3 transition-colors ${
                 rule.is_active
-                  ? 'border-stone-700 bg-surface'
+                  ? 'border-stone-700 bg-stone-900'
                   : 'border-stone-800 bg-stone-800 opacity-70'
               }`}
             >

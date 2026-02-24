@@ -31,14 +31,53 @@ stateDiagram-v2
     OfflineAction --> ShowActions: Display action menu
 ```
 
-### 2. Action Menu by State
+### 2. Full Options Menu (Always Available on Click)
 
-| State             | Visual                 | Click Action         | Menu Items                                          |
-| ----------------- | ---------------------- | -------------------- | --------------------------------------------------- |
-| **All Healthy**   | Green badge with pulse | Open details popover | View latency, model info, refresh                   |
-| **Degraded**      | Amber badge with pulse | Open action menu     | Ping endpoint, Load model, View details             |
-| **Offline**       | Red badge, no pulse    | Open action menu     | **Ping/Wake endpoint**, Retry connection, View logs |
-| **Loading Model** | Blue badge with pulse  | Open details popover | Show loading progress, Cancel                       |
+When clicking the badge, a dropdown menu appears with these options:
+
+#### Status Section (always shown at top)
+
+```
+┌─────────────────────────────────────┐
+│ PC:  ● Online · 45ms · qwen3:30b    │
+│ Pi:  ● Online · 120ms · qwen3:8b    │
+├─────────────────────────────────────┤
+│ 🔄 Refresh Status                   │
+│ 📡 Ping All Endpoints               │
+├─────────────────────────────────────┤
+│ 🔌 Wake PC                    (if offline) │
+│ 🔌 Wake Pi                    (if offline) │
+│ 📦 Load Model on PC           (if model not loaded) │
+│ 📦 Load Model on Pi           (if model not loaded) │
+├─────────────────────────────────────┤
+│ 📊 View Details                     │
+│ 📜 View Logs                        │
+│ ⚙️ AI Settings                      │
+└─────────────────────────────────────┘
+```
+
+#### Menu Actions Reference
+
+| Action                    | Always Visible?                          | Description                                        |
+| ------------------------- | ---------------------------------------- | -------------------------------------------------- |
+| **🔄 Refresh Status**     | Yes                                      | Force immediate health check on all endpoints      |
+| **📡 Ping All Endpoints** | Yes                                      | Extended timeout deep health check                 |
+| **🔌 Wake PC**            | Only when PC offline                     | Start Ollama service on PC via system command      |
+| **🔌 Wake Pi**            | Only when Pi offline                     | SSH to Pi, restart Ollama service                  |
+| **📦 Load Model on PC**   | Only when PC online but model not loaded | Preload configured model into memory               |
+| **📦 Load Model on Pi**   | Only when Pi online but model not loaded | Preload model on Pi                                |
+| **📊 View Details**       | Yes                                      | Open detailed health modal with full endpoint info |
+| **📜 View Logs**          | Yes                                      | Link to AI health logs/cross-monitor recovery log  |
+| **⚙️ AI Settings**        | Yes                                      | Navigate to AI settings page                       |
+
+#### Visual State Indicators on Badge Itself
+
+| State             | Badge Appearance                 |
+| ----------------- | -------------------------------- |
+| **All Healthy**   | Green badge with pulse animation |
+| **Degraded**      | Amber badge with pulse animation |
+| **Offline**       | Red badge, no pulse              |
+| **Loading Model** | Blue badge with pulse animation  |
 
 ### 3. New API Endpoint: `/api/ai/wake`
 
@@ -149,5 +188,220 @@ lib/ai/ollama-wake.ts
 
 1. **Pi Wake Method:** Is SSH already configured for Pi access, or should we just do extended ping/retry?
 2. **Permission Level:** Should wake actions be admin-only or available to all chefs?
-3. **Popover Style:** Dropdown menu or hovercard-style popover?
-4. **Additional Actions:** Any other actions you want in the menu?
+3. **Additional Actions:** Any other actions you want in the menu?
+
+## Implementation Checklist
+
+- [ ] Create `/api/ai/wake` endpoint for wake/ping actions
+- [ ] Create `lib/ai/ollama-wake.ts` utility module
+- [ ] Update `components/dashboard/ollama-status-badge.tsx`:
+  - [ ] Add button wrapper with hover/click states
+  - [ ] Add dropdown menu component
+  - [ ] Add status section showing PC/Pi state
+  - [ ] Add context-aware action buttons
+  - [ ] Add loading states and feedback
+  - [ ] Add navigation links (View Details, Logs, Settings)
+- [ ] Test all actions (refresh, ping, wake, load model)
+- [ ] Add error handling and user feedback
+
+## Additional Considerations
+
+### User Feedback
+
+- **Success toast:** "PC Ollama service started successfully"
+- **Error toast:** "Failed to wake PC: Permission denied. Try running as administrator."
+- **Loading state:** Show spinner on the action item while in progress
+- **Auto-refresh:** After any action, automatically refresh status after 2-3 seconds
+
+### Confirmation Dialogs
+
+- **Wake actions:** Confirmation dialog before executing (e.g., "Wake PC Ollama?" Yes/Cancel)
+- **Reason:** Wake is a system-level action, confirmation prevents accidental triggers
+
+### Mobile Responsiveness
+
+- Menu should be touch-friendly
+- Consider bottom sheet on mobile instead of dropdown
+
+### Keyboard Accessibility
+
+- Enter/Space to open menu
+- Arrow keys to navigate
+- Escape to close
+
+### Action History
+
+- Show last action result in menu: "Last: Wake PC · 2 min ago · ✓"
+- Useful for debugging and awareness
+
+### Additional Menu Actions (Included)
+
+| Action             | Description                     |
+| ------------------ | ------------------------------- |
+| **🌡️ Temperature** | Show GPU/CPU temp if available  |
+| **💾 Memory**      | Show Ollama memory consumption  |
+| **🔄 Restart**     | Full restart (not just wake)    |
+| **📋 Copy Status** | Copy health report to clipboard |
+
+---
+
+## Visual Design Specification
+
+### Badge States (Before Click)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+
+HEALTHY STATE:                                                  │
+┌──────────────────────┐                                        │
+│ ● PC · 45ms | Pi · 120ms │  ← Green bg, emerald border        │
+└──────────────────────┘                                        │
+  (clickable, shows cursor pointer)                              │
+
+DEGRADED STATE:                                                 │
+┌──────────────────────────┐                                    │
+│ ● PC · 45ms | Pi Loading │  ← Amber bg, amber border          │
+└──────────────────────────┘                                    │
+
+OFFLINE STATE:                                                  │
+┌─────────────────────┐                                         │
+│ ○ AI Offline        │  ← Red bg, red border, no pulse        │
+└─────────────────────┘                                         │
+
+LOADING MODEL STATE:                                            │
+┌─────────────────────┐                                         │
+│ ● Loading Model     │  ← Blue bg, blue border                │
+└─────────────────────┘                                         │
+
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Dropdown Menu (After Click - Healthy State)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  AI Endpoints                                    [X]    │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │                                                         │   │
+│  │  PC (Local)                                             │   │
+│  │  ● Online · 45ms · qwen3-coder:30b                     │   │
+│  │  🌡️ GPU: 72°C  ·  💾 RAM: 18.2 GB                      │   │
+│  │                                                         │   │
+│  │  Pi (Remote)                                            │   │
+│  │  ● Online · 120ms · qwen3:8b                           │   │
+│  │  🌡️ CPU: 58°C  ·  💾 RAM: 6.1 GB                       │   │
+│  │                                                         │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │  ACTIONS                                                │   │
+│  │  ─────────────────────────────────────────────────────  │   │
+│  │  🔄 Refresh Status                                      │   │
+│  │  📡 Ping All Endpoints                                  │   │
+│  │  📋 Copy Status to Clipboard                            │   │
+│  │                                                         │   │
+│  │  LAST ACTION                                            │   │
+│  │  ─────────────────────────────────────────────────────  │   │
+│  │  ✓ Wake PC · 2 min ago                                  │   │
+│  │                                                         │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │  NAVIGATION                                             │   │
+│  │  ─────────────────────────────────────────────────────  │   │
+│  │  📊 View Details                                        │   │
+│  │  📜 View Logs                                           │   │
+│  │  ⚙️ AI Settings                                         │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Dropdown Menu (After Click - Offline State)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  AI Endpoints                                    [X]    │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │                                                         │   │
+│  │  PC (Local)                                             │   │
+│  │  ○ Offline · Connection refused                         │   │
+│  │                                                         │   │
+│  │  Pi (Remote)                                            │   │
+│  │  ○ Offline · Host unreachable                          │   │
+│  │                                                         │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │  RECOVERY ACTIONS                                       │   │
+│  │  ─────────────────────────────────────────────────────  │   │
+│  │  🔌 Wake PC                          [▶]                │   │
+│  │  🔌 Wake Pi                          [▶]                │   │
+│  │  📡 Ping All Endpoints                                  │   │
+│  │  🔄 Refresh Status                                      │   │
+│  │                                                         │   │
+│  ├─────────────────────────────────────────────────────────┤   │
+│  │  OTHER ACTIONS                                          │   │
+│  │  ─────────────────────────────────────────────────────  │   │
+│  │  📋 Copy Status to Clipboard                            │   │
+│  │  📊 View Details                                        │   │
+│  │  📜 View Logs                                           │   │
+│  │  ⚙️ AI Settings                                         │   │
+│  └─────────────────────────────────────────────────────────┘   │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Confirmation Dialog (Before Wake Action)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│        ┌───────────────────────────────────────────┐           │
+│        │                                           │           │
+│        │   🔌 Wake PC Ollama?                      │           │
+│        │                                           │           │
+│        │   This will start the Ollama service      │           │
+│        │   on your local machine.                  │           │
+│        │                                           │           │
+│        │   ┌─────────────┐  ┌─────────────┐       │           │
+│        │   │   Cancel    │  │   Wake PC   │       │           │
+│        │   └─────────────┘  └─────────────┘       │           │
+│        │                                           │           │
+│        └───────────────────────────────────────────┘           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Toast Notifications
+
+```
+SUCCESS TOAST:
+┌─────────────────────────────────────────────────────────────────┐
+│ ✓ PC Ollama service started successfully              [X]       │
+└─────────────────────────────────────────────────────────────────┘
+
+ERROR TOAST:
+┌─────────────────────────────────────────────────────────────────┐
+│ ✕ Failed to wake PC: Permission denied                [X]       │
+│   Try running as administrator.                                 │
+└─────────────────────────────────────────────────────────────────┘
+
+LOADING STATE (in menu):
+┌─────────────────────────────────────────────────────────────────┐
+│ ⏳ Waking PC...                                    [spinner]    │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Hover States
+
+```
+NORMAL:                          HOVER:
+┌─────────────────────┐         ┌─────────────────────┐
+│ ● PC · 45ms | Pi    │         │ ● PC · 45ms | Pi    │  ← Slightly
+└─────────────────────┘         └─────────────────────┘    brighter bg
+    cursor: default                  cursor: pointer
+
+MENU ITEM NORMAL:                MENU ITEM HOVER:
+┌─────────────────────────┐     ┌─────────────────────────┐
+│ 🔄 Refresh Status       │     │ 🔄 Refresh Status       │ ← Highlighted
+└─────────────────────────┘     └─────────────────────────┘   background
+```

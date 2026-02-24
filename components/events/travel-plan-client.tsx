@@ -120,7 +120,7 @@ function IngredientStatusRow({
       <select
         value={ingredient.status}
         onChange={(e) => onStatusChange(ingredient.id, e.target.value as TravelIngredientStatus)}
-        className="text-xs border border-stone-700 rounded px-1.5 py-1 bg-surface focus:outline-none focus:ring-1 focus:ring-brand-500"
+        className="text-xs border border-stone-700 rounded px-1.5 py-1 bg-stone-900 focus:outline-none focus:ring-1 focus:ring-brand-500"
       >
         <option value="to_source">To Source</option>
         <option value="sourced">Sourced ✓</option>

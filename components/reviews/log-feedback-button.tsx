@@ -103,7 +103,7 @@ export function LogFeedbackButton() {
           <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
           {/* Modal */}
-          <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-stone-900 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-stone-100">Log Feedback</h3>
               <button

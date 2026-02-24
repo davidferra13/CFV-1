@@ -57,7 +57,7 @@ export function RemyArchetypeSelector({ currentArchetype, onSaved }: Props) {
               className={`relative text-left rounded-xl border-2 p-4 transition-all ${
                 isSelected
                   ? 'border-brand-500 bg-brand-950 ring-1 ring-brand-600'
-                  : 'border-stone-700 bg-surface hover:border-stone-600 hover:shadow-sm'
+                  : 'border-stone-700 bg-stone-900 hover:border-stone-600 hover:shadow-sm'
               } ${saving ? 'opacity-70 cursor-wait' : 'cursor-pointer'}`}
             >
               {isSelected && (

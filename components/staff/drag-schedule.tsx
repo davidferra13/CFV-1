@@ -238,7 +238,7 @@ export function DragSchedule({
                   return (
                     <div
                       key={evt.id}
-                      className="bg-surface rounded-lg border border-stone-700 shadow-sm p-2"
+                      className="bg-stone-900 rounded-lg border border-stone-700 shadow-sm p-2"
                     >
                       {/* Event Name */}
                       <div className="text-xs font-semibold text-stone-100 truncate mb-1.5">

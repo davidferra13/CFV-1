@@ -593,7 +593,7 @@ export function JourneyEntryPanel({
                         href={link}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1 rounded-full border border-stone-700 bg-surface px-2 py-0.5 text-xs text-brand-600 hover:text-brand-400"
+                        className="inline-flex items-center gap-1 rounded-full border border-stone-700 bg-stone-900 px-2 py-0.5 text-xs text-brand-600 hover:text-brand-400"
                       >
                         <Link2 className="w-3 h-3" />
                         Source {index + 1}

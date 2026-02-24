@@ -327,7 +327,7 @@ export function PreEventChecklistClient({ event, client }: PreEventChecklistClie
       )}
 
       {/* Confirm Button */}
-      <div className="bg-surface border border-stone-700 rounded-xl p-6 text-center">
+      <div className="bg-stone-900 border border-stone-700 rounded-xl p-6 text-center">
         <p className="text-stone-300 mb-4 text-sm">
           Everything above looks correct and the chef has everything they need for a perfect
           evening.

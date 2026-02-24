@@ -112,7 +112,7 @@ export function WebhookManager({ endpoints }: { endpoints: WebhookEndpoint[] }) 
                   <button
                     key={e}
                     onClick={() => toggleEvent(e)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedEvents.includes(e) ? 'bg-brand-600 text-white border-brand-600' : 'bg-surface text-stone-300 border-stone-600 hover:border-brand-400'}`}
+                    className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${selectedEvents.includes(e) ? 'bg-brand-600 text-white border-brand-600' : 'bg-stone-900 text-stone-300 border-stone-600 hover:border-brand-400'}`}
                   >
                     {e}
                   </button>

@@ -57,12 +57,12 @@ export default async function NotificationsPage() {
       </div>
 
       {notifications.length === 0 ? (
-        <div className="bg-surface rounded-2xl border border-stone-700 p-12 text-center">
+        <div className="bg-stone-900 rounded-2xl border border-stone-700 p-12 text-center">
           <Bell className="h-10 w-10 text-stone-300 mx-auto mb-3" />
           <p className="text-stone-500 text-sm">No notifications yet</p>
         </div>
       ) : (
-        <div className="bg-surface rounded-2xl border border-stone-700 divide-y divide-stone-800 overflow-hidden">
+        <div className="bg-stone-900 rounded-2xl border border-stone-700 divide-y divide-stone-800 overflow-hidden">
           {notifications.map((notif) => {
             const actorName = notif.actor
               ? (notif.actor.display_name ?? notif.actor.business_name)

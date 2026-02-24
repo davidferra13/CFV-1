@@ -55,7 +55,7 @@ export default async function CallDetailPage({ params }: Props) {
       </Link>
 
       {/* Header */}
-      <div className="bg-surface rounded-xl border shadow-sm p-6 space-y-4">
+      <div className="bg-stone-900 rounded-xl border shadow-sm p-6 space-y-4">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-xl font-bold text-gray-900 capitalize">{title}</h1>
@@ -148,7 +148,7 @@ export default async function CallDetailPage({ params }: Props) {
       </div>
 
       {/* Prep panel */}
-      <div className="bg-surface rounded-xl border shadow-sm p-6">
+      <div className="bg-stone-900 rounded-xl border shadow-sm p-6">
         <CallPrepPanel call={call} />
       </div>
 
@@ -156,7 +156,7 @@ export default async function CallDetailPage({ params }: Props) {
       {(call.status === 'scheduled' ||
         call.status === 'confirmed' ||
         call.status === 'completed') && (
-        <div className="bg-surface rounded-xl border shadow-sm p-6">
+        <div className="bg-stone-900 rounded-xl border shadow-sm p-6">
           <CallOutcomeForm call={call} />
         </div>
       )}

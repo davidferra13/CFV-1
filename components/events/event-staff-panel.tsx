@@ -132,7 +132,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
             return (
               <div
                 key={a.id}
-                className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface px-3 py-2"
+                className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 px-3 py-2"
               >
                 <div>
                   <p className="text-sm font-medium text-stone-100">{member?.name}</p>

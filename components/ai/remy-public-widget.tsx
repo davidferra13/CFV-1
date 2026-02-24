@@ -150,23 +150,23 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-surface-border bg-surface shadow-2xl">
+    <div className="fixed bottom-6 right-6 z-50 flex w-[380px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 shadow-2xl">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-surface-border bg-brand-950 px-4 py-3">
+      <div className="flex items-center justify-between border-b border-stone-700 bg-brand-950 px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white">
             R
           </div>
           <div>
-            <div className="text-sm font-semibold text-ink-900">Remy</div>
-            <div className="text-xs text-ink-500">
+            <div className="text-sm font-semibold text-stone-100">Remy</div>
+            <div className="text-xs text-stone-400">
               {chefName ? `${chefName}'s concierge` : 'Your food concierge'}
             </div>
           </div>
         </div>
         <button
           onClick={() => setIsOpen(false)}
-          className="rounded-lg p-1.5 text-ink-400 transition-colors hover:bg-surface-muted hover:text-ink-600"
+          className="rounded-lg p-1.5 text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-300"
           aria-label="Close chat"
         >
           <X className="h-4 w-4" />
@@ -181,8 +181,8 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
         {messages.length === 0 && (
           <div className="py-8 text-center">
             <div className="text-3xl">👨‍🍳</div>
-            <p className="mt-2 text-sm font-medium text-ink-700">Hi! I&apos;m Remy.</p>
-            <p className="mt-1 text-xs text-ink-500">
+            <p className="mt-2 text-sm font-medium text-stone-200">Hi! I&apos;m Remy.</p>
+            <p className="mt-1 text-xs text-stone-400">
               Ask me about {chefName ? `${chefName}'s` : 'our'} cuisine, services, or how to book an
               event.
             </p>
@@ -214,12 +214,12 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
           >
             <div
               className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
-                msg.role === 'user' ? 'bg-brand-600 text-white' : 'bg-surface-muted text-ink-800'
+                msg.role === 'user' ? 'bg-brand-600 text-white' : 'bg-stone-800 text-stone-200'
               }`}
             >
               {msg.content ||
                 (isStreaming && msg.role === 'remy' ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-ink-400" />
+                  <Loader2 className="h-4 w-4 animate-spin text-stone-400" />
                 ) : null)}
             </div>
           </div>
@@ -235,7 +235,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
       </div>
 
       {/* Input */}
-      <div className="border-t border-surface-border bg-surface p-3">
+      <div className="border-t border-stone-700 bg-stone-900 p-3">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -244,7 +244,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
             onKeyDown={handleKeyDown}
             placeholder="Ask about food, events, or services..."
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-surface-border bg-surface-muted px-3.5 py-2.5 text-sm text-ink-800 placeholder-ink-400 outline-none transition-colors focus:border-brand-400 focus:ring-1 focus:ring-brand-400"
+            className="flex-1 resize-none rounded-xl border border-stone-600 bg-stone-800 px-3.5 py-2.5 text-sm text-stone-200 placeholder-stone-500 outline-none transition-colors focus:border-brand-400 focus:ring-1 focus:ring-brand-400"
             disabled={isStreaming}
             style={{ maxHeight: '100px' }}
           />
@@ -261,7 +261,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
             )}
           </button>
         </div>
-        <p className="mt-1.5 text-center text-[10px] text-ink-400">Powered by ChefFlow AI</p>
+        <p className="mt-1.5 text-center text-[10px] text-stone-500">Powered by ChefFlow AI</p>
       </div>
     </div>
   )

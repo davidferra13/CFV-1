@@ -73,7 +73,7 @@ export default function CancelEventButton({
 
       {showConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-surface rounded-lg shadow-xl max-w-lg w-full p-6">
+          <div className="bg-stone-900 rounded-lg shadow-xl max-w-lg w-full p-6">
             <h3 className="text-lg font-semibold text-stone-100 mb-2">
               {directCancel ? 'Cancel This Event?' : 'Request Event Cancellation?'}
             </h3>

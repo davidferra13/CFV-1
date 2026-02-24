@@ -92,7 +92,7 @@ export default async function PushDinnerDetailPage({ params }: Props) {
 
       {/* Seat capacity bar */}
       {campaign.seats_available && (
-        <div className="bg-surface border border-stone-700 rounded-xl p-4 space-y-2">
+        <div className="bg-stone-900 border border-stone-700 rounded-xl p-4 space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-stone-400 font-medium">Seat capacity</span>
             <span className="text-stone-300 font-semibold">
@@ -118,7 +118,7 @@ export default async function PushDinnerDetailPage({ params }: Props) {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="bg-surface border border-stone-700 rounded-xl p-4 text-center"
+            className="bg-stone-900 border border-stone-700 rounded-xl p-4 text-center"
           >
             <div className="text-2xl font-bold text-stone-200">{stat.value}</div>
             <div className="text-xs text-stone-400 mt-0.5">{stat.label}</div>
@@ -128,7 +128,7 @@ export default async function PushDinnerDetailPage({ params }: Props) {
 
       {/* Booking link */}
       {bookingUrl && (
-        <div className="bg-surface border border-stone-700 rounded-xl p-4 space-y-2">
+        <div className="bg-stone-900 border border-stone-700 rounded-xl p-4 space-y-2">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">
             Shareable booking link
           </p>
@@ -147,7 +147,7 @@ export default async function PushDinnerDetailPage({ params }: Props) {
 
       {/* Concept description */}
       {campaign.concept_description && (
-        <div className="bg-surface border border-stone-700 rounded-xl p-4 space-y-1">
+        <div className="bg-stone-900 border border-stone-700 rounded-xl p-4 space-y-1">
           <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">
             Dinner concept
           </p>
@@ -158,7 +158,7 @@ export default async function PushDinnerDetailPage({ params }: Props) {
       )}
 
       {/* Recipient list with draft status */}
-      <div className="bg-surface border border-stone-700 rounded-xl overflow-hidden">
+      <div className="bg-stone-900 border border-stone-700 rounded-xl overflow-hidden">
         <div className="px-4 py-3 border-b border-stone-800">
           <h2 className="text-sm font-semibold text-stone-300">Recipients ({recipients.length})</h2>
         </div>

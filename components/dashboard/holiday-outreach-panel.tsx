@@ -173,7 +173,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           <OutreachHookBlock hook={outreachHook} holidayName={holiday.name} />
 
           {/* Menu idea */}
-          <div className="rounded-lg bg-surface border border-amber-200 px-4 py-3">
+          <div className="rounded-lg bg-stone-900 border border-amber-200 px-4 py-3">
             <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1">
               Menu Direction
             </p>
@@ -181,7 +181,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
           </div>
 
           {/* Promo code section */}
-          <div className="rounded-lg bg-surface border border-amber-200 px-4 py-3">
+          <div className="rounded-lg bg-stone-900 border border-amber-200 px-4 py-3">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
                 Promo Code
@@ -313,7 +313,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
               </ul>
             </div>
           ) : (
-            <div className="rounded-lg bg-surface border border-amber-100 px-4 py-3">
+            <div className="rounded-lg bg-stone-900 border border-amber-100 px-4 py-3">
               <p className="text-sm text-stone-500">
                 No past clients found near this holiday — this is a fresh opportunity to build the
                 tradition with new clients.
@@ -356,7 +356,7 @@ function ClientOutreachRow({ client, holidayName, outreachHook }: ClientOutreach
   }
 
   return (
-    <li className="rounded-lg bg-surface border border-amber-100 px-3 py-2">
+    <li className="rounded-lg bg-stone-900 border border-amber-100 px-3 py-2">
       <div className="flex items-center justify-between">
         <div>
           <span className="text-sm font-medium text-stone-200">{client.clientName}</span>
@@ -460,7 +460,7 @@ function OutreachHookBlock({ hook, holidayName }: OutreachHookBlockProps) {
   }
 
   return (
-    <div className="rounded-lg bg-surface border border-amber-200 px-4 py-3">
+    <div className="rounded-lg bg-stone-900 border border-amber-200 px-4 py-3">
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs font-semibold text-amber-800 uppercase tracking-wide mb-1.5">
           Outreach Message — {holidayName}

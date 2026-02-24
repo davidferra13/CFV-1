@@ -62,15 +62,15 @@ export default async function MarketingPage() {
       {/* Summary stats */}
       {campaigns.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg border border-stone-700 bg-surface p-4 text-center">
+          <div className="rounded-lg border border-stone-700 bg-stone-900 p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{campaigns.length}</p>
             <p className="text-xs text-stone-500 mt-0.5">Campaigns</p>
           </div>
-          <div className="rounded-lg border border-stone-700 bg-surface p-4 text-center">
+          <div className="rounded-lg border border-stone-700 bg-stone-900 p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{totalSent.toLocaleString()}</p>
             <p className="text-xs text-stone-500 mt-0.5">Emails sent</p>
           </div>
-          <div className="rounded-lg border border-stone-700 bg-surface p-4 text-center">
+          <div className="rounded-lg border border-stone-700 bg-stone-900 p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{scheduled.length}</p>
             <p className="text-xs text-stone-500 mt-0.5">Scheduled</p>
           </div>

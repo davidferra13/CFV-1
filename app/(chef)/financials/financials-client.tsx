@@ -448,7 +448,7 @@ export function FinancialsClient({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-surface divide-y divide-stone-700">
+                    <tbody className="bg-stone-900 divide-y divide-stone-700">
                       {monthlySummary.eventBreakdown.map((evt) => (
                         <tr key={evt.eventId} className="hover:bg-stone-800">
                           <td className="px-4 py-3 text-sm">
@@ -565,7 +565,7 @@ export function FinancialsClient({
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-surface divide-y divide-stone-700">
+                    <tbody className="bg-stone-900 divide-y divide-stone-700">
                       {marketIncome.map((entry, i) => (
                         <tr key={i} className="hover:bg-stone-800">
                           <td className="px-3 py-2 text-sm text-stone-100 whitespace-nowrap">
@@ -705,7 +705,7 @@ export function FinancialsClient({
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-surface divide-y divide-stone-700">
+                <tbody className="bg-stone-900 divide-y divide-stone-700">
                   {entriesWithBalance.map((entry) => (
                     <tr key={entry.id} className="hover:bg-stone-800">
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-stone-100">

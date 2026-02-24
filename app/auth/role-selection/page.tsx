@@ -34,7 +34,7 @@ export default function RoleSelectionPage() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">One Last Step</h1>

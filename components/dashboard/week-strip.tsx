@@ -11,7 +11,7 @@ const DAY_STYLES: Record<DayType, string> = {
   event: 'bg-brand-950 border-brand-700 border',
   prep: 'bg-amber-950 border-amber-200 border border-dashed',
   admin: 'bg-stone-800 border-stone-700 border',
-  free: 'bg-surface border-stone-700 border',
+  free: 'bg-stone-900 border-stone-700 border',
 }
 
 const PREP_DOT: Record<string, string> = {

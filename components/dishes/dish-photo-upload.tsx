@@ -189,7 +189,7 @@ export function DishPhotoUpload({
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={isPending}
-              className="bg-surface text-stone-100 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-stone-800 transition-colors"
+              className="bg-stone-900 text-stone-100 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-stone-800 transition-colors"
             >
               Replace
             </button>
@@ -197,7 +197,7 @@ export function DishPhotoUpload({
               type="button"
               onClick={handleRemove}
               disabled={isPending}
-              className="bg-surface text-red-600 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-red-950 transition-colors"
+              className="bg-stone-900 text-red-600 text-xs font-medium px-2.5 py-1.5 rounded-md shadow hover:bg-red-950 transition-colors"
             >
               Remove
             </button>

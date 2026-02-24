@@ -69,7 +69,7 @@ export function EmailComposer({
   }
 
   return (
-    <div className="border border-stone-700 rounded-xl bg-surface shadow-sm overflow-hidden">
+    <div className="border border-stone-700 rounded-xl bg-stone-900 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-stone-800 border-b border-stone-700">
         <span className="text-sm font-semibold text-stone-300">New Email</span>
@@ -83,7 +83,7 @@ export function EmailComposer({
               <ChevronDown className="h-3 w-3" />
             </button>
             {showTemplates && (
-              <div className="absolute right-0 top-full mt-1 w-56 bg-surface border border-stone-700 rounded-lg shadow-lg z-10">
+              <div className="absolute right-0 top-full mt-1 w-56 bg-stone-900 border border-stone-700 rounded-lg shadow-lg z-10">
                 {EMAIL_TEMPLATES.map((t) => (
                   <button
                     key={t.label}

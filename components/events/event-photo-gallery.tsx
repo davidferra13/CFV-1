@@ -59,7 +59,7 @@ function PhotoCard({
       : `${(photo.size_bytes / 1024 / 1024).toFixed(1)} MB`
 
   return (
-    <div className="flex flex-col border border-stone-700 rounded-xl overflow-hidden bg-surface shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex flex-col border border-stone-700 rounded-xl overflow-hidden bg-stone-900 shadow-sm hover:shadow-md transition-shadow">
       {/* Thumbnail — click to preview full size */}
       <div className="relative aspect-square bg-stone-800">
         <button
@@ -471,7 +471,7 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
           <button
             type="button"
             onClick={() => setPreviewIndex(null)}
-            className="absolute top-4 right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-2 transition"
+            className="absolute top-4 right-4 text-white/80 hover:text-white bg-stone-900/10 hover:bg-stone-800/20 rounded-full p-2 transition"
             title="Close (Esc)"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -492,7 +492,7 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
                 e.stopPropagation()
                 setPreviewIndex((i) => (i !== null && i > 0 ? i - 1 : photos.length - 1))
               }}
-              className="absolute left-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
+              className="absolute left-4 text-white/80 hover:text-white bg-stone-900/10 hover:bg-stone-800/20 rounded-full p-3 transition"
               title="Previous (←)"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -539,7 +539,7 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
                 e.stopPropagation()
                 setPreviewIndex((i) => (i !== null && i < photos.length - 1 ? i + 1 : 0))
               }}
-              className="absolute right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
+              className="absolute right-4 text-white/80 hover:text-white bg-stone-900/10 hover:bg-stone-800/20 rounded-full p-3 transition"
               title="Next (→)"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

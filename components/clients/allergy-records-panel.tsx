@@ -249,7 +249,7 @@ function AllergyRecordRow({
             <>
               <button
                 onClick={() => setShowConfirmSeverity(!showConfirmSeverity)}
-                className="text-xs text-green-700 hover:text-green-800 font-medium flex items-center gap-0.5 border border-green-300 rounded px-1.5 py-0.5 bg-surface"
+                className="text-xs text-green-700 hover:text-green-800 font-medium flex items-center gap-0.5 border border-green-300 rounded px-1.5 py-0.5 bg-stone-900"
               >
                 <CheckCircle2 className="h-3 w-3" />
                 Confirm
@@ -257,7 +257,7 @@ function AllergyRecordRow({
               <button
                 onClick={handleDismiss}
                 disabled={isPending}
-                className="text-xs text-stone-500 hover:text-red-600 flex items-center gap-0.5 border border-stone-700 rounded px-1.5 py-0.5 bg-surface"
+                className="text-xs text-stone-500 hover:text-red-600 flex items-center gap-0.5 border border-stone-700 rounded px-1.5 py-0.5 bg-stone-900"
               >
                 <Trash2 className="h-3 w-3" />
                 Dismiss

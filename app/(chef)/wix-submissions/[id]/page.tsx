@@ -139,7 +139,7 @@ export default async function WixSubmissionPage({ params }: { params: { id: stri
         <div className="bg-stone-800 border-b border-stone-700 px-4 py-2.5">
           <h2 className="text-sm font-semibold text-stone-300">Raw Form Data</h2>
         </div>
-        <pre className="p-4 text-xs text-stone-300 overflow-x-auto bg-surface leading-relaxed">
+        <pre className="p-4 text-xs text-stone-300 overflow-x-auto bg-stone-900 leading-relaxed">
           {JSON.stringify(submission.raw_payload, null, 2)}
         </pre>
       </div>

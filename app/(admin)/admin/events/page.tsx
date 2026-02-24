@@ -60,7 +60,7 @@ export default async function AdminEventsPage() {
 
       {/* Status distribution */}
       {Object.keys(statusCounts).length > 0 && (
-        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium mb-3">
             Status Distribution
           </p>
@@ -80,7 +80,7 @@ export default async function AdminEventsPage() {
       )}
 
       {/* Events table */}
-      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         {events.length === 0 ? (
           <div className="py-12 text-center text-slate-400 text-sm">No events found.</div>
         ) : (

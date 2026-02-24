@@ -77,7 +77,7 @@ export function BulkSelectTable<T extends { id: string }>({
 
   return (
     <div className="relative">
-      <div className="overflow-x-auto rounded-xl border border-stone-700 bg-surface shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-stone-700 bg-stone-900 shadow-sm">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-stone-800 bg-stone-800/60">
@@ -127,7 +127,7 @@ export function BulkSelectTable<T extends { id: string }>({
 
       {/* Floating bulk-action bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-stone-700 bg-surface px-5 py-3 shadow-xl">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-stone-700 bg-stone-900 px-5 py-3 shadow-xl">
           <span className="text-sm font-medium text-stone-300 mr-1">
             {selectedIds.size} selected
           </span>

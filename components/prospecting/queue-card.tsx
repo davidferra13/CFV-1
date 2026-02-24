@@ -50,7 +50,7 @@ export function QueueCard({ prospect, script, onCallLogged }: QueueCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-stone-700 bg-surface overflow-hidden">
+    <div className="rounded-lg border border-stone-700 bg-stone-900 overflow-hidden">
       <div
         className="flex items-center justify-between p-4 cursor-pointer hover:bg-stone-800 transition-colors"
         onClick={() => setExpanded(!expanded)}

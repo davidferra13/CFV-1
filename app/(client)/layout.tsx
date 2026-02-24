@@ -29,7 +29,7 @@ export default async function ClientLayout({ children }: { children: React.React
     <ClientSidebarProvider>
       <NotificationProvider userId={user.id}>
         <ToastProvider />
-        <div className="min-h-screen bg-surface-muted">
+        <div className="min-h-screen bg-stone-800">
           <ClientSidebar userEmail={user.email} hasCannabisTier={hasCannabisTier} />
           <ClientMobileNav userEmail={user.email} hasCannabisTier={hasCannabisTier} />
           <ActivityTracker eventType="portal_login" />

@@ -21,7 +21,7 @@ export default async function PartnerLocationsPage() {
       </div>
 
       {activeLocations.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-stone-600 bg-surface p-10 text-center">
+        <div className="rounded-xl border border-dashed border-stone-600 bg-stone-900 p-10 text-center">
           <MapPin size={32} className="mx-auto text-stone-300 mb-3" />
           <p className="text-sm text-stone-500">No locations added yet. Your chef will add them.</p>
         </div>
@@ -40,7 +40,7 @@ export default async function PartnerLocationsPage() {
               <Link
                 key={location.id}
                 href={`/partner/locations/${location.id}`}
-                className="flex items-center gap-4 rounded-xl border border-stone-700 bg-surface p-4 hover:border-stone-600 hover:shadow-sm transition-all"
+                className="flex items-center gap-4 rounded-xl border border-stone-700 bg-stone-900 p-4 hover:border-stone-600 hover:shadow-sm transition-all"
               >
                 {/* Thumbnail */}
                 {coverImg ? (

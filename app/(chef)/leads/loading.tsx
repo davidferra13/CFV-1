@@ -19,7 +19,7 @@ export default function LeadsLoading() {
       {/* Lead cards */}
       <div className="space-y-3">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="rounded-xl border border-stone-700 bg-surface p-4 space-y-3">
+          <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-4 space-y-3">
             <div className="flex items-start justify-between">
               <div className="space-y-1.5">
                 <div className="h-4 w-40 bg-stone-700 rounded" />

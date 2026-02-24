@@ -29,7 +29,7 @@ function WheelTooltip({
   if (!active || !payload || payload.length === 0) return null
   const { subject, value } = payload[0].payload
   return (
-    <div className="rounded-lg border border-stone-700 bg-surface px-3 py-2 shadow-md text-xs">
+    <div className="rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 shadow-md text-xs">
       <p className="font-semibold text-stone-100">{subject}</p>
       <p className="text-stone-400">{value}% toward targets</p>
     </div>

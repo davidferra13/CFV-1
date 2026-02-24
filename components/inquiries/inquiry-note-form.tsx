@@ -127,7 +127,7 @@ export function InquiryNoteForm({
           <button
             type="button"
             onClick={handleRemoveAttachment}
-            className="absolute -top-1.5 -right-1.5 bg-surface border border-stone-600 rounded-full p-0.5 hover:bg-red-950 hover:border-red-300 transition-colors"
+            className="absolute -top-1.5 -right-1.5 bg-stone-900 border border-stone-600 rounded-full p-0.5 hover:bg-red-950 hover:border-red-300 transition-colors"
             title="Remove image"
           >
             <X className="w-3 h-3 text-stone-500 hover:text-red-500" />

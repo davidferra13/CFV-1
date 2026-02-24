@@ -75,7 +75,7 @@ function ChannelToggle({ label, checked, disabled, onChange }: ChannelToggleProp
       >
         <span
           className={[
-            'pointer-events-none block h-4 w-4 rounded-full bg-surface shadow transition-transform',
+            'pointer-events-none block h-4 w-4 rounded-full bg-stone-900 shadow transition-transform',
             checked ? 'translate-x-4' : 'translate-x-0',
           ].join(' ')}
         />
@@ -162,7 +162,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
   return (
     <div className="space-y-8">
       {/* ─── Browser Push ───────────────────────────────────────────── */}
-      <section className="rounded-xl border border-stone-700 bg-surface p-5">
+      <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h2 className="text-base font-semibold text-stone-100">Browser Push Notifications</h2>
         <p className="mt-1 text-sm text-stone-500">
           Instant alerts delivered to this browser, even when the tab is closed.
@@ -194,7 +194,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
               className={[
                 'shrink-0 rounded-md px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50',
                 pushState === 'subscribed'
-                  ? 'border border-stone-600 bg-surface text-stone-300 hover:bg-stone-800'
+                  ? 'border border-stone-600 bg-stone-900 text-stone-300 hover:bg-stone-800'
                   : 'bg-stone-900 text-white hover:bg-stone-800',
               ].join(' ')}
             >
@@ -205,7 +205,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
       </section>
 
       {/* ─── SMS Setup ──────────────────────────────────────────────── */}
-      <section className="rounded-xl border border-stone-700 bg-surface p-5">
+      <section className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h2 className="text-base font-semibold text-stone-100">SMS Alerts</h2>
         <p className="mt-1 text-sm text-stone-500">
           Text messages for critical-tier notifications: new inquiries, payments, and disputes.
@@ -255,7 +255,7 @@ export function NotificationSettingsForm({ initialPreferences, initialSmsSetting
       </section>
 
       {/* ─── Per-Category Toggles ────────────────────────────────────── */}
-      <section className="rounded-xl border border-stone-700 bg-surface">
+      <section className="rounded-xl border border-stone-700 bg-stone-900">
         <div className="border-b border-stone-700 p-5">
           <h2 className="text-base font-semibold text-stone-100">Channel Overrides by Category</h2>
           <p className="mt-1 text-sm text-stone-500">

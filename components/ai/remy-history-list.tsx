@@ -201,7 +201,7 @@ export function RemyHistoryList() {
                 className={`rounded-lg border transition-colors ${
                   artifact.pinned
                     ? 'border-brand-700 bg-brand-950/50 dark:border-brand-800 dark:bg-brand-950/30'
-                    : 'border-stone-700 bg-surface dark:border-stone-700 dark:bg-stone-900'
+                    : 'border-stone-700 bg-stone-900 dark:border-stone-700 dark:bg-stone-900'
                 }`}
               >
                 {/* Card header */}

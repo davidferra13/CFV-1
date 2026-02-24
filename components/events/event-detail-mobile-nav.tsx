@@ -31,7 +31,7 @@ export function EventDetailMobileNav() {
   }
 
   return (
-    <nav className="md:hidden sticky top-14 z-30 bg-surface border-b border-stone-700 shadow-sm -mx-4 px-4">
+    <nav className="md:hidden sticky top-14 z-30 bg-stone-900 border-b border-stone-700 shadow-sm -mx-4 px-4">
       <div className="flex">
         {TABS.map(({ id, label, icon }) => (
           <button

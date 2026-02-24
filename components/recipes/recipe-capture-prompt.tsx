@@ -138,7 +138,7 @@ export function RecipeCapturePrompt({ eventId, unrecordedComponents, aiConfigure
 
       {/* Expanded list of unrecorded components */}
       {expanded && (
-        <div className="bg-surface border-t border-amber-200 p-4 space-y-3">
+        <div className="bg-stone-900 border-t border-amber-200 p-4 space-y-3">
           {error && <Alert variant="error">{error}</Alert>}
           {success && <Alert variant="success">{success}</Alert>}
 

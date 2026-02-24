@@ -5,7 +5,7 @@ import { SystemArchitectureComposition } from '@/lib/remotion/system-architectur
 
 export function SystemArchitecturePlayer() {
   return (
-    <div className="rounded-xl border border-stone-700 bg-surface shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-stone-900 shadow-sm overflow-hidden">
       <Player
         component={SystemArchitectureComposition}
         compositionWidth={640}

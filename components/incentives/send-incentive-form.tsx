@@ -69,7 +69,7 @@ export function SendIncentiveForm({
               className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
                 deliveryChannel === ch
                   ? 'bg-brand-600 text-white border-brand-600'
-                  : 'bg-surface text-stone-300 border-stone-600 hover:border-brand-400'
+                  : 'bg-stone-900 text-stone-300 border-stone-600 hover:border-brand-400'
               }`}
             >
               {ch === 'email' ? 'Send Email' : 'Manual (log only)'}

@@ -49,7 +49,7 @@ export function SocialPlatformPreview({
   const visibleHashtags = hashtagLimit > 0 ? hashtags.slice(0, hashtagLimit) : hashtags.slice(0, 5)
 
   return (
-    <div className="bg-surface rounded-xl border border-stone-700 overflow-hidden">
+    <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
       {/* Platform header */}
       <div className="flex items-center justify-between px-3 py-2 bg-stone-800 border-b border-stone-800">
         <div className="flex items-center gap-2">

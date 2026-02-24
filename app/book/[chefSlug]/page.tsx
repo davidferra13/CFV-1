@@ -78,7 +78,7 @@ export default async function BookingPage({ params }: { params: { chefSlug: stri
           )}
         </div>
 
-        <div className="bg-surface rounded-xl border border-stone-700 p-6 shadow-sm">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-6 shadow-sm">
           <BookingPageClient chefSlug={params.chefSlug} bookingConfig={bookingConfig} />
         </div>
       </div>

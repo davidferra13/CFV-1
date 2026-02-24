@@ -128,7 +128,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
           id="target-year"
           value={targetYear}
           onChange={(e) => setTargetYear(Number(e.target.value))}
-          className="w-40 px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-surface"
+          className="w-40 px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-stone-900"
         >
           {[2025, 2026, 2027, 2028].map((y) => (
             <option key={y} value={y}>
@@ -186,7 +186,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
           id="timezone"
           value={timezone}
           onChange={(e) => setTimezone(e.target.value)}
-          className="w-72 px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-surface"
+          className="w-72 px-3 py-2 border border-stone-600 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 bg-stone-900"
         >
           {TIMEZONES.map((tz) => (
             <option key={tz} value={tz}>
@@ -217,7 +217,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
                 value={slot.day}
                 onChange={(e) => updateSlot(i, 'day', Number(e.target.value))}
                 aria-label={`Day for slot ${i + 1}`}
-                className="px-3 py-2 border border-stone-600 rounded-lg text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                className="px-3 py-2 border border-stone-600 rounded-lg text-sm bg-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
               >
                 {DAY_LABELS.slice(1).map((label, di) => (
                   <option key={di + 1} value={di + 1}>
@@ -230,7 +230,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
                 value={slot.time}
                 onChange={(e) => updateSlot(i, 'time', e.target.value)}
                 aria-label={`Time for slot ${i + 1}`}
-                className="px-3 py-2 border border-stone-600 rounded-lg text-sm bg-surface focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
+                className="px-3 py-2 border border-stone-600 rounded-lg text-sm bg-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500"
               />
               <button
                 type="button"
@@ -325,7 +325,7 @@ export function SocialQueueSettingsForm({ settings, postCount }: Props) {
       {confirmRegenerate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setConfirmRegenerate(false)} />
-          <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="relative bg-stone-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center gap-3 text-amber-700">
               <AlertCircle className="w-6 h-6 flex-shrink-0" />
               <h3 className="font-semibold text-stone-100">Replace all posts?</h3>

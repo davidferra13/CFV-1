@@ -114,22 +114,22 @@ export function AdminPresencePanel() {
     <div className="space-y-4">
       {/* Stats bar */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="bg-surface rounded-lg border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Total Active</p>
           <p className="text-2xl font-bold text-slate-900 mt-1">{total}</p>
         </div>
-        <div className="bg-surface rounded-lg border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Logged In</p>
           <p className="text-2xl font-bold text-blue-600 mt-1">{authenticated}</p>
         </div>
-        <div className="bg-surface rounded-lg border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-lg border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Anonymous</p>
           <p className="text-2xl font-bold text-slate-500 mt-1">{anonymous}</p>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-surface rounded-lg border border-slate-200 p-4">
+      <div className="bg-stone-900 rounded-lg border border-slate-200 p-4">
         <div className="flex flex-wrap gap-3 items-center">
           <div className="flex gap-1">
             {(['all', 'authenticated', 'anonymous'] as FilterRole[]).map((r) => (
@@ -160,7 +160,7 @@ export function AdminPresencePanel() {
       </div>
 
       {/* Session table */}
-      <div className="bg-surface rounded-lg border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-lg border border-slate-200 overflow-hidden">
         {displaySessions.length === 0 ? (
           <div className="py-12 text-center text-slate-400 text-sm">
             {total === 0

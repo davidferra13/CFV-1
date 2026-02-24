@@ -122,7 +122,7 @@ export function TacStatusPrompt({
           type="button"
           disabled={loading}
           onClick={() => handleQuickStatus('still_discussing')}
-          className="flex flex-col items-start rounded-md border border-stone-700 bg-surface px-3 py-2 text-left hover:bg-stone-800 disabled:opacity-50 transition-colors"
+          className="flex flex-col items-start rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:bg-stone-800 disabled:opacity-50 transition-colors"
         >
           <span className="text-sm font-medium text-stone-200">Still Discussing</span>
           <span className="text-[11px] text-stone-400 mt-0.5">
@@ -155,7 +155,7 @@ export function TacStatusPrompt({
           type="button"
           disabled={loading}
           onClick={() => handleQuickStatus('changed_mind')}
-          className="flex flex-col items-start rounded-md border border-stone-700 bg-surface px-3 py-2 text-left hover:bg-stone-800 disabled:opacity-50 transition-colors"
+          className="flex flex-col items-start rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-left hover:bg-stone-800 disabled:opacity-50 transition-colors"
         >
           <span className="text-sm font-medium text-stone-200">Changed Their Mind</span>
           <span className="text-[11px] text-stone-400 mt-0.5">Closes inquiry — lead declined</span>
@@ -174,7 +174,7 @@ export function TacStatusPrompt({
       ) : (
         <div className="space-y-1.5">
           <textarea
-            className="w-full rounded-md border border-stone-600 bg-surface px-2.5 py-1.5 text-sm text-stone-200 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+            className="w-full rounded-md border border-stone-600 bg-stone-900 px-2.5 py-1.5 text-sm text-stone-200 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
             rows={2}
             placeholder="Quick note about this conversation..."
             value={noteText}

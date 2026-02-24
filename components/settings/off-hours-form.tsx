@@ -91,7 +91,7 @@ export function OffHoursForm({
                 className={`px-3 py-1.5 rounded text-sm border transition-colors ${
                   offDays.includes(d.value)
                     ? 'bg-stone-800 text-white border-stone-800'
-                    : 'bg-surface text-stone-400 border-stone-600 hover:bg-stone-800'
+                    : 'bg-stone-900 text-stone-400 border-stone-600 hover:bg-stone-800'
                 }`}
               >
                 {d.label}

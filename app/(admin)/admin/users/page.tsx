@@ -77,7 +77,7 @@ export default async function AdminChefListPage() {
         </div>
       )}
 
-      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         {chefs.length === 0 && !error ? (
           <div className="py-12 text-center text-slate-400 text-sm">No chefs found.</div>
         ) : (

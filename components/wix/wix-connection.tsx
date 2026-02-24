@@ -167,7 +167,7 @@ export function WixConnection({ connection, recentSubmissions }: WixConnectionPr
                 Paste this URL into your Wix Automation&apos;s HTTP Request action.
               </p>
               <div className="flex gap-2">
-                <code className="flex-1 text-xs bg-surface border border-stone-700 rounded px-2 py-1.5 overflow-x-auto whitespace-nowrap">
+                <code className="flex-1 text-xs bg-stone-900 border border-stone-700 rounded px-2 py-1.5 overflow-x-auto whitespace-nowrap">
                   {webhookUrl}
                 </code>
                 <Button variant="secondary" size="sm" onClick={copyUrl}>

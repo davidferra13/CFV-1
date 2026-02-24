@@ -133,7 +133,7 @@ function FilterPill({
       : variant === 'domain'
         ? 'bg-brand-900 text-brand-400 border-brand-700 ring-1 ring-brand-600 ring-offset-1'
         : 'bg-stone-800 text-white border-stone-800'
-    : 'bg-surface text-stone-400 border-stone-700 hover:bg-stone-800'
+    : 'bg-stone-900 text-stone-400 border-stone-700 hover:bg-stone-800'
 
   return (
     <button className={`${baseClass} ${activeClass}`} onClick={onClick}>

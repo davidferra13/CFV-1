@@ -1200,7 +1200,7 @@ export function RemyDrawer() {
           >
             <ChevronsLeft className="h-5 w-5" />
           </button>
-          <div className="w-8 h-8 rounded-full bg-surface/15 flex items-center justify-center mt-1">
+          <div className="w-8 h-8 rounded-full bg-stone-900/15 flex items-center justify-center mt-1">
             <Bot className="h-4 w-4 text-white" />
           </div>
           {loading && <Loader2 className="h-4 w-4 animate-spin text-white/80 mt-1" />}
@@ -1225,7 +1225,7 @@ export function RemyDrawer() {
       {/* Drawer panel — no overlay, page remains interactive */}
       {open && !collapsed && (
         <div
-          className="fixed top-0 right-0 bottom-0 z-50 bg-surface dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-700 dark:border-stone-700"
+          className="fixed top-0 right-0 bottom-0 z-50 bg-stone-900 dark:bg-stone-900 shadow-2xl flex flex-col h-full border-l border-stone-700 dark:border-stone-700"
           style={{ width: `min(${drawerWidth}px, 100vw)` }}
         >
           {/* Left-edge resize handle */}
@@ -1374,7 +1374,7 @@ export function RemyDrawer() {
                     value={voiceSettings.voiceURI ?? ''}
                     onChange={(e) => updateVoiceSetting('voiceURI', e.target.value || null)}
                     title="Select voice"
-                    className="flex-1 text-xs rounded-md border border-stone-600 dark:border-stone-600 bg-surface dark:bg-stone-700 px-2 py-1.5 text-stone-200 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="flex-1 text-xs rounded-md border border-stone-600 dark:border-stone-600 bg-stone-900 dark:bg-stone-700 px-2 py-1.5 text-stone-200 dark:text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
                   >
                     <option value="">System default</option>
                     {availableVoices
@@ -1576,7 +1576,7 @@ export function RemyDrawer() {
                           <button
                             key={starter.text}
                             onClick={() => handleSend(starter.text)}
-                            className="flex items-center gap-2 text-left text-sm bg-surface dark:bg-stone-800 border border-stone-700 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors text-stone-300 dark:text-stone-300"
+                            className="flex items-center gap-2 text-left text-sm bg-stone-900 dark:bg-stone-800 border border-stone-700 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors text-stone-300 dark:text-stone-300"
                           >
                             <Icon className="h-4 w-4 text-brand-600 flex-shrink-0" />
                             {starter.text}
@@ -1600,7 +1600,7 @@ export function RemyDrawer() {
                           <>
                             <button
                               onClick={() => handleSpeak(msg.id, msg.content)}
-                              className={`bg-surface dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 transition-colors ${
+                              className={`bg-stone-900 dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 transition-colors ${
                                 speakingId === msg.id
                                   ? 'text-brand-600 dark:text-brand-400'
                                   : 'text-stone-400 hover:text-brand-600'
@@ -1615,7 +1615,7 @@ export function RemyDrawer() {
                             </button>
                             <button
                               onClick={() => handleCopy(msg.id, msg.content)}
-                              className="bg-surface dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
+                              className="bg-stone-900 dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 text-stone-400 hover:text-brand-600 transition-colors"
                               title="Copy message"
                             >
                               {copiedId === msg.id ? (
@@ -1628,7 +1628,7 @@ export function RemyDrawer() {
                         )}
                         <button
                           onClick={() => handleDeleteMessage(msg.id)}
-                          className="bg-surface dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
+                          className="bg-stone-900 dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
                           title="Remove message"
                         >
                           <X className="h-3 w-3" />
@@ -1749,7 +1749,7 @@ export function RemyDrawer() {
                         <button
                           key={s.label}
                           onClick={() => handleSend(s.message)}
-                          className="flex items-center gap-2 text-left text-sm bg-surface dark:bg-stone-800 border border-stone-700 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors text-stone-300 dark:text-stone-300"
+                          className="flex items-center gap-2 text-left text-sm bg-stone-900 dark:bg-stone-800 border border-stone-700 dark:border-stone-700 rounded-lg px-3 py-2.5 hover:bg-stone-800 dark:hover:bg-stone-700 transition-colors text-stone-300 dark:text-stone-300"
                         >
                           <ArrowRight className="h-4 w-4 text-brand-600 flex-shrink-0" />
                           {s.label}

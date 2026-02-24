@@ -85,7 +85,7 @@ export function BillingClient({ status, upgraded }: Props) {
       )}
 
       {/* Status Card */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-6">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-stone-100">
@@ -168,7 +168,7 @@ export function BillingClient({ status, upgraded }: Props) {
       {/* Free vs Pro Comparison */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Free Tier */}
-        <div className="rounded-xl border border-stone-700 bg-surface p-6">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
           <div className="flex items-center gap-2 mb-4">
             <h3 className="text-base font-semibold text-stone-100">Free</h3>
             <span className="text-xs text-stone-400 font-medium">Forever</span>

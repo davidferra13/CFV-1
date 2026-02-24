@@ -217,7 +217,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
               type="file"
               accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
               onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
             />
             <p className="mt-1.5 text-sm text-stone-500">
               Upload a JPEG, PNG, HEIC, or WebP image (max 10MB).
@@ -255,7 +255,7 @@ export function ChefProfileForm({ profile }: { profile: ChefProfile }) {
               type="file"
               accept="image/jpeg,image/png,image/webp,image/svg+xml"
               onChange={(e) => setSelectedLogoFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
             />
             <p className="mt-1.5 text-xs text-stone-500">
               JPEG, PNG, WebP, or SVG (max 5MB). Recommended: landscape format, min 200px wide.

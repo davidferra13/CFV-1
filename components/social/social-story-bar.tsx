@@ -33,7 +33,7 @@ function StoryAvatar({ group, onClick }: { group: StoryGroup; onClick: () => voi
             : 'bg-stone-700'
         }`}
       >
-        <div className="bg-surface p-0.5 rounded-full">
+        <div className="bg-stone-900 p-0.5 rounded-full">
           <Avatar className="w-12 h-12">
             {group.chef.profile_image_url && (
               <AvatarImage src={group.chef.profile_image_url} alt={authorName} />
@@ -173,9 +173,9 @@ function StoryViewer({
         {/* Progress bars */}
         <div className="absolute top-0 left-0 right-0 flex gap-1 p-2 z-10">
           {group.stories.map((s, i) => (
-            <div key={s.id} className="flex-1 h-0.5 bg-surface/30 rounded-full overflow-hidden">
+            <div key={s.id} className="flex-1 h-0.5 bg-stone-900/30 rounded-full overflow-hidden">
               <div
-                className="h-full bg-surface rounded-full transition-none"
+                className="h-full bg-stone-900 rounded-full transition-none"
                 style={{ width: i < storyIdx ? '100%' : i === storyIdx ? `${progress}%` : '0%' }}
               />
             </div>
@@ -246,7 +246,7 @@ function StoryViewer({
         {/* Reaction bar */}
         <div className="absolute bottom-0 left-0 right-0 px-4 py-3 flex items-center gap-2 z-10">
           {showReactions ? (
-            <div className="flex items-center gap-2 bg-surface/10 backdrop-blur rounded-2xl px-3 py-2 w-full">
+            <div className="flex items-center gap-2 bg-stone-900/10 backdrop-blur rounded-2xl px-3 py-2 w-full">
               {STORY_REACTIONS.map((emoji) => (
                 <button
                   key={emoji}
@@ -263,7 +263,7 @@ function StoryViewer({
           ) : (
             <button
               onClick={() => setShowReactions(true)}
-              className="flex-1 text-left bg-surface/10 backdrop-blur border border-white/20 rounded-2xl px-4 py-2 text-white/70 text-sm"
+              className="flex-1 text-left bg-stone-900/10 backdrop-blur border border-white/20 rounded-2xl px-4 py-2 text-white/70 text-sm"
             >
               React to story...
             </button>
@@ -312,7 +312,7 @@ export function SocialStoryBar({
 
   if (groups.length === 0) {
     return (
-      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-3 flex items-center gap-3 overflow-x-auto scrollbar-hide">
+      <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-3 flex items-center gap-3 overflow-x-auto scrollbar-hide">
         <AddStoryButton onAdded={onRefresh} />
         <p className="text-sm text-stone-400 italic">No stories yet — be the first to post one!</p>
       </div>
@@ -321,7 +321,7 @@ export function SocialStoryBar({
 
   return (
     <>
-      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-3 flex items-center gap-4 overflow-x-auto scrollbar-hide">
+      <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-3 flex items-center gap-4 overflow-x-auto scrollbar-hide">
         <AddStoryButton onAdded={onRefresh} />
         {groups.map((group, i) => (
           <StoryAvatar key={group.chef.id} group={group} onClick={() => setViewerGroup(i)} />

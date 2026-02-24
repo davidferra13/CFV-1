@@ -143,7 +143,7 @@ export default async function LoyaltyDashboardPage() {
                 {overview.clientsApproachingTierUpgrade.map((client) => (
                   <div
                     key={client.id}
-                    className="flex items-center justify-between bg-surface rounded-lg p-3"
+                    className="flex items-center justify-between bg-stone-900 rounded-lg p-3"
                   >
                     <div>
                       <Link
@@ -174,7 +174,7 @@ export default async function LoyaltyDashboardPage() {
                 {approachingRewards.slice(0, 5).map((client) => (
                   <div
                     key={client.clientId}
-                    className="flex items-center justify-between bg-surface rounded-lg p-3"
+                    className="flex items-center justify-between bg-stone-900 rounded-lg p-3"
                   >
                     <div>
                       <Link

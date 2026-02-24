@@ -37,7 +37,7 @@ export function CallCard({ call }: { call: ScheduledCall }) {
 
   return (
     <Link href={`/calls/${call.id}`}>
-      <div className="flex items-center gap-4 p-4 rounded-lg border bg-surface hover:bg-gray-50 transition-colors group">
+      <div className="flex items-center gap-4 p-4 rounded-lg border bg-stone-900 hover:bg-gray-50 transition-colors group">
         {/* Icon */}
         <div
           className={`flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${isTerminal ? 'bg-gray-100' : 'bg-blue-950'}`}

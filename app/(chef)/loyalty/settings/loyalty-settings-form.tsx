@@ -158,7 +158,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
             }`}
           >
             <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-surface shadow transition-transform ${
+              className={`inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow transition-transform ${
                 isActive ? 'translate-x-8' : 'translate-x-1'
               }`}
             />
@@ -227,7 +227,7 @@ export function LoyaltySettingsForm({ config }: { config: LoyaltyConfig }) {
             }`}
           >
             <span
-              className={`inline-block h-5 w-5 transform rounded-full bg-surface shadow transition-transform ${
+              className={`inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow transition-transform ${
                 largePartyEnabled ? 'translate-x-8' : 'translate-x-1'
               }`}
             />

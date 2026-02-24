@@ -78,7 +78,7 @@ export function SocialDiscoverPanel({
     <div className="space-y-6">
       {/* Suggested chefs */}
       {suggestedChefs.length > 0 && (
-        <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4">
+        <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-3">
             <Users className="h-4 w-4 text-amber-600" />
             <h3 className="text-sm font-semibold text-stone-200">Chefs to Follow</h3>
@@ -99,7 +99,7 @@ export function SocialDiscoverPanel({
 
       {/* Trending hashtags */}
       {trendingHashtags.length > 0 && (
-        <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4">
+        <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-4">
           <div className="flex items-center gap-2 mb-3">
             <TrendingUp className="h-4 w-4 text-amber-600" />
             <h3 className="text-sm font-semibold text-stone-200">Trending This Week</h3>

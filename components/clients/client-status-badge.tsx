@@ -67,7 +67,7 @@ export function ClientStatusBadge({ clientId, initialStatus }: Props) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 mt-1 w-36 bg-surface border border-stone-700 rounded-lg shadow-lg z-20 py-1">
+          <div className="absolute left-0 mt-1 w-36 bg-stone-900 border border-stone-700 rounded-lg shadow-lg z-20 py-1">
             {ALL_STATUSES.map((s) => (
               <button
                 key={s}

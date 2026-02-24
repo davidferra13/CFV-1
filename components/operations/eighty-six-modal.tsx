@@ -41,7 +41,7 @@ export function EightySixModal({ courseId, courseName, onClose, onConfirm }: Eig
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative bg-surface rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
+      <div className="relative bg-stone-900 rounded-xl shadow-xl max-w-md w-full mx-4 p-6">
         {/* Close button */}
         <button
           onClick={onClose}

@@ -42,7 +42,7 @@ export default async function AdminCommunicationsPage() {
       </div>
 
       {/* Announcement Banner */}
-      <div className="bg-surface rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-1">
           <Megaphone size={16} className="text-amber-500" />
           <h2 className="text-sm font-semibold text-slate-700">Platform Announcement Banner</h2>
@@ -66,7 +66,7 @@ export default async function AdminCommunicationsPage() {
       </div>
 
       {/* Direct Email */}
-      <div className="bg-surface rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Mail size={16} className="text-blue-500" />
           <h2 className="text-sm font-semibold text-slate-700">Direct Email</h2>
@@ -78,7 +78,7 @@ export default async function AdminCommunicationsPage() {
       </div>
 
       {/* Broadcast */}
-      <div className="bg-surface rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
         <div className="flex items-center gap-2 mb-4">
           <Send size={16} className="text-purple-500" />
           <h2 className="text-sm font-semibold text-slate-700">Broadcast Email</h2>

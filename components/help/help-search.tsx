@@ -98,7 +98,7 @@ export function HelpSearch() {
       </div>
 
       {results.length > 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-stone-700 rounded-xl shadow-lg z-10 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-stone-900 border border-stone-700 rounded-xl shadow-lg z-10 overflow-hidden">
           {results.map((r) => (
             <a
               key={r.title}
@@ -113,7 +113,7 @@ export function HelpSearch() {
       )}
 
       {q.length > 1 && results.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-surface border border-stone-700 rounded-xl shadow-lg z-10 px-4 py-3">
+        <div className="absolute top-full left-0 right-0 mt-1 bg-stone-900 border border-stone-700 rounded-xl shadow-lg z-10 px-4 py-3">
           <p className="text-sm text-stone-500">No articles found for "{query}"</p>
         </div>
       )}

@@ -49,7 +49,7 @@ export function ChatMessageBubble({
         className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
           isOwn
             ? 'bg-brand-950 border border-brand-700 rounded-br-md'
-            : 'bg-surface border border-stone-700 rounded-bl-md'
+            : 'bg-stone-900 border border-stone-700 rounded-bl-md'
         }`}
       >
         {/* Sender name (only shown for messages from others) */}

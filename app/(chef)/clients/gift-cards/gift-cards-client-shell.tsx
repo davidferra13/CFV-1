@@ -36,7 +36,7 @@ function IssueButton({ clients }: { clients: Client[] }) {
 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+          <div className="bg-stone-900 rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-700">
               <h2 className="text-lg font-semibold text-stone-100">Issue Gift Card or Voucher</h2>
               <button
@@ -116,7 +116,7 @@ function RowActions({ incentive }: { incentive: Incentive }) {
       {/* Send modal */}
       {sendOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="bg-surface rounded-xl shadow-xl w-full max-w-md">
+          <div className="bg-stone-900 rounded-xl shadow-xl w-full max-w-md">
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-700">
               <h2 className="text-lg font-semibold text-stone-100">Send Code</h2>
               <button

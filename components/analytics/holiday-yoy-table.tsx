@@ -42,7 +42,7 @@ export function HolidayYoYTable({ rows, currentYear }: HolidayYoYTableProps) {
   const years = [currentYear - 2, currentYear - 1, currentYear]
 
   return (
-    <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
       <div className="px-5 py-4 border-b border-stone-800">
         <h3 className="text-sm font-semibold text-stone-100">Holiday Bookings — Year Over Year</h3>
         <p className="text-xs text-stone-500 mt-0.5">

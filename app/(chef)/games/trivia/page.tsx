@@ -432,7 +432,7 @@ export default function TriviaGame() {
               }`}
             >
               <span
-                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-surface shadow transition-transform ${
+                className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-stone-900 shadow transition-transform ${
                   timerEnabled ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />

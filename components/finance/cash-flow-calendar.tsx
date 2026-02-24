@@ -93,7 +93,7 @@ export function CashFlowCalendar({ data }: Props) {
       <div className="grid grid-cols-7 gap-px bg-stone-800 rounded-lg overflow-hidden border border-stone-800">
         {cells.map((dateStr, idx) => {
           if (!dateStr) {
-            return <div key={`empty-${idx}`} className="bg-surface h-16" />
+            return <div key={`empty-${idx}`} className="bg-stone-900 h-16" />
           }
           const day = dayMap.get(dateStr)
           const dayNum = parseInt(dateStr.slice(8), 10)
@@ -103,7 +103,7 @@ export function CashFlowCalendar({ data }: Props) {
           return (
             <div
               key={dateStr}
-              className={`bg-surface h-16 p-1 text-xs flex flex-col ${isToday ? 'ring-1 ring-brand-400 ring-inset' : ''}`}
+              className={`bg-stone-900 h-16 p-1 text-xs flex flex-col ${isToday ? 'ring-1 ring-brand-400 ring-inset' : ''}`}
             >
               <span className={`font-medium ${isToday ? 'text-brand-600' : 'text-stone-300'}`}>
                 {dayNum}

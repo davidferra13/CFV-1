@@ -324,7 +324,7 @@ export function EquipmentInventoryClient({ inventory, overdueItems, recentRental
           {recentRentals.map((r) => (
             <div
               key={r.id}
-              className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface px-3 py-2 text-sm"
+              className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
             >
               <div>
                 <span className="font-medium text-stone-100">{r.equipment_name}</span>

@@ -104,7 +104,7 @@ export function InquiryRecipeLinker({
   // ============================================================
 
   return (
-    <div className="border border-stone-700 rounded-xl bg-surface">
+    <div className="border border-stone-700 rounded-xl bg-stone-900">
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-stone-800">
         <div className="flex items-center gap-2">

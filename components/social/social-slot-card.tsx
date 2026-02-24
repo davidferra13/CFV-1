@@ -27,7 +27,7 @@ export function SocialSlotCard({ post }: Props) {
   const statusInfo = STATUS_BADGE[post.status]
 
   return (
-    <div className="bg-surface rounded-lg border border-stone-700 p-3 flex flex-col gap-2 hover:border-stone-600 hover:shadow-sm transition-all min-h-[120px]">
+    <div className="bg-stone-900 rounded-lg border border-stone-700 p-3 flex flex-col gap-2 hover:border-stone-600 hover:shadow-sm transition-all min-h-[120px]">
       {/* Header row */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-col gap-1">

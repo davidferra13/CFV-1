@@ -19,7 +19,7 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   ({ label, error, helperText, options, groups, className = '', ...props }, ref) => {
     const selectClasses = `
-      block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100
+      block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
       disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500
       ${error ? 'border-red-300 focus:border-red-400 focus:ring-red-500/20' : ''}
@@ -116,7 +116,7 @@ export function SelectTrigger({
     <button
       type="button"
       onClick={() => ctx?.setOpen(!ctx.open)}
-      className={`flex w-full items-center justify-between rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-500/20 ${className}`}
+      className={`flex w-full items-center justify-between rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:outline-none focus:ring-2 focus:ring-stone-500/20 ${className}`}
     >
       {children}
     </button>
@@ -139,7 +139,7 @@ export function SelectContent({
   if (!ctx?.open) return null
   return (
     <div
-      className={`absolute z-50 mt-1 w-full rounded-lg border border-stone-700 bg-surface shadow-lg ${className}`}
+      className={`absolute z-50 mt-1 w-full rounded-lg border border-stone-700 bg-stone-900 shadow-lg ${className}`}
     >
       {children}
     </div>

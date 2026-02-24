@@ -41,7 +41,7 @@ export default async function PartnerReportPage({ params }: { params: { id: stri
       </div>
 
       {/* Report Content */}
-      <div className="bg-surface print:shadow-none" id="partner-report">
+      <div className="bg-stone-900 print:shadow-none" id="partner-report">
         {/* Header */}
         <Card className="p-8 print:shadow-none print:border-none">
           <div className="text-center border-b border-stone-700 pb-6 mb-6">

@@ -108,7 +108,7 @@ function SuggestionModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
+      <div className="bg-stone-900 rounded-xl shadow-xl w-full max-w-lg max-h-[85vh] flex flex-col">
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <p className="font-semibold">Auto-schedule — {eventName}</p>

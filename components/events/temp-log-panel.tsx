@@ -170,7 +170,7 @@ export function TempLogPanel({
             <div>
               <label className="block text-xs font-medium text-stone-400 mb-1">Phase</label>
               <select
-                className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                 value={form.phase}
                 onChange={(e) => update('phase', e.target.value)}
               >
@@ -184,7 +184,7 @@ export function TempLogPanel({
             <div>
               <label className="block text-xs font-medium text-stone-400 mb-1">Safe?</label>
               <select
-                className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                 value={form.is_safe}
                 onChange={(e) => update('is_safe', e.target.value)}
               >

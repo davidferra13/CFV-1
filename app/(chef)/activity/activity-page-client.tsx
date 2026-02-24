@@ -293,7 +293,7 @@ export function ActivityPageClient({
             onClick={() => setViewMode('summary')}
             className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
               viewMode === 'summary'
-                ? 'bg-surface text-stone-200 shadow-sm'
+                ? 'bg-stone-900 text-stone-200 shadow-sm'
                 : 'text-stone-500 hover:text-stone-300'
             }`}
           >
@@ -304,7 +304,7 @@ export function ActivityPageClient({
             onClick={() => setViewMode('retrace')}
             className={`text-xs font-medium py-1.5 px-4 rounded-md transition-colors ${
               viewMode === 'retrace'
-                ? 'bg-surface text-stone-200 shadow-sm'
+                ? 'bg-stone-900 text-stone-200 shadow-sm'
                 : 'text-stone-500 hover:text-stone-300'
             }`}
           >
@@ -335,7 +335,7 @@ export function ActivityPageClient({
 
           {/* Activity Heat Map */}
           {activeTab === 'my' && chefActivity.length > 0 && (
-            <div className="border border-stone-700 rounded-lg p-4 bg-surface">
+            <div className="border border-stone-700 rounded-lg p-4 bg-stone-900">
               <p className="text-xs font-medium text-stone-500 uppercase tracking-wider mb-3">
                 When you&apos;re most active
               </p>
@@ -423,7 +423,7 @@ export function ActivityPageClient({
                 type="button"
                 onClick={() => void loadFeed({ append: true })}
                 disabled={loadingMore}
-                className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-surface hover:bg-stone-800 disabled:opacity-50"
+                className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
               >
                 {loadingMore ? 'Loading...' : 'Load more'}
               </button>
@@ -442,7 +442,7 @@ export function ActivityPageClient({
               value={timeRange}
               onChange={(e) => setTimeRange(e.target.value as TimeRange)}
               aria-label="Time range for retrace view"
-              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-surface"
+              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900"
             >
               <option value="1">Today</option>
               <option value="7">This Week</option>
@@ -485,7 +485,7 @@ function ActivityLogToggle({ enabled }: { enabled: boolean }) {
   }
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface px-4 py-3">
+    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 px-4 py-3">
       <div>
         <p className="text-sm font-medium text-stone-200">Activity Tracking</p>
         <p className="text-xs text-stone-500 mt-0.5">
@@ -507,7 +507,7 @@ function ActivityLogToggle({ enabled }: { enabled: boolean }) {
         }`}
       >
         <span
-          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0 transition duration-200 ease-in-out ${
+          className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow ring-0 transition duration-200 ease-in-out ${
             localEnabled ? 'translate-x-5' : 'translate-x-0'
           }`}
         />

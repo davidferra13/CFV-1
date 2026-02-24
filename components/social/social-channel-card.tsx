@@ -61,7 +61,7 @@ export function SocialChannelCard({ channel }: { channel: SocialChannel }) {
 
   return (
     <div
-      className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-4 flex items-start gap-4 hover:shadow-md transition-shadow"
+      className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-4 flex items-start gap-4 hover:shadow-md transition-shadow"
       style={{ borderLeft: channel.color ? `3px solid ${channel.color}` : undefined }}
     >
       {/* Icon */}

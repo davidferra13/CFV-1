@@ -116,7 +116,7 @@ export function StaffEntryForm({ initialStaff }: { initialStaff: StaffMember[] }
                 <select
                   value={form.role}
                   onChange={(e) => set('role', e.target.value)}
-                  className="flex h-10 w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                  className="flex h-10 w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                 >
                   {ROLES.map((r) => (
                     <option key={r.value} value={r.value}>

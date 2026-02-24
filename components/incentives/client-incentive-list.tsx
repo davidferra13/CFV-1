@@ -75,7 +75,7 @@ export function ClientIncentiveList({ incentives }: Props) {
           <div
             key={incentive.id}
             className={`border rounded-xl p-4 ${
-              isActive ? 'border-stone-700 bg-surface' : 'border-stone-800 bg-stone-800'
+              isActive ? 'border-stone-700 bg-stone-900' : 'border-stone-800 bg-stone-800'
             }`}
           >
             {/* Type badge + status */}

@@ -68,7 +68,7 @@ export function DirectoryToggleRow({ chef }: { chef: DirectoryCandidate }) {
         aria-label={approved ? 'Revoke listing' : 'Approve listing'}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-surface shadow transition-transform ${
+          className={`inline-block h-4 w-4 transform rounded-full bg-stone-900 shadow transition-transform ${
             approved ? 'translate-x-6' : 'translate-x-1'
           }`}
         />

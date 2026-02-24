@@ -28,7 +28,7 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
 
   if (!result) {
     return (
-      <div className="bg-surface border border-stone-700 rounded-lg p-4">
+      <div className="bg-stone-900 border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ClipboardCheck className="w-4 h-4 text-brand-600" />
@@ -56,7 +56,7 @@ export function PermitChecklistPanel({ permitId }: { permitId?: string }) {
   }
 
   return (
-    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
+    <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <ClipboardCheck className="w-4 h-4 text-brand-600" />

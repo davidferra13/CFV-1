@@ -89,7 +89,7 @@ export default async function NetworkPage({
           </Link>
           <Link
             href="/settings/profile"
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-300 bg-surface border border-stone-700 rounded-xl hover:bg-stone-800 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-stone-300 bg-stone-900 border border-stone-700 rounded-xl hover:bg-stone-800 transition-colors shadow-sm"
           >
             <Settings className="h-4 w-4" />
             Profile
@@ -132,7 +132,7 @@ export default async function NetworkPage({
       )}
 
       {/* Tab navigation */}
-      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
+      <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
         <nav className="flex border-b border-stone-800">
           {[
             { id: 'feed', label: 'Feed', icon: Rss },

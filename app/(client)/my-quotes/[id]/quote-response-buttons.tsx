@@ -87,7 +87,7 @@ export default function QuoteResponseButtons({
       {/* Accept Confirmation Modal */}
       {showAcceptConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-stone-900 rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-stone-100 mb-2">Accept This Quote?</h3>
             <p className="text-stone-400 mb-2">
               You are accepting a quote for <strong>{formatCurrency(totalCents)}</strong>.
@@ -119,7 +119,7 @@ export default function QuoteResponseButtons({
       {/* Reject Confirmation Modal */}
       {showRejectConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-surface rounded-lg shadow-xl max-w-md w-full p-6">
+          <div className="bg-stone-900 rounded-lg shadow-xl max-w-md w-full p-6">
             <h3 className="text-lg font-semibold text-stone-100 mb-2">Decline This Quote?</h3>
             <p className="text-stone-400 mb-4">
               Let your chef know why so they can adjust if needed.

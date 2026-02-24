@@ -129,7 +129,7 @@ export function CommentThread({
                 className={`flex gap-3 rounded-lg p-3 transition-colors ${
                   comment.resolved
                     ? 'bg-stone-800 opacity-60'
-                    : 'bg-surface border border-stone-700'
+                    : 'bg-stone-900 border border-stone-700'
                 }`}
               >
                 {/* Resolve checkbox */}

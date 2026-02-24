@@ -130,7 +130,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
             </div>
             <Link
               href={`/my-events/${event.id}/proposal`}
-              className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-brand-400 hover:text-brand-300 bg-surface border border-brand-700 px-3 py-1.5 rounded-lg shadow-sm transition"
+              className="shrink-0 inline-flex items-center gap-1.5 text-sm font-medium text-brand-400 hover:text-brand-300 bg-stone-900 border border-brand-700 px-3 py-1.5 rounded-lg shadow-sm transition"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -409,7 +409,7 @@ export default async function EventDetailPage({ params }: { params: { id: string
 
         {['proposed', 'accepted'].includes(event.status) && (
           <Link href={`/my-events/${event.id}/proposal`} className="flex-1">
-            <button className="w-full border border-stone-600 bg-surface text-stone-300 px-6 py-3 rounded-lg font-semibold hover:bg-stone-800 transition text-sm">
+            <button className="w-full border border-stone-600 bg-stone-900 text-stone-300 px-6 py-3 rounded-lg font-semibold hover:bg-stone-800 transition text-sm">
               View Full Proposal
             </button>
           </Link>

@@ -79,7 +79,7 @@ export default async function PushDinnersPage() {
               <Link
                 key={campaign.id}
                 href={`/marketing/push-dinners/${campaign.id}`}
-                className="block border border-stone-700 rounded-xl bg-surface p-4 hover:border-stone-600 hover:shadow-sm transition-all group"
+                className="block border border-stone-700 rounded-xl bg-stone-900 p-4 hover:border-stone-600 hover:shadow-sm transition-all group"
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0 space-y-1.5">

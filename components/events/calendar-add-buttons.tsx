@@ -60,7 +60,7 @@ export function CalendarAddButtons({ eventId, occasion, eventDate, startTime, lo
           href={googleUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-surface text-stone-300 border border-stone-600 hover:bg-stone-800 transition-all duration-150"
+          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-stone-900 text-stone-300 border border-stone-600 hover:bg-stone-800 transition-all duration-150"
         >
           <CalendarPlus className="w-3.5 h-3.5" />
           Google Calendar
@@ -69,7 +69,7 @@ export function CalendarAddButtons({ eventId, occasion, eventDate, startTime, lo
         <a
           href={icsUrl}
           download={`${occasion.replace(/\s+/g, '-').toLowerCase()}.ics`}
-          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-surface text-stone-300 border border-stone-600 hover:bg-stone-800 transition-all duration-150"
+          className="inline-flex items-center justify-center h-10 px-3 text-sm font-medium rounded-lg gap-1.5 bg-stone-900 text-stone-300 border border-stone-600 hover:bg-stone-800 transition-all duration-150"
         >
           <CalendarPlus className="w-3.5 h-3.5" />
           Apple / Outlook (.ics)

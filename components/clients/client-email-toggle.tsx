@@ -46,7 +46,7 @@ export function ClientEmailToggle({ clientId, initialEnabled }: ClientEmailToggl
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-surface shadow ring-0 transition duration-200 ease-in-out ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-stone-900 shadow ring-0 transition duration-200 ease-in-out ${
               enabled ? 'translate-x-4' : 'translate-x-0'
             }`}
           />

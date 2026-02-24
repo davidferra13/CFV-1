@@ -105,7 +105,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
               onChange={(e) => setBio(e.target.value)}
               maxLength={500}
               rows={3}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             />
             <p className="mt-1.5 text-sm text-stone-500">{bio.length}/500 characters</p>
           </div>
@@ -116,7 +116,7 @@ export function ProfileForm({ profile }: ProfileFormProps) {
               type="file"
               accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
               onChange={(e) => setSelectedImageFile(e.target.files?.[0] ?? null)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
             />
             <p className="mt-1.5 text-sm text-stone-500">
               Upload a JPEG, PNG, HEIC, or WebP image (max 10MB). New upload replaces your current

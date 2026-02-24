@@ -401,7 +401,7 @@ export function ProspectDossierClient({
                         className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                           callOutcome === outcome.value
                             ? 'bg-brand-600 text-white'
-                            : 'bg-surface border border-stone-700 text-stone-300 hover:bg-stone-800'
+                            : 'bg-stone-900 border border-stone-700 text-stone-300 hover:bg-stone-800'
                         }`}
                       >
                         {outcome.label}

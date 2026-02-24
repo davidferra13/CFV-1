@@ -150,7 +150,7 @@ export function DopMobileView({
           </div>
           <div className="w-full bg-stone-700 rounded-full h-2">
             <div
-              className="bg-surface rounded-full h-2 transition-all duration-300"
+              className="bg-stone-900 rounded-full h-2 transition-all duration-300"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -160,7 +160,7 @@ export function DopMobileView({
       {/* Current task — large, touch-friendly */}
       {currentTask ? (
         <div className="p-4 flex-1">
-          <div className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-6">
+          <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-6">
             <div className="flex items-center justify-between mb-2">
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[currentTask.category] ?? 'bg-stone-800 text-stone-300'}`}
@@ -234,7 +234,7 @@ export function DopMobileView({
       )}
 
       {/* All tasks scrollable list */}
-      <div className="border-t border-stone-700 bg-surface p-4 max-h-72 overflow-y-auto">
+      <div className="border-t border-stone-700 bg-stone-900 p-4 max-h-72 overflow-y-auto">
         <p className="text-xs font-medium text-stone-500 mb-2 uppercase tracking-wide">All Tasks</p>
         {tasks.map((task, i) => {
           const complete = isTaskComplete(task)

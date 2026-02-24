@@ -80,7 +80,7 @@ export function InquiryDeadlineForm({ inquiryId, currentDeadline, currentNextAct
             type="datetime-local"
             value={deadline}
             onChange={(e) => setDeadline(e.target.value)}
-            className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
 
@@ -91,7 +91,7 @@ export function InquiryDeadlineForm({ inquiryId, currentDeadline, currentNextAct
             value={nextAction}
             onChange={(e) => setNextAction(e.target.value)}
             placeholder="Follow up about menu confirmation"
-            className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
           />
         </div>
       </div>

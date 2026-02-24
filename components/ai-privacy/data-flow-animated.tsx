@@ -126,7 +126,7 @@ export function DataFlowAnimated() {
       </div>
 
       {/* What Remy CAN and CANNOT do — preserved from original */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5">
         <h3 className="font-semibold text-stone-100 mb-4 text-center">
           What Remy Can &amp; Cannot Do
         </h3>

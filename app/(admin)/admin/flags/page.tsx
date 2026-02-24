@@ -74,7 +74,7 @@ export default async function AdminFlagsPage() {
       )}
 
       {/* Flag Legend */}
-      <div className="bg-surface rounded-xl border border-slate-200 p-4">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-4">
         <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
           Flag Reference
         </h2>

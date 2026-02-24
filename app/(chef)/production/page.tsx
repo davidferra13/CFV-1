@@ -124,15 +124,15 @@ export default async function ProductionCalendarPage({
 
       {/* Summary row */}
       <div className="grid grid-cols-3 gap-4">
-        <div className="rounded-xl border border-stone-700 bg-surface p-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Events</p>
           <p className="text-2xl font-bold text-stone-100">{activeMonthEvents.length}</p>
         </div>
-        <div className="rounded-xl border border-stone-700 bg-surface p-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Total Guests</p>
           <p className="text-2xl font-bold text-stone-100">{totalGuests}</p>
         </div>
-        <div className="rounded-xl border border-stone-700 bg-surface p-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Projected Revenue</p>
           <p className="text-2xl font-bold text-stone-100">
             {projectedRevenue > 0 ? formatCurrency(projectedRevenue) : '—'}
@@ -141,7 +141,7 @@ export default async function ProductionCalendarPage({
       </div>
 
       {/* Calendar grid */}
-      <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
         {/* Day-of-week headers */}
         <div className="grid grid-cols-7 border-b border-stone-800">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
@@ -259,7 +259,7 @@ export default async function ProductionCalendarPage({
                 <Link
                   key={e.id}
                   href={`/events/${e.id}`}
-                  className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface px-4 py-3 hover:bg-stone-800 transition-colors"
+                  className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 hover:bg-stone-800 transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <span

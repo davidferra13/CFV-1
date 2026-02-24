@@ -31,7 +31,7 @@ export function NetworkInsights({ insights }: NetworkInsightsProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="rounded-lg border border-stone-700 p-4 bg-surface">
+        <div className="rounded-lg border border-stone-700 p-4 bg-stone-900">
           <h4 className="text-sm font-semibold text-stone-100">Inquiry Coverage Gaps</h4>
           <p className="text-xs text-stone-500 mt-0.5">
             Inquiries not yet referenced in a help/share outreach.
@@ -52,7 +52,7 @@ export function NetworkInsights({ insights }: NetworkInsightsProps) {
           )}
         </div>
 
-        <div className="rounded-lg border border-stone-700 p-4 bg-surface">
+        <div className="rounded-lg border border-stone-700 p-4 bg-stone-900">
           <h4 className="text-sm font-semibold text-stone-100">Client Sharing Gaps</h4>
           <p className="text-xs text-stone-500 mt-0.5">
             Clients not yet matched to a direct contact share.
@@ -78,7 +78,7 @@ export function NetworkInsights({ insights }: NetworkInsightsProps) {
 
 function StatCard({ label, value, sub }: { label: string; value: number; sub: string }) {
   return (
-    <div className="rounded-lg border border-stone-700 p-4 bg-surface">
+    <div className="rounded-lg border border-stone-700 p-4 bg-stone-900">
       <p className="text-xs text-stone-500">{label}</p>
       <p className="text-2xl font-semibold text-stone-100 mt-1">{value}</p>
       <p className="text-xs text-stone-500 mt-1">{sub}</p>

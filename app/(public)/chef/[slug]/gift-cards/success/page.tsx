@@ -47,7 +47,7 @@ export default async function GiftCardSuccessPage({
               </p>
             )}
             {purchase.incentive && (
-              <div className="mt-4 bg-surface border border-stone-700 rounded-xl p-4 text-left">
+              <div className="mt-4 bg-stone-900 border border-stone-700 rounded-xl p-4 text-left">
                 <p className="text-xs text-stone-500 mb-1 uppercase tracking-wide font-medium">
                   Gift card code
                 </p>

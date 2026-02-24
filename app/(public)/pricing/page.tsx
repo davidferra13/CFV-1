@@ -228,7 +228,7 @@ export default function PricingPage() {
               </Link>
               <Link
                 href="/contact"
-                className="w-full sm:w-auto bg-surface text-stone-300 px-8 py-3 rounded-md hover:bg-stone-800 transition-colors font-medium border border-stone-600 text-center"
+                className="w-full sm:w-auto bg-stone-900 text-stone-300 px-8 py-3 rounded-md hover:bg-stone-800 transition-colors font-medium border border-stone-600 text-center"
               >
                 Contact Us
               </Link>

@@ -43,13 +43,13 @@ function ItemRow({
       className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-left transition-colors ${
         checked
           ? 'bg-green-950 border border-green-200'
-          : 'bg-surface border border-stone-700 hover:bg-stone-800'
+          : 'bg-stone-900 border border-stone-700 hover:bg-stone-800'
       }`}
     >
       {/* Large checkbox — easy to tap on mobile */}
       <div
         className={`flex-shrink-0 w-7 h-7 rounded border-2 flex items-center justify-center mt-0.5 ${
-          checked ? 'bg-green-9500 border-green-500' : 'border-stone-400 bg-surface'
+          checked ? 'bg-green-9500 border-green-500' : 'border-stone-400 bg-stone-900'
         }`}
       >
         {checked && (
@@ -290,7 +290,7 @@ export function PackingListClient({ eventId, packingData, alreadyPacked }: Packi
   return (
     <div className="space-y-4">
       {/* Overall progress bar */}
-      <div className="bg-surface border border-stone-700 rounded-lg px-4 py-3">
+      <div className="bg-stone-900 border border-stone-700 rounded-lg px-4 py-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-stone-300">
             {checkedCount} of {totalItems} items packed

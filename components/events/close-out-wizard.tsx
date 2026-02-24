@@ -79,7 +79,7 @@ function StarRating({
             className={`w-11 h-11 rounded-full text-sm font-semibold border-2 transition-colors ${
               value >= n
                 ? 'bg-stone-800 border-stone-800 text-white'
-                : 'bg-surface border-stone-700 text-stone-500 hover:border-stone-400'
+                : 'bg-stone-900 border-stone-700 text-stone-500 hover:border-stone-400'
             }`}
           >
             {n}
@@ -113,7 +113,7 @@ function MethodPicker({ value, onChange }: { value: TipMethod; onChange: (v: Tip
           className={`px-4 py-2 rounded-lg text-sm font-medium border-2 transition-colors ${
             value === m.value
               ? 'bg-stone-800 border-stone-800 text-white'
-              : 'bg-surface border-stone-700 text-stone-300 hover:border-stone-400'
+              : 'bg-stone-900 border-stone-700 text-stone-300 hover:border-stone-400'
           }`}
         >
           {m.label}
@@ -557,7 +557,7 @@ function AARStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
           <span className="text-stone-400 font-normal">(optional)</span>
         </label>
         <textarea
-          className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-500/20 resize-none"
+          className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-stone-500 focus:outline-none focus:ring-2 focus:ring-stone-500/20 resize-none"
           rows={3}
           placeholder="Forgot salt, wish I prepped the dessert earlier..."
           value={notes}
@@ -816,7 +816,7 @@ function CloseStep({ data }: { data: CloseOutData }) {
             </span>
           </div>
         )}
-        <div className="flex justify-between items-center px-5 py-4 bg-surface rounded-b-xl">
+        <div className="flex justify-between items-center px-5 py-4 bg-stone-900 rounded-b-xl">
           <span className="text-base font-semibold text-stone-200">Net profit</span>
           <div className="text-right">
             <span className={`text-xl font-bold ${marginColor}`}>

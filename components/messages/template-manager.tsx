@@ -170,7 +170,7 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
                   placeholder="e.g. First response - new inquiry"
-                  className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 />
               </div>
               <div>
@@ -178,7 +178,7 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
                 <select
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value)}
-                  className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 >
                   <option value="">General</option>
                   {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
@@ -198,7 +198,7 @@ export function TemplateManager({ templates }: TemplateManagerProps) {
                 onChange={(e) => setFormContent(e.target.value)}
                 placeholder="Write your template message here. Use [name], [date], [time], [link] as placeholders."
                 rows={4}
-                className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+                className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
               />
             </div>
             <div className="flex gap-2 justify-end">

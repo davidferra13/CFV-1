@@ -94,7 +94,7 @@ export function SequenceBuilderClient() {
           <label className="block text-xs font-medium text-stone-400 mb-1">Trigger</label>
           <select
             title="Trigger type"
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
             value={triggerType}
             onChange={(e) => setTriggerType(e.target.value)}
           >
@@ -168,7 +168,7 @@ export function SequenceBuilderClient() {
               <div className="col-span-3">
                 <label className="block text-xs font-medium text-stone-400 mb-1">Body *</label>
                 <textarea
-                  className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[100px] resize-y font-mono"
+                  className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm min-h-[100px] resize-y font-mono"
                   value={step.body_html}
                   onChange={(e) => updateStep(i, 'body_html', e.target.value)}
                   placeholder={`Hi {{first_name}},\n\nWrite your message here.\n\n{{chef_name}}`}

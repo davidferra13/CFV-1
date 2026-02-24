@@ -126,7 +126,7 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
         >
           <span
             className={`
-              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0
+              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow ring-0
               transition duration-200 ease-in-out
               ${enabled ? 'translate-x-5' : 'translate-x-0'}
             `}

@@ -89,7 +89,7 @@ export function MenuApprovalClient({
     <div className="space-y-5">
       {/* Menu display */}
       {menuSnapshot.length > 0 ? (
-        <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
           {menuSnapshot.map((menu, i) => (
             <div key={i}>
               <h3 className="text-sm font-semibold text-stone-200 mb-1">{menu.menu_name}</h3>
@@ -104,7 +104,7 @@ export function MenuApprovalClient({
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-stone-700 bg-surface p-5">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5">
           <p className="text-sm text-stone-500">
             Menu details are being finalized. Contact your chef for the full list.
           </p>

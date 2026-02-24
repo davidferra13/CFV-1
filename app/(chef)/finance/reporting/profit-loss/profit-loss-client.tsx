@@ -84,7 +84,7 @@ export function ProfitLossClientControls({
       <select
         value={selectedYear}
         onChange={handleYearChange}
-        className="text-sm border border-stone-600 rounded-md px-3 py-2 text-stone-300 bg-surface focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className="text-sm border border-stone-600 rounded-md px-3 py-2 text-stone-300 bg-stone-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
         {yearOptions.map((y) => (
           <option key={y} value={y}>

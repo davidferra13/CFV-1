@@ -72,7 +72,7 @@ export function DashboardQuickSettings({
       </Button>
 
       {isOpen && (
-        <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-stone-700 bg-surface p-4 shadow-lg">
+        <div className="absolute right-0 z-20 mt-2 w-80 rounded-lg border border-stone-700 bg-stone-900 p-4 shadow-lg">
           <div className="mb-3">
             <p className="text-sm font-semibold text-stone-100">Reorder Dashboard</p>
             <p className="text-xs text-stone-500">Use up/down to reorder visible widgets.</p>

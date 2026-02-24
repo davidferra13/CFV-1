@@ -74,7 +74,7 @@ export function SentimentBadge({ clientId }: { clientId: string }) {
       </button>
 
       {showDetail && (
-        <div className="absolute top-6 left-0 z-20 w-72 bg-surface border border-stone-700 rounded-lg shadow-lg p-3 text-xs space-y-2">
+        <div className="absolute top-6 left-0 z-20 w-72 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-3 text-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-medium">Client Sentiment</span>
             <button onClick={() => setShowDetail(false)} className="text-stone-400">

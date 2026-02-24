@@ -43,7 +43,7 @@ export function ClientSuggestionCard({ suggestion }: ClientSuggestionCardProps) 
 
   return (
     <div
-      className={`rounded-lg border p-3 flex items-start justify-between gap-3 transition-opacity ${isPending ? 'opacity-50' : 'opacity-100'} ${suggestion.status !== 'pending' ? 'border-stone-800 bg-stone-800' : 'border-stone-700 bg-surface'}`}
+      className={`rounded-lg border p-3 flex items-start justify-between gap-3 transition-opacity ${isPending ? 'opacity-50' : 'opacity-100'} ${suggestion.status !== 'pending' ? 'border-stone-800 bg-stone-800' : 'border-stone-700 bg-stone-900'}`}
     >
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-stone-100 truncate">{suggestion.clientName}</p>

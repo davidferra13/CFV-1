@@ -27,11 +27,11 @@ export default async function AdminDirectoryPage() {
 
       {/* Stats */}
       <div className="mb-8 grid grid-cols-2 gap-4">
-        <div className="rounded-xl border border-stone-700 bg-surface p-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <p className="text-2xl font-bold text-emerald-600">{approved.length}</p>
           <p className="text-sm text-stone-500">Listed publicly</p>
         </div>
-        <div className="rounded-xl border border-stone-700 bg-surface p-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4">
           <p className="text-2xl font-bold text-stone-400">{pending.length}</p>
           <p className="text-sm text-stone-500">Not listed</p>
         </div>
@@ -43,7 +43,7 @@ export default async function AdminDirectoryPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500 mb-3">
             Listed ({approved.length})
           </h2>
-          <div className="divide-y divide-stone-800 rounded-xl border border-stone-700 bg-surface overflow-hidden">
+          <div className="divide-y divide-stone-800 rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
             {approved.map((chef) => (
               <DirectoryToggleRow key={chef.id} chef={chef} />
             ))}
@@ -57,7 +57,7 @@ export default async function AdminDirectoryPage() {
           <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500 mb-3">
             Not Listed ({pending.length})
           </h2>
-          <div className="divide-y divide-stone-800 rounded-xl border border-stone-700 bg-surface overflow-hidden">
+          <div className="divide-y divide-stone-800 rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
             {pending.map((chef) => (
               <DirectoryToggleRow key={chef.id} chef={chef} />
             ))}

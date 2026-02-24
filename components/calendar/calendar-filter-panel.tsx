@@ -158,7 +158,7 @@ export function CalendarFilterPanel({ storageKey, onChange, initialFilters }: Pr
               'px-2.5 py-1 rounded-md border text-xs font-medium transition-all',
               activeViewId === view.id
                 ? 'bg-stone-800 text-white border-stone-800'
-                : 'bg-surface text-stone-500 border-stone-700 hover:border-stone-400 hover:text-stone-300',
+                : 'bg-stone-900 text-stone-500 border-stone-700 hover:border-stone-400 hover:text-stone-300',
             ].join(' ')}
           >
             {view.name}

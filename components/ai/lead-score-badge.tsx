@@ -62,7 +62,7 @@ export function LeadScoreBadge({
       </button>
 
       {showDetail && (
-        <div className="absolute top-6 right-0 z-20 w-64 bg-surface border border-stone-700 rounded-lg shadow-lg p-3 text-xs space-y-2">
+        <div className="absolute top-6 right-0 z-20 w-64 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-3 text-xs space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-medium text-stone-300">Lead Score: {score.score}/100</span>
             <button

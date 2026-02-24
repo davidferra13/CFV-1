@@ -74,7 +74,7 @@ function DeleteButton({
   }
 
   return (
-    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface p-3">
+    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 p-3">
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-stone-400" />
         <div>
@@ -133,7 +133,7 @@ function FeatureToggle({
   onChange: (val: boolean) => void
 }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface p-3">
+    <div className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 p-3">
       <div>
         <p className="text-sm font-medium text-stone-100">{label}</p>
         <p className="text-xs text-stone-500">{description}</p>
@@ -359,7 +359,7 @@ export function DataControls({
         <button
           onClick={handleDisableRemy}
           disabled={disabling}
-          className="inline-flex items-center gap-2 rounded-lg border border-stone-600 bg-surface px-4 py-2
+          className="inline-flex items-center gap-2 rounded-lg border border-stone-600 bg-stone-900 px-4 py-2
                      text-sm font-medium text-stone-300 hover:bg-stone-700
                      disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >

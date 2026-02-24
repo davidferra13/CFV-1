@@ -42,7 +42,7 @@ export default async function MyProfilePage() {
       </div>
 
       {/* Feedback */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-3">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">
         <div>
           <h2 className="text-lg font-semibold text-stone-100">Share Feedback</h2>
           <p className="text-sm text-stone-500 mt-0.5">

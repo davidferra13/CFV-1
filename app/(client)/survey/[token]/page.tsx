@@ -20,7 +20,7 @@ export default async function SurveyPage({ params }: { params: { token: string }
   if (survey.submitted_at) {
     return (
       <div className="min-h-screen bg-stone-800 flex items-center justify-center p-4">
-        <div className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-8 max-w-md w-full text-center">
+        <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 max-w-md w-full text-center">
           <div className="text-4xl mb-4">🙏</div>
           <h1 className="text-2xl font-bold text-stone-100 mb-2">Thank you!</h1>
           <p className="text-stone-400">

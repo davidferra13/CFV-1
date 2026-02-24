@@ -171,7 +171,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
                   aria-label="Recipe category"
                   value={form.category}
                   onChange={(e) => set('category', e.target.value as typeof form.category)}
-                  className="flex h-10 w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 capitalize"
+                  className="flex h-10 w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 capitalize"
                 >
                   {CATEGORIES.map((c) => (
                     <option key={c} value={c} className="capitalize">
@@ -207,7 +207,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
                 onChange={(e) => set('method_detailed', e.target.value)}
                 placeholder="Step-by-step instructions…"
                 rows={4}
-                className="flex w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 resize-y"
+                className="flex w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 resize-y"
               />
             </div>
 

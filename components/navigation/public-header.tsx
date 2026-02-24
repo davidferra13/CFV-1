@@ -85,7 +85,7 @@ export function PublicHeader() {
       </nav>
 
       {mobileMenuOpen && (
-        <div className="border-t border-stone-700 bg-surface md:hidden">
+        <div className="border-t border-stone-700 bg-stone-900 md:hidden">
           <div className="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6 lg:px-8">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href

@@ -72,7 +72,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-surface rounded-xl border border-stone-700 p-6 space-y-6"
+      className="bg-stone-900 rounded-xl border border-stone-700 p-6 space-y-6"
     >
       {/* Amount picker */}
       <div>
@@ -89,7 +89,7 @@ export function GiftCardPurchaseForm({ tenantId, chefSlug, chefName }: Props) {
               className={`py-2 rounded-lg text-sm font-medium border transition-colors ${
                 selectedPreset === cents && !customAmount
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-surface text-stone-300 border-stone-600 hover:border-stone-500'
+                  : 'bg-stone-900 text-stone-300 border-stone-600 hover:border-stone-500'
               }`}
             >
               {formatCurrency(cents)}

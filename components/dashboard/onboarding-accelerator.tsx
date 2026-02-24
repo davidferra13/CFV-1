@@ -82,7 +82,7 @@ export function OnboardingAccelerator({
               forward.
             </p>
           </div>
-          <span className="inline-flex w-fit items-center rounded-full border border-brand-700 bg-surface px-3 py-1 text-xs font-semibold text-brand-400">
+          <span className="inline-flex w-fit items-center rounded-full border border-brand-700 bg-stone-900 px-3 py-1 text-xs font-semibold text-brand-400">
             {completedCount}/{steps.length} done
           </span>
         </div>
@@ -93,7 +93,7 @@ export function OnboardingAccelerator({
           {steps.map((step) => (
             <div
               key={step.id}
-              className="flex items-start gap-3 rounded-lg border border-stone-700 bg-surface p-3"
+              className="flex items-start gap-3 rounded-lg border border-stone-700 bg-stone-900 p-3"
             >
               {step.done ? (
                 <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
@@ -126,21 +126,21 @@ export function OnboardingAccelerator({
           </Link>
           <Link
             href="/import?mode=csv"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 bg-surface px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 bg-stone-900 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
           >
             <FileSpreadsheet className="h-3.5 w-3.5" />
             Upload CSV
           </Link>
           <Link
             href="/import?mode=past-events"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 bg-surface px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 bg-stone-900 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
           >
             <Clock className="h-3.5 w-3.5" />
             Log Past Events
           </Link>
           <Link
             href="/import?mode=brain-dump"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 bg-surface px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-stone-600 bg-stone-900 px-4 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
           >
             <Upload className="h-3.5 w-3.5" />
             Brain Dump

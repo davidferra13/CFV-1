@@ -69,7 +69,7 @@ export function SequenceTimeline({ sequences }: Props) {
                         ? 'bg-emerald-900'
                         : step.status === 'skipped'
                           ? 'bg-stone-800'
-                          : 'bg-surface border-2 border-stone-700'
+                          : 'bg-stone-900 border-2 border-stone-700'
                     }`}
                   >
                     {step.status === 'sent' ? (

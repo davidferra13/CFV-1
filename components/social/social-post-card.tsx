@@ -147,7 +147,7 @@ function ReactionBar({
       </button>
 
       {showPicker && (
-        <div className="absolute bottom-full left-0 mb-2 bg-surface rounded-2xl shadow-lg border border-stone-700 p-2 flex gap-1 z-20">
+        <div className="absolute bottom-full left-0 mb-2 bg-stone-900 rounded-2xl shadow-lg border border-stone-700 p-2 flex gap-1 z-20">
           {REACTIONS.map((r) => (
             <button
               key={r.type}
@@ -437,7 +437,7 @@ export function SocialPostCard({
   }
 
   return (
-    <article className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
+    <article className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
       {/* Header */}
       <div className="flex items-start justify-between p-4 pb-0">
         <div className="flex items-center gap-3">
@@ -485,7 +485,7 @@ export function SocialPostCard({
             </button>
           )}
           {showMenu && (
-            <div className="absolute right-0 top-full mt-1 bg-surface border border-stone-700 rounded-xl shadow-lg z-10 min-w-[140px]">
+            <div className="absolute right-0 top-full mt-1 bg-stone-900 border border-stone-700 rounded-xl shadow-lg z-10 min-w-[140px]">
               <button
                 onClick={handleDelete}
                 className="w-full text-left px-4 py-2.5 text-sm text-red-600 hover:bg-red-950 rounded-xl"

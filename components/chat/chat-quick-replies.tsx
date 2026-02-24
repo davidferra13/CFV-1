@@ -23,7 +23,7 @@ export function ChatQuickReplies({ onSelect, visible }: ChatQuickRepliesProps) {
           <button
             key={reply}
             onClick={() => onSelect(reply)}
-            className="px-3 py-1.5 text-xs font-medium text-brand-400 bg-surface border border-brand-700 rounded-full hover:bg-brand-950 transition-colors"
+            className="px-3 py-1.5 text-xs font-medium text-brand-400 bg-stone-900 border border-brand-700 rounded-full hover:bg-brand-950 transition-colors"
           >
             {reply}
           </button>

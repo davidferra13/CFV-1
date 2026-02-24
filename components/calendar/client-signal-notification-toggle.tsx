@@ -52,7 +52,7 @@ export function ClientSignalNotificationToggle({ initialEnabled }: Props) {
         >
           <span
             className={[
-              'inline-block h-4 w-4 transform rounded-full bg-surface transition-transform shadow',
+              'inline-block h-4 w-4 transform rounded-full bg-stone-900 transition-transform shadow',
               enabled ? 'translate-x-6' : 'translate-x-1',
             ].join(' ')}
           />

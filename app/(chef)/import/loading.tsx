@@ -10,7 +10,7 @@ export default function ImportLoading() {
       {/* Import type cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-xl border border-stone-700 bg-surface p-5 space-y-3">
+          <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-stone-700" />
             <div className="h-5 w-32 bg-stone-700 rounded" />
             <div className="space-y-1.5">
@@ -23,7 +23,7 @@ export default function ImportLoading() {
       </div>
 
       {/* Recent imports section */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <div className="h-5 w-36 bg-stone-700 rounded" />
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center gap-3">

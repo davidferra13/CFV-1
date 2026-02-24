@@ -81,7 +81,7 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor }: Props) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-6 space-y-4">
+      <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-6 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100">I'd love to host my own event</h2>
 
         <div>

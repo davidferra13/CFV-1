@@ -296,7 +296,7 @@ export function InquirySummary({ data, variant }: Props) {
                             ? 'bg-brand-600 border-brand-600 ring-2 ring-brand-100'
                             : reached
                               ? 'bg-brand-9500 border-brand-500'
-                              : 'bg-surface border-stone-600'
+                              : 'bg-stone-900 border-stone-600'
                         }`}
                       />
                       {!isLast && (

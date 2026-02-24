@@ -158,7 +158,7 @@ const icons = {
 
 function ClientPortalSidebar({ clientName }: { clientName: string }) {
   return (
-    <aside className="w-56 flex-shrink-0 bg-surface border-r border-stone-700 flex flex-col p-3">
+    <aside className="w-56 flex-shrink-0 bg-stone-900 border-r border-stone-700 flex flex-col p-3">
       <div className="px-3 py-2 mb-2">
         <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide truncate">
           {clientName}
@@ -414,7 +414,7 @@ function NoClientsState() {
   return (
     <div className="flex min-h-[460px]">
       {/* Nav shell */}
-      <aside className="w-56 flex-shrink-0 bg-surface border-r border-stone-700 flex flex-col p-3">
+      <aside className="w-56 flex-shrink-0 bg-stone-900 border-r border-stone-700 flex flex-col p-3">
         <div className="px-3 py-2 mb-2">
           <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
             Client name
@@ -479,7 +479,7 @@ export function ClientPortalPreview({
     <div className={isMobile ? 'flex justify-center' : undefined}>
       <div
         className={[
-          'rounded-xl border-2 border-stone-700 overflow-hidden bg-surface',
+          'rounded-xl border-2 border-stone-700 overflow-hidden bg-stone-900',
           isMobile ? 'w-[390px]' : 'w-full',
         ].join(' ')}
         style={{ minHeight: '460px' }}
@@ -494,7 +494,7 @@ export function ClientPortalPreview({
             <div className="flex-1 min-w-0 bg-stone-800">
               {isMobile && (
                 /* Mobile bottom tab bar hint */
-                <div className="border-b border-stone-700 bg-surface px-4 py-2 flex items-center justify-between">
+                <div className="border-b border-stone-700 bg-stone-900 px-4 py-2 flex items-center justify-between">
                   <span className="text-xs font-medium text-stone-300">{clientName}</span>
                   <div className="flex gap-4">
                     {[icons.calendar, icons.file, icons.chat, icons.gift, icons.user].map(

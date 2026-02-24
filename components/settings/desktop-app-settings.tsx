@@ -98,7 +98,7 @@ export function DesktopAppSettings() {
             {autostartState === 'enabled' ? 'Disable launch at login' : 'Enable launch at login'}
           </span>
           <span
-            className={`inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0 transition duration-200 ${
+            className={`inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow ring-0 transition duration-200 ${
               autostartState === 'enabled' ? 'translate-x-5' : 'translate-x-0'
             }`}
           />

@@ -53,7 +53,7 @@ export function CreateTemplateClient() {
           <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
           <select
             title="Campaign type"
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
             value={form.campaign_type}
             onChange={(e) => update('campaign_type', e.target.value)}
           >
@@ -76,7 +76,7 @@ export function CreateTemplateClient() {
         <div className="col-span-2">
           <label className="block text-xs font-medium text-stone-400 mb-1">Body *</label>
           <textarea
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[120px] resize-y font-mono"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm min-h-[120px] resize-y font-mono"
             value={form.body_html}
             onChange={(e) => update('body_html', e.target.value)}
             placeholder={`Hi {{first_name}},\n\nYour message here.\n\n{{chef_name}}`}

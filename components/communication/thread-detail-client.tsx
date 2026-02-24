@@ -272,7 +272,7 @@ export function ThreadDetailClient({
       )}
 
       {/* Reply Bar */}
-      <div className="sticky bottom-4 rounded-xl border border-stone-700 bg-surface shadow-lg">
+      <div className="sticky bottom-4 rounded-xl border border-stone-700 bg-stone-900 shadow-lg">
         <div className="flex items-center gap-2 border-b border-stone-800 px-4 py-2">
           <span className="text-xs text-stone-500">Log as:</span>
           <button

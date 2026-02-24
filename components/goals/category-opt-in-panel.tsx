@@ -54,7 +54,7 @@ export function CategoryOptInPanel({
   }
 
   return (
-    <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+    <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold text-stone-100">
@@ -92,7 +92,7 @@ export function CategoryOptInPanel({
                   ? locked
                     ? 'border-stone-600 bg-stone-800 cursor-default opacity-70'
                     : 'border-brand-500 bg-brand-950'
-                  : 'border-stone-700 bg-surface hover:border-stone-600'
+                  : 'border-stone-700 bg-stone-900 hover:border-stone-600'
               }`}
             >
               <div className="flex items-center gap-2">

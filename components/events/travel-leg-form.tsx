@@ -86,7 +86,7 @@ function StopRow({
   onMoveDown: () => void
 }) {
   return (
-    <div className="border border-stone-700 rounded-lg p-3 space-y-2 bg-surface">
+    <div className="border border-stone-700 rounded-lg p-3 space-y-2 bg-stone-900">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
           Stop {index + 1}
@@ -196,7 +196,7 @@ function IngredientRow({
   onRemove: () => void
 }) {
   return (
-    <div className="border border-stone-700 rounded-lg p-3 space-y-2 bg-surface">
+    <div className="border border-stone-700 rounded-lg p-3 space-y-2 bg-stone-900">
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium text-stone-200">
           {ingredient.ingredient_name || 'Ingredient'}
@@ -519,7 +519,7 @@ export function TravelLegForm({
           <select
             value={legType}
             onChange={(e) => handleTypeChange(e.target.value as TravelLegType)}
-            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface"
+            className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-900"
           >
             {LEG_TYPES.map((t) => (
               <option key={t} value={t}>
@@ -563,7 +563,7 @@ export function TravelLegForm({
                 <select
                   value={originType}
                   onChange={(e) => setOriginType(e.target.value as TravelLocationType)}
-                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface"
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-900"
                 >
                   {LOCATION_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -595,7 +595,7 @@ export function TravelLegForm({
                 <select
                   value={destType ?? ''}
                   onChange={(e) => setDestType((e.target.value as TravelLocationType) || null)}
-                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-surface"
+                  className="w-full border border-stone-600 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-stone-900"
                 >
                   <option value="">— select —</option>
                   {LOCATION_TYPES.map((t) => (
@@ -788,7 +788,7 @@ export function TravelLegForm({
                   </span>
                 )}
                 {ingredientResults.length > 0 && (
-                  <div className="absolute z-10 top-full left-0 right-0 bg-surface border border-stone-700 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                  <div className="absolute z-10 top-full left-0 right-0 bg-stone-900 border border-stone-700 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
                     {ingredientResults.map((r) => (
                       <button
                         key={r.id}

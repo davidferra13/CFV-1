@@ -95,7 +95,7 @@ export function ClientSidebar({ userEmail, hasCannabisTier }: ClientNavProps) {
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-surface border-r border-stone-700 transition-all duration-200 z-30 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-stone-900 border-r border-stone-700 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
@@ -262,7 +262,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
 
   return (
     <>
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-surface border-b border-stone-700 pt-safe">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-stone-900 border-b border-stone-700 pt-safe">
         <div className="flex items-center justify-between h-14 px-4">
           <Link href="/my-events" className="flex items-center gap-2">
             <AppLogo size={28} className="rounded-md" />
@@ -291,7 +291,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
       {menuOpen && (
         <>
           <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
-          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-surface border-r border-stone-700 shadow-xl">
+          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-stone-900 border-r border-stone-700 shadow-xl">
             <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
               <span className="font-semibold text-stone-100">Menu</span>
               <button
@@ -382,7 +382,7 @@ export function ClientMobileNav({ userEmail, hasCannabisTier }: ClientNavProps) 
         </>
       )}
 
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-stone-700 pb-safe">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-stone-900 border-t border-stone-700 pb-safe">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const active = isItemActive(pathname, item.href)

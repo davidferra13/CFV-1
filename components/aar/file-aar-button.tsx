@@ -54,7 +54,7 @@ export function FileAARButton() {
           <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
 
           {/* Modal */}
-          <div className="relative bg-surface rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
+          <div className="relative bg-stone-900 rounded-lg shadow-xl w-full max-w-md mx-4 p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-stone-100">File Event Review</h3>
               <button

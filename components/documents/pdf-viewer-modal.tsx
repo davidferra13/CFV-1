@@ -49,7 +49,7 @@ export function PdfViewerModal({ src, title, isOpen, onClose }: PdfViewerModalPr
         if (e.target === e.currentTarget) onClose()
       }}
     >
-      <div className="bg-surface rounded-lg shadow-xl w-full max-w-4xl flex flex-col h-[calc(100vh-2rem)]">
+      <div className="bg-stone-900 rounded-lg shadow-xl w-full max-w-4xl flex flex-col h-[calc(100vh-2rem)]">
         {/* Header bar */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-700 shrink-0">
           <h2 className="text-base font-semibold text-stone-100 truncate pr-4">{title}</h2>

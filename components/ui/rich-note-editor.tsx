@@ -84,7 +84,7 @@ export function RichNoteEditor({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         style={{ minHeight }}
-        className="w-full px-3 py-2 text-sm text-stone-100 resize-y focus:outline-none bg-surface"
+        className="w-full px-3 py-2 text-sm text-stone-100 resize-y focus:outline-none bg-stone-900"
       />
       {/* Preview hint */}
       {value && (

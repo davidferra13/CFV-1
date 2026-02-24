@@ -52,7 +52,7 @@ export function ChefDangerZone({ chefId, chefName, currentStatus }: Props) {
   }
 
   return (
-    <div className="bg-surface rounded-xl border border-red-200 overflow-hidden">
+    <div className="bg-stone-900 rounded-xl border border-red-200 overflow-hidden">
       <div className="px-4 py-3 border-b border-red-100 bg-red-950 flex items-center gap-2">
         <AlertTriangle size={14} className="text-red-500" />
         <h2 className="text-sm font-semibold text-red-700">Danger Zone</h2>

@@ -82,7 +82,7 @@ export function ChefBackgroundSettings({
             type="color"
             value={backgroundColor}
             onChange={(e) => setBackgroundColor(e.target.value)}
-            className="h-10 w-full rounded-md border border-stone-600 bg-surface px-2"
+            className="h-10 w-full rounded-md border border-stone-600 bg-stone-900 px-2"
           />
           <p className="text-xs text-stone-500 mt-1">Used as fallback when no image is set.</p>
         </div>
@@ -93,7 +93,7 @@ export function ChefBackgroundSettings({
             type="file"
             accept="image/jpeg,image/png,image/heic,image/heif,image/webp"
             onChange={(e) => setSelectedBackgroundFile(e.target.files?.[0] ?? null)}
-            className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
+            className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 file:mr-3 file:rounded-md file:border-0 file:bg-brand-950 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-400"
           />
           <p className="mt-1 text-xs text-stone-500">Upload JPEG, PNG, HEIC, or WebP (max 10MB)</p>
           {backgroundImageUrl && !selectedBackgroundFile && (

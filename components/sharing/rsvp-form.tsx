@@ -323,7 +323,7 @@ export function RSVPForm({
                         value={plusOneName}
                         onChange={(e) => setPlusOneName(e.target.value)}
                         placeholder="Their full name"
-                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
                       />
                     </div>
                     <div>
@@ -339,7 +339,7 @@ export function RSVPForm({
                         value={plusOneAllergies}
                         onChange={(e) => setPlusOneAllergies(e.target.value)}
                         placeholder="e.g., peanuts, shellfish"
-                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
                       />
                     </div>
                     <div>
@@ -355,7 +355,7 @@ export function RSVPForm({
                         value={plusOneDietary}
                         onChange={(e) => setPlusOneDietary(e.target.value)}
                         placeholder="e.g., vegetarian, gluten-free"
-                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
+                        className="w-full px-3 py-2 rounded-lg border border-stone-600 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
                       />
                     </div>
                   </div>
@@ -373,7 +373,7 @@ export function RSVPForm({
                   value={dietaryInput}
                   onChange={(e) => setDietaryInput(e.target.value)}
                   placeholder="e.g., vegetarian, kosher, gluten-free"
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
                 />
                 <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
               </div>
@@ -392,7 +392,7 @@ export function RSVPForm({
                   value={allergyInput}
                   onChange={(e) => setAllergyInput(e.target.value)}
                   placeholder="e.g., peanuts, shellfish, dairy"
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-surface"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 bg-stone-900"
                 />
                 <p className="text-xs text-stone-500 mt-1">Separate multiple with commas</p>
               </div>
@@ -408,7 +408,7 @@ export function RSVPForm({
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Anything you'd like the host to know..."
                   rows={2}
-                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none bg-surface"
+                  className="w-full px-4 py-2.5 rounded-lg border border-stone-600 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-stone-100 placeholder:text-stone-400 resize-none bg-stone-900"
                 />
               </div>
             </div>

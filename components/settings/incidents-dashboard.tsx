@@ -138,7 +138,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
             className={`inline-flex items-center gap-1 px-3 py-1 text-sm rounded-full border transition-colors ${
               activeSystem === system
                 ? 'bg-stone-900 text-white border-stone-900'
-                : 'bg-surface text-stone-300 border-stone-700 hover:border-stone-400'
+                : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-400'
             }`}
           >
             <span>{SYSTEM_ICONS[system] || '📎'}</span>
@@ -152,7 +152,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
           <select
             value={activeDate}
             onChange={(e) => applyFilter('date', e.target.value)}
-            className="px-3 py-1 text-sm rounded-full border border-stone-700 bg-surface text-stone-300"
+            className="px-3 py-1 text-sm rounded-full border border-stone-700 bg-stone-900 text-stone-300"
           >
             <option value="">All dates</option>
             {data.dates.map((d) => (
@@ -175,7 +175,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
 
       {/* ── Incident List ── */}
       {data.incidents.length === 0 ? (
-        <div className="rounded-xl border border-stone-700 bg-surface p-8 text-center">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-8 text-center">
           <div className="text-4xl mb-3">✅</div>
           <h3 className="text-lg font-semibold text-stone-100">No incidents</h3>
           <p className="text-stone-500 mt-1 text-sm">
@@ -193,7 +193,7 @@ export function IncidentsDashboard({ data }: { data: IncidentDashboardData }) {
             return (
               <div
                 key={incident.file}
-                className={`rounded-lg border bg-surface overflow-hidden transition-all ${
+                className={`rounded-lg border bg-stone-900 overflow-hidden transition-all ${
                   isExpanded ? 'border-stone-400 shadow-sm' : 'border-stone-700'
                 }`}
               >

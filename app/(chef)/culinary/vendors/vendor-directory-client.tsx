@@ -169,7 +169,7 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
                 <div>
                   <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
                   <select
-                    className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                     value={form.vendor_type}
                     onChange={(e) => update('vendor_type', e.target.value)}
                   >

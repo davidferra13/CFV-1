@@ -169,7 +169,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
                     className={`px-3 py-1.5 rounded-md text-sm font-medium border transition-colors ${
                       entityType === et
                         ? 'bg-stone-900 text-white border-stone-900'
-                        : 'bg-surface text-stone-300 border-stone-600 hover:border-stone-500'
+                        : 'bg-stone-900 text-stone-300 border-stone-600 hover:border-stone-500'
                     }`}
                   >
                     {ENTITY_LABELS[et]}

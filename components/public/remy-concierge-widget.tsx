@@ -326,14 +326,14 @@ export function RemyConciergeWidget() {
            z-10 ensures resize handles (z-20 edges, z-30 corners) are ALWAYS above content.
            Without this, animate-in / shadow-2xl can create a stacking context that covers handles. */}
       <div
-        className={`relative z-10 flex flex-col h-full overflow-hidden border border-stone-700 bg-surface shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${
+        className={`relative z-10 flex flex-col h-full overflow-hidden border border-stone-700 bg-stone-900 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ${
           isMaximized ? 'rounded-xl' : 'rounded-2xl'
         }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between bg-brand-600 px-4 py-3.5">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-surface/20 text-lg">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-stone-900/20 text-lg">
               👨‍🍳
             </div>
             <div>
@@ -382,7 +382,7 @@ export function RemyConciergeWidget() {
                 <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
                   R
                 </div>
-                <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-surface px-4 py-3 text-sm leading-relaxed text-stone-300 shadow-sm">
+                <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-stone-900 px-4 py-3 text-sm leading-relaxed text-stone-300 shadow-sm">
                   Hey! I&apos;m Remy, your ChefFlow concierge. 👋
                   <br />
                   <br />
@@ -398,7 +398,7 @@ export function RemyConciergeWidget() {
                     key={s.label}
                     onClick={() => sendMessage(s.message)}
                     disabled={isStreaming}
-                    className="rounded-full border border-brand-700 bg-surface px-3 py-1.5 text-xs font-medium text-brand-400 transition-all hover:border-brand-400 hover:bg-brand-950 hover:shadow-sm disabled:opacity-50"
+                    className="rounded-full border border-brand-700 bg-stone-900 px-3 py-1.5 text-xs font-medium text-brand-400 transition-all hover:border-brand-400 hover:bg-brand-950 hover:shadow-sm disabled:opacity-50"
                   >
                     {s.label}
                   </button>
@@ -421,7 +421,7 @@ export function RemyConciergeWidget() {
                 className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                   msg.role === 'user'
                     ? 'bg-brand-600 text-white rounded-br-sm'
-                    : 'bg-surface text-stone-200 shadow-sm rounded-tl-sm'
+                    : 'bg-stone-900 text-stone-200 shadow-sm rounded-tl-sm'
                 }`}
               >
                 {msg.content ||
@@ -446,7 +446,7 @@ export function RemyConciergeWidget() {
         </div>
 
         {/* Input */}
-        <div className="border-t border-stone-700 bg-surface p-3">
+        <div className="border-t border-stone-700 bg-stone-900 p-3">
           <div className="flex items-end gap-2">
             <textarea
               ref={inputRef}
@@ -458,7 +458,7 @@ export function RemyConciergeWidget() {
               onKeyDown={handleKeyDown}
               placeholder="Type a message..."
               rows={1}
-              className="flex-1 resize-none rounded-xl border border-stone-700 bg-stone-800 px-3.5 py-2.5 text-sm text-stone-200 placeholder-stone-400 outline-none transition-colors focus:border-brand-400 focus:bg-surface focus:ring-1 focus:ring-brand-400"
+              className="flex-1 resize-none rounded-xl border border-stone-700 bg-stone-800 px-3.5 py-2.5 text-sm text-stone-200 placeholder-stone-400 outline-none transition-colors focus:border-brand-400 focus:bg-stone-900 focus:ring-1 focus:ring-brand-400"
               disabled={isStreaming}
               style={{ maxHeight: '80px' }}
             />

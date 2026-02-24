@@ -151,7 +151,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
     <div className="space-y-4">
       <form
         onSubmit={handleShareSubmit}
-        className="rounded-lg border border-stone-700 p-4 bg-surface space-y-3"
+        className="rounded-lg border border-stone-700 p-4 bg-stone-900 space-y-3"
       >
         <p className="text-sm font-semibold text-stone-100">Share A Contact</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -162,7 +162,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
               onChange={(event) =>
                 setHelpType(event.target.value as 'date_help' | 'inquiry_help' | 'full_handover')
               }
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               disabled={isPending}
             >
               <option value="date_help">Date Help</option>
@@ -175,7 +175,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
             <select
               value={recipientChefId}
               onChange={(event) => setRecipientChefId(event.target.value)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               disabled={isPending}
             >
               {connections.map((connection) => (
@@ -191,7 +191,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
               type="text"
               value={contactName}
               onChange={(event) => setContactName(event.target.value)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               placeholder="Client or lead name"
               disabled={isPending}
             />
@@ -206,7 +206,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
                   type="text"
                   value={inquiryId}
                   onChange={(event) => setInquiryId(event.target.value)}
-                  className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                   placeholder="Optional UUID"
                   disabled={isPending}
                 />
@@ -219,7 +219,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
                   type="text"
                   value={inquirySummary}
                   onChange={(event) => setInquirySummary(event.target.value)}
-                  className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+                  className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
                   placeholder="Short summary if no inquiry ID"
                   disabled={isPending}
                 />
@@ -232,7 +232,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
               type="text"
               value={contactPhone}
               onChange={(event) => setContactPhone(event.target.value)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               placeholder="Optional"
               disabled={isPending}
             />
@@ -243,7 +243,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
               type="email"
               value={contactEmail}
               onChange={(event) => setContactEmail(event.target.value)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               placeholder="Optional"
               disabled={isPending}
             />
@@ -254,7 +254,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
               type="date"
               value={eventDate}
               onChange={(event) => setEventDate(event.target.value)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               disabled={isPending}
             />
           </div>
@@ -264,7 +264,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
               type="text"
               value={location}
               onChange={(event) => setLocation(event.target.value)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
               placeholder="City / area"
               disabled={isPending}
             />
@@ -276,7 +276,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
             value={details}
             onChange={(event) => setDetails(event.target.value)}
             rows={4}
-            className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             placeholder={
               helpType === 'full_handover'
                 ? 'Full handover notes: client expectations, menu scope, budget, constraints, and all context needed to take over.'
@@ -299,7 +299,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <section className="rounded-lg border border-stone-700 p-4 bg-surface">
+        <section className="rounded-lg border border-stone-700 p-4 bg-stone-900">
           <h4 className="text-sm font-semibold text-stone-100">Incoming Shares</h4>
           {received.length === 0 ? (
             <p className="text-sm text-stone-500 mt-3">No incoming shares yet.</p>
@@ -321,7 +321,7 @@ export function ContactShares({ connections, shares: initialShares }: ContactSha
           )}
         </section>
 
-        <section className="rounded-lg border border-stone-700 p-4 bg-surface">
+        <section className="rounded-lg border border-stone-700 p-4 bg-stone-900">
           <h4 className="text-sm font-semibold text-stone-100">Outgoing Shares</h4>
           {sent.length === 0 ? (
             <p className="text-sm text-stone-500 mt-3">No outgoing shares yet.</p>
@@ -394,7 +394,7 @@ function ContactShareItem({
             value={responseNote}
             onChange={(event) => onResponseNoteChange(event.target.value)}
             rows={2}
-            className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+            className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             placeholder="Optional response note"
             disabled={isPending}
           />

@@ -18,7 +18,7 @@ export function SocialQueueSummaryBar({ summary }: { summary: SocialQueueSummary
       {stats.map(({ label, value, color }) => (
         <div
           key={label}
-          className="bg-surface rounded-lg border border-stone-700 px-3 py-3 text-center"
+          className="bg-stone-900 rounded-lg border border-stone-700 px-3 py-3 text-center"
         >
           <div className={`text-2xl font-bold ${color}`}>{value}</div>
           <div className="text-xs text-stone-500 mt-0.5 leading-tight">{label}</div>

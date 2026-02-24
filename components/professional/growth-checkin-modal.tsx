@@ -58,7 +58,7 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
   if (done) {
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-        <div className="bg-surface rounded-lg p-8 max-w-md w-full text-center">
+        <div className="bg-stone-900 rounded-lg p-8 max-w-md w-full text-center">
           <p className="text-lg font-medium text-stone-100 mb-2">Check-in saved!</p>
           <p className="text-sm text-stone-500 mb-4">See you in 3 months.</p>
           <Button onClick={onClose}>Close</Button>
@@ -71,7 +71,7 @@ export function GrowthCheckinModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-surface rounded-lg p-6 max-w-lg w-full">
+      <div className="bg-stone-900 rounded-lg p-6 max-w-lg w-full">
         <p className="text-xs text-stone-400 mb-4">
           Question {step + 1} of {questions.length}
         </p>

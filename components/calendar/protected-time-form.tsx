@@ -98,7 +98,7 @@ export function ProtectedTimeForm({ onClose }: Props) {
         <select
           value={blockType}
           onChange={(e) => setBlockType(e.target.value as ProtectedBlockType)}
-          className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-surface"
+          className="w-full border border-stone-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none bg-stone-900"
         >
           <option value="protected_personal">Protected Personal Time</option>
           <option value="rest">Rest Day</option>

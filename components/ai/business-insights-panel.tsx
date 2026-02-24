@@ -45,7 +45,7 @@ export function BusinessInsightsPanel() {
 
   if (!result) {
     return (
-      <div className="bg-surface border border-stone-700 rounded-lg p-4">
+      <div className="bg-stone-900 border border-stone-700 rounded-lg p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4 text-brand-600" />
@@ -76,7 +76,7 @@ export function BusinessInsightsPanel() {
   const health = HEALTH_COLORS[result.healthLabel] ?? HEALTH_COLORS.healthy
 
   return (
-    <div className="bg-surface border border-stone-700 rounded-lg p-4 space-y-3">
+    <div className="bg-stone-900 border border-stone-700 rounded-lg p-4 space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="w-4 h-4 text-brand-600" />

@@ -47,7 +47,7 @@ export default async function EditCallPage({ params }: Props) {
         <h1 className="text-2xl font-bold text-gray-900">Edit Call</h1>
       </div>
 
-      <div className="bg-surface rounded-xl border shadow-sm p-6">
+      <div className="bg-stone-900 rounded-xl border shadow-sm p-6">
         <CallForm existing={call} />
       </div>
     </div>

@@ -71,7 +71,7 @@ export function FeedbackNudgeModal() {
       onClick={dismiss}
     >
       <div
-        className="bg-surface rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-5 animate-in zoom-in-95 duration-300"
+        className="bg-stone-900 rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center space-y-5 animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

@@ -370,7 +370,7 @@ export function JourneyHub({ journeys, insights }: JourneyHubProps) {
                   className={`px-3 py-1.5 rounded-md text-xs font-medium border transition-colors ${
                     statusFilter === status
                       ? 'bg-brand-600 text-white border-brand-600'
-                      : 'bg-surface text-stone-400 border-stone-700 hover:bg-stone-800'
+                      : 'bg-stone-900 text-stone-400 border-stone-700 hover:bg-stone-800'
                   }`}
                 >
                   {status === 'all' ? 'All' : STATUS_META[status].label}

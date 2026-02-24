@@ -236,7 +236,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
   const contextFields = TRIGGER_CONTEXT_FIELDS[triggerEvent] ?? []
 
   return (
-    <div className="border border-stone-700 rounded-lg bg-surface overflow-hidden">
+    <div className="border border-stone-700 rounded-lg bg-stone-900 overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3 border-b border-stone-800 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-stone-200">
@@ -264,7 +264,7 @@ export function RuleBuilder({ onClose, initialRule }: RuleBuilderProps) {
                 key={tpl.label}
                 type="button"
                 onClick={() => applyQuickStart(tpl)}
-                className="text-left border border-amber-200 rounded-md px-3 py-2 bg-surface hover:border-brand-400 hover:bg-brand-950 transition-colors group"
+                className="text-left border border-amber-200 rounded-md px-3 py-2 bg-stone-900 hover:border-brand-400 hover:bg-brand-950 transition-colors group"
               >
                 <p className="text-xs font-medium text-stone-200 group-hover:text-brand-400">
                   {tpl.label}

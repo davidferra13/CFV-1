@@ -263,7 +263,7 @@ export function NutritionLookupPanel({ defaultQuery = '' }: NutritionLookupPanel
             onClick={() => setTab(t.id)}
             className={`px-3 py-1.5 text-sm font-medium rounded-t transition-colors ${
               tab === t.id
-                ? 'bg-surface border border-b-white border-stone-700 text-stone-100 -mb-px'
+                ? 'bg-stone-900 border border-b-white border-stone-700 text-stone-100 -mb-px'
                 : 'text-stone-500 hover:text-stone-300'
             }`}
           >

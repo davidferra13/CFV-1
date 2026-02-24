@@ -227,7 +227,7 @@ export function ProfessionalDevelopmentClient({
                     <div>
                       <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
                       <select
-                        className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                        className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                         value={achForm.achieve_type}
                         onChange={(e) => updateAch('achieve_type', e.target.value)}
                       >
@@ -410,7 +410,7 @@ export function ProfessionalDevelopmentClient({
                         Category
                       </label>
                       <select
-                        className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                        className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                         value={goalForm.category}
                         onChange={(e) => updateGoal('category', e.target.value)}
                       >

@@ -108,7 +108,7 @@ function MemoryTab() {
         {memories.map((m) => (
           <div
             key={m.id}
-            className="flex items-start gap-3 rounded-lg border border-stone-700 bg-surface p-3 group"
+            className="flex items-start gap-3 rounded-lg border border-stone-700 bg-stone-900 p-3 group"
           >
             <Brain className="w-4 h-4 text-stone-400 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
@@ -209,7 +209,7 @@ function SettingsTab() {
       </div>
 
       {/* How It Works */}
-      <details className="rounded-xl border border-stone-700 bg-surface">
+      <details className="rounded-xl border border-stone-700 bg-stone-900">
         <summary className="cursor-pointer px-5 py-4">
           <span className="text-sm font-semibold text-stone-100">
             How It Works — Data Flow Diagram

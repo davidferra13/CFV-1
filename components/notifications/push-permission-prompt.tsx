@@ -56,7 +56,7 @@ export function PushPermissionPrompt() {
       aria-label="Enable push notifications"
       className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-sm"
     >
-      <div className="flex items-start gap-3 rounded-xl border border-stone-700 bg-surface p-4 shadow-lg">
+      <div className="flex items-start gap-3 rounded-xl border border-stone-700 bg-stone-900 p-4 shadow-lg">
         {/* Bell icon */}
         <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-900 text-amber-600">
           <svg

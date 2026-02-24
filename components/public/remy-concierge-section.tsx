@@ -157,7 +157,7 @@ export function RemyConciergeSection() {
             {CHEFFLOW_FEATURE_MAP.slice(0, 8).map((feature, i) => (
               <div
                 key={i}
-                className="overflow-hidden rounded-xl border border-stone-700 bg-surface transition-shadow hover:shadow-sm"
+                className="overflow-hidden rounded-xl border border-stone-700 bg-stone-900 transition-shadow hover:shadow-sm"
               >
                 <button
                   onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
@@ -217,7 +217,7 @@ export function RemyConciergeSection() {
                   key={s.label}
                   onClick={() => sendMessage(s.message)}
                   disabled={isStreaming}
-                  className="rounded-full border border-brand-700 bg-surface px-4 py-2 text-sm text-brand-400 transition-all hover:border-brand-400 hover:bg-brand-950 hover:shadow-sm disabled:opacity-50"
+                  className="rounded-full border border-brand-700 bg-stone-900 px-4 py-2 text-sm text-brand-400 transition-all hover:border-brand-400 hover:bg-brand-950 hover:shadow-sm disabled:opacity-50"
                 >
                   {s.label}
                 </button>
@@ -229,7 +229,7 @@ export function RemyConciergeSection() {
           {hasConversation && (
             <div
               ref={chatAreaRef}
-              className="mb-4 max-h-[400px] overflow-y-auto rounded-2xl border border-stone-700 bg-surface p-4 shadow-sm"
+              className="mb-4 max-h-[400px] overflow-y-auto rounded-2xl border border-stone-700 bg-stone-900 p-4 shadow-sm"
             >
               {messages.map((msg) => (
                 <div
@@ -275,7 +275,7 @@ export function RemyConciergeSection() {
               onKeyDown={handleKeyDown}
               placeholder="What's your biggest challenge as a private chef?"
               rows={1}
-              className="flex-1 resize-none rounded-xl border border-stone-600 bg-surface px-4 py-3 text-sm text-stone-200 placeholder-stone-400 outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20"
+              className="flex-1 resize-none rounded-xl border border-stone-600 bg-stone-900 px-4 py-3 text-sm text-stone-200 placeholder-stone-400 outline-none transition-all focus:border-brand-400 focus:ring-2 focus:ring-brand-400/20"
               disabled={isStreaming}
               style={{ maxHeight: '100px' }}
             />

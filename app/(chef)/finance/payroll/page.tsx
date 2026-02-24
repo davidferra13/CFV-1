@@ -109,7 +109,7 @@ export default async function PayrollPage() {
             <Link
               key={link.href}
               href={link.href}
-              className="rounded-lg border border-stone-700 bg-surface hover:border-brand-600 hover:bg-brand-950 transition-colors p-5 flex items-start gap-4"
+              className="rounded-lg border border-stone-700 bg-stone-900 hover:border-brand-600 hover:bg-brand-950 transition-colors p-5 flex items-start gap-4"
             >
               <div className="rounded-lg bg-stone-800 p-2.5">
                 <Icon className="h-5 w-5 text-stone-400" />

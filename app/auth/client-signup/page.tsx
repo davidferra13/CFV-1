@@ -84,7 +84,7 @@ function ClientSignUpForm() {
 
   if (invitationLoading) {
     return (
-      <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+      <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600 mx-auto" />
           <p className="mt-4 text-stone-400">Loading invitation...</p>
@@ -94,7 +94,7 @@ function ClientSignUpForm() {
   }
 
   return (
-    <div className="min-h-screen bg-surface-muted flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-stone-100">ChefFlow</h1>
@@ -158,7 +158,7 @@ function ClientSignUpForm() {
                   <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-surface px-2 text-stone-500">Or continue with</span>
+                  <span className="bg-stone-900 px-2 text-stone-500">Or continue with</span>
                 </div>
               </div>
 
@@ -194,7 +194,7 @@ export default function ClientSignUpPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-surface-muted flex items-center justify-center">
+        <div className="min-h-screen bg-stone-800 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-600" />
         </div>
       }

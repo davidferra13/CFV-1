@@ -120,7 +120,7 @@ export function SocialFeedClient({
         />
 
         {/* Feed header: mode tabs on main feed, simple refresh-only on channel feed */}
-        <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
+        <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
           <div className="flex border-b border-stone-800">
             {isChannelFeed ? (
               <div className="flex-1 flex items-center px-4 py-3">

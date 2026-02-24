@@ -143,7 +143,7 @@ function ComponentForm({
           value={form.category}
           onChange={(e) => set('category', e.target.value)}
           title="Component category"
-          className="text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-surface text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-stone-900 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
           disabled={disabled || pending}
         >
           {COMPONENT_CATEGORIES.map((cat) => (
@@ -175,7 +175,7 @@ function ComponentForm({
               value={form.transport_category}
               onChange={(e) => set('transport_category', e.target.value)}
               title="Transport zone"
-              className="w-full text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-surface text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-stone-900 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
               disabled={disabled || pending}
             >
               {TRANSPORT_CATEGORIES.map((tc) => (
@@ -210,7 +210,7 @@ function ComponentForm({
           placeholder="What needs to happen when you arrive (e.g. Sear to order, finish with butter)"
           rows={2}
           disabled={disabled || pending}
-          className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 bg-surface text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+          className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 bg-stone-900 text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
         />
       </div>
 
@@ -226,7 +226,7 @@ function ComponentForm({
             placeholder="e.g. Refrigerate covered, up to 48h. Label with date."
             rows={2}
             disabled={disabled || pending}
-            className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 bg-surface text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            className="w-full text-sm border border-stone-600 rounded-lg px-3 py-2 bg-stone-900 text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
           />
         </div>
       )}
@@ -659,7 +659,7 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
           {addingCourse ? (
             <form
               onSubmit={handleAddCourse}
-              className="border border-stone-700 rounded-xl p-4 space-y-2 bg-surface"
+              className="border border-stone-700 rounded-xl p-4 space-y-2 bg-stone-900"
             >
               <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide">
                 Course {nextCourseNumber}

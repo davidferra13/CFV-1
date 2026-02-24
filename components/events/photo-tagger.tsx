@@ -177,7 +177,7 @@ export function PhotoTagger({ photos: initialPhotos }: Props) {
             return (
               <div
                 key={photo.id}
-                className="rounded-lg border border-stone-700 bg-surface overflow-hidden"
+                className="rounded-lg border border-stone-700 bg-stone-900 overflow-hidden"
               >
                 {/* Photo */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}

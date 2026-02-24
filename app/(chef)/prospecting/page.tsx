@@ -152,7 +152,7 @@ export default async function ProspectingPage({
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="rounded-lg border border-stone-700 bg-surface p-4 space-y-2">
+              <div className="rounded-lg border border-stone-700 bg-stone-900 p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-900 text-brand-400 font-bold text-sm">
                     1
@@ -172,7 +172,7 @@ export default async function ProspectingPage({
                 </Link>
               </div>
 
-              <div className="rounded-lg border border-stone-700 bg-surface p-4 space-y-2">
+              <div className="rounded-lg border border-stone-700 bg-stone-900 p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-900 text-brand-400 font-bold text-sm">
                     2
@@ -192,7 +192,7 @@ export default async function ProspectingPage({
                 </Link>
               </div>
 
-              <div className="rounded-lg border border-stone-700 bg-surface p-4 space-y-2">
+              <div className="rounded-lg border border-stone-700 bg-stone-900 p-4 space-y-2">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center justify-center h-8 w-8 rounded-full bg-brand-900 text-brand-400 font-bold text-sm">
                     3
@@ -265,7 +265,7 @@ export default async function ProspectingPage({
 
 function StatCard({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
   return (
-    <div className="bg-surface rounded-lg border border-stone-700 p-4 flex items-center gap-3">
+    <div className="bg-stone-900 rounded-lg border border-stone-700 p-4 flex items-center gap-3">
       {icon}
       <div>
         <p className="text-2xl font-bold text-stone-100">{value}</p>

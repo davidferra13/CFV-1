@@ -88,7 +88,7 @@ export function SurveyForm({ token }: Props) {
 
   if (submitted) {
     return (
-      <div className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
+      <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-8 text-center">
         <div className="text-4xl mb-4">🙏</div>
         <h2 className="text-xl font-bold text-stone-100 mb-2">Thank you!</h2>
         <p className="text-stone-400">
@@ -101,7 +101,7 @@ export function SurveyForm({ token }: Props) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-surface rounded-2xl shadow-sm border border-stone-700 p-6 space-y-6"
+      className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-6 space-y-6"
     >
       {error && (
         <div className="rounded-lg bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">
@@ -124,7 +124,7 @@ export function SurveyForm({ token }: Props) {
               className={`w-9 h-9 rounded-lg text-sm font-medium border transition-colors ${
                 npsScore === i
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-surface text-stone-300 border-stone-700 hover:border-stone-400'
+                  : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-400'
               }`}
             >
               {i}
@@ -177,7 +177,7 @@ export function SurveyForm({ token }: Props) {
               className={`px-6 py-2 rounded-lg border text-sm font-medium transition-colors ${
                 wouldRebook === value
                   ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-surface text-stone-300 border-stone-700 hover:border-stone-400'
+                  : 'bg-stone-900 text-stone-300 border-stone-700 hover:border-stone-400'
               }`}
             >
               {label}

@@ -116,7 +116,7 @@ export function SignaturePad({ onChange, width = 500, height = 160 }: Props) {
 
   return (
     <div className="space-y-2">
-      <div className="relative rounded-lg border-2 border-dashed border-stone-600 bg-surface overflow-hidden cursor-crosshair">
+      <div className="relative rounded-lg border-2 border-dashed border-stone-600 bg-stone-900 overflow-hidden cursor-crosshair">
         <canvas
           ref={canvasRef}
           className="block touch-none"

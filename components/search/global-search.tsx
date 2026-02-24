@@ -136,7 +136,7 @@ export function GlobalSearch() {
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={onKeyDown}
             placeholder="Search everything... (Ctrl/Cmd+K)"
-            className="absolute right-0 top-full mt-1 w-[280px] px-3 py-2 rounded-lg border border-stone-700 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 bg-surface shadow-lg"
+            className="absolute right-0 top-full mt-1 w-[280px] px-3 py-2 rounded-lg border border-stone-700 text-sm outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400 bg-stone-900 shadow-lg"
             role="combobox"
             aria-controls={listboxId}
             aria-expanded={open}
@@ -148,7 +148,7 @@ export function GlobalSearch() {
       {open && query.length >= 2 && (
         <div
           id={listboxId}
-          className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-surface shadow-xl border border-stone-700 rounded-xl z-50 p-2"
+          className="absolute top-[calc(100%+2.75rem)] right-0 w-[320px] max-w-[90vw] bg-stone-900 shadow-xl border border-stone-700 rounded-xl z-50 p-2"
           role="listbox"
         >
           {loading && (

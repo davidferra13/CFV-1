@@ -159,7 +159,7 @@ export function SimulateClient({ summary, recentRuns, latestRun, latestResults }
                     className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
                       selected
                         ? 'border-brand-500 bg-brand-950 text-brand-400'
-                        : 'border-stone-600 bg-surface text-stone-400 hover:border-stone-400'
+                        : 'border-stone-600 bg-stone-900 text-stone-400 hover:border-stone-400'
                     } ${isPending ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
                   >
                     {SIM_MODULE_LABELS[module]}

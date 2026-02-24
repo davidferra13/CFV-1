@@ -59,7 +59,7 @@ export function TagInput({
     <div>
       {label && <label className="block text-sm font-medium text-stone-300 mb-1.5">{label}</label>}
       <div
-        className="flex flex-wrap gap-1.5 p-2 border border-stone-600 rounded-lg bg-surface focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500 min-h-[42px] cursor-text"
+        className="flex flex-wrap gap-1.5 p-2 border border-stone-600 rounded-lg bg-stone-900 focus-within:ring-2 focus-within:ring-brand-500/20 focus-within:border-brand-500 min-h-[42px] cursor-text"
         onClick={() => inputRef.current?.focus()}
       >
         {value.map((tag, i) => (
@@ -98,7 +98,7 @@ export function TagInput({
             className="w-full border-0 p-0 py-0.5 text-sm text-stone-100 placeholder:text-stone-400 focus:outline-none focus:ring-0 bg-transparent"
           />
           {showSuggestions && input && filteredSuggestions.length > 0 && (
-            <div className="absolute top-full left-0 mt-1 w-48 bg-surface border border-stone-700 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
+            <div className="absolute top-full left-0 mt-1 w-48 bg-stone-900 border border-stone-700 rounded-lg shadow-lg z-10 max-h-32 overflow-y-auto">
               {filteredSuggestions.map((s) => (
                 <button
                   key={s}

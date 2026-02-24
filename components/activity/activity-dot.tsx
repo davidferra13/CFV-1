@@ -74,7 +74,7 @@ export function ActivityDot({ collapsed }: ActivityDotProps) {
 
       {open && (
         <div
-          className={`absolute z-50 bg-surface rounded-lg shadow-lg border border-stone-700 w-72 ${
+          className={`absolute z-50 bg-stone-900 rounded-lg shadow-lg border border-stone-700 w-72 ${
             collapsed ? 'left-full ml-2 top-0' : 'left-0 top-full mt-1'
           }`}
         >

@@ -59,7 +59,7 @@ export default async function AdminSystemPage() {
       {health && (
         <>
           {/* Table Row Counts */}
-          <div className="bg-surface rounded-xl border border-slate-200 p-5">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
             <h2 className="text-sm font-semibold text-slate-700 mb-4">Database Row Counts</h2>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
               {Object.entries(health.tableRowCounts).map(([table, count]) => (
@@ -72,7 +72,7 @@ export default async function AdminSystemPage() {
           </div>
 
           {/* Signal Panel */}
-          <div className="bg-surface rounded-xl border border-slate-200 p-5">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
             <h2 className="text-sm font-semibold text-slate-700 mb-4">Integrity Signals</h2>
             <div className="space-y-3">
               <div
@@ -130,7 +130,7 @@ export default async function AdminSystemPage() {
       )}
 
       {/* External Links */}
-      <div className="bg-surface rounded-xl border border-slate-200 p-5">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 p-5">
         <h2 className="text-sm font-semibold text-slate-700 mb-4">External Dashboards</h2>
         <div className="space-y-2">
           <a

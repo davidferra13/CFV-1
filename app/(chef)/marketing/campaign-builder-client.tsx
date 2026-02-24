@@ -161,13 +161,13 @@ export function CampaignBuilderClient() {
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-4">
           <p className="text-sm font-semibold text-stone-100">{form.name}</p>
           <p className="text-xs text-stone-500">Subject: {form.subject}</p>
-          <div className="mt-3 border border-stone-700 rounded p-3 bg-surface text-xs text-stone-300 max-h-40 overflow-y-auto whitespace-pre-wrap">
+          <div className="mt-3 border border-stone-700 rounded p-3 bg-stone-900 text-xs text-stone-300 max-h-40 overflow-y-auto whitespace-pre-wrap">
             {form.body_html}
           </div>
         </div>
 
         {/* Channel breakdown */}
-        <div className="rounded-lg border border-stone-700 bg-surface p-4 space-y-2">
+        <div className="rounded-lg border border-stone-700 bg-stone-900 p-4 space-y-2">
           <p className="text-xs font-semibold text-stone-500 uppercase tracking-wide mb-3">
             Channel breakdown
           </p>
@@ -318,7 +318,7 @@ export function CampaignBuilderClient() {
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
           <select
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
             title="Campaign type"
             value={form.campaign_type}
             onChange={(e) => update('campaign_type', e.target.value)}
@@ -334,7 +334,7 @@ export function CampaignBuilderClient() {
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Audience</label>
           <select
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
             title="Audience segment"
             value={form.segment_type}
             onChange={(e) => update('segment_type', e.target.value)}
@@ -377,7 +377,7 @@ export function CampaignBuilderClient() {
           </div>
           <textarea
             ref={bodyRef}
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[160px] resize-y font-mono"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm min-h-[160px] resize-y font-mono"
             value={form.body_html}
             onChange={(e) => update('body_html', e.target.value)}
             placeholder={`Hi {{first_name}},\n\nWrite your message here. Plain text is perfect.\n\n{{chef_name}}`}

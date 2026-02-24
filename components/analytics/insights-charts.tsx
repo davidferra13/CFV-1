@@ -124,7 +124,7 @@ function OccasionTooltip({
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div className="rounded-lg border border-stone-700 bg-surface p-3 shadow-sm text-sm">
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-3 shadow-sm text-sm">
       <p className="font-semibold text-stone-100 mb-1">{label}</p>
       <p className="text-stone-400">
         {d.count} event{d.count !== 1 ? 's' : ''}

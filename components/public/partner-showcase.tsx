@@ -75,7 +75,7 @@ function PartnerCard({ partner, chefName }: { partner: Partner; chefName: string
   const bookingUrl = partner.booking_url
 
   return (
-    <div className="rounded-2xl border border-stone-700 overflow-hidden bg-surface shadow-sm hover:shadow-md transition-shadow">
+    <div className="rounded-2xl border border-stone-700 overflow-hidden bg-stone-900 shadow-sm hover:shadow-md transition-shadow">
       {/* Cover Image */}
       {partner.cover_image_url ? (
         <div className="relative h-56 overflow-hidden">

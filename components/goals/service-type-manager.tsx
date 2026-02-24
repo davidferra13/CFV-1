@@ -256,7 +256,7 @@ export function ServiceTypeManager({
               <select
                 value={form.pricingModel}
                 onChange={(e) => set('pricingModel', e.target.value as ServiceTypePricingModel)}
-                className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 bg-surface"
+                className="w-full rounded-md border border-stone-600 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 bg-stone-900"
               >
                 <option value="flat_rate">Flat rate — one price regardless of guest count</option>
                 <option value="per_person">Per person — price multiplied by guest count</option>

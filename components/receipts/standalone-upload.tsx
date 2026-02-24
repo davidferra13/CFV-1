@@ -102,7 +102,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
   }
 
   return (
-    <div className="border border-stone-700 rounded-lg p-4 space-y-4 bg-surface">
+    <div className="border border-stone-700 rounded-lg p-4 space-y-4 bg-stone-900">
       <p className="text-sm font-semibold text-stone-200">Upload a Receipt</p>
 
       {/* File picker */}
@@ -155,7 +155,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
             <select
               value={selectedEventId}
               onChange={(e) => setSelectedEventId(e.target.value)}
-              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-surface text-stone-200"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200"
             >
               <option value="">— No event (standalone receipt) —</option>
               {events.map((ev) => (
@@ -174,7 +174,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
             <select
               value={selectedClientId}
               onChange={(e) => setSelectedClientId(e.target.value)}
-              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-surface text-stone-200"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200"
             >
               <option value="">— No client —</option>
               {clients.map((c) => (
@@ -195,7 +195,7 @@ export function StandaloneUpload({ events, clients, defaultEventId, onSuccess }:
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g. Annual equipment purchase, farmers market run…"
-              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-surface text-stone-200 placeholder:text-stone-300"
+              className="w-full text-sm border border-stone-700 rounded px-2 py-1.5 bg-stone-900 text-stone-200 placeholder:text-stone-300"
             />
           </div>
 

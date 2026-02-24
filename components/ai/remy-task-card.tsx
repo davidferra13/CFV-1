@@ -86,7 +86,7 @@ export function RemyTaskCard({ task, onApprove, onReject }: RemyTaskCardProps) {
                 {expanded ? 'Hide details' : 'Show details'}
               </button>
               {expanded && (
-                <div className="mt-2 rounded bg-surface/60 dark:bg-stone-800/60 p-2">
+                <div className="mt-2 rounded bg-stone-900/60 dark:bg-stone-800/60 p-2">
                   <TaskDataRenderer taskType={task.taskType} data={task.data} />
                 </div>
               )}

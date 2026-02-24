@@ -94,7 +94,7 @@ export function ClientTags({ clientId, initialTags, suggestedTags = [] }: Client
             className="text-xs border border-stone-600 rounded-full px-2.5 py-0.5 w-32 focus:outline-none focus:border-brand-400"
           />
           {showSuggestions && filtered.length > 0 && (
-            <div className="absolute top-full left-0 mt-1 z-10 bg-surface border border-stone-700 rounded-md shadow-md min-w-[140px]">
+            <div className="absolute top-full left-0 mt-1 z-10 bg-stone-900 border border-stone-700 rounded-md shadow-md min-w-[140px]">
               {filtered.slice(0, 6).map((t) => (
                 <button
                   key={t}

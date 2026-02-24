@@ -414,7 +414,7 @@ function SettingRow({
 }) {
   return (
     <div
-      className={`rounded-lg border p-3 transition-colors ${enabled ? 'border-stone-700 bg-surface' : 'border-stone-800 bg-stone-800'}`}
+      className={`rounded-lg border p-3 transition-colors ${enabled ? 'border-stone-700 bg-stone-900' : 'border-stone-800 bg-stone-800'}`}
     >
       <div className="flex items-start gap-3">
         {/* Toggle */}
@@ -428,7 +428,7 @@ function SettingRow({
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-surface shadow ring-0 transition duration-200 ease-in-out ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-stone-900 shadow ring-0 transition duration-200 ease-in-out ${
               enabled ? 'translate-x-4' : 'translate-x-0'
             }`}
           />

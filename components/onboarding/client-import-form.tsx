@@ -157,7 +157,7 @@ export function ClientImportForm({ initialClients }: { initialClients: ImportedC
                 id="contact_method"
                 value={form.preferred_contact_method}
                 onChange={(e) => set('preferred_contact_method', e.target.value)}
-                className="flex h-10 w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                className="flex h-10 w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
               >
                 <option value="text">Text</option>
                 <option value="email">Email</option>

@@ -63,7 +63,7 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
 
       {/* Description */}
       {location.description && (
-        <div className="rounded-xl border border-stone-700 bg-surface p-5">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5">
           <h2 className="text-sm font-semibold text-stone-500 uppercase tracking-wide mb-2">
             About this space
           </h2>
@@ -101,7 +101,7 @@ export default async function PartnerLocationDetailPage({ params }: { params: { 
             <p className="text-sm text-stone-500">No completed events yet at this location.</p>
           </div>
         ) : (
-          <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
+          <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-stone-800 border-b border-stone-700">
                 <tr>

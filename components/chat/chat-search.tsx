@@ -43,7 +43,7 @@ export function ChatSearch({ conversationId, onResultClick, onClose }: ChatSearc
   }
 
   return (
-    <div className="border-b border-stone-700 bg-surface">
+    <div className="border-b border-stone-700 bg-stone-900">
       {/* Search input */}
       <div className="flex items-center gap-2 px-4 py-2">
         <Search className="w-4 h-4 text-stone-400 flex-shrink-0" />

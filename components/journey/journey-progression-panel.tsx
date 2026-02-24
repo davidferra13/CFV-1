@@ -143,7 +143,7 @@ export function JourneyProgressPanel({
               {completedCount}/{tasks.length} milestones complete
             </p>
           </div>
-          <div className="inline-flex items-center gap-1 rounded-full bg-surface border border-stone-700 px-2.5 py-1 text-xs text-stone-300">
+          <div className="inline-flex items-center gap-1 rounded-full bg-stone-900 border border-stone-700 px-2.5 py-1 text-xs text-stone-300">
             <Compass className="w-3.5 h-3.5 text-brand-600" />
             {percent}% complete
           </div>
@@ -162,7 +162,9 @@ export function JourneyProgressPanel({
           <div
             key={task.id}
             className={`rounded-lg border p-3 ${
-              task.complete ? 'border-emerald-200 bg-emerald-950/70' : 'border-stone-700 bg-surface'
+              task.complete
+                ? 'border-emerald-200 bg-emerald-950/70'
+                : 'border-stone-700 bg-stone-900'
             }`}
           >
             <div className="flex items-start justify-between gap-2">

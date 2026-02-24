@@ -61,7 +61,7 @@ function ItemRow({
       ? 'bg-green-950 border-green-200'
       : state === 1
         ? 'bg-amber-950 border-amber-300'
-        : 'bg-surface border-stone-700 hover:bg-stone-800'
+        : 'bg-stone-900 border-stone-700 hover:bg-stone-800'
 
   const textClass = state === 2 ? 'line-through text-stone-400' : 'text-stone-100'
 
@@ -78,7 +78,7 @@ function ItemRow({
             ? 'bg-green-9500 border-green-500'
             : state === 1
               ? 'border-amber-400 bg-amber-950'
-              : 'border-stone-400 bg-surface'
+              : 'border-stone-400 bg-stone-900'
         }`}
       >
         {state === 2 && (
@@ -231,7 +231,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
 
       {/* Overall progress bar — only when there are checkable items */}
       {totalCheckable > 0 && (
-        <div className="bg-surface border border-stone-700 rounded-lg px-4 py-3">
+        <div className="bg-stone-900 border border-stone-700 rounded-lg px-4 py-3">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-medium text-stone-300">
               {doneCount} of {totalCheckable} done
@@ -266,7 +266,7 @@ export function InteractiveDocClient({ eventId, docType, spec }: InteractiveDocC
         <div className="pt-2 space-y-3">
           <div className="flex items-center gap-4 justify-center text-xs text-stone-500">
             <span className="flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded border-2 border-stone-400 bg-surface inline-flex items-center justify-center" />
+              <span className="w-5 h-5 rounded border-2 border-stone-400 bg-stone-900 inline-flex items-center justify-center" />
               Untouched
             </span>
             <span className="flex items-center gap-1.5">

@@ -63,7 +63,7 @@ export default async function ChefProfilePage({ params }: { params: Promise<{ ch
       </Link>
 
       {/* Profile header */}
-      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm p-6">
+      <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm p-6">
         <div className="flex items-start gap-6">
           <Avatar className="w-20 h-20 flex-shrink-0">
             {profile.profile_image_url && (
@@ -121,7 +121,7 @@ export default async function ChefProfilePage({ params }: { params: Promise<{ ch
       </div>
 
       {/* Posts grid */}
-      <div className="bg-surface rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
+      <div className="bg-stone-900 rounded-2xl border border-stone-700 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-stone-800 flex items-center gap-2">
           <Grid3X3 className="h-4 w-4 text-stone-400" />
           <h2 className="text-sm font-semibold text-stone-300">Posts</h2>

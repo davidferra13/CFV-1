@@ -41,7 +41,7 @@ export default async function AdminAuditPage() {
         </div>
       )}
 
-      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         {entries.length === 0 && !note ? (
           <div className="py-12 text-center text-slate-400 text-sm">No audit log entries yet.</div>
         ) : entries.length > 0 ? (

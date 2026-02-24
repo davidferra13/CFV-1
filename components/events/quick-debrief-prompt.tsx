@@ -104,7 +104,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
           <input
             name="wentWell"
             placeholder="e.g. The risotto timing was perfect"
-            className="w-full text-sm border border-amber-200 bg-surface rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
+            className="w-full text-sm border border-amber-200 bg-stone-900 rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
           />
         </div>
 
@@ -116,7 +116,7 @@ export function QuickDebriefPrompt({ eventId, hasAAR, completedAt }: Props) {
           <input
             name="doDifferently"
             placeholder="e.g. Prep the sauce 30 min earlier"
-            className="w-full text-sm border border-amber-200 bg-surface rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
+            className="w-full text-sm border border-amber-200 bg-stone-900 rounded px-2.5 py-1.5 focus:outline-none focus:border-amber-400"
           />
         </div>
 

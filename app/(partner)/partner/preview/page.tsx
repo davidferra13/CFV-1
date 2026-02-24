@@ -88,7 +88,7 @@ export default async function PartnerPreviewPage() {
       </div>
 
       {/* ── Showcase card — what clients see ─────────────────────────────── */}
-      <div className="rounded-2xl border border-stone-700 bg-surface overflow-hidden shadow-sm">
+      <div className="rounded-2xl border border-stone-700 bg-stone-900 overflow-hidden shadow-sm">
         {/* Cover image */}
         {partner?.cover_image_url ? (
           <div className="h-48 overflow-hidden bg-stone-800">

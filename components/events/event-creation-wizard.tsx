@@ -14,7 +14,7 @@ interface Props {
 
 export function EventCreationWizard({ clients: _clients }: Props) {
   return (
-    <div className="bg-surface rounded-2xl border border-stone-700 p-8 text-center">
+    <div className="bg-stone-900 rounded-2xl border border-stone-700 p-8 text-center">
       <h1 className="text-2xl font-bold text-stone-100 mb-2">Create New Event</h1>
       <p className="text-stone-400">Guided event creation wizard coming soon.</p>
     </div>

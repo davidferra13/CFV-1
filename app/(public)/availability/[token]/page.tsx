@@ -113,7 +113,7 @@ export default async function PublicAvailabilityPage({
         <CardContent className="py-4">
           <div className="flex gap-4 mb-4 text-xs text-stone-500">
             <div className="flex items-center gap-1">
-              <div className="w-3 h-3 rounded bg-surface border border-stone-700" />
+              <div className="w-3 h-3 rounded bg-stone-900 border border-stone-700" />
               <span>Available</span>
             </div>
             <div className="flex items-center gap-1">
@@ -138,7 +138,7 @@ export default async function PublicAvailabilityPage({
                 className={`py-2 rounded text-xs ${
                   day.busy
                     ? 'bg-stone-300 text-stone-500'
-                    : 'bg-surface border border-stone-700 text-stone-300'
+                    : 'bg-stone-900 border border-stone-700 text-stone-300'
                 }`}
               >
                 {new Date(day.date + 'T12:00:00').getDate()}

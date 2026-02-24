@@ -47,7 +47,7 @@ export function RetraceTimeline({
             type="button"
             onClick={onLoadMore}
             disabled={loadingMore}
-            className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-surface hover:bg-stone-800 disabled:opacity-50"
+            className="text-xs font-medium border border-stone-700 rounded-md px-3 py-1.5 text-stone-400 bg-stone-900 hover:bg-stone-800 disabled:opacity-50"
           >
             {loadingMore ? 'Loading...' : 'Load older sessions'}
           </button>
@@ -87,7 +87,7 @@ function SessionCard({ session }: { session: BreadcrumbSession }) {
   const interactions = session.breadcrumbs.filter((b) => b.breadcrumb_type !== 'page_view')
 
   return (
-    <div className="border border-stone-700 rounded-lg bg-surface overflow-hidden">
+    <div className="border border-stone-700 rounded-lg bg-stone-900 overflow-hidden">
       {/* Session header */}
       <button
         type="button"

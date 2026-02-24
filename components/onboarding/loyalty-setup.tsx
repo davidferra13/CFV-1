@@ -154,7 +154,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
   return (
     <div className="space-y-6">
       {/* Tab bar */}
-      <div className="flex border border-stone-700 rounded-lg overflow-hidden bg-surface">
+      <div className="flex border border-stone-700 rounded-lg overflow-hidden bg-stone-900">
         {tabs.map((tab) => (
           <button
             key={tab.key}
@@ -364,7 +364,7 @@ export function LoyaltySetup({ initialConfig, initialRewards, clients }: Props) 
                         reward_type: e.target.value as LoyaltyReward['reward_type'],
                       }))
                     }
-                    className="flex h-10 w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
+                    className="flex h-10 w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400"
                   >
                     <option value="free_course">Free Course</option>
                     <option value="free_dinner">Free Dinner</option>

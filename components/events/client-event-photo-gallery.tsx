@@ -95,7 +95,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
           {/* Close button */}
           <button
             onClick={closeLightbox}
-            className="absolute top-4 right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-2 transition"
+            className="absolute top-4 right-4 text-white/80 hover:text-white bg-stone-900/10 hover:bg-stone-800/20 rounded-full p-2 transition"
             title="Close"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +115,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
                 e.stopPropagation()
                 prevPhoto()
               }}
-              className="absolute left-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
+              className="absolute left-4 text-white/80 hover:text-white bg-stone-900/10 hover:bg-stone-800/20 rounded-full p-3 transition"
               title="Previous"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,7 +167,7 @@ export function ClientEventPhotoGallery({ photos }: Props) {
                 e.stopPropagation()
                 nextPhoto()
               }}
-              className="absolute right-4 text-white/80 hover:text-white bg-surface/10 hover:bg-stone-800/20 rounded-full p-3 transition"
+              className="absolute right-4 text-white/80 hover:text-white bg-stone-900/10 hover:bg-stone-800/20 rounded-full p-3 transition"
               title="Next"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -10,7 +10,7 @@ import { RemyPrivacySchematic } from '@/lib/remotion/remy-privacy-schematic'
 
 export function PrivacySchematicPlayer() {
   return (
-    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-stone-900 shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={RemyPrivacySchematic}
         compositionWidth={640}

@@ -97,7 +97,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               className={`flex-1 py-2 px-4 rounded-lg border text-sm font-medium transition-colors ${
                 type === t
                   ? 'bg-brand-600 text-white border-brand-600'
-                  : 'bg-surface text-stone-300 border-stone-600 hover:border-brand-400'
+                  : 'bg-stone-900 text-stone-300 border-stone-600 hover:border-brand-400'
               }`}
             >
               {t === 'gift_card' ? 'Gift Card' : 'Voucher'}
@@ -135,7 +135,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                 !usePercent
                   ? 'bg-stone-800 text-white border-stone-800'
-                  : 'bg-surface text-stone-400 border-stone-600 hover:border-stone-500'
+                  : 'bg-stone-900 text-stone-400 border-stone-600 hover:border-stone-500'
               }`}
             >
               $ Fixed
@@ -146,7 +146,7 @@ export function IssueIncentiveForm({ clients = [], onSuccess, onCancel }: Props)
               className={`text-xs px-3 py-1 rounded-full border transition-colors ${
                 usePercent
                   ? 'bg-stone-800 text-white border-stone-800'
-                  : 'bg-surface text-stone-400 border-stone-600 hover:border-stone-500'
+                  : 'bg-stone-900 text-stone-400 border-stone-600 hover:border-stone-500'
               }`}
             >
               % Percent

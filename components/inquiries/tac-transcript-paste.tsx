@@ -176,7 +176,7 @@ export function TacTranscriptPaste({
           {!preview ? (
             <>
               <textarea
-                className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-200 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
+                className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
                 rows={12}
                 placeholder="Paste the full TakeAChef conversation here..."
                 value={rawText}

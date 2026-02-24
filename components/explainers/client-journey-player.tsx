@@ -10,7 +10,7 @@ import { ClientJourneyComposition } from '@/lib/remotion/client-journey-composit
 
 export function ClientJourneyPlayer() {
   return (
-    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-stone-900 shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={ClientJourneyComposition}
         compositionWidth={640}

@@ -154,7 +154,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
           return (
             <div
               key={platform.id}
-              className="bg-surface rounded-xl border border-stone-700 p-5 space-y-3"
+              className="bg-stone-900 rounded-xl border border-stone-700 p-5 space-y-3"
             >
               {/* Header row */}
               <div className="flex items-start gap-3">
@@ -224,7 +224,7 @@ export function SocialConnectionsManager({ connections, justConnected }: Props) 
                     {/* Reconnect button */}
                     <a
                       href={`/api/integrations/social/connect/${platform.id}`}
-                      className="flex-1 text-center text-sm font-medium py-2 rounded-lg border border-stone-600 text-stone-300 bg-surface hover:bg-stone-800 transition-colors"
+                      className="flex-1 text-center text-sm font-medium py-2 rounded-lg border border-stone-600 text-stone-300 bg-stone-900 hover:bg-stone-800 transition-colors"
                     >
                       Reconnect
                     </a>

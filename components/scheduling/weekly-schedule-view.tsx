@@ -14,7 +14,7 @@ const DAY_TYPE_COLORS: Record<string, string> = {
   event: 'bg-brand-950 border-brand-700',
   prep: 'bg-amber-950 border-amber-200',
   admin: 'bg-stone-800 border-stone-700',
-  free: 'bg-surface border-stone-800',
+  free: 'bg-stone-900 border-stone-800',
 }
 
 const DAY_TYPE_LABELS: Record<string, string> = {
@@ -124,7 +124,7 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
                 {/* Events */}
                 {day.events.map((event) => (
                   <Link key={event.id} href={`/events/${event.id}`} className="block">
-                    <div className="bg-surface rounded p-2 border border-stone-700 hover:shadow-sm transition-shadow">
+                    <div className="bg-stone-900 rounded p-2 border border-stone-700 hover:shadow-sm transition-shadow">
                       <div className="text-sm font-medium text-stone-100 truncate">
                         {event.occasion || 'Event'}
                       </div>
@@ -171,7 +171,7 @@ export function WeeklyScheduleView({ initialSchedule }: { initialSchedule: WeekS
           <span className="w-3 h-3 rounded bg-amber-900 border border-amber-200" /> Prep
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-3 h-3 rounded bg-surface border border-stone-700" /> Free
+          <span className="w-3 h-3 rounded bg-stone-900 border border-stone-700" /> Free
         </span>
       </div>
     </div>

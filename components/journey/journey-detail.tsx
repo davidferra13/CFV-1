@@ -168,7 +168,7 @@ export function JourneyDetail({
                 className={`px-3 py-1.5 text-sm rounded-md border ${
                   activeTab === tab.id
                     ? 'bg-brand-600 text-white border-brand-600'
-                    : 'bg-surface text-stone-400 border-stone-700 hover:bg-stone-800'
+                    : 'bg-stone-900 text-stone-400 border-stone-700 hover:bg-stone-800'
                 }`}
               >
                 {tab.label}

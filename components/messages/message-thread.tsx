@@ -50,7 +50,7 @@ export function MessageThread({ messages, showEntityLinks = false }: MessageThre
                 ? 'bg-stone-800 border border-dashed border-stone-600 max-w-full w-full'
                 : msg.direction === 'outbound'
                   ? 'bg-brand-950 border border-brand-700'
-                  : 'bg-surface border border-stone-700'
+                  : 'bg-stone-900 border border-stone-700'
             }`}
           >
             {/* Subject line for emails */}

@@ -312,7 +312,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
                     className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
                       selected
                         ? 'bg-brand-600 text-white border-brand-600'
-                        : 'bg-surface text-stone-300 border-stone-600 hover:border-brand-400 hover:text-brand-400'
+                        : 'bg-stone-900 text-stone-300 border-stone-600 hover:border-brand-400 hover:text-brand-400'
                     }`}
                   >
                     {protocol.label}

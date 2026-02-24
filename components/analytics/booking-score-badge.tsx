@@ -31,7 +31,7 @@ export function BookingScoreBadge({ score }: BookingScoreBadgeProps) {
       <Badge variant={variant}>{score.level === 'conflict' ? label : `Score: ${label}`}</Badge>
 
       {showBreakdown && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-56 bg-surface border border-stone-700 rounded-lg shadow-lg p-3 text-xs text-stone-300">
+        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-56 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-3 text-xs text-stone-300">
           <p className="font-semibold text-stone-100 mb-2">Score Breakdown</p>
           <div className="space-y-1">
             <div className="flex justify-between">

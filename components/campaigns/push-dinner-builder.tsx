@@ -670,7 +670,7 @@ export function PushDinnerBuilder() {
                 className={`w-full text-left text-sm px-4 py-3 rounded-lg border transition-colors ${
                   segment === opt.key
                     ? 'border-brand-500 bg-brand-950 text-brand-400'
-                    : 'border-stone-700 bg-surface text-stone-300 hover:border-stone-600'
+                    : 'border-stone-700 bg-stone-900 text-stone-300 hover:border-stone-600'
                 }`}
               >
                 {opt.label}
@@ -918,7 +918,7 @@ export function PushDinnerBuilder() {
                   className={`w-full text-left border rounded-lg p-4 transition-colors ${
                     deliveryModes.includes('email')
                       ? 'border-brand-500 bg-brand-950'
-                      : 'border-stone-700 bg-surface hover:border-stone-600'
+                      : 'border-stone-700 bg-stone-900 hover:border-stone-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -952,7 +952,7 @@ export function PushDinnerBuilder() {
                   className={`w-full text-left border rounded-lg p-4 transition-colors ${
                     deliveryModes.includes('portal_banner')
                       ? 'border-brand-500 bg-brand-950'
-                      : 'border-stone-700 bg-surface hover:border-stone-600'
+                      : 'border-stone-700 bg-stone-900 hover:border-stone-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -987,7 +987,7 @@ export function PushDinnerBuilder() {
                   className={`w-full text-left border rounded-lg p-4 transition-colors ${
                     deliveryModes.includes('link_only')
                       ? 'border-brand-500 bg-brand-950'
-                      : 'border-stone-700 bg-surface hover:border-stone-600'
+                      : 'border-stone-700 bg-stone-900 hover:border-stone-600'
                   }`}
                 >
                   <div className="flex items-center gap-3">

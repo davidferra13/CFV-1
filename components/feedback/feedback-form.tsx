@@ -91,7 +91,7 @@ export function FeedbackForm() {
               className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
                 sentiment === s.value
                   ? 'border-brand-600 bg-brand-950 text-brand-400'
-                  : 'border-stone-700 bg-surface text-stone-400 hover:border-stone-600 hover:bg-stone-800'
+                  : 'border-stone-700 bg-stone-900 text-stone-400 hover:border-stone-600 hover:bg-stone-800'
               }`}
             >
               <span>{s.emoji}</span>

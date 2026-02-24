@@ -31,7 +31,7 @@ export function OfflineStatusBar() {
         {/* Progress bar */}
         <div className="h-0.5 bg-blue-700">
           <div
-            className="h-full bg-surface transition-all duration-300"
+            className="h-full bg-stone-900 transition-all duration-300"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -67,7 +67,7 @@ export function OfflineStatusBar() {
           <WifiOff className="h-4 w-4" />
           You&apos;re offline — your work is being saved locally
           {pendingCount > 0 && (
-            <span className="inline-flex items-center gap-1 bg-surface/20 rounded-full px-2 py-0.5 text-xs">
+            <span className="inline-flex items-center gap-1 bg-stone-900/20 rounded-full px-2 py-0.5 text-xs">
               <CloudUpload className="h-3 w-3" />
               {pendingCount} pending
             </span>

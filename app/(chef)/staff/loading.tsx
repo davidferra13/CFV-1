@@ -11,7 +11,7 @@ export default function StaffLoading() {
       </div>
 
       {/* Team member rows */}
-      <div className="rounded-xl border border-stone-700 bg-surface divide-y divide-stone-800">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 divide-y divide-stone-800">
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="flex items-center gap-4 px-4 py-4">
             {/* Avatar */}
@@ -32,7 +32,7 @@ export default function StaffLoading() {
       {/* Availability section */}
       <div className="space-y-2">
         <div className="h-5 w-32 bg-stone-700 rounded" />
-        <div className="rounded-xl border border-stone-700 bg-surface p-4 space-y-3">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-4 space-y-3">
           {[1, 2].map((i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-stone-700" />

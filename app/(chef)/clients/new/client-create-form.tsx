@@ -56,7 +56,7 @@ function Section({
           {description}
         </p>
       )}
-      {open && <div className="p-4 space-y-4 bg-surface">{children}</div>}
+      {open && <div className="p-4 space-y-4 bg-stone-900">{children}</div>}
     </div>
   )
 }

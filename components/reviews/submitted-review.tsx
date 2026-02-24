@@ -88,7 +88,7 @@ export function SubmittedReview({ review, eventId, googleReviewUrl }: SubmittedR
               target="_blank"
               rel="noopener noreferrer"
               onClick={handleGoogleReviewClick}
-              className="inline-flex items-center gap-2 bg-surface border border-stone-600 rounded-lg px-4 py-2 text-sm font-medium text-stone-200 hover:bg-stone-800 transition-colors"
+              className="inline-flex items-center gap-2 bg-stone-900 border border-stone-600 rounded-lg px-4 py-2 text-sm font-medium text-stone-200 hover:bg-stone-800 transition-colors"
             >
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                 <path

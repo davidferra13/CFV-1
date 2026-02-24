@@ -171,7 +171,7 @@ function StatCard({
           ? 'text-red-600'
           : 'text-stone-100'
   return (
-    <div className="bg-surface rounded-lg border border-stone-700 p-4">
+    <div className="bg-stone-900 rounded-lg border border-stone-700 p-4">
       <p className="text-xs text-stone-500 uppercase tracking-wide mb-1">{label}</p>
       <p className={`text-2xl font-bold ${color}`}>{value}</p>
       {sub && <p className="text-xs text-stone-400 mt-1">{sub}</p>}

@@ -82,7 +82,7 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
               className={`relative rounded-xl border p-4 transition-colors ${
                 isOn
                   ? 'border-brand-600 bg-brand-950/30 dark:border-brand-700 dark:bg-brand-900/20'
-                  : 'border-stone-700 bg-surface dark:border-stone-700 dark:bg-stone-800'
+                  : 'border-stone-700 bg-stone-900 dark:border-stone-700 dark:bg-stone-800'
               } ${mod.alwaysVisible ? 'opacity-75' : ''}`}
             >
               <div className="flex items-start justify-between gap-3">
@@ -121,7 +121,7 @@ export function ModulesClient({ enabledModules: initial, tier, isGrandfathered }
                     aria-label={`Toggle ${mod.label}`}
                   >
                     <span
-                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-surface shadow transition-transform ${
+                      className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-stone-900 shadow transition-transform ${
                         isOn ? 'translate-x-4' : 'translate-x-0'
                       }`}
                     />

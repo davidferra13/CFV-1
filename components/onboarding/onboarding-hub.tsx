@@ -123,7 +123,7 @@ export function OnboardingHub({ progress }: { progress: OnboardingProgress }) {
             return (
               <Card
                 key={phase.key}
-                className={isDone ? 'border-green-200 bg-green-950' : 'bg-surface'}
+                className={isDone ? 'border-green-200 bg-green-950' : 'bg-stone-900'}
               >
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-3 text-base font-semibold">

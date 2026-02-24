@@ -12,7 +12,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={`bg-surface rounded-xl border border-stone-700/80 shadow-[var(--shadow-card)] transition-all duration-200 ${interactive ? 'hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5 cursor-pointer' : ''} ${className}`}
+        className={`bg-stone-900 rounded-xl border border-stone-700/80 shadow-[var(--shadow-card)] transition-all duration-200 ${interactive ? 'hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5 cursor-pointer' : ''} ${className}`}
         {...props}
       >
         {children}
@@ -64,7 +64,7 @@ export const CardFooter = forwardRef<HTMLDivElement, CardProps>(
     return (
       <div
         ref={ref}
-        className={`px-6 py-4 border-t border-stone-800 bg-surface-accent/60 rounded-b-xl ${className}`}
+        className={`px-6 py-4 border-t border-stone-800 bg-stone-800/60 rounded-b-xl ${className}`}
         {...props}
       >
         {children}

@@ -278,7 +278,7 @@ export function EmailBuilder({ templates: initialTemplates }: EmailBuilderProps)
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="bg-surface rounded border border-stone-700 p-4">
+            <div className="bg-stone-900 rounded border border-stone-700 p-4">
               <p className="text-xs text-stone-500 mb-2">
                 Subject:{' '}
                 <span className="font-medium text-stone-300">{previewTemplate.subject}</span>

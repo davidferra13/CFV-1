@@ -87,7 +87,7 @@ function RatingSelector({
               ${
                 value === n
                   ? 'border-brand-600 bg-brand-950 text-brand-400 font-semibold'
-                  : 'border-stone-700 bg-surface text-stone-400 hover:border-stone-600 hover:bg-stone-800'
+                  : 'border-stone-700 bg-stone-900 text-stone-400 hover:border-stone-600 hover:bg-stone-800'
               }
             `}
           >
@@ -240,7 +240,7 @@ export function AARForm({ eventId, checklistItems, existingAAR }: AARFormProps) 
                 ${
                   forgottenItems.has(ci.item)
                     ? 'border-red-300 bg-red-950 text-red-800'
-                    : 'border-stone-700 bg-surface text-stone-300 hover:bg-stone-800'
+                    : 'border-stone-700 bg-stone-900 text-stone-300 hover:bg-stone-800'
                 }
               `}
             >

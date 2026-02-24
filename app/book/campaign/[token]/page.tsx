@@ -41,7 +41,7 @@ export default async function PublicBookingPage({ params }: Props) {
         </div>
 
         {/* Key details */}
-        <div className="bg-surface border border-stone-700 rounded-2xl p-5 space-y-3">
+        <div className="bg-stone-900 border border-stone-700 rounded-2xl p-5 space-y-3">
           {(dateDisplay || timeDisplay) && (
             <div className="flex items-center gap-3 text-sm">
               <Calendar className="w-4 h-4 text-brand-500 shrink-0" />
@@ -97,7 +97,7 @@ export default async function PublicBookingPage({ params }: Props) {
 
         {/* Fully booked state */}
         {dinner.is_full ? (
-          <div className="bg-surface border border-stone-700 rounded-2xl p-6 text-center space-y-2">
+          <div className="bg-stone-900 border border-stone-700 rounded-2xl p-6 text-center space-y-2">
             <p className="text-base font-semibold text-stone-300">This dinner is fully booked.</p>
             <p className="text-sm text-stone-400">
               Contact {dinner.chef_name} directly to be added to a waitlist.
@@ -105,7 +105,7 @@ export default async function PublicBookingPage({ params }: Props) {
           </div>
         ) : (
           /* Booking form */
-          <div className="bg-surface border border-stone-700 rounded-2xl p-6">
+          <div className="bg-stone-900 border border-stone-700 rounded-2xl p-6">
             <h2 className="text-base font-semibold text-stone-200 mb-4 text-center">
               Reserve your spot
             </h2>

@@ -112,7 +112,7 @@ export function EventDetailPopover({
   return (
     <div
       ref={popoverRef}
-      className="event-popover fixed z-50 w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-surface rounded-xl shadow-xl border border-stone-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+      className="event-popover fixed z-50 w-[calc(100vw-2rem)] sm:w-80 max-w-80 bg-stone-900 rounded-xl shadow-xl border border-stone-700 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
       style={{
         left: adjustedPos.x,
         top: adjustedPos.y,
@@ -120,7 +120,7 @@ export function EventDetailPopover({
     >
       {/* Header */}
       <div
-        className={`px-4 py-3 ${isInquiry ? 'bg-gray-50 border-b border-gray-200' : isPrep ? 'bg-amber-950 border-b border-amber-200' : 'bg-surface-accent border-b border-stone-700'}`}
+        className={`px-4 py-3 ${isInquiry ? 'bg-gray-50 border-b border-gray-200' : isPrep ? 'bg-amber-950 border-b border-amber-200' : 'bg-stone-800 border-b border-stone-700'}`}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -247,7 +247,7 @@ export function EventDetailPopover({
       </div>
 
       {/* Footer Actions */}
-      <div className="px-4 py-3 bg-surface-muted border-t border-stone-800 flex items-center gap-2">
+      <div className="px-4 py-3 bg-stone-800 border-t border-stone-800 flex items-center gap-2">
         {isInquiry ? (
           <Link
             href={`/inquiries/${props.eventId}`}

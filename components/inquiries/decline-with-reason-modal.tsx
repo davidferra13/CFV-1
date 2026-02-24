@@ -39,7 +39,7 @@ export function DeclineWithReasonModal({ inquiryId, onCancel }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="bg-surface rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
+      <div className="bg-stone-900 rounded-xl shadow-xl max-w-sm w-full p-6 space-y-4">
         <div>
           <h2 className="text-base font-semibold text-stone-100">Decline Inquiry</h2>
           <p className="text-sm text-stone-500 mt-1">

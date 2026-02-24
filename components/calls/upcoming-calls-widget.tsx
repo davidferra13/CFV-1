@@ -15,7 +15,7 @@ function getContactLabel(call: ScheduledCall): string {
 
 export function UpcomingCallsWidget({ calls }: { calls: ScheduledCall[] }) {
   return (
-    <div className="rounded-xl border bg-surface shadow-sm">
+    <div className="rounded-xl border bg-stone-900 shadow-sm">
       <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-gray-100">
         <div className="flex items-center gap-2">
           <Phone className="w-4 h-4 text-blue-500" />

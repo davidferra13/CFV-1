@@ -563,7 +563,7 @@ export function ExpenseForm({ events, defaultEventId }: Props) {
                         key={idx}
                         className={`flex items-center gap-2 p-2 rounded border text-sm ${
                           item.isBusiness
-                            ? 'border-stone-700 bg-surface'
+                            ? 'border-stone-700 bg-stone-900'
                             : 'border-amber-200 bg-amber-950'
                         }`}
                       >

@@ -53,7 +53,7 @@ export function AddWordDialog({ onAdded }: AddWordDialogProps) {
   }
 
   return (
-    <div className="border border-stone-700 rounded-lg p-4 bg-surface shadow-sm max-w-md">
+    <div className="border border-stone-700 rounded-lg p-4 bg-stone-900 shadow-sm max-w-md">
       <h3 className="font-semibold text-stone-100 mb-3">Add a Word</h3>
 
       <form onSubmit={handleSubmit} className="space-y-3">

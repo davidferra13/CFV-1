@@ -35,7 +35,7 @@ export const TableBody = forwardRef<
   HTMLAttributes<HTMLTableSectionElement>
 >(({ className = '', ...props }, ref) => {
   return (
-    <tbody ref={ref} className={`bg-surface divide-y divide-stone-800 ${className}`} {...props} />
+    <tbody ref={ref} className={`bg-stone-900 divide-y divide-stone-800 ${className}`} {...props} />
   )
 })
 

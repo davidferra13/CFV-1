@@ -52,7 +52,7 @@ export function KanbanCard({ inquiry }: KanbanCardProps) {
   const isStuck = daysSinceUpdate !== null && daysSinceUpdate >= 7
   const isSlowing = daysSinceUpdate !== null && daysSinceUpdate >= 4 && daysSinceUpdate < 7
 
-  const stuckClass = isStuck ? 'bg-red-950' : isSlowing ? 'bg-amber-950' : 'bg-surface'
+  const stuckClass = isStuck ? 'bg-red-950' : isSlowing ? 'bg-amber-950' : 'bg-stone-900'
 
   const budgetFormatted = inquiry.budget_cents
     ? `$${(inquiry.budget_cents / 100).toLocaleString('en-US', { maximumFractionDigits: 0 })}`

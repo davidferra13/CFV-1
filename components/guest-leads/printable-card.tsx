@@ -30,7 +30,7 @@ export function PrintableCard({
   return (
     <div className="min-h-screen bg-stone-800">
       {/* Print button (hidden when printing) */}
-      <div className="print:hidden flex items-center justify-between px-6 py-4 bg-surface border-b">
+      <div className="print:hidden flex items-center justify-between px-6 py-4 bg-stone-900 border-b">
         <div>
           <h1 className="text-lg font-semibold text-stone-100">Table Card Preview</h1>
           <p className="text-sm text-stone-500">
@@ -56,7 +56,7 @@ export function PrintableCard({
       {/* Card — optimized for 4x6 print */}
       <div className="flex items-center justify-center p-8 print:p-0">
         <div
-          className="bg-surface rounded-2xl shadow-lg print:shadow-none print:rounded-none overflow-hidden"
+          className="bg-stone-900 rounded-2xl shadow-lg print:shadow-none print:rounded-none overflow-hidden"
           style={{ width: '4in', height: '6in' }}
         >
           <div className="h-full flex flex-col items-center justify-center p-8 text-center">

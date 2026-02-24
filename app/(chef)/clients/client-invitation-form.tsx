@@ -108,7 +108,7 @@ export function ClientInvitationForm() {
             <p className="text-sm">
               Invitation created for <strong>{success.email}</strong>
             </p>
-            <div className="bg-surface rounded border border-green-300 p-3">
+            <div className="bg-stone-900 rounded border border-green-300 p-3">
               <p className="text-xs font-mono break-all text-stone-300">{success.url}</p>
             </div>
             <Button variant="secondary" size="sm" onClick={() => copyToClipboard(success.url)}>

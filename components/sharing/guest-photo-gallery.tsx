@@ -103,7 +103,7 @@ export function GuestPhotoGallery({ shareToken, guestName, guestToken }: Props) 
       {showUpload && (
         <form
           onSubmit={handleUpload}
-          className="bg-surface rounded-xl border border-stone-700 p-4 space-y-3"
+          className="bg-stone-900 rounded-xl border border-stone-700 p-4 space-y-3"
         >
           {!guestName && (
             <input

@@ -42,7 +42,7 @@ export function BusinessModeToggle({
     <div className="space-y-3">
       {error && <Alert variant="error">{error}</Alert>}
 
-      <div className="rounded-lg border border-stone-700 p-4 bg-surface">
+      <div className="rounded-lg border border-stone-700 p-4 bg-stone-900">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             <p className="font-medium text-stone-100">Business Mode</p>
@@ -63,7 +63,7 @@ export function BusinessModeToggle({
             }`}
           >
             <span
-              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-surface shadow ring-0 transition duration-200 ease-in-out ${
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow ring-0 transition duration-200 ease-in-out ${
                 localEnabled ? 'translate-x-5' : 'translate-x-0'
               }`}
             />

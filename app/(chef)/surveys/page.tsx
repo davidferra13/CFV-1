@@ -19,7 +19,7 @@ function StarDisplay({ value }: { value: number | null }) {
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="bg-surface rounded-xl border border-stone-700 p-4">
+    <div className="bg-stone-900 rounded-xl border border-stone-700 p-4">
       <p className="text-xs text-stone-500 mb-1">{label}</p>
       <p className="text-2xl font-bold text-stone-100">{value}</p>
     </div>
@@ -68,7 +68,7 @@ export default async function SurveysPage() {
 
       {/* No surveys yet */}
       {surveys.length === 0 && (
-        <div className="text-center py-20 bg-surface rounded-2xl border border-stone-700">
+        <div className="text-center py-20 bg-stone-900 rounded-2xl border border-stone-700">
           <div className="text-4xl mb-3">📋</div>
           <h2 className="text-lg font-semibold text-stone-100 mb-1">No surveys yet</h2>
           <p className="text-stone-500 max-w-sm mx-auto text-sm">
@@ -87,7 +87,7 @@ export default async function SurveysPage() {
             const isSubmitted = survey.submitted_at !== null
 
             return (
-              <div key={survey.id} className="bg-surface rounded-xl border border-stone-700 p-5">
+              <div key={survey.id} className="bg-stone-900 rounded-xl border border-stone-700 p-5">
                 {/* Row header */}
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <div>

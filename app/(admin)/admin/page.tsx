@@ -40,7 +40,7 @@ function StatCard({
   trend?: 'up' | 'down' | 'neutral'
 }) {
   return (
-    <div className="bg-surface rounded-xl border border-slate-200 px-5 py-4">
+    <div className="bg-stone-900 rounded-xl border border-slate-200 px-5 py-4">
       <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">{label}</p>
       <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
       {sub !== undefined && (
@@ -70,7 +70,7 @@ function QuickTile({
   return (
     <Link
       href={href}
-      className="bg-surface rounded-xl border border-slate-200 px-4 py-4 hover:border-slate-300 hover:shadow-sm transition-all group"
+      className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4 hover:border-slate-300 hover:shadow-sm transition-all group"
     >
       <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-orange-950 transition-colors">

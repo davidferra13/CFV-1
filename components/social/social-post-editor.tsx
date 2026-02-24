@@ -254,7 +254,7 @@ export function SocialPostEditor({
   return (
     <div className="space-y-4">
       {/* Header card */}
-      <div className="bg-surface rounded-xl border border-stone-700 px-5 py-4">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 px-5 py-4">
         <div className="flex items-center gap-3 mb-3">
           <SocialPillarBadge pillar={post.pillar} />
           <Badge variant={statusBadgeVariant(post.status)}>
@@ -272,7 +272,7 @@ export function SocialPostEditor({
       </div>
 
       {/* Tab navigation + content */}
-      <div className="bg-surface rounded-xl border border-stone-700 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
         <div className="flex gap-0 border-b border-stone-800 overflow-x-auto">
           {tabs.map(({ key, label }) => (
             <button
@@ -676,7 +676,7 @@ export function SocialPostEditor({
       </div>
 
       {/* Preflight + save bar */}
-      <div className="bg-surface rounded-xl border border-stone-700 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between sticky bottom-4 shadow-sm">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 justify-between sticky bottom-4 shadow-sm">
         <div className="flex-1">
           <SocialPostPreflight post={post} />
         </div>
@@ -699,7 +699,7 @@ export function SocialPostEditor({
       {vaultOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/40" onClick={() => setVaultOpen(false)} />
-          <div className="relative bg-surface rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+          <div className="relative bg-stone-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-stone-800">
               <h3 className="font-semibold text-stone-100">Select from Media Vault</h3>
               <button

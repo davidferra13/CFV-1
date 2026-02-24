@@ -76,7 +76,7 @@ export function TakeAChefConvertBanner({ clientName, directBookingUrl, eventId }
             </p>
 
             {/* Pre-written message */}
-            <div className="mt-3 bg-surface border border-amber-200 rounded-lg p-3 text-sm text-stone-300 leading-relaxed">
+            <div className="mt-3 bg-stone-900 border border-amber-200 rounded-lg p-3 text-sm text-stone-300 leading-relaxed">
               {suggestedMessage}
             </div>
 
@@ -122,7 +122,7 @@ export function TakeAChefConvertBanner({ clientName, directBookingUrl, eventId }
                 href={directBookingUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface border border-amber-300 text-amber-800 text-xs font-medium rounded-lg hover:bg-amber-950 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-stone-900 border border-amber-300 text-amber-800 text-xs font-medium rounded-lg hover:bg-amber-950 transition-colors"
               >
                 <svg
                   className="w-3.5 h-3.5"

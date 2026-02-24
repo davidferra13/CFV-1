@@ -28,7 +28,7 @@ export function EventKanbanCard({ event, isDragging = false }: EventKanbanCardPr
       {...listeners}
       {...attributes}
       className={[
-        'bg-surface rounded-lg border border-stone-700 p-3 cursor-grab active:cursor-grabbing select-none',
+        'bg-stone-900 rounded-lg border border-stone-700 p-3 cursor-grab active:cursor-grabbing select-none',
         'transition-shadow duration-150',
         isDragging ? 'shadow-xl opacity-80 ring-2 ring-brand-400' : 'shadow-sm hover:shadow-md',
       ].join(' ')}
@@ -68,7 +68,7 @@ export function EventKanbanCard({ event, isDragging = false }: EventKanbanCardPr
 /** Ghost overlay card shown while dragging */
 export function EventKanbanCardOverlay({ event }: { event: KanbanEvent }) {
   return (
-    <div className="bg-surface rounded-lg border border-brand-600 p-3 shadow-2xl ring-2 ring-brand-400 rotate-1 opacity-95 w-64">
+    <div className="bg-stone-900 rounded-lg border border-brand-600 p-3 shadow-2xl ring-2 ring-brand-400 rotate-1 opacity-95 w-64">
       <p className="text-sm font-semibold text-stone-100 line-clamp-2">{event.occasion}</p>
       <p className="text-xs text-stone-500 mt-1 truncate">{event.client_name}</p>
       <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">

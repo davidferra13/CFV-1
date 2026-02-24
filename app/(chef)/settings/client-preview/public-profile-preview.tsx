@@ -33,7 +33,7 @@ type Props = {
 export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: Props) {
   if (!slug) {
     return (
-      <div className="rounded-xl border border-stone-700 bg-surface p-16 text-center">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-16 text-center">
         <div className="text-stone-300 mb-4">
           <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
@@ -60,7 +60,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
 
   if (!publicProfileData) {
     return (
-      <div className="rounded-xl border border-stone-700 bg-surface p-16 text-center">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-16 text-center">
         <p className="text-stone-500 text-sm">Could not load public profile preview.</p>
       </div>
     )
@@ -155,7 +155,7 @@ export function PublicProfilePreview({ slug, publicProfileData, deviceFrame }: P
           )}
 
           {/* CTA Section */}
-          <section className="py-16 px-6 bg-surface/75">
+          <section className="py-16 px-6 bg-stone-900/75">
             <div className="max-w-2xl mx-auto text-center">
               <h2 className="text-2xl font-bold text-stone-100">Ready to Book?</h2>
               <p className="text-stone-400 mt-3">

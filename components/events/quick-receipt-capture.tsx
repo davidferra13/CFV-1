@@ -120,7 +120,7 @@ export function QuickReceiptCapture({ eventId }: Props) {
           <img
             src={previewUrl}
             alt="Receipt preview"
-            className="max-h-48 w-full object-contain rounded-md border border-stone-700 bg-surface"
+            className="max-h-48 w-full object-contain rounded-md border border-stone-700 bg-stone-900"
           />
           <p className="text-xs text-stone-500 truncate">{file?.name}</p>
           <div className="flex gap-2">

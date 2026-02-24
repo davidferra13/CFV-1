@@ -22,7 +22,7 @@ export default function CallsLoading() {
         {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="rounded-xl border border-stone-700 bg-surface p-4 flex items-center gap-4"
+            className="rounded-xl border border-stone-700 bg-stone-900 p-4 flex items-center gap-4"
           >
             {/* Avatar */}
             <div className="w-10 h-10 rounded-full bg-stone-700 flex-shrink-0" />

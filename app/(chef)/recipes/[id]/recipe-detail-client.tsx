@@ -450,7 +450,7 @@ function RecipeShareModal({
               key={chef.id}
               type="button"
               onClick={() => setSelectedChef(chef)}
-              className="w-full text-left flex items-center gap-3 rounded-md border border-stone-700 bg-surface px-3 py-2 hover:bg-stone-800 transition-colors text-sm"
+              className="w-full text-left flex items-center gap-3 rounded-md border border-stone-700 bg-stone-900 px-3 py-2 hover:bg-stone-800 transition-colors text-sm"
             >
               <div className="h-7 w-7 rounded-full bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-400 flex-shrink-0">
                 {(chef.display_name || chef.business_name).charAt(0).toUpperCase()}
@@ -473,7 +473,7 @@ function RecipeShareModal({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center gap-3 rounded-md bg-surface border border-stone-700 px-3 py-2">
+          <div className="flex items-center gap-3 rounded-md bg-stone-900 border border-stone-700 px-3 py-2">
             <div className="h-7 w-7 rounded-full bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-400">
               {(selectedChef.display_name || selectedChef.business_name).charAt(0).toUpperCase()}
             </div>

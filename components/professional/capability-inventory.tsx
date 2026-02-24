@@ -173,7 +173,10 @@ export function CapabilityInventory({ capabilities }: CapabilityInventoryProps) 
   return (
     <div className="space-y-8">
       {SECTIONS.map((section) => (
-        <div key={section.type} className="bg-surface rounded-xl border border-stone-700 shadow-sm">
+        <div
+          key={section.type}
+          className="bg-stone-900 rounded-xl border border-stone-700 shadow-sm"
+        >
           <div className="px-6 py-4 border-b border-stone-800">
             <h2 className="text-base font-semibold text-stone-100">{section.label}</h2>
             <p className="text-xs text-stone-500 mt-0.5">

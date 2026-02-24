@@ -347,7 +347,7 @@ export function PastEventsImport({
                               }
                             }}
                             aria-label={`Client for row ${index + 1}`}
-                            className="w-full text-sm border border-stone-600 rounded-lg px-2 py-2 bg-surface text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                            className="w-full text-sm border border-stone-600 rounded-lg px-2 py-2 bg-stone-900 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                           >
                             <option value="__new__">+ New client</option>
                             {existingClients.map((c) => (
@@ -417,7 +417,7 @@ export function PastEventsImport({
                         value={row.payment_method}
                         onChange={(e) => updateRow(row.id, 'payment_method', e.target.value)}
                         aria-label={`Payment method for row ${index + 1}`}
-                        className="w-full text-sm border border-stone-600 rounded-lg px-2 py-2 bg-surface text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                        className="w-full text-sm border border-stone-600 rounded-lg px-2 py-2 bg-stone-900 text-stone-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                       >
                         {PAYMENT_METHODS.map((m) => (
                           <option key={m.value} value={m.value}>

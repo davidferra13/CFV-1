@@ -13,7 +13,7 @@ export default function BookingThankYouPage({
 
   return (
     <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
-      <div className="max-w-md w-full bg-surface rounded-xl border border-stone-700 p-8 text-center space-y-4 shadow-sm">
+      <div className="max-w-md w-full bg-stone-900 rounded-xl border border-stone-700 p-8 text-center space-y-4 shadow-sm">
         <div className="text-5xl">{isInstantBook ? '✅' : '🎉'}</div>
         <h1 className="text-2xl font-bold text-stone-100">
           {isInstantBook ? 'Booking Confirmed!' : 'Request Received!'}

@@ -330,7 +330,7 @@ export function CsvImport() {
                         ? 'border-stone-700 bg-stone-800 opacity-40'
                         : dupe
                           ? 'border-yellow-200 bg-yellow-950'
-                          : 'border-stone-700 bg-surface'
+                          : 'border-stone-700 bg-stone-900'
                     }`}
                   >
                     <div className="flex-1 min-w-0">

@@ -12,7 +12,7 @@ export interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ label, error, helperText, className = '', ...props }, ref) => {
     const textareaClasses = `
-      block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100
+      block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100
       placeholder:text-stone-400
       focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20
       disabled:cursor-not-allowed disabled:bg-stone-800 disabled:text-stone-500

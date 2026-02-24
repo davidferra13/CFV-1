@@ -225,7 +225,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
                       value={pricingType}
                       onChange={(e) => setPricingType(e.target.value as 'flat_rate' | 'per_person')}
                       title="Pricing type"
-                      className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     >
                       <option value="flat_rate">Flat rate</option>
                       <option value="per_person">Per person</option>
@@ -252,7 +252,7 @@ export function BookingPageSettings({ initialSettings }: Props) {
                       value={depositType}
                       onChange={(e) => setDepositType(e.target.value as 'percent' | 'fixed')}
                       title="Deposit type"
-                      className="w-full rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+                      className="w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
                     >
                       <option value="percent">Percentage of total</option>
                       <option value="fixed">Fixed amount</option>

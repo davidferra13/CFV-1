@@ -24,7 +24,7 @@ export function StatCard({
   className = '',
 }: StatCardProps) {
   return (
-    <div className={`rounded-xl border border-stone-700 bg-surface p-5 shadow-sm ${className}`}>
+    <div className={`rounded-xl border border-stone-700 bg-stone-900 p-5 shadow-sm ${className}`}>
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-stone-500">{label}</p>

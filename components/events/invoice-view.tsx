@@ -56,7 +56,7 @@ export function InvoiceView({ invoice }: { invoice: InvoiceData }) {
       : 'Flat rate'
 
   return (
-    <div className="max-w-2xl mx-auto bg-surface border border-stone-700 rounded-lg overflow-hidden print:shadow-none print:border-0">
+    <div className="max-w-2xl mx-auto bg-stone-900 border border-stone-700 rounded-lg overflow-hidden print:shadow-none print:border-0">
       {/* ── Section 1: INVOICE Header ── */}
       <div className="px-8 py-6 bg-stone-800 border-b border-stone-700">
         <div className="flex justify-between items-start">

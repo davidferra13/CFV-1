@@ -18,7 +18,7 @@ function StatCard({
   icon: typeof MapPin
 }) {
   return (
-    <div className="rounded-xl border border-stone-700 bg-surface p-5">
+    <div className="rounded-xl border border-stone-700 bg-stone-900 p-5">
       <div className="flex items-center gap-2 mb-1">
         <Icon size={15} className="text-stone-400" />
         <span className="text-xs font-medium uppercase tracking-wide text-stone-400">{label}</span>
@@ -104,7 +104,7 @@ export default async function PartnerDashboardPage() {
                   <Link
                     key={location.id}
                     href={`/partner/locations/${location.id}`}
-                    className="rounded-xl border border-stone-700 bg-surface overflow-hidden hover:border-stone-600 hover:shadow-sm transition-all"
+                    className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden hover:border-stone-600 hover:shadow-sm transition-all"
                   >
                     {/* Cover image */}
                     {coverImg ? (
@@ -146,7 +146,7 @@ export default async function PartnerDashboardPage() {
       {displayEvents.length > 0 && (
         <div>
           <h2 className="text-lg font-semibold text-stone-100 mb-4">Recent Events</h2>
-          <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
+          <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-stone-800 border-b border-stone-700">
                 <tr>
@@ -180,7 +180,7 @@ export default async function PartnerDashboardPage() {
 
       {/* Empty state */}
       {locations.length === 0 && (
-        <div className="rounded-xl border border-dashed border-stone-600 bg-surface p-10 text-center">
+        <div className="rounded-xl border border-dashed border-stone-600 bg-stone-900 p-10 text-center">
           <MapPin size={32} className="mx-auto text-stone-300 mb-3" />
           <h3 className="font-semibold text-stone-300 mb-1">No locations yet</h3>
           <p className="text-sm text-stone-500">

@@ -127,7 +127,7 @@ export function ClientFeedbackForm({ eventId, googleReviewUrl }: ClientFeedbackF
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={handleGoogleReviewClick}
-                  className="inline-flex items-center gap-2 bg-surface border border-stone-600 rounded-lg px-5 py-2.5 font-medium text-stone-200 hover:bg-stone-800 hover:border-stone-400 transition-colors shadow-sm"
+                  className="inline-flex items-center gap-2 bg-stone-900 border border-stone-600 rounded-lg px-5 py-2.5 font-medium text-stone-200 hover:bg-stone-800 hover:border-stone-400 transition-colors shadow-sm"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
                     <path

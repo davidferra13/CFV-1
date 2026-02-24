@@ -34,7 +34,7 @@ export function SocialMonthCell({ month, year, posts }: Props) {
 
   return (
     <Link href={`/social/planner/${month}`} className="block group">
-      <div className="bg-surface rounded-xl border border-stone-700 p-4 hover:border-brand-600 hover:shadow-sm transition-all cursor-pointer">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 hover:border-brand-600 hover:shadow-sm transition-all cursor-pointer">
         <div className="flex items-center justify-between mb-3">
           <span className="text-sm font-semibold text-stone-200">{MONTH_NAMES[month - 1]}</span>
           <span className="text-xs text-stone-400">{total} posts</span>

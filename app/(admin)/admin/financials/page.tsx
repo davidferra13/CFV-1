@@ -49,13 +49,13 @@ export default async function AdminFinancialsPage() {
 
       {fin && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               GMV All-Time
             </p>
             <p className="text-2xl font-bold text-slate-900 mt-1">{formatCents(fin.totalGMV)}</p>
           </div>
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               GMV This Month
             </p>
@@ -63,13 +63,13 @@ export default async function AdminFinancialsPage() {
               {formatCents(fin.gmvThisMonth)}
             </p>
           </div>
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               Expenses All-Time
             </p>
             <p className="text-2xl font-bold text-red-500 mt-1">{formatCents(fin.totalExpenses)}</p>
           </div>
-          <div className="bg-surface rounded-xl border border-slate-200 px-4 py-4">
+          <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-4">
             <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">
               Expenses This Month
             </p>
@@ -81,7 +81,7 @@ export default async function AdminFinancialsPage() {
       )}
 
       {/* Ledger entries */}
-      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
           <h2 className="text-sm font-semibold text-slate-700">Ledger Entries (last 200)</h2>
         </div>

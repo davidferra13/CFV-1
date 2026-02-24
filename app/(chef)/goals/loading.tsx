@@ -15,7 +15,7 @@ export default function GoalsLoading() {
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="rounded-xl border border-stone-700 bg-surface p-4 space-y-2 text-center"
+            className="rounded-xl border border-stone-700 bg-stone-900 p-4 space-y-2 text-center"
           >
             <div className="h-8 w-12 bg-stone-700 rounded mx-auto" />
             <div className="h-3 w-20 bg-stone-800 rounded mx-auto" />
@@ -26,7 +26,7 @@ export default function GoalsLoading() {
       {/* Goal cards */}
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+          <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
             <div className="flex items-start justify-between">
               <div className="space-y-2">
                 <div className="h-5 w-48 bg-stone-700 rounded" />

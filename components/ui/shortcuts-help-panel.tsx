@@ -59,7 +59,7 @@ export function ShortcutsHelpPanel({ isOpen, onClose }: ShortcutsHelpPanelProps)
       onClick={onClose}
     >
       <div
-        className="relative bg-surface rounded-xl shadow-2xl w-full max-w-[500px] mx-4 overflow-hidden"
+        className="relative bg-stone-900 rounded-xl shadow-2xl w-full max-w-[500px] mx-4 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -110,7 +110,7 @@ export function ShortcutsHelpPanel({ isOpen, onClose }: ShortcutsHelpPanelProps)
         <div className="px-6 py-3 border-t border-gray-100 bg-gray-50">
           <p className="text-xs text-gray-400 text-center">
             Press{' '}
-            <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-gray-300 bg-surface text-xs font-mono text-gray-600">
+            <kbd className="inline-flex items-center px-1.5 py-0.5 rounded border border-gray-300 bg-stone-900 text-xs font-mono text-gray-600">
               Esc
             </kbd>{' '}
             to close

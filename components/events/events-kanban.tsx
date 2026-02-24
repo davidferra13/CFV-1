@@ -112,7 +112,7 @@ function KanbanCard({ event }: { event: Event }) {
   return (
     <Link
       href={`/events/${event.id}`}
-      className={`block rounded-lg border bg-surface p-3 hover:shadow-md transition-shadow ${
+      className={`block rounded-lg border bg-stone-900 p-3 hover:shadow-md transition-shadow ${
         isTerminal ? 'opacity-60' : ''
       } ${event.status === 'in_progress' ? 'border-amber-300 ring-1 ring-amber-800' : 'border-stone-700'}`}
     >

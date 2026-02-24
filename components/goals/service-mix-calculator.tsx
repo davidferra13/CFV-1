@@ -160,7 +160,7 @@ export function ServiceMixCalculator({
                 <div
                   key={st.id}
                   className={`rounded-lg border px-4 py-3 transition-colors ${
-                    qty > 0 ? 'border-brand-700 bg-brand-950' : 'border-stone-700 bg-surface'
+                    qty > 0 ? 'border-brand-700 bg-brand-950' : 'border-stone-700 bg-stone-900'
                   }`}
                 >
                   <div className="flex items-center gap-3 flex-wrap">

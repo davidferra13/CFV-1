@@ -103,7 +103,7 @@ export function PublicPartnerSignupForm({ chefSlug, chefName, primaryColor }: Pr
             <select
               value={partnerType}
               onChange={(e) => setPartnerType(e.target.value as PartnerType)}
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
             >
               {PARTNER_TYPE_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>

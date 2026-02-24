@@ -79,23 +79,23 @@ export default async function AdminReferralPartnersPage() {
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
             Total Partners
           </p>
           <p className="text-2xl font-bold text-slate-900">{partners.length}</p>
         </div>
-        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">Active</p>
           <p className="text-2xl font-bold text-green-700">{activeCount}</p>
         </div>
-        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
             In Showcase
           </p>
           <p className="text-2xl font-bold text-blue-700">{showcaseCount}</p>
         </div>
-        <div className="bg-surface rounded-xl border border-slate-200 px-4 py-3">
+        <div className="bg-stone-900 rounded-xl border border-slate-200 px-4 py-3">
           <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-1">
             Chef Tenants
           </p>
@@ -105,7 +105,7 @@ export default async function AdminReferralPartnersPage() {
 
       {/* Type breakdown */}
       {Object.keys(typeBreakdown).length > 0 && (
-        <div className="bg-surface rounded-xl border border-slate-200 p-4">
+        <div className="bg-stone-900 rounded-xl border border-slate-200 p-4">
           <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">
             By Type
           </h2>
@@ -128,7 +128,7 @@ export default async function AdminReferralPartnersPage() {
       )}
 
       {/* Partners Table */}
-      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
         <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
           <h2 className="text-sm font-semibold text-slate-700">
             All Referral Partners ({partners.length})

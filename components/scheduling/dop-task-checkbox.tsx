@@ -38,7 +38,7 @@ export function DOPTaskCheckbox({ eventId, taskKey, initialChecked }: Props) {
       className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border-2 flex items-center justify-center text-xs transition-colors cursor-pointer ${
         checked
           ? 'bg-emerald-500 border-emerald-500 text-white'
-          : 'bg-surface border-stone-600 text-transparent hover:border-emerald-400'
+          : 'bg-stone-900 border-stone-600 text-transparent hover:border-emerald-400'
       }`}
     >
       ✓

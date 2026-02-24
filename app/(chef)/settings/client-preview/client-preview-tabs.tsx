@@ -94,7 +94,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
       {/* Controls row */}
       <div className="flex flex-wrap items-center gap-3 justify-between">
         {/* Tab switcher */}
-        <div className="flex rounded-lg border border-stone-700 bg-surface p-1 gap-1">
+        <div className="flex rounded-lg border border-stone-700 bg-stone-900 p-1 gap-1">
           <button
             onClick={() => handleTabSwitch('public')}
             className={[
@@ -122,7 +122,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
         {/* Right-side controls */}
         <div className="flex items-center gap-2">
           {/* Device frame toggle */}
-          <div className="flex rounded-lg border border-stone-700 bg-surface p-1 gap-1">
+          <div className="flex rounded-lg border border-stone-700 bg-stone-900 p-1 gap-1">
             <button
               onClick={() => setDeviceFrame('desktop')}
               title="Desktop view"
@@ -155,7 +155,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
               href={`/chef/${slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-stone-700 bg-surface text-stone-300 hover:bg-stone-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border border-stone-700 bg-stone-900 text-stone-300 hover:bg-stone-800 transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               Open Live Page
@@ -172,7 +172,7 @@ export function ClientPreviewTabs({ slug, publicProfileData, clients }: Props) {
           <select
             value={selectedClientId}
             onChange={(e) => handleClientChange(e.target.value)}
-            className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-surface focus:outline-none focus:ring-2 focus:ring-stone-600 text-stone-200"
+            className="text-sm border border-stone-700 rounded-lg px-3 py-1.5 bg-stone-900 focus:outline-none focus:ring-2 focus:ring-stone-600 text-stone-200"
           >
             {clients.map((c) => (
               <option key={c.id} value={c.id}>

@@ -142,7 +142,7 @@ function SuggestionPanel({
         {suggestions.map((s, i) => (
           <div
             key={i}
-            className={`bg-surface rounded border p-3 text-sm ${
+            className={`bg-stone-900 rounded border p-3 text-sm ${
               edits[i].included ? 'border-amber-300' : 'border-gray-200 opacity-50'
             }`}
           >
@@ -391,7 +391,7 @@ function PrepBlockCard({ block, onToggleComplete, onDelete }: PrepBlockCardProps
       className={`flex items-start gap-3 p-3 rounded-lg border text-sm ${
         block.is_completed
           ? 'bg-green-950 border-green-200 opacity-75'
-          : 'bg-surface border-gray-200'
+          : 'bg-stone-900 border-gray-200'
       }`}
     >
       <button

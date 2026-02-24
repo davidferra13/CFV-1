@@ -224,7 +224,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                               e.target.value || null
                             )
                           }
-                          className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-surface"
+                          className="text-xs border border-stone-700 rounded px-1 py-0.5 text-stone-400 bg-stone-900"
                         >
                           <option value="">—</option>
                           <option value="protein">Protein</option>
@@ -243,7 +243,7 @@ function LibraryReceiptBlock({ receipt: initialReceipt }: { receipt: AllReceiptP
                           onChange={(e) =>
                             handleLineItemUpdate(item.id, 'expenseTag', e.target.value)
                           }
-                          className={`text-xs border rounded px-1 py-0.5 bg-surface ${
+                          className={`text-xs border rounded px-1 py-0.5 bg-stone-900 ${
                             item.expenseTag === 'personal'
                               ? 'border-stone-700 text-stone-400'
                               : item.expenseTag === 'business'
@@ -346,7 +346,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
           <select
             value={filterEventId}
             onChange={(e) => setFilterEventId(e.target.value)}
-            className="text-xs border border-stone-700 rounded px-2 py-1 bg-surface text-stone-300"
+            className="text-xs border border-stone-700 rounded px-2 py-1 bg-stone-900 text-stone-300"
           >
             <option value="">All events</option>
             <option value="__standalone__">Standalone (no event)</option>
@@ -361,7 +361,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
             <select
               value={filterClientId}
               onChange={(e) => setFilterClientId(e.target.value)}
-              className="text-xs border border-stone-700 rounded px-2 py-1 bg-surface text-stone-300"
+              className="text-xs border border-stone-700 rounded px-2 py-1 bg-stone-900 text-stone-300"
             >
               <option value="">All clients</option>
               {clients.map((c) => (
@@ -375,7 +375,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="text-xs border border-stone-700 rounded px-2 py-1 bg-surface text-stone-300"
+            className="text-xs border border-stone-700 rounded px-2 py-1 bg-stone-900 text-stone-300"
           >
             <option value="all">All statuses</option>
             <option value="pending">Pending</option>
@@ -400,7 +400,7 @@ export function ReceiptLibraryClient({ receipts, events, clients }: Props) {
 
       {/* Summary bar */}
       {filtered.length > 0 && (
-        <div className="flex flex-wrap gap-4 text-sm text-stone-400 bg-surface border border-stone-700 rounded-lg px-4 py-3">
+        <div className="flex flex-wrap gap-4 text-sm text-stone-400 bg-stone-900 border border-stone-700 rounded-lg px-4 py-3">
           <span>
             <strong>{filtered.length}</strong> receipt{filtered.length !== 1 ? 's' : ''}
           </span>

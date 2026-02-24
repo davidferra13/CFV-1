@@ -44,7 +44,7 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
   return (
     <div className="space-y-6">
       {/* Status card */}
-      <div className="bg-surface rounded-xl border border-stone-700 p-6">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-semibold text-stone-100">Connection Status</h2>
           <Badge variant={status.connected ? 'success' : status.pending ? 'warning' : 'default'}>

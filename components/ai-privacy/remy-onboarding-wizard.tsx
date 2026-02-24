@@ -133,7 +133,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
       </div>
 
       {/* Step content */}
-      <div className="rounded-2xl border border-stone-700 bg-surface shadow-sm overflow-hidden">
+      <div className="rounded-2xl border border-stone-700 bg-stone-900 shadow-sm overflow-hidden">
         <div className="p-6 sm:p-8">
           {/* ─── Step 1: Meet Remy ──────────────────────────── */}
           {step === 0 && (
@@ -215,7 +215,7 @@ export function RemyOnboardingWizard({ onComplete }: { onComplete: () => void })
                     ].map((item) => (
                       <div
                         key={item.text}
-                        className="flex items-center justify-between rounded-lg border border-stone-700 bg-surface p-3"
+                        className="flex items-center justify-between rounded-lg border border-stone-700 bg-stone-900 p-3"
                       >
                         <div>
                           <span className="text-xs font-medium text-stone-400 uppercase">

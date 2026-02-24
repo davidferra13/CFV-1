@@ -10,7 +10,7 @@ import { TierVsModuleComposition } from '@/lib/remotion/tier-vs-module-compositi
 
 export function TierVsModulePlayer() {
   return (
-    <div className="rounded-xl border border-stone-700 bg-surface shadow-[var(--shadow-card)] overflow-hidden">
+    <div className="rounded-xl border border-stone-700 bg-stone-900 shadow-[var(--shadow-card)] overflow-hidden">
       <Player
         component={TierVsModuleComposition}
         compositionWidth={640}

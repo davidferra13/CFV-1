@@ -54,7 +54,7 @@ export default function Home() {
           <h1 className="max-w-4xl text-4xl font-display tracking-tight text-stone-100 md:text-6xl">
             The business OS built by a chef, for chefs.
           </h1>
-          <p className="mt-4 rounded-full border border-brand-700 bg-surface px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-400">
+          <p className="mt-4 rounded-full border border-brand-700 bg-stone-900 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-brand-300">
             Designed by Someone Who Gets It
           </p>
           <p className="mt-6 max-w-2xl text-base leading-relaxed text-stone-400 md:text-lg">
@@ -70,7 +70,7 @@ export default function Home() {
             </Link>
             <Link
               href="/pricing"
-              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-600 bg-surface px-6 py-3 text-sm font-semibold text-stone-300 transition-colors hover:bg-stone-800"
+              className="inline-flex flex-1 items-center justify-center rounded-lg border border-stone-600 bg-stone-900 px-6 py-3 text-sm font-semibold text-stone-200 transition-colors hover:bg-stone-800"
             >
               See pricing
             </Link>
@@ -85,7 +85,7 @@ export default function Home() {
             return (
               <article
                 key={feature.title}
-                className="rounded-xl border border-stone-700 bg-surface p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
+                className="rounded-xl border border-stone-700 bg-stone-900 p-6 shadow-[var(--shadow-card)] transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-0.5"
               >
                 <div className="mb-4 inline-flex rounded-lg bg-brand-950 p-2.5 text-brand-400">
                   <Icon className="h-5 w-5" />

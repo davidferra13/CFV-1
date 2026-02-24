@@ -120,7 +120,7 @@ export function CommandCenterClient() {
             placeholder="Tell me what you need… Find Sarah Johnson, check if March 15th is free, and draft her a follow-up."
             rows={4}
             disabled={loading}
-            className="w-full rounded-xl border border-stone-600 bg-surface pl-12 pr-14 py-4 text-sm text-stone-100 placeholder-stone-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 disabled:opacity-60 transition-colors"
+            className="w-full rounded-xl border border-stone-600 bg-stone-900 pl-12 pr-14 py-4 text-sm text-stone-100 placeholder-stone-400 resize-none focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-500 disabled:opacity-60 transition-colors"
           />
           <button
             type="submit"
@@ -149,7 +149,7 @@ export function CommandCenterClient() {
                 type="button"
                 key={prompt}
                 onClick={() => handleQuickPrompt(prompt)}
-                className="flex items-center gap-2 rounded-lg border border-stone-700 bg-surface hover:border-brand-600 hover:bg-brand-950/50 px-3 py-2.5 text-left text-sm text-stone-400 hover:text-brand-400 transition-all"
+                className="flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-900 hover:border-brand-600 hover:bg-brand-950/50 px-3 py-2.5 text-left text-sm text-stone-400 hover:text-brand-400 transition-all"
               >
                 <Zap className="w-3.5 h-3.5 text-brand-500 shrink-0" />
                 {prompt}

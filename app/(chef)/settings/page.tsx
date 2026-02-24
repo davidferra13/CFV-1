@@ -49,7 +49,7 @@ function SettingsCategory({
   defaultOpen?: boolean
 }) {
   return (
-    <details open={defaultOpen} className="rounded-xl border border-stone-700 bg-surface">
+    <details open={defaultOpen} className="rounded-xl border border-stone-700 bg-stone-900">
       <summary className="cursor-pointer px-4 py-3 sm:px-5 sm:py-4">
         <h2 className="text-lg font-semibold text-stone-100">{title}</h2>
         <p className="mt-1 text-sm text-stone-400">{description}</p>
@@ -202,7 +202,7 @@ export default async function SettingsPage() {
               <Link
                 href={`/chef/${profile.slug}`}
                 target="_blank"
-                className="inline-flex items-center rounded-md border border-stone-600 bg-surface px-3 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800 transition-colors"
+                className="inline-flex items-center rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-300 hover:bg-stone-800 transition-colors"
               >
                 Open Live Profile
               </Link>

@@ -10,7 +10,7 @@ export default function CulinaryLoading() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="rounded-xl border border-stone-700 bg-surface p-4 space-y-2">
+          <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-4 space-y-2">
             <div className="h-3 w-20 bg-stone-800 rounded" />
             <div className="h-8 w-12 bg-stone-700 rounded" />
           </div>
@@ -20,7 +20,7 @@ export default function CulinaryLoading() {
       {/* Nav tiles — 3 columns × 2 rows */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="rounded-xl border border-stone-700 bg-surface p-5 space-y-3">
+          <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-lg bg-stone-700" />
               <div className="h-5 w-28 bg-stone-700 rounded" />

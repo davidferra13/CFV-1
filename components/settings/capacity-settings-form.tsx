@@ -247,7 +247,7 @@ export function CapacitySettingsForm({ settings }: Props) {
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
                     offDays.includes(day.value)
                       ? 'bg-brand-600 border-brand-600 text-white'
-                      : 'bg-surface border-stone-600 text-stone-300 hover:bg-stone-800'
+                      : 'bg-stone-900 border-stone-600 text-stone-300 hover:bg-stone-800'
                   }`}
                 >
                   {day.label}

@@ -78,7 +78,7 @@ export function ActivityFilters({
             onClick={() => onTabChange(tab.value)}
             className={`flex-1 text-xs font-medium py-1.5 px-3 rounded-md transition-colors ${
               activeTab === tab.value
-                ? 'bg-surface text-stone-200 shadow-sm'
+                ? 'bg-stone-900 text-stone-200 shadow-sm'
                 : 'text-stone-500 hover:text-stone-300'
             }`}
           >
@@ -129,7 +129,7 @@ export function ActivityFilters({
             <select
               value={actorFilter}
               onChange={(e) => onActorFilterChange(e.target.value as ActivityActorFilter)}
-              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-surface"
+              className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900"
             >
               {ACTOR_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -141,7 +141,7 @@ export function ActivityFilters({
           <select
             value={timeRange}
             onChange={(e) => onTimeRangeChange(e.target.value as TimeRange)}
-            className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-surface shrink-0"
+            className="text-xs border border-stone-700 rounded-md px-2 py-1 text-stone-400 bg-stone-900 shrink-0"
           >
             {TIME_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>

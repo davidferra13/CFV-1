@@ -46,7 +46,7 @@ function NavLink({
 
 export function PartnerSidebar({ partnerName }: { partnerName: string }) {
   return (
-    <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-stone-700 bg-surface min-h-screen">
+    <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-stone-700 bg-stone-900 min-h-screen">
       {/* Brand */}
       <div className="px-4 py-5 border-b border-stone-800">
         <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-0.5">
@@ -82,7 +82,7 @@ export function PartnerMobileNav() {
   const pathname = rawPathname ?? ''
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-stone-700 z-40 flex">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-stone-900 border-t border-stone-700 z-40 flex">
       {NAV_ITEMS.slice(0, 4).map(({ href, label, icon: Icon }) => {
         const isActive = pathname === href || pathname.startsWith(href + '/')
         return (

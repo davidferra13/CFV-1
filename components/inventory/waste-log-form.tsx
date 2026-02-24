@@ -156,7 +156,7 @@ export function WasteLogForm({ eventId }: { eventId?: string }) {
           <div className="w-full">
             <label className="block text-sm font-medium text-stone-300 mb-1.5">Notes</label>
             <textarea
-              className="block w-full rounded-lg border border-stone-600 bg-surface px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 min-h-[72px] resize-y"
+              className="block w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 min-h-[72px] resize-y"
               placeholder="Additional details..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}

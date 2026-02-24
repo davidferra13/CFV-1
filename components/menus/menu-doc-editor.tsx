@@ -318,7 +318,7 @@ function CourseBlock({
               className="w-full text-xs font-bold tracking-[0.15em] uppercase text-stone-400 bg-transparent border-none outline-none focus:text-stone-400 placeholder:text-stone-300 py-0 leading-none"
             />
             {showSuggestions && (
-              <div className="absolute left-0 top-full z-10 bg-surface border border-stone-700 rounded-lg shadow-lg mt-1 py-1 min-w-[180px] max-h-48 overflow-y-auto">
+              <div className="absolute left-0 top-full z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg mt-1 py-1 min-w-[180px] max-h-48 overflow-y-auto">
                 {COURSE_SUGGESTIONS.map((s) => (
                   <button
                     key={s}
@@ -425,7 +425,7 @@ function CourseBlock({
               + tag
             </button>
             {showTagPicker && (
-              <div className="absolute left-0 top-full mt-1 z-10 bg-surface border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[210px]">
+              <div className="absolute left-0 top-full mt-1 z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[210px]">
                 <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1 px-0.5">
                   Accommodates
                 </p>
@@ -484,7 +484,7 @@ function CourseBlock({
                 + allergen
               </button>
               {showAllergenPicker && (
-                <div className="absolute left-0 top-full mt-1 z-10 bg-surface border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[220px]">
+                <div className="absolute left-0 top-full mt-1 z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg p-2 flex flex-wrap gap-1 min-w-[220px]">
                   <p className="w-full text-[10px] font-semibold uppercase tracking-widest text-orange-400 mb-1 px-0.5">
                     Contains
                   </p>
@@ -605,7 +605,7 @@ function AddCourseRow({
             key={s}
             onClick={() => handleAdd(s)}
             disabled={adding}
-            className="text-xs px-3 py-1.5 rounded-full border border-stone-700 text-stone-400 bg-surface hover:border-brand-400 hover:text-brand-400 hover:bg-brand-950 transition-colors"
+            className="text-xs px-3 py-1.5 rounded-full border border-stone-700 text-stone-400 bg-stone-900 hover:border-brand-400 hover:text-brand-400 hover:bg-brand-950 transition-colors"
           >
             {s}
           </button>
@@ -626,7 +626,7 @@ function AddCourseRow({
           placeholder="Custom course name…"
           disabled={adding}
           autoFocus
-          className="flex-1 text-sm border border-stone-600 rounded-lg px-3 py-2 bg-surface text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 text-sm border border-stone-600 rounded-lg px-3 py-2 bg-stone-900 text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <button
           type="button"
@@ -692,7 +692,7 @@ function ContextSidebar({
     <div className="sticky top-16 space-y-3 text-sm">
       {/* Event panel */}
       {event ? (
-        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-bold uppercase tracking-widest text-stone-400">Event</p>
             <Link href={`/events/${event.id}`} className="text-xs text-brand-600 hover:underline">
@@ -746,7 +746,7 @@ function ContextSidebar({
 
       {/* Client panel */}
       {event?.client && (
-        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Client</p>
           <p className="font-semibold text-stone-100">{event.client.full_name || 'Client'}</p>
           {allergyText ? (
@@ -762,7 +762,7 @@ function ContextSidebar({
 
       {/* Season panel */}
       {season && (
-        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Season</p>
           <p className="font-semibold text-stone-100 mb-1">
             {season.emoji} {season.label}
@@ -772,7 +772,7 @@ function ContextSidebar({
       )}
 
       {/* Pricing panel */}
-      <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Pricing</p>
         {!locked ? (
           <div className="flex items-baseline gap-1">
@@ -806,7 +806,7 @@ function ContextSidebar({
 
       {/* Previous menus */}
       {previousMenus.length > 0 && (
-        <div className="bg-surface rounded-xl border border-stone-700 p-4 shadow-sm">
+        <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
           <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">
             Previous Menus
           </p>
@@ -982,7 +982,7 @@ export function MenuDocEditor({
   return (
     <div className="min-h-screen bg-stone-800">
       {/* Top bar */}
-      <div className="sticky top-0 z-20 bg-surface border-b border-stone-700 px-6 py-2.5 flex items-center gap-4">
+      <div className="sticky top-0 z-20 bg-stone-900 border-b border-stone-700 px-6 py-2.5 flex items-center gap-4">
         <button
           type="button"
           onClick={() => router.push(`/menus/${initialMenu.id}`)}
@@ -1008,7 +1008,7 @@ export function MenuDocEditor({
                 ? 'border-blue-300 bg-blue-950 text-blue-700'
                 : initialMenu.status === 'archived'
                   ? 'border-stone-600 bg-stone-800 text-stone-500'
-                  : 'border-stone-700 bg-surface text-stone-400'
+                  : 'border-stone-700 bg-stone-900 text-stone-400'
           }`}
         >
           {initialMenu.status.charAt(0).toUpperCase() + initialMenu.status.slice(1)}
@@ -1037,7 +1037,7 @@ export function MenuDocEditor({
       <div className="max-w-6xl mx-auto px-4 py-8 flex gap-6 items-start">
         {/* ─── Document ─── */}
         <div className="flex-1 min-w-0">
-          <div className="bg-surface shadow-xl rounded-xl p-10 min-h-[calc(100vh-8rem)]">
+          <div className="bg-stone-900 shadow-xl rounded-xl p-10 min-h-[calc(100vh-8rem)]">
             {/* Title */}
             {!locked ? (
               <AutoTextarea
@@ -1068,7 +1068,7 @@ export function MenuDocEditor({
                       className="text-sm text-stone-500 border-b border-dashed border-stone-600 bg-transparent outline-none focus:border-brand-400 focus:text-stone-200 pb-0.5 min-w-[100px] max-w-[180px] transition-colors"
                     />
                     {showCuisineSuggestions && (
-                      <div className="absolute left-0 top-full z-10 bg-surface border border-stone-700 rounded-lg shadow-lg mt-1 py-1 max-h-48 overflow-y-auto min-w-[160px]">
+                      <div className="absolute left-0 top-full z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg mt-1 py-1 max-h-48 overflow-y-auto min-w-[160px]">
                         {CUISINE_SUGGESTIONS.filter(
                           (s) => !cuisineType || s.toLowerCase().includes(cuisineType.toLowerCase())
                         ).map((s) => (

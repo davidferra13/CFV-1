@@ -107,7 +107,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Widget Configuration ── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-5">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-5">
         <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
           <Palette className="h-5 w-5 text-stone-400" />
           Customize Your Widget
@@ -239,7 +239,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Embed Code ── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
             <Code2 className="h-5 w-5 text-stone-400" />
@@ -287,7 +287,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Preview ── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100 flex items-center gap-2">
           <Globe className="h-5 w-5 text-stone-400" />
           Live Preview
@@ -305,7 +305,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Platform-Specific Guides ── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100">Setup Guides by Platform</h2>
         <p className="text-sm text-stone-500">
           Click your website platform for step-by-step instructions.
@@ -439,7 +439,7 @@ export function EmbedCodePanel({ chefId }: Props) {
       </div>
 
       {/* ── Troubleshooting ── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100">Troubleshooting</h2>
 
         <div className="space-y-3 text-sm">

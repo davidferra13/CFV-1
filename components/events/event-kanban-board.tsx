@@ -228,7 +228,7 @@ function TerminalStatusPill({
   variant: 'success' | 'error'
 }) {
   return (
-    <div className="flex items-center gap-2 bg-surface border border-stone-700 rounded-lg px-4 py-2 shadow-sm">
+    <div className="flex items-center gap-2 bg-stone-900 border border-stone-700 rounded-lg px-4 py-2 shadow-sm">
       <span className="text-sm text-stone-400 font-medium">{label}</span>
       <Badge variant={variant}>{count}</Badge>
     </div>

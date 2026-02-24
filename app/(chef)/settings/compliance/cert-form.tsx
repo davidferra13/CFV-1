@@ -82,7 +82,7 @@ export function CertForm() {
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Type</label>
           <select
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm text-stone-100"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
             value={form.cert_type}
             onChange={(e) => update('cert_type', e.target.value)}
           >
@@ -96,7 +96,7 @@ export function CertForm() {
         <div>
           <label className="block text-xs font-medium text-stone-400 mb-1">Status</label>
           <select
-            className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm text-stone-100"
+            className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-100"
             value={form.status}
             onChange={(e) => update('status', e.target.value)}
           >

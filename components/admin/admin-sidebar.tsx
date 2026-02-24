@@ -65,7 +65,7 @@ function NavLink({
       href={href}
       className={`flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
         isActive
-          ? 'bg-surface/15 text-white'
+          ? 'bg-stone-900/15 text-white'
           : 'text-slate-300 hover:bg-stone-800/10 hover:text-white'
       }`}
     >

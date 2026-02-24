@@ -83,7 +83,7 @@ export function DraftReviewCard({ recipient, onApproved, onSkipped }: Props) {
   return (
     <div
       className={`border rounded-lg p-4 transition-colors ${
-        approved ? 'border-green-200 bg-green-950' : 'border-stone-700 bg-surface'
+        approved ? 'border-green-200 bg-green-950' : 'border-stone-700 bg-stone-900'
       }`}
     >
       {/* Header row */}

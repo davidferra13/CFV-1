@@ -480,7 +480,7 @@ export default function AnimationsTestPage() {
               key={h.key}
               type="button"
               onClick={() => trigger(h)}
-              className="flex items-center gap-2 px-3 py-2 bg-surface border border-slate-200 rounded-lg text-sm text-left hover:bg-blue-950 hover:border-blue-300 transition-colors"
+              className="flex items-center gap-2 px-3 py-2 bg-stone-900 border border-slate-200 rounded-lg text-sm text-left hover:bg-blue-950 hover:border-blue-300 transition-colors"
             >
               <span className="text-lg leading-none">{h.emoji}</span>
               <span className="text-slate-700 leading-tight">{h.label}</span>
@@ -512,7 +512,7 @@ export default function AnimationsTestPage() {
                   key={def.id}
                   type="button"
                   onClick={() => trigger(toPlayConfig(def))}
-                  className="flex items-center gap-2 px-3 py-2 bg-surface border border-slate-200 rounded-lg text-sm text-left hover:bg-emerald-950 hover:border-emerald-300 transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 bg-stone-900 border border-slate-200 rounded-lg text-sm text-left hover:bg-emerald-950 hover:border-emerald-300 transition-colors"
                 >
                   <span className="text-lg leading-none">{def.emoji}</span>
                   <span className="text-slate-700 leading-tight">{def.label}</span>

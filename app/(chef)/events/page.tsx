@@ -161,7 +161,7 @@ export default async function EventsPage({
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                 view === 'list'
                   ? 'bg-stone-900 text-white'
-                  : 'bg-surface text-stone-400 hover:bg-stone-800'
+                  : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
               }`}
             >
               List
@@ -171,7 +171,7 @@ export default async function EventsPage({
               className={`px-3 py-1.5 text-sm font-medium transition-colors ${
                 view === 'kanban'
                   ? 'bg-stone-900 text-white'
-                  : 'bg-surface text-stone-400 hover:bg-stone-800'
+                  : 'bg-stone-900 text-stone-400 hover:bg-stone-800'
               }`}
             >
               Board

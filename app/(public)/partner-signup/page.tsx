@@ -26,7 +26,7 @@ export default async function PartnerSignupPage({ searchParams }: Props) {
             <form
               action="/partner-signup"
               method="get"
-              className="bg-surface border border-stone-700 rounded-lg p-5 text-left space-y-4"
+              className="bg-stone-900 border border-stone-700 rounded-lg p-5 text-left space-y-4"
             >
               <label className="block">
                 <span className="text-sm font-medium text-stone-300">Chef Slug</span>

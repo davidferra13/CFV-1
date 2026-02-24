@@ -48,7 +48,7 @@ export function PlanItem({ item, onUpdate }: Props) {
       className={`group flex items-start gap-3 rounded-lg border px-4 py-3 transition-all ${
         completed
           ? 'border-green-200 bg-green-950/50 opacity-60'
-          : 'border-stone-700 bg-surface hover:border-brand-700 hover:shadow-sm'
+          : 'border-stone-700 bg-stone-900 hover:border-brand-700 hover:shadow-sm'
       }`}
     >
       {/* Checkbox */}

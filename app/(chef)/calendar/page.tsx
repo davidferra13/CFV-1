@@ -62,7 +62,7 @@ export default async function CalendarPage({
       </div>
 
       {unifiedItems.length === 0 && waitlistEntries.length === 0 && (
-        <div className="rounded-xl border border-stone-700 bg-surface p-8 text-center">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-950">
             <svg
               className="h-7 w-7 text-brand-600"

@@ -17,7 +17,7 @@ export default function InsightsLoading() {
       {/* KPI stat cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="rounded-xl border border-stone-700 bg-surface p-4 space-y-2">
+          <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-4 space-y-2">
             <div className="h-3 w-24 bg-stone-800 rounded" />
             <div className="h-8 w-20 bg-stone-700 rounded" />
             <div className="h-3 w-16 bg-stone-800 rounded" />
@@ -28,7 +28,7 @@ export default function InsightsLoading() {
       {/* Chart placeholders — two side by side */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[1, 2].map((i) => (
-          <div key={i} className="rounded-xl border border-stone-700 bg-surface p-5 space-y-3">
+          <div key={i} className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">
             <div className="h-5 w-40 bg-stone-700 rounded" />
             <div className="h-40 w-full bg-stone-800 rounded-lg" />
           </div>
@@ -36,7 +36,7 @@ export default function InsightsLoading() {
       </div>
 
       {/* Top clients list */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-5 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-4">
         <div className="h-5 w-32 bg-stone-700 rounded" />
         {[1, 2, 3].map((i) => (
           <div key={i} className="flex items-center gap-3">

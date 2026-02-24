@@ -244,7 +244,7 @@ export function CommunicationInboxClient({
             <button
               key={tab.key}
               onClick={() => setSelectedTab(tab.key)}
-              className={`px-3 py-1.5 rounded-full border text-sm ${active ? tabColorClasses[tab.key] : 'bg-surface text-stone-400 border-stone-600'}`}
+              className={`px-3 py-1.5 rounded-full border text-sm ${active ? tabColorClasses[tab.key] : 'bg-stone-900 text-stone-400 border-stone-600'}`}
             >
               {tab.label} ({count})
             </button>
@@ -268,7 +268,7 @@ export function CommunicationInboxClient({
                   return [...prev, source]
                 })
               }}
-              className={`px-2.5 py-1 rounded-full border text-xs ${active ? 'bg-surface text-stone-200 border-stone-400' : 'bg-stone-800 text-stone-500 border-stone-700'}`}
+              className={`px-2.5 py-1 rounded-full border text-xs ${active ? 'bg-stone-900 text-stone-200 border-stone-400' : 'bg-stone-800 text-stone-500 border-stone-700'}`}
             >
               {sourceLabel(source)}
             </button>

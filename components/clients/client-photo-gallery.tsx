@@ -125,7 +125,7 @@ export function ClientPhotoGallery({
         <select
           value={uploadCategory}
           onChange={(e) => setUploadCategory(e.target.value)}
-          className="text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-surface"
+          className="text-sm border border-stone-600 rounded-lg px-2 py-1.5 bg-stone-900"
         >
           {UPLOAD_CATEGORIES.map((cat) => (
             <option key={cat.value} value={cat.value}>
@@ -238,7 +238,7 @@ export function ClientPhotoGallery({
                     type="text"
                     value={captionText}
                     onChange={(e) => setCaptionText(e.target.value)}
-                    className="flex-1 bg-surface/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
+                    className="flex-1 bg-stone-900/10 border border-white/20 rounded px-2 py-1 text-white text-sm"
                     placeholder="Caption"
                     autoFocus
                   />
@@ -273,7 +273,7 @@ export function ClientPhotoGallery({
               <select
                 value={filtered[lightboxIndex].category}
                 onChange={(e) => handleCategoryChange(filtered[lightboxIndex].id, e.target.value)}
-                className="text-sm bg-surface/10 border border-white/20 rounded px-2 py-1 text-white"
+                className="text-sm bg-stone-900/10 border border-white/20 rounded px-2 py-1 text-white"
               >
                 {UPLOAD_CATEGORIES.map((cat) => (
                   <option key={cat.value} value={cat.value} className="text-black">

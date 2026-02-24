@@ -19,7 +19,7 @@ export function SocialHashtagSetPicker({ sets, onInsert }: Props) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-300 border border-stone-700 rounded px-2 py-1 bg-surface hover:bg-stone-800 transition-colors"
+        className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-300 border border-stone-700 rounded px-2 py-1 bg-stone-900 hover:bg-stone-800 transition-colors"
       >
         <BookMarked className="w-3 h-3" />
         Insert hashtag set
@@ -29,7 +29,7 @@ export function SocialHashtagSetPicker({ sets, onInsert }: Props) {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full mt-1 z-20 bg-surface border border-stone-700 rounded-lg shadow-lg w-64 max-h-48 overflow-y-auto">
+          <div className="absolute left-0 top-full mt-1 z-20 bg-stone-900 border border-stone-700 rounded-lg shadow-lg w-64 max-h-48 overflow-y-auto">
             {sets.map((set) => (
               <button
                 key={set.id}

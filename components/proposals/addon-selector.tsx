@@ -151,7 +151,7 @@ export function AddonSelector({ initialAddons, guestCount = 1 }: Props) {
             className={`flex items-center justify-between rounded-lg border p-3 cursor-pointer transition-colors ${
               selected.has(addon.id)
                 ? 'border-brand-600 bg-brand-950/30'
-                : 'border-stone-700 bg-surface hover:bg-stone-800'
+                : 'border-stone-700 bg-stone-900 hover:bg-stone-800'
             }`}
             onClick={() => toggleAddon(addon.id)}
           >

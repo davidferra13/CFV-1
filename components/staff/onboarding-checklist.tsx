@@ -101,7 +101,7 @@ export function OnboardingChecklist({ staffMemberId, items }: OnboardingChecklis
     <div className="border border-gray-200 rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-surface hover:bg-gray-50 transition-colors text-left"
+        className="w-full flex items-center justify-between px-4 py-3 bg-stone-900 hover:bg-gray-50 transition-colors text-left"
       >
         <span className="font-medium text-gray-900">Onboarding Checklist</span>
         <div className="flex items-center gap-2">
@@ -113,7 +113,7 @@ export function OnboardingChecklist({ staffMemberId, items }: OnboardingChecklis
       </button>
 
       {open && (
-        <div className="bg-surface border-t border-gray-100 px-4 py-2">
+        <div className="bg-stone-900 border-t border-gray-100 px-4 py-2">
           <ul>
             {ONBOARDING_ITEM_KEYS.map((key) => {
               const item = itemMap.get(key)

@@ -250,7 +250,7 @@ export function EditRecipeClient({ recipe }: Props) {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-surface"
+                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
               >
                 {RECIPE_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>

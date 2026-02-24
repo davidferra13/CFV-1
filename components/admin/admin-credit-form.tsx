@@ -59,7 +59,7 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
   }
 
   return (
-    <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-stone-900 rounded-xl border border-slate-200 overflow-hidden">
       <div className="px-4 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
         <PlusCircle size={14} className="text-slate-500" />
         <h2 className="text-sm font-semibold text-slate-700">Issue Ledger Adjustment</h2>
@@ -76,7 +76,7 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
                 className={`px-3 py-2 text-xs font-medium transition-colors ${
                   !isDebit
                     ? 'bg-green-500 text-white'
-                    : 'bg-surface text-slate-500 hover:bg-slate-50'
+                    : 'bg-stone-900 text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 Credit (+)
@@ -84,7 +84,9 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
               <button
                 onClick={() => setIsDebit(true)}
                 className={`px-3 py-2 text-xs font-medium transition-colors ${
-                  isDebit ? 'bg-red-500 text-white' : 'bg-surface text-slate-500 hover:bg-slate-50'
+                  isDebit
+                    ? 'bg-red-500 text-white'
+                    : 'bg-stone-900 text-slate-500 hover:bg-slate-50'
                 }`}
               >
                 Debit (–)
@@ -136,7 +138,7 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
             <select
               value={eventId}
               onChange={(e) => setEventId(e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200 bg-surface"
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200 bg-stone-900"
               disabled={isPending}
             >
               <option value="">No event</option>

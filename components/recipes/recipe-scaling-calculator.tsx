@@ -212,7 +212,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
               <select
                 value={coursePosition}
                 onChange={(e) => setCoursePosition(e.target.value as CoursePosition | '')}
-                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-surface focus:border-brand-500 focus:outline-none"
+                className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900 focus:border-brand-500 focus:outline-none"
               >
                 <option value="">Select course…</option>
                 {COURSE_POSITIONS.map((pos) => (
@@ -301,7 +301,7 @@ export function RecipeScalingCalculator({ recipe }: Props) {
                     className={`text-xs font-medium px-2.5 py-1 rounded-full border transition-colors ${
                       smartMode
                         ? 'bg-brand-600 text-white border-brand-600'
-                        : 'bg-surface text-stone-400 border-stone-600 hover:border-stone-400'
+                        : 'bg-stone-900 text-stone-400 border-stone-600 hover:border-stone-400'
                     }`}
                   >
                     {smartMode ? 'Smart (sub-linear)' : 'Linear'}

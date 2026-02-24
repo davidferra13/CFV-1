@@ -150,7 +150,7 @@ export function IngredientsClient({ ingredients }: Props) {
         <select
           value={currentCategory}
           onChange={(e) => updateFilters('category', e.target.value)}
-          className="border border-stone-600 rounded-md px-3 py-2 text-sm bg-surface"
+          className="border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
         >
           {CATEGORY_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -198,7 +198,7 @@ export function IngredientsClient({ ingredients }: Props) {
                           <select
                             value={editCategory}
                             onChange={(e) => setEditCategory(e.target.value)}
-                            className="border border-stone-600 rounded-md px-2 py-1 text-sm bg-surface w-full"
+                            className="border border-stone-600 rounded-md px-2 py-1 text-sm bg-stone-900 w-full"
                           >
                             {CATEGORY_OPTIONS.filter((o) => o.value).map((opt) => (
                               <option key={opt.value} value={opt.value}>

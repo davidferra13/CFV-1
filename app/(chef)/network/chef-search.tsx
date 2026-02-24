@@ -131,7 +131,7 @@ export function ChefSearch() {
           placeholder="Search by business name or display name..."
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          className="block w-full rounded-lg border border-stone-600 bg-surface pl-10 pr-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+          className="block w-full rounded-lg border border-stone-600 bg-stone-900 pl-10 pr-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
         />
       </div>
 

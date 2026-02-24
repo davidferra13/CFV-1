@@ -180,7 +180,7 @@ export default async function ChefProfilePage({ params }: Props) {
       )}
 
       {/* CTA Section */}
-      <section className="py-16 px-6 bg-surface/75">
+      <section className="py-16 px-6 bg-stone-900/75">
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-stone-100">Ready to Book?</h2>
           <p className="text-stone-400 mt-3">

@@ -157,7 +157,7 @@ function RailFlyout({ group, pathname }: { group: NavGroup; pathname: string }) 
       </button>
 
       {open && (
-        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-surface rounded-lg shadow-lg border border-stone-700 py-1.5">
+        <div className="absolute left-full top-0 ml-2 z-50 min-w-[180px] max-h-[80vh] overflow-y-auto custom-scrollbar bg-stone-900 rounded-lg shadow-lg border border-stone-700 py-1.5">
           <p className="px-3 py-1.5 text-xs font-semibold text-stone-400 uppercase tracking-wider">
             {group.label}
           </p>
@@ -501,7 +501,7 @@ export function ChefSidebar({
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-surface border-r border-stone-700 transition-all duration-200 z-30 ${
+      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-stone-900 border-r border-stone-700 transition-all duration-200 z-30 ${
         collapsed ? 'lg:w-16' : 'lg:w-60'
       }`}
     >
@@ -941,7 +941,7 @@ function MobileBottomTabBar({
   }, [onMoreClick])
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-stone-700 pb-safe">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-stone-900 border-t border-stone-700 pb-safe">
       <div className="flex items-center justify-around h-14">
         {mobileTabItems.map((item) => {
           const active = isItemActive(pathname, item.href)
@@ -1055,7 +1055,7 @@ export function ChefMobileNav({
   return (
     <>
       {/* Mobile top bar */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-surface border-b border-stone-700 pt-safe">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-stone-900 border-b border-stone-700 pt-safe">
         <div className="flex items-center justify-between h-14 px-3">
           <Link href="/dashboard" className="flex items-center gap-2 flex-shrink-0 min-w-0">
             <AppLogo size={28} className="rounded-md flex-shrink-0" />
@@ -1091,7 +1091,7 @@ export function ChefMobileNav({
       {menuOpen && (
         <>
           <div className="lg:hidden fixed inset-0 z-50 bg-black/20" onClick={closeMenu} />
-          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-surface border-r border-stone-700 shadow-xl">
+          <div className="lg:hidden fixed top-0 left-0 bottom-0 z-50 w-72 bg-stone-900 border-r border-stone-700 shadow-xl">
             <div className="flex items-center justify-between h-14 px-4 border-b border-stone-800">
               <span className="font-semibold text-stone-100">Menu</span>
               <button

@@ -97,7 +97,7 @@ export function ChatFileUpload({ onUpload, onCancel }: ChatFileUploadProps) {
   const isImage = file ? isImageType(file.type) : false
 
   return (
-    <div className="border-t border-stone-700 bg-surface p-4">
+    <div className="border-t border-stone-700 bg-stone-900 p-4">
       {!file ? (
         <label
           className={`flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-6 cursor-pointer transition-colors ${

@@ -279,7 +279,7 @@ function InviteChefForm({
                   key={chef.id}
                   type="button"
                   onClick={() => setSelectedChef(chef)}
-                  className="w-full text-left flex items-center gap-3 rounded-md border border-stone-700 bg-surface px-3 py-2 hover:bg-stone-800 transition-colors text-sm"
+                  className="w-full text-left flex items-center gap-3 rounded-md border border-stone-700 bg-stone-900 px-3 py-2 hover:bg-stone-800 transition-colors text-sm"
                 >
                   {chef.profile_image_url ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -315,7 +315,7 @@ function InviteChefForm({
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center gap-3 rounded-md bg-surface border border-stone-700 px-3 py-2">
+          <div className="flex items-center gap-3 rounded-md bg-stone-900 border border-stone-700 px-3 py-2">
             <div className="h-8 w-8 rounded-full bg-stone-700 flex items-center justify-center text-xs font-medium text-stone-400">
               {(selectedChef.display_name || selectedChef.business_name).charAt(0).toUpperCase()}
             </div>
@@ -472,7 +472,7 @@ function CollaboratorRow({
   const chefName = collab.chef.display_name || collab.chef.business_name
 
   return (
-    <div className="rounded-lg border border-stone-700 bg-surface p-3 space-y-2">
+    <div className="rounded-lg border border-stone-700 bg-stone-900 p-3 space-y-2">
       <div className="flex items-center gap-3">
         <div className="h-9 w-9 rounded-full bg-stone-700 flex items-center justify-center text-sm font-medium text-stone-400 flex-shrink-0">
           {chefName.charAt(0).toUpperCase()}
@@ -503,7 +503,7 @@ function CollaboratorRow({
                   value={collab.role}
                   onChange={(e) => onRoleChange(e.target.value as CollaboratorRole)}
                   disabled={isPending}
-                  className="text-xs rounded border border-stone-700 px-1 py-0.5 bg-surface text-stone-300"
+                  className="text-xs rounded border border-stone-700 px-1 py-0.5 bg-stone-900 text-stone-300"
                   title="Change role"
                 >
                   <option value="primary">Primary</option>

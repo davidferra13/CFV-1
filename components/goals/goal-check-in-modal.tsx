@@ -45,7 +45,7 @@ export function GoalCheckInModal({ goal, currentValue, onClose }: GoalCheckInMod
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full sm:max-w-md mx-auto bg-surface rounded-t-2xl sm:rounded-2xl shadow-xl p-6 space-y-4">
+      <div className="relative w-full sm:max-w-md mx-auto bg-stone-900 rounded-t-2xl sm:rounded-2xl shadow-xl p-6 space-y-4">
         <div className="flex items-start justify-between">
           <div>
             <h2 className="text-lg font-semibold text-stone-100">Log Progress</h2>

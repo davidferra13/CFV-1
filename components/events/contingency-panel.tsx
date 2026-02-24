@@ -136,7 +136,7 @@ export function ContingencyPanel({
                         Mitigation plan *
                       </label>
                       <textarea
-                        className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm min-h-[72px] resize-y"
+                        className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm min-h-[72px] resize-y"
                         value={form.mitigation_notes}
                         onChange={(e) =>
                           setForm((p) => ({ ...p, mitigation_notes: e.target.value }))
@@ -150,7 +150,7 @@ export function ContingencyPanel({
                           Backup contact
                         </label>
                         <select
-                          className="w-full rounded-md border border-stone-700 bg-surface px-3 py-2 text-sm"
+                          className="w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm"
                           value={form.backup_contact_id}
                           onChange={(e) =>
                             setForm((p) => ({ ...p, backup_contact_id: e.target.value }))

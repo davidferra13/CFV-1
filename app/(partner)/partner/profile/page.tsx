@@ -59,7 +59,7 @@ export default async function PartnerProfilePage() {
 
       {/* Edit form */}
       <form action={saveProfile} className="space-y-5">
-        <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-stone-300 mb-1">
               Business / Property Name

@@ -129,13 +129,13 @@ export default function AiPrivacyPage() {
 
       {/* ─── Remy Personality Selector ─────────────────────────── */}
       {prefs.remy_enabled && (
-        <div className="rounded-xl border border-stone-700 bg-surface p-6">
+        <div className="rounded-xl border border-stone-700 bg-stone-900 p-6">
           <RemyArchetypeSelector currentArchetype={prefs.remy_archetype} />
         </div>
       )}
 
       {/* ─── Section 1: How It Works ─────────────────────────── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Server className="h-5 w-5 text-brand-500" />
           <h2 className="text-lg font-semibold text-stone-100">How it works</h2>
@@ -155,7 +155,7 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── Section 2: What We Can See ──────────────────────── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Eye className="h-5 w-5 text-brand-500" />
           <h2 className="text-lg font-semibold text-stone-100">What we can see</h2>
@@ -214,7 +214,7 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── Section 3: If You Need Help ─────────────────────── */}
-      <div className="rounded-xl border border-stone-700 bg-surface p-6 space-y-4">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 p-6 space-y-4">
         <div className="flex items-center gap-2">
           <Headphones className="h-5 w-5 text-brand-500" />
           <h2 className="text-lg font-semibold text-stone-100">If you need help</h2>
@@ -268,7 +268,7 @@ export default function AiPrivacyPage() {
           ].map((svc) => (
             <div
               key={svc.name}
-              className="rounded-lg border border-amber-200 bg-surface p-3 space-y-1"
+              className="rounded-lg border border-amber-200 bg-stone-900 p-3 space-y-1"
             >
               <div className="flex items-center gap-2">
                 <svc.icon className="h-3.5 w-3.5 text-amber-500" />
@@ -285,7 +285,7 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── How It Works — animated schematic ──── */}
-      <div className="rounded-xl border border-stone-700 bg-surface overflow-hidden">
+      <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
         <div className="px-5 py-4">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-brand-500" />
@@ -301,7 +301,7 @@ export default function AiPrivacyPage() {
       </div>
 
       {/* ─── Static data flow diagram (collapsible) ──── */}
-      <details className="rounded-xl border border-stone-700 bg-surface">
+      <details className="rounded-xl border border-stone-700 bg-stone-900">
         <summary className="cursor-pointer px-5 py-4">
           <div className="inline-flex items-center gap-2">
             <Bot className="h-4 w-4 text-brand-500" />

@@ -22,7 +22,7 @@ export default async function ClientPortalPage({ params }: { params: { token: st
   return (
     <div className="min-h-screen bg-stone-800">
       {/* Header */}
-      <div className="bg-surface border-b border-stone-700">
+      <div className="bg-stone-900 border-b border-stone-700">
         <div className="max-w-2xl mx-auto px-4 py-6">
           <p className="text-xs text-stone-400 uppercase tracking-wide mb-1">Client Portal</p>
           <h1 className="text-2xl font-bold text-stone-100">Hello, {clientName.split(' ')[0]}</h1>
@@ -108,7 +108,7 @@ export default async function ClientPortalPage({ params }: { params: { token: st
             Your Upcoming Events
           </h2>
           {upcomingEvents.length === 0 ? (
-            <div className="rounded-xl border border-stone-700 bg-surface px-4 py-8 text-center">
+            <div className="rounded-xl border border-stone-700 bg-stone-900 px-4 py-8 text-center">
               <p className="text-sm text-stone-400">No upcoming events scheduled yet.</p>
             </div>
           ) : (
@@ -116,7 +116,7 @@ export default async function ClientPortalPage({ params }: { params: { token: st
               {upcomingEvents.map((ev) => (
                 <div
                   key={ev.id}
-                  className="rounded-xl border border-stone-700 bg-surface px-4 py-4"
+                  className="rounded-xl border border-stone-700 bg-stone-900 px-4 py-4"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
@@ -148,7 +148,7 @@ export default async function ClientPortalPage({ params }: { params: { token: st
               {pastEvents.map((ev) => (
                 <div
                   key={ev.id}
-                  className="flex items-center justify-between rounded-lg border border-stone-800 bg-surface px-4 py-3"
+                  className="flex items-center justify-between rounded-lg border border-stone-800 bg-stone-900 px-4 py-3"
                 >
                   <div>
                     <p className="text-sm font-medium text-stone-300">{ev.occasion ?? 'Event'}</p>

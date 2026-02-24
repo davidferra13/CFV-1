@@ -59,7 +59,7 @@ html {
 
 @layer base {
   body {
-    @apply bg-surface-page text-stone-200 antialiased;
+    @apply bg-stone-950 text-stone-200 antialiased;
   }
 
   /* Dark theme: ring-offset matches dark background */
