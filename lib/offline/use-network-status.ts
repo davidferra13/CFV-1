@@ -1,108 +1,53 @@
 'use client'
 
-// useNetworkStatus — Smart network detection that goes beyond navigator.onLine.
-// navigator.onLine only detects cable disconnection, not actual internet loss.
-// This hook combines the browser event with periodic connectivity checks.
+// useNetworkStatus — Network detection using browser-native online/offline events.
+//
+// Previous version polled /api/health every 30s, which caused false "offline"
+// when the dev server wasn't running. navigator.onLine + window events reliably
+// detect actual network loss without any server dependency.
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 
 export type NetworkStatus = 'online' | 'offline'
 
-interface UseNetworkStatusOptions {
-  /** How often to poll connectivity when online (ms). Default: 30000 (30s) */
-  pollInterval?: number
-  /** How often to poll when offline, checking for recovery (ms). Default: 5000 (5s) */
-  offlinePollInterval?: number
-}
-
-export function useNetworkStatus(options: UseNetworkStatusOptions = {}) {
-  const { pollInterval = 30000, offlinePollInterval = 5000 } = options
-
-  const [status, setStatus] = useState<NetworkStatus>('online')
+export function useNetworkStatus() {
+  const [status, setStatus] = useState<NetworkStatus>(
+    typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'online'
+  )
   const [lastOnline, setLastOnline] = useState<Date | null>(null)
   const [wasOffline, setWasOffline] = useState(false)
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const wasOfflineTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const checkConnectivity = useCallback(async (): Promise<boolean> => {
-    // First, fast check with navigator.onLine
-    if (!navigator.onLine) return false
-
-    // Then verify with a real network request (tiny, fast endpoint)
-    try {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), 5000)
-      // HEAD request to our own origin — cheapest possible check
-      const response = await fetch('/api/health', {
-        method: 'HEAD',
-        cache: 'no-store',
-        signal: controller.signal,
-      })
-      clearTimeout(timeout)
-      return response.ok
-    } catch {
-      // Network error = offline
-      return false
-    }
+  const goOffline = useCallback(() => {
+    setStatus('offline')
   }, [])
 
-  const updateStatus = useCallback(
-    async (fromEvent?: 'online' | 'offline') => {
-      // If browser says offline, trust it immediately — don't waste a request
-      if (fromEvent === 'offline' || !navigator.onLine) {
-        setStatus('offline')
-        return
+  const goOnline = useCallback(() => {
+    setStatus((prev) => {
+      if (prev === 'offline') {
+        setWasOffline(true)
+        setLastOnline(new Date())
+        // Clear the "was offline" flag after 5 seconds
+        if (wasOfflineTimerRef.current) clearTimeout(wasOfflineTimerRef.current)
+        wasOfflineTimerRef.current = setTimeout(() => setWasOffline(false), 5000)
       }
-
-      // If browser says online, verify with a real request
-      const isConnected = await checkConnectivity()
-      if (isConnected) {
-        setStatus((prev) => {
-          if (prev === 'offline') {
-            setWasOffline(true)
-            setLastOnline(new Date())
-            // Clear the "was offline" flag after 5 seconds
-            setTimeout(() => setWasOffline(false), 5000)
-          }
-          return 'online'
-        })
-      } else {
-        setStatus('offline')
-      }
-    },
-    [checkConnectivity]
-  )
+      return 'online'
+    })
+  }, [])
 
   useEffect(() => {
-    // Set initial status
-    updateStatus()
+    // Sync initial state (SSR may have defaulted to 'online')
+    if (!navigator.onLine) setStatus('offline')
 
-    const handleOnline = () => updateStatus('online')
-    const handleOffline = () => updateStatus('offline')
-
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+    window.addEventListener('online', goOnline)
+    window.addEventListener('offline', goOffline)
 
     return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
+      window.removeEventListener('online', goOnline)
+      window.removeEventListener('offline', goOffline)
+      if (wasOfflineTimerRef.current) clearTimeout(wasOfflineTimerRef.current)
     }
-  }, [updateStatus])
-
-  // Polling: different intervals for online vs offline
-  useEffect(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-    }
-
-    const interval = status === 'online' ? pollInterval : offlinePollInterval
-    intervalRef.current = setInterval(() => updateStatus(), interval)
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [status, pollInterval, offlinePollInterval, updateStatus])
+  }, [goOnline, goOffline])
 
   return {
     /** Current network status */
@@ -115,7 +60,10 @@ export function useNetworkStatus(options: UseNetworkStatusOptions = {}) {
     wasOffline,
     /** Timestamp of last reconnection */
     lastOnline,
-    /** Force a connectivity check now */
-    checkNow: () => updateStatus(),
+    /** Force a status re-read from the browser */
+    checkNow: () => {
+      if (navigator.onLine) goOnline()
+      else goOffline()
+    },
   }
 }
