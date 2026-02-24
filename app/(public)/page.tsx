@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CalendarDays, CreditCard, MessageCircle, UsersRound } from 'lucide-react'
+import { CalendarDays, CreditCard, UsersRound } from 'lucide-react'
 import { WorkflowSteps } from '@/components/public/workflow-steps'
 import { HowItWorksSection } from '@/components/public/how-it-works-section'
 
@@ -29,18 +29,21 @@ export const metadata: Metadata = {
 const FEATURES = [
   {
     icon: CalendarDays,
-    title: 'Events at a Glance',
-    description: 'Track inquiries, proposals, prep, and service without switching tools.',
+    title: 'Events & Scheduling',
+    description:
+      'Every inquiry, proposal, and event — organized in one place. No more juggling apps.',
   },
   {
     icon: UsersRound,
-    title: 'Client Collaboration',
-    description: 'Clients can review proposals, confirm details, and respond faster.',
+    title: 'Client Experience',
+    description:
+      'Clients review proposals, approve menus, and pay — all through a polished portal.',
   },
   {
     icon: CreditCard,
-    title: 'Built-In Payments',
-    description: 'Send invoices and collect payments with Stripe-backed workflows.',
+    title: 'Payments & Financials',
+    description:
+      'Invoicing, deposits, and expense tracking built in. Know your margins on every event.',
   },
 ]
 
@@ -117,17 +120,13 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-900/30 via-transparent to-brand-800/15" />
         <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 md:py-20 lg:px-8">
           <div className="text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-950 text-brand-400">
-              <MessageCircle className="h-7 w-7" />
-            </div>
             <h2 className="text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-              Not sure if ChefFlow fits your workflow?
+              Questions? Ask Remy.
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
-              Ask Remy — our concierge knows every feature inside and out. Describe your biggest
-              headache and he&apos;ll show you exactly how ChefFlow handles it.
+              Tell him what&apos;s eating your time and he&apos;ll show you how ChefFlow handles it.
             </p>
-            <p className="mt-6 text-sm font-medium text-brand-600">Try the chat in the corner →</p>
+            <p className="mt-6 text-sm font-medium text-brand-400">Try the chat in the corner →</p>
           </div>
         </div>
       </section>
@@ -137,10 +136,10 @@ export default function Home() {
       <section className="relative mx-auto w-full max-w-6xl px-4 py-14 text-center sm:px-6 md:py-20 lg:px-8">
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-[200px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-brand-800/20 blur-[50px]" />
         <h2 className="relative text-3xl font-display tracking-tight text-stone-100 md:text-4xl">
-          Your calmer workflow starts here.
+          Ready to run your business, not chase it.
         </h2>
         <p className="relative mx-auto mt-4 max-w-xl text-base leading-relaxed text-stone-400">
-          Start with the essentials, then scale your operations with confidence.
+          14-day free trial. No credit card required.
         </p>
         <Link
           href="/auth/signup"

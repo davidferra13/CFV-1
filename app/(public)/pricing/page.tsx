@@ -61,11 +61,6 @@ export default function PricingPage() {
         <div className="max-w-md mx-auto">
           <Card className="border-2 border-brand-500 shadow-xl">
             <CardHeader className="text-center pb-8 pt-8">
-              <div className="mb-4">
-                <span className="inline-block px-4 py-1 bg-brand-900 text-brand-400 text-sm font-semibold rounded-full">
-                  EVERYTHING YOU NEED
-                </span>
-              </div>
               <CardTitle className="text-2xl mb-4">Everything You Need</CardTitle>
               <div className="mb-2">
                 <span className="text-5xl font-bold text-stone-100">$29</span>
@@ -199,7 +194,7 @@ export default function PricingPage() {
               <p className="text-xs text-stone-500 text-center mb-2">No credit card required</p>
               <Link
                 href="/auth/signup"
-                className="block w-full bg-brand-9500 text-white text-center px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium"
+                className="block w-full bg-brand-500 text-white text-center px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium"
               >
                 Start your 14-day trial
               </Link>
@@ -213,16 +208,15 @@ export default function PricingPage() {
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-stone-100 mb-4">
-              Ready to ditch the spreadsheets?
+              Stop juggling. Start cooking.
             </h2>
             <p className="text-lg text-stone-400 mb-8">
-              Built by a chef who got tired of juggling it all — join the chefs who let ChefFlow
-              handle the admin
+              14 days free. No credit card. Cancel anytime.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/auth/signup"
-                className="w-full sm:w-auto bg-brand-9500 text-white px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium text-center"
+                className="w-full sm:w-auto bg-brand-500 text-white px-8 py-3 rounded-md hover:bg-brand-600 transition-colors font-medium text-center"
               >
                 Start your 14-day trial
               </Link>
