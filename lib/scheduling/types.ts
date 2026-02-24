@@ -12,6 +12,7 @@ export interface DefaultStore {
 }
 
 export const DASHBOARD_WIDGET_IDS = [
+  'system_nerve_center',
   'onboarding_accelerator',
   'todays_schedule',
   'next_action',
@@ -33,12 +34,15 @@ export interface DashboardWidgetPreference {
   enabled: boolean
 }
 
-export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetPreference[] = DASHBOARD_WIDGET_IDS.map((id) => ({
-  id,
-  enabled: true,
-}))
+export const DEFAULT_DASHBOARD_WIDGETS: DashboardWidgetPreference[] = DASHBOARD_WIDGET_IDS.map(
+  (id) => ({
+    id,
+    enabled: true,
+  })
+)
 
 export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
+  system_nerve_center: 'System Health',
   onboarding_accelerator: 'Onboarding Accelerator',
   todays_schedule: "Today's Schedule",
   next_action: 'Next Action',
@@ -151,18 +155,18 @@ export type TimelineItemType =
 
 export interface TimelineItem {
   id: string
-  time: string           // "HH:MM" format
+  time: string // "HH:MM" format
   label: string
   description: string
   type: TimelineItemType
-  isDeadline: boolean    // true for arrival, departure
-  isFlexible: boolean    // true for wake up, false for arrival
+  isDeadline: boolean // true for arrival, departure
+  isFlexible: boolean // true for wake up, false for arrival
 }
 
 export interface RouteStop {
   name: string
   address: string
-  purpose: string        // "Store", "Event location", etc.
+  purpose: string // "Store", "Event location", etc.
   estimatedMinutes: number
 }
 
@@ -181,13 +185,7 @@ export interface EventTimeline {
 // DEFAULT OPERATING PROCEDURES
 // ============================================
 
-export type DOPTaskCategory =
-  | 'documents'
-  | 'shopping'
-  | 'prep'
-  | 'packing'
-  | 'admin'
-  | 'reset'
+export type DOPTaskCategory = 'documents' | 'shopping' | 'prep' | 'packing' | 'admin' | 'reset'
 
 export interface DOPTask {
   id: string
@@ -201,12 +199,7 @@ export interface DOPTask {
   dependsOn: string[]
 }
 
-export type DOPPhaseStatus =
-  | 'complete'
-  | 'pending'
-  | 'overdue'
-  | 'upcoming'
-  | 'not_applicable'
+export type DOPPhaseStatus = 'complete' | 'pending' | 'overdue' | 'upcoming' | 'not_applicable'
 
 export interface DOPPhase {
   date?: string
@@ -303,8 +296,8 @@ export interface SchedulingEvent {
 export type DayType = 'event' | 'prep' | 'admin' | 'free'
 
 export interface WeekDay {
-  date: string         // ISO date
-  dayOfWeek: string    // "Monday", etc.
+  date: string // ISO date
+  dayOfWeek: string // "Monday", etc.
   dayType: DayType
   events: {
     id: string
@@ -319,8 +312,8 @@ export interface WeekDay {
 }
 
 export interface WeekSchedule {
-  weekStart: string    // ISO date of Monday
-  weekEnd: string      // ISO date of Sunday
+  weekStart: string // ISO date of Monday
+  weekEnd: string // ISO date of Sunday
   days: WeekDay[]
   warnings: string[]
 }
@@ -359,9 +352,9 @@ export interface PrepBlock {
   id: string
   chef_id: string
   event_id: string | null
-  block_date: string                       // "YYYY-MM-DD"
-  start_time: string | null                // "HH:MM" or null (date-only)
-  end_time: string | null                  // "HH:MM" or null
+  block_date: string // "YYYY-MM-DD"
+  start_time: string | null // "HH:MM" or null (date-only)
+  end_time: string | null // "HH:MM" or null
   block_type: PrepBlockType
   title: string
   notes: string | null
@@ -380,13 +373,13 @@ export interface PrepBlock {
 export interface PrepBlockSuggestion {
   block_type: PrepBlockType
   title: string
-  suggested_date: string                   // "YYYY-MM-DD"
-  suggested_start_time: string | null      // "HH:MM" or null
+  suggested_date: string // "YYYY-MM-DD"
+  suggested_start_time: string | null // "HH:MM" or null
   estimated_duration_minutes: number
   notes: string
   store_name: string | null
   store_address: string | null
-  reason: string                           // human-readable explanation shown in confirm dialog
+  reason: string // human-readable explanation shown in confirm dialog
 }
 
 // An event with one or more required prep blocks missing
@@ -403,12 +396,12 @@ export interface SchedulingGap {
 
 // One cell in the year view grid
 export interface YearWeekSummary {
-  week_number: number                      // 1–52
-  week_start: string                       // ISO date of Monday
-  week_end: string                         // ISO date of Sunday
+  week_number: number // 1–52
+  week_start: string // ISO date of Monday
+  week_end: string // ISO date of Sunday
   event_count: number
   scheduled_block_count: number
-  gap_count: number                        // events with ≥1 missing required block
+  gap_count: number // events with ≥1 missing required block
   has_gaps: boolean
 }
 

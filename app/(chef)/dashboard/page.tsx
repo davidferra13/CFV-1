@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { DEFAULT_PREFERENCES, type DashboardWidgetId } from '@/lib/scheduling/types'
+import SystemNerveCenter from '@/components/dashboard/system-nerve-center'
 
 export const metadata: Metadata = { title: 'Dashboard - ChefFlow' }
 import { getClients } from '@/lib/clients/actions'
@@ -671,6 +672,13 @@ export default async function ChefDashboard() {
       {holidayOutreachSuggestions.length > 0 && (
         <section>
           <HolidayOutreachPanel suggestions={holidayOutreachSuggestions} />
+        </section>
+      )}
+
+      {/* System Nerve Center — admin-only health monitor + self-healing */}
+      {isWidgetEnabled('system_nerve_center') && (
+        <section style={{ order: getWidgetOrder('system_nerve_center') }}>
+          <SystemNerveCenter />
         </section>
       )}
 
