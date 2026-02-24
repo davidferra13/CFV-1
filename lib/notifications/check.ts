@@ -10,15 +10,6 @@ import { requireAuth } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/supabase/server'
 import type { Notification, NotificationCategory } from './types'
 
-// Re-export core query functions from actions.ts for convenience
-export {
-  getNotifications,
-  getUnreadCount,
-  markAsRead,
-  markAllAsRead,
-  archiveNotification,
-} from './actions'
-
 // ─── Filtered queries ────────────────────────────────────────────────────
 
 /**

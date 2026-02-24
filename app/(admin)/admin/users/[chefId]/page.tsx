@@ -46,7 +46,8 @@ export default async function AdminChefDetailPage({ params }: { params: { chefId
   if (!chef) notFound()
 
   const email = chef.email
-  const accountStatus: 'active' | 'suspended' = chef.account_status ?? 'active'
+  const accountStatus: 'active' | 'suspended' =
+    chef.account_status === 'suspended' ? 'suspended' : 'active'
 
   const [eventsResult, clientsResult, ledgerResult] = await Promise.all([
     supabase

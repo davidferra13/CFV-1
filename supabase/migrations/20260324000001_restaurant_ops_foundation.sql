@@ -8,15 +8,13 @@
 -- ============================================
 
 -- ENUM: Task priority
-CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high', 'urgent');
+DO $$ BEGIN CREATE TYPE task_priority AS ENUM ('low', 'medium', 'high', 'urgent'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ENUM: Task status
-CREATE TYPE task_status AS ENUM ('pending', 'in_progress', 'done');
+DO $$ BEGIN CREATE TYPE task_status AS ENUM ('pending', 'in_progress', 'done'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ENUM: Task template category
-CREATE TYPE task_template_category AS ENUM (
-  'opening', 'closing', 'prep', 'cleaning', 'custom'
-);
+DO $$ BEGIN CREATE TYPE task_template_category AS ENUM ('opening', 'closing', 'prep', 'cleaning', 'custom'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Table: Task Templates (reusable checklists)
 CREATE TABLE task_templates (
@@ -41,11 +39,9 @@ CREATE TRIGGER trg_task_templates_updated_at
 
 ALTER TABLE task_templates ENABLE ROW LEVEL SECURITY;
 CREATE POLICY task_templates_chef_policy ON task_templates
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Tasks (individual task items)
 CREATE TABLE tasks (
@@ -82,11 +78,9 @@ CREATE TRIGGER trg_tasks_updated_at
 
 ALTER TABLE tasks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tasks_chef_policy ON tasks
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Task Completion Log (append-only, never delete)
 CREATE TABLE task_completion_log (
@@ -106,11 +100,9 @@ COMMENT ON TABLE task_completion_log IS 'Append-only record of every task comple
 
 ALTER TABLE task_completion_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY task_completion_log_chef_policy ON task_completion_log
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 
 -- ============================================
@@ -140,11 +132,9 @@ CREATE TRIGGER trg_stations_updated_at
 
 ALTER TABLE stations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY stations_chef_policy ON stations
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Now add the FK on tasks.station_id
 ALTER TABLE tasks
@@ -168,11 +158,9 @@ COMMENT ON TABLE station_menu_items IS 'Menu items assigned to a station. E.g., 
 
 ALTER TABLE station_menu_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY station_menu_items_chef_policy ON station_menu_items
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Station Components (ingredient/component breakdown per menu item)
 CREATE TABLE station_components (
@@ -201,16 +189,12 @@ CREATE TRIGGER trg_station_components_updated_at
 
 ALTER TABLE station_components ENABLE ROW LEVEL SECURITY;
 CREATE POLICY station_components_chef_policy ON station_components
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- ENUM: Waste reason
-CREATE TYPE waste_reason AS ENUM (
-  'expired', 'damaged', 'overproduced', 'dropped', 'other'
-);
+DO $$ BEGIN CREATE TYPE waste_reason AS ENUM ('expired', 'damaged', 'overproduced', 'dropped', 'other'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Table: Clipboard Entries (per-station, per-day tracking)
 CREATE TABLE clipboard_entries (
@@ -244,14 +228,12 @@ COMMENT ON TABLE clipboard_entries IS 'Daily station clipboard: par, on-hand, ma
 
 ALTER TABLE clipboard_entries ENABLE ROW LEVEL SECURITY;
 CREATE POLICY clipboard_entries_chef_policy ON clipboard_entries
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- ENUM: Shift type
-CREATE TYPE shift_type AS ENUM ('open', 'close', 'mid');
+DO $$ BEGIN CREATE TYPE shift_type AS ENUM ('open', 'close', 'mid'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Table: Shift Logs (check-in / check-out records)
 CREATE TABLE shift_logs (
@@ -275,14 +257,12 @@ COMMENT ON TABLE shift_logs IS 'Shift check-in/check-out records with frozen cli
 
 ALTER TABLE shift_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY shift_logs_chef_policy ON shift_logs
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- ENUM: Order request status
-CREATE TYPE order_request_status AS ENUM ('pending', 'ordered', 'received');
+DO $$ BEGIN CREATE TYPE order_request_status AS ENUM ('pending', 'ordered', 'received'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Table: Order Requests (station-level ordering needs)
 CREATE TABLE order_requests (
@@ -306,11 +286,9 @@ COMMENT ON TABLE order_requests IS 'Per-station order needs. Roll up into unifie
 
 ALTER TABLE order_requests ENABLE ROW LEVEL SECURITY;
 CREATE POLICY order_requests_chef_policy ON order_requests
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Waste Log (append-only tracking of all waste events)
 CREATE TABLE waste_log (
@@ -334,17 +312,12 @@ COMMENT ON TABLE waste_log IS 'Append-only waste/spoilage log. Never deleted. Fe
 
 ALTER TABLE waste_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY waste_log_chef_policy ON waste_log
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- ENUM: Ops log action types
-CREATE TYPE ops_log_action AS ENUM (
-  'check_in', 'check_out', 'prep_complete', 'stock_update',
-  'order_request', 'delivery_received', 'waste', 'eighty_six'
-);
+DO $$ BEGIN CREATE TYPE ops_log_action AS ENUM ('check_in', 'check_out', 'prep_complete', 'stock_update', 'order_request', 'delivery_received', 'waste', 'eighty_six'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Table: Ops Log (append-only master log of all station operations)
 CREATE TABLE ops_log (
@@ -365,11 +338,9 @@ COMMENT ON TABLE ops_log IS 'Append-only master log: every check-in, check-out, 
 
 ALTER TABLE ops_log ENABLE ROW LEVEL SECURITY;
 CREATE POLICY ops_log_chef_policy ON ops_log
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 
 -- ============================================
@@ -377,7 +348,7 @@ CREATE POLICY ops_log_chef_policy ON ops_log
 -- ============================================
 
 -- Table: Vendors (purveyors/suppliers)
-CREATE TABLE vendors (
+CREATE TABLE IF NOT EXISTS vendors (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id         UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   name            TEXT NOT NULL,
@@ -394,21 +365,22 @@ CREATE TABLE vendors (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_vendors_chef ON vendors(chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_vendors_chef ON vendors(chef_id, status);
 
 COMMENT ON TABLE vendors IS 'Purveyors/suppliers: Sysco, US Foods, local distributors, etc.';
 
-CREATE TRIGGER trg_vendors_updated_at
-  BEFORE UPDATE ON vendors
-  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'trg_vendors_updated_at') THEN
+    CREATE TRIGGER trg_vendors_updated_at BEFORE UPDATE ON vendors FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+  END IF;
+END $$;
 
 ALTER TABLE vendors ENABLE ROW LEVEL SECURITY;
-CREATE POLICY vendors_chef_policy ON vendors
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'vendors' AND policyname = 'vendors_chef_policy') THEN
+    CREATE POLICY vendors_chef_policy ON vendors USING (chef_id = (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1));
+  END IF;
+END $$;
 
 -- Table: Vendor Items (one-time mapping of vendor catalog to your ingredients)
 CREATE TABLE vendor_items (
@@ -436,14 +408,12 @@ COMMENT ON TABLE vendor_items IS 'Per-vendor pricing for ingredients. One-time m
 
 ALTER TABLE vendor_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY vendor_items_chef_policy ON vendor_items
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Invoices (purchase records from vendors)
-CREATE TABLE vendor_invoices (
+CREATE TABLE IF NOT EXISTS vendor_invoices (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id         UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   vendor_id       UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
@@ -455,18 +425,17 @@ CREATE TABLE vendor_invoices (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_vendor_invoices_chef ON vendor_invoices(chef_id, invoice_date);
-CREATE INDEX idx_vendor_invoices_vendor ON vendor_invoices(vendor_id, invoice_date);
+CREATE INDEX IF NOT EXISTS idx_vendor_invoices_chef ON vendor_invoices(chef_id, invoice_date);
+CREATE INDEX IF NOT EXISTS idx_vendor_invoices_vendor ON vendor_invoices(vendor_id, invoice_date);
 
 COMMENT ON TABLE vendor_invoices IS 'Purchase invoices from vendors. Each has line items for food cost tracking.';
 
 ALTER TABLE vendor_invoices ENABLE ROW LEVEL SECURITY;
-CREATE POLICY vendor_invoices_chef_policy ON vendor_invoices
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'vendor_invoices' AND policyname = 'vendor_invoices_chef_policy') THEN
+    CREATE POLICY vendor_invoices_chef_policy ON vendor_invoices USING (chef_id = (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1));
+  END IF;
+END $$;
 
 -- Table: Invoice Line Items
 CREATE TABLE vendor_invoice_line_items (
@@ -488,11 +457,9 @@ COMMENT ON TABLE vendor_invoice_line_items IS 'Line items on vendor invoices. Qu
 
 ALTER TABLE vendor_invoice_line_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY vendor_invoice_line_items_chef_policy ON vendor_invoice_line_items
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Daily Revenue (denominator for food cost %)
 CREATE TABLE daily_revenue (
@@ -520,11 +487,9 @@ CREATE TRIGGER trg_daily_revenue_updated_at
 
 ALTER TABLE daily_revenue ENABLE ROW LEVEL SECURITY;
 CREATE POLICY daily_revenue_chef_policy ON daily_revenue
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 
 -- ============================================
@@ -559,11 +524,9 @@ CREATE TRIGGER trg_guests_updated_at
 
 ALTER TABLE guests ENABLE ROW LEVEL SECURITY;
 CREATE POLICY guests_chef_policy ON guests
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Guest Tags (VIP, regular, problem, etc.)
 CREATE TABLE guest_tags (
@@ -584,11 +547,9 @@ COMMENT ON TABLE guest_tags IS 'Color-coded tags: VIP, regular, problem, comp_pe
 
 ALTER TABLE guest_tags ENABLE ROW LEVEL SECURITY;
 CREATE POLICY guest_tags_chef_policy ON guest_tags
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Guest Comps (promises: "free app next visit")
 CREATE TABLE guest_comps (
@@ -610,11 +571,9 @@ COMMENT ON TABLE guest_comps IS 'Comp promises: "free app next visit." Visible a
 
 ALTER TABLE guest_comps ENABLE ROW LEVEL SECURITY;
 CREATE POLICY guest_comps_chef_policy ON guest_comps
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- Table: Guest Visits (visit log)
 CREATE TABLE guest_visits (
@@ -636,16 +595,12 @@ COMMENT ON TABLE guest_visits IS 'Per-visit log: date, party size, spend, server
 
 ALTER TABLE guest_visits ENABLE ROW LEVEL SECURITY;
 CREATE POLICY guest_visits_chef_policy ON guest_visits
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));
 
 -- ENUM: Reservation status
-CREATE TYPE guest_reservation_status AS ENUM (
-  'confirmed', 'seated', 'completed', 'no_show', 'cancelled'
-);
+DO $$ BEGIN CREATE TYPE guest_reservation_status AS ENUM ('confirmed', 'seated', 'completed', 'no_show', 'cancelled'); EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- Table: Guest Reservations
 CREATE TABLE guest_reservations (
@@ -673,8 +628,6 @@ CREATE TRIGGER trg_guest_reservations_updated_at
 
 ALTER TABLE guest_reservations ENABLE ROW LEVEL SECURITY;
 CREATE POLICY guest_reservations_chef_policy ON guest_reservations
-  USING (chef_id IN (SELECT id FROM chefs WHERE tenant_id = (
-    SELECT tenant_id FROM chefs WHERE id = (
-      SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
-    )
-  )));
+  USING (chef_id = (
+    SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef' LIMIT 1
+  ));

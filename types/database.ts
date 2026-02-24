@@ -399,6 +399,7 @@ export type Database = {
           id: string
           onboarding_completed: boolean
           onboarding_completed_at: string | null
+          remy_archetype: string | null
           remy_enabled: boolean
           tenant_id: string
           updated_at: string
@@ -412,6 +413,7 @@ export type Database = {
           id?: string
           onboarding_completed?: boolean
           onboarding_completed_at?: string | null
+          remy_archetype?: string | null
           remy_enabled?: boolean
           tenant_id: string
           updated_at?: string
@@ -425,6 +427,7 @@ export type Database = {
           id?: string
           onboarding_completed?: boolean
           onboarding_completed_at?: string | null
+          remy_archetype?: string | null
           remy_enabled?: boolean
           tenant_id?: string
           updated_at?: string
@@ -2839,6 +2842,7 @@ export type Database = {
           feedback_text: string
           id: string
           logged_by: string
+          public_display: boolean
           rating: number | null
           reviewer_name: string | null
           source: string
@@ -2854,6 +2858,7 @@ export type Database = {
           feedback_text: string
           id?: string
           logged_by: string
+          public_display?: boolean
           rating?: number | null
           reviewer_name?: string | null
           source: string
@@ -2869,6 +2874,7 @@ export type Database = {
           feedback_text?: string
           id?: string
           logged_by?: string
+          public_display?: boolean
           rating?: number | null
           reviewer_name?: string | null
           source?: string
@@ -4917,6 +4923,7 @@ export type Database = {
           created_at: string
           current_closure_streak: number
           deposit_refundable: boolean
+          directory_approved: boolean
           display_name: string | null
           email: string
           google_review_url: string | null
@@ -4983,6 +4990,7 @@ export type Database = {
           created_at?: string
           current_closure_streak?: number
           deposit_refundable?: boolean
+          directory_approved?: boolean
           display_name?: string | null
           email: string
           google_review_url?: string | null
@@ -5049,6 +5057,7 @@ export type Database = {
           created_at?: string
           current_closure_streak?: number
           deposit_refundable?: boolean
+          directory_approved?: boolean
           display_name?: string | null
           email?: string
           google_review_url?: string | null
@@ -6239,6 +6248,98 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clipboard_entries: {
+        Row: {
+          chef_id: string
+          component_id: string
+          eighty_sixed_at: string | null
+          entry_date: string
+          id: string
+          is_86d: boolean
+          location: string | null
+          made: number | null
+          made_at: string | null
+          need_to_make: number | null
+          need_to_order: number | null
+          notes: string | null
+          on_hand: number | null
+          station_id: string
+          updated_at: string
+          updated_by: string | null
+          waste_qty: number | null
+          waste_reason_code: Database["public"]["Enums"]["waste_reason"] | null
+        }
+        Insert: {
+          chef_id: string
+          component_id: string
+          eighty_sixed_at?: string | null
+          entry_date: string
+          id?: string
+          is_86d?: boolean
+          location?: string | null
+          made?: number | null
+          made_at?: string | null
+          need_to_make?: number | null
+          need_to_order?: number | null
+          notes?: string | null
+          on_hand?: number | null
+          station_id: string
+          updated_at?: string
+          updated_by?: string | null
+          waste_qty?: number | null
+          waste_reason_code?: Database["public"]["Enums"]["waste_reason"] | null
+        }
+        Update: {
+          chef_id?: string
+          component_id?: string
+          eighty_sixed_at?: string | null
+          entry_date?: string
+          id?: string
+          is_86d?: boolean
+          location?: string | null
+          made?: number | null
+          made_at?: string | null
+          need_to_make?: number | null
+          need_to_order?: number | null
+          notes?: string | null
+          on_hand?: number | null
+          station_id?: string
+          updated_at?: string
+          updated_by?: string | null
+          waste_qty?: number | null
+          waste_reason_code?: Database["public"]["Enums"]["waste_reason"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clipboard_entries_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clipboard_entries_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "station_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clipboard_entries_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clipboard_entries_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
             referencedColumns: ["id"]
           },
         ]
@@ -7550,6 +7651,47 @@ export type Database = {
             columns: ["recipient_client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_revenue: {
+        Row: {
+          chef_id: string
+          created_at: string
+          date: string
+          id: string
+          notes: string | null
+          source: string
+          total_revenue_cents: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          date: string
+          id?: string
+          notes?: string | null
+          source?: string
+          total_revenue_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          date?: string
+          id?: string
+          notes?: string | null
+          source?: string
+          total_revenue_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_revenue_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
             referencedColumns: ["id"]
           },
         ]
@@ -10587,6 +10729,7 @@ export type Database = {
           id: string
           inquiry_id: string | null
           message_id: string | null
+          platform_email_type: string | null
           received_at: string | null
           snippet: string | null
           subject: string | null
@@ -10606,6 +10749,7 @@ export type Database = {
           id?: string
           inquiry_id?: string | null
           message_id?: string | null
+          platform_email_type?: string | null
           received_at?: string | null
           snippet?: string | null
           subject?: string | null
@@ -10625,6 +10769,7 @@ export type Database = {
           id?: string
           inquiry_id?: string | null
           message_id?: string | null
+          platform_email_type?: string | null
           received_at?: string | null
           snippet?: string | null
           subject?: string | null
@@ -11114,6 +11259,71 @@ export type Database = {
           },
         ]
       }
+      guest_comps: {
+        Row: {
+          chef_id: string
+          created_at: string
+          created_by: string | null
+          description: string
+          guest_id: string
+          id: string
+          redeemed: boolean
+          redeemed_at: string | null
+          redeemed_by: string | null
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          created_by?: string | null
+          description: string
+          guest_id: string
+          id?: string
+          redeemed?: boolean
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          guest_id?: string
+          id?: string
+          redeemed?: boolean
+          redeemed_at?: string | null
+          redeemed_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_comps_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_comps_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_comps_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_comps_redeemed_by_fkey"
+            columns: ["redeemed_by"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_leads: {
         Row: {
           converted_client_id: string | null
@@ -11346,6 +11556,105 @@ export type Database = {
           },
         ]
       }
+      guest_reservations: {
+        Row: {
+          chef_id: string
+          created_at: string
+          guest_id: string
+          id: string
+          notes: string | null
+          party_size: number | null
+          reservation_date: string
+          reservation_time: string | null
+          status: Database["public"]["Enums"]["guest_reservation_status"]
+          table_number: string | null
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          guest_id: string
+          id?: string
+          notes?: string | null
+          party_size?: number | null
+          reservation_date: string
+          reservation_time?: string | null
+          status?: Database["public"]["Enums"]["guest_reservation_status"]
+          table_number?: string | null
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          guest_id?: string
+          id?: string
+          notes?: string | null
+          party_size?: number | null
+          reservation_date?: string
+          reservation_time?: string | null
+          status?: Database["public"]["Enums"]["guest_reservation_status"]
+          table_number?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_reservations_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_reservations_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_tags: {
+        Row: {
+          chef_id: string
+          color: string | null
+          created_at: string
+          guest_id: string
+          id: string
+          tag: string
+        }
+        Insert: {
+          chef_id: string
+          color?: string | null
+          created_at?: string
+          guest_id: string
+          id?: string
+          tag: string
+        }
+        Update: {
+          chef_id?: string
+          color?: string | null
+          created_at?: string
+          guest_id?: string
+          id?: string
+          tag?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_tags_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_tags_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_testimonials: {
         Row: {
           chef_rating: number | null
@@ -11427,6 +11736,117 @@ export type Database = {
           {
             foreignKeyName: "guest_testimonials_tenant_id_fkey"
             columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_visits: {
+        Row: {
+          chef_id: string
+          created_at: string
+          guest_id: string
+          id: string
+          notes: string | null
+          party_size: number | null
+          server_id: string | null
+          spend_cents: number | null
+          visit_date: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          guest_id: string
+          id?: string
+          notes?: string | null
+          party_size?: number | null
+          server_id?: string | null
+          spend_cents?: number | null
+          visit_date: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          guest_id?: string
+          id?: string
+          notes?: string | null
+          party_size?: number | null
+          server_id?: string | null
+          spend_cents?: number | null
+          visit_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_visits_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_visits_guest_id_fkey"
+            columns: ["guest_id"]
+            isOneToOne: false
+            referencedRelation: "guests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_visits_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guests: {
+        Row: {
+          chef_id: string
+          created_at: string
+          email: string | null
+          first_visit_date: string | null
+          id: string
+          last_visit_date: string | null
+          name: string
+          notes: string | null
+          phone: string | null
+          total_spend_cents: number
+          total_visits: number
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          email?: string | null
+          first_visit_date?: string | null
+          id?: string
+          last_visit_date?: string | null
+          name: string
+          notes?: string | null
+          phone?: string | null
+          total_spend_cents?: number
+          total_visits?: number
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          email?: string | null
+          first_visit_date?: string | null
+          id?: string
+          last_visit_date?: string | null
+          name?: string
+          notes?: string | null
+          phone?: string | null
+          total_spend_cents?: number
+          total_visits?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guests_chef_id_fkey"
+            columns: ["chef_id"]
             isOneToOne: false
             referencedRelation: "chefs"
             referencedColumns: ["id"]
@@ -11892,6 +12312,7 @@ export type Database = {
         Row: {
           budget_range: string | null
           channel: Database["public"]["Enums"]["inquiry_channel"]
+          chef_likelihood: string | null
           client_id: string | null
           confirmed_budget_cents: number | null
           confirmed_cannabis_preference: string | null
@@ -11904,6 +12325,9 @@ export type Database = {
           converted_to_event_id: string | null
           created_at: string
           decline_reason: string | null
+          external_inquiry_id: string | null
+          external_link: string | null
+          external_platform: string | null
           first_contact_at: string
           follow_up_due_at: string | null
           ghost_at: string | null
@@ -11921,10 +12345,14 @@ export type Database = {
           tenant_id: string
           unknown_fields: Json | null
           updated_at: string
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
           budget_range?: string | null
           channel: Database["public"]["Enums"]["inquiry_channel"]
+          chef_likelihood?: string | null
           client_id?: string | null
           confirmed_budget_cents?: number | null
           confirmed_cannabis_preference?: string | null
@@ -11937,6 +12365,9 @@ export type Database = {
           converted_to_event_id?: string | null
           created_at?: string
           decline_reason?: string | null
+          external_inquiry_id?: string | null
+          external_link?: string | null
+          external_platform?: string | null
           first_contact_at: string
           follow_up_due_at?: string | null
           ghost_at?: string | null
@@ -11954,10 +12385,14 @@ export type Database = {
           tenant_id: string
           unknown_fields?: Json | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
           budget_range?: string | null
           channel?: Database["public"]["Enums"]["inquiry_channel"]
+          chef_likelihood?: string | null
           client_id?: string | null
           confirmed_budget_cents?: number | null
           confirmed_cannabis_preference?: string | null
@@ -11970,6 +12405,9 @@ export type Database = {
           converted_to_event_id?: string | null
           created_at?: string
           decline_reason?: string | null
+          external_inquiry_id?: string | null
+          external_link?: string | null
+          external_platform?: string | null
           first_contact_at?: string
           follow_up_due_at?: string | null
           ghost_at?: string | null
@@ -11987,6 +12425,9 @@ export type Database = {
           tenant_id?: string
           unknown_fields?: Json | null
           updated_at?: string
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: [
           {
@@ -14082,6 +14523,129 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ops_log: {
+        Row: {
+          action_type: Database["public"]["Enums"]["ops_log_action"]
+          chef_id: string
+          created_at: string
+          details: Json
+          id: string
+          staff_member_id: string | null
+          station_id: string | null
+        }
+        Insert: {
+          action_type: Database["public"]["Enums"]["ops_log_action"]
+          chef_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          staff_member_id?: string | null
+          station_id?: string | null
+        }
+        Update: {
+          action_type?: Database["public"]["Enums"]["ops_log_action"]
+          chef_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          staff_member_id?: string | null
+          station_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ops_log_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ops_log_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ops_log_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_requests: {
+        Row: {
+          chef_id: string
+          component_id: string
+          fulfilled_at: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          requested_at: string
+          requested_by: string | null
+          station_id: string
+          status: Database["public"]["Enums"]["order_request_status"]
+          unit: string
+        }
+        Insert: {
+          chef_id: string
+          component_id: string
+          fulfilled_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity: number
+          requested_at?: string
+          requested_by?: string | null
+          station_id: string
+          status?: Database["public"]["Enums"]["order_request_status"]
+          unit?: string
+        }
+        Update: {
+          chef_id?: string
+          component_id?: string
+          fulfilled_at?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          requested_at?: string
+          requested_by?: string | null
+          station_id?: string
+          status?: Database["public"]["Enums"]["order_request_status"]
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_requests_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_requests_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "station_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_requests_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
             referencedColumns: ["id"]
           },
         ]
@@ -16632,13 +17196,100 @@ export type Database = {
           },
         ]
       }
+      remy_support_shares: {
+        Row: {
+          conversation_json: Json
+          created_at: string
+          id: string
+          resolved_at: string | null
+          status: string
+          support_note: string | null
+          tenant_id: string
+        }
+        Insert: {
+          conversation_json: Json
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          support_note?: string | null
+          tenant_id: string
+        }
+        Update: {
+          conversation_json?: Json
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          status?: string
+          support_note?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remy_support_shares_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      remy_usage_metrics: {
+        Row: {
+          avg_response_time_ms: number | null
+          conversation_count: number
+          created_at: string
+          error_count: number
+          feature_category: string | null
+          id: string
+          message_count: number
+          metric_date: string
+          model_version: string | null
+          tenant_id: string
+        }
+        Insert: {
+          avg_response_time_ms?: number | null
+          conversation_count?: number
+          created_at?: string
+          error_count?: number
+          feature_category?: string | null
+          id?: string
+          message_count?: number
+          metric_date?: string
+          model_version?: string | null
+          tenant_id: string
+        }
+        Update: {
+          avg_response_time_ms?: number | null
+          conversation_count?: number
+          created_at?: string
+          error_count?: number
+          feature_category?: string | null
+          id?: string
+          message_count?: number
+          metric_date?: string
+          model_version?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "remy_usage_metrics_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       response_templates: {
         Row: {
           category: string | null
           created_at: string
           id: string
           is_active: boolean | null
+          merge_tags: string[]
           name: string
+          subject: string
           template_text: string
           tenant_id: string
           updated_at: string
@@ -16649,7 +17300,9 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean | null
+          merge_tags?: string[]
           name: string
+          subject?: string
           template_text: string
           tenant_id: string
           updated_at?: string
@@ -16660,7 +17313,9 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean | null
+          merge_tags?: string[]
           name?: string
+          subject?: string
           template_text?: string
           tenant_id?: string
           updated_at?: string
@@ -17455,6 +18110,67 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_logs: {
+        Row: {
+          check_in_at: string
+          check_out_at: string | null
+          chef_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          shift: Database["public"]["Enums"]["shift_type"]
+          snapshot: Json | null
+          staff_member_id: string | null
+          station_id: string
+        }
+        Insert: {
+          check_in_at?: string
+          check_out_at?: string | null
+          chef_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift?: Database["public"]["Enums"]["shift_type"]
+          snapshot?: Json | null
+          staff_member_id?: string | null
+          station_id: string
+        }
+        Update: {
+          check_in_at?: string
+          check_out_at?: string | null
+          chef_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift?: Database["public"]["Enums"]["shift_type"]
+          snapshot?: Json | null
+          staff_member_id?: string | null
+          station_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_logs_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_logs_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_logs_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
             referencedColumns: ["id"]
           },
         ]
@@ -18657,6 +19373,152 @@ export type Database = {
           },
         ]
       }
+      station_components: {
+        Row: {
+          chef_id: string
+          created_at: string
+          id: string
+          ingredient_id: string | null
+          name: string
+          notes: string | null
+          par_level: number
+          par_unit: string
+          shelf_life_days: number | null
+          station_menu_item_id: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          name: string
+          notes?: string | null
+          par_level?: number
+          par_unit?: string
+          shelf_life_days?: number | null
+          station_menu_item_id: string
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          id?: string
+          ingredient_id?: string | null
+          name?: string
+          notes?: string | null
+          par_level?: number
+          par_unit?: string
+          shelf_life_days?: number | null
+          station_menu_item_id?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_components_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "station_components_station_menu_item_id_fkey"
+            columns: ["station_menu_item_id"]
+            isOneToOne: false
+            referencedRelation: "station_menu_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      station_menu_items: {
+        Row: {
+          chef_id: string
+          created_at: string
+          description: string | null
+          id: string
+          menu_item_id: string | null
+          name: string
+          station_id: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          menu_item_id?: string | null
+          name: string
+          station_id: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          menu_item_id?: string | null
+          name?: string
+          station_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "station_menu_items_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "station_menu_items_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stations: {
+        Row: {
+          chef_id: string
+          created_at: string
+          description: string | null
+          display_order: number
+          id: string
+          name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          chef_id: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          chef_id?: string
+          created_at?: string
+          description?: string | null
+          display_order?: number
+          id?: string
+          name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stations_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stripe_transfers: {
         Row: {
           created_at: string
@@ -18800,6 +19662,195 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_completion_log: {
+        Row: {
+          chef_id: string
+          completed_at: string
+          duration_minutes: number | null
+          id: string
+          notes: string | null
+          staff_member_id: string | null
+          task_id: string
+        }
+        Insert: {
+          chef_id: string
+          completed_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          staff_member_id?: string | null
+          task_id: string
+        }
+        Update: {
+          chef_id?: string
+          completed_at?: string
+          duration_minutes?: number | null
+          id?: string
+          notes?: string | null
+          staff_member_id?: string | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_completion_log_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_completion_log_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_completion_log_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_templates: {
+        Row: {
+          category: Database["public"]["Enums"]["task_template_category"]
+          chef_id: string
+          created_at: string
+          description: string | null
+          id: string
+          items: Json
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["task_template_category"]
+          chef_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          items?: Json
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["task_template_category"]
+          chef_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          items?: Json
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_templates_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          chef_id: string
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string
+          description: string | null
+          due_date: string | null
+          due_time: string | null
+          id: string
+          notes: string | null
+          priority: Database["public"]["Enums"]["task_priority"]
+          recurring_rule: Json | null
+          station_id: string | null
+          status: Database["public"]["Enums"]["task_status"]
+          template_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          chef_id: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          recurring_rule?: Json | null
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          template_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          chef_id?: string
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string
+          description?: string | null
+          due_date?: string | null
+          due_time?: string | null
+          id?: string
+          notes?: string | null
+          priority?: Database["public"]["Enums"]["task_priority"]
+          recurring_rule?: Json | null
+          station_id?: string | null
+          status?: Database["public"]["Enums"]["task_status"]
+          template_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_tasks_station"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "task_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -19220,6 +20271,64 @@ export type Database = {
           },
         ]
       }
+      vendor_invoice_line_items: {
+        Row: {
+          chef_id: string
+          description: string
+          id: string
+          ingredient_id: string | null
+          invoice_id: string
+          quantity: number
+          total_cents: number
+          unit_price_cents: number
+          vendor_item_id: string | null
+        }
+        Insert: {
+          chef_id: string
+          description: string
+          id?: string
+          ingredient_id?: string | null
+          invoice_id: string
+          quantity?: number
+          total_cents?: number
+          unit_price_cents?: number
+          vendor_item_id?: string | null
+        }
+        Update: {
+          chef_id?: string
+          description?: string
+          id?: string
+          ingredient_id?: string | null
+          invoice_id?: string
+          quantity?: number
+          total_cents?: number
+          unit_price_cents?: number
+          vendor_item_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_invoice_line_items_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_invoice_line_items_vendor_item_id_fkey"
+            columns: ["vendor_item_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vendor_invoices: {
         Row: {
           chef_id: string
@@ -19267,6 +20376,63 @@ export type Database = {
           },
           {
             foreignKeyName: "vendor_invoices_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      vendor_items: {
+        Row: {
+          chef_id: string
+          id: string
+          ingredient_id: string | null
+          last_updated: string
+          notes: string | null
+          unit_measure: string | null
+          unit_price_cents: number
+          unit_size: number | null
+          vendor_id: string
+          vendor_item_name: string
+          vendor_sku: string | null
+        }
+        Insert: {
+          chef_id: string
+          id?: string
+          ingredient_id?: string | null
+          last_updated?: string
+          notes?: string | null
+          unit_measure?: string | null
+          unit_price_cents?: number
+          unit_size?: number | null
+          vendor_id: string
+          vendor_item_name: string
+          vendor_sku?: string | null
+        }
+        Update: {
+          chef_id?: string
+          id?: string
+          ingredient_id?: string | null
+          last_updated?: string
+          notes?: string | null
+          unit_measure?: string | null
+          unit_price_cents?: number
+          unit_size?: number | null
+          vendor_id?: string
+          vendor_item_name?: string
+          vendor_sku?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_items_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vendor_items_vendor_id_fkey"
             columns: ["vendor_id"]
             isOneToOne: false
             referencedRelation: "vendors"
@@ -19488,6 +20654,77 @@ export type Database = {
             columns: ["converted_event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      waste_log: {
+        Row: {
+          chef_id: string
+          component_id: string
+          created_at: string
+          estimated_value_cents: number | null
+          id: string
+          notes: string | null
+          quantity: number
+          reason: Database["public"]["Enums"]["waste_reason"]
+          staff_member_id: string | null
+          station_id: string
+          unit: string
+        }
+        Insert: {
+          chef_id: string
+          component_id: string
+          created_at?: string
+          estimated_value_cents?: number | null
+          id?: string
+          notes?: string | null
+          quantity: number
+          reason?: Database["public"]["Enums"]["waste_reason"]
+          staff_member_id?: string | null
+          station_id: string
+          unit?: string
+        }
+        Update: {
+          chef_id?: string
+          component_id?: string
+          created_at?: string
+          estimated_value_cents?: number | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          reason?: Database["public"]["Enums"]["waste_reason"]
+          staff_member_id?: string | null
+          station_id?: string
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "waste_log_chef_id_fkey"
+            columns: ["chef_id"]
+            isOneToOne: false
+            referencedRelation: "chefs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waste_log_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "station_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waste_log_staff_member_id_fkey"
+            columns: ["staff_member_id"]
+            isOneToOne: false
+            referencedRelation: "staff_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "waste_log_station_id_fkey"
+            columns: ["station_id"]
+            isOneToOne: false
+            referencedRelation: "stations"
             referencedColumns: ["id"]
           },
         ]
@@ -20572,6 +21809,12 @@ export type Database = {
         | "uniforms"
         | "utilities"
       follow_up_timer_status: "active" | "completed" | "dismissed"
+      guest_reservation_status:
+        | "confirmed"
+        | "seated"
+        | "completed"
+        | "no_show"
+        | "cancelled"
       household_relationship:
         | "partner"
         | "child"
@@ -20609,6 +21852,7 @@ export type Database = {
         | "wix"
         | "campaign_response"
         | "outbound_prospecting"
+        | "yhangry"
       inquiry_note_category:
         | "general"
         | "inspiration"
@@ -20701,6 +21945,16 @@ export type Database = {
         | "preference"
         | "logistics"
         | "relationship"
+      ops_log_action:
+        | "check_in"
+        | "check_out"
+        | "prep_complete"
+        | "stock_update"
+        | "order_request"
+        | "delivery_received"
+        | "waste"
+        | "eighty_six"
+      order_request_status: "pending" | "ordered" | "received"
       partner_status: "active" | "inactive"
       partner_type:
         | "airbnb_host"
@@ -20750,6 +22004,7 @@ export type Database = {
         | "email"
         | "other"
       rsvp_status: "pending" | "attending" | "declined" | "maybe"
+      shift_type: "open" | "close" | "mid"
       social_asset_kind: "image" | "video"
       social_media_type: "image" | "video" | "carousel" | "text"
       social_pillar:
@@ -20796,8 +22051,17 @@ export type Database = {
         | "forgot"
         | "other"
       suggested_link_status: "pending" | "accepted" | "rejected"
+      task_priority: "low" | "medium" | "high" | "urgent"
+      task_status: "pending" | "in_progress" | "done"
+      task_template_category:
+        | "opening"
+        | "closing"
+        | "prep"
+        | "cleaning"
+        | "custom"
       unused_reason: "leftover_reusable" | "wasted" | "returned"
-      user_role: "chef" | "client" | "system" | "partner"
+      user_role: "chef" | "client" | "system" | "partner" | "staff"
+      waste_reason: "expired" | "damaged" | "overproduced" | "dropped" | "other"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -21116,6 +22380,13 @@ export const Constants = {
         "utilities",
       ],
       follow_up_timer_status: ["active", "completed", "dismissed"],
+      guest_reservation_status: [
+        "confirmed",
+        "seated",
+        "completed",
+        "no_show",
+        "cancelled",
+      ],
       household_relationship: [
         "partner",
         "child",
@@ -21155,6 +22426,7 @@ export const Constants = {
         "wix",
         "campaign_response",
         "outbound_prospecting",
+        "yhangry",
       ],
       inquiry_note_category: [
         "general",
@@ -21260,6 +22532,17 @@ export const Constants = {
         "logistics",
         "relationship",
       ],
+      ops_log_action: [
+        "check_in",
+        "check_out",
+        "prep_complete",
+        "stock_update",
+        "order_request",
+        "delivery_received",
+        "waste",
+        "eighty_six",
+      ],
+      order_request_status: ["pending", "ordered", "received"],
       partner_status: ["active", "inactive"],
       partner_type: [
         "airbnb_host",
@@ -21308,6 +22591,7 @@ export const Constants = {
         "other",
       ],
       rsvp_status: ["pending", "attending", "declined", "maybe"],
+      shift_type: ["open", "close", "mid"],
       social_asset_kind: ["image", "video"],
       social_media_type: ["image", "video", "carousel", "text"],
       social_pillar: [
@@ -21360,8 +22644,18 @@ export const Constants = {
         "other",
       ],
       suggested_link_status: ["pending", "accepted", "rejected"],
+      task_priority: ["low", "medium", "high", "urgent"],
+      task_status: ["pending", "in_progress", "done"],
+      task_template_category: [
+        "opening",
+        "closing",
+        "prep",
+        "cleaning",
+        "custom",
+      ],
       unused_reason: ["leftover_reusable", "wasted", "returned"],
-      user_role: ["chef", "client", "system", "partner"],
+      user_role: ["chef", "client", "system", "partner", "staff"],
+      waste_reason: ["expired", "damaged", "overproduced", "dropped", "other"],
     },
   },
 } as const
