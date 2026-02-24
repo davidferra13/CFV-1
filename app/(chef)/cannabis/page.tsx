@@ -91,6 +91,21 @@ export default async function CannabisHubPage() {
                 <span>{item}</span>
               </li>
             ))}
+            <li className="flex items-start gap-2 text-sm" style={{ color: '#6aaa6e' }}>
+              <span className="mt-0.5 shrink-0" style={{ color: '#4a7c4e' }}>
+                ·
+              </span>
+              <span>
+                This portal was built by a member of Maine&rsquo;s Cannabis Hospitality Task Force.{' '}
+                <Link
+                  href="/cannabis/about"
+                  className="underline underline-offset-2"
+                  style={{ color: '#8bc34a' }}
+                >
+                  Learn the full story &rarr;
+                </Link>
+              </span>
+            </li>
           </ul>
         </div>
       </div>

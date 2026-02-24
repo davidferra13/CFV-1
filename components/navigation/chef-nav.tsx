@@ -685,6 +685,7 @@ export function ChefSidebar({
                   { href: '/cannabis/ledger', label: 'Cannabis Ledger' },
                   { href: '/cannabis/invite', label: 'Invite' },
                   { href: '/cannabis/compliance', label: 'Compliance ⚠️' },
+                  { href: '/cannabis/about', label: 'About' },
                 ].map((item) => {
                   const active = isItemActive(pathname, item.href)
                   return (
@@ -1172,6 +1173,7 @@ export function ChefMobileNav({
                     { href: '/cannabis/ledger', label: 'Ledger' },
                     { href: '/cannabis/invite', label: 'Invite' },
                     { href: '/cannabis/compliance', label: 'Compliance ⚠️' },
+                    { href: '/cannabis/about', label: 'About' },
                   ].map((item) => {
                     const active = isItemActive(pathname, item.href)
                     return (

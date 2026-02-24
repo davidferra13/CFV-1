@@ -2827,6 +2827,17 @@ export const PAGE_INFO_REGISTRY: Record<string, PageInfoEntry> = {
     features: ['Regulatory requirements', 'Documentation', 'Compliance checklist'],
   },
 
+  '/cannabis/about': {
+    title: 'About Cannabis Portal',
+    description: 'Why this portal exists — the task force, the legislation, and the roadmap.',
+    features: [
+      'Task force background',
+      'Legislative timeline',
+      'Feature roadmap',
+      'External sources',
+    ],
+  },
+
   '/cannabis/events': {
     title: 'Cannabis Event List',
     description: 'All cannabis-specific events.',
