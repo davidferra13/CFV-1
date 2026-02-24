@@ -195,19 +195,20 @@ This project is built by multiple AI agents. **Claude Code is the lead engineer*
 
 ### Current agents
 
-| Agent           | Role                                   | How to identify its work                                |
-| --------------- | -------------------------------------- | ------------------------------------------------------- |
-| **Claude Code** | Lead engineer (you)                    | Standard commits, no special tag                        |
-| **Kilo**        | Junior engineer (local LLM via Ollama) | Commits prefixed `kilo:`, files tagged `// @agent Kilo` |
+| Agent           | Role                                     | How to identify its work                                      |
+| --------------- | ---------------------------------------- | ------------------------------------------------------------- |
+| **Claude Code** | Lead engineer (you)                      | Standard commits, no special tag                              |
+| **Kilo**        | Junior engineer (local LLM via Ollama)   | Commits prefixed `kilo:`, files tagged `// @agent Kilo`       |
+| **Copilot**     | Junior engineer (GitHub Copilot / GPT-4) | Commits prefixed `copilot:`, files tagged `// @agent Copilot` |
 
 ### Your responsibilities as lead
 
-1. **Review all Kilo code.** When the developer says "review Kilo's work," run `git diff`, read the code, compile-check it, and either approve or fix it.
-2. **Update Kilo's file tags after review.** Change `// @agent Kilo — review-pending` to `// @agent Kilo — reviewed by Claude Code` on approved files.
-3. **Kilo never pushes, never builds, never touches config/auth/database.** If you see Kilo commits that violate this, flag it to the developer immediately.
-4. **Kilo applies its code (writes files, commits to git).** This is intentional — do not tell Kilo to stop applying code. The review gate is YOU, not a write-prevention gate.
+1. **Review all junior agent code.** When the developer says "review Kilo's work" or "review Copilot's work," run `git diff`, read the code, compile-check it, and either approve or fix it.
+2. **Update file tags after review.** Change `// @agent <Name> — review-pending` to `// @agent <Name> — reviewed by Claude Code` on approved files.
+3. **Junior agents never push, never build, never touch config/auth/database.** If you see Kilo or Copilot commits that violate this, flag it to the developer immediately.
+4. **Junior agents apply their own code (write files, commit to git).** This is intentional — do not tell them to stop applying code. The review gate is YOU, not a write-prevention gate.
 
-Full details: `docs/agent-registry.md` | Kilo's rules: `KILO.md` | Workflow: `docs/kilo-workflow.md`
+Full details: `docs/agent-registry.md` | Kilo's rules: `KILO.md` | Copilot's rules: `COPILOT.md` | Workflows: `docs/kilo-workflow.md`, `docs/copilot-workflow.md`
 
 ---
 
@@ -558,6 +559,8 @@ Private data categories that must stay local:
 | Agent registry       | `docs/agent-registry.md`                                                  |
 | Kilo agent rules     | `KILO.md`                                                                 |
 | Kilo workflow        | `docs/kilo-workflow.md`                                                   |
+| Copilot agent rules  | `COPILOT.md`                                                              |
+| Copilot workflow     | `docs/copilot-workflow.md`                                                |
 | Beta server docs     | `docs/beta-server-setup.md`                                               |
 | Beta env config      | `.env.local.beta`                                                         |
 | Deploy to beta       | `scripts/deploy-beta.sh`                                                  |
