@@ -3,12 +3,18 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { PrimaryNavForm } from '@/components/settings/primary-nav-form'
+import { ArchetypePicker } from '@/components/settings/archetype-picker'
+import { getChefArchetype, hasCustomNavDefault } from '@/lib/archetypes/actions'
 
 export const metadata: Metadata = { title: 'Primary Navigation - ChefFlow' }
 
 export default async function NavigationSettingsPage() {
   await requireChef()
-  const preferences = await getChefPreferences()
+  const [preferences, currentArchetype, hasCustom] = await Promise.all([
+    getChefPreferences(),
+    getChefArchetype(),
+    hasCustomNavDefault(),
+  ])
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -27,6 +33,12 @@ export default async function NavigationSettingsPage() {
         </Link>
       </div>
 
+      {/* Archetype presets + custom default */}
+      <div className="rounded-xl border border-stone-700 bg-stone-900/50 p-6">
+        <ArchetypePicker currentArchetype={currentArchetype} hasCustomDefault={hasCustom} />
+      </div>
+
+      {/* Manual customization */}
       <PrimaryNavForm initialPrimaryNavHrefs={preferences.primary_nav_hrefs ?? []} />
     </div>
   )

@@ -29,6 +29,8 @@ import { getTierForChef } from '@/lib/billing/tier'
 import { isAdmin } from '@/lib/auth/admin'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 import { differenceInDays } from 'date-fns'
+import { getChefArchetype } from '@/lib/archetypes/actions'
+import { ArchetypeSelector } from '@/components/onboarding/archetype-selector'
 
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   // Server-side role check - happens BEFORE any client code ships
@@ -51,22 +53,37 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   }
   // Parallelized — all four calls are independent of each other and of layoutData.
   // Running them concurrently saves ~3 sequential DB round-trips on every page load.
-  const [layoutData, announcement, tierStatus, hasCannabisTier, userIsAdmin] = await Promise.all([
-    // Cached for 60s — slug and nav prefs change rarely, keyed per chef
-    getChefLayoutData(user.entityId),
-    // Platform announcement (non-fatal — fail open)
-    getAnnouncement().catch(() => null),
-    // Tier check — non-fatal, defaults to pro (fail open so billing never breaks the portal)
-    getTierForChef(user.entityId).catch(() => ({
-      tier: 'pro' as const,
-      isGrandfathered: true,
-      subscriptionStatus: 'grandfathered',
-    })),
-    // Cannabis tier check — non-fatal, fails closed
-    hasCannabisAccess(user.id).catch(() => false),
-    // Admin check — admins bypass all tier restrictions
-    isAdmin().catch(() => false),
-  ])
+  const [layoutData, announcement, tierStatus, hasCannabisTier, userIsAdmin, chefArchetype] =
+    await Promise.all([
+      // Cached for 60s — slug and nav prefs change rarely, keyed per chef
+      getChefLayoutData(user.entityId),
+      // Platform announcement (non-fatal — fail open)
+      getAnnouncement().catch(() => null),
+      // Tier check — non-fatal, defaults to pro (fail open so billing never breaks the portal)
+      getTierForChef(user.entityId).catch(() => ({
+        tier: 'pro' as const,
+        isGrandfathered: true,
+        subscriptionStatus: 'grandfathered',
+      })),
+      // Cannabis tier check — non-fatal, fails closed
+      hasCannabisAccess(user.id).catch(() => false),
+      // Admin check — admins bypass all tier restrictions
+      isAdmin().catch(() => false),
+      // Archetype — null means chef hasn't picked one yet (show selector)
+      getChefArchetype().catch(() => null),
+    ])
+  // Archetype gate — new chefs pick their persona before seeing the portal.
+  // Admins skip this (they have full access and don't need a preset).
+  // Also skip on settings pages so they can manually configure if needed.
+  if (
+    !chefArchetype &&
+    !userIsAdmin &&
+    !pathname.startsWith('/settings') &&
+    !pathname.startsWith('/onboarding')
+  ) {
+    return <ArchetypeSelector />
+  }
+
   const profile = layoutData
   const primaryNavHrefs = layoutData.primary_nav_hrefs
   const enabledModules =

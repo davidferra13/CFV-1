@@ -1106,16 +1106,17 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 
 ## GLOBAL ELEMENTS (present on every page)
 
-| Element                  | Description                                                                                                                                       |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Sidebar Navigation**   | 8 groups (Remy, Pipeline, Events, Culinary, Clients, Finance, Protection, More) + customizable top shortcuts + bottom shortcuts (Settings, Games) |
-| **Mobile Tab Bar**       | Home, Daily Ops, Inbox, Events, Clients                                                                                                           |
-| **Remy Floating Widget** | Draggable/resizable concierge on all pages                                                                                                        |
-| **Breadcrumbs**          | Every sub-page has "← Parent" navigation                                                                                                          |
-| **Auth Gate**            | Every page calls `requireChef()` — unauthenticated users redirected to sign-in                                                                    |
-| **Tenant Scoping**       | Every query scoped to session `tenant_id`                                                                                                         |
-| **Pro Feature Gating**   | Pro features gated via `requirePro()` server-side + `<UpgradeGate>` client-side                                                                   |
-| **Admin Bypass**         | Admins always have full Pro access                                                                                                                |
+| Element                  | Description                                                                                                                                                                    |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Sidebar Navigation**   | 5 groups (Pipeline, Events, Clients, Finance, More) + customizable top shortcuts + bottom shortcuts (Settings). Curated per-archetype presets.                                 |
+| **Archetype Selector**   | Full-screen onboarding gate for new chefs — pick from 6 archetypes (Private Chef, Caterer, Meal Prep, Restaurant, Food Truck, Bakery) to set nav defaults. Nothing locked out. |
+| **Mobile Tab Bar**       | Home, Inbox, Events, Clients (customizable per archetype)                                                                                                                      |
+| **Remy Floating Widget** | Draggable/resizable concierge on all pages                                                                                                                                     |
+| **Breadcrumbs**          | Every sub-page has "← Parent" navigation                                                                                                                                       |
+| **Auth Gate**            | Every page calls `requireChef()` — unauthenticated users redirected to sign-in                                                                                                 |
+| **Tenant Scoping**       | Every query scoped to session `tenant_id`                                                                                                                                      |
+| **Pro Feature Gating**   | Pro features gated via `requirePro()` server-side + `<UpgradeGate>` client-side                                                                                                |
+| **Admin Bypass**         | Admins always have full Pro access                                                                                                                                             |
 
 ---
 
