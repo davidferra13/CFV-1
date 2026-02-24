@@ -61,6 +61,12 @@
 7. [Calendar](#7-calendar)
 8. [Inbox & Messaging](#8-inbox--messaging)
 9. [Staff](#9-staff)
+   - [Tasks](#9a-tasks)
+   - [Stations (Kitchen Clipboard)](#9b-stations-kitchen-clipboard-system)
+   - [Vendors & Food Cost](#9c-vendors--food-cost)
+   - [Guest CRM](#9d-guest-crm)
+   - [Notifications](#9e-notifications)
+   - [Staff Portal](#9f-staff-portal-staff-facing)
 10. [Analytics](#10-analytics)
 11. [Daily Ops](#11-daily-ops)
 12. [Activity & Queue](#12-activity--queue)
@@ -725,14 +731,98 @@
 
 ## 9. STAFF
 
-| Route                 | Key Elements                                                                                                                                        |
-| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/staff`              | Active staff cards (name, role badge, rate, contact, "Deactivate" button, collapsible edit form). Add form. Inactive section (collapsed by default) |
-| `/staff/schedule`     | 7-column week grid. Per-event: assigned staff list + "Assign" button → staff picker dropdown. Staff summary bar                                     |
-| `/staff/availability` | Staff × 7-day grid. Click cell cycles Available/Unavailable/Unknown. Summary row with counts                                                        |
-| `/staff/clock`        | Active entries with green pulse dot + elapsed time + "Out" button. Clock in button → staff picker. Completed entries list                           |
-| `/staff/performance`  | Sortable table (Name, On-Time Rate, Cancellations, Avg Rating, Total Events) with color-coded badges. Top performer trophy                          |
-| `/staff/labor`        | Summary cards (labor cost, ratio, avg). Recharts dual-axis chart (revenue bars + labor bars + ratio line). Monthly breakdown table                  |
+| Route                 | Key Elements                                                                                                                                                                                                                                              |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/staff`              | **Search bar** (real-time filter by name), **Role filter** dropdown (all/lead_chef/sous_chef/cook/server/bartender/assistant), **Status filter** (active/inactive/all). Staff cards now **clickable** → link to `/staff/[id]`. Active + inactive sections |
+| `/staff/[id]`         | **Staff detail page.** Contact info (name, email, phone, role, rate). Onboarding checklist progress with document status. Assignment history (event list). Performance stats. Deactivate button. Edit form                                                |
+| `/staff/schedule`     | 7-column week grid. Per-event: assigned staff list + "Assign" button → staff picker dropdown. Staff summary bar                                                                                                                                           |
+| `/staff/availability` | Staff × 7-day grid. Click cell cycles Available/Unavailable/Unknown. Summary row with counts                                                                                                                                                              |
+| `/staff/clock`        | Active entries with green pulse dot + elapsed time + "Out" button. Clock in button → staff picker. Completed entries list                                                                                                                                 |
+| `/staff/performance`  | Sortable table (Name, On-Time Rate, Cancellations, Avg Rating, Total Events) with color-coded badges. Top performer trophy                                                                                                                                |
+| `/staff/labor`        | Summary cards (labor cost, ratio, avg). Recharts dual-axis chart (revenue bars + labor bars + ratio line). Monthly breakdown table                                                                                                                        |
+
+---
+
+## 9A. TASKS
+
+| Route              | Key Elements                                                                                                                                                                                                                                                                                   |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/tasks`           | **Daily task board.** Date navigation (prev/today/next). Tasks grouped by assigned person. Each task: title, priority badge (low/medium/high/urgent), status (pending/in_progress/done), due time, "Complete" button. Create task form (title, description, assignee, due date/time, priority) |
+| `/tasks/templates` | **Task template management.** List of templates (opening/closing/prep/cleaning/custom). Create template: name, category, items list. "Generate Today's Tasks" button — one-click creates all tasks from template. Edit/delete templates                                                        |
+
+---
+
+## 9B. STATIONS (Kitchen Clipboard System)
+
+| Route                            | Key Elements                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/stations`                      | **Station list.** Cards per station (name, status, component count). Create station form (name, description). Click → station detail                                                                                                                                                                                           |
+| `/stations/[id]`                 | **Station detail.** Station info + menu items with components. Clipboard link. Edit station form. Manage menu items and components (name, unit, par level, shelf life)                                                                                                                                                         |
+| `/stations/[id]/clipboard`       | **The Clipboard** — core daily view. Excel-like grid: Item, Par, On Hand, Need to Make, Made, Need to Order, Waste, Shelf Life, Notes. Auto-generates entries from station components. Shift check-in/check-out panel. 86 toggle per item. Shelf life color coding (green/yellow/red). Updated_by accountability on every save |
+| `/stations/[id]/clipboard/print` | **Print-friendly clipboard.** `@media print` CSS. Table with all clipboard columns. Shelf life highlights (expired=red, expiring today=yellow). Station name + date header. "Print (Ctrl+P)" button. No nav chrome                                                                                                             |
+| `/stations/orders`               | **Unified order sheet.** All "need to order" items from ALL stations compiled. Pending order requests table. One view for the purchaser to call/email vendors                                                                                                                                                                  |
+| `/stations/orders/print`         | **Print-friendly order sheet.** Pending order requests table + clipboard "need to order" items. Blank "Ordered" column for manual checkoff when calling vendors. Clean black/white layout for paper                                                                                                                            |
+| `/stations/waste`                | **Waste log.** 7-day summary cards (total entries, estimated waste value, top reason). Full waste log table with reason badges (expired/over_production/dropped/contamination/quality/other), values, timestamps                                                                                                               |
+| `/stations/ops-log`              | **Operations log.** Append-only, permanent. Action type badges (Check In/Out, Prep Complete, Stock Update, Order Request, Delivery, Waste, 86). Description + timestamp per entry. Color-coded by action type                                                                                                                  |
+
+---
+
+## 9C. VENDORS & FOOD COST
+
+| Route                       | Key Elements                                                                                                                                                                                                                                                                             |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/vendors`                  | **Vendor list.** Search by name. Status toggle (active/inactive). Cards: name, contact, phone, delivery day chips, status badge. "Add Vendor" form (name, contact, phone, email, account #, delivery days, payment terms, notes). Click → vendor detail                                  |
+| `/vendors/[id]`             | **Vendor detail.** Info card (contact, phone, email, account #, payment terms, delivery days, notes) with "Edit Vendor Info" collapsible form. **Price list** (VendorPriceList component). **Invoice history** table (date, invoice #, total, notes). "Log New Invoice" collapsible form |
+| `/vendors/invoices`         | **All invoices** across vendors. Filter by vendor dropdown. Table (date, vendor, invoice #, total, notes). "Log Invoice" form + CSV upload                                                                                                                                               |
+| `/vendors/price-comparison` | **Side-by-side price comparison** across vendors per ingredient. Sorted by unit price. PriceComparison component                                                                                                                                                                         |
+| `/food-cost`                | **Food cost dashboard.** Date range picker (week/month/custom). Computed food cost % = `(purchases - waste) / revenue × 100`. Charts + trends. Alert when above target. Integrates DailyRevenueForm, InvoiceForm, InvoiceCsvUpload                                                       |
+| `/food-cost/revenue`        | **Daily revenue entry.** Date picker + amount input ($). "Save" upserts for the day. Revenue history table (last 30 days) with edit capability. Source tracking (manual/csv/pos)                                                                                                         |
+
+---
+
+## 9D. GUEST CRM
+
+| Route                  | Key Elements                                                                                                                                                                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/guests`              | **Guest directory.** GuestSearch with instant dropdown (search by name/phone). Guest cards with name, visit count, total spend, tags (VIP/regular/new/problem/comp_pending), pending comp indicator. "Add Guest" form. Click → guest profile                                         |
+| `/guests/[id]`         | **Guest profile.** Contact info (name, phone, email, first/last visit, total visits, spend). **Tags** section with color-coded badges + add/remove. **Pending comps** with "Redeem" buttons. **Visit history** table (date, party size, spend, server, notes). **Reservations** list |
+| `/guests/reservations` | **Reservations page.** Upcoming reservations (date, time, party size, table, guest link, status). Past reservations. "Add Reservation" form (guest, date, time, party size, table, notes)                                                                                            |
+
+---
+
+## 9E. NOTIFICATIONS
+
+| Route            | Key Elements                                                                                                                                                                                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/notifications` | **Full notification center.** Filter tabs (All, Ops, Inquiries, Events, Quotes, Payments, Clients, System). Category badges with color coding. Mark individual/all as read. Archive individual. Pagination (20/page). Relative + absolute timestamps. Links to relevant pages |
+| Bell icon (nav)  | **Notification panel** (existing, enhanced). New icon mappings for ops notifications (UserCheck, ClipboardList, CalendarClock, Package, Gift). `ops` category with orange color. "View all notifications" footer link → `/notifications`                                      |
+
+**Notification triggers (non-blocking, background):**
+
+- Staff assignment → event
+- Task assigned → staff member
+- Schedule change → event date/time/venue
+- Order ready → all stations submitted
+- Delivery received → station
+- Low stock → component below par threshold
+- Guest comp → pending unredeemed comp
+
+---
+
+## 9F. STAFF PORTAL (Staff-Facing)
+
+> Separate route group `(staff)` with limited permissions. Staff login via `/staff-login`.
+
+| Route              | Key Elements                                                                                                                                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/staff-login`     | **Staff login page.** Email/password form. Styled consistently with main signin. Redirects to staff dashboard on success                                                                                                               |
+| `/staff-dashboard` | **Staff home.** Welcome + today's date. Quick stats (tasks today, done today, upcoming events, stations). Today's tasks with checkboxes. Station links. Upcoming assignments                                                           |
+| `/staff-tasks`     | **My tasks.** Tasks grouped by date. Completion checkboxes (with accountability: records who completed + when). Progress bars per day. Priority badges. Overdue indicators                                                             |
+| `/staff-station`   | **Station clipboard.** Date navigation. Station selector dropdown. Shift check-in (open/mid/close). Editable clipboard: on_hand, waste_qty, waste_reason, notes (other fields read-only). Updated_by automatically set to staff member |
+| `/staff-recipes`   | **Station recipes.** Read-only recipe cards filterable by station. Servings, prep time, cook time, instructions. Cannot edit                                                                                                           |
+| `/staff-schedule`  | **My schedule.** Event assignments split into upcoming and past. Event name, date, times, hours, status. Read-only                                                                                                                     |
+
+**Staff nav bar:** Links to Dashboard, Tasks, Station, Recipes, Schedule + Sign Out. Responsive hamburger menu on mobile.
 
 ---
 
@@ -1030,20 +1120,25 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 
 ## STATISTICS
 
-| Metric                    | Count                                                 |
-| ------------------------- | ----------------------------------------------------- |
-| Total page.tsx files      | ~265                                                  |
-| Distinct route namespaces | 40+                                                   |
-| Nav groups                | 8                                                     |
-| AI panels on event detail | 13                                                    |
-| Dashboard data streams    | ~48                                                   |
-| Analytics data streams    | ~38                                                   |
-| Client detail panels      | ~30                                                   |
-| Event detail tabs         | 4                                                     |
-| Financial sub-pages       | ~78                                                   |
-| Settings sub-pages        | 50                                                    |
-| Games                     | 6                                                     |
-| Calendar views            | 7 (month, day, week, year, share, schedule, waitlist) |
-| Event FSM states          | 8                                                     |
-| Total audit lines         | ~7,800 (master + 5 companion docs)                    |
-| Companion documents       | 5                                                     |
+| Metric                    | Count                                                                    |
+| ------------------------- | ------------------------------------------------------------------------ |
+| Total page.tsx files      | ~295 (+30 from ops system)                                               |
+| Distinct route namespaces | 50+                                                                      |
+| Nav groups                | 13 (was 8, +5: Staff, Tasks, Stations, Vendors, Guests)                  |
+| AI panels on event detail | 13                                                                       |
+| Dashboard data streams    | ~48                                                                      |
+| Analytics data streams    | ~38                                                                      |
+| Client detail panels      | ~30                                                                      |
+| Event detail tabs         | 4                                                                        |
+| Financial sub-pages       | ~78                                                                      |
+| Settings sub-pages        | 50                                                                       |
+| Station clipboard pages   | 8 (list, detail, clipboard, print, orders, print-orders, waste, ops-log) |
+| Task pages                | 2 (daily board, templates)                                               |
+| Vendor/food cost pages    | 6 (list, detail, invoices, price-comparison, dashboard, revenue)         |
+| Guest CRM pages           | 3 (directory, profile, reservations)                                     |
+| Staff portal pages        | 6 (login, dashboard, tasks, station, recipes, schedule)                  |
+| Games                     | 6                                                                        |
+| Calendar views            | 7 (month, day, week, year, share, schedule, waitlist)                    |
+| Event FSM states          | 8                                                                        |
+| Total audit lines         | ~8,600 (master + 5 companion docs)                                       |
+| Companion documents       | 5                                                                        |
