@@ -447,10 +447,13 @@ export function ChefSidebar({
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
   // Filter nav groups by enabled modules (progressive disclosure)
+  // Admins always see every group — they're the developer, not a gated user
   const enabledSet = enabledModules ? new Set(enabledModules) : null
-  const visibleGroups = enabledSet
-    ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
-    : navGroups
+  const visibleGroups = isAdmin
+    ? navGroups
+    : enabledSet
+      ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
+      : navGroups
 
   // Auto-expand group containing active route
   useEffect(() => {
@@ -1000,10 +1003,13 @@ export function ChefMobileNav({
   const primaryItems = resolveStandaloneTop(primaryNavHrefs)
 
   // Filter nav groups by enabled modules (progressive disclosure)
+  // Admins always see every group — they're the developer, not a gated user
   const enabledSet = enabledModules ? new Set(enabledModules) : null
-  const visibleGroups = enabledSet
-    ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
-    : navGroups
+  const visibleGroups = isAdmin
+    ? navGroups
+    : enabledSet
+      ? navGroups.filter((g) => !g.module || enabledSet.has(g.module))
+      : navGroups
 
   // Auto-expand group containing active route in mobile menu
   useEffect(() => {

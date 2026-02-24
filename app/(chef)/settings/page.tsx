@@ -76,6 +76,7 @@ export default async function SettingsPage() {
     schedulingRules,
     bookingSettings,
     demoDataExists,
+    userIsAdmin,
   ] = await Promise.all([
     getChefPreferences(),
     getGoogleConnection().catch((err) => {
@@ -97,6 +98,7 @@ export default async function SettingsPage() {
     getSchedulingRules().catch(() => null),
     getBookingSettings().catch(() => null),
     hasDemoData().catch(() => false),
+    isAdmin().catch(() => false),
   ])
 
   return (
@@ -453,7 +455,7 @@ export default async function SettingsPage() {
               Check Stripe, Gmail, and DOP task status at a glance.
             </p>
           </Link>
-          {isAdmin(user.email) && (
+          {userIsAdmin && (
             <Link
               href="/settings/incidents"
               className="block border border-amber-200 rounded-lg p-4 hover:bg-amber-950/50 transition-colors"

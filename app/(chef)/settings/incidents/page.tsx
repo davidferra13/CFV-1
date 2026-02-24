@@ -15,7 +15,8 @@ export default async function IncidentsPage({
   const user = await requireChef()
 
   // Admin-only page — regular chefs should not see infrastructure reports
-  if (!isAdmin(user.email)) {
+  const userIsAdmin = await isAdmin()
+  if (!userIsAdmin) {
     redirect('/settings')
   }
 
