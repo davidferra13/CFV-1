@@ -47,8 +47,13 @@ ssh "$REMOTE" << 'BUILD'
   sudo systemctl stop ollama 2>/dev/null || true
   echo "  Ollama stopped"
 
-  # Install dependencies
-  npm ci --production=false 2>&1 | tail -3
+  # Install dependencies (rm stale node_modules dirs that cause ENOTEMPTY)
+  rm -rf node_modules/.package-lock.json 2>/dev/null || true
+  npm ci --production=false 2>&1 | tail -5 || {
+    echo "  npm ci failed — retrying with clean node_modules..."
+    rm -rf node_modules
+    npm ci --production=false 2>&1 | tail -5
+  }
   echo "  Dependencies installed"
 
   # Build with increased heap
