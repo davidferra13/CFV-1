@@ -34,6 +34,7 @@ const CreateInquirySchema = z.object({
     'email',
     'instagram',
     'take_a_chef',
+    'yhangry',
     'phone',
     'website',
     'referral',
@@ -126,7 +127,7 @@ export async function createInquiry(input: CreateInquiryInput) {
     .from('inquiries')
     .insert({
       tenant_id: user.tenantId!,
-      channel: validated.channel,
+      channel: validated.channel as any, // 'yhangry' added via migration, not yet in generated types
       client_id: clientId,
       referral_partner_id: validated.referral_partner_id || null,
       partner_location_id: validated.partner_location_id || null,
@@ -764,4 +765,102 @@ export async function getLostReasonStats(): Promise<LostReasonStat[]> {
   return Array.from(counts.entries())
     .map(([reason, count]) => ({ reason, count }))
     .sort((a, b) => b.count - a.count)
+}
+
+// ============================================
+// NEEDS FIRST CONTACT
+// ============================================
+
+export interface FirstContactInquiry {
+  id: string
+  clientName: string
+  channel: string
+  confirmedDate: string | null
+  confirmedOccasion: string | null
+  confirmedLocation: string | null
+  firstContactAt: string
+  clientId: string | null
+}
+
+/**
+ * Get inquiries that have never been contacted — no outbound messages,
+ * no linked conversation. These leads need the chef's first response.
+ */
+export async function getInquiriesNeedingFirstContact(): Promise<FirstContactInquiry[]> {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  // Get all new/awaiting_chef inquiries (active leads waiting for chef action)
+  const { data: inquiries } = await supabase
+    .from('inquiries')
+    .select(
+      'id, client_id, channel, confirmed_date, confirmed_occasion, confirmed_location, first_contact_at, unknown_fields, source_message'
+    )
+    .eq('tenant_id', user.tenantId!)
+    .in('status', ['new', 'awaiting_chef'])
+    .eq('next_action_by', 'chef')
+    .order('first_contact_at', { ascending: false })
+    .limit(50)
+
+  if (!inquiries || inquiries.length === 0) return []
+
+  // Filter out inquiries that already have outbound messages
+  const inquiryIds = inquiries.map((i) => i.id)
+  const { data: outboundMessages } = await supabase
+    .from('messages')
+    .select('inquiry_id')
+    .in('inquiry_id', inquiryIds)
+    .eq('direction', 'outbound')
+
+  const contactedInquiryIds = new Set(
+    (outboundMessages || []).map((m) => m.inquiry_id).filter(Boolean)
+  )
+
+  // Also check if there's an existing conversation linked
+  const { data: linkedConversations } = await supabase
+    .from('conversations' as any)
+    .select('context_id')
+    .in('context_id', inquiryIds)
+    .eq('context_type', 'inquiry')
+
+  const conversationInquiryIds = new Set(
+    (linkedConversations || []).map((c: any) => c.context_id).filter(Boolean)
+  )
+
+  // Build result — only inquiries without outbound contact
+  const results: FirstContactInquiry[] = []
+
+  for (const inq of inquiries) {
+    if (contactedInquiryIds.has(inq.id)) continue
+    if (conversationInquiryIds.has(inq.id)) continue
+
+    // Resolve client name
+    let clientName = 'Unknown'
+    if (inq.client_id) {
+      const { data: client } = await supabase
+        .from('clients')
+        .select('full_name')
+        .eq('id', inq.client_id)
+        .single()
+      if (client?.full_name) clientName = client.full_name
+    }
+    // Fallback to unknown_fields
+    if (clientName === 'Unknown') {
+      const fields = inq.unknown_fields as Record<string, string> | null
+      clientName = fields?.original_sender_name || fields?.client_name || 'Unknown'
+    }
+
+    results.push({
+      id: inq.id,
+      clientName,
+      channel: inq.channel,
+      confirmedDate: inq.confirmed_date,
+      confirmedOccasion: inq.confirmed_occasion,
+      confirmedLocation: inq.confirmed_location,
+      firstContactAt: inq.first_contact_at,
+      clientId: inq.client_id,
+    })
+  }
+
+  return results
 }

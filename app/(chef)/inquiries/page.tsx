@@ -295,6 +295,17 @@ export default async function InquiriesPage({
                   TakeAChef
                 </Button>
               </Link>
+              <Link
+                href={
+                  channelFilter === 'yhangry'
+                    ? `/inquiries?status=${filter}`
+                    : `/inquiries?status=${filter}&channel=yhangry`
+                }
+              >
+                <Button size="sm" variant={channelFilter === 'yhangry' ? 'primary' : 'secondary'}>
+                  Yhangry
+                </Button>
+              </Link>
             </div>
           </Card>
 

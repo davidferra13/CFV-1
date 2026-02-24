@@ -19,9 +19,16 @@ import { createNotification, getChefAuthUserId, getChefProfile } from '@/lib/not
 import { isCommTriageEnabled } from '@/lib/features'
 import { isTakeAChefEmail, parseTakeAChefEmail } from './take-a-chef-parser'
 import type { TacParseResult } from './take-a-chef-parser'
-import { checkTacInquiryDuplicate, findTacInquiryByContext } from './take-a-chef-dedup'
+import { isYhangryEmail, parseYhangryEmail } from './yhangry-parser'
+import type { YhangryParseResult } from './yhangry-parser'
+import { checkPlatformInquiryDuplicate, findPlatformInquiryByContext } from './platform-dedup'
 import type { SyncResult, ParsedEmail } from './types'
 import type { Json } from '@/types/database'
+
+// ─── Known Platform Domains ───────────────────────────────────────────────
+// Platform emails may be auto-archived by Gmail filters, so we run a second
+// targeted query for these domains to ensure they're always captured.
+const PLATFORM_DOMAINS = ['privatechefmanager.com', 'takeachef.com', 'yhangry.com']
 
 // ─── Main Sync Function ─────────────────────────────────────────────────────
 
@@ -95,6 +102,28 @@ export async function syncGmailInbox(chefId: string, tenantId: string): Promise<
         .update({ gmail_history_id: historyResult.latestHistoryId })
         .eq('chef_id', chefId)
     }
+  }
+
+  // 3b. Also fetch platform emails that may have been auto-archived by Gmail filters
+  // These domains (TakeAChef, Yhangry, etc.) often get filtered out of inbox
+  try {
+    const platformQuery = PLATFORM_DOMAINS.map((d) => `from:${d}`).join(' OR ')
+    const platformMessages = await listRecentMessages(accessToken, {
+      maxResults: 50,
+      query: platformQuery,
+    })
+    const platformIds = platformMessages.map((m) => m.id)
+
+    // Merge with inbox results, deduplicate by message ID
+    const existingSet = new Set(messageIds)
+    for (const id of platformIds) {
+      if (!existingSet.has(id)) {
+        messageIds.push(id)
+      }
+    }
+  } catch (platformErr) {
+    // Non-fatal — inbox messages were already fetched
+    console.error('[syncGmailInbox] Platform domain query failed (non-fatal):', platformErr)
   }
 
   // 4. Load known client emails for classification context
@@ -177,12 +206,17 @@ async function processMessage(
     return
   }
 
-  // ─── TakeAChef / Private Chef Manager Fast Path ─────────────────────
-  // Detect TakeAChef emails by sender domain and route to dedicated parser.
-  // Skips Ollama classification entirely — TakeAChef emails are consistently
+  // ─── Platform Fast Paths ────────────────────────────────────────────
+  // Detect known platform emails by sender domain and route to dedicated parsers.
+  // Skips Ollama classification entirely — platform emails are consistently
   // formatted and don't need AI to classify.
   if (isTakeAChefEmail(email.from.email)) {
     await handleTakeAChefEmail(supabase, email, chefId, tenantId, result)
+    return
+  }
+
+  if (isYhangryEmail(email.from.email)) {
+    await handleYhangryEmail(supabase, email, chefId, tenantId, result)
     return
   }
 
@@ -613,7 +647,9 @@ async function handleTacNewInquiry(
   }
 
   // Dedup check — same inquiry sent multiple times?
-  const dedup = await checkTacInquiryDuplicate(supabase, tenantId, {
+  const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
+    channel: 'take_a_chef',
+    externalId: inquiry.ctaLink || undefined,
     clientName: inquiry.clientName,
     eventDate: inquiry.eventDate,
   })
@@ -782,7 +818,7 @@ async function handleTacClientMessage(
   const eventDate = msg?.eventDate || null
 
   // Find the existing inquiry
-  const inquiryId = await findTacInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
     clientName,
     eventDate,
     orderId: null,
@@ -864,7 +900,7 @@ async function handleTacBookingConfirmed(
   }
 
   // Find existing inquiry by client name + date
-  const inquiryId = await findTacInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
     clientName: booking.clientName,
     eventDate: null, // Booking may have different date format
     orderId: null,
@@ -1012,7 +1048,7 @@ async function handleTacCustomerInfo(
   }
 
   // Find existing inquiry to get the client
-  const inquiryId = await findTacInquiryByContext(supabase, tenantId, {
+  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
     clientName: info.guestName,
     eventDate: null,
     orderId: null,
@@ -1116,6 +1152,341 @@ async function handleTacPayment(
     confidence: 'high',
     action_taken: 'payment_logged',
     platform_email_type: 'tac_payment',
+  })
+
+  result.messagesLogged++
+}
+
+// ─── Yhangry Email Handler ─────────────────────────────────────────────────
+
+async function handleYhangryEmail(
+  supabase: ReturnType<typeof createServerClient>,
+  email: ParsedEmail,
+  chefId: string,
+  tenantId: string,
+  result: SyncResult
+) {
+  const parsed = parseYhangryEmail(email)
+
+  if (parsed.parseWarnings.length > 0) {
+    console.warn(`[Yhangry] Parse warnings for ${email.messageId}:`, parsed.parseWarnings)
+  }
+
+  try {
+    switch (parsed.emailType) {
+      case 'yhangry_new_inquiry':
+        await handleYhangryNewInquiry(supabase, email, parsed, chefId, tenantId, result)
+        break
+
+      case 'yhangry_client_message':
+        await handleYhangryClientMessage(supabase, email, parsed, tenantId, result)
+        break
+
+      case 'yhangry_booking_confirmed':
+        await handleYhangryBookingConfirmed(supabase, email, parsed, chefId, tenantId, result)
+        break
+
+      case 'yhangry_administrative':
+      default:
+        await logSyncEntry(supabase, tenantId, email, {
+          classification: 'marketing',
+          confidence: 'high',
+          action_taken: 'administrative_skipped',
+          platform_email_type: parsed.emailType,
+        })
+        result.skipped++
+        break
+    }
+  } catch (err) {
+    const error = err as Error
+    await logSyncEntry(supabase, tenantId, email, {
+      classification: 'inquiry',
+      confidence: 'high',
+      action_taken: 'error',
+      platform_email_type: parsed.emailType,
+      error: error.message,
+    })
+    result.errors.push(`Yhangry ${parsed.emailType} for ${email.messageId}: ${error.message}`)
+  }
+}
+
+// ─── Yhangry: New Inquiry ─────────────────────────────────────────────────
+
+async function handleYhangryNewInquiry(
+  supabase: ReturnType<typeof createServerClient>,
+  email: ParsedEmail,
+  parsed: YhangryParseResult,
+  chefId: string,
+  tenantId: string,
+  result: SyncResult
+) {
+  const inquiry = parsed.inquiry
+  if (!inquiry) {
+    await logSyncEntry(supabase, tenantId, email, {
+      classification: 'inquiry',
+      confidence: 'high',
+      action_taken: 'error',
+      platform_email_type: 'yhangry_new_inquiry',
+      error: 'Failed to parse inquiry fields from email body',
+    })
+    result.errors.push(`Yhangry inquiry parse failed for ${email.messageId}`)
+    return
+  }
+
+  // Dedup check
+  const dedup = await checkPlatformInquiryDuplicate(supabase, tenantId, {
+    channel: 'yhangry',
+    externalId: inquiry.quoteId || undefined,
+    clientName: inquiry.clientName || 'Yhangry Client',
+    eventDate: inquiry.eventDate,
+  })
+
+  if (dedup.isDuplicate) {
+    await logSyncEntry(supabase, tenantId, email, {
+      classification: 'inquiry',
+      confidence: 'high',
+      action_taken: 'duplicate_skipped',
+      platform_email_type: 'yhangry_new_inquiry',
+      inquiry_id: dedup.existingInquiryId,
+    })
+    result.skipped++
+    return
+  }
+
+  // Create client record — name comes from Yhangry later, use placeholder
+  let clientId: string | null = null
+  try {
+    const clientResult = await createClientFromLead(tenantId, {
+      full_name: inquiry.clientName || 'Yhangry Client',
+      email: null,
+      phone: null,
+      dietary_restrictions: null,
+      source: 'yhangry',
+    })
+    clientId = clientResult.id
+  } catch (clientErr) {
+    console.error('[Yhangry] Client creation failed (non-fatal):', clientErr)
+  }
+
+  // Build unknown_fields with all Yhangry-specific data
+  const unknownFields: Record<string, unknown> = {
+    submission_source: 'yhangry_gmail_auto',
+    original_sender_name: email.from.name || 'Yhangry',
+    platform_rep_name: email.from.name || null,
+    location: inquiry.location,
+    event_type: inquiry.eventType,
+    quote_url: inquiry.quoteUrl,
+    quote_id: inquiry.quoteId,
+  }
+
+  // Create the inquiry
+  const { data: newInquiry, error: inquiryError } = await supabase
+    .from('inquiries')
+    .insert({
+      tenant_id: tenantId,
+      channel: 'yhangry' as any,
+      client_id: clientId,
+      first_contact_at: email.date ? new Date(email.date).toISOString() : new Date().toISOString(),
+      confirmed_date: inquiry.eventDate,
+      confirmed_location: inquiry.location,
+      confirmed_occasion: inquiry.eventType || 'private event',
+      source_message:
+        `${inquiry.eventType || 'Private event'} in ${inquiry.location || 'TBD'}\n\n--- Original Yhangry email ---\n${email.body}`.trim(),
+      unknown_fields: unknownFields as unknown as Json,
+      external_platform: 'yhangry',
+      external_link: inquiry.quoteUrl,
+      external_inquiry_id: inquiry.quoteId,
+      status: 'new',
+      next_action_required: `Review Yhangry inquiry — ${inquiry.eventType || 'private event'} in ${inquiry.location || 'location TBD'}`,
+      next_action_by: 'chef',
+    })
+    .select('id')
+    .single()
+
+  if (inquiryError || !newInquiry) {
+    throw new Error(`Inquiry creation failed: ${inquiryError?.message}`)
+  }
+
+  // Log in sync log
+  await logSyncEntry(supabase, tenantId, email, {
+    classification: 'inquiry',
+    confidence: 'high',
+    action_taken: 'created_inquiry',
+    inquiry_id: newInquiry.id,
+    platform_email_type: 'yhangry_new_inquiry',
+  })
+
+  // Notify chef (non-blocking)
+  try {
+    const chefUserId = await getChefAuthUserId(tenantId)
+    if (chefUserId) {
+      await createNotification({
+        tenantId,
+        recipientId: chefUserId,
+        category: 'inquiry',
+        action: 'new_inquiry',
+        title: 'New Yhangry inquiry',
+        body: `${inquiry.eventType || 'Private event'} in ${inquiry.location || 'TBD'} on ${inquiry.eventDate || 'TBD'}`,
+        actionUrl: `/inquiries/${newInquiry.id}`,
+        inquiryId: newInquiry.id,
+        clientId: clientId || undefined,
+      })
+    }
+  } catch (notifErr) {
+    console.error('[Yhangry] Notification failed (non-fatal):', notifErr)
+  }
+
+  // Log activity (non-blocking)
+  try {
+    const { logChefActivity } = await import('@/lib/activity/log-chef')
+    await logChefActivity({
+      tenantId,
+      actorId: chefId,
+      action: 'inquiry_created',
+      domain: 'inquiry',
+      entityType: 'inquiry',
+      entityId: newInquiry.id,
+      summary: `Yhangry inquiry auto-captured: ${inquiry.eventType || 'private event'} in ${inquiry.location || 'TBD'} on ${inquiry.eventDate || 'TBD'}`,
+      context: {
+        channel: 'yhangry',
+        event_type: inquiry.eventType,
+        event_date: inquiry.eventDate,
+        location: inquiry.location,
+        source: 'gmail_auto',
+      },
+      clientId: clientId || undefined,
+    })
+  } catch (actErr) {
+    console.error('[Yhangry] Activity log failed (non-fatal):', actErr)
+  }
+
+  result.inquiriesCreated++
+}
+
+// ─── Yhangry: Client Message ──────────────────────────────────────────────
+
+async function handleYhangryClientMessage(
+  supabase: ReturnType<typeof createServerClient>,
+  email: ParsedEmail,
+  parsed: YhangryParseResult,
+  tenantId: string,
+  result: SyncResult
+) {
+  // Find existing inquiry by quote URL or context
+  const quoteId = parsed.inquiry?.quoteId || parsed.message?.quoteId || null
+  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    channel: 'yhangry',
+    clientName: null,
+    eventDate: null,
+    orderId: quoteId,
+  })
+
+  if (inquiryId) {
+    const { data: inquiry } = await supabase
+      .from('inquiries')
+      .select('status, external_link')
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (inquiry && ['new', 'awaiting_client'].includes(inquiry.status)) {
+      await supabase
+        .from('inquiries')
+        .update({
+          status: 'awaiting_chef',
+          next_action_required: 'Client messaged you on Yhangry — respond to keep lead warm',
+          next_action_by: 'chef',
+        })
+        .eq('id', inquiryId)
+        .eq('tenant_id', tenantId)
+    }
+
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'inquiry_reply',
+          title: 'Yhangry client messaged you',
+          body: `Check your Yhangry account for details`,
+          actionUrl: `/inquiries/${inquiryId}`,
+          inquiryId,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[Yhangry] Message notification failed (non-fatal):', notifErr)
+    }
+  }
+
+  await logSyncEntry(supabase, tenantId, email, {
+    classification: 'existing_thread',
+    confidence: 'high',
+    action_taken: inquiryId ? 'logged_message' : 'unmatched_message',
+    inquiry_id: inquiryId,
+    platform_email_type: 'yhangry_client_message',
+  })
+
+  result.messagesLogged++
+}
+
+// ─── Yhangry: Booking Confirmed ──────────────────────────────────────────
+
+async function handleYhangryBookingConfirmed(
+  supabase: ReturnType<typeof createServerClient>,
+  email: ParsedEmail,
+  parsed: YhangryParseResult,
+  chefId: string,
+  tenantId: string,
+  result: SyncResult
+) {
+  const quoteId = parsed.booking?.quoteId || null
+  const inquiryId = await findPlatformInquiryByContext(supabase, tenantId, {
+    channel: 'yhangry',
+    clientName: null,
+    eventDate: null,
+    orderId: quoteId,
+  })
+
+  if (inquiryId) {
+    await supabase
+      .from('inquiries')
+      .update({
+        status: 'confirmed',
+        external_inquiry_id: quoteId,
+        confirmed_budget_cents: parsed.booking?.amountCents || null,
+        next_action_required: 'Yhangry booking confirmed — prepare for event',
+        next_action_by: 'chef',
+      })
+      .eq('id', inquiryId)
+      .eq('tenant_id', tenantId)
+
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'inquiry',
+          action: 'new_inquiry',
+          title: 'Yhangry booking confirmed!',
+          body: `Check your Yhangry account for booking details`,
+          actionUrl: `/inquiries/${inquiryId}`,
+          inquiryId,
+        })
+      }
+    } catch (notifErr) {
+      console.error('[Yhangry] Booking notification failed (non-fatal):', notifErr)
+    }
+  }
+
+  await logSyncEntry(supabase, tenantId, email, {
+    classification: 'inquiry',
+    confidence: 'high',
+    action_taken: inquiryId ? 'booking_confirmed' : 'unmatched_booking',
+    inquiry_id: inquiryId,
+    platform_email_type: 'yhangry_booking_confirmed',
   })
 
   result.messagesLogged++

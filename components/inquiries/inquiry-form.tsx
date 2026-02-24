@@ -199,6 +199,7 @@ export function InquiryForm({
     { value: 'walk_in', label: 'Walk-In / Networking' },
     { value: 'instagram', label: 'Instagram' },
     { value: 'take_a_chef', label: 'Take a Chef' },
+    { value: 'yhangry', label: 'Yhangry' },
     { value: 'website', label: 'Website' },
     { value: 'other', label: 'Other' },
   ]

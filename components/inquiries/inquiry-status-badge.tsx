@@ -12,7 +12,10 @@ export type InquiryStatus =
   | 'declined'
   | 'expired'
 
-const STATUS_CONFIG: Record<InquiryStatus, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const STATUS_CONFIG: Record<
+  InquiryStatus,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   new: { label: 'New', variant: 'warning' },
   awaiting_client: { label: 'Awaiting Client', variant: 'info' },
   awaiting_chef: { label: 'Awaiting Chef', variant: 'default' },
@@ -27,11 +30,15 @@ export function InquiryStatusBadge({ status }: { status: InquiryStatus }) {
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
 
-const CHANNEL_CONFIG: Record<string, { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }> = {
+const CHANNEL_CONFIG: Record<
+  string,
+  { label: string; variant: 'default' | 'success' | 'warning' | 'error' | 'info' }
+> = {
   text: { label: 'Text', variant: 'default' },
   email: { label: 'Email', variant: 'info' },
   instagram: { label: 'Instagram', variant: 'warning' },
   take_a_chef: { label: 'Take a Chef', variant: 'success' },
+  yhangry: { label: 'Yhangry', variant: 'warning' },
   phone: { label: 'Phone', variant: 'default' },
   website: { label: 'Website', variant: 'info' },
   other: { label: 'Other', variant: 'default' },
