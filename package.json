@@ -59,7 +59,8 @@
     "beta": "bash scripts/beta-serve.sh quick",
     "beta:quick": "cloudflared tunnel --url http://localhost:3100",
     "beta:named": "bash scripts/beta-serve.sh named",
-    "beta:build": "next build --no-lint && next start -p 3100"
+    "beta:build": "next build --no-lint && next start -p 3100",
+    "ollama": "node scripts/ollama-control.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
