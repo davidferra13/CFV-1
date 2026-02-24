@@ -345,6 +345,79 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: 'inventory',
+    label: 'Inventory',
+    icon: Warehouse,
+    module: 'operations',
+    items: [
+      {
+        href: '/inventory',
+        label: 'Inventory Hub',
+        icon: Warehouse,
+      },
+      {
+        href: '/inventory/transactions',
+        label: 'Transaction Ledger',
+        icon: Package,
+      },
+      {
+        href: '/inventory/locations',
+        label: 'Storage Locations',
+        icon: MapPin,
+      },
+      {
+        href: '/inventory/purchase-orders',
+        label: 'Purchase Orders',
+        icon: Truck,
+        children: [{ href: '/inventory/purchase-orders/new', label: 'New PO' }],
+      },
+      {
+        href: '/inventory/counts',
+        label: 'Inventory Counts',
+        icon: ClipboardCheck,
+      },
+      {
+        href: '/inventory/audits',
+        label: 'Physical Audits',
+        icon: ClipboardCheck,
+        children: [{ href: '/inventory/audits/new', label: 'New Audit' }],
+      },
+      {
+        href: '/inventory/waste',
+        label: 'Waste Tracking',
+        icon: AlertTriangle,
+      },
+      {
+        href: '/inventory/vendor-invoices',
+        label: 'Vendor Invoices',
+        icon: FileText,
+      },
+      {
+        href: '/inventory/food-cost',
+        label: 'Food Cost Analysis',
+        icon: DollarSign,
+      },
+      {
+        href: '/inventory/staff-meals',
+        label: 'Staff Meals',
+        icon: UtensilsCrossed,
+        visibility: 'secondary' as const,
+      },
+      {
+        href: '/inventory/expiry',
+        label: 'Expiry Alerts',
+        icon: Clock,
+        visibility: 'secondary' as const,
+      },
+      {
+        href: '/inventory/demand',
+        label: 'Demand Forecast',
+        icon: TrendingUp,
+        visibility: 'secondary' as const,
+      },
+    ],
+  },
+  {
     id: 'guests',
     label: 'Guests',
     icon: Contact,
@@ -400,30 +473,12 @@ export const navGroups: NavGroup[] = [
         href: '/culinary/costing',
         label: 'Costing',
         icon: DollarSign,
-        children: [
-          { href: '/inventory/food-cost', label: 'Food Cost Analysis', visibility: 'secondary' },
-        ],
-      },
-      {
-        href: '/culinary/vendors',
-        label: 'Vendor Directory',
-        icon: Warehouse,
-        children: [
-          { href: '/inventory/vendor-invoices', label: 'Vendor Invoices', visibility: 'advanced' },
-        ],
       },
       {
         href: '/culinary/my-kitchen',
         label: 'My Kitchen',
         icon: Warehouse,
         children: [
-          { href: '/inventory', label: 'Inventory', icon: Warehouse, visibility: 'secondary' },
-          {
-            href: '/inventory/waste',
-            label: 'Waste Tracking',
-            icon: Package,
-            visibility: 'advanced',
-          },
           { href: '/operations/kitchen-rentals', label: 'Kitchen Rentals', visibility: 'advanced' },
           { href: '/operations/equipment', label: 'Equipment Inventory', visibility: 'advanced' },
         ],
