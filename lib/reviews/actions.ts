@@ -415,6 +415,7 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
         feedback_text,
         source_url,
         feedback_date,
+        public_display,
         created_at,
         client:clients(id, full_name),
         event:events(id, occasion, event_date)
@@ -551,7 +552,7 @@ export async function getUnifiedChefReviewFeed(): Promise<UnifiedChefReviewItem[
       contextLine: formatEventContext(feedback.event || null),
       reviewDate: feedback.feedback_date || feedback.created_at,
       createdAt: feedback.created_at,
-      tags: ['Manual Entry'],
+      tags: ['Manual Entry', ...(feedback.public_display ? ['Public'] : [])],
     })
   )
 

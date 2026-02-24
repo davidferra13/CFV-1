@@ -42,6 +42,7 @@ export function LogFeedbackButton() {
   const [clientId, setClientId] = useState('')
   const [sourceUrl, setSourceUrl] = useState('')
   const [feedbackDate, setFeedbackDate] = useState(new Date().toISOString().split('T')[0])
+  const [publicDisplay, setPublicDisplay] = useState(false)
 
   // Fetch clients when modal opens
   useEffect(() => {
@@ -60,6 +61,7 @@ export function LogFeedbackButton() {
     setClientId('')
     setSourceUrl('')
     setFeedbackDate(new Date().toISOString().split('T')[0])
+    setPublicDisplay(false)
     setError(null)
   }
 
@@ -83,6 +85,7 @@ export function LogFeedbackButton() {
         client_id: clientId || null,
         source_url: sourceUrl.trim() || '',
         feedback_date: feedbackDate,
+        public_display: publicDisplay,
       })
       handleClose()
       router.refresh()
@@ -226,6 +229,22 @@ export function LogFeedbackButton() {
                   onChange={(e) => setFeedbackDate(e.target.value)}
                 />
               </div>
+
+              {/* Public display toggle */}
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={publicDisplay}
+                  onChange={(e) => setPublicDisplay(e.target.checked)}
+                  className="w-4 h-4 rounded border-stone-600 bg-stone-800 text-brand-500 focus:ring-brand-500"
+                />
+                <div>
+                  <span className="text-sm font-medium text-stone-300">Show on public profile</span>
+                  <p className="text-xs text-stone-500">
+                    This feedback will be visible to visitors on your public profile page
+                  </p>
+                </div>
+              </label>
 
               {/* Actions */}
               <div className="flex gap-3 justify-end pt-2">

@@ -792,7 +792,16 @@ Protected time reminder (purple callout). Completion celebration when all done.
 
 **Route:** `/aar` — Event reviews with stats (calm/prep ratings, trend, frequently forgotten items). Per AAR: link to `/events/[id]/aar`.
 
-**Route:** `/reviews` — Unified internal + external reviews feed. Log feedback button, import platform review button, external review sources panel, configure Google review link.
+**Route:** `/reviews` — Unified internal + external reviews feed. Log feedback button (with "Show on public profile" toggle), import platform review button (with "Show on public profile" toggle, default on), external review sources panel, configure Google review link. "Public" badge on reviews marked for public display.
+
+**Route:** `/chef/[slug]` — Public chef profile (no auth). Now includes **Reviews & Testimonials** section showing:
+
+- Unified stats header: average rating (stars), total review count, platform breakdown pills (e.g., "Google 12 · 4.8★")
+- Review cards: reviewer name, date, star rating, review text, source badge, external link
+- Featured testimonials highlighted with gold border
+- "View all X reviews" expand button (shows 6 initially)
+- JSON-LD `AggregateRating` markup for SEO star ratings in Google search results
+- Sources: consented client reviews, public chef feedback, external reviews (Google/website), approved guest testimonials
 
 ---
 

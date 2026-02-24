@@ -17,16 +17,32 @@ const LogFeedbackSchema = z.object({
   client_id: z.string().uuid().nullable().optional(),
   event_id: z.string().uuid().nullable().optional(),
   source: z.enum([
-    'verbal', 'google', 'yelp', 'email', 'social_media', 'text_message', 'other',
-    'airbnb', 'facebook', 'tripadvisor', 'thumbtack', 'bark',
-    'gigsalad', 'taskrabbit', 'houzz', 'angi', 'nextdoor',
-    'instagram', 'yelp_guest',
+    'verbal',
+    'google',
+    'yelp',
+    'email',
+    'social_media',
+    'text_message',
+    'other',
+    'airbnb',
+    'facebook',
+    'tripadvisor',
+    'thumbtack',
+    'bark',
+    'gigsalad',
+    'taskrabbit',
+    'houzz',
+    'angi',
+    'nextdoor',
+    'instagram',
+    'yelp_guest',
   ]),
   reviewer_name: z.string().max(200).nullable().optional(),
   rating: z.number().int().min(1).max(5).nullable().optional(),
   feedback_text: z.string().min(1, 'Feedback text is required').max(5000),
   source_url: z.string().url().optional().or(z.literal('')),
   feedback_date: z.string().optional(), // ISO date string
+  public_display: z.boolean().optional(), // show on public profile
 })
 
 export type LogFeedbackInput = z.infer<typeof LogFeedbackSchema>
@@ -57,6 +73,7 @@ export async function logChefFeedback(input: LogFeedbackInput) {
       source_url: validated.source_url || null,
       feedback_date: validated.feedback_date || new Date().toISOString().split('T')[0],
       logged_by: user.id,
+      public_display: validated.public_display ?? false,
     })
     .select()
     .single()
@@ -80,11 +97,13 @@ export async function getChefFeedback() {
 
   const { data, error } = await supabase
     .from('chef_feedback')
-    .select(`
+    .select(
+      `
       *,
       client:clients(id, full_name, email),
       event:events(id, occasion, event_date)
-    `)
+    `
+    )
     .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 

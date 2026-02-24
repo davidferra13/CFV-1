@@ -3,9 +3,11 @@
 // Shows chef bio, partner venues with seasonal photos, and booking links
 
 import { getPublicChefProfile } from '@/lib/profile/actions'
+import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { PartnerShowcase } from '@/components/public/partner-showcase'
+import { ReviewShowcase } from '@/components/public/review-showcase'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { RemyPublicWidget } from '@/components/ai/remy-public-widget'
 
@@ -44,16 +46,60 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
+/**
+ * JSON-LD AggregateRating for SEO — enables star ratings in Google search results.
+ * Only rendered when the chef has at least 1 review with a rating.
+ */
+function AggregateRatingJsonLd({
+  chefName,
+  averageRating,
+  totalReviews,
+  profileUrl,
+}: {
+  chefName: string
+  averageRating: number
+  totalReviews: number
+  profileUrl: string
+}) {
+  if (totalReviews === 0 || averageRating === 0) return null
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'LocalBusiness',
+    name: chefName,
+    url: profileUrl,
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: averageRating.toFixed(2),
+      bestRating: '5',
+      worstRating: '1',
+      reviewCount: totalReviews,
+    },
+  }
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  )
+}
+
 export default async function ChefProfilePage({ params }: Props) {
   const data = await getPublicChefProfile(params.slug)
   if (!data) notFound()
 
   const { chef, partners } = data
 
-  // Public availability signals (only when chef opts in)
-  const availabilitySignals = (chef as any).show_availability_signals
-    ? await getPublicAvailabilitySignals(chef.id)
-    : []
+  // Load reviews + availability in parallel
+  const [reviewFeed, availabilitySignals] = await Promise.all([
+    getPublicChefReviewFeed(chef.id),
+    (chef as any).show_availability_signals
+      ? getPublicAvailabilitySignals(chef.id)
+      : Promise.resolve([]),
+  ])
+
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://chefflow.app'
   const primaryColor = chef.portal_primary_color || '#1c1917'
   const backgroundColor = chef.portal_background_color || '#fafaf9'
   const backgroundImageUrl = chef.portal_background_image_url
@@ -72,6 +118,13 @@ export default async function ChefProfilePage({ params }: Props) {
 
   return (
     <div className="min-h-screen" style={pageBackgroundStyle}>
+      <AggregateRatingJsonLd
+        chefName={chef.display_name}
+        averageRating={reviewFeed.stats.averageRating}
+        totalReviews={reviewFeed.stats.totalReviews}
+        profileUrl={`${BASE_URL}/chef/${params.slug}`}
+      />
+
       {/* Hero Section */}
       <section className="py-16 md:py-24 bg-stone-900/70 backdrop-blur-[1px]">
         <div className="max-w-4xl mx-auto px-6 text-center">
@@ -128,6 +181,22 @@ export default async function ChefProfilePage({ params }: Props) {
             </div>
 
             <PartnerShowcase partners={partners as any} chefName={chef.display_name} />
+          </div>
+        </section>
+      )}
+
+      {/* Reviews & Testimonials */}
+      {reviewFeed.reviews.length > 0 && (
+        <section className="py-16 px-6 bg-stone-900/70">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-stone-100">Reviews & Testimonials</h2>
+              <p className="text-stone-400 mt-3 max-w-xl mx-auto">
+                What clients and guests are saying about {chef.display_name}
+              </p>
+            </div>
+
+            <ReviewShowcase reviews={reviewFeed.reviews} stats={reviewFeed.stats} />
           </div>
         </section>
       )}
