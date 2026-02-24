@@ -1861,7 +1861,7 @@ export function RemyDrawer() {
                 <div className="flex items-center justify-between mt-1.5">
                   <p className="text-xs text-stone-400 flex items-center gap-1">
                     <Globe className="h-3 w-3" />
-                    Conversations stay in your browser. Ctrl+K to toggle.
+                    Remy can make mistakes. Please double-check important info.
                   </p>
                   <span
                     className={`text-[10px] tabular-nums ${input.length >= 1800 ? (input.length >= 2000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}

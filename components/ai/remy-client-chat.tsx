@@ -308,7 +308,9 @@ export function RemyClientChat() {
             )}
           </button>
         </div>
-        <p className="mt-1.5 text-center text-[10px] text-stone-500">Powered by ChefFlow AI</p>
+        <p className="mt-1.5 text-center text-[10px] text-stone-500">
+          Remy can make mistakes. Please double-check important info.
+        </p>
       </div>
     </div>
   )

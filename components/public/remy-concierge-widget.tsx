@@ -477,7 +477,7 @@ export function RemyConciergeWidget() {
           </div>
           <div className="mt-1.5 flex items-center justify-between px-1">
             <p className="text-center text-[10px] text-stone-400 flex-1">
-              Powered by ChefFlow AI — private &amp; local
+              Remy can make mistakes. Please double-check important info.
             </p>
             <span
               className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
