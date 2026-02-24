@@ -558,6 +558,8 @@ export function ChefSidebar({
               <ChevronRight className="w-4 h-4" />
             </button>
 
+            {/* Ollama status (admin only) */}
+            {isAdmin && <OllamaStatusBadge />}
             {/* Notification bell */}
             <NotificationBell collapsed />
             <GlobalSearch />
@@ -984,10 +986,12 @@ export function ChefMobileNav({
   primaryNavHrefs,
   hasCannabisTier,
   enabledModules,
+  isAdmin,
 }: {
   primaryNavHrefs?: string[]
   hasCannabisTier?: boolean
   enabledModules?: string[]
+  isAdmin?: boolean
 }) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
@@ -1062,6 +1066,7 @@ export function ChefMobileNav({
             <span className="font-display text-stone-100 whitespace-nowrap">ChefFlow</span>
           </Link>
           <div className="flex items-center flex-shrink-0 gap-0.5">
+            {isAdmin && <OllamaStatusBadge />}
             <OfflineNavIndicator />
             <ActivityDot />
             <GlobalSearch />

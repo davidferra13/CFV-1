@@ -113,6 +113,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                   primaryNavHrefs={primaryNavHrefs}
                   hasCannabisTier={hasCannabisTier}
                   enabledModules={enabledModules}
+                  isAdmin={userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'}
                 />
 
                 {/* Main content — offset adjusts dynamically based on sidebar state */}
