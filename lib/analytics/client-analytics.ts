@@ -264,17 +264,8 @@ export async function getClientAcquisitionStats(
     .lte('first_event_date', endDate)
 
   // Marketing spend in period
-  const { data: spendData } = await supabase
-    .from('marketing_spend_log')
-    .select('amount_cents')
-    .eq('chef_id', chef.id)
-    .gte('spend_date', startDate)
-    .lte('spend_date', endDate)
-
-  const totalSpend = (spendData ?? []).reduce(
-    (sum: number, s: { amount_cents: number }) => sum + s.amount_cents,
-    0
-  )
+  // TODO: marketing_spend_log table not yet created — stub to 0
+  const totalSpend = 0
   const newClientCount = newClients ?? 0
   const cac = newClientCount > 0 ? Math.round(totalSpend / newClientCount) : 0
 
