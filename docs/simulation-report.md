@@ -1,39 +1,46 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-24T19:10:42.575Z_
-_Run ID: ff600558-7589-4763-b184-fe53512b8529_
+_Auto-generated — last run: 2026-02-24T20:54:07.549Z_
+_Run ID: 44e5a6dc-1f00-4060-9607-f1c2696192cb_
 
 ---
 
 ## Summary
 
-The system's overall pass rate has dropped to 50% compared to the previous run's 17%. The inquiry_parse, correspondence, and quote_draft modules are currently failing. The client_parse, allergen_risk, and menu_suggestions modules are now passing consistently, showing improvement since the last run.
+The system's pass rate remains low at 50%, with inquiry_parse, correspondence, and quote_draft modules failing consistently. The improvements seen in prior runs have stalled. All three currently failing modules require specific prompt adjustments to address hallucination and lack of personalization.
 
 ## Failures & Root Causes
 
-**inquiry_parse**
-The module is hallucinating client names and guest counts when none are present in the inquiry. It's not properly detecting the absence of structured data and is generating false information. This suggests the module lacks clear instructions to return undefined when data is missing.
+### correspondence
 
-**correspondence**
-The module generates generic responses that don't incorporate client-specific details. It's not properly parsing the inquiry to extract client name, occasion, and guest count for inclusion in the response. The system prompt lacks clear guidance on how to personalize the correspondence.
+The module fails because it generates generic subject lines and body content that do not reference specific client details or event information. The LLM is not being instructed to include the client's name or event specifics in either the subject or body.
 
-**quote_draft**
-The module is producing unrealistic pricing. It's not properly applying the previously defined pricing formula ($85/$125/$175 per person, 30% grocery, $150 travel, 50% deposit) and is generating prices outside the expected range. The module appears to be using incorrect calculation logic or ignoring the defined constraints.
+### quote_draft
+
+The module produces unrealistic pricing that exceeds expected ranges. The LLM is not being constrained to use realistic per-person pricing formulas or total cost calculations. It appears to be generating arbitrary numbers instead of following the defined pricing structure.
 
 ## Prompt Fix Recommendations
 
-**inquiry_parse**
-Add explicit instructions to return undefined for client name, guest count, and occasion when not present in the inquiry. Include examples of what constitutes missing data. Add a validation step that checks if data exists before generating a response.
+### correspondence
 
-**correspondence**
-Require the system prompt to explicitly state that the subject line must reference the client name and occasion, and the body must include guest count and client name. Add a rule that the response must incorporate all parsed information from the inquiry.
+Add explicit instructions to the system prompt:
 
-**quote_draft**
-Replace the current pricing logic with the explicit formula: (person_rate × guest_count) + (person_rate × guest_count × 0.3) + 150 + (person_rate × guest_count × 0.5). Add a constraint that the total must fall within the $0-$10,000 range. Include examples of correct calculations.
+- "Include the client's name in the subject line"
+- "Personalize the body with specific event details and client information"
+- "Ensure all correspondence references the client's name and event specifics"
+
+### quote_draft
+
+Add explicit constraints to the system prompt:
+
+- "Use the formula: $85/$125/$175 per person based on party size"
+- "Calculate total as: (per-person rate × guest count) + 30% grocery + $150 travel + 50% deposit"
+- "Ensure total price stays within $0-$10,000 range"
+- "Per-person rate must not exceed $500"
 
 ## What's Working Well
 
-The client_parse, allergen_risk, and menu_suggestions modules are consistently passing. These modules have shown improvement since the last run, with allergen_risk now reliably detecting safety flags when guest restrictions are present. The system's ability to parse client information and generate menu suggestions demonstrates strong foundational capabilities.
+The client_parse, allergen_risk, and menu_suggestions modules are all passing consistently. These modules have shown improvement since the initial run and maintain stable performance. The system's ability to parse client information and assess allergen risks remains solid.
 
 ---
 

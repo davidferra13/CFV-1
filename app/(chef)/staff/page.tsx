@@ -1,10 +1,13 @@
 // Staff Roster Page
 // Chef manages their team: sous chefs, kitchen assistants, service staff.
+// Supports search by name, filter by role, filter by status via URL params.
 
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { listStaffMembers, deactivateStaffMember } from '@/lib/staff/actions'
+import { searchStaffMembers, deactivateStaffMember } from '@/lib/staff/actions'
 import { StaffMemberForm } from '@/components/staff/staff-member-form'
+import { StaffSearchFilter } from '@/components/staff/staff-search-filter'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -21,38 +24,62 @@ const ROLE_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
-export default async function StaffRosterPage() {
+export default async function StaffRosterPage({
+  searchParams,
+}: {
+  searchParams: { q?: string; role?: string; status?: string }
+}) {
   await requireChef()
-  const staff = await listStaffMembers(false) // load all including inactive
+
+  const search = searchParams.q ?? ''
+  const role = searchParams.role ?? 'all'
+  const status = searchParams.status ?? 'active'
+
+  const staff = await searchStaffMembers({
+    search: search || undefined,
+    role,
+    status: status === 'all' ? undefined : status,
+  })
 
   const active = staff.filter((s: any) => s.status === 'active')
   const inactive = staff.filter((s: any) => s.status === 'inactive')
+  const showAll = status === 'all' || status === 'inactive'
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Staff Roster</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Manage your sous chefs, kitchen assistants, and service staff. Assign them to events and
-          track hours and labor costs.
+          Manage your sous chefs, kitchen assistants, and service staff. Click any name to see their
+          full profile, assignment history, and performance.
         </p>
       </div>
 
-      {/* Active staff */}
+      {/* Search & Filter */}
+      <StaffSearchFilter initialSearch={search} initialRole={role} initialStatus={status} />
+
+      {/* Staff List */}
       <div className="space-y-3">
-        {active.length === 0 ? (
+        {staff.length === 0 ? (
           <p className="text-sm text-stone-500">
-            No active staff yet. Add your first team member below.
+            {search || role !== 'all'
+              ? 'No staff members match your search.'
+              : 'No active staff yet. Add your first team member below.'}
           </p>
         ) : (
-          active.map((member: any) => (
+          staff.map((member: any) => (
             <Card key={member.id}>
               <CardContent className="pt-4 pb-4">
                 <div className="flex items-start justify-between">
-                  <div>
+                  <Link href={`/staff/${member.id}`} className="group flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-stone-100">{member.name}</span>
+                      <span className="font-medium text-stone-100 group-hover:text-amber-500 transition-colors">
+                        {member.name}
+                      </span>
                       <Badge variant="default">{ROLE_LABELS[member.role] ?? member.role}</Badge>
+                      <Badge variant={member.status === 'active' ? 'success' : 'error'}>
+                        {member.status}
+                      </Badge>
                     </div>
                     <div className="mt-1 flex flex-wrap gap-x-4 text-xs text-stone-500">
                       {member.hourly_rate_cents > 0 && (
@@ -62,26 +89,20 @@ export default async function StaffRosterPage() {
                       {member.email && <span>{member.email}</span>}
                     </div>
                     {member.notes && <p className="mt-1 text-xs text-stone-400">{member.notes}</p>}
-                  </div>
-                  <form
-                    action={async () => {
-                      'use server'
-                      await deactivateStaffMember(member.id)
-                    }}
-                  >
-                    <Button type="submit" variant="ghost" size="sm" className="text-stone-400">
-                      Deactivate
-                    </Button>
-                  </form>
+                  </Link>
+                  {member.status === 'active' && (
+                    <form
+                      action={async () => {
+                        'use server'
+                        await deactivateStaffMember(member.id)
+                      }}
+                    >
+                      <Button type="submit" variant="ghost" size="sm" className="text-stone-400">
+                        Deactivate
+                      </Button>
+                    </form>
+                  )}
                 </div>
-                <details className="mt-3">
-                  <summary className="cursor-pointer text-xs text-amber-700 hover:text-amber-900">
-                    Edit
-                  </summary>
-                  <div className="mt-3">
-                    <StaffMemberForm member={member} />
-                  </div>
-                </details>
               </CardContent>
             </Card>
           ))
@@ -97,27 +118,6 @@ export default async function StaffRosterPage() {
           <StaffMemberForm />
         </CardContent>
       </Card>
-
-      {/* Inactive */}
-      {inactive.length > 0 && (
-        <details>
-          <summary className="cursor-pointer text-sm text-stone-500">
-            {inactive.length} inactive team member{inactive.length !== 1 ? 's' : ''}
-          </summary>
-          <div className="mt-3 space-y-2">
-            {inactive.map((member: any) => (
-              <div
-                key={member.id}
-                className="flex items-center justify-between rounded-lg border border-stone-700 px-4 py-2 text-sm text-stone-400"
-              >
-                <span>
-                  {member.name} — {ROLE_LABELS[member.role] ?? member.role}
-                </span>
-              </div>
-            ))}
-          </div>
-        </details>
-      )}
     </div>
   )
 }

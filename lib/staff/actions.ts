@@ -134,6 +134,130 @@ export async function listStaffMembers(activeOnly = true) {
   return data ?? []
 }
 
+/**
+ * Search staff members by name, optionally filter by role and status.
+ */
+export async function searchStaffMembers(filters: {
+  search?: string
+  role?: string
+  status?: string
+}) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  let query = supabase.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
+
+  if (filters.search) {
+    query = query.ilike('name', `%${filters.search}%`)
+  }
+  if (filters.role && filters.role !== 'all') {
+    query = query.eq('role', filters.role)
+  }
+  if (filters.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status)
+  }
+
+  const { data, error } = await query
+  if (error) throw new Error('Failed to search staff members')
+  return data ?? []
+}
+
+/**
+ * Get a single staff member with their assignment history, onboarding status, and performance.
+ */
+export async function getStaffMember(id: string) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: member, error } = await supabase
+    .from('staff_members')
+    .select('*')
+    .eq('id', id)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (error || !member) throw new Error('Staff member not found')
+
+  // Load assignment history
+  const { data: assignments } = await supabase
+    .from('event_staff_assignments')
+    .select(
+      `
+      *,
+      events (id, title, event_date, status)
+    `
+    )
+    .eq('staff_member_id', id)
+    .eq('chef_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+    .limit(20)
+
+  // Load onboarding checklist
+  const { data: onboarding } = await supabase
+    .from('staff_onboarding_items')
+    .select('*')
+    .eq('staff_member_id', id)
+    .eq('tenant_id', user.tenantId!)
+
+  // Load contractor agreements
+  const { data: agreements } = await supabase
+    .from('contractor_service_agreements')
+    .select('*')
+    .eq('staff_member_id', id)
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  // Load performance score
+  const { data: performance } = await supabase
+    .from('staff_performance_scores')
+    .select('*')
+    .eq('staff_member_id', id)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  return {
+    ...member,
+    assignments: assignments ?? [],
+    onboarding: onboarding ?? [],
+    agreements: agreements ?? [],
+    performance: performance ?? null,
+  }
+}
+
+/**
+ * Check for assignment conflicts: is this staff member already assigned to an event
+ * on the same date?
+ */
+export async function checkAssignmentConflict(
+  staffMemberId: string,
+  eventDate: string,
+  excludeEventId?: string
+) {
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  let query = supabase
+    .from('event_staff_assignments')
+    .select(
+      `
+      id,
+      event_id,
+      events!inner (id, title, event_date)
+    `
+    )
+    .eq('staff_member_id', staffMemberId)
+    .eq('chef_id', user.tenantId!)
+    .eq('events.event_date', eventDate)
+
+  if (excludeEventId) {
+    query = query.neq('event_id', excludeEventId)
+  }
+
+  const { data, error } = await query
+  if (error) return []
+  return data ?? []
+}
+
 // ============================================
 // EVENT ASSIGNMENT ACTIONS
 // ============================================

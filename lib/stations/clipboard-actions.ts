@@ -15,6 +15,7 @@ import { z } from 'zod'
 const UpdateClipboardEntrySchema = z.object({
   on_hand: z.number().min(0).optional(),
   made: z.number().min(0).optional(),
+  made_at: z.string().optional(), // timestamp for shelf life calculation
   need_to_make: z.number().min(0).optional(),
   need_to_order: z.number().min(0).optional(),
   waste_qty: z.number().min(0).optional(),
@@ -24,6 +25,7 @@ const UpdateClipboardEntrySchema = z.object({
     .optional(),
   location: z.enum(['line', 'backup']).optional(),
   notes: z.string().optional(),
+  updated_by: z.string().uuid().optional(), // staff_member_id — who initialed this update
 })
 
 const ShiftCheckInSchema = z.object({
@@ -180,7 +182,11 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
 
   const updatePayload: Record<string, unknown> = {}
   if (validated.on_hand !== undefined) updatePayload.on_hand = validated.on_hand
-  if (validated.made !== undefined) updatePayload.made = validated.made
+  if (validated.made !== undefined) {
+    updatePayload.made = validated.made
+    // Auto-set made_at timestamp when "made" is updated (for shelf life tracking)
+    if (validated.made > 0) updatePayload.made_at = validated.made_at ?? new Date().toISOString()
+  }
   if (validated.need_to_make !== undefined) updatePayload.need_to_make = validated.need_to_make
   if (validated.need_to_order !== undefined) updatePayload.need_to_order = validated.need_to_order
   if (validated.waste_qty !== undefined) updatePayload.waste_qty = validated.waste_qty
@@ -188,6 +194,10 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
     updatePayload.waste_reason_code = validated.waste_reason_code
   if (validated.location !== undefined) updatePayload.location = validated.location
   if (validated.notes !== undefined) updatePayload.notes = validated.notes
+
+  // ACCOUNTABILITY: Always record who made this update + when
+  updatePayload.updated_by = validated.updated_by ?? null
+  updatePayload.updated_at = new Date().toISOString()
 
   const { data, error } = await supabase
     .from('clipboard_entries')
@@ -210,17 +220,22 @@ export async function updateClipboardEntry(entryId: string, updates: UpdateClipb
  * Accepts an array of { id, updates } pairs.
  */
 export async function batchUpdateClipboard(
-  entries: Array<{ id: string; updates: UpdateClipboardEntryInput }>
+  entries: Array<{ id: string; updates: UpdateClipboardEntryInput }>,
+  updatedBy?: string // staff_member_id — who is saving this batch (initials/accountability)
 ) {
   const user = await requireChef()
   const supabase = createServerClient()
+  const now = new Date().toISOString()
 
   const results: any[] = []
   for (const entry of entries) {
     const validated = UpdateClipboardEntrySchema.parse(entry.updates)
     const updatePayload: Record<string, unknown> = {}
     if (validated.on_hand !== undefined) updatePayload.on_hand = validated.on_hand
-    if (validated.made !== undefined) updatePayload.made = validated.made
+    if (validated.made !== undefined) {
+      updatePayload.made = validated.made
+      if (validated.made > 0) updatePayload.made_at = validated.made_at ?? now
+    }
     if (validated.need_to_make !== undefined) updatePayload.need_to_make = validated.need_to_make
     if (validated.need_to_order !== undefined) updatePayload.need_to_order = validated.need_to_order
     if (validated.waste_qty !== undefined) updatePayload.waste_qty = validated.waste_qty
@@ -228,6 +243,10 @@ export async function batchUpdateClipboard(
       updatePayload.waste_reason_code = validated.waste_reason_code
     if (validated.location !== undefined) updatePayload.location = validated.location
     if (validated.notes !== undefined) updatePayload.notes = validated.notes
+
+    // ACCOUNTABILITY: Record who saved this + when
+    updatePayload.updated_by = updatedBy ?? validated.updated_by ?? null
+    updatePayload.updated_at = now
 
     const { data, error } = await supabase
       .from('clipboard_entries')

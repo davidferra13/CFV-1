@@ -1,0 +1,54 @@
+// Price Comparison Page
+// Compare ingredient prices across all vendors side-by-side.
+// Formula: sort by unit_price_cents ASC — no AI needed.
+
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import { requireChef } from '@/lib/auth/get-user'
+import { getPriceComparisonAll } from '@/lib/vendors/vendor-item-actions'
+import { PriceComparison } from '@/components/vendors/price-comparison'
+import { Button } from '@/components/ui/button'
+
+export const metadata: Metadata = { title: 'Price Comparison — ChefFlow' }
+
+export default async function PriceComparisonPage() {
+  await requireChef()
+  const data = await getPriceComparisonAll()
+
+  return (
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
+      <Link href="/vendors" className="text-sm text-stone-500 hover:text-stone-300">
+        &larr; Back to Vendor Directory
+      </Link>
+
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-100">Price Comparison</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Compare prices across vendors for the same ingredients. Best price highlighted
+            automatically — pure math, no AI.
+          </p>
+        </div>
+        <Link href="/food-cost">
+          <Button variant="secondary" size="sm">
+            Food Cost Dashboard
+          </Button>
+        </Link>
+      </div>
+
+      <PriceComparison data={data} />
+
+      {data.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-stone-400">No vendor items mapped yet.</p>
+          <p className="text-sm text-stone-500 mt-2">
+            Go to a vendor&apos;s profile and add their items to start comparing prices.
+          </p>
+          <Link href="/vendors" className="mt-4 inline-block">
+            <Button variant="secondary">Go to Vendors</Button>
+          </Link>
+        </div>
+      )}
+    </div>
+  )
+}

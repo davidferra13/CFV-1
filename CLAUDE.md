@@ -372,7 +372,23 @@ Only run `npx tsc --noEmit --skipLibCheck` or `npx next build --no-lint` if:
 
 ## IMPLEMENTATION PATTERNS
 
-These are the four patterns Claude will get wrong without explicit rules.
+These are the patterns Claude will get wrong without explicit rules.
+
+### 0. Formula > AI — Always (HIGHEST PRIORITY PATTERN)
+
+**If deterministic code (math, logic, database queries, conditional checks) can produce the correct result, ALWAYS use it over AI.** AI (Remy/Ollama) is the fallback, never the default.
+
+A formula returns the same correct answer every single time, instantly, for free. AI returns a _probably_ correct answer, slower, using compute resources, and might hallucinate. There is no contest when both can do the job.
+
+| Use deterministic code when...                            | Use AI (Remy) only when...                         |
+| --------------------------------------------------------- | -------------------------------------------------- |
+| The calculation is math                                   | Unstructured text needs to become structured data  |
+| The logic is a simple condition (`if X < Y → alert`)      | A human would need judgment to interpret the input |
+| Data is already structured (DB columns, CSV, form inputs) | The input format is unpredictable                  |
+| Correctness matters more than convenience                 | Convenience matters and a wrong answer is harmless |
+| It needs to work offline, instantly, zero compute cost    | The feature already requires Ollama to be running  |
+
+**This applies retroactively.** If any existing feature uses Remy/Ollama for something a formula could handle, swap it out. AI stays where it genuinely earns its place: understanding natural language, generating draft text, interpreting unstructured input. Everywhere else, math and logic win.
 
 ### 1. Non-Blocking Side Effects
 
