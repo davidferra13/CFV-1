@@ -42,8 +42,8 @@ export function OfflineBanner() {
     <div
       role="status"
       aria-live="polite"
-      className={`fixed top-0 left-0 right-0 z-50 py-2 px-4 text-center text-sm font-medium transition-all backdrop-blur-sm ${
-        isOnline ? 'bg-green-600/80 text-white' : 'bg-red-600/80 text-white'
+      className={`fixed top-0 left-0 right-0 z-50 py-2 px-4 text-center text-sm font-medium transition-all backdrop-blur-md ${
+        isOnline ? 'bg-green-500/40 text-green-100' : 'bg-red-500/40 text-red-100'
       }`}
     >
       {isOnline ? (
@@ -54,7 +54,7 @@ export function OfflineBanner() {
       ) : (
         <span className="flex items-center justify-center gap-2">
           <WifiOff className="h-4 w-4" />
-          You're offline — some features may be unavailable
+          You&apos;re offline — some features may be unavailable
         </span>
       )}
     </div>
