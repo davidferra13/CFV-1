@@ -12,6 +12,31 @@ export const metadata: Metadata = { title: 'Inventory - ChefFlow' }
 
 const SUB_PAGES = [
   {
+    href: '/inventory/transactions',
+    label: 'Transaction Ledger',
+    description:
+      'Every inventory movement in one append-only log — receiving, deductions, waste, transfers',
+    icon: 'ledger',
+  },
+  {
+    href: '/inventory/locations',
+    label: 'Storage Locations',
+    description: 'Manage fridges, freezers, pantries, and vehicles — see stock at each location',
+    icon: 'location',
+  },
+  {
+    href: '/inventory/purchase-orders',
+    label: 'Purchase Orders',
+    description: 'Create, submit, and receive POs — track every ingredient from order to shelf',
+    icon: 'truck',
+  },
+  {
+    href: '/inventory/audits',
+    label: 'Physical Audits',
+    description: 'Run full, cycle, or spot count audits — verify stock levels match your records',
+    icon: 'audit',
+  },
+  {
     href: '/inventory/counts',
     label: 'Inventory Counts',
     description: 'Update on-hand quantities and par levels for all tracked ingredients',
@@ -35,13 +60,39 @@ const SUB_PAGES = [
     description: 'Theoretical vs actual food cost comparison across recent events',
     icon: 'calculator',
   },
+  {
+    href: '/inventory/staff-meals',
+    label: 'Staff Meals',
+    description: 'Log team meals, track ingredient usage, and monitor staff meal costs',
+    icon: 'meal',
+  },
+  {
+    href: '/inventory/expiry',
+    label: 'Expiry Alerts',
+    description: 'Batches expiring soon — act before food goes to waste',
+    icon: 'clock',
+  },
+  {
+    href: '/inventory/demand',
+    label: 'Demand Forecast',
+    description:
+      'What ingredients do you need for upcoming events? See shortages before they happen',
+    icon: 'forecast',
+  },
 ]
 
 const ICON_MAP: Record<string, string> = {
+  ledger: '\uD83D\uDCD2',
+  location: '\uD83D\uDCCD',
+  truck: '\uD83D\uDE9A',
+  audit: '\uD83D\uDD0D',
   clipboard: '\uD83D\uDCCB',
   trash: '\uD83D\uDDD1\uFE0F',
   receipt: '\uD83E\uDDFE',
   calculator: '\uD83E\uDDEE',
+  meal: '\uD83C\uDF7D\uFE0F',
+  clock: '\u23F0',
+  forecast: '\uD83D\uDCC8',
 }
 
 export default async function InventoryPage() {
@@ -54,7 +105,8 @@ export default async function InventoryPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100">Inventory</h1>
         <p className="text-stone-500 mt-1">
-          Track ingredient levels, log waste, manage vendor invoices, and analyze food costs.
+          Your complete inventory command center — track every ingredient in and out, manage
+          purchase orders, run audits, and forecast demand.
         </p>
       </div>
 
