@@ -2,9 +2,6 @@
 // This page exists to make it impossible to forget that the full compliance
 // system hasn't been built yet. It is intentionally conspicuous.
 
-import { requireChef } from '@/lib/auth/get-user'
-import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
-import { redirect } from 'next/navigation'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -12,10 +9,6 @@ import {
 import { CompliancePlaceholderClient } from './compliance-placeholder-client'
 
 export default async function CannabisCompliancePage() {
-  const user = await requireChef()
-  const hasAccess = await hasCannabisAccess(user.id)
-  if (!hasAccess) redirect('/dashboard')
-
   return (
     <CannabisPageWrapper>
       <div className="px-6 py-8 max-w-3xl mx-auto">

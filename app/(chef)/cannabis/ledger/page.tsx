@@ -1,9 +1,7 @@
 // Cannabis Ledger — Chef Portal
 // All ledger entries scoped to cannabis events.
 
-import { requireChef } from '@/lib/auth/get-user'
-import { hasCannabisAccess, getCannabisLedger } from '@/lib/chef/cannabis-actions'
-import { redirect } from 'next/navigation'
+import { getCannabisLedger } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -35,10 +33,6 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
 }
 
 export default async function CannabisLedgerPage() {
-  const user = await requireChef()
-  const hasAccess = await hasCannabisAccess(user.id)
-  if (!hasAccess) redirect('/dashboard')
-
   const { events, entries, totals } = await getCannabisLedger().catch(() => ({
     events: [],
     entries: [],

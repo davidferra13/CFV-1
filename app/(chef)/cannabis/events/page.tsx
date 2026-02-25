@@ -1,9 +1,7 @@
 // Cannabis Events — Chef Portal
 // All events where cannabis_preference = true, with their details.
 
-import { requireChef } from '@/lib/auth/get-user'
-import { hasCannabisAccess, getCannabisEvents } from '@/lib/chef/cannabis-actions'
-import { redirect } from 'next/navigation'
+import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -12,10 +10,6 @@ import { CannabisEventCard } from '@/components/cannabis/cannabis-event-card'
 import Link from 'next/link'
 
 export default async function CannabisEventsPage() {
-  const user = await requireChef()
-  const hasAccess = await hasCannabisAccess(user.id)
-  if (!hasAccess) redirect('/dashboard')
-
   const events = await getCannabisEvents().catch(() => [])
 
   const upcoming = events.filter((e: any) => !['completed', 'cancelled'].includes(e.status ?? ''))

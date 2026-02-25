@@ -1,9 +1,7 @@
 // Cannabis Dining Hub — Chef Portal
 // The main entry point for the cannabis tier. Only visible to cannabis-tier chefs.
 
-import { requireChef } from '@/lib/auth/get-user'
-import { hasCannabisAccess, getCannabisEvents } from '@/lib/chef/cannabis-actions'
-import { redirect } from 'next/navigation'
+import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
 import Link from 'next/link'
 import {
   CannabisPortalHeader,
@@ -11,10 +9,6 @@ import {
 } from '@/components/cannabis/cannabis-portal-header'
 
 export default async function CannabisHubPage() {
-  const user = await requireChef()
-  const hasAccess = await hasCannabisAccess(user.id)
-  if (!hasAccess) redirect('/dashboard')
-
   const events = await getCannabisEvents().catch(() => [])
   const eventCount = events.length
   const recentEvents = events.filter(

@@ -2,9 +2,6 @@
 // The full story: task force, legislation, credentials, and what's coming.
 // Every claim is source-linked. Every fact is verifiable. This is the receipts.
 
-import { requireChef } from '@/lib/auth/get-user'
-import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
-import { redirect } from 'next/navigation'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -25,10 +22,6 @@ import {
 } from '@/components/cannabis/about-sections'
 
 export default async function CannabisAboutPage() {
-  const user = await requireChef()
-  const hasAccess = await hasCannabisAccess(user.id)
-  if (!hasAccess) redirect('/dashboard')
-
   return (
     <CannabisPageWrapper>
       <div className="px-6 py-8 max-w-3xl mx-auto">
@@ -489,15 +482,6 @@ export default async function CannabisAboutPage() {
                 >
                   I think this just isn&rsquo;t going to work if we don&rsquo;t allow inhalation of
                   some sort.
-                </AboutQuote>
-                <AboutQuote
-                  speaker="David Ferragamo"
-                  affiliation="Private Chef"
-                  timestamp="02:01:21"
-                >
-                  I&rsquo;ve worked at dispensaries in multiple states. I have seen what people
-                  want, and they all want to smoke&hellip; most longtime users&hellip; want nothing
-                  to do with edibles.
                 </AboutQuote>
                 <AboutQuote speaker="Lexi Perry" affiliation="Maine CDC" timestamp="01:51:49">
                   Anywhere where people are working, smoking is prohibited under that law&hellip;

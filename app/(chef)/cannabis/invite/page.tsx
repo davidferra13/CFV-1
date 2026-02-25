@@ -1,9 +1,7 @@
 // Cannabis Invite Page — Chef Portal
 // Submit an invitation request. All invites are routed through admin approval first.
 
-import { requireChef } from '@/lib/auth/get-user'
-import { hasCannabisAccess, getMySentCannabisInvites } from '@/lib/chef/cannabis-actions'
-import { redirect } from 'next/navigation'
+import { getMySentCannabisInvites } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -17,10 +15,6 @@ const STATUS_STYLES: Record<string, { label: string; color: string }> = {
 }
 
 export default async function CannabisInvitePage() {
-  const user = await requireChef()
-  const hasAccess = await hasCannabisAccess(user.id)
-  if (!hasAccess) redirect('/dashboard')
-
   const sentInvites = await getMySentCannabisInvites().catch(() => [])
 
   return (
