@@ -47,7 +47,7 @@ export function AboutSection({ title, icon, children, defaultOpen = false }: Abo
       </button>
       <div
         className={`overflow-hidden transition-all duration-200 ease-in-out ${
-          isOpen ? 'max-h-[6000px] opacity-100' : 'max-h-0 opacity-0'
+          isOpen ? 'max-h-[50000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         <div className="px-5 pb-5" style={{ borderTop: '1px solid rgba(74, 124, 78, 0.1)' }}>
@@ -236,6 +236,122 @@ export function AboutFeatureStatus({ items }: { items: FeatureItem[] }) {
           </div>
         )
       })}
+    </div>
+  )
+}
+
+// ─── Attributed Quote ─────────────────────────────────
+interface AboutQuoteProps {
+  speaker: string
+  affiliation?: string
+  timestamp?: string
+  children: ReactNode
+}
+
+export function AboutQuote({ speaker, affiliation, timestamp, children }: AboutQuoteProps) {
+  return (
+    <div
+      className="rounded-lg px-4 py-3 space-y-1.5"
+      style={{
+        background: 'rgba(10, 19, 10, 0.7)',
+        borderLeft: '3px solid rgba(139, 195, 74, 0.4)',
+      }}
+    >
+      <p className="text-sm italic leading-relaxed" style={{ color: '#6aaa6e' }}>
+        &ldquo;{children}&rdquo;
+      </p>
+      <p className="text-xs" style={{ color: '#4a7c4e' }}>
+        &mdash; <strong style={{ color: '#8bc34a' }}>{speaker}</strong>
+        {affiliation && <span>, {affiliation}</span>}
+        {timestamp && <span className="ml-2 font-mono opacity-60">[{timestamp}]</span>}
+      </p>
+    </div>
+  )
+}
+
+// ─── Sub-Section Header (for meeting breakdowns) ─────
+export function AboutSubHeader({ children }: { children: ReactNode }) {
+  return (
+    <p className="text-xs font-semibold uppercase tracking-wider pt-3" style={{ color: '#4a7c4e' }}>
+      {children}
+    </p>
+  )
+}
+
+// ─── Bullet List Item ─────────────────────────────────
+export function AboutBullet({ children }: { children: ReactNode }) {
+  return (
+    <li className="flex items-start gap-2 text-sm" style={{ color: '#6aaa6e' }}>
+      <span className="mt-0.5 shrink-0" style={{ color: '#4a7c4e' }}>
+        &middot;
+      </span>
+      <span>{children}</span>
+    </li>
+  )
+}
+
+// ─── Meeting Card (collapsible within a section) ──────
+interface MeetingCardProps {
+  number: number
+  date: string
+  duration: string
+  focus: string
+  children: ReactNode
+}
+
+export function MeetingCard({ number, date, duration, focus, children }: MeetingCardProps) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <div
+      className="rounded-lg overflow-hidden"
+      style={{
+        background: '#0a130a',
+        border: `1px solid ${isOpen ? 'rgba(139, 195, 74, 0.2)' : 'rgba(74, 124, 78, 0.1)'}`,
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        className="flex w-full items-start gap-3 px-4 py-3 text-left cursor-pointer"
+      >
+        <span
+          className="mt-0.5 shrink-0 text-xs font-mono font-bold rounded px-1.5 py-0.5"
+          style={{ background: 'rgba(139, 195, 74, 0.15)', color: '#8bc34a' }}
+        >
+          #{number}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium" style={{ color: '#e8f5e9' }}>
+            {date}
+          </p>
+          <p className="text-xs mt-0.5" style={{ color: '#4a7c4e' }}>
+            {duration} &middot; {focus}
+          </p>
+        </div>
+        <span
+          className="text-xs transition-transform duration-200 mt-1"
+          style={{
+            color: '#4a7c4e',
+            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+          }}
+        >
+          &#x25BE;
+        </span>
+      </button>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          isOpen ? 'max-h-[12000px] opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <div
+          className="px-4 pb-4 space-y-3"
+          style={{ borderTop: '1px solid rgba(74, 124, 78, 0.08)' }}
+        >
+          <div className="pt-3 space-y-3">{children}</div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -18,6 +18,10 @@ import {
   AboutTimeline,
   AboutFeatureStatus,
   AboutLinkGroup,
+  AboutQuote,
+  AboutSubHeader,
+  AboutBullet,
+  MeetingCard,
 } from '@/components/cannabis/about-sections'
 
 export default async function CannabisAboutPage() {
@@ -275,6 +279,569 @@ export default async function CannabisAboutPage() {
               <AboutExternalLink href="https://www.maine.gov/dafs/ocp/sites/maine.gov.dafs.ocp/files/inline-files/CHTF%20-%20Cannabis%20Hospitality%20National%20Footprint.pdf">
                 National Footprint (PDF)
               </AboutExternalLink>
+            </div>
+          </AboutSection>
+
+          {/* ── Section 2.5: Inside the Meetings — 12 Hours Distilled ── */}
+          <AboutSection title="Inside the Meetings — 12 Hours Distilled" icon="🎙️">
+            <div
+              className="rounded-lg p-4 mb-2"
+              style={{
+                background: 'rgba(139, 195, 74, 0.06)',
+                border: '1px solid rgba(139, 195, 74, 0.12)',
+              }}
+            >
+              <p className="text-sm leading-relaxed" style={{ color: '#6aaa6e' }}>
+                The four task force meetings totaled nearly{' '}
+                <strong style={{ color: '#e8f5e9' }}>12 hours of policy debate</strong>. Nobody is
+                going to watch all of that footage. What follows is a comprehensive summary of every
+                substantive discussion, every point of consensus and disagreement, and the key
+                quotes that shaped the final recommendations. This is the record of what actually
+                happened in those rooms &mdash; distilled so you don&rsquo;t have to sit through it
+                yourself.
+              </p>
+            </div>
+
+            {/* ─── Meeting #1 ─── */}
+            <MeetingCard
+              number={1}
+              date="July 10, 2024"
+              duration="2h 50m"
+              focus="National landscape, license types, first debates on consumption methods"
+            >
+              <AboutSubHeader>What Happened</AboutSubHeader>
+              <AboutParagraph>
+                The inaugural meeting established the task force&rsquo;s scope and legislative
+                charge under <AboutHighlight>P.L. 2023, ch. 679</AboutHighlight>. Director John
+                Hudak outlined the five core topics to be addressed across all four meetings:
+                license types, consumption methods, non-cannabis products and services, employee
+                training, and local control.
+              </AboutParagraph>
+
+              <AboutSubHeader>License Types</AboutSubHeader>
+              <AboutParagraph>
+                The group broadly favored{' '}
+                <strong style={{ color: '#e8f5e9' }}>multiple license types</strong> rather than a
+                one-size-fits-all approach. Standalone consumption lounges emerged as the leading
+                model. The &ldquo;Bring Your Own Cannabis&rdquo; (BYOC) model was widely opposed
+                &mdash; it provides no real revenue stream, bypasses track-and-trace (Metrc)
+                protocols, and introduces massive liability since staff cannot verify the dosage of
+                outside products.
+              </AboutParagraph>
+              <AboutParagraph>
+                Natasha Johnson advocated for licensing large outdoor properties for hiking and
+                cross-country skiing while consuming. &ldquo;Camp Laughing Grass&rdquo; (a
+                cannabis-friendly campground already operating in Maine) was cited as an existing
+                model.
+              </AboutParagraph>
+
+              <AboutSubHeader>Consumption Methods</AboutSubHeader>
+              <AboutParagraph>
+                The first major divide appeared. Public health members strongly opposed indoor
+                smoking due to Maine&rsquo;s Clean Air Act. Industry members argued that inhalation
+                must be permitted because it has a much faster onset and shorter duration than
+                edibles, which actually <em>prevents</em> accidental overconsumption.
+              </AboutParagraph>
+              <AboutParagraph>
+                Pablo Barras raised a pivotal point about{' '}
+                <strong style={{ color: '#e8f5e9' }}>nano-emulsified edibles</strong> &mdash;
+                water-soluble technology that reduces onset from 60&ndash;90 minutes to 10&ndash;15
+                minutes, allowing customers to feel effects while still at the establishment rather
+                than while driving home.
+              </AboutParagraph>
+
+              <AboutSubHeader>Safety &amp; Liability</AboutSubHeader>
+              <AboutParagraph>
+                Scott Maddox (Highway Safety) introduced the concept of a{' '}
+                <strong style={{ color: '#e8f5e9' }}>Cannabis Dram Shop Act</strong> &mdash; holding
+                establishments civilly liable if they over-serve a patron who subsequently causes
+                injury. Lauren Stewart emphasized the need for a massive, state-funded public
+                education campaign on cannabis-impaired driving.
+              </AboutParagraph>
+              <AboutParagraph>
+                Ben M. (Dept. of Agriculture) raised alarm about cross-contamination in commercial
+                kitchens where chefs would prep both standard food and infused food simultaneously.
+              </AboutParagraph>
+
+              <AboutSubHeader>Key Quotes</AboutSubHeader>
+              <div className="space-y-2">
+                <AboutQuote
+                  speaker="Scott Maddox"
+                  affiliation="Highway Safety"
+                  timestamp="01:14:55"
+                >
+                  It&rsquo;s about impairment, it&rsquo;s not about marijuana consumption,
+                  it&rsquo;s not about the number of alcohol drinks consumed, it&rsquo;s about
+                  impairment.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="Lauren Stewart"
+                  affiliation="Highway Safety"
+                  timestamp="01:33:14"
+                >
+                  We&rsquo;d rather put our money into educating people to make the right choice
+                  than putting our money into educating law enforcement to arrest people and then
+                  all the costs that compound on top of that.
+                </AboutQuote>
+                <AboutQuote speaker="Pablo Barras" affiliation="Culinary Arts" timestamp="02:28:11">
+                  There is new nano-technology so that it&rsquo;s a much smaller molecule
+                  that&rsquo;s able to be water soluble and the onset&hellip; is between 10 and 15
+                  minutes as opposed to 60 and 90.
+                </AboutQuote>
+                <AboutQuote speaker="Ann Sadlak" affiliation="Public Health" timestamp="02:17:52">
+                  I am here to be maybe the public health Debbie Downer&hellip; I am uncomfortable
+                  at any idea of smoking.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="David Ferragamo"
+                  affiliation="Private Chef"
+                  timestamp="01:56:26"
+                >
+                  I don&rsquo;t see BYOC being successful at all, especially for a business
+                  owner&hellip; I just see it being a huge liability.
+                </AboutQuote>
+              </div>
+
+              <AboutSubHeader>Consensus Points</AboutSubHeader>
+              <ul className="space-y-1.5 pl-1">
+                <AboutBullet>
+                  The BYOC model is largely unworkable from a business, tracking, and liability
+                  perspective
+                </AboutBullet>
+                <AboutBullet>
+                  Extensive, mandated server training (similar to alcohol RBS) will be required
+                </AboutBullet>
+                <AboutBullet>
+                  Strict dosing limits (e.g., standard 2.5mg or 5mg servings) will be necessary for
+                  on-site edible consumption
+                </AboutBullet>
+              </ul>
+            </MeetingCard>
+
+            {/* ─── Meeting #2 ─── */}
+            <MeetingCard
+              number={2}
+              date="July 24, 2024"
+              duration="2h 56m"
+              focus="Narrowing business models, inhalation debate intensifies, BYOC formally rejected"
+            >
+              <AboutSubHeader>What Happened</AboutSubHeader>
+              <AboutParagraph>
+                Meeting #2 focused on building consensus around business models and consumption
+                methods. The five original business model categories from Meeting #1 were condensed
+                into three manageable buckets for potential pilot programs.
+              </AboutParagraph>
+
+              <AboutSubHeader>Three Business Models</AboutSubHeader>
+              <AboutParagraph>
+                Natasha Johnson proposed condensing the five themes into three categories, which
+                gained broad agreement:
+              </AboutParagraph>
+              <ul className="space-y-1.5 pl-1">
+                <AboutBullet>
+                  <strong style={{ color: '#e8f5e9' }}>Traditional Consumption Lounge</strong>{' '}
+                  and/or Restaurant model
+                </AboutBullet>
+                <AboutBullet>
+                  <strong style={{ color: '#e8f5e9' }}>Accommodation/Lodging</strong> model
+                  (B&amp;Bs, hotels)
+                </AboutBullet>
+                <AboutBullet>
+                  <strong style={{ color: '#e8f5e9' }}>Events &amp; Experiences</strong> combined
+                  (tours, festivals, trade shows)
+                </AboutBullet>
+              </ul>
+
+              <AboutSubHeader>The Inhalation Battle</AboutSubHeader>
+              <AboutParagraph>
+                This was the most heavily debated topic. Sam Tracy, Rose Mahoney, Steve Rusnack, and
+                David Ferragamo deemed inhalation an absolute economic necessity &mdash; smokeable
+                flower makes up approximately 70% of Maine&rsquo;s cannabis market. Ann Sadlak
+                explicitly stated that the Maine Medical Association would not support any policy
+                allowing indoor smoking. Lexi Perry cited the{' '}
+                <strong style={{ color: '#e8f5e9' }}>Workplace Smoking Act of 1985</strong>,
+                pointing out that employees cannot legally be subjected to secondhand smoke in their
+                workplace.
+              </AboutParagraph>
+
+              <AboutSubHeader>Lodging Paradox</AboutSubHeader>
+              <AboutParagraph>
+                Nate Cloutier identified a legal conflict: under the Maine Human Rights Act, a hotel
+                cannot deny a stay to an adult simply because they are accompanied by a minor. This
+                directly complicates the strict 21+ requirement for cannabis-friendly B&amp;Bs.
+              </AboutParagraph>
+
+              <AboutSubHeader>Local Control</AboutSubHeader>
+              <AboutParagraph>
+                Municipal representatives heavily cautioned against bundling hospitality under
+                existing retail opt-ins. Towns go through rigorous zoning processes and would demand
+                specific control over where social clubs are located. Heather Sullivan noted that
+                many towns explicitly banned &ldquo;social use clubs&rdquo; in their 2016
+                ordinances, meaning they would have to actively rewrite their laws.
+              </AboutParagraph>
+
+              <AboutSubHeader>Key Quotes</AboutSubHeader>
+              <div className="space-y-2">
+                <AboutQuote
+                  speaker="Sam Tracy"
+                  affiliation="Cannabis Policy Expert"
+                  timestamp="01:37:13"
+                >
+                  I think this just isn&rsquo;t going to work if we don&rsquo;t allow inhalation of
+                  some sort.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="David Ferragamo"
+                  affiliation="Private Chef"
+                  timestamp="02:01:21"
+                >
+                  I&rsquo;ve worked at dispensaries in multiple states. I have seen what people
+                  want, and they all want to smoke&hellip; most longtime users&hellip; want nothing
+                  to do with edibles.
+                </AboutQuote>
+                <AboutQuote speaker="Lexi Perry" affiliation="Maine CDC" timestamp="01:51:49">
+                  Anywhere where people are working, smoking is prohibited under that law&hellip;
+                  that is where I think there&rsquo;s a big gap in what we&rsquo;re talking about.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="Nate Cloutier"
+                  affiliation="HospitalityMaine"
+                  timestamp="02:11:22"
+                >
+                  It needs to work for local folks first before we can try to really tailor this to
+                  what folks from away might want&hellip; if it&rsquo;s not working for folks here
+                  at home, then it&rsquo;s definitely not going to work for folks that are
+                  traveling.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="Chris Parmenter"
+                  affiliation="City of Portland"
+                  timestamp="02:10:03"
+                >
+                  Coming from one of the bigger cities, I see a need for the tourism&hellip; if
+                  you&rsquo;re coming off one of the cruise ships into the city, there&rsquo;s
+                  really not a lot of legal places for you to consume.
+                </AboutQuote>
+              </div>
+
+              <AboutSubHeader>Consensus Points</AboutSubHeader>
+              <ul className="space-y-1.5 pl-1">
+                <AboutBullet>
+                  Future discussions framed around three buckets: Lounges/Restaurants,
+                  Accommodations, and Events/Experiences
+                </AboutBullet>
+                <AboutBullet>
+                  Consumption areas must be strictly 21+ &mdash; unanimous agreement
+                </AboutBullet>
+                <AboutBullet>
+                  Inhalation is viewed as an economic necessity by industry, but faces a hard veto
+                  threat from public health
+                </AboutBullet>
+              </ul>
+            </MeetingCard>
+
+            {/* ─── Meeting #3 ─── */}
+            <MeetingCard
+              number={3}
+              date="August 14, 2024"
+              duration="2h 49m"
+              focus="AG's legal opinion on smoking laws, entertainment, local opt-in framework"
+            >
+              <AboutSubHeader>What Happened</AboutSubHeader>
+              <AboutParagraph>
+                This meeting was a turning point. Assistant Attorney General Elizabeth Reen provided
+                an expert presentation on Maine&rsquo;s existing smoking laws, and the legal reality
+                changed the entire conversation.
+              </AboutParagraph>
+
+              <AboutSubHeader>The Legal Wall</AboutSubHeader>
+              <AboutParagraph>
+                AAG Reen confirmed that Maine&rsquo;s definition of &ldquo;smoking&rdquo; is
+                extremely broad, covering lighted/heated tobacco, plant products (including
+                cannabis), and electronic smoking devices (vapes). Cannabis use is currently{' '}
+                <em>more strictly regulated than tobacco</em> &mdash; restricted exclusively to
+                private residences or private property not open to the public. Under current law,
+                there is <strong style={{ color: '#e8f5e9' }}>virtually no workaround</strong> to
+                allow indoor cannabis smoking at a business without the legislature actively
+                rewriting both the Clean Indoor Air Act and the Adult Use Cannabis statutes.
+              </AboutParagraph>
+
+              <AboutSubHeader>The Smoking Room Compromise</AboutSubHeader>
+              <AboutParagraph>
+                Steve Rusnack proposed the architecture that would shape the final framework:{' '}
+                <strong style={{ color: '#e8f5e9' }}>
+                  smaller rooms designated for smoking only
+                </strong>{' '}
+                inside of the lounges themselves, keeping employees out and allowing designated
+                drivers to remain in the main smoke-free lounge area. Sam Tracy suggested looking at
+                models from other states where staff monitor smoking rooms from separate,
+                glass-enclosed rooms.
+              </AboutParagraph>
+
+              <AboutSubHeader>Designated Driver Problem</AboutSubHeader>
+              <AboutParagraph>
+                Director Lauren Stewart highlighted a critical flaw: if a group brings a designated
+                driver, that sober driver cannot sit with their friends in the smoking room without
+                being exposed to secondhand smoke and potentially failing an OUI test themselves.
+              </AboutParagraph>
+
+              <AboutSubHeader>Entertainment &amp; Non-Cannabis Services</AboutSubHeader>
+              <AboutParagraph>
+                The group agreed that lounges should offer entertainment (trivia, live music, yoga,
+                arcade games), with rules mirroring alcohol regulations: cannabis cannot be given
+                away as a prize, and performers cannot consume while actively performing on stage.
+                There was unanimous agreement that venues must sell pre-packaged food and
+                non-alcoholic beverages at minimum.
+              </AboutParagraph>
+
+              <AboutSubHeader>Survey Results</AboutSubHeader>
+              <AboutParagraph>
+                The mid-task-force survey showed approximately two-thirds of members favored some
+                form of indoor/outdoor smoking and vaping. Traditional consumption lounges ranked as
+                the highest priority business model; restaurants ranked lowest.
+              </AboutParagraph>
+
+              <AboutSubHeader>Key Quotes</AboutSubHeader>
+              <div className="space-y-2">
+                <AboutQuote
+                  speaker="Elizabeth Reen"
+                  affiliation="Assistant Attorney General"
+                  timestamp="15:53"
+                >
+                  According to the statute it really only allows for cannabis use in a private
+                  residence or on private property not open to the public&hellip; [cannabis] is
+                  actually even more restrictive than the general public smoking requirements.
+                </AboutQuote>
+                <AboutQuote speaker="Rose Mahoney" affiliation="Consumer Rep" timestamp="49:15">
+                  Not having smoking as part of the introduction I think would be the first nail in
+                  the coffin of the whole idea.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="Steve Rusnack"
+                  affiliation="Full Bloom Cannabis"
+                  timestamp="01:31:25"
+                >
+                  I think that if we had smaller rooms designated for smoking only inside of the
+                  lounges themselves, that would keep employees out of there, it would be a
+                  designated driver can be in the lounge but not in the smoke room.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="Heather Sullivan"
+                  affiliation="2016 Campaign"
+                  timestamp="02:26:49"
+                >
+                  We are going to have a really hard time getting legislative approval&hellip; if we
+                  in any way limit local control&hellip; Maine&rsquo;s a state that has more local
+                  control than most.
+                </AboutQuote>
+                <AboutQuote speaker="Lexi Perry" affiliation="Maine CDC" timestamp="01:09:41">
+                  I would not be interested in setting us up for immediately having to roll back
+                  health and safety standards&hellip; I think that&rsquo;s a big consideration.
+                </AboutQuote>
+              </div>
+
+              <AboutSubHeader>Unresolved Questions</AboutSubHeader>
+              <ul className="space-y-1.5 pl-1">
+                <AboutBullet>
+                  Can HVAC systems clear a smoking room fast enough for First Responder access
+                  during emergencies?
+                </AboutBullet>
+                <AboutBullet>
+                  Will the legislature reopen the Municipal Opt-In Reimbursement Fund to help towns
+                  draft hospitality ordinances?
+                </AboutBullet>
+                <AboutBullet>
+                  How can designated drivers safely attend indoor smoking lounges without secondhand
+                  exposure?
+                </AboutBullet>
+              </ul>
+            </MeetingCard>
+
+            {/* ─── Meeting #4 ─── */}
+            <MeetingCard
+              number={4}
+              date="August 28, 2024"
+              duration="2h 54m"
+              focus="Nevada lessons, highway safety, training mandates, beverages emerge as the winning model"
+            >
+              <AboutSubHeader>What Happened</AboutSubHeader>
+              <AboutParagraph>
+                The final meeting featured the most consequential presentation of the entire task
+                force: a guest speaker from Nevada who had helped draft their lounge law and open
+                &ldquo;Smoke and Mirrors&rdquo; (Vegas&rsquo;s first state-licensed consumption
+                lounge). His data fundamentally reframed the conversation.
+              </AboutParagraph>
+
+              <AboutSubHeader>Nevada&rsquo;s Data Changed Everything</AboutSubHeader>
+              <AboutParagraph>
+                Scott Rutledge (Government &amp; Regulatory Affairs Specialist, Nevada) shared that
+                &ldquo;Smoke and Mirrors&rdquo; projected 50/50 sales between smoke and beverages.
+                Instead,{' '}
+                <strong style={{ color: '#e8f5e9' }}>
+                  70% of early sales were low-dose cannabis beverages
+                </strong>{' '}
+                (2.5mg&ndash;10mg). Consumers loved the fast onset (15&ndash;20 minutes) and fast
+                offset (under 2 hours). This data point shifted the conversation from &ldquo;smoking
+                vs. no smoking&rdquo; to &ldquo;beverages might be the real business model.&rdquo;
+              </AboutParagraph>
+              <AboutParagraph>
+                Rutledge also shared practical lessons: Nevada initially required 20 air-exchanges
+                per hour (~$500k HVAC cost), but regulators later allowed carbon-filtration waivers.
+                Nevada&rsquo;s mistake was banning take-home of unconsumed products, which forces
+                single-serving sales or encourages dangerous overconsumption before leaving.
+              </AboutParagraph>
+
+              <AboutSubHeader>Highway Safety</AboutSubHeader>
+              <AboutParagraph>
+                Scott Maddox presented data showing traffic fatalities increased by 2.2 per billion
+                miles driven in states with legalized recreational cannabis. He stressed that blood
+                THC levels do not correspond with measured impairment. His recommendations:
+                mandatory impairment training, strict serving size/wait-time rules, a Cannabis
+                Liability Act (Dram Shop law), and a hard ban on co-locating alcohol and cannabis
+                sales.
+              </AboutParagraph>
+
+              <AboutSubHeader>Mandatory Training</AboutSubHeader>
+              <AboutParagraph>
+                Jiffy Kelly-Young presented Portland&rsquo;s existing cannabis vendor training
+                model. Maine currently does not mandate statewide alcohol server training &mdash;
+                only 4 towns require it. The task force agreed that cannabis hospitality training
+                must be state-mandated from the start. Maddox&rsquo;s position was unequivocal:{' '}
+                <em>&ldquo;If it&rsquo;s voluntary, it won&rsquo;t happen.&rdquo;</em>
+              </AboutParagraph>
+
+              <AboutSubHeader>Insurance &amp; Impaired Driving Prevention</AboutSubHeader>
+              <AboutParagraph>
+                Clark County, Nevada requires venues to submit impaired driving prevention plans
+                including 24-hour no-tow parking policies and partnerships with Uber/Lyft for
+                discounted rides. The task force expressed frustration over the &ldquo;Green
+                Premium&rdquo; &mdash; exorbitant insurance rates for cannabis businesses &mdash;
+                and wants to know if mandated training or Dram Shop laws will help lower premiums.
+              </AboutParagraph>
+
+              <AboutSubHeader>Key Quotes</AboutSubHeader>
+              <div className="space-y-2">
+                <AboutQuote
+                  speaker="Scott Rutledge"
+                  affiliation="Nevada Lobbyist"
+                  timestamp="11:12"
+                >
+                  Turns out 70% of our sales were beverages&hellip; consumers were not interested in
+                  smoking flower&hellip; but to sell them a low-dose cannabis beverage&hellip; they
+                  got really high marks.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="Scott Rutledge"
+                  affiliation="Nevada Lobbyist"
+                  timestamp="16:25"
+                >
+                  If you didn&rsquo;t give people the ability to purchase food and beverage&hellip;
+                  you&rsquo;re really just asking people to come into a venue, consume cannabis and
+                  leave. We would call this the airport smoking lounge model, and we didn&rsquo;t
+                  think that was a very attractive business model.
+                </AboutQuote>
+                <AboutQuote
+                  speaker="Scott Maddox"
+                  affiliation="Highway Safety"
+                  timestamp="01:03:36"
+                >
+                  If we&rsquo;re going to license cannabis hospitality facilities, there has to be
+                  mandatory training. And I suggest very strongly it&rsquo;s mandatory, because if
+                  it&rsquo;s voluntary, it won&rsquo;t happen.
+                </AboutQuote>
+                <AboutQuote speaker="John Hudak" affiliation="OCP Director" timestamp="02:21:59">
+                  If we make a recommendation for something that no one can possibly get any
+                  insurance for, then that is a system that is doomed to fail.
+                </AboutQuote>
+                <AboutQuote speaker="John Hudak" affiliation="OCP Director" timestamp="02:35:31">
+                  There&rsquo;s disagreement in this task force &mdash; that&rsquo;s how it&rsquo;s
+                  supposed to be. If we were all agreeing with each other on everything, we
+                  organized the wrong task force.
+                </AboutQuote>
+              </div>
+
+              <AboutSubHeader>Final Consensus Points</AboutSubHeader>
+              <ul className="space-y-1.5 pl-1">
+                <AboutBullet>
+                  Low-dose, fast-acting cannabis beverages represent the most viable and safest
+                  business model
+                </AboutBullet>
+                <AboutBullet>
+                  Employee server training must be state-mandated, with the state subsidizing costs
+                </AboutBullet>
+                <AboutBullet>
+                  Patrons must be allowed to take unconsumed cannabis home in child-proof,
+                  tamper-evident exit bags
+                </AboutBullet>
+                <AboutBullet>
+                  A Cannabis Liability Act (Dram Shop law) is necessary for the program to gain
+                  public trust
+                </AboutBullet>
+              </ul>
+            </MeetingCard>
+
+            {/* ─── The Big Picture ─── */}
+            <AboutSubHeader>The Big Picture &mdash; What 12 Hours Produced</AboutSubHeader>
+            <AboutParagraph>
+              Across four meetings, the task force moved from open brainstorming to a focused set of
+              recommendations. Here is the framework that emerged:
+            </AboutParagraph>
+            <ul className="space-y-1.5 pl-1">
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Standalone 21+ consumption lounges</strong> as
+                the primary business model, with beverages as the anchor product
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>
+                  Sealed, separately ventilated smoking rooms
+                </strong>{' '}
+                within non-smoking venues &mdash; employees do not enter
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Edibles and nano-emulsified beverages</strong>{' '}
+                as the default and safest consumption method
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Municipal opt-in required</strong> &mdash; no
+                municipality forced to participate
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Mandatory state-level server training</strong>{' '}
+                tied to individual OCP registration cards
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Cannabis Liability Act</strong> (Dram Shop law)
+                for over-service civil liability
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Impaired driving prevention plans</strong>{' '}
+                including 24-hour no-tow parking and rideshare partnerships
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Entertainment allowed</strong> (live music,
+                trivia, yoga) &mdash; alcohol excluded
+              </AboutBullet>
+              <AboutBullet>
+                <strong style={{ color: '#e8f5e9' }}>Exit bags for unconsumed product</strong>{' '}
+                &mdash; child-proof, tamper-evident, just like retail
+              </AboutBullet>
+            </ul>
+
+            <div
+              className="rounded-lg p-3 mt-2"
+              style={{
+                background: 'rgba(74, 124, 78, 0.08)',
+                border: '1px solid rgba(74, 124, 78, 0.12)',
+              }}
+            >
+              <p className="text-xs leading-relaxed" style={{ color: '#4a7c4e' }}>
+                These summaries were produced from the complete meeting recordings archived on the{' '}
+                <AboutExternalLink href="https://www.youtube.com/playlist?list=PLdBrIirjKsezIN0zkfKawogPci7010WQY">
+                  Maine OCP YouTube channel
+                </AboutExternalLink>
+                . All quotes are attributed with timestamps so you can verify them against the
+                source footage.
+              </p>
             </div>
           </AboutSection>
 
