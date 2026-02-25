@@ -33,11 +33,28 @@ const UpdateChefCannabisGuestSchema = z.object({
   guestId: z.string().uuid(),
   attendingStatus: z.enum(['yes', 'no']).optional(),
   cannabisParticipation: z.enum(['participate', 'not_consume', 'undecided']).optional(),
-  familiarityLevel: z.enum(['new', 'light', 'moderate', 'experienced']).optional().nullable(),
+  familiarityLevel: z
+    .enum(['first_time', 'occasional', 'experienced', 'regular', 'new', 'light', 'moderate'])
+    .optional()
+    .nullable(),
   consumptionStyle: z
-    .array(z.enum(['edibles', 'infused_course', 'paired_noninfused', 'skip_infusion', 'unsure']))
+    .array(
+      z.enum([
+        'smoking',
+        'edibles',
+        'tincture',
+        'other',
+        'infused_course',
+        'paired_noninfused',
+        'skip_infusion',
+        'unsure',
+      ])
+    )
     .optional(),
-  edibleFamiliarity: z.enum(['none', 'low', 'moderate', 'high']).optional().nullable(),
+  edibleFamiliarity: z
+    .enum(['yes', 'no', 'unsure', 'none', 'low', 'moderate', 'high'])
+    .optional()
+    .nullable(),
   preferredDoseNote: z.string().optional().nullable(),
   comfortNotes: z.string().optional().nullable(),
   dietaryNotes: z.string().optional().nullable(),

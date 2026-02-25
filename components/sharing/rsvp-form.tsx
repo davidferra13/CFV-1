@@ -146,6 +146,8 @@ export function RSVPForm({
   }
 
   if (submitted) {
+    const guestPortalHref = guestToken ? `/event/${eventId}/guest/${guestToken}` : null
+
     return (
       <div className="text-center py-8">
         <div className="w-16 h-16 bg-emerald-900 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -174,6 +176,17 @@ export function RSVPForm({
         >
           Update my response
         </button>
+
+        {guestPortalHref && (
+          <div className="mt-3">
+            <a
+              href={guestPortalHref}
+              className="text-brand-600 hover:text-brand-400 text-sm underline"
+            >
+              Open my guest portal
+            </a>
+          </div>
+        )}
 
         {chefProfileUrl && rsvpStatus === 'attending' && (
           <div className="mt-8 pt-6 border-t border-stone-700">
@@ -315,7 +328,7 @@ export function RSVPForm({
                         htmlFor="plusOneName"
                         className="block text-sm font-medium text-stone-300 mb-1"
                       >
-                        Plus-one's name
+                        Plus-one&apos;s name
                       </label>
                       <input
                         id="plusOneName"

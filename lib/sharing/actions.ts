@@ -61,9 +61,83 @@ const AddGuestManuallySchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
 })
 
+const GuestPortalLookupSchema = z.object({
+  eventId: z.string().uuid(),
+  secureToken: z.string().min(32),
+})
+
+const SaveGuestPortalRSVPSchema = z.object({
+  eventId: z.string().uuid(),
+  secureToken: z.string().min(32),
+  full_name: z.string().min(1, 'Full name is required'),
+  attending_status: z.enum(['yes', 'no']),
+  dietary_notes: z.string().optional(),
+  accessibility_notes: z.string().optional(),
+  menu_preference_note: z.string().optional(),
+  additional_note: z.string().optional(),
+  final_confirmation: z.boolean(),
+  age_confirmed: z.boolean().optional(),
+  cannabis_participation: z.enum(['participate', 'not_consume', 'undecided']).optional(),
+  familiarity_level: z
+    .enum(['first_time', 'occasional', 'experienced', 'regular', 'new', 'light', 'moderate'])
+    .optional(),
+  consumption_method: z
+    .enum([
+      'smoking',
+      'edibles',
+      'tincture',
+      'other',
+      'infused_course',
+      'paired_noninfused',
+      'skip_infusion',
+      'unsure',
+    ])
+    .optional(),
+  edible_experience: z.enum(['yes', 'no', 'unsure', 'none', 'low', 'moderate', 'high']).optional(),
+  preferred_dose_note: z.string().optional(),
+  comfort_notes: z.string().optional(),
+  discuss_in_person_flag: z.boolean().optional(),
+  voluntary_acknowledgment: z.boolean().optional(),
+  alcohol_acknowledgment: z.boolean().optional(),
+  transportation_acknowledgment: z.boolean().optional(),
+})
+
 export type SubmitRSVPInput = z.infer<typeof SubmitRSVPSchema>
 export type UpdateRSVPInput = z.infer<typeof UpdateRSVPSchema>
 export type VisibilitySettings = z.infer<typeof VisibilitySettingsSchema>
+export type SaveGuestPortalRSVPInput = z.infer<typeof SaveGuestPortalRSVPSchema>
+
+function parseEventDateTime(eventDate: string, timeValue?: string | null) {
+  const safeTime = timeValue && /^\d{2}:\d{2}/.test(timeValue) ? timeValue.slice(0, 5) : '18:00'
+  return new Date(`${eventDate}T${safeTime}:00`)
+}
+
+function parseEventEndOfDay(eventDate: string) {
+  return new Date(`${eventDate}T23:59:59`)
+}
+
+function parseEditCutoff(
+  eventDate: string,
+  arrivalTime?: string | null,
+  serveTime?: string | null
+) {
+  return parseEventDateTime(eventDate, arrivalTime || serveTime || '18:00')
+}
+
+function parseNotesToList(notes?: string) {
+  if (!notes) return []
+  return notes
+    .split(/[\n,]/)
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .slice(0, 30)
+}
+
+function deriveAttendingStatus(rsvpStatus: string) {
+  if (rsvpStatus === 'attending') return 'yes'
+  if (rsvpStatus === 'declined') return 'no'
+  return null
+}
 
 // ============================================================
 // CLIENT ACTIONS (Authenticated)
@@ -378,6 +452,109 @@ export async function getEventShares(eventId: string) {
   return shares || []
 }
 
+async function loadGuestPortalContext(eventId: string, secureToken: string) {
+  const supabase = createServerClient({ admin: true })
+
+  const { data: guest } = await supabase
+    .from('event_guests')
+    .select(
+      'id, event_id, tenant_id, event_share_id, guest_token, full_name, email, rsvp_status, dietary_restrictions, notes, created_at, updated_at'
+    )
+    .eq('event_id', eventId)
+    .eq('guest_token', secureToken)
+    .maybeSingle()
+
+  if (!guest) {
+    return null
+  }
+
+  const { data: event } = await supabase
+    .from('events')
+    .select(
+      'id, tenant_id, client_id, event_date, serve_time, arrival_time, occasion, service_style, location_address, location_city, location_state, location_zip, location_notes, status, special_requests, cannabis_preference, menu_approval_status'
+    )
+    .eq('id', eventId)
+    .single()
+
+  if (!event) {
+    return null
+  }
+
+  const { data: share } = await supabase
+    .from('event_shares')
+    .select('id, is_active, expires_at, visibility_settings')
+    .eq('id', guest.event_share_id)
+    .maybeSingle()
+
+  if (!share) {
+    return null
+  }
+
+  const { data: chef } = await supabase
+    .from('chefs')
+    .select('display_name, business_name')
+    .eq('id', event.tenant_id)
+    .maybeSingle()
+
+  const { data: hostClient } = await supabase
+    .from('clients')
+    .select('full_name')
+    .eq('id', event.client_id)
+    .maybeSingle()
+
+  const { data: profile } = await (supabase
+    .from('guest_event_profile' as any)
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('guest_token', secureToken)
+    .maybeSingle() as any)
+
+  const visibility = (share.visibility_settings || {}) as Record<string, boolean>
+
+  let menus: {
+    id: string
+    name: string
+    description: string | null
+    service_style: string | null
+  }[] = []
+
+  if (visibility.show_menu) {
+    const { data: menuRows } = await supabase
+      .from('menus')
+      .select('id, name, description, service_style')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: true })
+
+    menus = menuRows || []
+  }
+
+  let guestList: { full_name: string; rsvp_status: string }[] = []
+  if (visibility.show_guest_list) {
+    const { data: guestRows } = await supabase
+      .from('event_guests')
+      .select('full_name, rsvp_status')
+      .eq('event_share_id', share.id)
+      .order('created_at', { ascending: true })
+
+    guestList = (guestRows || []).map((row) => ({
+      full_name: row.full_name,
+      rsvp_status: row.rsvp_status,
+    }))
+  }
+
+  return {
+    guest,
+    event,
+    share,
+    chef,
+    hostClient,
+    profile,
+    visibility,
+    menus,
+    guestList,
+  }
+}
+
 // ============================================================
 // PUBLIC ACTIONS (No auth required -- token-validated)
 // ============================================================
@@ -645,4 +822,237 @@ export async function getGuestByToken(guestToken: string) {
   }
 
   return guest
+}
+
+export async function getGuestEventPortal(eventId: string, secureToken: string) {
+  const validated = GuestPortalLookupSchema.parse({ eventId, secureToken })
+  const context = await loadGuestPortalContext(validated.eventId, validated.secureToken)
+
+  if (!context) {
+    return { state: 'invalid' as const }
+  }
+
+  const { event, guest, share, chef, hostClient, profile, visibility, menus, guestList } = context
+  const now = new Date()
+
+  if (event.status === 'cancelled') {
+    return {
+      state: 'cancelled' as const,
+      event: {
+        title: event.occasion || 'Private Dinner',
+        eventDate: event.event_date,
+        serveTime: event.serve_time,
+      },
+    }
+  }
+
+  if (!share.is_active) {
+    return { state: 'revoked' as const }
+  }
+
+  if (share.expires_at && new Date(share.expires_at) < now) {
+    return { state: 'expired' as const }
+  }
+
+  const editCutoff = parseEditCutoff(event.event_date, event.arrival_time, event.serve_time)
+  const eventEnd = parseEventEndOfDay(event.event_date)
+  const archiveAt = new Date(eventEnd.getTime() + 90 * 24 * 60 * 60 * 1000)
+  const archiveMode = now > archiveAt
+  const canEdit = now <= editCutoff && !archiveMode
+
+  const menuFinalized = event.menu_approval_status === 'approved' && menus.length > 0
+  const attendingStatus =
+    profile?.attending_status ?? deriveAttendingStatus(guest.rsvp_status) ?? 'yes'
+  const consumptionMethod = Array.isArray(profile?.consumption_style)
+    ? profile.consumption_style[0] || null
+    : null
+
+  return {
+    state: 'ready' as const,
+    event: {
+      id: event.id,
+      title: event.occasion || 'Private Dinner',
+      occasion: event.occasion,
+      eventDate: event.event_date,
+      serveTime: event.serve_time,
+      arrivalTime: event.arrival_time,
+      location: {
+        address: event.location_address,
+        city: event.location_city,
+        state: event.location_state,
+        zip: event.location_zip,
+        notes: event.location_notes,
+      },
+      hostName: hostClient?.full_name || chef?.display_name || chef?.business_name || 'Event Host',
+      hostMessage: event.special_requests,
+      serviceStyle: event.service_style,
+      cannabisEnabled: !!event.cannabis_preference,
+      menuFinalized,
+      menus,
+      visibility,
+      guestList,
+    },
+    guest: {
+      fullName: guest.full_name,
+      email: guest.email,
+      attendingStatus,
+      dietaryNotes: profile?.dietary_notes || guest.dietary_restrictions?.join(', ') || '',
+      accessibilityNotes: profile?.accessibility_notes || '',
+      menuPreferenceNote: profile?.menu_preference_note || '',
+      additionalNote: profile?.additional_note || guest.notes || '',
+      ageConfirmed: !!profile?.age_confirmed,
+      participationStatus: profile?.cannabis_participation || 'undecided',
+      familiarityLevel: profile?.familiarity_level || '',
+      consumptionMethod: consumptionMethod || '',
+      edibleExperience: profile?.edible_familiarity || '',
+      preferredDoseNote: profile?.preferred_dose_note || '',
+      comfortNotes: profile?.comfort_notes || '',
+      discussInPerson: !!profile?.discuss_in_person_flag,
+      voluntaryAcknowledgment: !!profile?.voluntary_acknowledgment,
+      alcoholAcknowledgment: !!profile?.alcohol_acknowledgment,
+      transportationAcknowledgment: !!profile?.transportation_acknowledgment,
+      finalConfirmation: !!profile?.final_confirmation,
+      updatedAt: profile?.updated_at || guest.updated_at || guest.created_at,
+    },
+    lifecycle: {
+      editCutoff: editCutoff.toISOString(),
+      archiveAt: archiveAt.toISOString(),
+      canEdit,
+      archiveMode,
+    },
+  }
+}
+
+export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) {
+  const validated = SaveGuestPortalRSVPSchema.parse(input)
+  const context = await loadGuestPortalContext(validated.eventId, validated.secureToken)
+
+  if (!context) {
+    throw new Error('This link is invalid or no longer available.')
+  }
+
+  const { event, guest, share, profile } = context
+  const now = new Date()
+
+  if (event.status === 'cancelled') {
+    throw new Error('This event has been canceled.')
+  }
+
+  if (!share.is_active) {
+    throw new Error('This guest link has been revoked.')
+  }
+
+  if (share.expires_at && new Date(share.expires_at) < now) {
+    throw new Error('This guest link has expired.')
+  }
+
+  const editCutoff = parseEditCutoff(event.event_date, event.arrival_time, event.serve_time)
+  const eventEnd = parseEventEndOfDay(event.event_date)
+  const archiveAt = new Date(eventEnd.getTime() + 90 * 24 * 60 * 60 * 1000)
+
+  if (now > archiveAt) {
+    throw new Error('This RSVP is now in archival mode and cannot be edited.')
+  }
+
+  if (now > editCutoff) {
+    throw new Error('The RSVP update window has closed for this event.')
+  }
+
+  if (!validated.final_confirmation) {
+    throw new Error('Please confirm that you reviewed the event information.')
+  }
+
+  const isCannabisEvent = !!event.cannabis_preference
+  const attending = validated.attending_status === 'yes'
+
+  if (isCannabisEvent && attending) {
+    if (!validated.age_confirmed) {
+      throw new Error('Age confirmation is required for participating guests.')
+    }
+
+    if (!validated.cannabis_participation) {
+      throw new Error('Please select your participation preference.')
+    }
+
+    if (!validated.voluntary_acknowledgment) {
+      throw new Error('Please confirm participation is voluntary.')
+    }
+
+    if (!validated.alcohol_acknowledgment) {
+      throw new Error('Please acknowledge alcohol mixing guidance.')
+    }
+
+    if (!validated.transportation_acknowledgment) {
+      throw new Error('Please acknowledge transportation responsibility.')
+    }
+  }
+
+  const supabase = createServerClient({ admin: true })
+
+  const guestUpdatePayload: Record<string, unknown> = {
+    full_name: validated.full_name.trim(),
+    rsvp_status: validated.attending_status === 'yes' ? 'attending' : 'declined',
+    notes: validated.additional_note?.trim() || null,
+    dietary_restrictions: parseNotesToList(validated.dietary_notes),
+  }
+
+  const { error: guestUpdateError } = await supabase
+    .from('event_guests')
+    .update(guestUpdatePayload)
+    .eq('id', guest.id)
+    .eq('event_id', validated.eventId)
+    .eq('guest_token', validated.secureToken)
+
+  if (guestUpdateError) {
+    throw new Error('Failed to save RSVP.')
+  }
+
+  const nextConsumptionStyle =
+    validated.consumption_method !== undefined
+      ? validated.consumption_method
+        ? [validated.consumption_method]
+        : []
+      : Array.isArray(profile?.consumption_style)
+        ? profile.consumption_style
+        : []
+
+  const profilePayload = {
+    event_id: validated.eventId,
+    guest_token: validated.secureToken,
+    attending_status: validated.attending_status,
+    dietary_notes: validated.dietary_notes?.trim() || null,
+    accessibility_notes: validated.accessibility_notes?.trim() || null,
+    menu_preference_note: validated.menu_preference_note?.trim() || null,
+    additional_note: validated.additional_note?.trim() || null,
+    cannabis_participation:
+      validated.attending_status === 'no'
+        ? 'not_consume'
+        : validated.cannabis_participation || 'undecided',
+    familiarity_level: validated.familiarity_level || null,
+    consumption_style: nextConsumptionStyle,
+    edible_familiarity: validated.edible_experience || null,
+    preferred_dose_note: validated.preferred_dose_note?.trim() || null,
+    comfort_notes: validated.comfort_notes?.trim() || null,
+    discuss_in_person_flag: !!validated.discuss_in_person_flag,
+    age_confirmed: !!validated.age_confirmed,
+    voluntary_acknowledgment: !!validated.voluntary_acknowledgment,
+    alcohol_acknowledgment: !!validated.alcohol_acknowledgment,
+    transportation_acknowledgment: !!validated.transportation_acknowledgment,
+    final_confirmation: !!validated.final_confirmation,
+  }
+
+  const { error: profileError } = await (supabase
+    .from('guest_event_profile' as any)
+    .upsert(profilePayload, { onConflict: 'event_id,guest_token' }) as any)
+
+  if (profileError) {
+    throw new Error('Failed to save guest profile.')
+  }
+
+  return {
+    success: true,
+    attending_status: validated.attending_status,
+    cannabis_participation: profilePayload.cannabis_participation || 'undecided',
+    editCutoff: editCutoff.toISOString(),
+  }
 }

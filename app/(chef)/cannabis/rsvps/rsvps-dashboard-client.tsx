@@ -79,7 +79,10 @@ const FILTERS: { key: FilterKey; label: string }[] = [
 ]
 
 const CONSUMPTION_OPTIONS = [
+  'smoking',
   'edibles',
+  'tincture',
+  'other',
   'infused_course',
   'paired_noninfused',
   'skip_infusion',
@@ -208,7 +211,7 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
               >
                 {data.events.map((event) => (
                   <option key={event.id} value={event.id}>
-                    {(event.occasion || 'Private Dinner') + ' • ' + event.event_date}
+                    {(event.occasion || 'Private Dinner') + ' - ' + event.event_date}
                   </option>
                 ))}
               </select>
@@ -418,11 +421,11 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                         {labelize(guest.edibleFamiliarity)}
                       </td>
                       <td className="px-3 py-3 text-[#97b89c]">
-                        {guest.preferredDoseNote ? '•' : '-'}
+                        {guest.preferredDoseNote ? '*' : '-'}
                       </td>
-                      <td className="px-3 py-3 text-[#97b89c]">{guest.dietaryNotes ? '•' : '-'}</td>
+                      <td className="px-3 py-3 text-[#97b89c]">{guest.dietaryNotes ? '*' : '-'}</td>
                       <td className="px-3 py-3 text-[#97b89c]">
-                        {guest.accessibilityNotes ? '•' : '-'}
+                        {guest.accessibilityNotes ? '*' : '-'}
                       </td>
                       <td className="px-3 py-3 text-[#97b89c]">
                         {guest.discussInPerson ? 'Yes' : '-'}
@@ -461,7 +464,7 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                     </span>
                   </div>
                   <p className="text-xs mt-1" style={{ color: '#9eb8a2' }}>
-                    {labelize(guest.attendingStatus)} • Updated {formatUpdated(guest.updatedAt)}
+                    {labelize(guest.attendingStatus)} | Updated {formatUpdated(guest.updatedAt)}
                   </p>
                 </button>
               ))}
@@ -700,6 +703,9 @@ function GuestDrawer({
                 }
               >
                 <option value="">-</option>
+                <option value="first_time">First-time</option>
+                <option value="occasional">Occasional</option>
+                <option value="regular">Regular</option>
                 <option value="new">New</option>
                 <option value="light">Light</option>
                 <option value="moderate">Moderate</option>
@@ -715,6 +721,9 @@ function GuestDrawer({
                 }
               >
                 <option value="">-</option>
+                <option value="yes">Yes</option>
+                <option value="no">No</option>
+                <option value="unsure">Unsure</option>
                 <option value="none">None</option>
                 <option value="low">Low</option>
                 <option value="moderate">Moderate</option>
