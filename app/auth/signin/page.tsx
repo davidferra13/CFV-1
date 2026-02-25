@@ -26,6 +26,20 @@ function safeRedirectPath(raw: string | null): string {
   }
 }
 
+function normalizeAuthErrorMessage(message: string): string {
+  const normalized = message.toLowerCase()
+  if (
+    normalized.includes('failed to fetch') ||
+    normalized.includes('fetch failed') ||
+    normalized.includes('networkerror') ||
+    normalized.includes('network request failed') ||
+    normalized.includes('load failed')
+  ) {
+    return 'Connection issue while signing in. Please confirm the app server is running and try again.'
+  }
+  return message
+}
+
 function SignInForm() {
   const router = useRouter()
   const rawSearchParams = useSearchParams()
@@ -60,7 +74,7 @@ function SignInForm() {
       router.refresh()
     } catch (err) {
       const error = err as Error
-      setError(error.message)
+      setError(normalizeAuthErrorMessage(error.message))
     } finally {
       setLoading(false)
     }
@@ -75,7 +89,7 @@ function SignInForm() {
       // signInWithGoogle redirects, so no navigation or state change is needed here on success
     } catch (err) {
       const error = err as Error
-      setError(error.message)
+      setError(normalizeAuthErrorMessage(error.message))
       setGoogleLoading(false)
     }
   }

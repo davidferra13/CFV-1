@@ -245,7 +245,16 @@ export async function signUpClient(input: ClientSignupInput) {
 export async function signIn(input: SignInInput) {
   const validated = SignInSchema.parse(input)
   const email = validated.email.trim().toLowerCase()
-  await checkRateLimit(email)
+  try {
+    await checkRateLimit(email)
+  } catch (error) {
+    const message = String((error as any)?.message || '').toLowerCase()
+    if (message.includes('too many attempts')) {
+      throw error
+    }
+    log.auth.error('Rate limit check failed', { error, context: { email } })
+    throw new Error('Sign-in service is temporarily unavailable. Please try again.')
+  }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
   if (
@@ -258,10 +267,19 @@ export async function signIn(input: SignInInput) {
 
   const supabase = createServerClient()
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
-    password: validated.password,
-  })
+  let data: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['data'] | null = null
+  let error: Awaited<ReturnType<typeof supabase.auth.signInWithPassword>>['error'] | null = null
+  try {
+    const result = await supabase.auth.signInWithPassword({
+      email,
+      password: validated.password,
+    })
+    data = result.data
+    error = result.error
+  } catch (err) {
+    log.auth.error('Sign-in transport failure', { error: err, context: { email } })
+    throw new Error('Sign-in service is temporarily unavailable. Please try again.')
+  }
 
   if (error) {
     log.auth.error('Sign-in failed', { error })

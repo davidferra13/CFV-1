@@ -8,6 +8,27 @@ import { useEffect } from 'react'
 export function SwRegister() {
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return
+    const host = window.location.hostname
+    const isLocalHost =
+      host === 'localhost' || host === '127.0.0.1' || host === '0.0.0.0' || host.endsWith('.local')
+    const shouldRegister = process.env.NODE_ENV === 'production' && !isLocalHost
+
+    if (!shouldRegister) {
+      // Local/dev safety: remove stale SW + caches so auth/network requests hit the live dev server.
+      void navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => {
+          void registration.unregister()
+        })
+      })
+      if ('caches' in window) {
+        void caches.keys().then((keys) => {
+          keys.forEach((key) => {
+            void caches.delete(key)
+          })
+        })
+      }
+      return
+    }
 
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })

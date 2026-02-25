@@ -10,6 +10,20 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 
+function normalizeAuthErrorMessage(message: string): string {
+  const normalized = message.toLowerCase()
+  if (
+    normalized.includes('failed to fetch') ||
+    normalized.includes('fetch failed') ||
+    normalized.includes('networkerror') ||
+    normalized.includes('network request failed') ||
+    normalized.includes('load failed')
+  ) {
+    return 'Connection issue while signing in. Please confirm the app server is running and try again.'
+  }
+  return message
+}
+
 function StaffLoginForm() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -31,7 +45,7 @@ function StaffLoginForm() {
       router.refresh()
     } catch (err) {
       const error = err as Error
-      setError(error.message)
+      setError(normalizeAuthErrorMessage(error.message))
     } finally {
       setLoading(false)
     }
