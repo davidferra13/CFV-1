@@ -1060,14 +1060,14 @@ Each category has a unique lucide-react icon and animated chevron expand/collaps
 
 > **Full element-by-element detail → [`docs/ui-audit-secondary-pages.md`](ui-audit-secondary-pages.md)** § Cannabis Pages
 
-| Route                  | Content                                                                                             |
-| ---------------------- | --------------------------------------------------------------------------------------------------- |
-| `/cannabis`            | Cannabis chef hub (compliance score, upcoming events, quick actions)                                |
-| `/cannabis/about`      | About page — task force story, credentials, legislation timeline, feature roadmap, all source links |
-| `/cannabis/compliance` | Compliance tracker (license status, testing requirements, regulatory items)                         |
-| `/cannabis/events`     | Cannabis events list (strain pairings, dosage info, compliance badges)                              |
-| `/cannabis/invite`     | Guest invitations with age verification and consent forms                                           |
-| `/cannabis/ledger`     | Cannabis-specific ledger (separate from main financials for compliance)                             |
+| Route                  | Content                                                                                                                                                                                                                                               |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/cannabis`            | Cannabis chef hub (compliance score, upcoming events, quick actions)                                                                                                                                                                                  |
+| `/cannabis/about`      | About page — task force story, **12-hour meeting summaries** (4 collapsible meeting cards with topic breakdowns, attributed quotes with timestamps, consensus points), credentials, legislation timeline (LD 1365), feature roadmap, all source links |
+| `/cannabis/compliance` | Compliance tracker (license status, testing requirements, regulatory items)                                                                                                                                                                           |
+| `/cannabis/events`     | Cannabis events list (strain pairings, dosage info, compliance badges)                                                                                                                                                                                |
+| `/cannabis/invite`     | Guest invitations with age verification and consent forms                                                                                                                                                                                             |
+| `/cannabis/ledger`     | Cannabis-specific ledger (separate from main financials for compliance)                                                                                                                                                                               |
 
 ---
 
