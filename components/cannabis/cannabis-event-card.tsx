@@ -64,7 +64,7 @@ export function CannabisEventCard({ event, cannabisDetails }: CannabisEventCardP
     : 'Date TBD'
 
   return (
-    <Link href={`/events/${event.id}`} className="block group">
+    <Link href={`/cannabis/events/${event.id}/control-packet`} className="block group">
       <div
         className="rounded-xl p-4 transition-all duration-200 group-hover:scale-[1.01]"
         style={{

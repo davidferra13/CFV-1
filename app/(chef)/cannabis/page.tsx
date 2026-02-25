@@ -59,7 +59,7 @@ export default async function CannabisHubPage() {
             icon="⚠️"
             label="Compliance"
             value={null}
-            sublabel="Needs your attention"
+            sublabel="Control packets & reconciliation"
             glow="rgba(180, 100, 30, 0.35)"
             alert
           />
@@ -84,7 +84,7 @@ export default async function CannabisHubPage() {
               'Cannabis events are tracked separately from your regular dining calendar.',
               'Invite clients directly from this portal — invitations are reviewed before sending.',
               'The ledger captures all cannabis event revenue and expenses in one place.',
-              'Compliance & dosing system coming in Phase 2 — build it before your next event.',
+              'Control packets lock seating, dosing, reconciliation, and finalization evidence.',
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#6aaa6e' }}>
                 <span className="mt-0.5 shrink-0" style={{ color: '#4a7c4e' }}>
