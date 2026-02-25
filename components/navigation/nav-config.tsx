@@ -846,6 +846,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     context: 'Settings',
   },
   {
+    href: '/settings/compliance/haccp',
+    label: 'HACCP Plan',
+    icon: Settings,
+    context: 'Settings',
+  },
+  {
     href: '/settings/emergency',
     label: 'Emergency Contacts',
     icon: Settings,

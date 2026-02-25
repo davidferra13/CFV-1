@@ -3,9 +3,11 @@
 // with expiry tracking and color-coded urgency indicators.
 
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { PermitChecklistPanel } from '@/components/ai/permit-checklist-panel'
 import { requireChef } from '@/lib/auth/get-user'
 import { listCertifications, getExpiringCertifications } from '@/lib/compliance/actions'
+import { getChefArchetype } from '@/lib/archetypes/actions'
 
 // Pure utility — keeps compliance/actions.ts free of sync exports under 'use server'
 function certExpiryStatus(expiryDate: string | null | undefined) {
@@ -28,6 +30,7 @@ function certExpiryStatus(expiryDate: string | null | undefined) {
   }
 }
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { format } from 'date-fns'
 import { CertForm } from './cert-form'
@@ -59,7 +62,11 @@ function ExpiryBadge({ expiryDate }: { expiryDate: string | null }) {
 export default async function CompliancePage() {
   await requireChef()
 
-  const [certs, expiring] = await Promise.all([listCertifications(), getExpiringCertifications(60)])
+  const [certs, expiring, archetype] = await Promise.all([
+    listCertifications(),
+    getExpiringCertifications(60),
+    getChefArchetype(),
+  ])
 
   const activeCerts = certs.filter((c: any) => c.status === 'active')
   const otherCerts = certs.filter((c: any) => c.status !== 'active')
@@ -72,6 +79,25 @@ export default async function CompliancePage() {
           Track certifications, licenses, and insurance with expiry reminders.
         </p>
       </div>
+
+      {/* HACCP Plan */}
+      <Card>
+        <CardContent className="pt-4 pb-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="font-semibold text-stone-100">HACCP Plan</h2>
+              <p className="text-sm text-stone-400 mt-0.5">
+                {archetype
+                  ? 'Your food safety plan is ready — auto-generated for your business type.'
+                  : 'Select your business type in Settings to generate your HACCP plan.'}
+              </p>
+            </div>
+            <Link href="/settings/compliance/haccp">
+              <Button variant="secondary">View Plan</Button>
+            </Link>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Expiry alerts */}
       {expiring.length > 0 && (
