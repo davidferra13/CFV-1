@@ -294,6 +294,13 @@ export function GoogleIntegrations({
                     Sync complete: {syncResult.processed} processed, {syncResult.inquiriesCreated}{' '}
                     inquiries created, {syncResult.skipped} skipped
                   </p>
+                  {syncResult.errors.length > 0 && (
+                    <ul className="mt-1 list-disc list-inside text-xs">
+                      {syncResult.errors.slice(0, 3).map((err, i) => (
+                        <li key={i}>{err}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </Alert>
             )}

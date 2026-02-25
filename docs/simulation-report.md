@@ -1,46 +1,55 @@
 # ChefFlow AI Simulation Report
 
-_Auto-generated — last run: 2026-02-24T20:54:07.549Z_
-_Run ID: 44e5a6dc-1f00-4060-9607-f1c2696192cb_
+_Auto-generated — last run: 2026-02-25T17:11:54.496Z_
+_Run ID: 401cc64d-0c96-4a3a-ab5b-60e8e610b8da_
 
 ---
 
 ## Summary
 
-The system's pass rate remains low at 50%, with inquiry_parse, correspondence, and quote_draft modules failing consistently. The improvements seen in prior runs have stalled. All three currently failing modules require specific prompt adjustments to address hallucination and lack of personalization.
+The system's pass rate remains low at 50%, with inquiry_parse, correspondence, and quote_draft modules failing consistently. All previously failing modules show no improvement since the last run. The core issues involve hallucination, missing required fields, and incorrect data generation.
 
 ## Failures & Root Causes
 
-### correspondence
+**inquiry_parse**
+The module hallucinates client names and guest counts when none are present in input. It fails to recognize that "Hi there" is not a client name and "a few of us" is not a guest count. The module also incorrectly parses "12" as a guest count when no such number exists in the input.
 
-The module fails because it generates generic subject lines and body content that do not reference specific client details or event information. The LLM is not being instructed to include the client's name or event specifics in either the subject or body.
+**correspondence**
+The module generates generic responses without client-specific details. It fails to include a subject line and does not incorporate client name, occasion, or guest count from the input. The response feels generic and lacks personalization.
 
-### quote_draft
-
-The module produces unrealistic pricing that exceeds expected ranges. The LLM is not being constrained to use realistic per-person pricing formulas or total cost calculations. It appears to be generating arbitrary numbers instead of following the defined pricing structure.
+**quote_draft**
+The module generates unrealistic pricing. It produces a per-person rate of $162.50 and a total of $1,625, both exceeding expected ranges. The pricing formula is incorrect and does not match the previously defined $85/$125/$175 per person rates with 30% grocery, $150 travel, and 50% deposit.
 
 ## Prompt Fix Recommendations
 
-### correspondence
+**inquiry_parse**
+Add explicit null rules to reject hallucinated patterns:
 
-Add explicit instructions to the system prompt:
+- "Hi there" → null client name
+- "a few of us" → null guest count
+- "we're a group of" → null guest count
+- "I'm" → null client name
+- "we're" → null client name
 
-- "Include the client's name in the subject line"
-- "Personalize the body with specific event details and client information"
-- "Ensure all correspondence references the client's name and event specifics"
+**correspondence**
+Require specific fields in both system and user prompts:
 
-### quote_draft
+- System prompt: "Include client name in subject line"
+- User prompt: "Body must reference client name, occasion, and guest count from input"
+- Add rule: "If no client name in input, do not hallucinate one"
 
-Add explicit constraints to the system prompt:
+**quote_draft**
+Replace pricing logic with explicit formula:
 
-- "Use the formula: $85/$125/$175 per person based on party size"
-- "Calculate total as: (per-person rate × guest count) + 30% grocery + $150 travel + 50% deposit"
-- "Ensure total price stays within $0-$10,000 range"
-- "Per-person rate must not exceed $500"
+- "Per-person rate = $85/$125/$175 based on menu tier"
+- "Grocery cost = 30% of per-person rate"
+- "Travel cost = $150"
+- "Deposit = 50% of total"
+- "Total = (per-person rate × guest count) + grocery + travel + deposit"
 
 ## What's Working Well
 
-The client_parse, allergen_risk, and menu_suggestions modules are all passing consistently. These modules have shown improvement since the initial run and maintain stable performance. The system's ability to parse client information and assess allergen risks remains solid.
+client_parse, allergen_risk, and menu_suggestions modules are passing consistently. These modules have shown improvement since the first run, with allergen_risk specifically implementing a mandatory scan protocol that prevents empty safety flags when restrictions exist.
 
 ---
 

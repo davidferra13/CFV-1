@@ -74,6 +74,40 @@ const FinalizePacketSchema = z.object({
   archivalPdfPath: z.string().max(500).optional(),
 })
 
+const UpsertCourseConfigSchema = z.object({
+  eventId: z.string().uuid(),
+  courseConfig: z
+    .array(
+      z.object({
+        courseIndex: z.number().int().min(1),
+        infusionEnabled: z.boolean(),
+        plannedMgPerGuest: z.number().min(0).nullable().optional(),
+        notes: z.string().max(5000).nullable().optional(),
+      })
+    )
+    .max(80),
+})
+
+type CoursePlanRow = {
+  courseIndex: number
+  courseName: string
+  sourceCourseNumber: number | null
+}
+
+type CourseConfigRow = {
+  courseIndex: number
+  infusionEnabled: boolean
+  plannedMgPerGuest: number | null
+  notes: string | null
+  isActive: boolean
+}
+
+type SnapshotPlan = {
+  menu: { id: string; title: string } | null
+  courses: CoursePlanRow[]
+  courseConfig: CourseConfigRow[]
+}
+
 function deriveParticipationStatus(value: unknown): ControlPacketGuestInput['participationStatus'] {
   if (value === 'participate') return 'participate'
   if (value === 'not_consume') return 'not_consume'
@@ -94,6 +128,229 @@ function normalizeNullableText(value: string | null | undefined): string | null 
   return trimmed.length ? trimmed : null
 }
 
+function normalizeCourseLabel(value: unknown, fallbackIndex: number): string {
+  const label = String(value ?? '').trim()
+  return label.length ? label : `Course ${fallbackIndex}`
+}
+
+function buildCoursePlanFromDishes(dishes: any[], courseCount: number): CoursePlanRow[] {
+  const safeCourseCount = normalizeCourseCount(courseCount)
+  const byCourseNumber = new Map<number, string>()
+
+  for (const dish of dishes ?? []) {
+    const courseNumber = Number(dish?.course_number ?? NaN)
+    if (!Number.isFinite(courseNumber) || courseNumber < 1) continue
+    if (byCourseNumber.has(courseNumber)) continue
+
+    const label = normalizeCourseLabel(dish?.course_name, courseNumber)
+    byCourseNumber.set(courseNumber, label)
+  }
+
+  const ordered = [...byCourseNumber.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([sourceCourseNumber, courseName]) => ({ sourceCourseNumber, courseName }))
+
+  return Array.from({ length: safeCourseCount }, (_, index) => {
+    const courseIndex = index + 1
+    const source = ordered[index]
+    return {
+      courseIndex,
+      courseName: source?.courseName ?? `Course ${courseIndex}`,
+      sourceCourseNumber: source?.sourceCourseNumber ?? null,
+    }
+  })
+}
+
+async function ensureEventCannabisCourseConfigRows(
+  supabase: ReturnType<typeof createServerClient>,
+  eventId: string,
+  tenantId: string,
+  courseCount: number
+): Promise<CourseConfigRow[]> {
+  const safeCourseCount = normalizeCourseCount(courseCount)
+
+  const { data: existingRows, error: existingError } = await (supabase
+    .from('event_cannabis_course_config' as any)
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+    .order('course_index', { ascending: true }) as any)
+
+  if (existingError) {
+    throw new Error('Failed to load cannabis course overlay settings')
+  }
+
+  const existing = (existingRows ?? []) as any[]
+  const existingByIndex = new Map<number, any>(
+    existing
+      .map((row) => [Number(row.course_index), row] as const)
+      .filter(([index]) => Number.isFinite(index) && index >= 1)
+  )
+
+  const indexes = Array.from({ length: safeCourseCount }, (_, index) => index + 1)
+  const rowsToInsert = indexes.filter((index) => !existingByIndex.has(index))
+  const rowsToReactivate = indexes.filter((index) => {
+    const row = existingByIndex.get(index)
+    return row && row.is_active === false
+  })
+  const rowsToArchive = existing
+    .filter((row) => Number(row.course_index) > safeCourseCount && row.is_active === true)
+    .map((row) => Number(row.course_index))
+
+  if (rowsToInsert.length > 0) {
+    const { error: insertError } = await (supabase
+      .from('event_cannabis_course_config' as any)
+      .insert(
+        rowsToInsert.map((courseIndex) => ({
+          event_id: eventId,
+          tenant_id: tenantId,
+          course_index: courseIndex,
+          infusion_enabled: false,
+          planned_mg_per_guest: null,
+          notes: null,
+          is_active: true,
+          archived_at: null,
+        }))
+      ) as any)
+
+    if (insertError) {
+      throw new Error('Failed to create cannabis course overlay rows')
+    }
+  }
+
+  if (rowsToReactivate.length > 0) {
+    const { error: reactivateError } = await (supabase
+      .from('event_cannabis_course_config' as any)
+      .update({
+        is_active: true,
+        archived_at: null,
+      })
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .in('course_index', rowsToReactivate) as any)
+
+    if (reactivateError) {
+      throw new Error('Failed to reactivate cannabis course overlay rows')
+    }
+  }
+
+  if (rowsToArchive.length > 0) {
+    const { error: archiveError } = await (supabase
+      .from('event_cannabis_course_config' as any)
+      .update({
+        is_active: false,
+        archived_at: new Date().toISOString(),
+      })
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .in('course_index', rowsToArchive) as any)
+
+    if (archiveError) {
+      throw new Error('Failed to archive extra cannabis course overlay rows')
+    }
+  }
+
+  const { data: activeRows, error: activeRowsError } = await (supabase
+    .from('event_cannabis_course_config' as any)
+    .select('*')
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+    .eq('is_active', true)
+    .order('course_index', { ascending: true }) as any)
+
+  if (activeRowsError) {
+    throw new Error('Failed to refresh cannabis course overlay rows')
+  }
+
+  return ((activeRows ?? []) as any[]).map((row) => ({
+    courseIndex: Number(row.course_index),
+    infusionEnabled: !!row.infusion_enabled,
+    plannedMgPerGuest:
+      row.planned_mg_per_guest === null || row.planned_mg_per_guest === undefined
+        ? null
+        : Number(row.planned_mg_per_guest),
+    notes: normalizeNullableText(row.notes),
+    isActive: !!row.is_active,
+  }))
+}
+
+function hydrateCourseConfigForCourseCount(
+  rows: CourseConfigRow[],
+  courseCount: number
+): CourseConfigRow[] {
+  const safeCourseCount = normalizeCourseCount(courseCount)
+  const byIndex = new Map<number, CourseConfigRow>(rows.map((row) => [row.courseIndex, row]))
+
+  return Array.from({ length: safeCourseCount }, (_, index) => {
+    const courseIndex = index + 1
+    const existing = byIndex.get(courseIndex)
+
+    if (existing) return existing
+
+    return {
+      courseIndex,
+      infusionEnabled: false,
+      plannedMgPerGuest: null,
+      notes: null,
+      isActive: true,
+    }
+  })
+}
+
+function sanitizeSnapshotPlan(snapshot: any): SnapshotPlan | null {
+  const payload = snapshot?.snapshot_json
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return null
+
+  const menuPayload = (payload as any).menu
+  const rawCourses = Array.isArray((payload as any).courses) ? (payload as any).courses : []
+  const rawCourseConfig = Array.isArray((payload as any).course_config)
+    ? (payload as any).course_config
+    : []
+
+  const courses = rawCourses
+    .map((row: any) => ({
+      courseIndex: Number(row?.course_index ?? row?.courseIndex ?? NaN),
+      courseName: normalizeCourseLabel(row?.course_name ?? row?.courseName, 1),
+      sourceCourseNumber:
+        row?.source_course_number === null || row?.sourceCourseNumber === null
+          ? null
+          : Number(row?.source_course_number ?? row?.sourceCourseNumber ?? NaN),
+    }))
+    .filter((row: CoursePlanRow) => Number.isFinite(row.courseIndex) && row.courseIndex >= 1)
+    .sort((a: CoursePlanRow, b: CoursePlanRow) => a.courseIndex - b.courseIndex)
+
+  const courseConfig = rawCourseConfig
+    .map((row: any) => ({
+      courseIndex: Number(row?.course_index ?? row?.courseIndex ?? NaN),
+      infusionEnabled: !!(row?.infusion_enabled ?? row?.infusionEnabled),
+      plannedMgPerGuest:
+        row?.planned_mg_per_guest === null ||
+        row?.planned_mg_per_guest === undefined ||
+        row?.plannedMgPerGuest === null ||
+        row?.plannedMgPerGuest === undefined
+          ? null
+          : Number(row?.planned_mg_per_guest ?? row?.plannedMgPerGuest),
+      notes: normalizeNullableText(row?.notes ?? null),
+      isActive: row?.is_active === undefined ? true : !!row?.is_active,
+    }))
+    .filter((row: CourseConfigRow) => Number.isFinite(row.courseIndex) && row.courseIndex >= 1)
+    .sort((a: CourseConfigRow, b: CourseConfigRow) => a.courseIndex - b.courseIndex)
+
+  const menu =
+    menuPayload && typeof menuPayload === 'object'
+      ? {
+          id: String((menuPayload as any).menu_id ?? (menuPayload as any).id ?? '').trim(),
+          title: String((menuPayload as any).title ?? (menuPayload as any).menu_title ?? '').trim(),
+        }
+      : null
+
+  return {
+    menu: menu && (menu.id.length > 0 || menu.title.length > 0) ? menu : null,
+    courses,
+    courseConfig,
+  }
+}
+
 async function loadCannabisEventContext(eventId: string, tenantId: string) {
   const supabase = createServerClient()
 
@@ -112,6 +369,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
       status,
       cannabis_preference,
       course_count,
+      menu_id,
       clients!inner(full_name)
     `
     )
@@ -180,6 +438,13 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
     }
   })
 
+  const participationByGuestName = new Map<string, ControlPacketGuestInput['participationStatus']>(
+    guestSnapshotInput.map((guest) => [
+      guest.fullName.trim().toLowerCase(),
+      guest.participationStatus,
+    ])
+  )
+
   const sourceGuestUpdatedAtValues = [
     ...guests.map((guest) => toIsoOrNull(guest.updated_at)),
     ...profiles.map((profile) => toIsoOrNull(profile?.updated_at)),
@@ -190,9 +455,81 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
       ? sourceGuestUpdatedAtValues.sort((a, b) => Date.parse(b) - Date.parse(a))[0]
       : null
 
+  const directMenuId =
+    typeof (event as any).menu_id === 'string' && (event as any).menu_id.trim().length > 0
+      ? String((event as any).menu_id)
+      : null
+
+  let menu: { id: string; title: string } | null = null
+
+  if (directMenuId) {
+    const { data: menuRow } = await (supabase
+      .from('menus' as any)
+      .select('id, name')
+      .eq('id', directMenuId)
+      .eq('tenant_id', tenantId)
+      .maybeSingle() as any)
+
+    if (menuRow) {
+      menu = {
+        id: String(menuRow.id),
+        title: String(menuRow.name ?? '').trim() || 'Untitled Menu',
+      }
+    }
+  }
+
+  if (!menu) {
+    const { data: fallbackMenuRow } = await (supabase
+      .from('menus' as any)
+      .select('id, name')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .order('created_at', { ascending: true })
+      .limit(1)
+      .maybeSingle() as any)
+
+    if (fallbackMenuRow) {
+      menu = {
+        id: String(fallbackMenuRow.id),
+        title: String(fallbackMenuRow.name ?? '').trim() || 'Untitled Menu',
+      }
+    }
+  }
+
+  let menuDishes: any[] = []
+  if (menu) {
+    const { data: dishRows, error: dishError } = await (supabase
+      .from('dishes' as any)
+      .select('course_number, course_name, sort_order')
+      .eq('menu_id', menu.id)
+      .eq('tenant_id', tenantId)
+      .order('course_number', { ascending: true })
+      .order('sort_order', { ascending: true }) as any)
+
+    if (dishError) {
+      throw new Error('Failed to load menu course structure')
+    }
+
+    menuDishes = dishRows ?? []
+  }
+
+  const courseCount = normalizeCourseCount((event as any).course_count)
+  const menuCourses = buildCoursePlanFromDishes(menuDishes, courseCount)
+  const liveCourseConfig = await ensureEventCannabisCourseConfigRows(
+    supabase,
+    eventId,
+    tenantId,
+    courseCount
+  )
+  const courseConfig = hydrateCourseConfigForCourseCount(liveCourseConfig, courseCount)
+
   return {
     event,
+    menu,
+    menuCourses,
+    courseConfig,
     guestSnapshotInput,
+    participationByGuestName,
     sourceGuestUpdatedAt,
   }
 }
@@ -201,6 +538,66 @@ function snapshotGuestNames(snapshotGuestPayload: any[]): string[] {
   return (snapshotGuestPayload ?? [])
     .map((guest) => String(guest?.full_name ?? guest?.fullName ?? '').trim())
     .filter(Boolean)
+}
+
+function buildDefaultPlannedBreakdown(courseConfig: CourseConfigRow[]): number[] {
+  return courseConfig.map((course) => {
+    if (!course.infusionEnabled) return 0
+    return Number(course.plannedMgPerGuest ?? 0)
+  })
+}
+
+function buildSnapshotJsonPayload(args: {
+  nextVersion: number
+  eventId: string
+  tenantId: string
+  courseCount: number
+  menu: { id: string; title: string } | null
+  courses: CoursePlanRow[]
+  courseConfig: CourseConfigRow[]
+  guestSnapshot: any[]
+  seatingSnapshot: any[]
+  participationSnapshot: any
+  layoutType: ControlPacketLayoutType
+  customSeatCount: number
+}) {
+  return {
+    snapshot_version: args.nextVersion,
+    event: {
+      event_id: args.eventId,
+      tenant_id: args.tenantId,
+      course_count: args.courseCount,
+    },
+    menu: args.menu
+      ? {
+          menu_id: args.menu.id,
+          title: args.menu.title,
+        }
+      : null,
+    courses: args.courses.map((course) => ({
+      course_index: course.courseIndex,
+      course_name: course.courseName,
+      source_course_number: course.sourceCourseNumber,
+    })),
+    course_config: args.courseConfig.map((course) => ({
+      course_index: course.courseIndex,
+      infusion_enabled: course.infusionEnabled,
+      planned_mg_per_guest: course.plannedMgPerGuest,
+      notes: course.notes,
+      is_active: course.isActive,
+    })),
+    course_count: args.courseCount,
+    guest_snapshot: args.guestSnapshot,
+    seating_snapshot: args.seatingSnapshot,
+    participation_snapshot: args.participationSnapshot,
+    layout: {
+      layout_type: args.layoutType,
+      layout_meta: {
+        generated_from: args.layoutType,
+        custom_seat_count: args.customSeatCount,
+      },
+    },
+  }
 }
 
 export async function getCannabisControlPacketData(eventId: string, snapshotId?: string | null) {
@@ -272,6 +669,13 @@ export async function getCannabisControlPacketData(eventId: string, snapshotId?:
     Date.parse(context.sourceGuestUpdatedAt) > Date.parse(activeSnapshot.generated_at)
 
   const participationSummary = summarizeParticipationStatuses(context.guestSnapshotInput)
+  const snapshotPlan = sanitizeSnapshotPlan(activeSnapshot)
+  const livePlan: SnapshotPlan = {
+    menu: context.menu,
+    courses: context.menuCourses,
+    courseConfig: context.courseConfig,
+  }
+  const effectiveSnapshotPlan = snapshotPlan ?? livePlan
 
   return {
     event: {
@@ -282,16 +686,99 @@ export async function getCannabisControlPacketData(eventId: string, snapshotId?:
       occasion: context.event.occasion ?? null,
       guestCount: context.event.guest_count ?? context.guestSnapshotInput.length,
       courseCount: normalizeCourseCount((context.event as any).course_count),
+      menuId:
+        typeof (context.event as any).menu_id === 'string' &&
+        String((context.event as any).menu_id).trim().length > 0
+          ? String((context.event as any).menu_id)
+          : null,
       status: context.event.status,
     },
     guestRows: context.guestSnapshotInput,
     participationSummary,
+    menuPlan: {
+      hasMenu: !!context.menu,
+      attachMenuHref: `/events/${eventId}`,
+      live: livePlan,
+      snapshot: effectiveSnapshotPlan,
+      snapshotIsFrozen: !!snapshotPlan,
+    },
     snapshots: snapshotRows,
     activeSnapshot,
     reconciliation,
     evidence,
     alertRsvpUpdatedAfterSnapshot,
     sourceGuestUpdatedAt: context.sourceGuestUpdatedAt,
+  }
+}
+
+export async function upsertEventCannabisCourseConfig(
+  input: z.infer<typeof UpsertCourseConfigSchema>
+) {
+  const validated = UpsertCourseConfigSchema.parse(input)
+  const user = await requireChef()
+  const supabase = createServerClient()
+
+  const { data: event, error: eventError } = await (supabase
+    .from('events' as any)
+    .select('id, tenant_id, cannabis_preference, course_count')
+    .eq('id', validated.eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single() as any)
+
+  if (eventError || !event) {
+    throw new Error('Event not found')
+  }
+
+  if (!event.cannabis_preference) {
+    throw new Error('Cannabis overlay is only available for cannabis-enabled events')
+  }
+
+  const courseCount = normalizeCourseCount(event.course_count)
+  const ensuredRows = await ensureEventCannabisCourseConfigRows(
+    supabase,
+    validated.eventId,
+    user.tenantId!,
+    courseCount
+  )
+  const ensuredByIndex = new Map<number, CourseConfigRow>(
+    ensuredRows.map((row) => [row.courseIndex, row])
+  )
+  const incomingByIndex = new Map<number, (typeof validated.courseConfig)[number]>(
+    validated.courseConfig.map((row) => [row.courseIndex, row])
+  )
+
+  const rowsToPersist = Array.from({ length: courseCount }, (_, index) => {
+    const courseIndex = index + 1
+    const incoming = incomingByIndex.get(courseIndex)
+    const existing = ensuredByIndex.get(courseIndex)
+
+    return {
+      event_id: validated.eventId,
+      tenant_id: user.tenantId!,
+      course_index: courseIndex,
+      infusion_enabled: incoming ? incoming.infusionEnabled : !!existing?.infusionEnabled,
+      planned_mg_per_guest:
+        incoming && incoming.plannedMgPerGuest !== undefined
+          ? incoming.plannedMgPerGuest
+          : (existing?.plannedMgPerGuest ?? null),
+      notes: incoming ? normalizeNullableText(incoming.notes ?? null) : (existing?.notes ?? null),
+      is_active: true,
+      archived_at: null,
+    }
+  })
+
+  const { error: upsertError } = await (supabase
+    .from('event_cannabis_course_config' as any)
+    .upsert(rowsToPersist as any, { onConflict: 'event_id,course_index' }) as any)
+
+  if (upsertError) {
+    throw new Error('Failed to save infusion plan')
+  }
+
+  revalidatePath(`/cannabis/events/${validated.eventId}/control-packet`)
+
+  return {
+    success: true,
   }
 }
 
@@ -314,6 +801,11 @@ export async function generateCannabisControlPacketSnapshot(
 
   const nextVersion = Number(latestVersionRow?.version_number ?? 0) + 1
   const courseCount = normalizeCourseCount((context.event as any).course_count)
+  const frozenMenuPlan: SnapshotPlan = {
+    menu: context.menu,
+    courses: context.menuCourses,
+    courseConfig: hydrateCourseConfigForCourseCount(context.courseConfig, courseCount),
+  }
   const seatCountTarget = Math.max(
     Number(context.event.guest_count ?? 0),
     context.guestSnapshotInput.length,
@@ -341,6 +833,20 @@ export async function generateCannabisControlPacketSnapshot(
   }))
 
   const participationSnapshot = summarizeParticipationStatuses(context.guestSnapshotInput)
+  const snapshotJson = buildSnapshotJsonPayload({
+    nextVersion,
+    eventId: validated.eventId,
+    tenantId: user.tenantId!,
+    courseCount,
+    menu: frozenMenuPlan.menu,
+    courses: frozenMenuPlan.courses,
+    courseConfig: frozenMenuPlan.courseConfig,
+    guestSnapshot,
+    seatingSnapshot,
+    participationSnapshot,
+    layoutType: validated.layoutType,
+    customSeatCount: validated.customSeatIds?.length ?? 0,
+  })
 
   const { data: inserted, error: insertError } = await (supabase
     .from('cannabis_control_packet_snapshots' as any)
@@ -358,6 +864,7 @@ export async function generateCannabisControlPacketSnapshot(
         generated_from: validated.layoutType,
         custom_seat_count: validated.customSeatIds?.length ?? 0,
       },
+      snapshot_json: snapshotJson,
       source_guest_updated_at: context.sourceGuestUpdatedAt,
     })
     .select('*')
@@ -465,27 +972,64 @@ export async function upsertControlPacketReconciliation(
     throw new Error('Snapshot is finalized and cannot be edited')
   }
 
-  const sanitizedGuestRows = validated.guestRows.map((row) => ({
-    guestId: row.guestId ?? null,
-    guestName: row.guestName.trim(),
-    totalMgPlanned: row.totalMgPlanned ?? null,
-    totalMgServed: row.totalMgServed ?? null,
-    breakdownPerCourseMg: row.breakdownPerCourseMg ?? [],
-    perCourse:
-      row.perCourse?.map((courseRow) => ({
-        courseNumber: courseRow.courseNumber,
-        mgServed: courseRow.mgServed ?? null,
-        doseApplied: !!courseRow.doseApplied,
-        skipped: !!courseRow.skipped,
-        optedOutDuringService: !!courseRow.optedOutDuringService,
-      })) ?? [],
-    notes: normalizeNullableText(row.notes ?? null),
-  }))
+  const safeCourseCount = normalizeCourseCount(Number(snapshot.course_count ?? 1))
+  const frozenSnapshotPlan = sanitizeSnapshotPlan(snapshot)
+  const fallbackCourseConfig = hydrateCourseConfigForCourseCount(
+    frozenSnapshotPlan?.courseConfig ?? [],
+    safeCourseCount
+  )
+  const fallbackBreakdownByCourse = buildDefaultPlannedBreakdown(fallbackCourseConfig)
+  const fallbackPlannedTotal = fallbackBreakdownByCourse.reduce((sum, mg) => sum + mg, 0)
+
+  const snapshotParticipationByGuest = new Map<string, string>(
+    ((snapshot.guest_snapshot ?? []) as any[])
+      .map((guest) => [
+        String(guest?.full_name ?? guest?.fullName ?? '')
+          .trim()
+          .toLowerCase(),
+        String(guest?.participation_status ?? guest?.participationStatus ?? ''),
+      ])
+      .filter(([name]) => !!name)
+  )
+
+  const sanitizedGuestRows = validated.guestRows.map((row) => {
+    const guestName = row.guestName.trim()
+    const guestKey = guestName.toLowerCase()
+    const participationStatus = snapshotParticipationByGuest.get(guestKey)
+    const defaultPlanned =
+      participationStatus && participationStatus !== 'participate' ? 0 : fallbackPlannedTotal
+
+    const plannedTotal = row.totalMgPlanned ?? defaultPlanned
+    const breakdownPerCourseMg = Array.from({ length: safeCourseCount }, (_, index) => {
+      const provided = row.breakdownPerCourseMg?.[index]
+      if (provided !== undefined && provided !== null && Number.isFinite(Number(provided))) {
+        return Number(provided)
+      }
+      return Number(fallbackBreakdownByCourse[index] ?? 0)
+    })
+
+    return {
+      guestId: row.guestId ?? null,
+      guestName,
+      totalMgPlanned: plannedTotal,
+      totalMgServed: row.totalMgServed ?? null,
+      breakdownPerCourseMg,
+      perCourse:
+        row.perCourse?.map((courseRow) => ({
+          courseNumber: courseRow.courseNumber,
+          mgServed: courseRow.mgServed ?? null,
+          doseApplied: !!courseRow.doseApplied,
+          skipped: !!courseRow.skipped,
+          optedOutDuringService: !!courseRow.optedOutDuringService,
+        })) ?? [],
+      notes: normalizeNullableText(row.notes ?? null),
+    }
+  })
 
   const mismatchSummary = evaluateReconciliation(
     snapshotGuestNames((snapshot.guest_snapshot ?? []) as any[]),
     sanitizedGuestRows,
-    Number(snapshot.course_count ?? 1)
+    safeCourseCount
   )
 
   const { error: upsertError } = await (supabase

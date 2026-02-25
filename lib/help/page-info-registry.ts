@@ -2837,7 +2837,16 @@ export const PAGE_INFO_REGISTRY: Record<string, PageInfoEntry> = {
       'External sources',
     ],
   },
-
+  '/cannabis/handbook': {
+    title: 'Cannabis Dinner Handbook (Draft)',
+    description: 'Internal-only draft outline for cannabis dinner service structure.',
+    features: [
+      'Service philosophy outline',
+      'Extract fundamentals outline',
+      'Portioning and infusion workflow outline',
+      'Draft-only implementation constraints',
+    ],
+  },
   '/cannabis/events': {
     title: 'Cannabis Event List',
     description: 'All cannabis-specific events.',

@@ -685,7 +685,8 @@ export function ChefSidebar({
                   { href: '/cannabis/rsvps', label: 'RSVPs' },
                   { href: '/cannabis/ledger', label: 'Cannabis Ledger' },
                   { href: '/cannabis/invite', label: 'Invite' },
-                  { href: '/cannabis/compliance', label: 'Compliance ⚠️' },
+                  { href: '/cannabis/handbook', label: 'Handbook (Draft)' },
+                  { href: '/cannabis/compliance', label: 'Compliance' },
                   { href: '/cannabis/about', label: 'About' },
                 ].map((item) => {
                   const active = isItemActive(pathname, item.href)
@@ -1174,7 +1175,8 @@ export function ChefMobileNav({
                     { href: '/cannabis/rsvps', label: 'RSVPs' },
                     { href: '/cannabis/ledger', label: 'Ledger' },
                     { href: '/cannabis/invite', label: 'Invite' },
-                    { href: '/cannabis/compliance', label: 'Compliance ⚠️' },
+                    { href: '/cannabis/handbook', label: 'Handbook (Draft)' },
+                    { href: '/cannabis/compliance', label: 'Compliance' },
                     { href: '/cannabis/about', label: 'About' },
                   ].map((item) => {
                     const active = isItemActive(pathname, item.href)

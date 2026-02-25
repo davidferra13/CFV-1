@@ -101,10 +101,8 @@ import { MobileDashboardExpander } from '@/components/dashboard/mobile-dashboard
 
 import { BusinessInsightsPanel } from '@/components/ai/business-insights-panel'
 import { HolidayOutreachPanel } from '@/components/dashboard/holiday-outreach-panel'
-import {
-  getHolidayOutreachSuggestions,
-  type HolidayOutreachSuggestion,
-} from '@/lib/holidays/outreach-actions'
+import { getHolidayOutreachSuggestions } from '@/lib/holidays/outreach-data'
+import { type HolidayOutreachSuggestion } from '@/lib/holidays/outreach-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
 import {
@@ -520,6 +518,25 @@ export default async function ChefDashboard() {
   const isWidgetEnabled = (widgetId: DashboardWidgetId) => widgetEnabled.get(widgetId) ?? true
   const getWidgetOrder = (widgetId: DashboardWidgetId) =>
     widgetOrder.get(widgetId) ?? Number.MAX_SAFE_INTEGER
+  const serializableHolidayOutreachSuggestions = holidayOutreachSuggestions.map((suggestion) => ({
+    upcoming: {
+      holiday: {
+        key: suggestion.upcoming.holiday.key,
+        name: suggestion.upcoming.holiday.name,
+      },
+      date:
+        typeof suggestion.upcoming.date === 'string'
+          ? suggestion.upcoming.date
+          : new Date(suggestion.upcoming.date).toISOString(),
+      daysUntil: suggestion.upcoming.daysUntil,
+      inOutreachWindow: suggestion.upcoming.inOutreachWindow,
+      isUrgent: suggestion.upcoming.isUrgent,
+    },
+    pastClients: suggestion.pastClients,
+    premiumPricing: suggestion.premiumPricing,
+    outreachHook: suggestion.outreachHook,
+    menuNotes: suggestion.menuNotes,
+  }))
 
   return (
     <div className="flex flex-col gap-8">
@@ -669,9 +686,9 @@ export default async function ChefDashboard() {
       {/* ============================================ */}
       {/* HOLIDAY OUTREACH PANEL                        */}
       {/* ============================================ */}
-      {holidayOutreachSuggestions.length > 0 && (
+      {serializableHolidayOutreachSuggestions.length > 0 && (
         <section>
-          <HolidayOutreachPanel suggestions={holidayOutreachSuggestions} />
+          <HolidayOutreachPanel suggestions={serializableHolidayOutreachSuggestions} />
         </section>
       )}
 
@@ -1412,8 +1429,8 @@ export default async function ChefDashboard() {
                       ))}
                     </div>
                     <p className="text-xs text-stone-400 mt-3">
-                      {dormantClients.length} client{dormantClients.length !== 1 ? 's' : ''} haven't
-                      booked in 90+ days
+                      {dormantClients.length} client{dormantClients.length !== 1 ? 's' : ''}{' '}
+                      haven&apos;t booked in 90+ days
                     </p>
                   </CardContent>
                 </Card>

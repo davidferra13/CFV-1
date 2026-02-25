@@ -14,7 +14,7 @@ import {
   Tag,
   X,
 } from 'lucide-react'
-import { type HolidayOutreachSuggestion } from '@/lib/holidays/outreach-actions'
+import { type HolidayOutreachSuggestion } from '@/lib/holidays/outreach-types'
 import {
   sendHolidayOutreachToClient,
   createHolidayPromoCode,
@@ -79,7 +79,7 @@ function HolidaySuggestionRow({ suggestion, isExpanded, onToggle }: HolidaySugge
   const { upcoming, pastClients, premiumPricing, outreachHook, menuNotes } = suggestion
   const { holiday, date, daysUntil, isUrgent } = upcoming
 
-  const dateLabel = formatHolidayDate(date, daysUntil)
+  const dateLabel = formatHolidayDate(new Date(date), daysUntil)
 
   // Promo code state
   const [showPromoForm, setShowPromoForm] = useState(false)
@@ -483,7 +483,7 @@ function OutreachHookBlock({ hook, holidayName }: OutreachHookBlockProps) {
           )}
         </button>
       </div>
-      <p className="text-sm text-stone-300 italic leading-relaxed">"{hook}"</p>
+      <p className="text-sm text-stone-300 italic leading-relaxed">&ldquo;{hook}&rdquo;</p>
     </div>
   )
 }

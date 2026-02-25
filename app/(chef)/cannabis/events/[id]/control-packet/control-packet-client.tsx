@@ -5,9 +5,24 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   finalizeControlPacket,
   generateCannabisControlPacketSnapshot,
+  upsertEventCannabisCourseConfig,
   upsertControlPacketReconciliation,
   uploadControlPacketEvidence,
 } from '@/lib/chef/cannabis-control-packet-actions'
+
+type CoursePlan = {
+  courseIndex: number
+  courseName: string
+  sourceCourseNumber: number | null
+}
+
+type CourseConfig = {
+  courseIndex: number
+  infusionEnabled: boolean
+  plannedMgPerGuest: number | null
+  notes: string | null
+  isActive: boolean
+}
 
 type InitialData = {
   event: {
@@ -18,6 +33,7 @@ type InitialData = {
     occasion: string | null
     guestCount: number
     courseCount: number
+    menuId: string | null
     status: string | null
   }
   guestRows: Array<{
@@ -37,6 +53,21 @@ type InitialData = {
   reconciliation: any | null
   evidence: any[]
   alertRsvpUpdatedAfterSnapshot: boolean
+  menuPlan: {
+    hasMenu: boolean
+    attachMenuHref: string
+    live: {
+      menu: { id: string; title: string } | null
+      courses: CoursePlan[]
+      courseConfig: CourseConfig[]
+    }
+    snapshot: {
+      menu: { id: string; title: string } | null
+      courses: CoursePlan[]
+      courseConfig: CourseConfig[]
+    }
+    snapshotIsFrozen: boolean
+  }
 }
 
 type CourseInput = {
@@ -69,7 +100,11 @@ function parseNumber(value: string): number | null {
   return Number.isFinite(parsed) ? parsed : null
 }
 
-function seatGuestRows(initialData: InitialData, courseCount: number): GuestInput[] {
+function seatGuestRows(
+  initialData: InitialData,
+  courseCount: number,
+  defaultPlannedByCourse: number[]
+): GuestInput[] {
   const seats = (initialData.activeSnapshot?.seating_snapshot ?? []) as any[]
   const existingRows = (initialData.reconciliation?.guest_reconciliation ?? []) as any[]
   const existingByName = new Map(
@@ -80,6 +115,13 @@ function seatGuestRows(initialData: InitialData, courseCount: number): GuestInpu
       row,
     ])
   )
+  const participationByName = new Map(
+    initialData.guestRows.map((guest) => [
+      guest.fullName.trim().toLowerCase(),
+      guest.participationStatus,
+    ])
+  )
+  const defaultPlannedTotal = defaultPlannedByCourse.reduce((sum, mg) => sum + mg, 0)
 
   const rows = seats
     .filter((seat) => typeof seat?.guestName === 'string' && seat.guestName.trim())
@@ -90,6 +132,10 @@ function seatGuestRows(initialData: InitialData, courseCount: number): GuestInpu
       const breakdown = Array.isArray(existing.breakdownPerCourseMg)
         ? existing.breakdownPerCourseMg
         : []
+      const participationStatus =
+        participationByName.get(name.toLowerCase()) ?? String(seat.participationStatus ?? '')
+      const plannedFallback =
+        participationStatus && participationStatus !== 'participate' ? 0 : defaultPlannedTotal
 
       return {
         guestId: typeof seat.guestId === 'string' ? seat.guestId : null,
@@ -97,7 +143,7 @@ function seatGuestRows(initialData: InitialData, courseCount: number): GuestInpu
         seatId: String(seat.seatId ?? ''),
         totalMgPlanned:
           existing.totalMgPlanned === undefined || existing.totalMgPlanned === null
-            ? ''
+            ? String(plannedFallback)
             : String(existing.totalMgPlanned),
         totalMgServed:
           existing.totalMgServed === undefined || existing.totalMgServed === null
@@ -125,7 +171,7 @@ function seatGuestRows(initialData: InitialData, courseCount: number): GuestInpu
     guestId: guest.guestId,
     guestName: guest.fullName,
     seatId: '',
-    totalMgPlanned: '',
+    totalMgPlanned: guest.participationStatus === 'participate' ? String(defaultPlannedTotal) : '0',
     totalMgServed: '',
     notes: '',
     courses: Array.from({ length: courseCount }, () => ({
@@ -190,19 +236,49 @@ export function ControlPacketClient({
   const [mismatchSummary, setMismatchSummary] = useState<any>(
     initialData.reconciliation?.mismatch_summary ?? null
   )
+  const [liveCourseConfig, setLiveCourseConfig] = useState<CourseConfig[]>(
+    initialData.menuPlan.live.courseConfig
+  )
 
   const activeSnapshot = initialData.activeSnapshot
   const courseCount = Number(activeSnapshot?.course_count ?? initialData.event.courseCount ?? 1)
   const isFinalized = !!activeSnapshot?.finalization_locked
+  const snapshotPlan = initialData.menuPlan.snapshot
+  const displayCourses =
+    snapshotPlan.courses.length > 0
+      ? snapshotPlan.courses
+      : Array.from({ length: courseCount }, (_, index) => ({
+          courseIndex: index + 1,
+          courseName: `Course ${index + 1}`,
+          sourceCourseNumber: null,
+        }))
+  const liveCourses =
+    initialData.menuPlan.live.courses.length > 0
+      ? initialData.menuPlan.live.courses
+      : Array.from({ length: courseCount }, (_, index) => ({
+          courseIndex: index + 1,
+          courseName: `Course ${index + 1}`,
+          sourceCourseNumber: null,
+        }))
+  const liveCourseConfigByIndex = new Map(liveCourseConfig.map((row) => [row.courseIndex, row]))
+  const displayCourseConfigByIndex = new Map(
+    snapshotPlan.courseConfig.map((row) => [row.courseIndex, row])
+  )
+  const plannedByCourse = displayCourses.map((course) => {
+    const config = displayCourseConfigByIndex.get(course.courseIndex)
+    if (!config?.infusionEnabled) return 0
+    return Number(config.plannedMgPerGuest ?? 0)
+  })
 
   const initialGuestRows = useMemo(
-    () => seatGuestRows(initialData, courseCount),
-    [initialData.activeSnapshot?.id, initialData.reconciliation?.updated_at, courseCount]
+    () => seatGuestRows(initialData, courseCount, plannedByCourse),
+    [initialData, courseCount, plannedByCourse]
   )
   const [guestRows, setGuestRows] = useState<GuestInput[]>(initialGuestRows)
 
   useEffect(() => {
     setGuestRows(initialGuestRows)
+    setLiveCourseConfig(initialData.menuPlan.live.courseConfig)
     setMismatchSummary(initialData.reconciliation?.mismatch_summary ?? null)
     setExtractLabelStrength(String(initialData.reconciliation?.extract_label_strength ?? ''))
     setServiceOperator(String(initialData.reconciliation?.service_operator ?? ''))
@@ -220,7 +296,7 @@ export function ControlPacketClient({
     setChefSignature(String(initialData.reconciliation?.chef_signature ?? ''))
     setHostAcknowledgment(String(initialData.reconciliation?.host_acknowledgment ?? ''))
     setArchivalPdfPath(String(initialData.activeSnapshot?.archival_pdf_path ?? ''))
-  }, [initialData.activeSnapshot?.id, initialData.reconciliation?.id, initialGuestRows])
+  }, [initialData, initialGuestRows])
 
   function setGuestValue(index: number, key: keyof Omit<GuestInput, 'courses'>, value: string) {
     setGuestRows((rows) => {
@@ -245,6 +321,51 @@ export function ControlPacketClient({
     })
   }
 
+  function setCourseConfigValue(
+    courseIndex: number,
+    key: 'infusionEnabled' | 'plannedMgPerGuest' | 'notes',
+    value: boolean | string
+  ) {
+    setLiveCourseConfig((rows) =>
+      rows.map((row) => {
+        if (row.courseIndex !== courseIndex) return row
+
+        if (key === 'infusionEnabled') {
+          return { ...row, infusionEnabled: Boolean(value) }
+        }
+
+        if (key === 'plannedMgPerGuest') {
+          const parsed = parseNumber(String(value))
+          return { ...row, plannedMgPerGuest: parsed }
+        }
+
+        return { ...row, notes: String(value) }
+      })
+    )
+  }
+
+  function saveInfusionPlan() {
+    setError(null)
+    setMessage(null)
+    startTransition(async () => {
+      try {
+        await upsertEventCannabisCourseConfig({
+          eventId,
+          courseConfig: liveCourseConfig.map((row) => ({
+            courseIndex: row.courseIndex,
+            infusionEnabled: !!row.infusionEnabled,
+            plannedMgPerGuest: row.plannedMgPerGuest,
+            notes: row.notes,
+          })),
+        })
+        setMessage('Infusion plan saved.')
+        router.refresh()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to save infusion plan')
+      }
+    })
+  }
+
   function selectSnapshot(snapshotId: string) {
     const params = new URLSearchParams()
     if (snapshotId) params.set('snapshot', snapshotId)
@@ -252,6 +373,10 @@ export function ControlPacketClient({
   }
 
   function generateSnapshot() {
+    if (!initialData.menuPlan.hasMenu) {
+      setError('Attach a menu to this event before generating a control packet snapshot.')
+      return
+    }
     setError(null)
     setMessage(null)
     startTransition(async () => {
@@ -444,7 +569,7 @@ export function ControlPacketClient({
           <button
             type="button"
             onClick={generateSnapshot}
-            disabled={isPending}
+            disabled={isPending || !initialData.menuPlan.hasMenu}
             className="px-3 py-2 rounded text-sm font-semibold"
             style={{ background: '#2f6a37', color: '#e8f5e9' }}
           >
@@ -471,6 +596,133 @@ export function ControlPacketClient({
         )}
       </section>
 
+      <section
+        className="rounded-xl p-4 space-y-3"
+        style={{ background: '#0f1a0f', border: '1px solid #27432b' }}
+      >
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-[#d2e8d4]">Menu + Infusion Plan</h2>
+          {initialData.menuPlan.live.menu && (
+            <p className="text-xs text-[#6aaa6e]">
+              Menu: <span className="text-[#d2e8d4]">{initialData.menuPlan.live.menu.title}</span>
+            </p>
+          )}
+        </div>
+
+        {!initialData.menuPlan.hasMenu ? (
+          <div
+            className="rounded-lg p-3 text-sm"
+            style={{ background: '#111d12', border: '1px solid #27432b', color: '#c8d8ca' }}
+          >
+            <p>Attach a menu to this event to enable infusion planning.</p>
+            <a
+              href={initialData.menuPlan.attachMenuHref}
+              className="inline-block mt-2 text-xs underline text-[#8fc294]"
+            >
+              Open event menu workflow
+            </a>
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs">
+                <thead>
+                  <tr>
+                    <th className="text-left px-2 py-2 text-[#7cab80]">Course</th>
+                    <th className="text-left px-2 py-2 text-[#7cab80]">Menu Structure</th>
+                    <th className="text-left px-2 py-2 text-[#7cab80]">Infused</th>
+                    <th className="text-left px-2 py-2 text-[#7cab80]">Planned mg / guest</th>
+                    <th className="text-left px-2 py-2 text-[#7cab80]">Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {liveCourses.map((course) => {
+                    const courseConfig = liveCourseConfigByIndex.get(course.courseIndex) ?? {
+                      courseIndex: course.courseIndex,
+                      infusionEnabled: false,
+                      plannedMgPerGuest: null,
+                      notes: null,
+                      isActive: true,
+                    }
+                    return (
+                      <tr key={course.courseIndex} className="border-t border-[#1e3520]">
+                        <td className="px-2 py-2 text-[#8ebf92]">C{course.courseIndex}</td>
+                        <td className="px-2 py-2 text-[#d2e8d4]">{course.courseName}</td>
+                        <td className="px-2 py-2 text-[#d2e8d4]">
+                          <label className="inline-flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              checked={courseConfig.infusionEnabled}
+                              onChange={(event) =>
+                                setCourseConfigValue(
+                                  course.courseIndex,
+                                  'infusionEnabled',
+                                  event.target.checked
+                                )
+                              }
+                              disabled={isPending}
+                            />
+                            {courseConfig.infusionEnabled ? 'Yes' : 'No'}
+                          </label>
+                        </td>
+                        <td className="px-2 py-2">
+                          <input
+                            value={
+                              courseConfig.plannedMgPerGuest === null ||
+                              courseConfig.plannedMgPerGuest === undefined
+                                ? ''
+                                : String(courseConfig.plannedMgPerGuest)
+                            }
+                            onChange={(event) =>
+                              setCourseConfigValue(
+                                course.courseIndex,
+                                'plannedMgPerGuest',
+                                event.target.value
+                              )
+                            }
+                            disabled={isPending}
+                            placeholder="0"
+                            className="w-24 rounded px-2 py-1 bg-[#0a130a] border border-[#27432b] text-[#d2e8d4]"
+                          />
+                        </td>
+                        <td className="px-2 py-2">
+                          <input
+                            value={String(courseConfig.notes ?? '')}
+                            onChange={(event) =>
+                              setCourseConfigValue(course.courseIndex, 'notes', event.target.value)
+                            }
+                            disabled={isPending}
+                            placeholder="Optional note"
+                            className="w-full min-w-[220px] rounded px-2 py-1 bg-[#0a130a] border border-[#27432b] text-[#d2e8d4]"
+                          />
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={saveInfusionPlan}
+                disabled={isPending}
+                className="px-3 py-2 rounded text-sm font-semibold"
+                style={{ background: '#355f39', color: '#e8f5e9' }}
+              >
+                Save Infusion Plan
+              </button>
+              {initialData.menuPlan.snapshotIsFrozen && (
+                <p className="text-xs text-[#8ebf92]">
+                  Snapshot view uses frozen menu/plan values from the selected packet version.
+                </p>
+              )}
+            </div>
+          </>
+        )}
+      </section>
+
       {activeSnapshot && (
         <>
           <section
@@ -483,9 +735,14 @@ export function ControlPacketClient({
                   <th className="text-left px-2 py-2 text-[#7cab80]">Seat</th>
                   <th className="text-left px-2 py-2 text-[#7cab80]">Guest</th>
                   <th className="text-left px-2 py-2 text-[#7cab80]">Participation</th>
-                  {Array.from({ length: courseCount }, (_, index) => (
-                    <th key={index} className="text-left px-2 py-2 text-[#7cab80]">
-                      C{index + 1}
+                  {displayCourses.map((course, index) => (
+                    <th key={course.courseIndex} className="text-left px-2 py-2 text-[#7cab80]">
+                      C{course.courseIndex}
+                      <span className="ml-1 text-[#5f8b63]">
+                        {plannedByCourse[index] > 0
+                          ? `(${plannedByCourse[index]}mg plan)`
+                          : '(no plan)'}
+                      </span>
                     </th>
                   ))}
                 </tr>
@@ -498,8 +755,8 @@ export function ControlPacketClient({
                     <td className="px-2 py-2 text-[#8ebf92]">
                       {String(seat.participationStatus ?? '')}
                     </td>
-                    {Array.from({ length: courseCount }, (_, index) => (
-                      <td key={index} className="px-2 py-2 text-[#7cab80]">
+                    {displayCourses.map((course) => (
+                      <td key={course.courseIndex} className="px-2 py-2 text-[#7cab80]">
                         Dose ☐ Skip ☐ Out ☐
                       </td>
                     ))}
@@ -585,9 +842,12 @@ export function ControlPacketClient({
                     <th className="px-2 py-2 text-left text-[#7cab80]">Guest</th>
                     <th className="px-2 py-2 text-left text-[#7cab80]">Planned</th>
                     <th className="px-2 py-2 text-left text-[#7cab80]">Served</th>
-                    {Array.from({ length: courseCount }, (_, index) => (
-                      <th key={index} className="px-2 py-2 text-left text-[#7cab80]">
-                        C{index + 1}
+                    {displayCourses.map((course, index) => (
+                      <th key={course.courseIndex} className="px-2 py-2 text-left text-[#7cab80]">
+                        C{course.courseIndex}
+                        <span className="ml-1 text-[#5f8b63]">
+                          {plannedByCourse[index] > 0 ? `${plannedByCourse[index]}mg` : '0mg'}
+                        </span>
                       </th>
                     ))}
                   </tr>

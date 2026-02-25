@@ -141,6 +141,30 @@ export type UpdateComponentInput = z.infer<typeof UpdateComponentSchema>
 export type { ComponentCategory, TransportCategory } from './constants'
 // COMPONENT_CATEGORIES and TRANSPORT_CATEGORIES are in lib/menus/constants.ts
 
+async function getMenuCourseCountForEventSync(
+  supabase: ReturnType<typeof createServerClient>,
+  menuId: string,
+  tenantId: string
+) {
+  const { data: dishRows, error: dishError } = await (supabase
+    .from('dishes' as any)
+    .select('course_number')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', tenantId) as any)
+
+  if (dishError) {
+    throw new Error('Failed to calculate menu course count')
+  }
+
+  const courseNumbers = new Set<number>(
+    ((dishRows ?? []) as any[])
+      .map((dish) => Number(dish?.course_number ?? NaN))
+      .filter((value) => Number.isFinite(value) && value > 0)
+  )
+
+  return Math.max(courseNumbers.size, 1)
+}
+
 // ============================================
 // MENU CRUD
 // ============================================
@@ -200,6 +224,18 @@ export async function createMenu(input: CreateMenuInput) {
     to_status: 'draft',
     transitioned_by: user.id,
   })
+
+  if (validated.event_id) {
+    await (supabase
+      .from('events' as any)
+      .update({
+        menu_id: menu.id,
+        course_count: 1,
+        updated_by: user.id,
+      })
+      .eq('id', validated.event_id)
+      .eq('tenant_id', user.tenantId!) as any)
+  }
 
   revalidatePath('/menus')
 
@@ -459,6 +495,8 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
     throw new Error('Event not found')
   }
 
+  const menuCourseCount = await getMenuCourseCountForEventSync(supabase, menuId, user.tenantId!)
+
   // Update menu to attach to event
   const { error } = await supabase
     .from('menus')
@@ -469,6 +507,20 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
   if (error) {
     console.error('[attachMenuToEvent] Error:', error)
     throw new Error('Failed to attach menu to event')
+  }
+
+  const { error: eventUpdateError } = await (supabase
+    .from('events' as any)
+    .update({
+      menu_id: menuId,
+      course_count: menuCourseCount,
+      updated_by: user.id,
+    })
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!) as any)
+
+  if (eventUpdateError) {
+    throw new Error('Menu attached, but event menu link failed')
   }
 
   revalidatePath(`/events/${eventId}`)
@@ -500,6 +552,18 @@ export async function detachMenuFromEvent(menuId: string) {
   if (error) {
     console.error('[detachMenuFromEvent] Error:', error)
     throw new Error('Failed to detach menu from event')
+  }
+
+  if (menu?.event_id) {
+    await (supabase
+      .from('events' as any)
+      .update({
+        menu_id: null,
+        updated_by: user.id,
+      })
+      .eq('id', menu.event_id)
+      .eq('tenant_id', user.tenantId!)
+      .eq('menu_id', menuId) as any)
   }
 
   if (menu?.event_id) {

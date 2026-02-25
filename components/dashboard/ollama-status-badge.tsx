@@ -54,6 +54,7 @@ export function OllamaStatusBadge() {
   const [legacy, setLegacy] = useState<LegacyStatus | null>(null)
   const [useDualMode, setUseDualMode] = useState(false)
   const [popoverOpen, setPopoverOpen] = useState(false)
+  const [popoverStyle, setPopoverStyle] = useState<{ top: number; left: number } | null>(null)
   const [actionLoading, setActionLoading] = useState<Record<string, boolean>>({})
   const [actionResults, setActionResults] = useState<
     Record<string, { success: boolean; message: string } | null>
@@ -61,6 +62,7 @@ export function OllamaStatusBadge() {
   const failCountRef = useRef(0)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
   // ── Close popover on outside click ──
   useEffect(() => {
@@ -73,6 +75,29 @@ export function OllamaStatusBadge() {
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [popoverOpen])
+
+  const updatePopoverPosition = useCallback(() => {
+    if (!triggerRef.current) return
+    const rect = triggerRef.current.getBoundingClientRect()
+    const width = 320
+    const gutter = 8
+    const top = rect.bottom + 8
+    const maxLeft = window.innerWidth - width - gutter
+    const left = Math.min(Math.max(rect.left, gutter), Math.max(gutter, maxLeft))
+    setPopoverStyle({ top, left })
+  }, [])
+
+  useEffect(() => {
+    if (!popoverOpen) return
+    updatePopoverPosition()
+    const onViewportChange = () => updatePopoverPosition()
+    window.addEventListener('resize', onViewportChange)
+    window.addEventListener('scroll', onViewportChange, true)
+    return () => {
+      window.removeEventListener('resize', onViewportChange)
+      window.removeEventListener('scroll', onViewportChange, true)
+    }
+  }, [popoverOpen, updatePopoverPosition])
 
   const getInterval = useCallback(() => {
     if (health) {
@@ -145,10 +170,20 @@ export function OllamaStatusBadge() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ action, endpoint }),
         })
-        const data = await res.json()
+        let data: { success?: boolean; message?: string; error?: string } = {}
+        try {
+          data = await res.json()
+        } catch {
+          /* response may not be JSON */
+        }
+        const success = res.ok && data.success === true
+        const message =
+          data.message ??
+          data.error ??
+          (res.ok ? `${action} completed` : `${action} failed (${res.status})`)
         setActionResults((prev) => ({
           ...prev,
-          [key]: { success: data.success, message: data.message },
+          [key]: { success, message },
         }))
         // Refresh health after action
         setTimeout(fetchHealth, 1000)
@@ -256,6 +291,7 @@ export function OllamaStatusBadge() {
   return (
     <div className="relative" ref={popoverRef}>
       <button
+        ref={triggerRef}
         type="button"
         onClick={() => setPopoverOpen((prev) => !prev)}
         className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium shrink-0 cursor-pointer transition-all hover:brightness-125 ${badgeClass}`}
@@ -269,7 +305,10 @@ export function OllamaStatusBadge() {
       </button>
 
       {popoverOpen && (
-        <div className="absolute top-full right-0 mt-2 w-80 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl z-50 overflow-hidden">
+        <div
+          className="fixed w-80 rounded-xl border border-stone-700 bg-stone-900 shadow-2xl z-[100] overflow-hidden"
+          style={popoverStyle ?? undefined}
+        >
           <div className="flex items-center justify-between px-4 py-3 border-b border-stone-700">
             <span className="text-sm font-semibold text-stone-200">AI Infrastructure</span>
             <button

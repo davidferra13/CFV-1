@@ -1,8 +1,8 @@
-// Cannabis Dining Hub — Chef Portal
+// Cannabis Dining Hub - Chef Portal
 // The main entry point for the cannabis tier. Only visible to cannabis-tier chefs.
 
-import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
 import Link from 'next/link'
+import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -18,13 +18,33 @@ export default async function CannabisHubPage() {
   return (
     <CannabisPageWrapper>
       <div className="px-6 py-8 max-w-3xl mx-auto">
-        <CannabisPortalHeader title="Cannabis Dining" subtitle="Private tier · invitation only" />
+        <CannabisPortalHeader title="Cannabis Dining" subtitle="Private tier - invitation only" />
 
-        {/* Hub Cards */}
+        <div
+          className="rounded-xl p-4 mb-6"
+          style={{
+            background: 'rgba(74, 124, 78, 0.12)',
+            border: '1px solid rgba(106, 170, 110, 0.3)',
+          }}
+        >
+          <p className="text-[11px] font-semibold uppercase tracking-wider mb-1 text-[#8bc34a]">
+            Internal Reminder
+          </p>
+          <div className="flex flex-wrap items-center gap-2 text-sm text-[#d2e8d4]">
+            <span>Cannabis Handbook content not yet finalized.</span>
+            <Link
+              href="/cannabis/handbook"
+              className="underline underline-offset-2 text-[#8bc34a] font-medium"
+            >
+              Open draft outline -&gt;
+            </Link>
+          </div>
+        </div>
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           <HubCard
             href="/cannabis/events"
-            icon="🍃"
+            icon="EV"
             label="Events"
             value={eventCount}
             sublabel={`${recentEvents} active`}
@@ -32,7 +52,7 @@ export default async function CannabisHubPage() {
           />
           <HubCard
             href="/cannabis/ledger"
-            icon="💚"
+            icon="LG"
             label="Ledger"
             value={null}
             sublabel="All cannabis financials"
@@ -40,7 +60,7 @@ export default async function CannabisHubPage() {
           />
           <HubCard
             href="/cannabis/invite"
-            icon="✉️"
+            icon="IN"
             label="Invite"
             value={null}
             sublabel="Bring someone in"
@@ -48,24 +68,31 @@ export default async function CannabisHubPage() {
           />
           <HubCard
             href="/cannabis/rsvps"
-            icon="\u{1F4CB}"
+            icon="RV"
             label="RSVPs"
             value={null}
-            sublabel="Guest participation & intake"
+            sublabel="Guest participation and intake"
             glow="rgba(63, 125, 89, 0.26)"
           />
           <HubCard
             href="/cannabis/compliance"
-            icon="⚠️"
+            icon="CP"
             label="Compliance"
             value={null}
-            sublabel="Control packets & reconciliation"
+            sublabel="Control packets and reconciliation"
             glow="rgba(180, 100, 30, 0.35)"
             alert
           />
+          <HubCard
+            href="/cannabis/handbook"
+            icon="HB"
+            label="Handbook (Draft)"
+            value={null}
+            sublabel="Internal reference only"
+            glow="rgba(74, 124, 78, 0.25)"
+          />
         </div>
 
-        {/* Quick info panel */}
         <div
           className="rounded-xl p-5"
           style={{
@@ -82,29 +109,29 @@ export default async function CannabisHubPage() {
           <ul className="space-y-2">
             {[
               'Cannabis events are tracked separately from your regular dining calendar.',
-              'Invite clients directly from this portal — invitations are reviewed before sending.',
+              'Invite clients directly from this portal and keep access centralized.',
               'The ledger captures all cannabis event revenue and expenses in one place.',
               'Control packets lock seating, dosing, reconciliation, and finalization evidence.',
             ].map((item, i) => (
               <li key={i} className="flex items-start gap-2 text-sm" style={{ color: '#6aaa6e' }}>
                 <span className="mt-0.5 shrink-0" style={{ color: '#4a7c4e' }}>
-                  ·
+                  -
                 </span>
                 <span>{item}</span>
               </li>
             ))}
             <li className="flex items-start gap-2 text-sm" style={{ color: '#6aaa6e' }}>
               <span className="mt-0.5 shrink-0" style={{ color: '#4a7c4e' }}>
-                ·
+                -
               </span>
               <span>
-                This portal was built by a member of Maine&rsquo;s Cannabis Hospitality Task Force.{' '}
+                This portal was built by a member of Maine&apos;s Cannabis Hospitality Task Force.{' '}
                 <Link
                   href="/cannabis/about"
                   className="underline underline-offset-2"
                   style={{ color: '#8bc34a' }}
                 >
-                  Learn the full story &rarr;
+                  Learn the full story -&gt;
                 </Link>
               </span>
             </li>
@@ -142,7 +169,9 @@ function HubCard({
           boxShadow: `0 4px 20px ${glow}`,
         }}
       >
-        <div className="text-2xl mb-3">{icon}</div>
+        <div className="text-2xl mb-3 font-semibold tracking-tight" style={{ color: '#8bc34a' }}>
+          {icon}
+        </div>
         <p className="text-base font-semibold" style={{ color: '#e8f5e9' }}>
           {value !== null ? (
             <>

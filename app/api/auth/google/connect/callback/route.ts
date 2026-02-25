@@ -133,7 +133,7 @@ export async function GET(request: NextRequest) {
     .eq('chef_id', state.chefId)
     .single()
 
-  const mergedGmail = gmailConnected || (existing?.gmail_connected ?? false)
+  const mergedGmail = gmailConnected
   const mergedCalendar = calendarConnected || (existing?.calendar_connected ?? false)
   const mergedScopes = Array.from(new Set([...(existing?.scopes ?? []), ...grantedScopes]))
   // Google only returns refresh_token on first consent; preserve the existing one
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
   const { error: upsertError } = await supabase.from('google_connections').upsert(
     {
       chef_id: state.chefId,
-      tenant_id: state.chefId,
+      tenant_id: currentUser.tenantId || state.chefId,
       access_token: tokens.access_token,
       refresh_token: refreshToken,
       token_expires_at: expiresAt,

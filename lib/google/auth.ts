@@ -79,6 +79,7 @@ export async function initiateGoogleConnect(scopes: string[]): Promise<{ redirec
     response_type: 'code',
     scope: allScopes.join(' '),
     access_type: 'offline',
+    include_granted_scopes: 'true',
     prompt: 'consent',
     state: Buffer.from(state).toString('base64'),
   })
@@ -95,7 +96,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
 
   const { data: conn, error } = await supabase
     .from('google_connections')
-    .select('access_token, refresh_token, token_expires_at, gmail_connected')
+    .select('access_token, refresh_token, token_expires_at, gmail_connected, gmail_sync_errors')
     .eq('chef_id', chefId)
     .single()
 
@@ -135,7 +136,7 @@ export async function getGoogleAccessToken(chefId: string): Promise<string> {
       .from('google_connections')
       .update({
         gmail_connected: false,
-        gmail_sync_errors: ((conn as Record<string, unknown>).gmail_sync_errors as number) + 1 || 1,
+        gmail_sync_errors: (conn.gmail_sync_errors || 0) + 1,
       })
       .eq('chef_id', chefId)
 
