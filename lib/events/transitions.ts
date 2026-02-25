@@ -345,6 +345,46 @@ export async function transitionEvent({
           eventId,
         })
 
+        // Persist an FOH HTML render for the linked event menu (non-blocking).
+        try {
+          const { data: eventMenu } = await supabaseAdmin
+            .from('menus')
+            .select('id')
+            .eq('event_id', eventId)
+            .eq('tenant_id', event.tenant_id)
+            .order('created_at', { ascending: true })
+            .limit(1)
+            .maybeSingle()
+
+          if (eventMenu?.id) {
+            const lowerOccasion = (event.occasion ?? '').toLowerCase()
+            const eventType = /birthday/.test(lowerOccasion)
+              ? 'birthday'
+              : /bachelorette/.test(lowerOccasion)
+                ? 'bachelorette_party'
+                : /anniversary/.test(lowerOccasion)
+                  ? 'anniversary'
+                  : /christmas|hanukkah|valentine|easter|halloween/.test(lowerOccasion)
+                    ? 'holiday'
+                    : /corporate/.test(lowerOccasion)
+                      ? 'corporate_event'
+                      : 'regular_menu'
+
+            const { generateAndSaveFrontOfHouseMenu } =
+              await import('@/lib/front-of-house/menuGeneratorService')
+            await generateAndSaveFrontOfHouseMenu({
+              menuId: eventMenu.id,
+              context: {
+                hostName: client.full_name ?? undefined,
+                eventType,
+                specialNote: event.occasion ?? undefined,
+              },
+            })
+          }
+        } catch (fohPersistErr) {
+          log.events.warn('FOH HTML auto-save failed (non-blocking)', { error: fohPersistErr })
+        }
+
         // Auto-send printable FOH menu PDF to both client and chef.
         // Non-blocking to event transition if PDF generation/send fails.
         try {

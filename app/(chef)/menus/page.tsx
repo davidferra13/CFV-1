@@ -2,33 +2,38 @@
 
 import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/supabase/server'
 
 export const metadata: Metadata = { title: 'Menus - ChefFlow' }
-import { getMenus } from '@/lib/menus/actions'
-import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import Link from 'next/link'
-import { formatCurrency } from '@/lib/utils/currency'
+import { getMenuCostSummaries, getMenus } from '@/lib/menus/actions'
 import { MenusClientWrapper } from './menus-client-wrapper'
 
 export default async function MenusPage() {
   const user = await requireChef()
-  const menus = await getMenus()
+  const [menus, costSummaries] = await Promise.all([getMenus(), getMenuCostSummaries()])
 
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-stone-100">Menus</h1>
-          <p className="text-stone-400 mt-1">Manage your menu templates</p>
-        </div>
-        <Link href="/menus/new">
-          <Button>Create Menu</Button>
-        </Link>
-      </div>
+  const eventIds = Array.from(
+    new Set(menus.map((menu) => menu.event_id).filter(Boolean))
+  ) as string[]
+  let eventsById: Record<
+    string,
+    { id: string; occasion: string | null; event_date: string; status: string }
+  > = {}
 
-      <MenusClientWrapper menus={menus} />
-    </div>
+  if (eventIds.length > 0) {
+    const supabase = createServerClient()
+    const { data: events } = await supabase
+      .from('events')
+      .select('id, occasion, event_date, status')
+      .in('id', eventIds)
+      .eq('tenant_id', user.tenantId!)
+
+    eventsById = Object.fromEntries((events || []).map((event) => [event.id, event]))
+  }
+
+  const costByMenuId = Object.fromEntries(
+    costSummaries.map((summary) => [summary.menu_id, summary])
   )
+
+  return <MenusClientWrapper menus={menus} eventsById={eventsById} costByMenuId={costByMenuId} />
 }

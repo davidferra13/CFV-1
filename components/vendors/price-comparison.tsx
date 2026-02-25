@@ -6,7 +6,7 @@ interface ComparisonItem {
   id: string
   vendor_item_name: string
   unit_price_cents: number
-  unit_size: string | null
+  unit_size: number | string | null
   unit_measure: string | null
   ingredient_id: string | null
   vendors: { name: string; status: string } | null

@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import { formatCurrency } from '@/lib/utils/currency'
-import { updateMenu, deleteMenu, duplicateMenu } from '@/lib/menus/actions'
+import { updateMenu, deleteMenu, duplicateMenu, transitionMenu } from '@/lib/menus/actions'
 import {
   searchRecipes,
   linkRecipeToComponent,
@@ -18,6 +18,7 @@ import {
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { PrepTimelineView } from '@/components/menus/prep-timeline-view'
+import { MenuGeneratorUI } from '@/components/menus/menuGeneratorUI'
 
 type RecipeInfo = {
   id: string
@@ -68,12 +69,23 @@ type Event = {
   event_date: string
   status: string
   quoted_price_cents: number | null
+  clients?: { full_name?: string } | null
 } | null
+
+type MenuCostSummary = {
+  menu_id: string
+  total_component_count: number | null
+  total_recipe_cost_cents: number | null
+  cost_per_guest_cents: number | null
+  food_cost_percentage: number | null
+  has_all_recipe_costs: boolean | null
+}
 
 type Props = {
   menu: Menu
   event: Event
   recipeMap?: Record<string, RecipeInfo>
+  costSummary?: MenuCostSummary | null
 }
 
 const STATUS_BADGE: Record<
@@ -86,9 +98,9 @@ const STATUS_BADGE: Record<
   archived: { label: 'Archived', variant: 'default' },
 }
 
-export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: Props) {
+export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {}, costSummary }: Props) {
   const router = useRouter()
-  const [menu, setMenu] = useState(initialMenu)
+  const [menu] = useState(initialMenu)
   const [isEditing, setIsEditing] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -165,6 +177,91 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
     }
   }
 
+  const handleArchiveToggle = async () => {
+    setLoading(true)
+    setError('')
+    try {
+      const nextStatus = menu.status === 'archived' ? 'draft' : 'archived'
+      await transitionMenu(menu.id, nextStatus, 'Updated from back-of-house menu screen')
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || 'Failed to update menu status')
+      setLoading(false)
+    }
+  }
+
+  const handlePrintBackOfHouse = () => {
+    window.print()
+  }
+
+  const handleExportCSV = () => {
+    const rows: string[][] = [
+      [
+        'Menu Name',
+        'Course #',
+        'Course Name',
+        'Component',
+        'Category',
+        'Recipe Name',
+        'Dietary Tags',
+        'Allergens',
+        'Prep Day Offset',
+        'Prep Time',
+      ],
+    ]
+
+    for (const dish of menu.dishes) {
+      if (dish.components.length === 0) {
+        rows.push([
+          menu.name,
+          String(dish.course_number),
+          dish.course_name,
+          '',
+          '',
+          '',
+          (dish.dietary_tags || []).join('|'),
+          (dish.allergen_flags || []).join('|'),
+          '',
+          '',
+        ])
+        continue
+      }
+
+      for (const component of dish.components) {
+        const linkedRecipe = component.recipe_id ? recipeMap[component.recipe_id] : null
+        rows.push([
+          menu.name,
+          String(dish.course_number),
+          dish.course_name,
+          component.name,
+          String(component.category || ''),
+          linkedRecipe?.name || '',
+          (dish.dietary_tags || []).join('|'),
+          (dish.allergen_flags || []).join('|'),
+          String((component as any).prep_day_offset ?? ''),
+          String((component as any).prep_time_of_day ?? ''),
+        ])
+      }
+    }
+
+    const csv = rows
+      .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(','))
+      .join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const anchor = document.createElement('a')
+    anchor.href = url
+    anchor.download = `${menu.name.replaceAll(/\s+/g, '-').toLowerCase()}-back-of-house.csv`
+    anchor.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const handleExportExcel = () => {
+    // Use CSV content for Excel compatibility without introducing a new dependency.
+    handleExportCSV()
+  }
+
   const handleRecipeSearch = async (query: string) => {
     setRecipeSearch(query)
     if (query.length < 2) {
@@ -212,20 +309,92 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
   const statusBadge = STATUS_BADGE[menu.status] || STATUS_BADGE.draft
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex justify-between items-start">
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">{menu.name}</h1>
-          <p className="text-stone-400 mt-1">Menu Details</p>
+          <p className="mt-1 text-stone-400">Back-of-house operational view</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
+            {menu.is_template && <Badge variant="info">Template</Badge>}
+            {menu.cuisine_type && <Badge variant="default">{menu.cuisine_type}</Badge>}
+            {menu.target_guest_count && (
+              <Badge variant="default">{menu.target_guest_count} guests</Badge>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {menu.status === 'locked' && (
+            <MenuGeneratorUI
+              menuId={menu.id}
+              menuStatus={menu.status}
+              defaultHostName={event?.clients?.full_name ?? null}
+            />
+          )}
           <Button variant="ghost" onClick={() => router.back()}>
             Back
+          </Button>
+          {event && (
+            <Button
+              variant="secondary"
+              onClick={() =>
+                window.open(`/api/documents/${event.id}?type=foh`, '_blank', 'noopener,noreferrer')
+              }
+            >
+              View FOH PDF
+            </Button>
+          )}
+          <Button variant="secondary" onClick={handlePrintBackOfHouse}>
+            Print BOH
+          </Button>
+          <Button variant="secondary" onClick={handleExportCSV}>
+            Export CSV
+          </Button>
+          <Button variant="secondary" onClick={handleExportExcel}>
+            Export Excel
           </Button>
           <Button variant="primary" onClick={() => router.push(`/menus/${menu.id}/editor`)}>
             Open Editor
           </Button>
         </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs uppercase tracking-wider text-stone-500">Courses</p>
+            <p className="mt-1 text-2xl font-semibold text-stone-100">{menu.dishes.length}</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs uppercase tracking-wider text-stone-500">Components</p>
+            <p className="mt-1 text-2xl font-semibold text-stone-100">
+              {costSummary?.total_component_count ??
+                menu.dishes.reduce((acc, dish) => acc + dish.components.length, 0)}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs uppercase tracking-wider text-stone-500">Cost / Guest</p>
+            <p className="mt-1 text-2xl font-semibold text-stone-100">
+              {costSummary?.cost_per_guest_cents != null
+                ? formatCurrency(costSummary.cost_per_guest_cents)
+                : 'Pending'}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="py-4">
+            <p className="text-xs uppercase tracking-wider text-stone-500">Food Cost %</p>
+            <p className="mt-1 text-2xl font-semibold text-stone-100">
+              {costSummary?.food_cost_percentage != null
+                ? `${costSummary.food_cost_percentage.toFixed(1)}%`
+                : 'Pending'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       {error && <Alert variant="error">{error}</Alert>}
@@ -250,6 +419,14 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                     disabled={loading}
                   >
                     Duplicate
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={handleArchiveToggle}
+                    disabled={loading}
+                  >
+                    {menu.status === 'archived' ? 'Restore' : 'Archive'}
                   </Button>
                   {!event && menu.status === 'draft' && (
                     <Button size="sm" variant="danger" onClick={handleDelete} disabled={loading}>
@@ -285,6 +462,13 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                   <p className="text-stone-100 mt-1 capitalize">
                     {menu.service_style.replace('_', ' ')}
                   </p>
+                </div>
+              )}
+
+              {menu.notes && (
+                <div>
+                  <label className="text-sm font-medium text-stone-500">Staff Notes</label>
+                  <p className="mt-1 whitespace-pre-wrap text-stone-100">{menu.notes}</p>
                 </div>
               )}
 
@@ -328,6 +512,22 @@ export function MenuDetailClient({ menu: initialMenu, event, recipeMap = {} }: P
                             </Badge>
                           ))}
                         </div>
+                      )}
+                      <p className="mt-2 text-xs text-stone-500">
+                        Complexity:{' '}
+                        <span className="font-medium text-stone-300">
+                          {dish.components.length >= 8
+                            ? 'High'
+                            : dish.components.length >= 4
+                              ? 'Medium'
+                              : 'Low'}
+                        </span>
+                      </p>
+                      {(dish as any).chef_notes && (
+                        <p className="text-sm text-stone-400 mt-1">
+                          <span className="font-medium text-stone-300">Staff note:</span>{' '}
+                          {(dish as any).chef_notes}
+                        </p>
                       )}
                       {(dish as any).beverage_pairing && (
                         <p className="text-sm text-purple-400 mt-2">

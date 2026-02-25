@@ -1,7 +1,7 @@
 // Menu Detail - Protected by layout
 
 import { requireChef } from '@/lib/auth/get-user'
-import { getMenuById, getMenuEvent } from '@/lib/menus/actions'
+import { getMenuById, getMenuCostSummaries, getMenuEvent } from '@/lib/menus/actions'
 import { notFound } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
 import { MenuDetailClient } from './menu-detail-client'
@@ -16,9 +16,10 @@ export default async function MenuDetailPage({ params }: Props) {
   const user = await requireChef()
   const { id } = await params
 
-  const [menu, event] = await Promise.all([
+  const [menu, event, costSummaries] = await Promise.all([
     getMenuById(id),
-    getMenuEvent(id)
+    getMenuEvent(id),
+    getMenuCostSummaries(),
   ])
 
   if (!menu) {
@@ -51,15 +52,18 @@ export default async function MenuDetailPage({ params }: Props) {
 
   let recipeMap: Record<string, { id: string; name: string; category: string }> = {}
   if (recipeMapResult.data) {
-    recipeMap = Object.fromEntries(recipeMapResult.data.map(r => [r.id, r]))
+    recipeMap = Object.fromEntries(recipeMapResult.data.map((r) => [r.id, r]))
   }
 
   return (
     <div className="space-y-6">
-      <MenuDetailClient menu={menu} event={event} recipeMap={recipeMap} />
-      {recommendations && (
-        <MenuRecommendationHints result={recommendations} />
-      )}
+      <MenuDetailClient
+        menu={menu}
+        event={event}
+        recipeMap={recipeMap}
+        costSummary={costSummaries.find((summary) => summary.menu_id === menu.id) || null}
+      />
+      {recommendations && <MenuRecommendationHints result={recommendations} />}
     </div>
   )
 }

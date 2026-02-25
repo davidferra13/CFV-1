@@ -31,7 +31,17 @@ const CreateVendorSchema = z.object({
 })
 
 export type CreateVendorInput = z.infer<typeof CreateVendorSchema>
-export type VendorInput = CreateVendorInput
+
+export type VendorInput = {
+  name: string
+  vendor_type?: string
+  phone?: string
+  email?: string
+  address?: string
+  website?: string
+  notes?: string
+  is_preferred?: boolean
+}
 
 const UpdateVendorSchema = CreateVendorSchema.partial()
 export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
@@ -40,22 +50,21 @@ export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
 // VENDOR CRUD
 // ============================================
 
-export async function createVendor(input: CreateVendorInput) {
+export async function createVendor(input: VendorInput | CreateVendorInput) {
   const user = await requireChef()
   const supabase = createServerClient()
-  const data = CreateVendorSchema.parse(input)
 
   const { data: vendor, error } = await supabase
     .from('vendors')
     .insert({
-      name: data.name,
-      contact_name: data.contact_name || null,
-      phone: data.phone || null,
-      email: data.email || null,
-      account_number: data.account_number || null,
-      delivery_days: data.delivery_days,
-      payment_terms: data.payment_terms || null,
-      notes: data.notes || null,
+      name: input.name,
+      phone: input.phone || null,
+      email: input.email || null,
+      notes: input.notes || null,
+      vendor_type: ('vendor_type' in input ? input.vendor_type : undefined) || 'grocery',
+      address: ('address' in input ? input.address : undefined) || null,
+      website: ('website' in input ? input.website : undefined) || null,
+      is_preferred: ('is_preferred' in input ? input.is_preferred : false) || false,
       status: 'active',
       chef_id: user.tenantId!,
     })

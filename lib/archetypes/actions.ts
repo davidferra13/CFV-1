@@ -61,6 +61,15 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
 
   revalidatePath('/', 'layout')
   revalidateTag(`chef-layout-${user.entityId}`)
+
+  // Non-blocking: ensure HACCP plan exists for this archetype
+  try {
+    const { ensureHACCPPlan } = await import('@/lib/haccp/actions')
+    await ensureHACCPPlan(archetypeId)
+  } catch (err) {
+    console.error('[non-blocking] HACCP plan generation failed', err)
+  }
+
   return { success: true, archetype: archetypeId }
 }
 

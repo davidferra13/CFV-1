@@ -365,6 +365,15 @@ export default async function SettingsPage() {
               </p>
             </Link>
             <Link
+              href="/settings/menu-templates"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Front-of-House Menu Templates</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Customize default, holiday, and special-event templates used by FOH menu generation.
+              </p>
+            </Link>
+            <Link
               href="/settings/automations"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >

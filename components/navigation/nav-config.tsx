@@ -78,6 +78,7 @@ export const standaloneTop: NavItem[] = [
   { href: '/chat', label: 'Messaging', icon: MessageCircle },
   { href: '/schedule', label: 'Calendar', icon: CalendarDays },
   { href: '/events', label: 'All Events', icon: CalendarDays },
+  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/travel', label: 'Travel', icon: MapPin },
   { href: '/staff', label: 'Staff', icon: Users },
   { href: '/tasks', label: 'Tasks', icon: ListChecks },
@@ -343,15 +344,6 @@ export const navGroups: NavGroup[] = [
     icon: ChefHat,
     module: 'culinary',
     items: [
-      {
-        href: '/menus',
-        label: 'Menus',
-        icon: UtensilsCrossed,
-        children: [
-          { href: '/menus/new', label: 'New Menu' },
-          { href: '/culinary/menus', label: 'Menu Library' },
-        ],
-      },
       {
         href: '/recipes',
         label: 'Recipes',

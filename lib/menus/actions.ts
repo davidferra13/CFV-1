@@ -359,6 +359,19 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
   revalidatePath('/menus')
   revalidatePath(`/menus/${menuId}`)
 
+  // Auto-generate FOH menu when the menu is confirmed (locked).
+  if (toStatus === 'locked') {
+    try {
+      const { autoGenerateFrontOfHouseMenuForMenu } =
+        await import('@/lib/front-of-house/menuGeneratorService')
+      await autoGenerateFrontOfHouseMenuForMenu(menuId, {
+        eventType: 'regular_menu',
+      })
+    } catch (err) {
+      console.error('[transitionMenu] FOH auto-generation failed (non-blocking):', err)
+    }
+  }
+
   // Log chef activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
@@ -530,7 +543,7 @@ export async function getMenuEvent(menuId: string) {
     .select(
       `
       event_id,
-      event:events(id, occasion, event_date, status, quoted_price_cents)
+      event:events(id, occasion, event_date, status, quoted_price_cents, clients(full_name))
     `
     )
     .eq('id', menuId)
