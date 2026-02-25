@@ -682,6 +682,7 @@ export function ChefSidebar({
                 {[
                   { href: '/cannabis', label: 'Cannabis Hub' },
                   { href: '/cannabis/events', label: 'Cannabis Events' },
+                  { href: '/cannabis/rsvps', label: 'RSVPs' },
                   { href: '/cannabis/ledger', label: 'Cannabis Ledger' },
                   { href: '/cannabis/invite', label: 'Invite' },
                   { href: '/cannabis/compliance', label: 'Compliance ⚠️' },
@@ -1170,6 +1171,7 @@ export function ChefMobileNav({
                   {[
                     { href: '/cannabis', label: 'Cannabis Hub' },
                     { href: '/cannabis/events', label: 'Events' },
+                    { href: '/cannabis/rsvps', label: 'RSVPs' },
                     { href: '/cannabis/ledger', label: 'Ledger' },
                     { href: '/cannabis/invite', label: 'Invite' },
                     { href: '/cannabis/compliance', label: 'Compliance ⚠️' },

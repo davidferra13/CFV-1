@@ -21,7 +21,7 @@ export default async function CannabisHubPage() {
         <CannabisPortalHeader title="Cannabis Dining" subtitle="Private tier · invitation only" />
 
         {/* Hub Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
           <HubCard
             href="/cannabis/events"
             icon="🍃"
@@ -45,6 +45,14 @@ export default async function CannabisHubPage() {
             value={null}
             sublabel="Bring someone in"
             glow="rgba(90, 122, 45, 0.25)"
+          />
+          <HubCard
+            href="/cannabis/rsvps"
+            icon="\u{1F4CB}"
+            label="RSVPs"
+            value={null}
+            sublabel="Guest participation & intake"
+            glow="rgba(63, 125, 89, 0.26)"
           />
           <HubCard
             href="/cannabis/compliance"
