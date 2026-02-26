@@ -66,6 +66,11 @@ import {
   pruneOldConversations,
   trimConversationMessages,
   logAction,
+  autoSuggestProject,
+  autoTitle,
+  createProject,
+  getProjects,
+  moveConversation,
 } from '@/lib/ai/remy-local-storage'
 import type { LocalConversation } from '@/lib/ai/remy-local-storage'
 import {
@@ -384,6 +389,10 @@ export function RemyDrawer() {
   const [conversationsLoaded, setConversationsLoaded] = useState(false)
   const [isFirstExchange, setIsFirstExchange] = useState(true)
   const [hasDecayedThisSession, setHasDecayedThisSession] = useState(false)
+  const [projectSuggestion, setProjectSuggestion] = useState<{
+    name: string
+    icon: string
+  } | null>(null)
 
   // Context-aware starters
   const starters = useMemo(() => getStartersForPage(pathname ?? '/dashboard'), [pathname])
@@ -539,6 +548,7 @@ export function RemyDrawer() {
       setCurrentConversationId(convId)
       setDrawerView('chat')
       setIsFirstExchange(remyMsgs.length === 0)
+      setProjectSuggestion(null)
     } catch (err) {
       console.error('[remy] Failed to load conversation:', err)
       toast.error('Failed to load conversation')
@@ -552,6 +562,7 @@ export function RemyDrawer() {
       setMessages([])
       setDrawerView('chat')
       setIsFirstExchange(true)
+      setProjectSuggestion(null)
       setConversations((prev) => [
         {
           id: conv.id,
@@ -588,6 +599,23 @@ export function RemyDrawer() {
     },
     [currentConversationId]
   )
+
+  const handleAcceptProjectSuggestion = useCallback(async () => {
+    if (!projectSuggestion || !currentConversationId) return
+    try {
+      // Find or create the project
+      const existing = await getProjects()
+      let project = existing.find((p) => p.name === projectSuggestion.name)
+      if (!project) {
+        project = await createProject(projectSuggestion.name, projectSuggestion.icon)
+      }
+      await moveConversation(currentConversationId, project.id)
+      setProjectSuggestion(null)
+      toast.success(`Moved to ${projectSuggestion.icon} ${projectSuggestion.name}`)
+    } catch (err) {
+      console.error('[remy] Failed to accept project suggestion:', err)
+    }
+  }, [projectSuggestion, currentConversationId])
 
   const handleDeleteMessage = useCallback(async (msgId: string) => {
     setMessages((prev) => prev.filter((m) => m.id !== msgId))
@@ -1102,13 +1130,19 @@ export function RemyDrawer() {
 
         if (isFirstExchange) {
           setIsFirstExchange(false)
-          // Derive title from first message (no server call needed)
-          const title = message.length > 50 ? message.slice(0, 47) + '...' : message
+          // Derive title from first message using smart auto-title
+          const title = autoTitle(message)
           updateLocalConversation(convId, { title })
             .then(() => {
               setConversations((prev) => prev.map((c) => (c.id === convId ? { ...c, title } : c)))
             })
             .catch((err) => console.error('[non-blocking] Auto-title failed', err))
+
+          // Check if conversation should be suggested for a project
+          const suggestion = autoSuggestProject(message)
+          if (suggestion) {
+            setProjectSuggestion(suggestion)
+          }
         }
 
         autoSave(message, remyMsg)
@@ -1611,6 +1645,30 @@ export function RemyDrawer() {
             <>
               {/* Messages */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                {/* Auto-project suggestion banner */}
+                {projectSuggestion && (
+                  <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-brand-500/10 border border-brand-500/20 text-sm">
+                    <span className="text-base">{projectSuggestion.icon}</span>
+                    <span className="flex-1 text-gray-200">
+                      Move to <strong>{projectSuggestion.name}</strong>?
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleAcceptProjectSuggestion}
+                      className="px-2 py-0.5 text-xs bg-brand-500 text-white rounded hover:bg-brand-600 transition-colors"
+                    >
+                      Yes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProjectSuggestion(null)}
+                      className="px-2 py-0.5 text-xs text-gray-400 hover:text-white transition-colors"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                )}
+
                 {/* Welcome message */}
                 {messages.length === 0 && !streamingContent && (
                   <div className="space-y-4">
