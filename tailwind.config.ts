@@ -44,11 +44,37 @@ const config: Config = {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' },
         },
+        'mascot-peek': {
+          from: { transform: 'translateY(100%)' },
+          to: { transform: 'translateY(0)' },
+        },
+        'mascot-bob': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-3px)' },
+        },
+        'mascot-wiggle': {
+          '0%, 100%': { transform: 'rotate(0deg)' },
+          '25%': { transform: 'rotate(-3deg)' },
+          '75%': { transform: 'rotate(3deg)' },
+        },
+        'mascot-hop': {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-8px)' },
+        },
+        'thinking-dot': {
+          '0%, 100%': { transform: 'translateY(0)', opacity: '0.4' },
+          '50%': { transform: 'translateY(-4px)', opacity: '1' },
+        },
       },
       animation: {
         'fade-slide-up': 'fade-slide-up 220ms cubic-bezier(0.16, 1, 0.3, 1) both',
         'scale-in': 'scale-in 150ms cubic-bezier(0.16, 1, 0.3, 1) both',
         shimmer: 'shimmer 1.6s linear infinite',
+        'mascot-peek': 'mascot-peek 0.5s cubic-bezier(0.16, 1, 0.3, 1) both',
+        'mascot-bob': 'mascot-bob 3s ease-in-out infinite',
+        'mascot-wiggle': 'mascot-wiggle 0.4s ease-in-out',
+        'mascot-hop': 'mascot-hop 0.3s ease-out',
+        'thinking-dot': 'thinking-dot 0.6s ease-in-out infinite',
       },
     },
   },

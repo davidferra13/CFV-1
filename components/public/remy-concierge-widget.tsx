@@ -5,7 +5,8 @@
 // Platform-level concierge: no tenantId, hits /api/remy/landing endpoint.
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { MessageCircle, X, Send, Loader2, Minus, Maximize2, Minimize2 } from 'lucide-react'
+import { X, Send, Loader2, Minus, Maximize2, Minimize2 } from 'lucide-react'
+import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import { getStarterPainPoints } from '@/lib/ai/chefflow-feature-map'
 
 const DEFAULT_WIDTH = 380
@@ -243,22 +244,9 @@ export function RemyConciergeWidget() {
     [isMaximized, size]
   )
 
-  // Collapsed state — floating branded button
+  // Collapsed state — floating mascot character
   if (!isOpen) {
-    return (
-      <button
-        onClick={handleOpen}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 rounded-full bg-brand-600 px-5 py-3.5 text-white shadow-xl transition-all hover:bg-brand-700 hover:shadow-2xl hover:scale-105 active:scale-95 animate-in fade-in slide-in-from-bottom-4 duration-300"
-        aria-label="Chat with Remy"
-      >
-        <MessageCircle className="h-5 w-5" />
-        <span className="text-sm font-semibold">Chat with Remy</span>
-        <span className="relative flex h-2.5 w-2.5">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-300 opacity-75" />
-          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-400" />
-        </span>
-      </button>
-    )
+    return <RemyMascotButton onClick={handleOpen} showOnlineDot ariaLabel="Chat with Remy" />
   }
 
   // Open state — full chatbot widget

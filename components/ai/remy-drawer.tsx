@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 import {
   Bot,
   X,
@@ -1166,18 +1167,8 @@ export function RemyDrawer() {
 
   return (
     <>
-      {/* Floating trigger button — hidden when drawer is open */}
-      {!open && (
-        <button
-          onClick={() => setOpen(true)}
-          className="fixed bottom-32 right-4 lg:bottom-6 lg:right-6 z-50 flex items-center gap-2 bg-brand-600 text-white rounded-full px-4 py-3 shadow-lg hover:bg-brand-700 transition-all hover:scale-105 active:scale-95"
-          aria-label="Open Remy (Ctrl+K)"
-          title="Open Remy (Ctrl+K)"
-        >
-          <Bot className="h-5 w-5" />
-          <span className="text-sm font-medium hidden sm:inline">Remy</span>
-        </button>
-      )}
+      {/* Floating mascot trigger — hidden when drawer is open */}
+      {!open && <RemyMascotButton onClick={() => setOpen(true)} ariaLabel="Open Remy (Ctrl+K)" />}
 
       {/* Hidden file input */}
       <input

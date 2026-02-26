@@ -5,7 +5,8 @@
 // Compact design: floating button → expandable card (not a full drawer).
 
 import { useState, useRef, useEffect, useCallback } from 'react'
-import { MessageCircle, X, Send, Loader2 } from 'lucide-react'
+import { X, Send, Loader2 } from 'lucide-react'
+import { RemyMascotButton } from '@/components/ai/remy-mascot-button'
 
 interface Message {
   id: string
@@ -137,16 +138,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
   }
 
   if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full bg-brand-600 px-5 py-3 text-white shadow-lg transition-all hover:bg-brand-700 hover:shadow-xl"
-        aria-label="Chat with Remy"
-      >
-        <MessageCircle className="h-5 w-5" />
-        <span className="text-sm font-medium">Ask Remy</span>
-      </button>
-    )
+    return <RemyMascotButton onClick={() => setIsOpen(true)} ariaLabel="Chat with Remy" />
   }
 
   return (
