@@ -39,6 +39,15 @@ const CONFIG = {
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
 }
 
+// ── Chat Configuration ───────────────────────────────────────────
+
+const CHAT_CONFIG = {
+  maxHistoryMessages: 20,
+  maxTokens: 1024,
+  timeoutMs: 120_000,
+  streamTimeoutMs: 30_000,
+}
+
 // ── Event Log + SSE ───────────────────────────────────────────────
 
 const eventLog = []
@@ -458,6 +467,99 @@ async function runBuild(type) {
   return { ok: true, message: `${type} started` }
 }
 
+// ── Chat Tool Registry ───────────────────────────────────────────
+
+const TOOLS = {
+  'dev/start':        { fn: startDevServer,                       desc: 'Start the local Next.js dev server on port 3100' },
+  'dev/stop':         { fn: stopDevServer,                        desc: 'Stop the local dev server' },
+  'beta/restart':     { fn: restartBeta,                          desc: 'Restart the beta server (PM2 on Raspberry Pi)' },
+  'beta/deploy':      { fn: () => deployBeta(),                   desc: 'Deploy current code to beta.cheflowhq.com (takes 8-10 min)' },
+  'beta/rollback':    { fn: rollbackBeta,                         desc: 'Rollback beta to previous build' },
+  'ollama/pc/start':  { fn: () => ollamaAction('pc', 'start'),   desc: 'Start Ollama on the PC' },
+  'ollama/pc/stop':   { fn: () => ollamaAction('pc', 'stop'),    desc: 'Stop Ollama on the PC' },
+  'ollama/pi/start':  { fn: () => ollamaAction('pi', 'start'),   desc: 'Start Ollama on the Raspberry Pi' },
+  'ollama/pi/stop':   { fn: () => ollamaAction('pi', 'stop'),    desc: 'Stop Ollama on the Raspberry Pi' },
+  'git/push':         { fn: gitPush,                              desc: 'Push current git branch to origin' },
+  'build/typecheck':  { fn: () => runBuild('typecheck'),          desc: 'Run TypeScript type check (npx tsc --noEmit)' },
+  'build/full':       { fn: () => runBuild('full'),               desc: 'Run full Next.js production build' },
+  'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services' },
+  'status/git':       { fn: checkGitStatus,                       desc: 'Get git branch, dirty files, and recent commits' },
+}
+
+async function getAvailableOllamaEndpoint() {
+  const pcCheck = await httpCheck(`${CONFIG.ollamaPcUrl}/api/tags`)
+  if (pcCheck.ok) return { url: CONFIG.ollamaPcUrl, model: CONFIG.ollamaPcModel, source: 'PC' }
+  const piCheck = await httpCheck(`${CONFIG.ollamaPiUrl}/api/tags`)
+  if (piCheck.ok) return { url: CONFIG.ollamaPiUrl, model: CONFIG.ollamaPiModel, source: 'Pi' }
+  return null
+}
+
+async function buildChatSystemPrompt() {
+  const status = await getAllStatus()
+  const toolList = Object.entries(TOOLS)
+    .map(([name, { desc }]) => `  - ${name}: ${desc}`)
+    .join('\n')
+
+  return `You are MC, the ChefFlow Mission Control AI assistant. You manage the development infrastructure for ChefFlow, a private chef platform.
+
+## Your Capabilities
+You can execute system actions by including action tags in your response. Format: <action>action/name</action>
+
+Available actions:
+${toolList}
+
+## Current System Status
+- Dev Server (localhost:3100): ${status.dev.online ? `ONLINE (${status.dev.latency}ms)` : 'OFFLINE'}
+- Beta Server (beta.cheflowhq.com): ${status.beta.online ? `ONLINE (${status.beta.latency}ms)` : 'OFFLINE'}
+- Production (app.cheflowhq.com): ${status.prod.online ? `ONLINE (${status.prod.latency}ms)` : 'OFFLINE'}
+- Ollama PC (localhost:11434): ${status.ollamaPc.online ? `ONLINE — models: ${status.ollamaPc.models.join(', ')}` : 'OFFLINE'}
+- Ollama Pi (10.0.0.177:11434): ${status.ollamaPi.online ? `ONLINE — models: ${status.ollamaPi.models.join(', ')}` : 'OFFLINE'}
+- Git Branch: ${status.git.branch} (${status.git.clean ? 'clean' : `${status.git.dirty} dirty files`})
+- Recent Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
+
+## Rules
+1. You have FULL AUTHORITY to execute any action. No confirmation needed. If the user asks you to do something, do it.
+2. You can execute MULTIPLE actions in a single response. Just include multiple <action> tags.
+3. After executing an action, briefly describe what you did and the expected result.
+4. For status queries, you already have the current status above. Only use <action>status/all</action> if you need a refresh.
+5. Be concise. This is a developer tool. Short, direct answers. No fluff.
+6. NEVER suggest actions without executing them. If someone says "start dev", just do it.
+7. You can chain actions: "push and deploy" = <action>git/push</action> then <action>beta/deploy</action>.
+
+## Personality
+You are a competent ops assistant. Direct, efficient, slightly dry humor. Think mission control operator. Short sentences.`
+}
+
+async function parseAndExecuteActions(responseText) {
+  const actionRegex = /<action>([\w/]+)<\/action>/g
+  const actions = []
+  let match
+  while ((match = actionRegex.exec(responseText)) !== null) {
+    actions.push(match[1])
+  }
+  if (actions.length === 0) return { actions: [], results: [] }
+
+  const results = []
+  for (const actionName of actions) {
+    const tool = TOOLS[actionName]
+    if (!tool) {
+      results.push({ action: actionName, ok: false, error: `Unknown action: ${actionName}` })
+      log('chat', `Unknown action requested: ${actionName}`, 'warn')
+      continue
+    }
+    log('chat', `Executing: ${actionName}`, 'info')
+    try {
+      const result = await tool.fn()
+      results.push({ action: actionName, ok: true, result })
+      log('chat', `Action ${actionName} completed`, 'success')
+    } catch (err) {
+      results.push({ action: actionName, ok: false, error: err.message })
+      log('chat', `Action ${actionName} failed: ${err.message}`, 'error')
+    }
+  }
+  return { actions, results }
+}
+
 // ── Request handling ──────────────────────────────────────────────
 
 function parseBody(req) {
@@ -586,6 +688,104 @@ async function handleRequest(req, res) {
     const lines = parseInt(url.searchParams.get('lines') || '100', 10)
     const logLines = await readPersistentLog(lines)
     return json(res, { lines: logLines })
+  }
+
+  // ── Chat endpoint (streaming) ──────────────────────────────────
+  if (path === '/api/chat' && method === 'POST') {
+    const body = await parseBody(req)
+    const { message, history = [] } = body
+
+    if (!message || typeof message !== 'string') {
+      return json(res, { error: 'Message is required' }, 400)
+    }
+
+    const endpoint = await getAvailableOllamaEndpoint()
+    if (!endpoint) {
+      return json(res, { error: 'No Ollama instance available. Start Ollama on PC or Pi first.' }, 503)
+    }
+
+    log('chat', `Chat request via ${endpoint.source} (${endpoint.model})`, 'info')
+
+    const systemPrompt = await buildChatSystemPrompt()
+    const trimmedHistory = history.slice(-CHAT_CONFIG.maxHistoryMessages)
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...trimmedHistory,
+      { role: 'user', content: message },
+    ]
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'Access-Control-Allow-Origin': '*',
+      'X-Chat-Source': endpoint.source,
+    })
+
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), CHAT_CONFIG.timeoutMs)
+
+      const ollamaRes = await fetch(`${endpoint.url}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: endpoint.model,
+          messages,
+          stream: true,
+          options: { num_predict: CHAT_CONFIG.maxTokens },
+        }),
+        signal: controller.signal,
+      })
+
+      clearTimeout(timeout)
+
+      if (!ollamaRes.ok) {
+        res.write(JSON.stringify({ type: 'error', error: `Ollama returned ${ollamaRes.status}` }) + '\n')
+        return res.end()
+      }
+
+      let fullResponse = ''
+      const reader = ollamaRes.body.getReader()
+      const decoder = new TextDecoder()
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        const chunk = decoder.decode(value, { stream: true })
+        const lines = chunk.split('\n').filter(l => l.trim())
+
+        for (const line of lines) {
+          try {
+            const parsed = JSON.parse(line)
+            if (parsed.message?.content) {
+              fullResponse += parsed.message.content
+              res.write(JSON.stringify({ type: 'token', content: parsed.message.content }) + '\n')
+            }
+          } catch { /* skip malformed lines */ }
+        }
+      }
+
+      const { actions, results } = await parseAndExecuteActions(fullResponse)
+
+      if (results.length > 0) {
+        res.write(JSON.stringify({ type: 'action_results', results }) + '\n')
+      }
+
+      res.write(JSON.stringify({ type: 'done', fullResponse, actions }) + '\n')
+      res.end()
+
+    } catch (err) {
+      const errMsg = err.name === 'AbortError' ? 'Request timed out' : err.message
+      log('chat', `Chat error: ${errMsg}`, 'error')
+      try {
+        res.write(JSON.stringify({ type: 'error', error: errMsg }) + '\n')
+        res.end()
+      } catch { /* response already closed */ }
+    }
+    return
   }
 
   // 404
