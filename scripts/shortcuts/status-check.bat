@@ -1,5 +1,5 @@
 @echo off
 echo === ChefFlow Status ===
-curl -s http://localhost:3200/api/status
+curl -s http://localhost:41937/api/status
 echo.
 pause

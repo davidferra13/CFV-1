@@ -8,7 +8,7 @@
 // Usage:  node scripts/launcher/server.mjs
 //         npm run dashboard
 //
-// Opens: http://localhost:3200
+// Opens: http://localhost:41937
 // ═══════════════════════════════════════════════════════════════════
 
 import { createServer } from 'node:http'
@@ -22,7 +22,7 @@ import { promisify } from 'node:util'
 const execAsync = promisify(exec)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
-const PORT = 3200
+const PORT = 41937
 
 // Load .env.local for Supabase credentials
 try {
@@ -1445,6 +1445,66 @@ async function handleRequest(req, res) {
   }
   if (path === '/api/prompts/queue' && method === 'GET') {
     return json(res, await getPromptQueue())
+  }
+
+  // ── Infrastructure info (Pi health, ports, quick links) ──────────
+  if (path === '/api/infra' && method === 'GET') {
+    const infra = {
+      ports: {
+        dev: { port: 3100, label: 'Dev Server', url: 'http://localhost:3100' },
+        launcher: { port: PORT, label: 'Mission Control', url: `http://localhost:${PORT}` },
+        soak: { port: 3200, label: 'Soak Tests', url: 'http://localhost:3200' },
+        beta: { port: 443, label: 'Beta', url: 'https://beta.cheflowhq.com' },
+        prod: { port: 443, label: 'Production', url: 'https://app.cheflowhq.com' },
+        ollamaPc: { port: 11434, label: 'Ollama PC', url: 'http://localhost:11434' },
+        ollamaPi: { port: 11434, label: 'Ollama Pi', url: 'http://10.0.0.177:11434' },
+      },
+      quickLinks: {
+        supabase: 'https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz',
+        vercel: 'https://vercel.com/dashboard',
+        github: 'https://github.com/davidferra13/CFV1',
+        cloudflare: 'https://dash.cloudflare.com',
+        beta: 'https://beta.cheflowhq.com',
+        prod: 'https://app.cheflowhq.com',
+      },
+      pi: null,
+    }
+    // Fetch Pi system info (non-blocking — if Pi is down, we still return the rest)
+    try {
+      const { stdout } = await sshExec(
+        "echo RAM_START && free -m | grep Mem && echo SWAP_START && swapon --show 2>/dev/null | head -2 && echo UPTIME_START && uptime -p && echo SERVICES_START && echo ollama:$(systemctl is-active ollama 2>/dev/null || echo disabled) && echo cloudflared:$(systemctl is-active cloudflared 2>/dev/null) && echo ssh:$(systemctl is-active ssh 2>/dev/null) && echo zramswap:$(systemctl is-active zramswap 2>/dev/null) && echo pm2:$(pm2 pid chefflow-beta >/dev/null 2>&1 && echo active || echo inactive) && echo WATCHDOG_START && (test -e /dev/watchdog && echo active || echo inactive)",
+        10000
+      )
+      const lines = stdout.trim().split('\n')
+      const ramLine = lines.find(l => l.startsWith('Mem:'))
+      const uptimeLine = lines.find(l => l.startsWith('up '))
+      const services = {}
+      let inServices = false
+      for (const l of lines) {
+        if (l === 'SERVICES_START') { inServices = true; continue }
+        if (l === 'WATCHDOG_START') { inServices = false; continue }
+        if (inServices && l.includes(':')) {
+          const [svc, status] = l.split(':')
+          services[svc] = status
+        }
+      }
+      const watchdogLine = lines[lines.length - 1]
+      let ram = null
+      if (ramLine) {
+        const parts = ramLine.trim().split(/\s+/)
+        ram = { total: parts[1] + ' MB', used: parts[2] + ' MB', free: parts[3] + ' MB', available: parts[6] + ' MB' }
+      }
+      infra.pi = {
+        reachable: true,
+        ram,
+        uptime: uptimeLine || 'unknown',
+        services,
+        watchdog: watchdogLine === 'active' ? 'active' : 'inactive',
+      }
+    } catch {
+      infra.pi = { reachable: false, error: 'Pi unreachable via SSH' }
+    }
+    return json(res, infra)
   }
 
   if (path === '/api/jobs' && method === 'GET') {

@@ -1412,6 +1412,11 @@ body {
         <span class="nav-icon">&#x1F4AC;</span>
         <span class="nav-label">Inbox</span>
       </a>
+      <a class="nav-item" data-section="infra" title="Infrastructure">
+        <span class="nav-dot online" id="nd-infra"></span>
+        <span class="nav-icon">&#x2699;&#xFE0F;</span>
+        <span class="nav-label">Infra</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -1768,6 +1773,163 @@ body {
         </div>
         <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;" id="feedback-summary"></div>
         <div id="feedback-list" style="overflow-y:auto;max-height:calc(100vh - 400px);"></div>
+      </div>
+
+      <!-- ─── Infrastructure Panel ─── -->
+      <div class="panel" id="panel-infra">
+        <div class="panel-header">
+          <h2 class="panel-title">Infrastructure</h2>
+          <span class="status-badge online" id="badge-infra">
+            <span class="dot checking"></span>
+            <span id="infra-status">Loading...</span>
+          </span>
+        </div>
+
+        <!-- Quick Links -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Quick Links</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;" id="infra-links">
+            <a href="https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
+              <span style="font-size:16px;">&#x1F5C4;&#xFE0F;</span> Supabase
+            </a>
+            <a href="https://vercel.com/dashboard" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
+              <span style="font-size:16px;">&#x25B2;</span> Vercel
+            </a>
+            <a href="https://github.com/davidferra13/CFV1" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
+              <span style="font-size:16px;">&#x1F4E6;</span> GitHub
+            </a>
+            <a href="https://dash.cloudflare.com" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
+              <span style="font-size:16px;">&#x2601;&#xFE0F;</span> Cloudflare
+            </a>
+            <a href="https://beta.cheflowhq.com" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
+              <span style="font-size:16px;">&#x1F310;</span> Beta Site
+            </a>
+            <a href="https://app.cheflowhq.com" target="_blank" rel="noopener" class="btn btn-ghost" style="text-align:left;justify-content:flex-start;gap:8px;padding:10px 14px;">
+              <span style="font-size:16px;">&#x1F680;</span> Production Site
+            </a>
+          </div>
+        </div>
+
+        <!-- Port Map -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Port Map</h3>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Service</th>
+                  <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Port</th>
+                  <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">URL</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;">Dev Server</td>
+                  <td style="padding:8px 14px;font-family:monospace;color:var(--brand);">3100</td>
+                  <td style="padding:8px 14px;"><a href="http://localhost:3100" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">localhost:3100</a></td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;">Mission Control</td>
+                  <td style="padding:8px 14px;font-family:monospace;color:var(--brand);">41937</td>
+                  <td style="padding:8px 14px;"><a href="http://localhost:41937" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">localhost:41937</a></td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;">Soak Tests</td>
+                  <td style="padding:8px 14px;font-family:monospace;color:var(--text-muted);">3200</td>
+                  <td style="padding:8px 14px;font-size:12px;color:var(--text-muted);">on-demand only</td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;">Beta</td>
+                  <td style="padding:8px 14px;font-family:monospace;color:var(--brand);">443</td>
+                  <td style="padding:8px 14px;"><a href="https://beta.cheflowhq.com" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">beta.cheflowhq.com</a></td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;">Production</td>
+                  <td style="padding:8px 14px;font-family:monospace;color:var(--brand);">443</td>
+                  <td style="padding:8px 14px;"><a href="https://app.cheflowhq.com" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">app.cheflowhq.com</a></td>
+                </tr>
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:8px 14px;">Ollama PC</td>
+                  <td style="padding:8px 14px;font-family:monospace;color:var(--brand);">11434</td>
+                  <td style="padding:8px 14px;"><a href="http://localhost:11434" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">localhost:11434</a></td>
+                </tr>
+                <tr>
+                  <td style="padding:8px 14px;">Ollama Pi</td>
+                  <td style="padding:8px 14px;font-family:monospace;color:var(--brand);">11434</td>
+                  <td style="padding:8px 14px;"><a href="http://10.0.0.177:11434" target="_blank" rel="noopener" style="color:var(--brand);text-decoration:none;">10.0.0.177:11434</a></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- APIs & Services -->
+        <div style="margin-bottom:24px;">
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">APIs & Services</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Database</div>
+              <div style="font-size:14px;font-weight:600;">Supabase</div>
+              <a href="https://supabase.com/dashboard/project/luefkpakzvxcsqroxyhz" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Dashboard</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Hosting</div>
+              <div style="font-size:14px;font-weight:600;">Vercel</div>
+              <a href="https://vercel.com/dashboard" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Dashboard</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">DNS / Tunnel</div>
+              <div style="font-size:14px;font-weight:600;">Cloudflare</div>
+              <a href="https://dash.cloudflare.com" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Dashboard</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Email</div>
+              <div style="font-size:14px;font-weight:600;">Resend</div>
+              <a href="https://resend.com/overview" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Dashboard</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Payments</div>
+              <div style="font-size:14px;font-weight:600;">Stripe</div>
+              <a href="https://dashboard.stripe.com" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Dashboard</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Source Code</div>
+              <div style="font-size:14px;font-weight:600;">GitHub</div>
+              <a href="https://github.com/davidferra13/CFV1" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Repository</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Grocery Pricing</div>
+              <div style="font-size:14px;font-weight:600;">Spoonacular</div>
+              <a href="https://spoonacular.com/food-api/console" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Console</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Grocery (Kroger)</div>
+              <div style="font-size:14px;font-weight:600;">Kroger API</div>
+              <a href="https://developer.kroger.com" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Developer Portal</a>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+              <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Local AI</div>
+              <div style="font-size:14px;font-weight:600;">Ollama</div>
+              <a href="http://localhost:11434" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">PC API</a>
+              &bull;
+              <a href="http://10.0.0.177:11434" target="_blank" rel="noopener" style="font-size:11px;color:var(--brand);text-decoration:none;">Pi API</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pi Health -->
+        <div>
+          <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Raspberry Pi 5 Health</h3>
+          <div id="infra-pi-health" style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;">
+            <div style="color:var(--text-muted);font-size:13px;">Loading Pi status...</div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-ghost" onclick="loadInfra()">Refresh</button>
+            <button class="btn btn-ghost" onclick="runAction('/api/ollama/pi/start','Starting Ollama on Pi...')">Start Ollama on Pi</button>
+            <button class="btn btn-ghost" onclick="runAction('/api/ollama/pi/stop','Stopping Ollama on Pi...')">Stop Ollama on Pi</button>
+            <button class="btn btn-ghost" onclick="runAction('/api/beta/restart','Restarting Beta...')">Restart Beta App</button>
+          </div>
+        </div>
       </div>
 
       <!-- ═══ Console ═══ -->
@@ -3754,6 +3916,78 @@ function renderFeedback(entries) {
   el.innerHTML = html
 }
 
+// ── Infrastructure Panel ──────────────────────────────────────────
+
+async function loadInfra() {
+  const badge = document.getElementById('infra-status')
+  const piHealth = document.getElementById('infra-pi-health')
+  if (badge) badge.textContent = 'Refreshing...'
+
+  try {
+    const res = await fetch(`${API}/api/infra`)
+    const data = await res.json()
+
+    if (!data.pi || !data.pi.reachable) {
+      if (piHealth) piHealth.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;color:#f87171;">
+          <span style="font-size:20px;">&#x274C;</span>
+          <div>
+            <div style="font-weight:600;">Pi Unreachable</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Cannot connect via SSH. The watchdog should auto-reboot it within 15 seconds if it's frozen.</div>
+          </div>
+        </div>`
+      if (badge) badge.textContent = 'Pi Offline'
+      const dot = document.querySelector('#badge-infra .dot')
+      if (dot) { dot.className = 'dot offline' }
+      return
+    }
+
+    const pi = data.pi
+    const ram = pi.ram
+    const usedMB = parseInt(ram?.used) || 0
+    const totalMB = parseInt(ram?.total) || 1
+    const pct = Math.round((usedMB / totalMB) * 100)
+    const barColor = pct > 70 ? '#f87171' : pct > 50 ? '#fbbf24' : '#4ade80'
+
+    const svcHtml = Object.entries(pi.services || {}).map(([name, status]) => {
+      const color = status === 'active' ? '#4ade80' : status === 'disabled' || status === 'disabled (good)' ? 'var(--text-muted)' : '#f87171'
+      const icon = status === 'active' ? '&#x2705;' : status === 'inactive' ? '&#x26AA;' : '&#x274C;'
+      return `<div style="display:flex;justify-content:space-between;padding:4px 0;font-size:13px;">
+        <span>${name}</span>
+        <span style="color:${color};font-family:monospace;">${icon} ${status}</span>
+      </div>`
+    }).join('')
+
+    piHealth.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+        <div class="info-card" style="padding:12px;">
+          <div class="info-label">RAM Usage</div>
+          <div class="info-value" style="font-size:20px;">${ram?.used} / ${ram?.total}</div>
+          <div style="background:var(--border);border-radius:4px;height:8px;margin-top:8px;overflow:hidden;">
+            <div style="background:${barColor};height:100%;width:${pct}%;border-radius:4px;transition:width 0.3s;"></div>
+          </div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${ram?.available} available &bull; ${pct}% used</div>
+        </div>
+        <div class="info-card" style="padding:12px;">
+          <div class="info-label">System</div>
+          <div style="font-size:13px;margin-top:6px;line-height:1.8;">
+            <div>Uptime: <strong>${escapeHtml(pi.uptime || 'unknown')}</strong></div>
+            <div>Watchdog: <strong style="color:${pi.watchdog === 'active' ? '#4ade80' : '#f87171'};">${pi.watchdog}</strong></div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Services</div>
+      <div style="background:var(--bg);border-radius:6px;padding:8px 12px;">${svcHtml}</div>`
+
+    if (badge) badge.textContent = `${pct}% RAM`
+    const dot = document.querySelector('#badge-infra .dot')
+    if (dot) { dot.className = pct > 70 ? 'dot offline' : 'dot online' }
+  } catch (err) {
+    if (piHealth) piHealth.innerHTML = `<div style="color:#f87171;">Failed to load: ${escapeHtml(err.message)}</div>`
+    if (badge) badge.textContent = 'Error'
+  }
+}
+
 // ── Keyboard Shortcuts ────────────────────────────────────────────
 
 document.addEventListener('keydown', (e) => {
@@ -3817,6 +4051,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '7') switchSection('build')
   if (e.key === '8') switchSection('log')
   if (e.key === '9') switchSection('feedback')
+  if (e.key === '0') switchSection('infra')
 })
 
 function switchSection(section) {
@@ -3826,6 +4061,7 @@ function switchSection(section) {
   if (section === 'home') loadPromptQueue()
   if (section === 'log') loadHistory()
   if (section === 'feedback') loadFeedback()
+  if (section === 'infra') loadInfra()
 }
 
 // ── Init ──────────────────────────────────────────────────────────

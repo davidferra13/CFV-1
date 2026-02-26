@@ -1,3 +1,3 @@
 @echo off
-curl -s -X POST http://localhost:3200/api/beta/restart
+curl -s -X POST http://localhost:41937/api/beta/restart
 echo Beta server restarting...

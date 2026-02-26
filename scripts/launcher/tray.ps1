@@ -13,7 +13,7 @@ Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
 $projectRoot = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
-$serverPort = 3200
+$serverPort = 41937
 $devPort = 3100
 
 # ── Create tray icon ────────────────────────────────────────────

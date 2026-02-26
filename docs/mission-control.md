@@ -30,7 +30,7 @@ scripts/launcher/open-dashboard.bat
 
 ```
 ┌─────────────────────────────────────────────┐
-│  Dashboard Server (port 3200)               │
+│  Dashboard Server (port 41937)               │
 │  scripts/launcher/server.mjs                │
 │                                             │
 │  ├── REST API for all 14 operations         │
@@ -50,11 +50,11 @@ scripts/launcher/open-dashboard.bat
 
 ## Three Access Methods
 
-### 1. Web Dashboard (port 3200)
+### 1. Web Dashboard (port 41937)
 
 The primary interface. Dark theme with real-time status polling every 5 seconds. SSE-connected console shows live output from deploys, builds, etc.
 
-- **URL:** `http://localhost:3200`
+- **URL:** `http://localhost:41937`
 - **Keyboard shortcuts:** `1-5` switch panels, `Esc` closes dialogs
 - **Chrome app mode:** Use `open-dashboard.bat` to open without browser chrome
 
@@ -88,14 +88,14 @@ Mission Control auto-starts on Windows login via the existing watchdog chain:
 ```
 Login → chefflow-launcher.vbs
        → chefflow-watchdog.ps1
-          → Starts dashboard server (port 3200)
+          → Starts dashboard server (port 41937)
           → Starts system tray icon
           → (also starts Ollama, dev server as before)
 ```
 
 ## API Endpoints
 
-All endpoints are on `http://localhost:3200`. The server only binds to `127.0.0.1` (localhost only, not network-accessible).
+All endpoints are on `http://localhost:41937`. The server only binds to `127.0.0.1` (localhost only, not network-accessible).
 
 | Method | Endpoint               | Description                   |
 | ------ | ---------------------- | ----------------------------- |

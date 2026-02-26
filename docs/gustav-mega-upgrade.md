@@ -70,7 +70,7 @@
 
 ```
 User → Gustav Chat UI (index.html)
-  → POST /api/chat (server.mjs:3200)
+  → POST /api/chat (server.mjs:41937)
     → Ollama qwen3-coder:30b (streaming)
     → Parse <action> tags
     → Execute tools:

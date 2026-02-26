@@ -17,4 +17,4 @@ objShell.Run "cmd /c cd /d """ & projectRoot & """ && node scripts/launcher/serv
 WScript.Sleep 2000
 
 ' Open in Chrome app mode (native feel) on monitor 3
-objShell.Run "cmd /c start """" chrome --app=http://localhost:3200 --window-size=1100,750 --window-position=2560,100", 0, False
+objShell.Run "cmd /c start """" chrome --app=http://localhost:41937 --window-size=1100,750 --window-position=2560,100", 0, False

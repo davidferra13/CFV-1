@@ -228,9 +228,9 @@ Ensure-OllamaRunning
 # ============================================
 # Mission Control Dashboard — Auto-Start
 # ============================================
-# Ensures the dashboard server (port 3200) and system tray are running
+# Ensures the dashboard server (port 41937) and system tray are running
 
-$dashboardPort = 3200
+$dashboardPort = 41937
 
 function Ensure-MissionControlRunning {
     # Check if dashboard server is already running
