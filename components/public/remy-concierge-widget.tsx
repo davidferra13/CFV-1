@@ -201,6 +201,16 @@ export function RemyConciergeWidget() {
     }
   }, [])
 
+  // Track active drag listeners so they can be cleaned up on unmount
+  const dragCleanupRef = useRef<(() => void) | null>(null)
+
+  // Cleanup drag listeners on unmount (prevents leak if component unmounts mid-drag)
+  useEffect(() => {
+    return () => {
+      dragCleanupRef.current?.()
+    }
+  }, [])
+
   // Edge/corner resize via mouse drag
   const startResize = useCallback(
     (edge: string) => (e: React.MouseEvent) => {
@@ -232,6 +242,12 @@ export function RemyConciergeWidget() {
         setSize({ w: newW, h: newH })
       }
 
+      const cleanup = () => {
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+        dragCleanupRef.current = null
+      }
+
       const onMouseUp = () => {
         if (resizingRef.current) {
           const el = widgetRef.current
@@ -241,12 +257,12 @@ export function RemyConciergeWidget() {
           }
         }
         resizingRef.current = null
-        document.removeEventListener('mousemove', onMouseMove)
-        document.removeEventListener('mouseup', onMouseUp)
+        cleanup()
       }
 
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
+      dragCleanupRef.current = cleanup
     },
     [isMaximized, size]
   )
@@ -478,15 +494,20 @@ export function RemyConciergeWidget() {
               )}
             </button>
           </div>
-          <div className="mt-1.5 flex items-center justify-between px-1">
-            <p className="text-center text-[10px] text-stone-400 flex-1">
-              Remy can make mistakes. Please double-check important info.
+          <div className="mt-1.5 flex flex-col gap-0.5 px-1">
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-stone-400">
+                Remy can make mistakes. Please double-check important info.
+              </p>
+              <span
+                className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
+              >
+                {input.length}/500
+              </span>
+            </div>
+            <p className="text-[10px] text-stone-500 italic">
+              Responses may take a moment — Remy runs on a private, local AI.
             </p>
-            <span
-              className={`text-[10px] tabular-nums ${input.length >= 450 ? (input.length >= 500 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
-            >
-              {input.length}/500
-            </span>
           </div>
         </div>
       </div>

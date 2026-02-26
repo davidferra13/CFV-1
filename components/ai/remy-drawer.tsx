@@ -298,6 +298,7 @@ export function RemyDrawer() {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
   const [drawerWidth, setDrawerWidth] = useState(DRAWER_DEFAULT_WIDTH)
   const drawerResizingRef = useRef<{ startX: number; startW: number } | null>(null)
+  const drawerDragCleanupRef = useRef<(() => void) | null>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = useRef<any>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -321,6 +322,13 @@ export function RemyDrawer() {
     }
   }, [])
 
+  // Cleanup drag listeners on unmount (prevents leak if component unmounts mid-drag)
+  useEffect(() => {
+    return () => {
+      drawerDragCleanupRef.current?.()
+    }
+  }, [])
+
   // Drag-to-resize the drawer from the left edge
   const startDrawerResize = useCallback(
     (e: React.MouseEvent) => {
@@ -339,15 +347,21 @@ export function RemyDrawer() {
         setDrawerWidth(latestW)
       }
 
+      const cleanup = () => {
+        document.removeEventListener('mousemove', onMouseMove)
+        document.removeEventListener('mouseup', onMouseUp)
+        drawerDragCleanupRef.current = null
+      }
+
       const onMouseUp = () => {
         drawerResizingRef.current = null
         sessionStorage.setItem('remy-drawer-width', String(latestW))
-        document.removeEventListener('mousemove', onMouseMove)
-        document.removeEventListener('mouseup', onMouseUp)
+        cleanup()
       }
 
       document.addEventListener('mousemove', onMouseMove)
       document.addEventListener('mouseup', onMouseUp)
+      drawerDragCleanupRef.current = cleanup
     },
     [drawerWidth]
   )
@@ -1871,10 +1885,15 @@ export function RemyDrawer() {
                   </Button>
                 </div>
                 <div className="flex items-center justify-between mt-1.5">
-                  <p className="text-xs text-stone-400 flex items-center gap-1">
-                    <Globe className="h-3 w-3" />
-                    Remy can make mistakes. Please double-check important info.
-                  </p>
+                  <div className="space-y-0.5">
+                    <p className="text-xs text-stone-400 flex items-center gap-1">
+                      <Globe className="h-3 w-3" />
+                      Remy can make mistakes. Please double-check important info.
+                    </p>
+                    <p className="text-[10px] text-stone-500 italic">
+                      Responses may take a moment — Remy runs on a private, local AI.
+                    </p>
+                  </div>
                   <span
                     className={`text-[10px] tabular-nums ${input.length >= 1800 ? (input.length >= 2000 ? 'text-red-500 font-medium' : 'text-amber-500') : 'text-stone-400'}`}
                   >
