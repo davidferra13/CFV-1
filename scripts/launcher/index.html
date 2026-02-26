@@ -1512,6 +1512,11 @@ body {
         <span class="nav-icon">&#x1F3AF;</span>
         <span class="nav-label">Blueprint</span>
       </a>
+      <a class="nav-item" data-section="sysref" title="System Reference">
+        <span class="nav-dot online" id="nd-sysref"></span>
+        <span class="nav-icon">&#x1F4D6;</span>
+        <span class="nav-label">Ref</span>
+      </a>
     </nav>
 
     <!-- Content -->
@@ -2325,6 +2330,800 @@ body {
         <div style="text-align:center;padding:12px;">
           <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Full document: <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">docs/master-launch-blueprint.md</code></div>
           <div style="font-size:11px;color:var(--text-muted);">Built from studying Shopify, Stripe, Slack, Calendly, Basecamp, HubSpot, Mailchimp, Square, Notion, Canva, Toast, and Zenchef</div>
+        </div>
+      </div>
+
+      <!-- ─── System Reference Panel ─── -->
+      <div class="panel" id="panel-sysref">
+        <div class="panel-header">
+          <h2 class="panel-title">System Reference</h2>
+          <span class="status-badge online" style="background:var(--brand-dim);color:var(--brand);border:1px solid rgba(232,143,71,0.25);">
+            <span class="dot online" style="background:var(--brand);"></span>
+            Quick Reference
+          </span>
+        </div>
+
+        <!-- ── Grand Total ── -->
+        <div style="background:linear-gradient(135deg,rgba(232,143,71,0.15),rgba(232,143,71,0.05));border:1px solid rgba(232,143,71,0.3);border-radius:10px;padding:20px;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span style="font-size:20px;">&#x1F4CA;</span>
+            <span style="font-size:16px;font-weight:700;color:var(--brand-bright);">ChefFlow by the Numbers</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;">
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">11</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Processes</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">7</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Ports</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">3</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Environments</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">38</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">External Services</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">87</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">API Routes</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">477</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Server Actions</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">511</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Pages</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">60</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">NPM Scripts</div>
+            </div>
+            <div style="background:rgba(0,0,0,0.2);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:22px;font-weight:700;color:var(--brand-bright);font-family:monospace;">29</div>
+              <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Env Variables</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Processes — PC ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Processes — Your PC (6)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:30%;">Process</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">What It Does</th>
+                <th style="text-align:center;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:80px;">Visible?</th>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">VS Code</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Code editor — where you write and read code</td>
+                <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Node.js Dev Server</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Runs ChefFlow locally on port 3100 for testing</td>
+                <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Ollama</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Local AI brain — the terminal with scrolling GET requests</td>
+                <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Mission Control</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">This dashboard — monitors everything</td>
+                <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">NordVPN</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Encrypts your internet traffic</td>
+                <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-weight:600;">Claude Code</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Lead AI engineer — runs inside VS Code</td>
+                <td style="padding:10px 14px;text-align:center;color:var(--success);">&#x2705;</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Processes — Pi ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Processes — Raspberry Pi (4)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:30%;">Process</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">What It Does</th>
+                <th style="text-align:center;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:100px;">Type</th>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Node.js Beta Server</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Runs ChefFlow for beta testers at beta.cheflowhq.com</td>
+                <td style="padding:10px 14px;text-align:center;"><span style="font-size:11px;background:var(--info-dim);color:var(--info);padding:2px 8px;border-radius:4px;">Daemon</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">PM2</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Process manager — auto-restarts the beta app if it crashes</td>
+                <td style="padding:10px 14px;text-align:center;"><span style="font-size:11px;background:var(--info-dim);color:var(--info);padding:2px 8px;border-radius:4px;">Daemon</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">cloudflared</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Tunnel — connects Pi to Cloudflare so the internet can reach beta</td>
+                <td style="padding:10px 14px;text-align:center;"><span style="font-size:11px;background:var(--success-dim);color:var(--success);padding:2px 8px;border-radius:4px;">Service</span></td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-weight:600;">sshd</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">SSH daemon — lets you control Pi remotely from your PC</td>
+                <td style="padding:10px 14px;text-align:center;"><span style="font-size:11px;background:var(--success-dim);color:var(--success);padding:2px 8px;border-radius:4px;">Service</span></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── 3 Environments ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">3 Environments</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:6px;">&#x1F4BB;</div>
+            <div style="font-size:14px;font-weight:700;">Your PC</div>
+            <div style="font-family:monospace;font-size:12px;color:var(--brand);margin-top:4px;">localhost:3100</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Development</div>
+            <div style="font-size:10px;color:var(--text-muted);">Only you see this</div>
+            <div style="font-size:10px;color:var(--success);margin-top:4px;">Hot reload (instant)</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:6px;">&#x1F967;</div>
+            <div style="font-size:14px;font-weight:700;">Raspberry Pi</div>
+            <div style="font-family:monospace;font-size:12px;color:var(--brand);margin-top:4px;">beta.cheflowhq.com</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Staging / Beta</div>
+            <div style="font-size:10px;color:var(--text-muted);">Testers see this</div>
+            <div style="font-size:10px;color:var(--warning);margin-top:4px;">Deploy takes 8-10 min</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center;">
+            <div style="font-size:20px;margin-bottom:6px;">&#x25B2;</div>
+            <div style="font-size:14px;font-weight:700;">Vercel (Cloud)</div>
+            <div style="font-family:monospace;font-size:12px;color:var(--brand);margin-top:4px;">app.cheflowhq.com</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">Production</div>
+            <div style="font-size:10px;color:var(--text-muted);">Public sees this</div>
+            <div style="font-size:10px;color:var(--error);margin-top:4px;">Costs money to deploy</div>
+          </div>
+        </div>
+
+        <!-- ── Ports ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Ports (Numbered Doors)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:80px;">Port</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">What's Behind It</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:100px;">Machine</th>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-family:monospace;color:var(--brand);font-weight:600;">3100</td>
+                <td style="padding:10px 14px;">ChefFlow dev server</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">PC</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-family:monospace;color:var(--brand);font-weight:600;">3100</td>
+                <td style="padding:10px 14px;">ChefFlow beta server</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Pi</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-family:monospace;color:var(--text-muted);">3200</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Soak test server</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">PC</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-family:monospace;color:var(--text-muted);">3333</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Production build (local testing only)</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">PC</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-family:monospace;color:var(--brand);font-weight:600;">11434</td>
+                <td style="padding:10px 14px;">Ollama AI API</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">PC</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-family:monospace;color:var(--brand);font-weight:600;">22</td>
+                <td style="padding:10px 14px;">SSH (remote control of Pi)</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Pi</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-family:monospace;color:var(--brand);font-weight:600;">41937</td>
+                <td style="padding:10px 14px;">Mission Control (this dashboard)</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">PC</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── External Services ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">External Services (38 Total)</h3>
+
+        <!-- Core Infrastructure -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Core Infrastructure</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Database + Auth + Storage</div>
+            <div style="font-size:14px;font-weight:600;">Supabase</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Payments + Subscriptions</div>
+            <div style="font-size:14px;font-weight:600;">Stripe</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Production Hosting</div>
+            <div style="font-size:14px;font-weight:600;">Vercel</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">DNS + Beta Tunnel</div>
+            <div style="font-size:14px;font-weight:600;">Cloudflare</div>
+          </div>
+        </div>
+
+        <!-- Communication -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Communication</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Transactional Email</div>
+            <div style="font-size:14px;font-weight:600;">Resend</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">SMS + WhatsApp</div>
+            <div style="font-size:14px;font-weight:600;">Twilio</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Push Notifications</div>
+            <div style="font-size:14px;font-weight:600;">Firebase Cloud Messaging</div>
+          </div>
+        </div>
+
+        <!-- AI & Search -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">AI &amp; Search</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Private AI (local only)</div>
+            <div style="font-size:14px;font-weight:600;">Ollama</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Cloud AI (non-private tasks)</div>
+            <div style="font-size:14px;font-weight:600;">Google Gemini</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Web Search API</div>
+            <div style="font-size:14px;font-weight:600;">Tavily</div>
+          </div>
+        </div>
+
+        <!-- Food & Grocery -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Food &amp; Grocery</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Recipe + Ingredient Data</div>
+            <div style="font-size:14px;font-weight:600;">Spoonacular</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Grocery Pricing</div>
+            <div style="font-size:14px;font-weight:600;">Kroger</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Local Store Pricing</div>
+            <div style="font-size:14px;font-weight:600;">MealMe</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Shopping Cart Links</div>
+            <div style="font-size:14px;font-weight:600;">Instacart</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Nutrition Database</div>
+            <div style="font-size:14px;font-weight:600;">USDA FDC</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Open Nutrition DB</div>
+            <div style="font-size:14px;font-weight:600;">Open Food Facts</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Food Recall Alerts</div>
+            <div style="font-size:14px;font-weight:600;">FDA</div>
+          </div>
+        </div>
+
+        <!-- Social Media -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Social Media (7 Platforms)</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:600;">Facebook</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:600;">Instagram</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:600;">Twitter / X</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:600;">LinkedIn</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:600;">TikTok</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:600;">Pinterest</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:13px;font-weight:600;">YouTube</div>
+          </div>
+        </div>
+
+        <!-- Google Services -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Google Services</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Address Autocomplete</div>
+            <div style="font-size:14px;font-weight:600;">Google Maps</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Business Reviews Sync</div>
+            <div style="font-size:14px;font-weight:600;">Google Places</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Event Scheduling</div>
+            <div style="font-size:14px;font-weight:600;">Google Calendar</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Sign In with Google</div>
+            <div style="font-size:14px;font-weight:600;">Google OAuth</div>
+          </div>
+        </div>
+
+        <!-- Monitoring -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Monitoring &amp; Performance</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:16px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Error Tracking</div>
+            <div style="font-size:14px;font-weight:600;">Sentry</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Rate Limiting + Cache</div>
+            <div style="font-size:14px;font-weight:600;">Upstash Redis</div>
+          </div>
+        </div>
+
+        <!-- Utilities -->
+        <div style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:8px;">Utilities</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Backup Web Search</div>
+            <div style="font-size:14px;font-weight:600;">DuckDuckGo</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Free Geocoding</div>
+            <div style="font-size:14px;font-weight:600;">Nominatim (OSM)</div>
+          </div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:4px;">Connectivity Check</div>
+            <div style="font-size:14px;font-weight:600;">Cloudflare DNS (1.1.1.1)</div>
+          </div>
+        </div>
+
+        <!-- ── App Scale ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">App Scale</h3>
+        <div style="margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Category</th>
+                <th style="text-align:right;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:80px;">Count</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">What It Means</th>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">API Routes</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--brand);">87</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">URLs other programs call to interact with ChefFlow</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Server Actions</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--brand);">477</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Functions that run on the server (the brains of the app)</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Pages</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--brand);">511</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Screens users see in their browser</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">&nbsp;&nbsp;&#x2514; Chef pages</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--text-muted);">389</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Dashboard, events, clients, recipes, menus, finances, analytics</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">&nbsp;&nbsp;&#x2514; Client pages</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--text-muted);">23</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Events, quotes, invoices, chat, preferences</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">&nbsp;&nbsp;&#x2514; Public pages</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--text-muted);">28</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Chef directory, pricing, landing, terms, privacy</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">&nbsp;&nbsp;&#x2514; Admin pages</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--text-muted);">18</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">System analytics, users, audit logs, flags</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">&nbsp;&nbsp;&#x2514; Other</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--text-muted);">53</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">Auth, staff, partner, demo, embed, booking</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">NPM Scripts</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--brand);">60</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Commands you can run (dev, build, test, deploy, etc.)</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-weight:600;">Env Variables</td>
+                <td style="padding:10px 14px;text-align:right;font-family:monospace;color:var(--brand);">29</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Secrets and config (API keys, URLs, passwords)</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Daemons & Services ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Daemons &amp; Services on Pi (Always Running)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Service</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Managed By</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">If It Crashes</th>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">chefflow-beta</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">PM2</td>
+                <td style="padding:10px 14px;color:var(--success);">Auto-restarts</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">cloudflared</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">systemd</td>
+                <td style="padding:10px 14px;color:var(--success);">Auto-restarts</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">sshd</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">systemd</td>
+                <td style="padding:10px 14px;color:var(--success);">Auto-restarts (OOM-protected -900)</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">zram-swap</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">systemd</td>
+                <td style="padding:10px 14px;color:var(--text-muted);">4 GB compressed RAM swap</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">bcm2835_wdt</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">kernel</td>
+                <td style="padding:10px 14px;color:var(--warning);">Hardware watchdog — reboots Pi if OS freezes (15s)</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-weight:600;">Ollama</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">systemd</td>
+                <td style="padding:10px 14px;color:var(--error);">MASKED — permanently disabled (Pi OOM fix)</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Health Checks ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Health Checks (Heartbeat Monitors)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x1F49A;</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">Ollama alive?</div>
+                <div style="font-size:10px;color:var(--text-muted);">Every ~2-4 seconds by Mission Control</div>
+              </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x1F49A;</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">Dev server alive?</div>
+                <div style="font-size:10px;color:var(--text-muted);">Every ~5 seconds</div>
+              </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x1F49A;</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">Beta site alive?</div>
+                <div style="font-size:10px;color:var(--text-muted);">Every ~30 seconds</div>
+              </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--success);font-size:16px;">&#x1F49A;</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">Production alive?</div>
+                <div style="font-size:10px;color:var(--text-muted);">Every ~30 seconds</div>
+              </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--warning);font-size:16px;">&#x1F4E1;</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">Pi system health</div>
+                <div style="font-size:10px;color:var(--text-muted);">On demand (Infra panel refresh)</div>
+              </div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;">
+              <span style="color:var(--error);font-size:16px;">&#x23F0;</span>
+              <div>
+                <div style="font-size:12px;font-weight:600;">Pi OS watchdog</div>
+                <div style="font-size:10px;color:var(--text-muted);">Hardware chip — reboots if frozen (15s)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Log Sources ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Log Sources (Where You See Scrolling Text)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Source</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Where You See It</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">What It Shows</th>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Ollama</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Terminal window on PC</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Every AI request — who asked, how fast, success/fail</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Next.js Dev Server</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Terminal running npm run dev</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Page loads, API calls, compilation, errors</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">PM2 (Pi)</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">pm2 logs chefflow-beta via SSH</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Same as dev server, but for beta</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">cloudflared (Pi)</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">journalctl -u cloudflared via SSH</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Tunnel connection, request routing</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:10px 14px;font-weight:600;">Mission Control</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Activity Log (bottom of this dashboard)</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">All services health, deploys, git ops</td>
+              </tr>
+              <tr>
+                <td style="padding:10px 14px;font-weight:600;">Sentry</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Sentry dashboard in browser</td>
+                <td style="padding:10px 14px;color:var(--text-secondary);">Production errors, stack traces, performance</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── Request Chain ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">How a Page Load Works (The Full Chain)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:8px 8px 2px 2px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--brand);font-weight:700;">1</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Browser sends request</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">User types beta.cheflowhq.com/dashboard</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--brand);font-weight:700;">2</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Cloudflare DNS resolves the domain</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">beta.cheflowhq.com &#x2192; Cloudflare tunnel</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--brand);font-weight:700;">3</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">cloudflared daemon receives the request</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Through the tunnel on the Raspberry Pi</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--brand);font-weight:700;">4</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Forwarded to localhost:3100 on Pi</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">cloudflared passes it to the Node.js server</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--brand);font-weight:700;">5</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Next.js middleware checks auth</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Talks to Supabase: "Is this user valid?"</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--brand);font-weight:700;">6</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">Server renders the page</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Calls server actions &#x2192; queries Supabase, Ollama, Stripe as needed</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--brand);font-weight:700;">7</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;">HTML + JavaScript sent back through tunnel</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Response travels back the same path</div>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:32px 1fr;gap:12px;align-items:center;background:var(--bg-card);border:1px solid var(--border);border-radius:2px 2px 8px 8px;padding:12px 16px;">
+              <span style="font-size:14px;text-align:center;font-family:monospace;color:var(--success);font-weight:700;">8</span>
+              <div>
+                <div style="font-weight:600;font-size:13px;color:var(--success);">Page loads — user can click things</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">Browser renders HTML, JavaScript hydrates, page is interactive</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── HTTP Status Codes ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">HTTP Status Codes (What Those Numbers Mean)</h3>
+        <div style="margin-bottom:24px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-family:monospace;font-weight:700;color:var(--success);font-size:16px;">200</span>
+              <div style="font-size:12px;color:var(--text-secondary);">OK — everything worked</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-family:monospace;font-weight:700;color:var(--info);font-size:16px;">301</span>
+              <div style="font-size:12px;color:var(--text-secondary);">Moved — redirect</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-family:monospace;font-weight:700;color:var(--warning);font-size:16px;">400</span>
+              <div style="font-size:12px;color:var(--text-secondary);">Bad request — sent wrong data</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-family:monospace;font-weight:700;color:var(--warning);font-size:16px;">401</span>
+              <div style="font-size:12px;color:var(--text-secondary);">Unauthorized — need to log in</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-family:monospace;font-weight:700;color:var(--warning);font-size:16px;">403</span>
+              <div style="font-size:12px;color:var(--text-secondary);">Forbidden — logged in but not allowed</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-family:monospace;font-weight:700;color:var(--error);font-size:16px;">404</span>
+              <div style="font-size:12px;color:var(--text-secondary);">Not found — doesn't exist</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;">
+              <span style="font-family:monospace;font-weight:700;color:var(--error);font-size:16px;">500</span>
+              <div style="font-size:12px;color:var(--text-secondary);">Server error — the server broke</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Vocabulary Quick Reference ── -->
+        <h3 style="color:var(--text-secondary);font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Vocabulary Quick Reference</h3>
+        <div style="margin-bottom:24px;">
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+              <tr style="border-bottom:1px solid var(--border);">
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;width:140px;">Term</th>
+                <th style="text-align:left;padding:10px 14px;color:var(--text-secondary);font-weight:500;">Plain English</th>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Terminal</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">The window that shows text. Like a TV screen — just a container.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Shell</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">The program inside the terminal that reads your commands (Bash, PowerShell).</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">CLI</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A program you interact with by typing, not clicking. Opposite of GUI.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Process</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Any program currently running. Your browser, Ollama, VS Code — all processes.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Daemon</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A process that runs silently in the background with no window.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Service</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A daemon managed by the OS — it auto-starts on boot and auto-restarts on crash.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Port</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A numbered door on a computer. Each program listens on a specific port.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">localhost</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Your own machine. localhost:3100 = "port 3100 on this computer."</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">SSH</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A way to open a terminal on a remote machine (like your Pi from your PC).</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Tunnel</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Makes a local service reachable from the internet. Pi &#x2192; Cloudflare &#x2192; beta.cheflowhq.com.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">API</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">How programs talk to each other — structured requests and responses, no GUI.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Endpoint</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A specific URL in an API. /api/tags and /api/ps are endpoints.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">GET / POST</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">GET = "give me data" (read). POST = "here's new data" (create/update).</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Log</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A record of what a program is doing. That scrolling text = a log.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Health Check</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A periodic "are you alive?" request. The /api/ps calls in Ollama's log.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Hot Reload</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Save a file &#x2192; app updates instantly without restarting.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Build</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Converting human-readable code into optimized code the computer runs fast.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Deploy</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Moving built code to a server where users can access it.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Headless</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A computer with no monitor/keyboard. Your Pi is headless — controlled via SSH.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">OOM</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Out of Memory — a process tried to use more RAM than available. OS kills something.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Latency</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">How long a message takes to travel between two points. Lower = better.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">Flag</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">A modifier on a command: --oneline, -v, --force. The dashes give it away.</td>
+              </tr>
+              <tr style="border-bottom:1px solid var(--border);">
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">stdout / stderr</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Two output channels: normal output (stdout) and error messages (stderr).</td>
+              </tr>
+              <tr>
+                <td style="padding:8px 14px;font-weight:600;color:var(--brand);">PID</td>
+                <td style="padding:8px 14px;color:var(--text-secondary);">Process ID — every running program gets a unique number. Used to kill stuck processes.</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align:center;padding:12px;">
+          <div style="font-size:11px;color:var(--text-muted);">Press <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-size:11px;">=</code> to jump to this panel &bull; Last updated Feb 2026</div>
         </div>
       </div>
 
@@ -4670,6 +5469,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === '9') switchSection('feedback')
   if (e.key === '0') switchSection('infra')
   if (e.key === '-') switchSection('blueprint')
+  if (e.key === '=') switchSection('sysref')
 })
 
 function switchSection(section) {
