@@ -45,10 +45,7 @@ export default defineConfig({
     // Chef portal tests — authenticated as test chef
     {
       name: 'chef',
-      testMatch: [
-        '**/e2e/0[1-9]-*.spec.ts',
-        '**/e2e/1[0-3]-*.spec.ts',
-      ],
+      testMatch: ['**/e2e/0[1-9]-*.spec.ts', '**/e2e/1[0-3]-*.spec.ts'],
       use: {
         storageState: '.auth/chef.json',
       },
@@ -181,6 +178,61 @@ export default defineConfig({
       name: 'interactions-public',
       testMatch: ['**/interactions/13-auth-signup-flows.spec.ts'],
       // No storageState — unauthenticated
+    },
+    // ── Launch Readiness Audit ──────────────────────────────────────────────────
+    // Targeted end-to-end flow tests: every input, every output, every core feature.
+    // Run: npx playwright test -p launch-chef
+    //      npx playwright test -p launch-client
+    //      npx playwright test -p launch-public
+    //      npx playwright test -p launch-mobile
+    {
+      name: 'launch-chef',
+      testMatch: [
+        '**/launch/01-auth-and-security.spec.ts',
+        '**/launch/03-empty-states.spec.ts',
+        '**/launch/04-inquiry-to-event.spec.ts',
+        '**/launch/05-quote-flow.spec.ts',
+        '**/launch/06-event-lifecycle.spec.ts',
+        '**/launch/07-payments-and-finance.spec.ts',
+        '**/launch/08-client-management.spec.ts',
+        '**/launch/09-staff-and-tasks.spec.ts',
+        '**/launch/10-vendor-comparison.spec.ts',
+        '**/launch/11-culinary.spec.ts',
+        '**/launch/12-calendar-and-schedule.spec.ts',
+        '**/launch/15-settings-and-modules.spec.ts',
+      ],
+      use: { storageState: '.auth/chef.json' },
+    },
+    {
+      name: 'launch-client',
+      testMatch: ['**/launch/05-quote-flow.spec.ts', '**/launch/13-client-portal.spec.ts'],
+      use: { storageState: '.auth/client.json' },
+    },
+    {
+      name: 'launch-public',
+      testMatch: ['**/launch/02-public-pages.spec.ts', '**/launch/14-public-inquiry-form.spec.ts'],
+      // No storageState — unauthenticated
+    },
+    {
+      name: 'launch-mobile',
+      testMatch: ['**/launch/16-mobile-viewport.spec.ts'],
+      use: {
+        storageState: '.auth/chef.json',
+        viewport: { width: 375, height: 812 },
+      },
+    },
+    // ── Soak Tests ──────────────────────────────────────────────────────────────
+    // Software aging detection: repeated workflows measuring memory, DOM, timing.
+    // Run: npm run test:soak (full) or npm run test:soak:quick (10 iterations)
+    {
+      name: 'soak',
+      testMatch: ['**/soak/**/*.spec.ts'],
+      use: {
+        storageState: '.auth/chef.json',
+        navigationTimeout: 30_000,
+        actionTimeout: 15_000,
+      },
+      timeout: 600_000, // 10 min per test (100 iterations × ~3-5s each)
     },
   ],
   webServer: {

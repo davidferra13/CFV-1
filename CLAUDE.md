@@ -235,6 +235,22 @@ The developer should never have to ask for these steps separately. "Ship it" = t
 
 ---
 
+## "RUN SOAK" — SOFTWARE AGING PIPELINE
+
+When the developer says **"run soak"** (or any variation: "soak test", "soak it", "run the soak tests", "check for leaks"), do ALL of the following:
+
+1. **useEffect cleanup audit** — scan all components for missing cleanup returns, leaked event listeners, unclosed Supabase subscriptions, intervals/timeouts without `clearTimeout`/`clearInterval`
+2. **Fix every issue** the audit finds
+3. **Run `npm run test:soak:quick`** (dev server must be on port 3100 — ask user to start it if needed)
+4. **If any test fails** — read the report, diagnose the root cause, fix it, and re-run until all 3 soak tests pass
+5. **Commit everything** when done
+
+**What the soak tests measure:** JS heap memory, DOM node count, console errors, and cycle time across 100+ repeated navigation loops. Uses Chrome DevTools Protocol (CDP) for precise measurements. Fails if memory > 3× baseline, DOM nodes > 2× baseline, any console errors, or cycle time > 2× baseline.
+
+**Full docs:** `docs/soak-testing.md`
+
+---
+
 ## STANDARD SESSION CLOSE-OUT (run at the end of every session)
 
 These steps run automatically at the end of every session, whether or not the developer asks. No exceptions.

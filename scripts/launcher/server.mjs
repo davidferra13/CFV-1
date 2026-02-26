@@ -565,9 +565,308 @@ async function getFeedback() {
   }
 }
 
+// ── Supabase Query Helper ────────────────────────────────────────
+
+async function supabaseQuery(endpoint, { select, filters = [], order, limit = 50, extra = '' } = {}) {
+  if (!CONFIG.supabaseUrl || !CONFIG.supabaseServiceKey) {
+    return { ok: false, error: 'Supabase credentials not configured' }
+  }
+  try {
+    let url = `${CONFIG.supabaseUrl}/rest/v1/${endpoint}`
+    const params = []
+    if (select) params.push(`select=${encodeURIComponent(select)}`)
+    for (const f of filters) params.push(f)
+    if (order) params.push(`order=${encodeURIComponent(order)}`)
+    if (limit) params.push(`limit=${limit}`)
+    if (extra) params.push(extra)
+    if (params.length) url += '?' + params.join('&')
+
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 10000)
+    const res = await fetch(url, {
+      headers: {
+        'apikey': CONFIG.supabaseServiceKey,
+        'Authorization': `Bearer ${CONFIG.supabaseServiceKey}`,
+        'Accept': 'application/json',
+      },
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    if (!res.ok) return { ok: false, error: `Supabase returned ${res.status}: ${await res.text()}` }
+    const data = await res.json()
+    return { ok: true, data, count: data.length }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── Business Data Tools ─────────────────────────────────────────
+
+async function getUpcomingEvents() {
+  const now = new Date().toISOString().slice(0, 10)
+  const result = await supabaseQuery('events', {
+    select: 'id,event_date,serve_time,status,guest_count,occasion,service_style,location_city,client:clients(full_name)',
+    filters: [`event_date=gte.${now}`, 'status=neq.cancelled'],
+    order: 'event_date.asc',
+    limit: 15,
+  })
+  if (!result.ok) return result
+  const events = result.data.map(e => ({
+    name: e.occasion || 'Event',
+    date: e.event_date,
+    time: e.serve_time || '',
+    status: e.status,
+    guests: e.guest_count || 0,
+    style: e.service_style || '',
+    city: e.location_city || '',
+    client: e.client?.full_name || 'No client',
+  }))
+  return { ok: true, events, total: events.length, message: `${events.length} upcoming events` }
+}
+
+async function getEventsByStatus() {
+  const result = await supabaseQuery('events', {
+    select: 'status',
+    limit: 1000,
+  })
+  if (!result.ok) return result
+  const counts = {}
+  for (const e of result.data) {
+    counts[e.status] = (counts[e.status] || 0) + 1
+  }
+  return { ok: true, counts, total: result.data.length, message: `${result.data.length} total events` }
+}
+
+async function getRevenueSummary() {
+  const result = await supabaseQuery('event_financial_summary', {
+    select: 'event_id,total_paid_cents,total_refunded_cents,net_revenue_cents,total_expenses_cents,profit_cents,profit_margin,food_cost_percentage,outstanding_balance_cents',
+    limit: 1000,
+  })
+  if (!result.ok) return result
+  const totals = result.data.reduce((acc, e) => ({
+    revenue: acc.revenue + (e.net_revenue_cents || 0),
+    expenses: acc.expenses + (e.total_expenses_cents || 0),
+    profit: acc.profit + (e.profit_cents || 0),
+    outstanding: acc.outstanding + (e.outstanding_balance_cents || 0),
+    refunds: acc.refunds + (e.total_refunded_cents || 0),
+  }), { revenue: 0, expenses: 0, profit: 0, outstanding: 0, refunds: 0 })
+  const fmt = c => '$' + (Math.abs(c) / 100).toFixed(2)
+  return {
+    ok: true,
+    summary: {
+      totalRevenue: fmt(totals.revenue),
+      totalExpenses: fmt(totals.expenses),
+      totalProfit: fmt(totals.profit),
+      outstandingBalance: fmt(totals.outstanding),
+      totalRefunds: fmt(totals.refunds),
+      eventCount: result.data.length,
+      avgMargin: result.data.length
+        ? (result.data.reduce((s, e) => s + (e.profit_margin || 0), 0) / result.data.length * 100).toFixed(1) + '%'
+        : '0%',
+    },
+    message: `Revenue: ${fmt(totals.revenue)} | Profit: ${fmt(totals.profit)} | Outstanding: ${fmt(totals.outstanding)}`,
+  }
+}
+
+async function getClients(param) {
+  const opts = {
+    select: 'id,full_name,email,phone,created_at',
+    order: 'created_at.desc',
+    limit: 25,
+  }
+  if (param && param.trim()) {
+    opts.filters = [`full_name=ilike.*${param.trim()}*`]
+  }
+  const result = await supabaseQuery('clients', opts)
+  if (!result.ok) return result
+  return {
+    ok: true,
+    clients: result.data.map(c => ({
+      name: c.full_name || 'Unknown',
+      email: c.email || '',
+      phone: c.phone || '',
+      since: c.created_at?.slice(0, 10) || '',
+    })),
+    total: result.data.length,
+    message: `${result.data.length} clients${param ? ` matching "${param}"` : ''}`,
+  }
+}
+
+async function getOpenInquiries() {
+  const result = await supabaseQuery('inquiries', {
+    select: 'id,created_at,event_type,event_date,guest_count,status,budget_range,client:clients(full_name)',
+    filters: ['status=in.(new,open,pending,contacted)'],
+    order: 'created_at.desc',
+    limit: 20,
+  })
+  if (!result.ok) return result
+  return {
+    ok: true,
+    inquiries: result.data.map(i => ({
+      type: i.event_type || 'General',
+      date: i.event_date || 'TBD',
+      guests: i.guest_count || 0,
+      status: i.status,
+      budget: i.budget_range || 'Not specified',
+      client: i.client?.full_name || 'Unknown',
+      received: i.created_at?.slice(0, 10) || '',
+    })),
+    total: result.data.length,
+    message: `${result.data.length} open inquiries`,
+  }
+}
+
+// ── Pi System Monitoring ────────────────────────────────────────
+
+async function getPiStatus() {
+  try {
+    const { stdout } = await sshExec(
+      'echo "===UPTIME===" && uptime && echo "===DISK===" && df -h / && echo "===MEMORY===" && free -h && echo "===PM2===" && pm2 jlist 2>/dev/null && echo "===SERVICES===" && systemctl is-active ollama cloudflared 2>/dev/null',
+      20000
+    )
+    // Parse PM2 JSON
+    let pm2Info = 'unknown'
+    const pm2Match = stdout.match(/===PM2===\s*\n([\s\S]*?)(?:===|$)/)
+    if (pm2Match) {
+      try {
+        const pm2Data = JSON.parse(pm2Match[1].trim())
+        pm2Info = pm2Data.map(p => `${p.name}: ${p.pm2_env?.status || 'unknown'} (pid ${p.pid}, restarts: ${p.pm2_env?.restart_time || 0})`).join('\n')
+      } catch { pm2Info = pm2Match[1].trim() }
+    }
+    return { ok: true, output: stdout, pm2: pm2Info, message: 'Pi status retrieved' }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+async function getPiLogs(param) {
+  const lines = parseInt(param) || 50
+  try {
+    const { stdout } = await sshExec(`pm2 logs chefflow-beta --lines ${lines} --nostream 2>&1`, 15000)
+    return { ok: true, logs: stdout, message: `Last ${lines} lines of PM2 logs` }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── App Health Check ────────────────────────────────────────────
+
+async function getAppHealth() {
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 8000)
+    const res = await fetch(`http://localhost:${CONFIG.devPort}/api/health`, {
+      signal: controller.signal,
+      cache: 'no-store',
+    })
+    clearTimeout(timer)
+    if (!res.ok) return { ok: false, error: `Health endpoint returned ${res.status}` }
+    const data = await res.json()
+    return {
+      ok: true,
+      health: data,
+      message: `App status: ${data.status} | DB: ${data.checks?.database} (${data.latencyMs?.database}ms)${data.checks?.redis ? ` | Redis: ${data.checks.redis}` : ''}`,
+    }
+  } catch (err) {
+    return { ok: false, error: `Dev server not reachable: ${err.message}. Start it first.` }
+  }
+}
+
+// ── Production / Vercel ─────────────────────────────────────────
+
+async function getVercelDeployments() {
+  const prod = await checkProduction()
+  if (!prod.vercel?.deployments) {
+    return { ok: false, error: 'No Vercel data available. Set VERCEL_TOKEN and VERCEL_PROJECT_ID in .env.local' }
+  }
+  return {
+    ok: true,
+    deployments: prod.vercel.deployments.map(d => ({
+      state: d.state,
+      branch: d.meta?.branch || 'unknown',
+      message: d.meta?.message || '',
+      created: d.created ? new Date(d.created).toISOString().replace('T', ' ').slice(0, 19) : '',
+      url: d.url || '',
+    })),
+    team: prod.vercel.team || null,
+    prodOnline: prod.online,
+    message: `${prod.vercel.deployments.length} recent deployments | Production: ${prod.online ? 'ONLINE' : 'OFFLINE'}`,
+  }
+}
+
+// ── Test Runner ─────────────────────────────────────────────────
+
+async function runTests(param) {
+  const testType = param?.trim() || 'smoke'
+  const commands = {
+    smoke: 'npx playwright test tests/launch/ --reporter=line',
+    typecheck: 'npx tsc --noEmit --skipLibCheck',
+  }
+  const cmd = commands[testType]
+  if (!cmd) return { ok: false, error: `Unknown test type: ${testType}. Available: ${Object.keys(commands).join(', ')}` }
+
+  const jobId = `test-${testType}`
+  if (runningJobs.has(jobId)) return { ok: false, error: 'Test already in progress' }
+
+  log('test', `Running ${testType} tests...`, 'info')
+  const child = spawn(cmd.split(' ')[0], cmd.split(' ').slice(1), {
+    cwd: PROJECT_ROOT,
+    shell: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+  const job = { id: jobId, child, startTime: Date.now(), status: 'running' }
+  runningJobs.set(jobId, job)
+
+  child.stdout.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('test', line.trim())
+    })
+  })
+  child.stderr.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('test', line.trim(), 'warn')
+    })
+  })
+  child.on('close', code => {
+    job.status = code === 0 ? 'success' : 'failed'
+    const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+    log('test', `${testType} tests ${code === 0 ? 'passed' : 'failed'} (${duration}s)`, code === 0 ? 'success' : 'error')
+    runningJobs.delete(jobId)
+  })
+
+  return { ok: true, message: `${testType} tests started — watch the console` }
+}
+
+// ── Remy Bridge ─────────────────────────────────────────────────
+
+async function askRemy(param) {
+  if (!param || !param.trim()) return { ok: false, error: 'Provide a question for Remy' }
+  const devOnline = await httpCheck(`http://localhost:${CONFIG.devPort}`)
+  if (!devOnline.ok) {
+    return { ok: false, error: 'Dev server is offline. Start it first to access Remy.' }
+  }
+  try {
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 60000)
+    const res = await fetch(`http://localhost:${CONFIG.devPort}/api/ai/remy`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: param.trim() }),
+      signal: controller.signal,
+    })
+    clearTimeout(timer)
+    if (!res.ok) return { ok: false, error: `Remy API returned ${res.status}` }
+    const data = await res.json()
+    return { ok: true, response: data.response || data.message || JSON.stringify(data), message: 'Remy responded' }
+  } catch (err) {
+    return { ok: false, error: `Remy bridge failed: ${err.message}` }
+  }
+}
+
 // ── Chat Tool Registry ───────────────────────────────────────────
 
 const TOOLS = {
+  // DevOps — Process Control
   'dev/start':        { fn: startDevServer,                       desc: 'Start the local Next.js dev server on port 3100' },
   'dev/stop':         { fn: stopDevServer,                        desc: 'Stop the local dev server' },
   'beta/restart':     { fn: restartBeta,                          desc: 'Restart the beta server (PM2 on Raspberry Pi)' },
@@ -577,15 +876,36 @@ const TOOLS = {
   'ollama/pc/stop':   { fn: () => ollamaAction('pc', 'stop'),    desc: 'Stop Ollama on the PC' },
   'ollama/pi/start':  { fn: () => ollamaAction('pi', 'start'),   desc: 'Start Ollama on the Raspberry Pi' },
   'ollama/pi/stop':   { fn: () => ollamaAction('pi', 'stop'),    desc: 'Stop Ollama on the Raspberry Pi' },
+
+  // DevOps — Git & Build
   'git/push':         { fn: gitPush,                              desc: 'Push current git branch to origin' },
+  'git/commit':       { fn: (param) => gitCommit(param),          desc: 'Stage all changes and commit (use git/commit:your message here)' },
   'build/typecheck':  { fn: () => runBuild('typecheck'),          desc: 'Run TypeScript type check (npx tsc --noEmit)' },
   'build/full':       { fn: () => runBuild('full'),               desc: 'Run full Next.js production build' },
-  'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services' },
+  'test/run':         { fn: (param) => runTests(param),           desc: 'Run tests (use test/run:smoke or test/run:typecheck)' },
+
+  // Status & Monitoring
+  'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services (dev, beta, prod, Ollama, git)' },
   'status/git':       { fn: checkGitStatus,                       desc: 'Get git branch, dirty files, and recent commits' },
-  'git/commit':       { fn: (param) => gitCommit(param),          desc: 'Stage all changes and commit (use git/commit:your message here)' },
-  'db/backup':        { fn: dbBackup,                              desc: 'Backup the Supabase database to a local SQL file' },
-  'history/all':      { fn: getGitHistory,                         desc: 'Get the full project commit history' },
-  'feedback/all':     { fn: getFeedback,                           desc: 'Get all user feedback from the database' },
+  'health/app':       { fn: getAppHealth,                         desc: 'Check app health (database, Redis, circuit breakers) — requires dev server running' },
+  'pi/status':        { fn: getPiStatus,                          desc: 'Get Raspberry Pi system status (uptime, disk, memory, PM2, services)' },
+  'pi/logs':          { fn: (param) => getPiLogs(param),          desc: 'Get recent PM2 logs from Pi (use pi/logs:100 for more lines)' },
+  'prod/deployments': { fn: getVercelDeployments,                 desc: 'Show recent Vercel production deployments' },
+
+  // Business Data (read-only Supabase queries)
+  'data/events':      { fn: getUpcomingEvents,                    desc: 'List upcoming events with client, date, status, guest count' },
+  'data/events-by-status': { fn: getEventsByStatus,               desc: 'Count events grouped by FSM status (draft, proposed, accepted, etc.)' },
+  'data/revenue':     { fn: getRevenueSummary,                    desc: 'Revenue summary: total revenue, expenses, profit, outstanding balance' },
+  'data/clients':     { fn: (param) => getClients(param),         desc: 'List or search clients (use data/clients:sarah to search)' },
+  'data/inquiries':   { fn: getOpenInquiries,                     desc: 'List open inquiries awaiting response' },
+
+  // Database & History
+  'db/backup':        { fn: dbBackup,                             desc: 'Backup the Supabase database to a local SQL file' },
+  'history/all':      { fn: getGitHistory,                        desc: 'Get the full project commit history' },
+  'feedback/all':     { fn: getFeedback,                          desc: 'Get all user feedback from the database' },
+
+  // Remy Bridge
+  'remy/ask':         { fn: (param) => askRemy(param),            desc: 'Ask Remy (business AI) a question — requires dev server running. Use remy/ask:your question here' },
 }
 
 async function getAvailableOllamaEndpoint() {
@@ -602,35 +922,56 @@ async function buildChatSystemPrompt() {
     .map(([name, { desc }]) => `  - ${name}: ${desc}`)
     .join('\n')
 
-  return `You are Gustav, the ChefFlow Mission Control AI. You manage the development infrastructure for ChefFlow, a private chef platform.
+  return `You are Gustav, the ChefFlow Mission Control AI — the developer's right hand. You manage infrastructure, query business data, monitor systems, and bridge to Remy (the in-app business AI). ChefFlow is a private chef operations platform.
 
 ## Your Capabilities
-You can execute system actions by including action tags in your response. Format: <action>action/name</action>
-For actions with parameters, use: <action>action/name:parameter value</action>
+Execute actions by including tags in your response.
+Format: <action>action/name</action>
+With parameters: <action>action/name:parameter value</action>
 
 Available actions:
 ${toolList}
 
 ## Current System Status
-- Dev Server (localhost:3100): ${status.dev.online ? `ONLINE (${status.dev.latency}ms)` : 'OFFLINE'}
-- Beta Server (beta.cheflowhq.com): ${status.beta.online ? `ONLINE (${status.beta.latency}ms)` : 'OFFLINE'}
-- Production (app.cheflowhq.com): ${status.prod.online ? `ONLINE (${status.prod.latency}ms)` : 'OFFLINE'}
-- Ollama PC (localhost:11434): ${status.ollamaPc.online ? `ONLINE — models: ${status.ollamaPc.models.join(', ')}` : 'OFFLINE'}
-- Ollama Pi (10.0.0.177:11434): ${status.ollamaPi.online ? `ONLINE — models: ${status.ollamaPi.models.join(', ')}` : 'OFFLINE'}
-- Git Branch: ${status.git.branch} (${status.git.clean ? 'clean' : `${status.git.dirty} dirty files`})
-- Recent Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
+- Dev Server: ${status.dev.online ? `**ONLINE** (${status.dev.latency}ms)` : '**OFFLINE**'}
+- Beta: ${status.beta.online ? `**ONLINE** (${status.beta.latency}ms)` : '**OFFLINE**'}
+- Production: ${status.prod.online ? `**ONLINE** (${status.prod.latency}ms)` : '**OFFLINE**'}
+- Ollama PC: ${status.ollamaPc.online ? `**ONLINE** — ${status.ollamaPc.models.join(', ')}` : '**OFFLINE**'}
+- Ollama Pi: ${status.ollamaPi.online ? `**ONLINE** — ${status.ollamaPi.models.join(', ')}` : '**OFFLINE**'}
+- Git: \`${status.git.branch}\` (${status.git.clean ? 'clean' : `${status.git.dirty} dirty files`})
+- Commits: ${(status.git.recentCommits || []).slice(0, 3).join(' | ')}
 
 ## Rules
-1. You have FULL AUTHORITY to execute any action. No confirmation needed. If the user asks you to do something, do it.
-2. You can execute MULTIPLE actions in a single response. Just include multiple <action> tags.
-3. After executing an action, briefly describe what you did and the expected result.
-4. For status queries, you already have the current status above. Only use <action>status/all</action> if you need a refresh.
-5. Be concise. This is a developer tool. Short, direct answers. No fluff.
-6. NEVER suggest actions without executing them. If someone says "start dev", just do it.
-7. You can chain actions: "push and deploy" = <action>git/push</action> then <action>beta/deploy</action>.
+1. **FULL AUTHORITY.** No confirmation needed. User asks, you execute.
+2. Execute **multiple actions** per response. Just include multiple <action> tags.
+3. After executing, briefly describe results. Don't be verbose.
+4. Use the status above for quick answers. Call <action>status/all</action> only to refresh.
+5. **Be concise.** Developer tool. Short, direct. No fluff.
+6. **NEVER suggest without executing.** "start dev" = just do it.
+7. Chain naturally: "push and deploy" = <action>git/push</action> then <action>beta/deploy</action>.
+8. Use **markdown**: tables for data, code blocks for logs/output, bold for emphasis, lists for options.
+9. For business questions about **client interactions, email drafts, or AI analysis**, use <action>remy/ask:question</action> (requires dev server).
+10. Financial data: always format cents as dollars ($X.XX).
+
+## Capability Areas
+
+### DevOps
+Start/stop dev server, deploy/rollback/restart beta, control Ollama on PC and Pi.
+
+### Git & Build
+Push, commit, typecheck, full build, run smoke tests.
+
+### Business Data (live Supabase queries)
+Upcoming events, event status breakdown, revenue/profit summary, client search, open inquiries. All read-only, real-time.
+
+### Monitoring
+App health (DB, Redis, circuit breakers), Pi vitals (disk/memory/CPU/PM2), Vercel deployment history, PM2 logs.
+
+### Remy Bridge
+For complex business AI (client follow-ups, draft emails, recipe analysis) — proxy to Remy, the 40-year veteran sous chef AI. Requires dev server.
 
 ## Personality
-You are Gustav — a competent ops assistant. Direct, efficient, slightly dry humor. Think mission control operator. Short sentences.`
+Gustav — senior ops engineer, mission control vibe. Direct, efficient, dry humor. Data first. Action, then explanation. NASA flight controller meets chef's right hand.`
 }
 
 async function parseAndExecuteActions(responseText) {
@@ -708,6 +1049,18 @@ async function handleRequest(req, res) {
     } catch {
       res.writeHead(500)
       return res.end('Dashboard HTML not found')
+    }
+  }
+
+  // Gustav storage JS
+  if (path === '/gustav-storage.js') {
+    try {
+      const js = await readFile(join(__dirname, 'gustav-storage.js'), 'utf-8')
+      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' })
+      return res.end(js)
+    } catch {
+      res.writeHead(500)
+      return res.end('Gustav storage JS not found')
     }
   }
 

@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ChefFlow Mission Control</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="/gustav-storage.js"></script>
 <style>
 /* ── Reset & Base ─────────────────────────────────────────────── */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -784,6 +786,78 @@ body {
   box-shadow: 0 0 8px var(--brand-dim);
 }
 
+/* ── Chat Markdown Rendering ──────────────────────────────────── */
+.chat-msg.bot { white-space: normal; }
+.chat-msg.bot p { margin: 0 0 8px 0; }
+.chat-msg.bot p:last-child { margin-bottom: 0; }
+.chat-msg.bot strong { color: var(--brand-bright); font-weight: 600; }
+.chat-msg.bot em { color: var(--text-secondary); }
+.chat-msg.bot code {
+  background: var(--bg-deep);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: 'SFMono-Regular', 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--brand-bright);
+}
+.chat-msg.bot pre {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  overflow-x: auto;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.chat-msg.bot pre code {
+  background: none;
+  padding: 0;
+  color: var(--text-primary);
+}
+.chat-msg.bot table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 11px;
+}
+.chat-msg.bot th, .chat-msg.bot td {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  text-align: left;
+}
+.chat-msg.bot th {
+  background: var(--bg-deep);
+  color: var(--brand-bright);
+  font-weight: 600;
+}
+.chat-msg.bot tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.chat-msg.bot ul, .chat-msg.bot ol {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+.chat-msg.bot li { margin: 2px 0; }
+.chat-msg.bot h1, .chat-msg.bot h2, .chat-msg.bot h3 {
+  font-family: 'DM Serif Display', serif;
+  color: var(--text-primary);
+  margin: 10px 0 6px 0;
+}
+.chat-msg.bot h1 { font-size: 16px; }
+.chat-msg.bot h2 { font-size: 14px; }
+.chat-msg.bot h3 { font-size: 13px; }
+.chat-msg.bot hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 8px 0;
+}
+.chat-msg.bot blockquote {
+  border-left: 3px solid var(--brand);
+  padding-left: 10px;
+  margin: 6px 0;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
 .chat-action-card {
   align-self: flex-start;
   max-width: 85%;
@@ -849,6 +923,263 @@ body {
   cursor: not-allowed;
   transform: none !important;
 }
+
+/* ── Chat Views (list, search, actions, templates) ──────────── */
+.chat-view { display: none; flex-direction: column; height: 100%; }
+.chat-view.active { display: flex; }
+.chat-view-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; background: var(--bg-primary); border-bottom: 1px solid var(--border);
+}
+.chat-view-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: var(--text-primary); }
+.chat-view-back {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 14px; padding: 4px 8px; border-radius: 4px; transition: all var(--transition);
+}
+.chat-view-back:hover { background: var(--bg-hover); color: var(--text-primary); }
+.chat-view-content { flex: 1; overflow-y: auto; padding: 12px 16px; }
+.chat-view-footer {
+  padding: 8px 16px; border-top: 1px solid var(--border); background: var(--bg-primary);
+  display: flex; gap: 8px; justify-content: center;
+}
+.chat-view-footer-btn {
+  padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--bg-card); color: var(--text-secondary); font-family: inherit;
+  font-size: 11px; cursor: pointer; transition: all var(--transition);
+}
+.chat-view-footer-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--brand); }
+
+/* List view items */
+.chat-project-group { margin-bottom: 12px; }
+.chat-project-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 8px; cursor: pointer; border-radius: 6px; transition: background var(--transition);
+  font-size: 12px; font-weight: 600; color: var(--text-secondary);
+}
+.chat-project-header:hover { background: var(--bg-hover); }
+.chat-project-header .chevron { font-size: 10px; transition: transform 200ms; margin-right: 6px; }
+.chat-project-header .chevron.collapsed { transform: rotate(-90deg); }
+.chat-project-actions { display: flex; gap: 2px; }
+.chat-project-btn {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 12px; padding: 2px 4px; border-radius: 3px; opacity: 0;
+  transition: all var(--transition);
+}
+.chat-project-header:hover .chat-project-btn { opacity: 1; }
+.chat-project-btn:hover { background: var(--bg-active); color: var(--text-primary); }
+.chat-project-convs { padding-left: 12px; }
+.chat-project-convs.collapsed { display: none; }
+
+.chat-conv-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 6px; cursor: pointer; transition: all var(--transition);
+  margin-bottom: 2px; gap: 8px;
+}
+.chat-conv-item:hover { background: var(--bg-hover); }
+.chat-conv-item.active { background: var(--bg-active); border-left: 2px solid var(--brand); }
+.chat-conv-item.pinned { border-left: 2px solid var(--warning); }
+.chat-conv-title {
+  flex: 1; font-size: 12px; color: var(--text-primary); white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.chat-conv-meta { font-size: 10px; color: var(--text-muted); white-space: nowrap; }
+.chat-conv-menu-btn {
+  background: none; border: none; color: var(--text-muted); cursor: pointer;
+  font-size: 14px; padding: 2px 4px; border-radius: 3px; opacity: 0;
+  transition: all var(--transition); flex-shrink: 0;
+}
+.chat-conv-item:hover .chat-conv-menu-btn { opacity: 1; }
+.chat-conv-menu-btn:hover { background: var(--bg-active); color: var(--text-primary); }
+
+/* Section label */
+.chat-section-label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-muted); padding: 8px 8px 4px; margin-bottom: 4px;
+}
+
+/* Context menu */
+.chat-context-menu {
+  position: fixed; min-width: 160px; background: var(--bg-card);
+  border: 1px solid var(--border-bright); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 300;
+  padding: 4px; animation: fadeIn 150ms ease;
+}
+.chat-ctx-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  font-size: 12px; color: var(--text-primary); cursor: pointer;
+  border-radius: 4px; transition: background var(--transition); border: none;
+  background: none; width: 100%; text-align: left; font-family: inherit;
+}
+.chat-ctx-item:hover { background: var(--bg-hover); }
+.chat-ctx-item.danger { color: var(--error); }
+.chat-ctx-item.danger:hover { background: rgba(239,68,68,0.15); }
+.chat-ctx-sep { height: 1px; background: var(--border); margin: 4px 8px; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Search */
+.chat-search-input {
+  width: 100%; padding: 8px 12px; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text-primary); font-family: inherit; font-size: 12px;
+  outline: none; margin-bottom: 12px; transition: border-color var(--transition);
+}
+.chat-search-input:focus { border-color: var(--brand); }
+.chat-search-input::placeholder { color: var(--text-muted); }
+.chat-search-result {
+  padding: 10px 12px; background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; margin-bottom: 8px; cursor: pointer; transition: all var(--transition);
+}
+.chat-search-result:hover { border-color: var(--brand); background: var(--bg-hover); }
+.chat-search-result-title { font-size: 12px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+.chat-search-result-project { font-size: 10px; color: var(--brand); margin-bottom: 4px; }
+.chat-search-result-snippet { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+.chat-search-highlight { background: var(--brand-dim); color: var(--brand-bright); padding: 0 2px; border-radius: 2px; }
+
+/* Action log */
+.chat-action-log-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-radius: 6px; margin-bottom: 4px; cursor: pointer; transition: background var(--transition);
+}
+.chat-action-log-item:hover { background: var(--bg-hover); }
+.chat-action-log-time { font-size: 11px; color: var(--text-muted); white-space: nowrap; font-family: 'SFMono-Regular', monospace; }
+.chat-action-log-name { flex: 1; font-size: 12px; color: var(--text-primary); font-family: 'SFMono-Regular', monospace; }
+.chat-action-log-status { font-size: 12px; }
+.chat-action-log-date {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  padding: 8px 0 4px; border-bottom: 1px solid var(--border); margin-bottom: 6px;
+}
+
+/* Templates */
+.chat-template-item {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  margin-bottom: 8px; transition: all var(--transition);
+}
+.chat-template-item:hover { border-color: var(--brand); }
+.chat-template-icon { font-size: 18px; flex-shrink: 0; }
+.chat-template-info { flex: 1; min-width: 0; }
+.chat-template-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.chat-template-prompt { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-template-actions { display: flex; gap: 4px; }
+.chat-template-btn {
+  background: none; border: 1px solid var(--border); color: var(--text-muted); cursor: pointer;
+  font-size: 11px; padding: 4px 8px; border-radius: 4px; transition: all var(--transition);
+}
+.chat-template-btn:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--brand); }
+.chat-template-btn.play { color: var(--success); border-color: var(--success); }
+.chat-template-btn.play:hover { background: rgba(34,197,94,0.15); }
+
+/* Inline edit */
+.chat-inline-edit {
+  background: var(--bg-deep); border: 1px solid var(--brand); border-radius: 4px;
+  color: var(--text-primary); font-family: inherit; font-size: 12px;
+  padding: 4px 8px; outline: none; width: 100%;
+}
+
+/* Empty state */
+.chat-empty-state {
+  text-align: center; padding: 32px 16px; color: var(--text-muted); font-size: 12px;
+}
+
+/* Project pill in chat header */
+.chat-breadcrumb {
+  display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  background: var(--bg-card); color: var(--text-secondary); border: 1px solid var(--border);
+  cursor: pointer; transition: all var(--transition); margin-top: 2px;
+}
+.chat-breadcrumb:hover { border-color: var(--brand); color: var(--brand); }
+
+/* Message hover toolbar */
+.chat-msg-wrapper { position: relative; display: flex; flex-direction: column; }
+.chat-msg-toolbar {
+  display: none; position: absolute; top: -4px; gap: 2px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px;
+  padding: 2px; box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.chat-msg-wrapper:hover .chat-msg-toolbar { display: flex; }
+.chat-msg-wrapper.user .chat-msg-toolbar { right: 0; }
+.chat-msg-wrapper.bot .chat-msg-toolbar { left: 0; }
+.chat-msg-tool-btn {
+  background: none; border: none; cursor: pointer; font-size: 12px;
+  padding: 3px 6px; border-radius: 3px; color: var(--text-muted);
+  transition: all var(--transition);
+}
+.chat-msg-tool-btn:hover { background: var(--bg-hover); color: var(--text-primary); }
+.chat-msg-tool-btn.bookmarked { color: var(--warning); }
+
+/* Suggestion banner */
+.chat-suggest-banner {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  margin: 8px 16px; font-size: 11px; color: var(--text-secondary);
+  animation: fadeIn 300ms ease;
+}
+.chat-suggest-text { flex: 1; }
+.chat-suggest-btn {
+  padding: 3px 10px; border-radius: 4px; border: 1px solid var(--border);
+  background: none; color: var(--text-primary); font-family: inherit;
+  font-size: 11px; cursor: pointer; transition: all var(--transition);
+}
+.chat-suggest-btn.yes { border-color: var(--brand); color: var(--brand); }
+.chat-suggest-btn.yes:hover { background: var(--brand-dim); }
+.chat-suggest-btn:hover { background: var(--bg-hover); }
+
+/* Voice button */
+.chat-voice-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--border);
+  color: var(--text-muted); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition); flex-shrink: 0;
+}
+.chat-voice-btn:hover { border-color: var(--brand); color: var(--brand); }
+.chat-voice-btn.listening {
+  border-color: var(--error); color: var(--error);
+  animation: pulse-ring 1.5s ease infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+  70% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+  100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+
+/* Move-to submenu */
+.chat-move-submenu {
+  position: fixed; min-width: 160px; background: var(--bg-card);
+  border: 1px solid var(--border-bright); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 301;
+  padding: 4px; animation: fadeIn 150ms ease;
+}
+
+/* Dialog overlay */
+.chat-dialog-overlay {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.6);
+  display: none; align-items: center; justify-content: center; z-index: 250;
+  border-radius: 12px;
+}
+.chat-dialog-overlay.visible { display: flex; }
+.chat-dialog {
+  background: var(--bg-card); border: 1px solid var(--border-bright);
+  border-radius: 8px; padding: 20px; max-width: 300px; width: 90%;
+}
+.chat-dialog-title { font-family: 'DM Serif Display', serif; font-size: 15px; color: var(--text-primary); margin-bottom: 8px; }
+.chat-dialog-text { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.5; }
+.chat-dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.chat-dialog-btn {
+  padding: 6px 14px; border-radius: 6px; font-family: inherit; font-size: 12px;
+  cursor: pointer; transition: all var(--transition); border: 1px solid var(--border);
+}
+.chat-dialog-btn.cancel { background: none; color: var(--text-secondary); }
+.chat-dialog-btn.cancel:hover { background: var(--bg-hover); }
+.chat-dialog-btn.confirm { background: var(--brand); color: #fff; border-color: var(--brand); }
+.chat-dialog-btn.confirm:hover { opacity: 0.9; }
+.chat-dialog-btn.danger { background: var(--error); color: #fff; border-color: var(--error); }
+.chat-dialog-btn.danger:hover { opacity: 0.9; }
+.chat-dialog-input {
+  width: 100%; padding: 8px 12px; background: var(--bg-deep); border: 1px solid var(--border);
+  border-radius: 6px; color: var(--text-primary); font-family: inherit; font-size: 12px;
+  outline: none; margin-bottom: 12px;
+}
+.chat-dialog-input:focus { border-color: var(--brand); }
 
 /* ── Responsive tweaks ────────────────────────────────────────── */
 @media (max-width: 700px) {
@@ -1231,39 +1562,113 @@ body {
 </button>
 
 <div class="chat-drawer" id="chat-drawer">
-  <div class="chat-header">
-    <div class="chat-header-left">
-      <span class="chat-header-icon">&#x1F916;</span>
-      <div>
-        <div class="chat-header-title">Gustav</div>
-        <div class="chat-header-subtitle" id="chat-status">Connecting...</div>
+  <!-- Chat View -->
+  <div class="chat-view active" id="chat-view-chat">
+    <div class="chat-header">
+      <div class="chat-header-left">
+        <button type="button" class="chat-view-back" onclick="showChatView('list')" title="Conversations (Ctrl+H)">&#x2630;</button>
+        <div>
+          <div class="chat-header-title">Gustav</div>
+          <div class="chat-header-subtitle" id="chat-status">Connecting...</div>
+          <div id="chat-breadcrumb-container"></div>
+        </div>
+      </div>
+      <div class="chat-header-actions">
+        <button type="button" class="chat-header-btn" onclick="newConversation()" title="New conversation (Ctrl+N)">&#x2795;</button>
+        <button type="button" class="chat-header-btn" onclick="toggleChat()" title="Close">&times;</button>
       </div>
     </div>
-    <div class="chat-header-actions">
-      <button type="button" class="chat-header-btn" onclick="clearChat()" title="Clear conversation">&#x1F5D1;</button>
-      <button type="button" class="chat-header-btn" onclick="toggleChat()" title="Close">&times;</button>
-    </div>
-  </div>
-  <div class="chat-messages" id="chat-messages">
-    <div class="chat-welcome">
-      <div class="chat-welcome-icon">&#x1F916;</div>
-      <div class="chat-welcome-title">Gustav</div>
-      <div class="chat-welcome-text">I can start/stop servers, deploy, push branches, check status, and more. Just tell me what you need.</div>
-      <div class="chat-quick-actions">
-        <button type="button" class="chat-quick-btn" onclick="sendQuick('What is the current status of all services?')">Status check</button>
-        <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Start dev</button>
-        <button type="button" class="chat-quick-btn" onclick="sendQuick('Push the current branch')">Push branch</button>
-        <button type="button" class="chat-quick-btn" onclick="sendQuick('Deploy to beta')">Deploy beta</button>
+    <div id="chat-suggest-area"></div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-welcome">
+        <div class="chat-welcome-icon">&#x1F916;</div>
+        <div class="chat-welcome-title">Gustav</div>
+        <div class="chat-welcome-text">DevOps, business data, Pi monitoring, Remy bridge — I do it all. Ask me anything.</div>
+        <div class="chat-quick-actions" id="chat-quick-actions">
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">Status</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show revenue summary')">Revenue</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Show upcoming events')">Events</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Check the Pi status')">Pi status</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Start dev</button>
+          <button type="button" class="chat-quick-btn" onclick="sendQuick('Deploy to beta')">Deploy beta</button>
+        </div>
       </div>
     </div>
+    <div class="chat-input-wrapper">
+      <input type="text" class="chat-input" id="chat-input"
+             placeholder="Ask Gustav anything..."
+             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" />
+      <button type="button" class="chat-voice-btn" id="chat-voice-btn" onclick="toggleVoice()" title="Voice input">&#x1F399;</button>
+      <button type="button" class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">&#x27A4;</button>
+    </div>
   </div>
-  <div class="chat-input-wrapper">
-    <input type="text" class="chat-input" id="chat-input"
-           placeholder="Ask Gustav anything..."
-           onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}" />
-    <button type="button" class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">&#x27A4;</button>
+
+  <!-- List View -->
+  <div class="chat-view" id="chat-view-list">
+    <div class="chat-view-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" class="chat-view-back" onclick="showChatView('chat')">&#x2190;</button>
+        <span class="chat-view-title">Conversations</span>
+      </div>
+      <div style="display:flex;gap:4px;">
+        <button type="button" class="chat-header-btn" onclick="newConversation()" title="New conversation">&#x2795;</button>
+        <button type="button" class="chat-header-btn" onclick="showChatView('search')" title="Search">&#x1F50D;</button>
+      </div>
+    </div>
+    <div class="chat-view-content" id="chat-list-content"></div>
+    <div class="chat-view-footer">
+      <button type="button" class="chat-view-footer-btn" onclick="showChatView('actions')">&#x1F4CB; Actions</button>
+      <button type="button" class="chat-view-footer-btn" onclick="showChatView('templates')">&#x1F4DD; Templates</button>
+      <button type="button" class="chat-view-footer-btn" onclick="showNewProjectDialog()">&#x1F4C1; New Project</button>
+    </div>
+  </div>
+
+  <!-- Search View -->
+  <div class="chat-view" id="chat-view-search">
+    <div class="chat-view-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" class="chat-view-back" onclick="showChatView('list')">&#x2190;</button>
+        <span class="chat-view-title">Search</span>
+      </div>
+    </div>
+    <div class="chat-view-content">
+      <input type="text" class="chat-search-input" id="chat-search-input"
+             placeholder="Search conversations..." oninput="debounceSearch()" />
+      <div id="chat-search-results"><div class="chat-empty-state">Type to search across all conversations</div></div>
+    </div>
+  </div>
+
+  <!-- Action Log View -->
+  <div class="chat-view" id="chat-view-actions">
+    <div class="chat-view-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" class="chat-view-back" onclick="showChatView('list')">&#x2190;</button>
+        <span class="chat-view-title">Action Log</span>
+      </div>
+    </div>
+    <div class="chat-view-content" id="chat-action-log-content"></div>
+  </div>
+
+  <!-- Templates View -->
+  <div class="chat-view" id="chat-view-templates">
+    <div class="chat-view-header">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button type="button" class="chat-view-back" onclick="showChatView('list')">&#x2190;</button>
+        <span class="chat-view-title">Templates</span>
+      </div>
+      <button type="button" class="chat-header-btn" onclick="showNewTemplateDialog()" title="New template">&#x2795;</button>
+    </div>
+    <div class="chat-view-content" id="chat-templates-content"></div>
+  </div>
+
+  <!-- Dialog overlay -->
+  <div class="chat-dialog-overlay" id="chat-dialog-overlay">
+    <div class="chat-dialog" id="chat-dialog"></div>
   </div>
 </div>
+
+<!-- Context menu -->
+<div class="chat-context-menu" id="chat-context-menu" style="display:none;"></div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
@@ -1637,13 +2042,38 @@ function connectSSE() {
   }
 }
 
-// ── Chat Bot ──────────────────────────────────────────────────────
+// ── Chat Bot (with Gustav Conversation Management) ───────────────
 
 let chatOpen = false
 let chatHistory = []
 let chatStreaming = false
+let currentConversationId = null
+let currentChatView = 'chat'
+let chatInitialized = false
+let projectSuggestionShown = false
+let voiceRecognition = null
+let voiceListening = false
 
-function toggleChat() {
+// ── View Switching ───────────────────────────────────────────────
+
+function showChatView(viewName) {
+  document.querySelectorAll('.chat-view').forEach(v => v.classList.remove('active'))
+  const target = document.getElementById(`chat-view-${viewName}`)
+  if (target) target.classList.add('active')
+  currentChatView = viewName
+
+  // Load data for specific views
+  if (viewName === 'list') renderConversationList()
+  if (viewName === 'actions') renderActionLog()
+  if (viewName === 'templates') renderTemplates()
+  if (viewName === 'search') {
+    setTimeout(() => document.getElementById('chat-search-input')?.focus(), 50)
+  }
+}
+
+// ── Toggle / Init ────────────────────────────────────────────────
+
+async function toggleChat() {
   chatOpen = !chatOpen
   const drawer = document.getElementById('chat-drawer')
   const fab = document.getElementById('chat-fab')
@@ -1653,33 +2083,145 @@ function toggleChat() {
     drawer.classList.add('open')
     fab.classList.add('open')
     fabIcon.innerHTML = '&#x2715;'
-    document.getElementById('chat-input').focus()
+    document.getElementById('chat-input')?.focus()
+
+    // Load most recent conversation on first open
+    if (!chatInitialized && window.GustavStorage) {
+      chatInitialized = true
+      try {
+        const convs = await GustavStorage.getAllConversations()
+        if (convs.length > 0) {
+          await loadConversation(convs[0].id)
+        }
+      } catch (e) { console.error('[gustav] Init load failed:', e) }
+    }
   } else {
     drawer.classList.remove('open')
     fab.classList.remove('open')
     fabIcon.innerHTML = '&#x1F916;'
+    closeContextMenu()
   }
 }
 
-function clearChat() {
-  chatHistory = []
+// ── New Conversation ─────────────────────────────────────────────
+
+async function newConversation(projectId = null) {
+  if (!window.GustavStorage) return
+  try {
+    const conv = await GustavStorage.createConversation(projectId)
+    currentConversationId = conv.id
+    chatHistory = []
+    projectSuggestionShown = false
+    showWelcomeScreen()
+    showChatView('chat')
+    updateBreadcrumb(conv)
+    document.getElementById('chat-suggest-area').innerHTML = ''
+    document.getElementById('chat-input')?.focus()
+    GustavStorage.pruneOldConversations().catch(() => {})
+  } catch (e) { console.error('[gustav] New conversation failed:', e) }
+}
+
+function showWelcomeScreen() {
   const messagesEl = document.getElementById('chat-messages')
   messagesEl.innerHTML = `<div class="chat-welcome">
     <div class="chat-welcome-icon">&#x1F916;</div>
     <div class="chat-welcome-title">Gustav</div>
-    <div class="chat-welcome-text">I can start/stop servers, deploy, push branches, check status, and more. Just tell me what you need.</div>
-    <div class="chat-quick-actions">
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('What is the current status of all services?')">Status check</button>
+    <div class="chat-welcome-text">DevOps, business data, Pi monitoring, Remy bridge — I do it all. Ask me anything.</div>
+    <div class="chat-quick-actions" id="chat-quick-actions">
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show me the full system status')">Status</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show revenue summary')">Revenue</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('Show upcoming events')">Events</button>
+      <button type="button" class="chat-quick-btn" onclick="sendQuick('Check the Pi status')">Pi status</button>
       <button type="button" class="chat-quick-btn" onclick="sendQuick('Start the dev server')">Start dev</button>
-      <button type="button" class="chat-quick-btn" onclick="sendQuick('Push the current branch')">Push branch</button>
       <button type="button" class="chat-quick-btn" onclick="sendQuick('Deploy to beta')">Deploy beta</button>
     </div>
   </div>`
 }
 
+// ── Load Conversation ────────────────────────────────────────────
+
+async function loadConversation(convId) {
+  if (!window.GustavStorage) return
+  try {
+    const conv = await GustavStorage.getConversation(convId)
+    if (!conv) return
+    currentConversationId = convId
+    projectSuggestionShown = true // Don't suggest for loaded conversations
+
+    const messages = await GustavStorage.getMessages(convId)
+    chatHistory = messages.map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content }))
+
+    // Render messages
+    const messagesEl = document.getElementById('chat-messages')
+    messagesEl.innerHTML = ''
+
+    if (messages.length === 0) {
+      showWelcomeScreen()
+    } else {
+      for (const msg of messages) {
+        const role = msg.role === 'user' ? 'user' : 'bot'
+        const wrapper = document.createElement('div')
+        wrapper.className = `chat-msg-wrapper ${role}`
+        wrapper.dataset.msgId = msg.id
+
+        const msgDiv = document.createElement('div')
+        msgDiv.className = `chat-msg ${role}`
+        const cleaned = msg.content.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
+        if (role === 'bot' && cleaned) {
+          msgDiv.innerHTML = renderMarkdown(cleaned)
+        } else {
+          msgDiv.textContent = cleaned || msg.content
+        }
+
+        // Toolbar
+        const toolbar = document.createElement('div')
+        toolbar.className = 'chat-msg-toolbar'
+        toolbar.innerHTML = `<button type="button" class="chat-msg-tool-btn ${msg.bookmarked ? 'bookmarked' : ''}" onclick="toggleMsgBookmark('${msg.id}', this)" title="Bookmark">&#x1F516;</button><button type="button" class="chat-msg-tool-btn" onclick="copyMsgContent(this)" title="Copy">&#x1F4CB;</button>`
+
+        wrapper.appendChild(toolbar)
+        wrapper.appendChild(msgDiv)
+        messagesEl.appendChild(wrapper)
+      }
+      messagesEl.scrollTop = messagesEl.scrollHeight
+    }
+
+    updateBreadcrumb(conv)
+    document.getElementById('chat-suggest-area').innerHTML = ''
+    showChatView('chat')
+  } catch (e) { console.error('[gustav] Load conversation failed:', e) }
+}
+
+// ── Breadcrumb ───────────────────────────────────────────────────
+
+async function updateBreadcrumb(conv) {
+  const container = document.getElementById('chat-breadcrumb-container')
+  if (!container) return
+  if (!conv || !conv.projectId) {
+    container.innerHTML = ''
+    return
+  }
+  try {
+    const proj = await GustavStorage.getProject(conv.projectId)
+    if (proj) {
+      container.innerHTML = `<span class="chat-breadcrumb" onclick="showMoveMenu(event, '${conv.id}')">${proj.icon} ${escapeHtml(proj.name)}</span>`
+    } else {
+      container.innerHTML = ''
+    }
+  } catch { container.innerHTML = '' }
+}
+
+// ── Send Message (with persistence) ──────────────────────────────
+
 function sendQuick(text) {
   document.getElementById('chat-input').value = text
   sendChat()
+}
+
+function renderMarkdown(text) {
+  if (typeof marked !== 'undefined' && text) {
+    try { return marked.parse(text, { breaks: true }) } catch { return escapeHtml(text) }
+  }
+  return escapeHtml(text)
 }
 
 function appendChatMessage(role, content, extraClass) {
@@ -1687,11 +2229,26 @@ function appendChatMessage(role, content, extraClass) {
   const welcome = messagesEl.querySelector('.chat-welcome')
   if (welcome) welcome.remove()
 
+  const wrapper = document.createElement('div')
+  wrapper.className = `chat-msg-wrapper ${role}`
+
   const div = document.createElement('div')
   div.className = `chat-msg ${role}${extraClass ? ' ' + extraClass : ''}`
   const displayContent = content.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
-  div.textContent = displayContent || content
-  messagesEl.appendChild(div)
+  if (role === 'bot' && displayContent) {
+    div.innerHTML = renderMarkdown(displayContent)
+  } else {
+    div.textContent = displayContent || content
+  }
+
+  // Add toolbar
+  const toolbar = document.createElement('div')
+  toolbar.className = 'chat-msg-toolbar'
+  toolbar.innerHTML = `<button type="button" class="chat-msg-tool-btn" onclick="copyMsgContent(this)" title="Copy">&#x1F4CB;</button>`
+
+  wrapper.appendChild(toolbar)
+  wrapper.appendChild(div)
+  messagesEl.appendChild(wrapper)
   messagesEl.scrollTop = messagesEl.scrollHeight
   return div
 }
@@ -1717,11 +2274,41 @@ async function sendChat() {
   chatStreaming = true
   document.getElementById('chat-send-btn').disabled = true
 
+  // Auto-create conversation if none exists
+  if (!currentConversationId && window.GustavStorage) {
+    try {
+      const conv = await GustavStorage.createConversation()
+      currentConversationId = conv.id
+      GustavStorage.pruneOldConversations().catch(() => {})
+    } catch (e) { console.error('[gustav] Auto-create failed:', e) }
+  }
+
   appendChatMessage('user', message)
   chatHistory.push({ role: 'user', content: message })
 
+  // Save user message to IndexedDB
+  if (currentConversationId && window.GustavStorage) {
+    GustavStorage.addMessage(currentConversationId, 'user', message).catch(e =>
+      console.error('[gustav] Save user msg failed:', e)
+    )
+    // Auto-title from first message
+    if (chatHistory.filter(m => m.role === 'user').length === 1) {
+      const title = GustavStorage.autoTitle(message)
+      GustavStorage.updateConversation(currentConversationId, { title }).catch(() => {})
+
+      // Auto-suggest project
+      if (!projectSuggestionShown) {
+        projectSuggestionShown = true
+        const suggestion = GustavStorage.autoSuggestProject(message)
+        if (suggestion) showProjectSuggestion(suggestion, currentConversationId)
+      }
+    }
+  }
+
   const botMsg = appendChatMessage('bot', '', 'streaming')
   let fullResponse = ''
+  let collectedActions = []
+  let collectedActionResults = []
 
   try {
     const response = await fetch(`${API}/api/chat`, {
@@ -1765,14 +2352,22 @@ async function sendChat() {
 
           if (chunk.type === 'token') {
             fullResponse += chunk.content
-            botMsg.textContent = fullResponse.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
-            document.getElementById('chat-messages').scrollTop =
-              document.getElementById('chat-messages').scrollHeight
+            const cleaned = fullResponse.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
+            if (!sendChat._renderTimer) {
+              sendChat._renderTimer = setTimeout(() => {
+                botMsg.innerHTML = renderMarkdown(cleaned)
+                document.getElementById('chat-messages').scrollTop =
+                  document.getElementById('chat-messages').scrollHeight
+                sendChat._renderTimer = null
+              }, 100)
+            }
           }
 
           if (chunk.type === 'action_results') {
             for (const result of chunk.results) {
               appendActionResult(result)
+              collectedActions.push(result.action)
+              collectedActionResults.push(result)
             }
             setTimeout(refreshStatus, 1000)
           }
@@ -1784,12 +2379,41 @@ async function sendChat() {
 
           if (chunk.type === 'done') {
             chatHistory.push({ role: 'assistant', content: chunk.fullResponse })
+
+            // Save assistant message with actions to IndexedDB
+            if (currentConversationId && window.GustavStorage) {
+              GustavStorage.addMessage(currentConversationId, 'assistant', chunk.fullResponse, {
+                actions: collectedActions.length > 0 ? collectedActions : null,
+                actionResults: collectedActionResults.length > 0 ? collectedActionResults : null,
+              }).then(() => {
+                GustavStorage.trimMessages(currentConversationId).catch(() => {})
+              }).catch(e => console.error('[gustav] Save assistant msg failed:', e))
+            }
           }
         } catch { /* skip malformed chunks */ }
       }
     }
 
+    // Final markdown render
+    if (sendChat._renderTimer) { clearTimeout(sendChat._renderTimer); sendChat._renderTimer = null }
+    const finalCleaned = fullResponse.replace(/<action>[\w/]+(?::[^<]+)?<\/action>/g, '').trim()
+    if (finalCleaned) botMsg.innerHTML = renderMarkdown(finalCleaned)
     botMsg.classList.remove('streaming')
+
+    // Add bookmark button to the bot message wrapper
+    const wrapper = botMsg.closest('.chat-msg-wrapper')
+    if (wrapper) {
+      const toolbar = wrapper.querySelector('.chat-msg-toolbar')
+      if (toolbar) {
+        const bookmarkBtn = document.createElement('button')
+        bookmarkBtn.type = 'button'
+        bookmarkBtn.className = 'chat-msg-tool-btn'
+        bookmarkBtn.title = 'Bookmark'
+        bookmarkBtn.innerHTML = '&#x1F516;'
+        bookmarkBtn.onclick = function() { toggleMsgBookmark(null, this) }
+        toolbar.insertBefore(bookmarkBtn, toolbar.firstChild)
+      }
+    }
 
   } catch (err) {
     botMsg.textContent = `Connection error: ${err.message}`
@@ -1800,6 +2424,719 @@ async function sendChat() {
   chatStreaming = false
   document.getElementById('chat-send-btn').disabled = false
 }
+
+// ── Bookmarks ────────────────────────────────────────────────────
+
+async function toggleMsgBookmark(msgId, btn) {
+  if (!window.GustavStorage || !msgId) return
+  try {
+    await GustavStorage.toggleBookmark(msgId)
+    btn.classList.toggle('bookmarked')
+  } catch (e) { console.error('[gustav] Bookmark toggle failed:', e) }
+}
+
+function copyMsgContent(btn) {
+  const wrapper = btn.closest('.chat-msg-wrapper')
+  const msgEl = wrapper?.querySelector('.chat-msg')
+  if (msgEl) {
+    navigator.clipboard.writeText(msgEl.textContent).catch(() => {})
+    btn.innerHTML = '&#x2714;'
+    setTimeout(() => { btn.innerHTML = '&#x1F4CB;' }, 1500)
+  }
+}
+
+// ── Project Suggestion Banner ────────────────────────────────────
+
+async function showProjectSuggestion(suggestion, convId) {
+  const area = document.getElementById('chat-suggest-area')
+  if (!area) return
+
+  // Check if the project already exists
+  const projects = await GustavStorage.getProjects()
+  const existing = projects.find(p => p.name === suggestion.name)
+
+  area.innerHTML = `<div class="chat-suggest-banner">
+    <span class="chat-suggest-text">Move to ${suggestion.icon} ${escapeHtml(suggestion.name)}?</span>
+    <button type="button" class="chat-suggest-btn yes" onclick="acceptProjectSuggestion('${convId}', '${escapeHtml(suggestion.name)}', '${suggestion.icon}', ${existing ? `'${existing.id}'` : 'null'})">Yes</button>
+    <button type="button" class="chat-suggest-btn" onclick="this.closest('.chat-suggest-banner').remove()">No</button>
+  </div>`
+}
+
+async function acceptProjectSuggestion(convId, projectName, icon, existingProjectId) {
+  try {
+    let projectId = existingProjectId
+    if (!projectId) {
+      const proj = await GustavStorage.createProject(projectName, icon)
+      projectId = proj.id
+    }
+    await GustavStorage.moveConversation(convId, projectId)
+    const conv = await GustavStorage.getConversation(convId)
+    updateBreadcrumb(conv)
+  } catch (e) { console.error('[gustav] Accept suggestion failed:', e) }
+  document.getElementById('chat-suggest-area').innerHTML = ''
+}
+
+// ── Conversation List ────────────────────────────────────────────
+
+async function renderConversationList() {
+  if (!window.GustavStorage) return
+  const content = document.getElementById('chat-list-content')
+  if (!content) return
+
+  try {
+    const [projects, allConvs, archivedConvs] = await Promise.all([
+      GustavStorage.getProjects(),
+      GustavStorage.getAllConversations(false),
+      GustavStorage.getArchivedConversations(),
+    ])
+
+    let html = ''
+
+    // Pinned conversations
+    const pinned = allConvs.filter(c => c.pinned)
+    if (pinned.length > 0) {
+      html += `<div class="chat-section-label">&#x1F4CC; Pinned</div>`
+      for (const conv of pinned) {
+        html += renderConvItem(conv)
+      }
+    }
+
+    // Conversations by project
+    for (const proj of projects) {
+      const projConvs = allConvs.filter(c => c.projectId === proj.id && !c.pinned)
+      const collapsed = localStorage.getItem(`gustav-proj-${proj.id}-collapsed`) === '1'
+      html += `<div class="chat-project-group">
+        <div class="chat-project-header" onclick="toggleProjectCollapse('${proj.id}')">
+          <div><span class="chevron ${collapsed ? 'collapsed' : ''}">&#x25BC;</span>${escapeHtml(proj.icon)} ${escapeHtml(proj.name)} (${projConvs.length})</div>
+          <div class="chat-project-actions">
+            <button type="button" class="chat-project-btn" onclick="event.stopPropagation();newConversation('${proj.id}')" title="New conversation in project">&#x2795;</button>
+            <button type="button" class="chat-project-btn" onclick="event.stopPropagation();showProjectContextMenu(event,'${proj.id}')" title="More">&#x22EF;</button>
+          </div>
+        </div>
+        <div class="chat-project-convs ${collapsed ? 'collapsed' : ''}" id="proj-convs-${proj.id}">`
+      for (const conv of projConvs) {
+        html += renderConvItem(conv)
+      }
+      if (projConvs.length === 0) {
+        html += `<div class="chat-empty-state" style="padding:8px;font-size:11px;">No conversations</div>`
+      }
+      html += `</div></div>`
+    }
+
+    // Uncategorized
+    const uncategorized = allConvs.filter(c => !c.projectId && !c.pinned)
+    if (uncategorized.length > 0) {
+      html += `<div class="chat-section-label">Uncategorized (${uncategorized.length})</div>`
+      for (const conv of uncategorized) {
+        html += renderConvItem(conv)
+      }
+    }
+
+    // Archived
+    if (archivedConvs.length > 0) {
+      const archCollapsed = localStorage.getItem('gustav-archived-collapsed') !== '0'
+      html += `<div class="chat-project-header" onclick="toggleArchivedCollapse()" style="margin-top:8px;">
+        <div><span class="chevron ${archCollapsed ? 'collapsed' : ''}">&#x25BC;</span>Archived (${archivedConvs.length})</div>
+      </div>
+      <div class="chat-project-convs ${archCollapsed ? 'collapsed' : ''}" id="archived-convs">`
+      for (const conv of archivedConvs) {
+        html += renderConvItem(conv, true)
+      }
+      html += `</div>`
+    }
+
+    if (allConvs.length === 0 && archivedConvs.length === 0) {
+      html = `<div class="chat-empty-state">No conversations yet.<br>Start one with the + button above.</div>`
+    }
+
+    content.innerHTML = html
+  } catch (e) {
+    content.innerHTML = `<div class="chat-empty-state">Failed to load conversations</div>`
+    console.error('[gustav] List render failed:', e)
+  }
+}
+
+function renderConvItem(conv, isArchived = false) {
+  const active = conv.id === currentConversationId ? ' active' : ''
+  const pinClass = conv.pinned ? ' pinned' : ''
+  const time = timeAgo(conv.updatedAt)
+  const bookmarkBadge = conv.bookmarkCount > 0 ? ` &#x1F516;${conv.bookmarkCount}` : ''
+  return `<div class="chat-conv-item${active}${pinClass}" onclick="loadConversation('${conv.id}')">
+    <span class="chat-conv-title">${escapeHtml(conv.title)}${bookmarkBadge}</span>
+    <span class="chat-conv-meta">${time}</span>
+    <button type="button" class="chat-conv-menu-btn" onclick="event.stopPropagation();showConvContextMenu(event,'${conv.id}',${isArchived})" title="More">&#x22EF;</button>
+  </div>`
+}
+
+function timeAgo(dateStr) {
+  const now = Date.now()
+  const then = new Date(dateStr).getTime()
+  const diff = now - then
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'now'
+  if (mins < 60) return `${mins}m`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d`
+  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function toggleProjectCollapse(projId) {
+  const key = `gustav-proj-${projId}-collapsed`
+  const el = document.getElementById(`proj-convs-${projId}`)
+  const isCollapsed = localStorage.getItem(key) === '1'
+  localStorage.setItem(key, isCollapsed ? '0' : '1')
+  if (el) el.classList.toggle('collapsed')
+  // Update chevron
+  const header = el?.previousElementSibling
+  const chevron = header?.querySelector('.chevron')
+  if (chevron) chevron.classList.toggle('collapsed')
+}
+
+function toggleArchivedCollapse() {
+  const key = 'gustav-archived-collapsed'
+  const el = document.getElementById('archived-convs')
+  const isCollapsed = localStorage.getItem(key) !== '0'
+  localStorage.setItem(key, isCollapsed ? '0' : '1')
+  if (el) el.classList.toggle('collapsed')
+  const header = el?.previousElementSibling
+  const chevron = header?.querySelector('.chevron')
+  if (chevron) chevron.classList.toggle('collapsed')
+}
+
+// ── Context Menus ────────────────────────────────────────────────
+
+function closeContextMenu() {
+  document.getElementById('chat-context-menu').style.display = 'none'
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.chat-context-menu') && !e.target.closest('.chat-conv-menu-btn') && !e.target.closest('.chat-project-btn')) {
+    closeContextMenu()
+  }
+})
+
+function showConvContextMenu(event, convId, isArchived) {
+  event.preventDefault()
+  const menu = document.getElementById('chat-context-menu')
+  let items = `
+    <button type="button" class="chat-ctx-item" onclick="renameConversation('${convId}')">&#x270F; Rename</button>
+    <button type="button" class="chat-ctx-item" onclick="showMoveMenu(event,'${convId}')">&#x1F4C1; Move to...</button>
+    <button type="button" class="chat-ctx-item" onclick="togglePin('${convId}')">${isArchived ? '' : '&#x1F4CC; Pin/Unpin'}</button>
+    <div class="chat-ctx-sep"></div>
+    <button type="button" class="chat-ctx-item" onclick="exportConv('${convId}','json')">&#x1F4E5; Export JSON</button>
+    <button type="button" class="chat-ctx-item" onclick="exportConv('${convId}','md')">&#x1F4DD; Export Markdown</button>
+    <div class="chat-ctx-sep"></div>`
+
+  if (isArchived) {
+    items += `<button type="button" class="chat-ctx-item" onclick="unarchiveConv('${convId}')">&#x1F4E4; Unarchive</button>`
+  } else {
+    items += `<button type="button" class="chat-ctx-item" onclick="archiveConv('${convId}')">&#x1F4E6; Archive</button>`
+  }
+  items += `<button type="button" class="chat-ctx-item danger" onclick="deleteConv('${convId}')">&#x1F5D1; Delete</button>`
+
+  menu.innerHTML = items
+  positionMenu(menu, event)
+}
+
+function showProjectContextMenu(event, projId) {
+  event.preventDefault()
+  const menu = document.getElementById('chat-context-menu')
+  menu.innerHTML = `
+    <button type="button" class="chat-ctx-item" onclick="renameProject('${projId}')">&#x270F; Rename</button>
+    <button type="button" class="chat-ctx-item" onclick="exportProject('${projId}')">&#x1F4E5; Export All</button>
+    <div class="chat-ctx-sep"></div>
+    <button type="button" class="chat-ctx-item danger" onclick="deleteProject('${projId}')">&#x1F5D1; Delete Project</button>`
+  positionMenu(menu, event)
+}
+
+function positionMenu(menu, event) {
+  menu.style.display = 'block'
+  const rect = menu.getBoundingClientRect()
+  let x = event.clientX
+  let y = event.clientY
+  if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 8
+  if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 8
+  menu.style.left = x + 'px'
+  menu.style.top = y + 'px'
+}
+
+// ── Context Menu Actions ─────────────────────────────────────────
+
+async function renameConversation(convId) {
+  closeContextMenu()
+  const conv = await GustavStorage.getConversation(convId)
+  if (!conv) return
+  showDialog({
+    title: 'Rename Conversation',
+    input: true,
+    inputValue: conv.title,
+    confirmText: 'Rename',
+    onConfirm: async (val) => {
+      if (val.trim()) {
+        await GustavStorage.updateConversation(convId, { title: val.trim() })
+        renderConversationList()
+      }
+    }
+  })
+}
+
+async function togglePin(convId) {
+  closeContextMenu()
+  const conv = await GustavStorage.getConversation(convId)
+  if (!conv) return
+  if (conv.pinned) {
+    await GustavStorage.unpinConversation(convId)
+  } else {
+    await GustavStorage.pinConversation(convId)
+  }
+  renderConversationList()
+}
+
+async function archiveConv(convId) {
+  closeContextMenu()
+  await GustavStorage.archiveConversation(convId)
+  if (convId === currentConversationId) {
+    const convs = await GustavStorage.getAllConversations()
+    if (convs.length > 0) await loadConversation(convs[0].id)
+    else { currentConversationId = null; showWelcomeScreen() }
+  }
+  renderConversationList()
+}
+
+async function unarchiveConv(convId) {
+  closeContextMenu()
+  await GustavStorage.unarchiveConversation(convId)
+  renderConversationList()
+}
+
+async function deleteConv(convId) {
+  closeContextMenu()
+  showDialog({
+    title: 'Delete Conversation?',
+    text: 'This cannot be undone. All messages will be permanently deleted.',
+    confirmText: 'Delete',
+    danger: true,
+    onConfirm: async () => {
+      await GustavStorage.deleteConversation(convId)
+      if (convId === currentConversationId) {
+        const convs = await GustavStorage.getAllConversations()
+        if (convs.length > 0) await loadConversation(convs[0].id)
+        else { currentConversationId = null; chatHistory = []; showWelcomeScreen() }
+      }
+      renderConversationList()
+    }
+  })
+}
+
+async function renameProject(projId) {
+  closeContextMenu()
+  const proj = await GustavStorage.getProject(projId)
+  if (!proj) return
+  showDialog({
+    title: 'Rename Project',
+    input: true,
+    inputValue: proj.name,
+    confirmText: 'Rename',
+    onConfirm: async (val) => {
+      if (val.trim()) {
+        await GustavStorage.updateProject(projId, { name: val.trim() })
+        renderConversationList()
+      }
+    }
+  })
+}
+
+async function deleteProject(projId) {
+  closeContextMenu()
+  showDialog({
+    title: 'Delete Project?',
+    text: 'Conversations in this project will be moved to Uncategorized.',
+    confirmText: 'Delete',
+    danger: true,
+    onConfirm: async () => {
+      await GustavStorage.deleteProject(projId, null)
+      renderConversationList()
+      if (currentConversationId) {
+        const conv = await GustavStorage.getConversation(currentConversationId)
+        updateBreadcrumb(conv)
+      }
+    }
+  })
+}
+
+async function exportConv(convId, format) {
+  closeContextMenu()
+  try {
+    if (format === 'md') {
+      const md = await GustavStorage.exportConversationMarkdown(convId)
+      if (md) downloadFile(md, 'gustav-conversation.md', 'text/markdown')
+    } else {
+      const json = await GustavStorage.exportConversationJSON(convId)
+      if (json) downloadFile(JSON.stringify(json, null, 2), 'gustav-conversation.json', 'application/json')
+    }
+  } catch (e) { console.error('[gustav] Export failed:', e) }
+}
+
+async function exportProject(projId) {
+  closeContextMenu()
+  try {
+    const json = await GustavStorage.exportProjectJSON(projId)
+    if (json) downloadFile(JSON.stringify(json, null, 2), `gustav-project-${json.project.name}.json`, 'application/json')
+  } catch (e) { console.error('[gustav] Export project failed:', e) }
+}
+
+function downloadFile(content, filename, mimeType) {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+// ── Move To ──────────────────────────────────────────────────────
+
+async function showMoveMenu(event, convId) {
+  event.stopPropagation()
+  closeContextMenu()
+  const menu = document.getElementById('chat-context-menu')
+  const projects = await GustavStorage.getProjects()
+
+  let items = `<div style="padding:6px 12px;font-size:11px;color:var(--text-muted);font-weight:600;">Move to:</div>`
+  items += `<button type="button" class="chat-ctx-item" onclick="moveConvTo('${convId}',null)">&#x1F4C2; Uncategorized</button>`
+  for (const proj of projects) {
+    items += `<button type="button" class="chat-ctx-item" onclick="moveConvTo('${convId}','${proj.id}')">${proj.icon} ${escapeHtml(proj.name)}</button>`
+  }
+  items += `<div class="chat-ctx-sep"></div>`
+  items += `<button type="button" class="chat-ctx-item" onclick="moveToNewProject('${convId}')">&#x2795; New Project...</button>`
+
+  menu.innerHTML = items
+  positionMenu(menu, event)
+}
+
+async function moveConvTo(convId, projectId) {
+  closeContextMenu()
+  await GustavStorage.moveConversation(convId, projectId)
+  renderConversationList()
+  if (convId === currentConversationId) {
+    const conv = await GustavStorage.getConversation(convId)
+    updateBreadcrumb(conv)
+  }
+}
+
+async function moveToNewProject(convId) {
+  closeContextMenu()
+  showDialog({
+    title: 'New Project',
+    input: true,
+    inputValue: '',
+    inputPlaceholder: 'Project name',
+    confirmText: 'Create & Move',
+    onConfirm: async (val) => {
+      if (val.trim()) {
+        const proj = await GustavStorage.createProject(val.trim())
+        await GustavStorage.moveConversation(convId, proj.id)
+        renderConversationList()
+        if (convId === currentConversationId) {
+          const conv = await GustavStorage.getConversation(convId)
+          updateBreadcrumb(conv)
+        }
+      }
+    }
+  })
+}
+
+// ── New Project Dialog ───────────────────────────────────────────
+
+function showNewProjectDialog() {
+  showDialog({
+    title: 'New Project',
+    input: true,
+    inputValue: '',
+    inputPlaceholder: 'Project name (e.g., Deployments)',
+    confirmText: 'Create',
+    onConfirm: async (val) => {
+      if (val.trim()) {
+        await GustavStorage.createProject(val.trim())
+        renderConversationList()
+      }
+    }
+  })
+}
+
+// ── Dialog System ────────────────────────────────────────────────
+
+function showDialog({ title, text, input, inputValue, inputPlaceholder, confirmText, danger, onConfirm }) {
+  const overlay = document.getElementById('chat-dialog-overlay')
+  const dialog = document.getElementById('chat-dialog')
+
+  let html = `<div class="chat-dialog-title">${escapeHtml(title)}</div>`
+  if (text) html += `<div class="chat-dialog-text">${escapeHtml(text)}</div>`
+  if (input) {
+    html += `<input type="text" class="chat-dialog-input" id="chat-dialog-input"
+      value="${escapeHtml(inputValue || '')}" placeholder="${escapeHtml(inputPlaceholder || '')}"
+      onkeydown="if(event.key==='Enter'){document.getElementById('chat-dialog-confirm').click()}" />`
+  }
+  html += `<div class="chat-dialog-actions">
+    <button type="button" class="chat-dialog-btn cancel" onclick="closeChatDialog()">Cancel</button>
+    <button type="button" class="chat-dialog-btn ${danger ? 'danger' : 'confirm'}" id="chat-dialog-confirm">${escapeHtml(confirmText || 'OK')}</button>
+  </div>`
+
+  dialog.innerHTML = html
+  overlay.classList.add('visible')
+
+  if (input) {
+    setTimeout(() => {
+      const inp = document.getElementById('chat-dialog-input')
+      inp?.focus()
+      inp?.select()
+    }, 50)
+  }
+
+  document.getElementById('chat-dialog-confirm').onclick = async () => {
+    const val = input ? document.getElementById('chat-dialog-input')?.value : null
+    closeChatDialog()
+    if (onConfirm) await onConfirm(val)
+  }
+}
+
+function closeChatDialog() {
+  document.getElementById('chat-dialog-overlay')?.classList.remove('visible')
+}
+
+// ── Search ───────────────────────────────────────────────────────
+
+let searchTimer = null
+function debounceSearch() {
+  if (searchTimer) clearTimeout(searchTimer)
+  searchTimer = setTimeout(executeSearch, 300)
+}
+
+async function executeSearch() {
+  const query = document.getElementById('chat-search-input')?.value?.trim()
+  const results = document.getElementById('chat-search-results')
+  if (!results || !window.GustavStorage) return
+
+  if (!query) {
+    results.innerHTML = '<div class="chat-empty-state">Type to search across all conversations</div>'
+    return
+  }
+
+  try {
+    const matches = await GustavStorage.searchConversations(query)
+    if (matches.length === 0) {
+      results.innerHTML = `<div class="chat-empty-state">No results for "${escapeHtml(query)}"</div>`
+      return
+    }
+
+    let html = ''
+    for (const match of matches) {
+      const projName = match.conversation.projectId ? '' : 'Uncategorized'
+      const snippet = highlightSearch(match.matchingSnippet, query)
+      html += `<div class="chat-search-result" onclick="loadConversation('${match.conversation.id}')">
+        <div class="chat-search-result-title">${escapeHtml(match.conversation.title)}</div>
+        ${projName ? `<div class="chat-search-result-project">${projName}</div>` : ''}
+        <div class="chat-search-result-snippet">${snippet}</div>
+      </div>`
+    }
+    results.innerHTML = html
+  } catch (e) {
+    results.innerHTML = '<div class="chat-empty-state">Search failed</div>'
+    console.error('[gustav] Search failed:', e)
+  }
+}
+
+function highlightSearch(text, query) {
+  const escaped = escapeHtml(text)
+  const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
+  return escaped.replace(re, '<span class="chat-search-highlight">$1</span>')
+}
+
+// ── Action Log ───────────────────────────────────────────────────
+
+async function renderActionLog() {
+  const content = document.getElementById('chat-action-log-content')
+  if (!content || !window.GustavStorage) return
+
+  try {
+    const actions = await GustavStorage.getActionLog({ limit: 200 })
+    if (actions.length === 0) {
+      content.innerHTML = '<div class="chat-empty-state">No actions executed yet</div>'
+      return
+    }
+
+    // Group by date
+    const grouped = {}
+    for (const msg of actions) {
+      const date = new Date(msg.createdAt).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+      if (!grouped[date]) grouped[date] = []
+      for (let i = 0; i < msg.actions.length; i++) {
+        const action = msg.actions[i]
+        const result = msg.actionResults?.[i]
+        grouped[date].push({
+          time: new Date(msg.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+          action: typeof action === 'string' ? action : action.action || action,
+          ok: result?.ok ?? true,
+          conversationId: msg.conversationId,
+        })
+      }
+    }
+
+    let html = ''
+    for (const [date, items] of Object.entries(grouped)) {
+      html += `<div class="chat-action-log-date">${date}</div>`
+      for (const item of items) {
+        html += `<div class="chat-action-log-item" onclick="loadConversation('${item.conversationId}')">
+          <span class="chat-action-log-time">${item.time}</span>
+          <span class="chat-action-log-name">${escapeHtml(String(item.action))}</span>
+          <span class="chat-action-log-status">${item.ok ? '&#x2705;' : '&#x274C;'}</span>
+        </div>`
+      }
+    }
+    content.innerHTML = html
+  } catch (e) {
+    content.innerHTML = '<div class="chat-empty-state">Failed to load action log</div>'
+    console.error('[gustav] Action log failed:', e)
+  }
+}
+
+// ── Templates ────────────────────────────────────────────────────
+
+async function renderTemplates() {
+  const content = document.getElementById('chat-templates-content')
+  if (!content || !window.GustavStorage) return
+
+  try {
+    const templates = await GustavStorage.getTemplates()
+    if (templates.length === 0) {
+      content.innerHTML = `<div class="chat-empty-state">No templates yet.<br>Create one to save frequently used prompts.</div>`
+      return
+    }
+
+    let html = ''
+    for (const tmpl of templates) {
+      html += `<div class="chat-template-item">
+        <span class="chat-template-icon">${tmpl.icon}</span>
+        <div class="chat-template-info">
+          <div class="chat-template-name">${escapeHtml(tmpl.name)}</div>
+          <div class="chat-template-prompt">${escapeHtml(tmpl.prompt)}</div>
+        </div>
+        <div class="chat-template-actions">
+          <button type="button" class="chat-template-btn play" onclick="runTemplate('${tmpl.id}')" title="Run">&#x25B6;</button>
+          <button type="button" class="chat-template-btn" onclick="editTemplate('${tmpl.id}')" title="Edit">&#x270F;</button>
+          <button type="button" class="chat-template-btn" onclick="deleteTempl('${tmpl.id}')" title="Delete">&#x1F5D1;</button>
+        </div>
+      </div>`
+    }
+    content.innerHTML = html
+  } catch (e) {
+    content.innerHTML = '<div class="chat-empty-state">Failed to load templates</div>'
+    console.error('[gustav] Templates failed:', e)
+  }
+}
+
+async function runTemplate(templateId) {
+  try {
+    const tmpl = (await GustavStorage.getTemplates()).find(t => t.id === templateId)
+    if (!tmpl) return
+    await newConversation(tmpl.projectId)
+    document.getElementById('chat-input').value = tmpl.prompt
+    sendChat()
+  } catch (e) { console.error('[gustav] Run template failed:', e) }
+}
+
+function showNewTemplateDialog() {
+  showDialog({
+    title: 'New Template',
+    input: true,
+    inputPlaceholder: 'Template name (e.g., Morning Check)',
+    confirmText: 'Next',
+    onConfirm: async (name) => {
+      if (!name?.trim()) return
+      showDialog({
+        title: 'Template Prompt',
+        input: true,
+        inputPlaceholder: 'The prompt to auto-send (e.g., Show full status)',
+        confirmText: 'Create',
+        onConfirm: async (prompt) => {
+          if (!prompt?.trim()) return
+          await GustavStorage.createTemplate(name.trim(), prompt.trim())
+          renderTemplates()
+        }
+      })
+    }
+  })
+}
+
+async function editTemplate(templateId) {
+  const tmpl = (await GustavStorage.getTemplates()).find(t => t.id === templateId)
+  if (!tmpl) return
+  showDialog({
+    title: 'Edit Template',
+    input: true,
+    inputValue: tmpl.prompt,
+    confirmText: 'Save',
+    onConfirm: async (val) => {
+      if (val?.trim()) {
+        await GustavStorage.updateTemplate(templateId, { prompt: val.trim() })
+        renderTemplates()
+      }
+    }
+  })
+}
+
+async function deleteTempl(templateId) {
+  await GustavStorage.deleteTemplate(templateId)
+  renderTemplates()
+}
+
+// ── Voice Input (Web Speech API) ─────────────────────────────────
+
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    alert('Voice input is not supported in this browser.')
+    return
+  }
+
+  if (voiceListening) {
+    stopVoice()
+    return
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  voiceRecognition = new SpeechRecognition()
+  voiceRecognition.continuous = false
+  voiceRecognition.interimResults = true
+  voiceRecognition.lang = 'en-US'
+
+  voiceRecognition.onresult = (event) => {
+    const transcript = Array.from(event.results)
+      .map(r => r[0].transcript)
+      .join('')
+    document.getElementById('chat-input').value = transcript
+  }
+
+  voiceRecognition.onend = () => { stopVoice() }
+  voiceRecognition.onerror = () => { stopVoice() }
+
+  voiceRecognition.start()
+  voiceListening = true
+  document.getElementById('chat-voice-btn')?.classList.add('listening')
+}
+
+function stopVoice() {
+  if (voiceRecognition) {
+    try { voiceRecognition.stop() } catch {}
+    voiceRecognition = null
+  }
+  voiceListening = false
+  document.getElementById('chat-voice-btn')?.classList.remove('listening')
+}
+
+// ── FAB Status ───────────────────────────────────────────────────
 
 function updateChatFabStatus() {
   const dot = document.getElementById('chat-fab-dot')
@@ -2010,6 +3347,23 @@ function renderFeedback(entries) {
 
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
+    // Close context menu first
+    if (document.getElementById('chat-context-menu')?.style.display === 'block') {
+      closeContextMenu(); return
+    }
+    // Close dialog
+    if (document.getElementById('chat-dialog-overlay')?.classList.contains('visible')) {
+      closeChatDialog(); return
+    }
+    // Navigate back in chat views
+    if (chatOpen && currentChatView !== 'chat') {
+      if (currentChatView === 'search' || currentChatView === 'actions' || currentChatView === 'templates') {
+        showChatView('list')
+      } else {
+        showChatView('chat')
+      }
+      return
+    }
     if (chatOpen) { toggleChat(); return }
     closeConfirm()
   }
@@ -2018,9 +3372,31 @@ document.addEventListener('keydown', (e) => {
     toggleChat()
     return
   }
+  // Gustav chat shortcuts (only when chat is open)
+  if (chatOpen) {
+    if (e.key === 'n' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      newConversation()
+      return
+    }
+    if (e.key === 'h' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      showChatView(currentChatView === 'list' ? 'chat' : 'list')
+      return
+    }
+    if (e.key === 'f' && (e.ctrlKey || e.metaKey) && document.activeElement !== document.getElementById('chat-input')) {
+      e.preventDefault()
+      showChatView('search')
+      return
+    }
+  }
   // Don't trigger tab shortcuts when typing in inputs
-  if (document.activeElement === document.getElementById('chat-input')) return
-  if (document.activeElement === document.getElementById('commit-msg')) return
+  const activeEl = document.activeElement
+  if (activeEl === document.getElementById('chat-input') ||
+      activeEl === document.getElementById('commit-msg') ||
+      activeEl === document.getElementById('chat-search-input') ||
+      activeEl === document.getElementById('chat-dialog-input') ||
+      activeEl?.classList.contains('chat-inline-edit')) return
   if (e.key === '1') switchSection('dev')
   if (e.key === '2') switchSection('beta')
   if (e.key === '3') switchSection('prod')
