@@ -133,7 +133,7 @@ export async function submitCampaignBooking(
 ): Promise<SubmitBookingResult> {
   const parse = BookingSchema.safeParse(rawInput)
   if (!parse.success) {
-    return { success: false, error: parse.error.errors[0]?.message ?? 'Invalid input' }
+    return { success: false, error: parse.error.issues[0]?.message ?? 'Invalid input' }
   }
   const input = parse.data
 

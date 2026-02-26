@@ -3,7 +3,7 @@
 # ChefFlow Beta Deploy Script
 # ============================================
 # Deploys the current branch to the Raspberry Pi beta server.
-# Memory-safe: stops Ollama during build (if running), uses 2GB heap,
+# Memory-safe: stops Ollama during build (if running), uses 6GB heap,
 # restarts app via ecosystem.config.cjs with proper memory caps.
 # NOTE: Ollama is intentionally NOT restarted after deploy — it caused
 # OOM crashes. The beta server does not need a local LLM.
@@ -25,9 +25,12 @@ echo "  Target: $REMOTE:$APP_DIR"
 echo "=========================================="
 echo ""
 
+# SSH options applied to ALL ssh/scp commands in this script
+SSH_OPTS="-o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=20"
+
 # Step 0: Pre-flight — verify SSH works
 echo "[0/8] Checking Pi connectivity..."
-if ! ssh -o ConnectTimeout=10 "$REMOTE" "echo OK" > /dev/null 2>&1; then
+if ! ssh $SSH_OPTS "$REMOTE" "echo OK" > /dev/null 2>&1; then
   echo "  ERROR: Cannot reach Pi via SSH."
   echo "  The Pi may need a physical reboot, or sshd is hung."
   echo "  Once SSH works, re-run this script."
@@ -41,23 +44,23 @@ git push origin "$BRANCH" 2>/dev/null || echo "  (push skipped — may already b
 
 # Step 2: Stop Ollama FIRST to free memory for everything that follows
 echo "[2/8] Stopping Ollama to free memory for build..."
-ssh "$REMOTE" "sudo systemctl stop ollama 2>/dev/null || true; sleep 1; echo '  Ollama stopped'; free -m | grep Mem"
+ssh $SSH_OPTS "$REMOTE" "sudo systemctl stop ollama 2>/dev/null || true; sleep 1; echo '  Ollama stopped'; free -m | grep Mem"
 
 # Step 3: Sync code to Pi
 echo "[3/8] Syncing code to Pi..."
-ssh "$REMOTE" "cd $APP_DIR && git fetch origin && git reset --hard origin/$BRANCH"
+ssh $SSH_OPTS "$REMOTE" "cd $APP_DIR && git fetch origin && git reset --hard origin/$BRANCH"
 
 # Step 4: Copy latest .env.local.beta + ecosystem config
 echo "[4/8] Syncing beta environment config..."
-scp "$(dirname "$0")/../.env.local.beta" "$REMOTE:$APP_DIR/.env.local"
+scp $SSH_OPTS "$(dirname "$0")/../.env.local.beta" "$REMOTE:$APP_DIR/.env.local"
 
 # Step 5: Backup current build
 echo "[5/8] Backing up current build..."
-ssh "$REMOTE" "cd $APP_DIR && if [ -d .next ]; then rm -rf .next.backup && cp -r .next .next.backup && echo '  Backup saved'; else echo '  No existing build to back up'; fi"
+ssh $SSH_OPTS "$REMOTE" "cd $APP_DIR && if [ -d .next ]; then rm -rf .next.backup && cp -r .next .next.backup && echo '  Backup saved'; else echo '  No existing build to back up'; fi"
 
-# Step 6: Install deps + build (memory-safe: 2GB heap, not 4GB)
+# Step 6: Install deps + build (6GB heap — app requires this as of Feb 2026)
 echo "[6/8] Building on Pi (this takes ~8-10 minutes)..."
-ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=20 "$REMOTE" << 'BUILD'
+ssh $SSH_OPTS "$REMOTE" << 'BUILD'
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
   cd ~/apps/chefflow-beta
@@ -79,8 +82,9 @@ ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=20 "$REMOTE" << 'BUILD'
   }
   echo "  Dependencies installed"
 
-  # Build with SAFE heap size (2GB, not 4GB — leaves room for OS + swap)
-  NODE_OPTIONS="--max-old-space-size=2048" npx next build 2>&1 | tail -10
+  # Build with 6GB heap — app has grown past 4GB (OOMs at 4096 as of 2026-02-26)
+  # Pi has 8GB RAM + 4GB swap. Ollama + PM2 are stopped, so ~7GB available.
+  NODE_OPTIONS="--max-old-space-size=6144" npx next build 2>&1 | tail -10
   BUILD_EXIT=$?
 
   if [ $BUILD_EXIT -ne 0 ]; then
@@ -98,7 +102,7 @@ BUILD
 
 # Step 7: Restart the app using ecosystem config (memory-capped)
 echo "[7/8] Restarting app with memory limits..."
-ssh "$REMOTE" << 'RESTART'
+ssh $SSH_OPTS "$REMOTE" << 'RESTART'
   export NVM_DIR="$HOME/.nvm"
   [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
   cd ~/apps/chefflow-beta
@@ -125,20 +129,33 @@ ssh "$REMOTE" << 'RESTART'
   free -m | grep -E "Mem|Swap"
 RESTART
 
-# Step 8: Verify
-echo "[8/8] Verifying..."
-sleep 5
-STATUS=$(ssh "$REMOTE" "curl -s -o /dev/null -w '%{http_code}' http://localhost:3100" 2>/dev/null)
-if [ "$STATUS" = "200" ]; then
+# Step 8: Verify — wait for PM2 to fully start the new process before checking
+echo "[8/8] Verifying (waiting 8s for PM2 process to initialize)..."
+sleep 8
+
+# Retry health check up to 3 times (new process may need a moment to bind)
+HEALTH_OK=false
+for i in 1 2 3; do
+  STATUS=$(ssh $SSH_OPTS "$REMOTE" "curl -s -o /dev/null -w '%{http_code}' --max-time 10 http://localhost:3100" 2>/dev/null)
+  if [ "$STATUS" = "200" ] || [ "$STATUS" = "302" ] || [ "$STATUS" = "307" ]; then
+    HEALTH_OK=true
+    break
+  fi
+  echo "  Health check attempt $i: HTTP $STATUS (retrying in 3s...)"
+  sleep 3
+done
+
+if [ "$HEALTH_OK" = true ]; then
   echo ""
   echo "=========================================="
-  echo "  Deploy SUCCESS!"
+  echo "  Deploy SUCCESS! (HTTP $STATUS)"
   echo "  https://beta.cheflowhq.com is updated"
   echo "=========================================="
 else
   echo ""
   echo "=========================================="
-  echo "  WARNING: Health check returned $STATUS"
+  echo "  WARNING: Health check failed (last status: $STATUS)"
+  echo "  The server may still be starting up."
   echo "  Check logs: ssh pi 'pm2 logs chefflow-beta'"
   echo "=========================================="
 fi

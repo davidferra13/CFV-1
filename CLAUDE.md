@@ -1,4 +1,4 @@
-# ChefFlow V1 — Project Rules
+Called Open Shuffle.# ChefFlow V1 — Project Rules
 
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
@@ -621,7 +621,7 @@ The deploy script: pushes to GitHub → pulls on Pi → stops Ollama → install
 - **Never deploy to beta during active development** — test locally first
 - **The deploy script handles Ollama stop/start** — don't manually stop it
 - **Beta shares the dev Supabase database** (for now) — be careful with destructive data operations
-- **Pi builds take ~8-10 minutes** — the 4 GB heap limit is required (`NODE_OPTIONS="--max-old-space-size=4096"`)
+- **Pi builds take ~8-10 minutes** — the 6 GB heap limit is required (`NODE_OPTIONS="--max-old-space-size=6144"`) — app outgrew 4 GB as of Feb 2026
 - **Pi swap is 2 GB** at `/var/swap` — needed for builds
 
 ---
