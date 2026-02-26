@@ -47,6 +47,8 @@ export interface RemyMessage {
   role: 'user' | 'remy'
   content: string
   timestamp: string
+  /** Whether this message is bookmarked */
+  bookmarked?: boolean
   /** Inline task results (from command execution) */
   tasks?: RemyTaskResult[]
   /** Clickable navigation links */

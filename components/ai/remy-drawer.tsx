@@ -45,6 +45,7 @@ import {
   Activity,
   BookTemplate,
   List,
+  Bookmark,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -71,6 +72,7 @@ import {
   createProject,
   getProjects,
   moveConversation,
+  toggleBookmark,
 } from '@/lib/ai/remy-local-storage'
 import type { LocalConversation } from '@/lib/ai/remy-local-storage'
 import {
@@ -505,6 +507,7 @@ export function RemyDrawer() {
           role: m.role === 'remy' ? 'remy' : 'user',
           content: m.content,
           timestamp: m.createdAt,
+          bookmarked: m.bookmarked,
           tasks: m.tasks as RemyTaskResult[] | undefined,
           navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
         }))
@@ -541,6 +544,7 @@ export function RemyDrawer() {
         role: m.role === 'remy' ? 'remy' : 'user',
         content: m.content,
         timestamp: m.createdAt,
+        bookmarked: m.bookmarked,
         tasks: m.tasks as RemyTaskResult[] | undefined,
         navSuggestions: m.navSuggestions as NavigationSuggestion[] | undefined,
       }))
@@ -649,6 +653,16 @@ export function RemyDrawer() {
       toast.success('Copied to clipboard')
       setTimeout(() => setCopiedId(null), 2000)
     })
+  }, [])
+
+  const handleToggleBookmark = useCallback(async (msgId: string) => {
+    try {
+      const newState = await toggleBookmark(msgId)
+      setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, bookmarked: newState } : m)))
+      toast.success(newState ? 'Bookmarked' : 'Bookmark removed')
+    } catch (err) {
+      console.error('[remy] Failed to toggle bookmark:', err)
+    }
   }, [])
 
   const updateVoiceSetting = useCallback(
@@ -1630,14 +1644,10 @@ export function RemyDrawer() {
                 onRunTemplate={(prompt, projectId) => {
                   handleNewConversation()
                   setDrawerView('chat')
-                  // Auto-send the template prompt after a brief delay for state to settle
+                  // Use React state + direct send after conversation is ready
                   setTimeout(() => {
-                    const input = document.querySelector<HTMLTextAreaElement>('[data-remy-input]')
-                    if (input) {
-                      input.value = prompt
-                      input.dispatchEvent(new Event('input', { bubbles: true }))
-                    }
-                  }, 100)
+                    handleSend(prompt)
+                  }, 150)
                 }}
               />
             </div>
@@ -1745,6 +1755,17 @@ export function RemyDrawer() {
                             </button>
                           </>
                         )}
+                        <button
+                          onClick={() => handleToggleBookmark(msg.id)}
+                          className={`bg-stone-900 dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 transition-colors ${
+                            msg.bookmarked
+                              ? 'text-amber-400'
+                              : 'text-stone-400 hover:text-amber-400'
+                          }`}
+                          title={msg.bookmarked ? 'Remove bookmark' : 'Bookmark'}
+                        >
+                          <Bookmark className={`h-3 w-3 ${msg.bookmarked ? 'fill-current' : ''}`} />
+                        </button>
                         <button
                           onClick={() => handleDeleteMessage(msg.id)}
                           className="bg-stone-900 dark:bg-stone-700 rounded-full p-1 shadow-sm border border-stone-700 dark:border-stone-600 text-stone-400 hover:text-red-500 transition-colors"
@@ -1936,6 +1957,7 @@ export function RemyDrawer() {
                   <div className="flex-1 relative">
                     <textarea
                       ref={textareaRef}
+                      data-remy-input=""
                       value={input}
                       onChange={(e) => {
                         if (e.target.value.length <= 2000) setInput(e.target.value)
