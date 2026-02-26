@@ -608,6 +608,158 @@ body {
 .ping-result.ok { color: var(--success); }
 .ping-result.fail { color: var(--error); }
 
+/* ── Home Panel — Mega Buttons ────────────────────────────────── */
+.mega-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.mega-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 20px 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: all 250ms ease;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text-primary);
+  position: relative;
+  overflow: hidden;
+}
+.mega-btn:hover {
+  border-color: var(--brand);
+  background: var(--bg-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.mega-btn:active { transform: translateY(0); }
+.mega-btn.running {
+  border-color: var(--warning);
+  pointer-events: none;
+  opacity: 0.85;
+}
+.mega-btn.running::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: var(--warning);
+  animation: progress-bar 4s linear infinite;
+}
+@keyframes progress-bar {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+.mega-btn.success-flash {
+  border-color: var(--success);
+}
+.mega-icon {
+  font-size: 28px;
+  line-height: 1;
+}
+.mega-label {
+  font-size: 16px;
+  font-weight: 700;
+}
+.mega-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.mega-btn.ship-it { border-left: 3px solid var(--brand); }
+.mega-btn.close-out { border-left: 3px solid var(--success); }
+.mega-btn.danger-action { border-left: 3px solid var(--error); }
+
+/* ── Quick Links Grid ────────────────────────────────────────── */
+.quick-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  text-decoration: none;
+}
+.quick-link:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--brand);
+}
+.quick-link:active { transform: scale(0.97); }
+
+/* ── Section Headers for Home Panel ──────────────────────────── */
+.home-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  margin-top: 8px;
+}
+
+/* ── Button Loading State ────────────────────────────────────── */
+.btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.btn.loading::after {
+  content: '';
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid transparent;
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 6px;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Tooltip ─────────────────────────────────────────────────── */
+.btn[title]:hover::before {
+  /* Use native title attribute tooltips — they work well enough */
+}
+
+/* ── Prompt Queue Badge ──────────────────────────────────────── */
+.queue-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: var(--brand);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.queue-badge.empty { background: var(--text-muted); }
+
 /* ── Chat FAB ────────────────────────────────────────────────── */
 .chat-fab {
   position: fixed;
@@ -1215,7 +1367,12 @@ body {
   <div class="layout">
     <!-- Sidebar -->
     <nav class="sidebar">
-      <a class="nav-item active" data-section="dev" title="Dev Server">
+      <a class="nav-item active" data-section="home" title="Home — Quick Actions">
+        <span class="nav-dot online" id="nd-home"></span>
+        <span class="nav-icon">&#x1F3E0;</span>
+        <span class="nav-label">Home</span>
+      </a>
+      <a class="nav-item" data-section="dev" title="Dev Server">
         <span class="nav-dot checking" id="nd-dev"></span>
         <span class="nav-icon">&#x1F5A5;&#xFE0F;</span>
         <span class="nav-label">Dev</span>
@@ -1259,8 +1416,104 @@ body {
 
     <!-- Content -->
     <div class="content">
+      <!-- ─── Home Panel (Quick Actions) ─── -->
+      <div class="panel active" id="panel-home">
+        <div class="panel-header">
+          <h2 class="panel-title">Quick Actions</h2>
+          <span class="status-badge online" id="badge-home">
+            <span class="dot online"></span>
+            <span id="home-status-text">Ready</span>
+          </span>
+        </div>
+
+        <!-- ── One-Click Pipelines ── -->
+        <div class="home-section-title">&#x1F680; One-Click Pipelines</div>
+        <div class="mega-grid">
+          <button class="mega-btn ship-it" id="mega-ship-it" onclick="megaShipIt()" title="Saves all your changes, backs them up to GitHub, and updates the beta website — all in one click">
+            <span class="mega-icon">&#x1F680;</span>
+            <span class="mega-label">Ship It</span>
+            <span class="mega-desc">Save changes → Back up to GitHub → Update beta website</span>
+          </button>
+          <button class="mega-btn close-out" id="mega-close-out" onclick="megaCloseOut()" title="Checks code for errors, builds the app, saves changes, and backs up to GitHub">
+            <span class="mega-icon">&#x2705;</span>
+            <span class="mega-label">Close Out Feature</span>
+            <span class="mega-desc">Check for errors → Build app → Save → Back up to GitHub</span>
+          </button>
+        </div>
+
+        <!-- ── Common Tasks ── -->
+        <div class="home-section-title">&#x1F527; Common Tasks</div>
+        <div class="mega-grid">
+          <button class="mega-btn" id="mega-commit" onclick="megaCommit()" title="Saves all current changes with a description">
+            <span class="mega-icon">&#x1F4BE;</span>
+            <span class="mega-label">Save Changes</span>
+            <span class="mega-desc">Stage and commit all modified files</span>
+          </button>
+          <button class="mega-btn" id="mega-push" onclick="megaAction('git/push')" title="Sends saved changes to GitHub for safe backup">
+            <span class="mega-icon">&#x2601;&#xFE0F;</span>
+            <span class="mega-label">Back Up to GitHub</span>
+            <span class="mega-desc">Push current branch to GitHub (free, safe)</span>
+          </button>
+          <button class="mega-btn" id="mega-deploy" onclick="confirmAction('deploy')" title="Updates the beta preview website (takes 8-10 min)">
+            <span class="mega-icon">&#x1F4E1;</span>
+            <span class="mega-label">Deploy to Beta</span>
+            <span class="mega-desc">Build and push to beta.cheflowhq.com</span>
+          </button>
+          <button class="mega-btn" id="mega-typecheck" onclick="megaAction('build/typecheck')" title="Quick check for code errors without building">
+            <span class="mega-icon">&#x1F50D;</span>
+            <span class="mega-label">Check for Errors</span>
+            <span class="mega-desc">Run TypeScript type check (fast)</span>
+          </button>
+        </div>
+
+        <!-- ── Maintenance ── -->
+        <div class="home-section-title">&#x1F9F9; Maintenance</div>
+        <div class="mega-grid">
+          <button class="mega-btn" id="mega-clear-cache" onclick="megaAction('cache/clear')" title="Clears old build files — fixes most weird build errors">
+            <span class="mega-icon">&#x1F5D1;&#xFE0F;</span>
+            <span class="mega-label">Clear Build Cache</span>
+            <span class="mega-desc">Delete .next/ folder to fix build errors</span>
+          </button>
+          <button class="mega-btn" id="mega-npm-install" onclick="megaAction('npm/install')" title="Install or update project dependencies">
+            <span class="mega-icon">&#x1F4E6;</span>
+            <span class="mega-label">Install Dependencies</span>
+            <span class="mega-desc">Run npm install to update packages</span>
+          </button>
+          <button class="mega-btn" id="mega-gen-types" onclick="megaAction('db/gen-types')" title="Regenerate TypeScript types from the database schema">
+            <span class="mega-icon">&#x1F4CA;</span>
+            <span class="mega-label">Update DB Types</span>
+            <span class="mega-desc">Regenerate types/database.ts from Supabase</span>
+          </button>
+          <button class="mega-btn" id="mega-db-backup" onclick="megaAction('db/backup')" title="Download a backup of the entire database">
+            <span class="mega-icon">&#x1F4BE;</span>
+            <span class="mega-label">Backup Database</span>
+            <span class="mega-desc">Export database to a local SQL file</span>
+          </button>
+        </div>
+
+        <!-- ── Quick Links ── -->
+        <div class="home-section-title">&#x1F517; Open In Browser</div>
+        <div class="quick-links">
+          <button class="quick-link" onclick="openUrl('http://localhost:3100')">&#x1F4BB; Dev App</button>
+          <button class="quick-link" onclick="openUrl('http://localhost:3100/dashboard')">&#x1F4CA; Dashboard</button>
+          <button class="quick-link" onclick="openUrl('http://localhost:3100/events')">&#x1F4C5; Events</button>
+          <button class="quick-link" onclick="openUrl('http://localhost:3100/clients')">&#x1F465; Clients</button>
+          <button class="quick-link" onclick="openUrl('http://localhost:3100/recipes')">&#x1F373; Recipes</button>
+          <button class="quick-link" onclick="openUrl('http://localhost:3100/settings')">&#x2699;&#xFE0F; Settings</button>
+          <button class="quick-link" onclick="openUrl('https://beta.cheflowhq.com')">&#x1F310; Beta Site</button>
+          <button class="quick-link" onclick="openUrl('https://app.cheflowhq.com')">&#x1F680; Production</button>
+          <button class="quick-link" onclick="openUrl('https://vercel.com/dashboard')">&#x25B2; Vercel</button>
+          <button class="quick-link" onclick="openUrl('https://supabase.com/dashboard')">&#x1F4BE; Supabase</button>
+          <button class="quick-link" onclick="openUrl('https://github.com')">&#x1F4E6; GitHub</button>
+        </div>
+
+        <!-- ── Prompt Queue ── -->
+        <div class="home-section-title">&#x1F4DD; Prompt Queue <span class="queue-badge empty" id="queue-badge">0</span></div>
+        <div id="prompt-queue-list" style="font-size:13px;color:var(--text-secondary);"></div>
+      </div>
+
       <!-- ─── Dev Server Panel ─── -->
-      <div class="panel active" id="panel-dev">
+      <div class="panel" id="panel-dev">
         <div class="panel-header">
           <h2 class="panel-title">Dev Server</h2>
           <span class="status-badge offline" id="badge-dev">
@@ -1282,15 +1535,15 @@ body {
             <div class="info-value small">Next.js 15</div>
           </div>
           <div class="info-card">
-            <div class="info-label">Managed</div>
+            <div class="info-label">Started By</div>
             <div class="info-value small" id="dev-managed">--</div>
           </div>
         </div>
         <div class="actions">
-          <button type="button" class="btn btn-success" onclick="action('dev/start')">&#x25B6; Start</button>
-          <button type="button" class="btn btn-danger" onclick="action('dev/stop')">&#x23F9; Stop</button>
-          <button type="button" class="btn btn-ghost" onclick="openUrl('http://localhost:3100')">&#x1F310; Open Browser</button>
-          <button type="button" class="btn-ping" onclick="ping('dev')" id="ping-dev">&#x1F4E1; Ping <span class="ping-result" id="ping-dev-result"></span></button>
+          <button type="button" class="btn btn-success" onclick="action('dev/start')" title="Start the local development server so you can preview the app">&#x25B6; Start Server</button>
+          <button type="button" class="btn btn-danger" onclick="action('dev/stop')" title="Shut down the local development server">&#x23F9; Stop Server</button>
+          <button type="button" class="btn btn-ghost" onclick="openUrl('http://localhost:3100')" title="Open the app in your browser">&#x1F310; Open App</button>
+          <button type="button" class="btn-ping" onclick="ping('dev')" id="ping-dev" title="Check if the dev server is responding">&#x1F4E1; Ping <span class="ping-result" id="ping-dev-result"></span></button>
         </div>
       </div>
 
@@ -1322,11 +1575,11 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button type="button" class="btn btn-warning" onclick="action('beta/restart')">&#x1F504; Restart</button>
-          <button type="button" class="btn btn-primary" onclick="confirmAction('deploy')">&#x1F680; Deploy</button>
-          <button type="button" class="btn btn-danger" onclick="confirmAction('rollback')">&#x23EA; Rollback</button>
-          <button type="button" class="btn btn-ghost" onclick="openUrl('https://beta.cheflowhq.com')">&#x1F310; Open Beta</button>
-          <button type="button" class="btn-ping" onclick="ping('beta')" id="ping-beta">&#x1F4E1; Ping <span class="ping-result" id="ping-beta-result"></span></button>
+          <button type="button" class="btn btn-warning" onclick="action('beta/restart')" title="Restart the beta server without redeploying — quick fix for freezes">&#x1F504; Restart</button>
+          <button type="button" class="btn btn-primary" onclick="confirmAction('deploy')" title="Build and publish to beta.cheflowhq.com (takes 8-10 minutes)">&#x1F680; Deploy to Beta</button>
+          <button type="button" class="btn btn-danger" onclick="confirmAction('rollback')" title="Undo the last deploy — go back to the previous version">&#x23EA; Rollback</button>
+          <button type="button" class="btn btn-ghost" onclick="openUrl('https://beta.cheflowhq.com')" title="Open the beta preview website">&#x1F310; Open Beta</button>
+          <button type="button" class="btn-ping" onclick="ping('beta')" id="ping-beta" title="Check if the beta server is online">&#x1F4E1; Ping <span class="ping-result" id="ping-beta-result"></span></button>
         </div>
       </div>
 
@@ -1448,7 +1701,7 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" onclick="action('git/push')">&#x1F680; Push Branch</button>
+          <button class="btn btn-primary" onclick="action('git/push')" title="Send your saved changes to GitHub for safe backup">&#x1F680; Push to GitHub</button>
         </div>
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:8px;">Commit Changes</h3>
@@ -1481,8 +1734,8 @@ body {
           </div>
         </div>
         <div class="actions">
-          <button class="btn btn-primary" onclick="action('build/typecheck')" id="btn-tsc">&#x2714; Type Check</button>
-          <button class="btn btn-warning" onclick="action('build/full')" id="btn-build">&#x1F528; Full Build</button>
+          <button class="btn btn-primary" onclick="action('build/typecheck')" id="btn-tsc" title="Quick check for code errors — takes a few seconds">&#x2714; Check for Errors</button>
+          <button class="btn btn-warning" onclick="action('build/full')" id="btn-build" title="Full production build — compiles everything, takes 1-2 minutes">&#x1F528; Full Build</button>
         </div>
         <div class="divider"></div>
         <h3 style="font-size:14px;color:var(--text-secondary);margin-bottom:12px;">&#x1F5C4;&#xFE0F; Database</h3>
@@ -1675,7 +1928,7 @@ body {
 // ChefFlow Mission Control — Frontend
 // ═══════════════════════════════════════════════════════════════════
 
-const API = 'http://localhost:3200'
+const API = 'http://localhost:41937'
 let currentSection = 'dev'
 let pendingAction = null
 let statusData = null
@@ -1733,7 +1986,7 @@ function updateUI(s) {
   // Dev panel
   setBadge('badge-dev', s.dev.online)
   setText('dev-latency', s.dev.online ? `${s.dev.latency}ms` : 'Offline')
-  setText('dev-managed', s.dev.managedByUs ? 'Dashboard' : 'External')
+  setText('dev-managed', s.dev.managedByUs ? 'Mission Control' : 'Started elsewhere')
 
   // Beta panel
   setBadge('badge-beta', s.beta.online)
@@ -1798,6 +2051,11 @@ function updateUI(s) {
 
   // Commits
   renderCommits(s.git.recentCommits || [])
+
+  // Home panel status
+  const upServices = [s.dev.online, s.beta.online, s.prod?.online, s.ollamaPc.online, s.ollamaPi.online].filter(Boolean).length
+  const homeText = document.getElementById('home-status-text')
+  if (homeText) homeText.textContent = `${upServices}/5 services up`
 
   // Chat FAB status
   updateChatFabStatus()
@@ -3211,6 +3469,159 @@ async function dbBackup() {
   }
 }
 
+// ── Mega Button Actions (Home Panel) ──────────────────────────────
+
+function setMegaState(btnId, state) {
+  const btn = document.getElementById(btnId)
+  if (!btn) return
+  btn.classList.remove('running', 'success-flash')
+  if (state === 'running') {
+    btn.classList.add('running')
+  } else if (state === 'success') {
+    btn.classList.add('success-flash')
+    setTimeout(() => btn.classList.remove('success-flash'), 3000)
+  }
+}
+
+async function megaShipIt() {
+  const msg = prompt('Commit message (or leave blank for auto-message):')
+  if (msg === null) return // cancelled
+
+  setMegaState('mega-ship-it', 'running')
+  addLog('info', 'ship', '🚀 Ship It — starting pipeline...')
+
+  try {
+    const res = await fetch(`${API}/api/ship-it`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg || undefined }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      addLog('success', 'ship', data.message || 'Ship It complete!')
+      setMegaState('mega-ship-it', 'success')
+    } else {
+      addLog('error', 'ship', data.error || 'Ship It failed')
+      setMegaState('mega-ship-it', 'idle')
+    }
+    setTimeout(refreshStatus, 2000)
+  } catch (err) {
+    addLog('error', 'ship', `Ship It failed: ${err.message}`)
+    setMegaState('mega-ship-it', 'idle')
+  }
+}
+
+async function megaCloseOut() {
+  const msg = prompt('Commit message for close-out (or leave blank for auto):')
+  if (msg === null) return
+
+  setMegaState('mega-close-out', 'running')
+  addLog('info', 'close-out', '✅ Feature Close-Out — starting pipeline...')
+
+  try {
+    const res = await fetch(`${API}/api/close-out`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg || undefined }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      addLog('success', 'close-out', data.message || 'Close-out complete!')
+      setMegaState('mega-close-out', 'success')
+    } else {
+      addLog('error', 'close-out', data.error || 'Close-out failed')
+      setMegaState('mega-close-out', 'idle')
+    }
+    setTimeout(refreshStatus, 2000)
+  } catch (err) {
+    addLog('error', 'close-out', `Close-out failed: ${err.message}`)
+    setMegaState('mega-close-out', 'idle')
+  }
+}
+
+async function megaCommit() {
+  const msg = prompt('What did you change?')
+  if (!msg) return
+
+  setMegaState('mega-commit', 'running')
+  addLog('info', 'git', `Committing: ${msg}`)
+  try {
+    const res = await fetch(`${API}/api/git/commit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg }),
+    })
+    const data = await res.json()
+    if (data.ok) {
+      addLog('success', 'git', data.message || 'Committed')
+      setMegaState('mega-commit', 'success')
+    } else {
+      addLog('error', 'git', data.error || 'Commit failed')
+      setMegaState('mega-commit', 'idle')
+    }
+    setTimeout(refreshStatus, 1500)
+  } catch (err) {
+    addLog('error', 'git', `Commit failed: ${err.message}`)
+    setMegaState('mega-commit', 'idle')
+  }
+}
+
+async function megaAction(endpoint) {
+  const btnMap = {
+    'git/push': 'mega-push',
+    'build/typecheck': 'mega-typecheck',
+    'cache/clear': 'mega-clear-cache',
+    'npm/install': 'mega-npm-install',
+    'db/gen-types': 'mega-gen-types',
+    'db/backup': 'mega-db-backup',
+  }
+  const btnId = btnMap[endpoint]
+  if (btnId) setMegaState(btnId, 'running')
+
+  try {
+    const res = await fetch(`${API}/api/${endpoint}`, { method: 'POST' })
+    const data = await res.json()
+    if (data.ok) {
+      addLog('success', endpoint.split('/')[0], data.message || `${endpoint} complete`)
+      if (btnId) setMegaState(btnId, 'success')
+    } else {
+      addLog('error', endpoint.split('/')[0], data.error || `${endpoint} failed`)
+      if (btnId) setMegaState(btnId, 'idle')
+    }
+    setTimeout(refreshStatus, 2000)
+  } catch (err) {
+    addLog('error', endpoint.split('/')[0], `${endpoint} failed: ${err.message}`)
+    if (btnId) setMegaState(btnId, 'idle')
+  }
+}
+
+// ── Prompt Queue (Home Panel) ─────────────────────────────────────
+
+async function loadPromptQueue() {
+  try {
+    const res = await fetch(`${API}/api/prompts/queue`)
+    const data = await res.json()
+    const badge = document.getElementById('queue-badge')
+    const list = document.getElementById('prompt-queue-list')
+    if (!badge || !list) return
+
+    const count = data.total || 0
+    badge.textContent = count
+    badge.className = `queue-badge${count === 0 ? ' empty' : ''}`
+
+    if (count === 0) {
+      list.innerHTML = '<span style="color:var(--text-muted);font-size:12px;">No prompts waiting. Copilot writes prompts here for Claude Code to pick up.</span>'
+    } else {
+      list.innerHTML = data.prompts.map(p =>
+        `<div style="padding:8px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;">
+          <div style="font-weight:600;font-size:13px;color:var(--text-primary);">${escapeHtml(p.title)}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${escapeHtml(p.file)}</div>
+        </div>`
+      ).join('')
+    }
+  } catch { /* ignore */ }
+}
+
 // ── Project History ───────────────────────────────────────────────
 
 let historyLoaded = false
@@ -3397,20 +3808,22 @@ document.addEventListener('keydown', (e) => {
       activeEl === document.getElementById('chat-search-input') ||
       activeEl === document.getElementById('chat-dialog-input') ||
       activeEl?.classList.contains('chat-inline-edit')) return
-  if (e.key === '1') switchSection('dev')
-  if (e.key === '2') switchSection('beta')
-  if (e.key === '3') switchSection('prod')
-  if (e.key === '4') switchSection('ollama')
-  if (e.key === '5') switchSection('git')
-  if (e.key === '6') switchSection('build')
-  if (e.key === '7') switchSection('log')
-  if (e.key === '8') switchSection('feedback')
+  if (e.key === '1') switchSection('home')
+  if (e.key === '2') switchSection('dev')
+  if (e.key === '3') switchSection('beta')
+  if (e.key === '4') switchSection('prod')
+  if (e.key === '5') switchSection('ollama')
+  if (e.key === '6') switchSection('git')
+  if (e.key === '7') switchSection('build')
+  if (e.key === '8') switchSection('log')
+  if (e.key === '9') switchSection('feedback')
 })
 
 function switchSection(section) {
   const item = document.querySelector(`.nav-item[data-section="${section}"]`)
   if (item) item.click()
   // Lazy-load data for heavy panels
+  if (section === 'home') loadPromptQueue()
   if (section === 'log') loadHistory()
   if (section === 'feedback') loadFeedback()
 }
@@ -3420,9 +3833,10 @@ function switchSection(section) {
 refreshStatus()
 setInterval(refreshStatus, 5000)
 connectSSE()
+loadPromptQueue() // Load prompt queue on startup since Home is default
 
 addLog('info', 'system', 'Mission Control connected')
-addLog('info', 'system', 'Keyboard shortcuts: 1-8 switch panels, Ctrl+/ opens chat, Esc closes dialogs')
+addLog('info', 'system', 'Keyboard shortcuts: 1-9 switch panels, Ctrl+/ opens chat, Esc closes dialogs')
 </script>
 </body>
 </html>

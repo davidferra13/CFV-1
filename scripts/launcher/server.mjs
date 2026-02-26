@@ -486,6 +486,261 @@ async function dbBackup() {
   }
 }
 
+// ── Ship It (commit + push + deploy) ────────────────────────────
+
+async function shipIt(message) {
+  if (runningJobs.has('ship-it')) return { ok: false, error: 'Ship It already in progress' }
+
+  log('ship', '🚀 SHIP IT — Starting full pipeline...', 'info')
+  const results = { commit: null, push: null, deploy: null }
+
+  // Step 1: Commit
+  const commitMsg = message || `update: ${new Date().toISOString().slice(0, 10)} ship from Mission Control`
+  log('ship', `Step 1/3: Committing — "${commitMsg}"`, 'info')
+  try {
+    await execAsync('git add -A', { cwd: PROJECT_ROOT })
+    const escaped = commitMsg.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`')
+    const { stdout } = await execAsync(`git commit -m "${escaped}"`, { cwd: PROJECT_ROOT })
+    results.commit = { ok: true, message: stdout.trim() || 'Committed' }
+    log('ship', `Committed: ${stdout.trim() || 'done'}`, 'success')
+  } catch (err) {
+    if (err.stdout?.includes('nothing to commit')) {
+      results.commit = { ok: true, message: 'Nothing to commit — clean tree' }
+      log('ship', 'Nothing to commit — working tree clean', 'info')
+    } else {
+      results.commit = { ok: false, error: err.stderr || err.message }
+      log('ship', `Commit failed: ${err.stderr || err.message}`, 'error')
+      return { ok: false, error: `Commit failed: ${err.stderr || err.message}`, results }
+    }
+  }
+
+  // Step 2: Push
+  log('ship', 'Step 2/3: Pushing to GitHub...', 'info')
+  try {
+    const { stdout: branch } = await execAsync('git branch --show-current', { cwd: PROJECT_ROOT })
+    const branchName = branch.trim()
+    const { stdout } = await execAsync(`git push origin ${branchName}`, { cwd: PROJECT_ROOT })
+    results.push = { ok: true, branch: branchName, message: stdout.trim() || `Pushed ${branchName}` }
+    log('ship', `Pushed ${branchName} to origin`, 'success')
+  } catch (err) {
+    results.push = { ok: false, error: err.stderr || err.message }
+    log('ship', `Push failed: ${err.stderr || err.message}`, 'error')
+    return { ok: false, error: `Push failed: ${err.stderr || err.message}`, results }
+  }
+
+  // Step 3: Deploy to beta
+  log('ship', 'Step 3/3: Deploying to beta...', 'info')
+  const deployResult = deployBeta()
+  results.deploy = deployResult
+
+  return { ok: true, message: '🚀 Ship It complete! Commit → Push → Deploy started.', results }
+}
+
+// ── Clear .next Cache ───────────────────────────────────────────
+
+async function clearCache() {
+  log('cache', 'Clearing .next/ build cache...', 'info')
+  try {
+    const { stdout } = await execAsync(
+      process.platform === 'win32'
+        ? 'if exist ".next" rmdir /s /q ".next"'
+        : 'rm -rf .next/',
+      { cwd: PROJECT_ROOT, shell: process.platform === 'win32' ? 'cmd' : true }
+    )
+    log('cache', 'Build cache cleared!', 'success')
+    return { ok: true, message: 'Build cache (.next/) cleared successfully' }
+  } catch (err) {
+    log('cache', `Cache clear failed: ${err.message}`, 'error')
+    return { ok: false, error: err.message }
+  }
+}
+
+// ── NPM Install ─────────────────────────────────────────────────
+
+async function npmInstall() {
+  if (runningJobs.has('npm-install')) return { ok: false, error: 'npm install already in progress' }
+
+  log('npm', 'Running npm install...', 'info')
+  const child = spawn('npm', ['install'], {
+    cwd: PROJECT_ROOT,
+    shell: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  const job = { id: 'npm-install', child, startTime: Date.now(), status: 'running' }
+  runningJobs.set('npm-install', job)
+
+  child.stdout.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('npm', line.trim())
+    })
+  })
+  child.stderr.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('npm', line.trim(), 'warn')
+    })
+  })
+  child.on('close', code => {
+    job.status = code === 0 ? 'success' : 'failed'
+    const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+    log('npm', code === 0 ? `npm install completed (${duration}s)` : `npm install failed (${duration}s)`, code === 0 ? 'success' : 'error')
+    runningJobs.delete('npm-install')
+  })
+
+  return { ok: true, message: 'npm install started — watch the console' }
+}
+
+// ── Generate DB Types ───────────────────────────────────────────
+
+async function generateTypes() {
+  if (runningJobs.has('gen-types')) return { ok: false, error: 'Type generation already in progress' }
+
+  log('db', 'Generating database types from Supabase...', 'info')
+  const child = spawn('npx', ['supabase', 'gen', 'types', 'typescript', '--linked'], {
+    cwd: PROJECT_ROOT,
+    shell: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  })
+
+  const job = { id: 'gen-types', child, startTime: Date.now(), status: 'running' }
+  runningJobs.set('gen-types', job)
+
+  let output = ''
+  child.stdout.on('data', d => { output += d.toString() })
+  child.stderr.on('data', d => {
+    d.toString().trim().split('\n').forEach(line => {
+      if (line.trim()) log('db', line.trim(), 'warn')
+    })
+  })
+  child.on('close', async code => {
+    if (code === 0 && output.trim()) {
+      try {
+        const typesPath = join(PROJECT_ROOT, 'types', 'database.ts')
+        const { writeFile } = await import('node:fs/promises')
+        await writeFile(typesPath, output)
+        log('db', 'types/database.ts regenerated successfully!', 'success')
+      } catch (err) {
+        log('db', `Failed to write types file: ${err.message}`, 'error')
+      }
+    } else if (code !== 0) {
+      log('db', 'Type generation failed', 'error')
+    }
+    job.status = code === 0 ? 'success' : 'failed'
+    const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+    log('db', `Type generation ${code === 0 ? 'completed' : 'failed'} (${duration}s)`, code === 0 ? 'success' : 'error')
+    runningJobs.delete('gen-types')
+  })
+
+  return { ok: true, message: 'Generating database types — watch the console' }
+}
+
+// ── Prompt Queue ────────────────────────────────────────────────
+
+async function getPromptQueue() {
+  try {
+    const { readdir } = await import('node:fs/promises')
+    const queueDir = join(PROJECT_ROOT, 'prompts', 'queue')
+    let files = []
+    try {
+      files = await readdir(queueDir)
+      files = files.filter(f => f.endsWith('.md'))
+    } catch { /* directory may not exist */ }
+
+    if (files.length === 0) {
+      return { ok: true, prompts: [], total: 0, message: 'Prompt queue is empty' }
+    }
+
+    const prompts = []
+    for (const f of files) {
+      try {
+        const content = await readFile(join(queueDir, f), 'utf-8')
+        const titleMatch = content.match(/^#\s+(.+)/m)
+        prompts.push({
+          file: f,
+          title: titleMatch ? titleMatch[1] : f.replace('.md', ''),
+          preview: content.slice(0, 200),
+        })
+      } catch { prompts.push({ file: f, title: f.replace('.md', ''), preview: '' }) }
+    }
+
+    return { ok: true, prompts, total: prompts.length, message: `${prompts.length} prompt(s) in queue` }
+  } catch (err) {
+    return { ok: false, error: err.message, prompts: [], total: 0 }
+  }
+}
+
+// ── Feature Close-Out (typecheck + build + commit + push) ───────
+
+async function closeOutFeature(message) {
+  if (runningJobs.has('close-out')) return { ok: false, error: 'Close-out already in progress' }
+
+  log('close-out', '✅ Feature Close-Out — Starting pipeline...', 'info')
+  const job = { id: 'close-out', startTime: Date.now(), status: 'running' }
+  runningJobs.set('close-out', job)
+
+  // Step 1: Type check
+  log('close-out', 'Step 1/4: Running type check...', 'info')
+  try {
+    await execAsync('npx tsc --noEmit --skipLibCheck', { cwd: PROJECT_ROOT, timeout: 120000 })
+    log('close-out', 'Type check passed!', 'success')
+  } catch (err) {
+    log('close-out', `Type check failed: ${err.stderr || err.message}`, 'error')
+    job.status = 'failed'
+    runningJobs.delete('close-out')
+    return { ok: false, error: `Type check failed: ${err.stderr || err.message}` }
+  }
+
+  // Step 2: Full build
+  log('close-out', 'Step 2/4: Running full build...', 'info')
+  try {
+    await execAsync('npx next build --no-lint', { cwd: PROJECT_ROOT, timeout: 300000 })
+    log('close-out', 'Build passed!', 'success')
+  } catch (err) {
+    log('close-out', `Build failed: ${err.stderr || err.message}`, 'error')
+    job.status = 'failed'
+    runningJobs.delete('close-out')
+    return { ok: false, error: `Build failed: ${err.stderr || err.message}` }
+  }
+
+  // Step 3: Commit
+  const commitMsg = message || `feat: close-out ${new Date().toISOString().slice(0, 10)}`
+  log('close-out', `Step 3/4: Committing — "${commitMsg}"`, 'info')
+  try {
+    await execAsync('git add -A', { cwd: PROJECT_ROOT })
+    const escaped = commitMsg.replace(/"/g, '\\"').replace(/\$/g, '\\$').replace(/`/g, '\\`')
+    await execAsync(`git commit -m "${escaped}"`, { cwd: PROJECT_ROOT })
+    log('close-out', 'Committed!', 'success')
+  } catch (err) {
+    if (err.stdout?.includes('nothing to commit')) {
+      log('close-out', 'Nothing to commit — working tree clean', 'info')
+    } else {
+      log('close-out', `Commit failed: ${err.stderr || err.message}`, 'error')
+      job.status = 'failed'
+      runningJobs.delete('close-out')
+      return { ok: false, error: `Commit failed: ${err.stderr || err.message}` }
+    }
+  }
+
+  // Step 4: Push
+  log('close-out', 'Step 4/4: Pushing to GitHub...', 'info')
+  try {
+    const { stdout: branch } = await execAsync('git branch --show-current', { cwd: PROJECT_ROOT })
+    await execAsync(`git push origin ${branch.trim()}`, { cwd: PROJECT_ROOT })
+    log('close-out', `Pushed ${branch.trim()} to origin`, 'success')
+  } catch (err) {
+    log('close-out', `Push failed: ${err.stderr || err.message}`, 'error')
+    job.status = 'failed'
+    runningJobs.delete('close-out')
+    return { ok: false, error: `Push failed: ${err.stderr || err.message}` }
+  }
+
+  job.status = 'success'
+  const duration = ((Date.now() - job.startTime) / 1000).toFixed(1)
+  log('close-out', `✅ Feature close-out complete! (${duration}s)`, 'success')
+  runningJobs.delete('close-out')
+  return { ok: true, message: `Feature close-out complete (${duration}s). Type check ✓ Build ✓ Commit ✓ Push ✓` }
+}
+
 async function runBuild(type) {
   const jobId = `build-${type}`
   if (runningJobs.has(jobId)) return { ok: false, error: 'Build already in progress' }
@@ -895,6 +1150,16 @@ const TOOLS = {
   'build/full':       { fn: () => runBuild('full'),               desc: 'Run full Next.js production build' },
   'test/run':         { fn: (param) => runTests(param),           desc: 'Run tests (use test/run:smoke or test/run:typecheck)' },
 
+  // Pipelines (multi-step)
+  'ship-it':          { fn: (param) => shipIt(param),             desc: 'SHIP IT — commit + push + deploy to beta in one shot (use ship-it:commit message)' },
+  'close-out':        { fn: (param) => closeOutFeature(param),    desc: 'Feature Close-Out — typecheck + build + commit + push (use close-out:commit message)' },
+
+  // Maintenance
+  'cache/clear':      { fn: clearCache,                           desc: 'Clear the .next/ build cache (fixes ENOTEMPTY errors)' },
+  'npm/install':      { fn: npmInstall,                           desc: 'Run npm install to update dependencies' },
+  'db/gen-types':     { fn: generateTypes,                        desc: 'Regenerate types/database.ts from Supabase schema' },
+  'prompts/queue':    { fn: getPromptQueue,                       desc: 'Show pending prompts from the Claude Code queue' },
+
   // Status & Monitoring
   'status/all':       { fn: getAllStatus,                         desc: 'Get current status of all services (dev, beta, prod, Ollama, git)' },
   'status/git':       { fn: checkGitStatus,                       desc: 'Get git branch, dirty files, and recent commits' },
@@ -1158,6 +1423,28 @@ async function handleRequest(req, res) {
   }
   if (path === '/api/build/full' && method === 'POST') {
     return json(res, await runBuild('full'))
+  }
+
+  // New pipeline routes
+  if (path === '/api/ship-it' && method === 'POST') {
+    const body = await parseBody(req)
+    return json(res, await shipIt(body.message))
+  }
+  if (path === '/api/close-out' && method === 'POST') {
+    const body = await parseBody(req)
+    return json(res, await closeOutFeature(body.message))
+  }
+  if (path === '/api/cache/clear' && method === 'POST') {
+    return json(res, await clearCache())
+  }
+  if (path === '/api/npm/install' && method === 'POST') {
+    return json(res, await npmInstall())
+  }
+  if (path === '/api/db/gen-types' && method === 'POST') {
+    return json(res, await generateTypes())
+  }
+  if (path === '/api/prompts/queue' && method === 'GET') {
+    return json(res, await getPromptQueue())
   }
 
   if (path === '/api/jobs' && method === 'GET') {
