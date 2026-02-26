@@ -73,6 +73,11 @@ ssh $SSH_OPTS "$REMOTE" << 'BUILD'
   echo "  Memory before build:"
   free -m | grep -E "Mem|Swap"
 
+  # Clean stale build cache — prevents next-flight-client-entry-loader errors
+  # when switching between branches with different code
+  rm -rf .next 2>/dev/null || true
+  echo "  Cleared .next cache"
+
   # Install dependencies
   rm -rf node_modules/.package-lock.json 2>/dev/null || true
   npm ci --production=false 2>&1 | tail -5 || {
@@ -84,8 +89,14 @@ ssh $SSH_OPTS "$REMOTE" << 'BUILD'
 
   # Build with 6GB heap — app has grown past 4GB (OOMs at 4096 as of 2026-02-26)
   # Pi has 8GB RAM + 4GB swap. Ollama + PM2 are stopped, so ~7GB available.
-  NODE_OPTIONS="--max-old-space-size=6144" npx next build 2>&1 | tail -10
+  NODE_OPTIONS="--max-old-space-size=6144" npx next build 2>&1 | tail -20
   BUILD_EXIT=$?
+
+  # Double-check: even if exit code is 0, verify BUILD_ID exists
+  if [ ! -f .next/BUILD_ID ]; then
+    echo "  BUILD FAILED — no BUILD_ID produced"
+    BUILD_EXIT=1
+  fi
 
   if [ $BUILD_EXIT -ne 0 ]; then
     echo "  BUILD FAILED! Rolling back..."
